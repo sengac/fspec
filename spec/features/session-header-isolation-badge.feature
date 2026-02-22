@@ -2,7 +2,6 @@
 @tui-component
 @GIT-029
 Feature: Session Header Isolation Badge
-
   """
   SessionHeader displays [ISOLATED] badge when session is isolated.
   Badge is green to match existing badge patterns: [R], [V], [DEBUG], [T:Med].

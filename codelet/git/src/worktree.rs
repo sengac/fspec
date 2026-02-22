@@ -1,13 +1,28 @@
 //! Git worktree operations using gitoxide
 //!
 //! Provides primitives for creating, removing, and listing git worktrees
-//! for session isolation. Uses pure gitoxide (gix) - NO git CLI commands.
+//! for session isolation.
+//!
+//! # IMPORTANT: Pure Gitoxide Implementation
+//!
+//! This module uses ONLY gitoxide (gix) - a pure Rust git implementation.
+//! **NEVER use `std::process::Command` to shell out to `git` CLI.**
+//!
+//! All operations including:
+//! - Repository opening (`gix::open`)
+//! - Commit/tree traversal (`repo.find_object`, `commit.tree_id`)
+//! - Index creation (`repo.index_from_tree`)
+//! - Index writing (`index_file.write_to`)
+//! - File checkout (`checkout_to_worktree`)
+//!
+//! Are implemented using gitoxide APIs, NOT git CLI commands.
 
 use crate::checkout::checkout_to_worktree;
 use crate::error::{GitError, Result};
 use crate::open_repo;
 use chrono::{DateTime, Utc};
-use std::fs;
+use std::fs::{self, File};
+use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 
 /// Directory name for fspec worktrees within a repository
@@ -66,6 +81,11 @@ pub fn create_worktree(
 ///
 /// # Returns
 /// WorktreeCreateResult with worktree info and metadata
+///
+/// # Implementation Note - PURE GITOXIDE
+///
+/// This function uses ONLY gitoxide (gix) APIs for all git operations.
+/// **NEVER use `std::process::Command` or shell out to `git` CLI.**
 pub fn create_worktree_at_ref(
     repo_path: impl AsRef<Path>,
     session_id: &str,
@@ -92,6 +112,7 @@ pub fn create_worktree_at_ref(
 
     write_worktree_metadata(&worktree_path, &worktree_git_dir, &commit_sha)?;
     checkout_to_worktree(&repo, &worktree_path, &commit_id)?;
+    initialize_worktree_index(&repo, &worktree_git_dir, &commit_id)?;
 
     Ok(WorktreeCreateResult {
         info: WorktreeInfo {
@@ -204,6 +225,61 @@ fn resolve_commit_ref(repo: &gix::Repository, commit_ref: Option<&str>) -> Resul
                 commit_ref: reference.to_string(),
             })?;
     Ok(id.detach())
+}
+
+/// Initialize the git index for a worktree from the commit tree
+///
+/// This is the gitoxide equivalent of `git reset --mixed HEAD` which:
+/// 1. Keeps the working directory files unchanged
+/// 2. Resets the index to match the HEAD tree
+/// 3. Results in a clean `git status`
+///
+/// Without this, the worktree index is empty and all files appear as
+/// "staged for deletion" in git status.
+///
+/// # Implementation Note - PURE GITOXIDE
+///
+/// This function uses ONLY gitoxide (gix) APIs:
+/// - `repo.find_object()` to get the commit
+/// - `commit.tree_id()` to get the tree
+/// - `repo.index_from_tree()` to create index state from tree
+/// - `index_file.write_to()` to write index to disk
+///
+/// **NEVER use `std::process::Command` or shell out to `git` CLI.**
+fn initialize_worktree_index(
+    repo: &gix::Repository,
+    worktree_git_dir: &Path,
+    commit_id: &gix::ObjectId,
+) -> Result<()> {
+    // PURE GITOXIDE: Get the tree from the commit using gix APIs
+    let commit = repo
+        .find_object(*commit_id)
+        .map_err(|e| GitError::Other(format!("Failed to find commit for index: {e}")))?
+        .into_commit();
+
+    let tree_id = commit
+        .tree_id()
+        .map_err(|e| GitError::Other(format!("Failed to get tree id for index: {e}")))?;
+
+    // PURE GITOXIDE: Create an index from the tree using gix::Repository::index_from_tree
+    let mut index_file = repo
+        .index_from_tree(&tree_id)
+        .map_err(|e| GitError::Other(format!("Failed to create index from tree: {e}")))?;
+
+    // Set the path to the worktree's index file
+    let index_path = worktree_git_dir.join("index");
+    index_file.set_path(&index_path);
+
+    // PURE GITOXIDE: Write the index to disk using gix::index::File::write_to
+    let file = File::create(&index_path)
+        .map_err(|e| GitError::Other(format!("Failed to create index file: {e}")))?;
+    let mut writer = BufWriter::new(file);
+
+    index_file
+        .write_to(&mut writer, gix::index::write::Options::default())
+        .map_err(|e| GitError::Other(format!("Failed to write index: {e}")))?;
+
+    Ok(())
 }
 
 /// Write worktree metadata files

@@ -2,7 +2,6 @@
 @codelet
 @GIT-029
 Feature: Isolated session NAPI bindings
-
   """
   NAPI bindings for isolated session management: listSessions, inspectSession,
   mergeSession, discardSession, pruneOrphaned.
@@ -74,4 +73,3 @@ Feature: Isolated session NAPI bindings
     When I call sessionManagerList
     Then the SessionInfo for that session should have isIsolated set to true
     Then the SessionInfo should have worktreePath set to the worktree directory
-

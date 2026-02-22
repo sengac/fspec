@@ -1,6 +1,12 @@
 //! File collection utilities for worktrees and git trees
 //!
 //! Provides utilities for collecting file contents from directories and git trees.
+//!
+//! # IMPORTANT: Pure Gitoxide Implementation
+//!
+//! This module uses ONLY gitoxide (gix) - a pure Rust git implementation.
+//! **ALL worktrees MUST have a properly initialized git index.**
+//! There are NO fallbacks - if the index is missing, it's an error.
 
 use crate::error::{GitError, Result};
 use crate::open_repo;
@@ -14,16 +20,20 @@ use std::path::{Path, PathBuf};
 /// - All tracked files (files in the git index)
 /// - All untracked files that are NOT ignored by .gitignore
 ///
-/// If no git index is available (e.g., for worktrees without an index),
-/// falls back to collecting all files except .git and .fspec directories.
+/// # IMPORTANT: Index Required
 ///
-/// This prevents OOM by excluding node_modules, dist, *.node, etc.
+/// This function REQUIRES a properly initialized git index.
+/// Worktrees created by fspec ALWAYS have an initialized index (GIT-035).
+/// If the index is missing, this function returns an error.
 ///
 /// # Arguments
 /// * `worktree_path` - Path to the worktree root directory
 ///
 /// # Returns
 /// HashMap mapping relative paths to file contents
+///
+/// # Errors
+/// Returns `GitError::CorruptedIndex` if the git index is missing or corrupted.
 pub fn collect_worktree_files(worktree_path: &Path) -> Result<HashMap<String, Vec<u8>>> {
     let repo = open_repo(worktree_path)?;
     let mut files = HashMap::new();
@@ -32,105 +42,82 @@ pub fn collect_worktree_files(worktree_path: &Path) -> Result<HashMap<String, Ve
         .workdir()
         .ok_or_else(|| GitError::Other("Not a worktree".to_string()))?;
 
-    // Try to get the index, but if it fails, fall back to simple collection
-    let index_result = repo.index();
+    // Get the index - this MUST succeed for properly initialized repos/worktrees
+    let index = repo.index().map_err(|e| {
+        GitError::CorruptedIndex {
+            message: format!(
+                "Git index not available at '{}'. This indicates a corrupted worktree \
+                 or a repo without any commits. All fspec worktrees should have an \
+                 initialized index. Ensure repo has at least one commit. Error: {}",
+                worktree_path.display(),
+                e
+            ),
+        }
+    })?;
 
-    match index_result {
-        Ok(index) => {
-            // 1. Collect all tracked files from the index
-            for entry in index.entries() {
-                let path = entry.path(&index);
-                let path_str = String::from_utf8_lossy(path).to_string();
-                let full_path = workdir.join(&path_str);
+    // 1. Collect all tracked files from the index
+    for entry in index.entries() {
+        let path = entry.path(&index);
+        let path_str = String::from_utf8_lossy(path).to_string();
+        let full_path = workdir.join(&path_str);
 
-                // Only include if file exists in working tree (not deleted)
-                if full_path.is_file() {
-                    let content = fs::read(&full_path)?;
-                    files.insert(path_str, content);
+        // Only include if file exists in working tree (not deleted)
+        if full_path.is_file() {
+            let content = fs::read(&full_path)?;
+            files.insert(path_str, content);
+        }
+    }
+
+    // 2. Collect untracked files that are NOT ignored
+    // Use gitoxide's excludes stack for proper gitignore support
+    let excludes_result = repo.excludes(
+        &index,
+        None,
+        gix::worktree::stack::state::ignore::Source::WorktreeThenIdMappingIfNotSkipped,
+    );
+
+    if let Ok(mut excludes) = excludes_result {
+        // Walk the working directory
+        for entry in walkdir::WalkDir::new(workdir)
+            .into_iter()
+            .filter_entry(|e| !is_git_or_fspec_dir(e))
+            .filter_map(|e| e.ok())
+        {
+            if entry.file_type().is_file() {
+                let rel_path = entry
+                    .path()
+                    .strip_prefix(workdir)
+                    .map_err(|e| GitError::Other(e.to_string()))?;
+
+                // Convert to forward slashes for git path format
+                let rel_path_str = rel_path.to_string_lossy().replace('\\', "/");
+
+                // Skip if already in our collection (tracked file)
+                if files.contains_key(&rel_path_str) {
+                    continue;
                 }
-            }
 
-            // 2. Collect untracked files that are NOT ignored
-            // Use gitoxide's excludes stack for proper gitignore support
-            let excludes_result = repo.excludes(
-                &index,
-                None,
-                gix::worktree::stack::state::ignore::Source::WorktreeThenIdMappingIfNotSkipped,
-            );
+                // Check if file is in index using gix's path conversion
+                let bstr_path = gix::path::into_bstr(rel_path);
+                let is_in_index = index.entry_index_by_path(&bstr_path).is_ok();
 
-            if let Ok(mut excludes) = excludes_result {
-                // Walk the working directory
-                for entry in walkdir::WalkDir::new(workdir)
-                    .into_iter()
-                    .filter_entry(|e| !is_git_or_fspec_dir(e))
-                    .filter_map(|e| e.ok())
-                {
-                    if entry.file_type().is_file() {
-                        let rel_path = entry
-                            .path()
-                            .strip_prefix(workdir)
-                            .map_err(|e| GitError::Other(e.to_string()))?;
+                if !is_in_index {
+                    // Check if file is ignored using proper gitignore support
+                    let is_ignored = excludes
+                        .at_path(rel_path, Some(gix::index::entry::Mode::FILE))
+                        .map(|platform| platform.is_excluded())
+                        .unwrap_or(false);
 
-                        // Convert to forward slashes for git path format
-                        let rel_path_str = rel_path.to_string_lossy().replace('\\', "/");
-
-                        // Skip if already in our collection (tracked file)
-                        if files.contains_key(&rel_path_str) {
-                            continue;
-                        }
-
-                        // Check if file is in index using gix's path conversion
-                        let bstr_path = gix::path::into_bstr(rel_path);
-                        let is_in_index = index.entry_index_by_path(&bstr_path).is_ok();
-
-                        if !is_in_index {
-                            // Check if file is ignored using proper gitignore support
-                            let is_ignored = excludes
-                                .at_path(rel_path, Some(gix::index::entry::Mode::FILE))
-                                .map(|platform| platform.is_excluded())
-                                .unwrap_or(false);
-
-                            if !is_ignored {
-                                let content = fs::read(entry.path())?;
-                                files.insert(rel_path_str, content);
-                            }
-                        }
+                    if !is_ignored {
+                        let content = fs::read(entry.path())?;
+                        files.insert(rel_path_str, content);
                     }
                 }
             }
         }
-        Err(_) => {
-            // No index available - fall back to collecting all files
-            // This happens for worktrees we create manually without a git index
-            collect_all_files_simple(workdir, &mut files)?;
-        }
     }
 
     Ok(files)
-}
-
-/// Simple file collection without git index (fallback for worktrees without index)
-///
-/// Collects all files except those in .git and .fspec directories.
-fn collect_all_files_simple(workdir: &Path, files: &mut HashMap<String, Vec<u8>>) -> Result<()> {
-    for entry in walkdir::WalkDir::new(workdir)
-        .into_iter()
-        .filter_entry(|e| !is_git_or_fspec_dir(e))
-        .filter_map(|e| e.ok())
-    {
-        if entry.file_type().is_file() {
-            let rel_path = entry
-                .path()
-                .strip_prefix(workdir)
-                .map_err(|e| GitError::Other(e.to_string()))?;
-
-            // Convert to forward slashes for git path format
-            let rel_path_str = rel_path.to_string_lossy().replace('\\', "/");
-            let content = fs::read(entry.path())?;
-            files.insert(rel_path_str, content);
-        }
-    }
-    Ok(())
 }
 
 /// Check if entry is .git or .fspec directory (should be skipped)

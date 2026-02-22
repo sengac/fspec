@@ -1001,6 +1001,7 @@ impl BackgroundSession {
     /// Create a new background session
     /// 
     /// GIT-019: Added worktree_path and base_commit parameters for isolated session support
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn new(
         id: Uuid,
         name: String,
@@ -7213,4 +7214,195 @@ pub fn session_get_active() -> Option<String> {
     SessionManager::instance()
         .get_active_session()
         .map(|uuid| uuid.to_string())
+}
+
+// ============================================================================
+// GIT-020: Isolated Session Path Validation - E2E Test Support
+// ============================================================================
+
+/// Result of path validation for isolated sessions.
+#[napi(object)]
+pub struct PathValidationResult {
+    /// Whether the path is allowed for this session
+    pub allowed: bool,
+    /// The resolved path (within worktree if isolated session)
+    pub resolved_path: Option<String>,
+    /// Error message if path is not allowed
+    pub error: Option<String>,
+}
+
+/// GIT-020: Validate if a path is allowed for a session.
+///
+/// This function is exposed for E2E testing of isolated session file operations.
+/// It calls the same validate_and_resolve_path function used by all file tools.
+///
+/// For isolated sessions:
+/// - Relative paths are resolved relative to worktree and ALLOWED
+/// - Absolute paths within worktree are ALLOWED
+/// - Absolute paths outside worktree are BLOCKED
+/// - Path traversal (../) that escapes worktree is BLOCKED
+/// - Symlinks pointing outside worktree are BLOCKED
+///
+/// For non-isolated sessions:
+/// - All paths are ALLOWED (backward compatible)
+///
+/// @param session_id - UUID of the session to validate against
+/// @param path - File path to validate
+/// @param tool_name - Name of the tool (for error messages): "read", "write", "edit", "ls", "grep", "glob", "ast_grep", "ast_grep_refactor"
+/// @returns PathValidationResult with allowed status and resolved path or error
+#[napi]
+pub fn session_validate_path(
+    session_id: String,
+    path: String,
+    tool_name: String,
+) -> PathValidationResult {
+    use codelet_tools::facade::validate_and_resolve_path;
+    
+    // Parse session ID
+    let uuid = match uuid::Uuid::parse_str(&session_id) {
+        Ok(id) => id,
+        Err(e) => {
+            return PathValidationResult {
+                allowed: false,
+                resolved_path: None,
+                error: Some(format!("Invalid session ID: {}", e)),
+            };
+        }
+    };
+    
+    // Convert tool_name to static str for validate_and_resolve_path
+    let tool_static: &'static str = match tool_name.as_str() {
+        "read" => "read",
+        "write" => "write",
+        "edit" => "edit",
+        "ls" => "ls",
+        "grep" => "grep",
+        "glob" => "glob",
+        "ast_grep" => "ast_grep",
+        "ast_grep_refactor" => "ast_grep_refactor",
+        _ => "unknown",
+    };
+    
+    // Call the actual validation function used by all file tools
+    match validate_and_resolve_path(uuid, &path, tool_static) {
+        Ok(resolved) => PathValidationResult {
+            allowed: true,
+            resolved_path: Some(resolved.to_string_lossy().to_string()),
+            error: None,
+        },
+        Err(e) => PathValidationResult {
+            allowed: false,
+            resolved_path: None,
+            error: Some(e.to_string()),
+        },
+    }
+}
+
+/// GIT-020: Get the effective working directory for a session.
+///
+/// This function is exposed for E2E testing. It returns the directory
+/// that the session uses for relative path resolution:
+/// - For isolated sessions: the worktree path
+/// - For non-isolated sessions: the project root
+///
+/// @param session_id - UUID of the session
+/// @returns The effective working directory path, or null if session not found
+#[napi]
+pub fn session_get_effective_cwd(session_id: String) -> Option<String> {
+    let manager = SessionManager::instance();
+    
+    match manager.get_session(&session_id) {
+        Ok(session) => Some(session.effective_cwd().to_string_lossy().to_string()),
+        Err(_) => None,
+    }
+}
+
+/// GIT-020: Check if a session is isolated (has a worktree).
+///
+/// @param session_id - UUID of the session
+/// @returns true if session is isolated, false if not, null if session not found
+#[napi]
+pub fn session_is_isolated(session_id: String) -> Option<bool> {
+    let manager = SessionManager::instance();
+    
+    match manager.get_session(&session_id) {
+        Ok(session) => Some(session.worktree_path.is_some()),
+        Err(_) => None,
+    }
+}
+
+/// Result of bash command execution for E2E testing.
+#[napi(object)]
+pub struct BashExecutionResult {
+    /// Whether the command succeeded (exit code 0)
+    pub success: bool,
+    /// Command output (stdout)
+    pub output: Option<String>,
+    /// Error message or stderr content
+    pub error: Option<String>,
+}
+
+/// GIT-020: Execute a bash command within a session's context.
+///
+/// This function is exposed for E2E testing of Bash tool cwd restriction.
+/// It executes a command using the session's effective_cwd as the working directory.
+///
+/// For isolated sessions: command runs in the worktree directory
+/// For non-isolated sessions: command runs in the project root
+///
+/// @param session_id - UUID of the session
+/// @param command - The bash command to execute
+/// @returns BashExecutionResult with output or error
+#[napi]
+pub fn session_execute_bash(session_id: String, command: String) -> BashExecutionResult {
+    use std::process::Command;
+    
+    // Get the effective_cwd for this session
+    let cwd = match session_get_effective_cwd(session_id.clone()) {
+        Some(path) => path,
+        None => {
+            return BashExecutionResult {
+                success: false,
+                output: None,
+                error: Some(format!("Session not found: {}", session_id)),
+            };
+        }
+    };
+    
+    // Execute the command with the session's effective_cwd
+    let result = Command::new("bash")
+        .arg("-c")
+        .arg(&command)
+        .current_dir(&cwd)
+        .output();
+    
+    match result {
+        Ok(output) => {
+            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            
+            if output.status.success() {
+                BashExecutionResult {
+                    success: true,
+                    output: Some(stdout),
+                    error: if stderr.is_empty() { None } else { Some(stderr) },
+                }
+            } else {
+                BashExecutionResult {
+                    success: false,
+                    output: if stdout.is_empty() { None } else { Some(stdout) },
+                    error: Some(if stderr.is_empty() {
+                        format!("Command failed with exit code: {:?}", output.status.code())
+                    } else {
+                        stderr
+                    }),
+                }
+            }
+        }
+        Err(e) => BashExecutionResult {
+            success: false,
+            output: None,
+            error: Some(format!("Failed to execute command: {}", e)),
+        },
+    }
 }

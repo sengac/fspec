@@ -557,7 +557,7 @@ pub fn validate_and_resolve_path(
     validate_and_resolve_path_with_cwd(path, effective_cwd.as_ref(), tool_name)
 }
 
-/// TOOL-014: Internal path validation with explicit worktree path.
+/// Internal path validation with explicit worktree path.
 ///
 /// This is the core implementation that can be tested in isolation without
 /// requiring a registered callback.
@@ -575,34 +575,42 @@ pub fn validate_and_resolve_path_with_cwd(
         Some(worktree) => {
             let path_buf = std::path::Path::new(path);
             
+            // Get canonical worktree path for comparison
+            let canonical_worktree = worktree.canonicalize().map_err(|_| {
+                ToolError::Validation {
+                    tool: tool_name,
+                    message: format!(
+                        "Cannot resolve worktree path. Session worktree: {}",
+                        worktree.display()
+                    ),
+                }
+            })?;
+            
             if path_buf.is_absolute() {
                 // For absolute paths, check if they're within the worktree
-                // We need to handle the case where the path might not exist yet (for writes)
-                // So we compare path prefixes rather than requiring canonical paths
-                
-                // First, try to get canonical paths (works for existing paths)
-                match (worktree.canonicalize(), path_buf.canonicalize()) {
-                    (Ok(canonical_worktree), Ok(canonical_path)) => {
+                // Try to canonicalize to follow symlinks and resolve ..
+                match path_buf.canonicalize() {
+                    Ok(canonical_path) => {
+                        // Path exists - check it's within worktree (follows symlinks)
                         if canonical_path.starts_with(&canonical_worktree) {
                             return Ok(canonical_path);
                         }
-                        // Path exists but is outside worktree
+                        // Path exists but is outside worktree (or symlink points outside)
                         Err(ToolError::Validation {
                             tool: tool_name,
                             message: format!(
-                                "Path is outside isolated worktree. Use relative path or path within worktree. \
-                                Session worktree: {}",
-                                worktree.display()
+                                "Path is outside isolated worktree. Session worktree: {}",
+                                canonical_worktree.display()
                             ),
                         })
                     }
-                    (Ok(canonical_worktree), Err(_)) => {
+                    Err(_) => {
                         // Path doesn't exist yet - check if it would be within worktree
-                        // by comparing the path prefix
+                        // by comparing the path prefix (for writes to new files)
                         if path_buf.starts_with(&canonical_worktree) {
                             return Ok(path_buf.to_path_buf());
                         }
-                        // Try comparing against non-canonical worktree path
+                        // Also check against non-canonical worktree (in case of symlinked worktree)
                         if path_buf.starts_with(worktree) {
                             return Ok(path_buf.to_path_buf());
                         }
@@ -611,28 +619,51 @@ pub fn validate_and_resolve_path_with_cwd(
                             message: format!(
                                 "Cannot {} outside isolated worktree. Session worktree: {}",
                                 tool_name,
-                                worktree.display()
-                            ),
-                        })
-                    }
-                    (Err(_), _) => {
-                        // Worktree path doesn't exist - something is wrong with session setup
-                        // Fall through to simple prefix check
-                        if path_buf.starts_with(worktree) {
-                            return Ok(path_buf.to_path_buf());
-                        }
-                        Err(ToolError::Validation {
-                            tool: tool_name,
-                            message: format!(
-                                "Path is outside isolated worktree. Session worktree: {}",
-                                worktree.display()
+                                canonical_worktree.display()
                             ),
                         })
                     }
                 }
             } else {
-                // Relative path - resolve to worktree
-                Ok(worktree.join(path))
+                // Relative path - resolve to worktree, then verify it doesn't escape
+                let resolved = worktree.join(path);
+                
+                // Try to canonicalize to follow symlinks and resolve .. components
+                match resolved.canonicalize() {
+                    Ok(canonical_path) => {
+                        // Path exists - verify it's within worktree (catches symlink escapes and ..)
+                        if canonical_path.starts_with(&canonical_worktree) {
+                            return Ok(canonical_path);
+                        }
+                        // Resolved path escapes worktree (via .. or symlink)
+                        Err(ToolError::Validation {
+                            tool: tool_name,
+                            message: format!(
+                                "Path is outside isolated worktree. Session worktree: {}",
+                                canonical_worktree.display()
+                            ),
+                        })
+                    }
+                    Err(_) => {
+                        // Path doesn't exist - normalize manually and check for escape
+                        // We need to handle .. components that would escape the worktree
+                        let normalized = normalize_path(&resolved);
+                        if normalized.starts_with(&canonical_worktree) {
+                            return Ok(normalized);
+                        }
+                        // Also check against non-canonical worktree
+                        if normalized.starts_with(worktree) {
+                            return Ok(normalized);
+                        }
+                        Err(ToolError::Validation {
+                            tool: tool_name,
+                            message: format!(
+                                "Path is outside isolated worktree. Session worktree: {}",
+                                canonical_worktree.display()
+                            ),
+                        })
+                    }
+                }
             }
         }
         None => {
@@ -640,6 +671,38 @@ pub fn validate_and_resolve_path_with_cwd(
             Ok(PathBuf::from(path))
         }
     }
+}
+
+/// Normalize a path by resolving . and .. components without requiring the path to exist.
+/// This is used for validating paths to files that don't exist yet.
+fn normalize_path(path: &std::path::Path) -> PathBuf {
+    let mut components = Vec::new();
+    
+    for component in path.components() {
+        match component {
+            std::path::Component::Prefix(p) => components.push(std::path::Component::Prefix(p)),
+            std::path::Component::RootDir => {
+                components.clear();
+                components.push(component);
+            }
+            std::path::Component::CurDir => {
+                // Skip . components
+            }
+            std::path::Component::ParentDir => {
+                // Pop the last component if possible (but don't go above root)
+                if let Some(last) = components.last() {
+                    if !matches!(last, std::path::Component::RootDir | std::path::Component::Prefix(_)) {
+                        components.pop();
+                    }
+                }
+            }
+            std::path::Component::Normal(c) => {
+                components.push(std::path::Component::Normal(c));
+            }
+        }
+    }
+    
+    components.iter().collect()
 }
 
 /// Result type for bash operations
@@ -1480,8 +1543,7 @@ mod worktree_isolation_tests {
         assert!(matches!(err, ToolError::Validation { tool: "read", .. }));
         assert!(
             err.to_string().contains("outside") && err.to_string().contains("worktree"),
-            "Error should mention worktree isolation: {}",
-            err
+            "Error should mention worktree isolation: {err}"
         );
     }
 
@@ -1693,33 +1755,6 @@ mod worktree_isolation_tests {
         assert_eq!(result.unwrap(), PathBuf::from("relative/path"));
     }
 
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: Tools require session_id in constructor
-    #[test]
-    fn test_tools_require_session_id_in_constructor() {
-        // @step Given a tool class that previously had parameterless new()
-        // @step When the tool is instantiated
-        // @step Then it must require session_id: uuid::Uuid as parameter
-        // @step And Default trait implementation should not exist
-
-        // These assertions verify the API contract.
-        // The actual tool struct changes will be made during implementation.
-        // For now, these tests document the expected API.
-
-        // Current API (will fail compilation after TOOL-014):
-        // let read_tool = ReadTool::new();  // Should require session_id
-        // let write_tool = WriteTool::new(); // Should require session_id
-
-        // Expected API after TOOL-014:
-        // let session_id = Uuid::nil();
-        // let read_tool = ReadTool::new(session_id);
-        // let write_tool = WriteTool::new(session_id);
-
-        // For now, this test passes to document the requirement
-        // The actual signature changes will cause compile errors that drive implementation
-        assert!(true, "Tool constructor signature requirements documented");
-    }
-
     // ========================================================================
     // Additional Happy Path Tests for Tool-Specific Scenarios
     // ========================================================================
@@ -1876,25 +1911,6 @@ mod worktree_isolation_tests {
 
         // @step And the main project file should be unchanged
         // (Verified by path being within worktree)
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: BashTool runs in worktree directory in isolated session
-    #[test]
-    fn test_bash_tool_runs_in_worktree() {
-        // @step Given an isolated session with worktree at ".fspec/worktrees/abc123/"
-        // BashTool already has session_id support from TOOL-013
-
-        // @step When BashTool runs "pwd"
-        // BashTool::new(session_id) already looks up effective_cwd
-
-        // @step Then the output should contain ".fspec/worktrees/abc123"
-        // This is verified by BashTool's existing implementation
-        // We document this test for coverage tracking
-
-        // Note: BashTool already implemented session_id in TOOL-013
-        // This test documents that the pattern is already in place
-        assert!(true, "BashTool session_id support verified in TOOL-013");
     }
 
     // ============================================================================
@@ -2086,104 +2102,4 @@ mod worktree_isolation_tests {
         // @step And LsToolFacadeWrapper MUST NOT implement Default trait
     }
 
-    // ============================================================================
-    // REQUIREMENT 3: PROVIDER COMPLIANCE - ALL PROVIDERS MUST PASS session_id
-    // These scenarios verify that ALL providers pass session_id to ALL tools.
-    // If any provider fails to pass session_id, compilation MUST fail.
-    // ============================================================================
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: Claude provider MUST pass session_id to all tools
-    #[test]
-    fn test_claude_provider_must_pass_session_id() {
-        // @step Given a Claude provider creating an agent with session_id
-        // @step When tools are instantiated for the agent
-        // @step Then ReadTool MUST be constructed with ReadTool::new(session_id)
-        // @step And WriteTool MUST be constructed with WriteTool::new(session_id)
-        // @step And EditTool MUST be constructed with EditTool::new(session_id)
-        // @step And GrepTool MUST be constructed with GrepTool::new(session_id)
-        // @step And GlobTool MUST be constructed with GlobTool::new(session_id)
-        // @step And LsTool MUST be constructed with LsTool::new(session_id)
-        // @step And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
-        // @step And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
-        // Verified by compilation - if any tool doesn't get session_id, build fails
-        assert!(
-            true,
-            "Claude provider compiles with session_id passed to all tools"
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: OpenAI provider MUST pass session_id to all tools
-    #[test]
-    fn test_openai_provider_must_pass_session_id() {
-        // @step Given an OpenAI provider creating an agent with session_id
-        // @step When tools are instantiated for the agent
-        // @step Then ReadTool MUST be constructed with ReadTool::new(session_id)
-        // @step And WriteTool MUST be constructed with WriteTool::new(session_id)
-        // @step And EditTool MUST be constructed with EditTool::new(session_id)
-        // @step And GrepTool MUST be constructed with GrepTool::new(session_id)
-        // @step And GlobTool MUST be constructed with GlobTool::new(session_id)
-        // @step And LsTool MUST be constructed with LsTool::new(session_id)
-        // @step And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
-        // @step And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
-        assert!(
-            true,
-            "OpenAI provider compiles with session_id passed to all tools"
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: Codex provider MUST pass session_id to all tools
-    #[test]
-    fn test_codex_provider_must_pass_session_id() {
-        // @step Given a Codex provider creating an agent with session_id
-        // @step When tools are instantiated for the agent
-        // @step Then ReadTool MUST be constructed with ReadTool::new(session_id)
-        // @step And WriteTool MUST be constructed with WriteTool::new(session_id)
-        // @step And EditTool MUST be constructed with EditTool::new(session_id)
-        // @step And GrepTool MUST be constructed with GrepTool::new(session_id)
-        // @step And GlobTool MUST be constructed with GlobTool::new(session_id)
-        // @step And LsTool MUST be constructed with LsTool::new(session_id)
-        // @step And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
-        // @step And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
-        assert!(
-            true,
-            "Codex provider compiles with session_id passed to all tools"
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: Gemini provider MUST pass session_id to all tools
-    #[test]
-    fn test_gemini_provider_must_pass_session_id() {
-        // @step Given a Gemini provider creating an agent with session_id
-        // @step When tools are instantiated for the agent
-        // @step Then SearchToolFacadeWrapper MUST be constructed with SearchToolFacadeWrapper::new(session_id)
-        // @step And LsToolFacadeWrapper MUST be constructed with LsToolFacadeWrapper::new(session_id)
-        // @step And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
-        // @step And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
-        // @step And all file operation wrappers MUST receive session_id
-        assert!(
-            true,
-            "Gemini provider compiles with session_id passed to all tools"
-        );
-    }
-
-    /// Feature: spec/features/require-session-id-for-all-tools-to-support-worktree-isolation.feature
-    /// Scenario: ZAI provider MUST pass session_id to all tools
-    #[test]
-    fn test_zai_provider_must_pass_session_id() {
-        // @step Given a ZAI provider creating an agent with session_id
-        // @step When tools are instantiated for the agent
-        // @step Then SearchToolFacadeWrapper MUST be constructed with SearchToolFacadeWrapper::new(session_id)
-        // @step And LsToolFacadeWrapper MUST be constructed with LsToolFacadeWrapper::new(session_id)
-        // @step And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
-        // @step And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
-        // @step And all file operation wrappers MUST receive session_id
-        assert!(
-            true,
-            "ZAI provider compiles with session_id passed to all tools"
-        );
-    }
 }

@@ -197,6 +197,16 @@ export interface AstGrepTransform {
   convert?: AstGrepConvertTransform;
 }
 
+/** Result of bash command execution for E2E testing. */
+export interface BashExecutionResult {
+  /** Whether the command succeeded (exit code 0) */
+  success: boolean;
+  /** Command output (stdout) */
+  output?: string;
+  /** Error message or stderr content */
+  error?: string;
+}
+
 /**
  * Add a pattern to session allowances.
  * Called when user selects "Allow Session" in the triple confirmation dialog.
@@ -1158,6 +1168,16 @@ export declare const enum NotificationSeverity {
   Error = 'Error',
 }
 
+/** Result of path validation for isolated sessions. */
+export interface PathValidationResult {
+  /** Whether the path is allowed for this session */
+  allowed: boolean;
+  /** The resolved path (within worktree if isolated session) */
+  resolvedPath?: string;
+  /** Error message if path is not allowed */
+  error?: string;
+}
+
 /** Add a history entry */
 export declare function persistenceAddHistory(
   display: string,
@@ -1513,6 +1533,24 @@ export declare function sessionCreateWatcher(
 ): Promise<string>;
 
 /**
+ * GIT-020: Execute a bash command within a session's context.
+ *
+ * This function is exposed for E2E testing of Bash tool cwd restriction.
+ * It executes a command using the session's effective_cwd as the working directory.
+ *
+ * For isolated sessions: command runs in the worktree directory
+ * For non-isolated sessions: command runs in the project root
+ *
+ * @param session_id - UUID of the session
+ * @param command - The bash command to execute
+ * @returns BashExecutionResult with output or error
+ */
+export declare function sessionExecuteBash(
+  sessionId: string,
+  command: string
+): BashExecutionResult;
+
+/**
  * TUI-059: Get the currently active session ID
  *
  * Returns the session ID of the currently active session (for navigation),
@@ -1559,6 +1597,21 @@ export declare function sessionGetCompactionProgress(
 
 /** Get debug enabled state for a background session */
 export declare function sessionGetDebugEnabled(sessionId: string): boolean;
+
+/**
+ * GIT-020: Get the effective working directory for a session.
+ *
+ * This function is exposed for E2E testing. It returns the directory
+ * that the session uses for relative path resolution:
+ * - For isolated sessions: the worktree path
+ * - For non-isolated sessions: the project root
+ *
+ * @param session_id - UUID of the session
+ * @returns The effective working directory path, or null if session not found
+ */
+export declare function sessionGetEffectiveCwd(
+  sessionId: string
+): string | null;
 
 /**
  * Get the first session (VIEWNV-001)
@@ -1696,6 +1749,14 @@ export interface SessionInfoJs {
 
 /** Interrupt a session */
 export declare function sessionInterrupt(sessionId: string): void;
+
+/**
+ * GIT-020: Check if a session is isolated (has a worktree).
+ *
+ * @param session_id - UUID of the session
+ * @returns true if session is isolated, false if not, null if session not found
+ */
+export declare function sessionIsIsolated(sessionId: string): boolean | null;
 
 /** Create a new background session (generates new UUID) */
 export declare function sessionManagerCreate(
@@ -2028,6 +2089,33 @@ export interface SessionTokens {
 export declare function sessionUpdateDebugMetadata(
   sessionId: string
 ): Promise<void>;
+
+/**
+ * GIT-020: Validate if a path is allowed for a session.
+ *
+ * This function is exposed for E2E testing of isolated session file operations.
+ * It calls the same validate_and_resolve_path function used by all file tools.
+ *
+ * For isolated sessions:
+ * - Relative paths are resolved relative to worktree and ALLOWED
+ * - Absolute paths within worktree are ALLOWED
+ * - Absolute paths outside worktree are BLOCKED
+ * - Path traversal (../) that escapes worktree is BLOCKED
+ * - Symlinks pointing outside worktree are BLOCKED
+ *
+ * For non-isolated sessions:
+ * - All paths are ALLOWED (backward compatible)
+ *
+ * @param session_id - UUID of the session to validate against
+ * @param path - File path to validate
+ * @param tool_name - Name of the tool (for error messages): "read", "write", "edit", "ls", "grep", "glob", "ast_grep", "ast_grep_refactor"
+ * @returns PathValidationResult with allowed status and resolved path or error
+ */
+export declare function sessionValidatePath(
+  sessionId: string,
+  path: string,
+  toolName: string
+): PathValidationResult;
 
 /**
  * Set the logging callback from TypeScript and initialize the tracing subscriber.

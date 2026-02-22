@@ -1,6 +1,5 @@
 @GIT-033
 Feature: File Search Popup Uses Worktree Path for Isolated Sessions
-
   """
   useFileSearchInput hook needs sessionId prop, calls getSessionEffectiveCwd NAPI, passes result to callGlobTool
   """
@@ -22,13 +21,13 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
   #   4. AI deletes file.txt in worktree, user types @file, popup does NOT show file.txt (correctly reflects worktree state)
   #
   # ========================================
-
   Background: User Story
     As a user in an isolated session
     I want to search for files using the @ popup
     So that find files in the worktree where the AI is actually working
 
-  @isolated @file-search
+  @isolated
+  @file-search
   Scenario: File search in isolated session searches the worktree
     Given I am in an isolated session with worktree at ".fspec/worktrees/abc-123/"
     And the AI has created a file "src/auth.ts" in the worktree
@@ -37,7 +36,8 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
     And the popup should show "src/auth.ts" in the results
     And the search should have used path ".fspec/worktrees/abc-123/"
 
-  @non-isolated @file-search
+  @non-isolated
+  @file-search
   Scenario: File search in non-isolated session searches project root
     Given I am in a non-isolated session
     And a file "src/config.ts" exists in the project root
@@ -46,7 +46,8 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
     And the popup should show "src/config.ts" in the results
     And the search should have used the project root path
 
-  @no-session @file-search
+  @no-session
+  @file-search
   Scenario: File search before session creation uses project root fallback
     Given I have not sent any messages yet
     And no session has been created
@@ -56,7 +57,9 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
     And the popup should show "README.md" in the results
     And the search should have used the project root path
 
-  @isolated @file-search @deletion
+  @isolated
+  @file-search
+  @deletion
   Scenario: File search reflects worktree state after AI deletes file
     Given I am in an isolated session with worktree at ".fspec/worktrees/abc-123/"
     And a file "src/old-file.txt" exists in the main project

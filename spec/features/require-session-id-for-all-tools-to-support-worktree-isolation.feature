@@ -1,40 +1,39 @@
 @TOOL-014
 Feature: Require session_id for all tools to support worktree isolation
-
   """
   ============================================================================
   MANDATORY REQUIREMENTS - NON-NEGOTIABLE
   ============================================================================
 
   REQUIREMENT 1: ALL TOOL CONSTRUCTORS MUST REQUIRE session_id PARAMETER
-    - ReadTool::new(session_id: Uuid) - REQUIRED
-    - WriteTool::new(session_id: Uuid) - REQUIRED
-    - EditTool::new(session_id: Uuid) - REQUIRED
-    - GrepTool::new(session_id: Uuid) - REQUIRED
-    - GlobTool::new(session_id: Uuid) - REQUIRED
-    - LsTool::new(session_id: Uuid) - REQUIRED
-    - AstGrepTool::new(session_id: Uuid) - REQUIRED
-    - AstGrepRefactorTool::new(session_id: Uuid) - REQUIRED
-    - WebSearchTool::new(session_id: Uuid) - REQUIRED
-    - SearchToolFacadeWrapper::new(session_id: Uuid) - REQUIRED
-    - LsToolFacadeWrapper::new(session_id: Uuid) - REQUIRED
+  - ReadTool::new(session_id: Uuid) - REQUIRED
+  - WriteTool::new(session_id: Uuid) - REQUIRED
+  - EditTool::new(session_id: Uuid) - REQUIRED
+  - GrepTool::new(session_id: Uuid) - REQUIRED
+  - GlobTool::new(session_id: Uuid) - REQUIRED
+  - LsTool::new(session_id: Uuid) - REQUIRED
+  - AstGrepTool::new(session_id: Uuid) - REQUIRED
+  - AstGrepRefactorTool::new(session_id: Uuid) - REQUIRED
+  - WebSearchTool::new(session_id: Uuid) - REQUIRED
+  - SearchToolFacadeWrapper::new(session_id: Uuid) - REQUIRED
+  - LsToolFacadeWrapper::new(session_id: Uuid) - REQUIRED
 
   REQUIREMENT 2: NO DEFAULT TRAIT IMPLEMENTATIONS
-    - Tools MUST NOT implement Default trait
-    - There is no valid default without a session_id
-    - Compilation MUST fail if tool is constructed without session_id
+  - Tools MUST NOT implement Default trait
+  - There is no valid default without a session_id
+  - Compilation MUST fail if tool is constructed without session_id
 
   REQUIREMENT 3: ALL PROVIDERS MUST PASS session_id TO ALL TOOLS
-    - Claude provider MUST pass session_id to all tools
-    - OpenAI provider MUST pass session_id to all tools
-    - Codex provider MUST pass session_id to all tools
-    - Gemini provider MUST pass session_id to all tools
-    - ZAI provider MUST pass session_id to all tools
+  - Claude provider MUST pass session_id to all tools
+  - OpenAI provider MUST pass session_id to all tools
+  - Codex provider MUST pass session_id to all tools
+  - Gemini provider MUST pass session_id to all tools
+  - ZAI provider MUST pass session_id to all tools
 
   REQUIREMENT 4: PATH VALIDATION IN ISOLATED SESSIONS
-    - Tools MUST call get_effective_cwd(session_id) to resolve file paths
-    - Tools MUST reject absolute paths outside worktree when session is isolated
-    - Tools MUST resolve relative paths to worktree directory
+  - Tools MUST call get_effective_cwd(session_id) to resolve file paths
+  - Tools MUST reject absolute paths outside worktree when session is isolated
+  - Tools MUST resolve relative paths to worktree directory
 
   ============================================================================
   IMPLEMENTATION NOTES
@@ -84,7 +83,6 @@ Feature: Require session_id for all tools to support worktree isolation
   #   22. When session uses Uuid::nil() (tests/non-isolated), get_effective_cwd returns None → tools operate in current directory without path validation
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have all tools use session_id for worktree lookup
@@ -96,7 +94,6 @@ Feature: Require session_id for all tools to support worktree isolation
   # These scenarios verify that ALL tools REQUIRE session_id in their constructor.
   # This is a compile-time guarantee - tools cannot be instantiated without session_id.
   # ============================================================================
-
   Scenario: ReadTool REQUIRES session_id parameter in constructor
     Given ReadTool is being instantiated
     Then the constructor signature MUST be ReadTool::new(session_id: Uuid)
@@ -169,7 +166,6 @@ Feature: Require session_id for all tools to support worktree isolation
   # These scenarios verify that ALL providers pass session_id to ALL tools.
   # If any provider fails to pass session_id, compilation MUST fail.
   # ============================================================================
-
   Scenario: Claude provider MUST pass session_id to all tools
     Given a Claude provider creating an agent with session_id
     When tools are instantiated for the agent
@@ -227,7 +223,6 @@ Feature: Require session_id for all tools to support worktree isolation
   # ============================================================================
   # HAPPY PATH - Relative paths resolve to worktree
   # ============================================================================
-
   Scenario: ReadTool resolves relative path to worktree in isolated session
     Given an isolated session with worktree at ".fspec/worktrees/abc123/"
     And a file exists at ".fspec/worktrees/abc123/src/file.rs"
@@ -284,7 +279,6 @@ Feature: Require session_id for all tools to support worktree isolation
   # ============================================================================
   # ERROR CASES - Absolute paths outside worktree rejected
   # ============================================================================
-
   Scenario: ReadTool rejects absolute path outside worktree
     Given an isolated session with worktree at ".fspec/worktrees/abc123/"
     When ReadTool attempts to read "/project/src/main.rs"
@@ -336,7 +330,6 @@ Feature: Require session_id for all tools to support worktree isolation
   # ============================================================================
   # NON-ISOLATED SESSION - Normal operation
   # ============================================================================
-
   Scenario: Tools operate normally with Uuid::nil() in tests
     Given a non-isolated session with Uuid::nil()
     When get_effective_cwd is called

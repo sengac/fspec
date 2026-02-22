@@ -3,31 +3,31 @@
 //! Writes content to files, creating parent directories as needed.
 //! Uses tokio::fs for non-blocking async I/O.
 //!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, file paths are validated and resolved to the worktree
+//! to ensure the session cannot write files outside its isolated environment.
 
 use super::blocklist::check_file_path;
 use super::error::ToolError;
+use super::facade::validate_and_resolve_path;
 use super::validation::{create_parent_dirs, require_absolute_path, write_file_contents};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 
-/// Write tool for writing file contents
+/// Write tool for writing file contents.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, file paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct WriteTool {
-    /// Session ID for worktree isolation support
-    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
     session_id: Uuid,
 }
 
 impl WriteTool {
-    /// Create a new Write tool instance with session awareness
+    /// Create a new Write tool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
@@ -64,8 +64,12 @@ impl rig::tool::Tool for WriteTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Validate and resolve path (handles worktree isolation for isolated sessions)
+        let resolved_path = validate_and_resolve_path(self.session_id, &args.file_path, "write")?;
+        let file_path_str = resolved_path.to_string_lossy().to_string();
+
         // Check file path against blocklist before any I/O
-        if let Err(blocked) = check_file_path(&args.file_path) {
+        if let Err(blocked) = check_file_path(&file_path_str) {
             return Err(ToolError::Blocked {
                 tool: "write",
                 message: blocked.to_string(),
@@ -73,7 +77,7 @@ impl rig::tool::Tool for WriteTool {
         }
 
         // Validate absolute path (sync - no I/O)
-        let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
+        let path = require_absolute_path(&file_path_str).map_err(|e| ToolError::Validation {
             tool: "write",
             message: e.content,
         })?;
@@ -94,6 +98,6 @@ impl rig::tool::Tool for WriteTool {
                 message: e.content,
             })?;
 
-        Ok(format!("Successfully wrote to {}", args.file_path))
+        Ok(format!("Successfully wrote to {file_path_str}"))
     }
 }

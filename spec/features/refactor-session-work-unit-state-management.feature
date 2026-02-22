@@ -5,7 +5,6 @@
 @tui
 @TUI-068
 Feature: Refactor session-work unit state management
-
   """
   Remove currentWorkUnitId, setCurrentWorkUnitId(), getCurrentWorkUnitId() from fspecStore
   Keep fspecStore.sessionAttachments for multi-session tracking and IPC
@@ -35,7 +34,6 @@ Feature: Refactor session-work unit state management
   #   6. fspecStore no longer has currentWorkUnitId or setCurrentWorkUnitId or getCurrentWorkUnitId (removed duplicates)
   #
   # ========================================
-
   Background: User Story
     As a developer using the TUI
     I want to have work unit context properly managed across session lifecycle
@@ -50,7 +48,8 @@ Feature: Refactor session-work unit state management
     And the session should be attached to work unit "TOOL-014"
     And sessionStore.currentWorkUnitId should be "TOOL-014"
 
-  @regression @bug-fix
+  @regression
+  @bug-fix
   Scenario: New session does not auto-attach after closing previous session
     Given I am in an agent session attached to work unit "TOOL-014"
     When I close the session
@@ -60,7 +59,8 @@ Feature: Refactor session-work unit state management
     And the session should NOT be attached to any work unit
     And sessionStore.currentWorkUnitId should be null
 
-  @regression @bug-fix
+  @regression
+  @bug-fix
   Scenario: New session does not auto-attach after detaching from previous session
     Given I am in an agent session attached to work unit "TOOL-014"
     When I detach from the session
@@ -79,14 +79,16 @@ Feature: Refactor session-work unit state management
     And the session should NOT be attached to any work unit
     And sessionStore.currentWorkUnitId should be null
 
-  @integration @ipc
+  @integration
+  @ipc
   Scenario: Work unit context updates via IPC
     Given I am in an agent session attached to work unit "TOOL-014"
     When the AI changes work unit to "AUTH-001" via IPC
     Then sessionStore.currentWorkUnitId should be "AUTH-001"
     And fspecStore.sessionAttachments should map "AUTH-001" to the current session
 
-  @code-quality @refactoring
+  @code-quality
+  @refactoring
   Scenario: Duplicate state removed from fspecStore
     Given I inspect the fspecStore implementation
     Then fspecStore should NOT have a currentWorkUnitId property
@@ -97,8 +99,8 @@ Feature: Refactor session-work unit state management
   # ========================================
   # SESSION SERVICE FACADE SCENARIOS
   # ========================================
-
-  @unit @service
+  @unit
+  @service
   Scenario: destroySession orchestrates all cleanup atomically
     Given I have an active session "session-123" attached to work unit "TOOL-014"
     When I call destroySession("session-123")
@@ -107,7 +109,8 @@ Feature: Refactor session-work unit state management
     And sessionStore.currentWorkUnitId should be null
     And GlobalSessionStreamManager should unsubscribe from "session-123"
 
-  @unit @service
+  @unit
+  @service
   Scenario: attachToWorkUnit orchestrates all stores atomically
     Given I have an active session "session-123"
     When I call attachToWorkUnit("session-123", "TOOL-014")
@@ -115,7 +118,8 @@ Feature: Refactor session-work unit state management
     And sessionStore.currentWorkUnitId should be "TOOL-014"
     And workUnitContextService should set context for "session-123" with work unit "TOOL-014"
 
-  @unit @service
+  @unit
+  @service
   Scenario: detachFromWorkUnit clears all state atomically
     Given I have an active session "session-123" attached to work unit "TOOL-014"
     When I call detachFromWorkUnit("session-123")
@@ -123,7 +127,8 @@ Feature: Refactor session-work unit state management
     And sessionStore.currentWorkUnitId should be null
     And workUnitContextService should clear context for "session-123"
 
-  @isolated @git-worktree
+  @isolated
+  @git-worktree
   Scenario: Isolated session close prompts user then calls merge or discard
     Given I have an isolated session "session-123" with changes in worktree
     When I choose to close the session
@@ -132,7 +137,8 @@ Feature: Refactor session-work unit state management
     Then mergeSessionChanges should be called with "session-123"
     And destroySession should be called with "session-123"
 
-  @isolated @git-worktree
+  @isolated
+  @git-worktree
   Scenario: Isolated session discard removes worktree without applying changes
     Given I have an isolated session "session-123" with changes in worktree
     When I choose to close the session
@@ -144,8 +150,8 @@ Feature: Refactor session-work unit state management
   # ========================================
   # COMPONENT INTEGRATION SCENARIOS
   # ========================================
-
-  @integration @agentview
+  @integration
+  @agentview
   Scenario: AgentView uses sessionService facade for all session-work unit lifecycle operations
     Given I inspect AgentView.tsx imports
     Then AgentView should import from sessionService
@@ -156,7 +162,8 @@ Feature: Refactor session-work unit state management
     And AgentView should use detachFromWorkUnit from sessionService for all detachment operations
     And AgentView should NOT directly call useSessionStore for session lifecycle
 
-  @integration @boardview
+  @integration
+  @boardview
   Scenario: BoardView IPC handler uses sessionService for work unit attachment
     Given I receive an IPC message with type "work-unit-changed"
     And the payload contains workUnitId "AUTH-001" and sessionId "session-123"
@@ -164,7 +171,8 @@ Feature: Refactor session-work unit state management
     Then attachToWorkUnit should be called with "session-123" and "AUTH-001"
     And BoardView should NOT directly call fspecStore.attachSession
 
-  @integration @globalstreamlistener
+  @integration
+  @globalstreamlistener
   Scenario: globalStreamListener uses sessionService for work unit context sync
     Given I receive a FspecCommandCompleted stream chunk
     And the chunk indicates work unit changed to "AUTH-001"

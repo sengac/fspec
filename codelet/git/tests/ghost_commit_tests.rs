@@ -4,24 +4,10 @@
 //!
 //! These tests validate the acceptance criteria for ghost commit-based checkpoints.
 
+mod common;
+
 use codelet_git::ghost_commit;
 use std::fs;
-use tempfile::TempDir;
-
-// Helper to create a test git repository
-fn setup_test_repo() -> TempDir {
-    let temp_dir = TempDir::new().expect("Failed to create temp dir");
-    let repo_path = temp_dir.path();
-
-    // Initialize git repo using gix
-    let _repo = gix::init(repo_path).expect("Failed to init repo");
-
-    // Create initial file
-    let file_path = repo_path.join("initial.txt");
-    fs::write(&file_path, "initial content").expect("Failed to write initial file");
-
-    temp_dir
-}
 
 /// Scenario: Create checkpoint capturing all file states
 ///
@@ -36,7 +22,7 @@ fn setup_test_repo() -> TempDir {
 #[test]
 fn test_create_checkpoint_capturing_all_file_states() {
     // @step Given I have a git repository with uncommitted changes
-    let temp_dir = setup_test_repo();
+    let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
 
     // @step And I have staged files in the index
@@ -44,7 +30,7 @@ fn test_create_checkpoint_capturing_all_file_states() {
     fs::write(&staged_file, "staged content").expect("Failed to write staged file");
 
     // @step And I have unstaged modifications to tracked files
-    let tracked_file = repo_path.join("initial.txt");
+    let tracked_file = repo_path.join("README.md");
     fs::write(&tracked_file, "modified content").expect("Failed to modify tracked file");
 
     // @step And I have untracked files in the working directory
@@ -86,7 +72,7 @@ fn test_create_checkpoint_capturing_all_file_states() {
 #[test]
 fn test_checkpoint_creation_preserves_staging_area() {
     // @step Given I have a git repository with a file staged for commit
-    let temp_dir = setup_test_repo();
+    let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
 
     let staged_file = repo_path.join("to-stage.txt");
@@ -97,7 +83,7 @@ fn test_checkpoint_creation_preserves_staging_area() {
         codelet_git::get_staged_files(repo_path.to_str().unwrap()).unwrap_or_default();
 
     // @step And I have additional unstaged changes
-    let tracked_file = repo_path.join("initial.txt");
+    let tracked_file = repo_path.join("README.md");
     fs::write(&tracked_file, "unstaged modification").expect("Failed to modify");
 
     // @step When I create a ghost commit checkpoint
@@ -137,7 +123,7 @@ fn test_checkpoint_creation_preserves_staging_area() {
 #[test]
 fn test_restore_checkpoint_replaces_working_tree_files() {
     // @step Given I have a git repository with a ghost commit checkpoint
-    let temp_dir = setup_test_repo();
+    let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
 
     // @step And the checkpoint contains specific file contents
@@ -187,7 +173,7 @@ fn test_restore_checkpoint_replaces_working_tree_files() {
 #[test]
 fn test_multiple_checkpoints_have_unique_sha_identifiers() {
     // @step Given I have a git repository with uncommitted changes
-    let temp_dir = setup_test_repo();
+    let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
 
     let test_file = repo_path.join("evolving.txt");
@@ -236,7 +222,7 @@ fn test_multiple_checkpoints_have_unique_sha_identifiers() {
 #[test]
 fn test_ghost_commits_are_invisible_to_git_log() {
     // @step Given I have a git repository with a ghost commit checkpoint
-    let temp_dir = setup_test_repo();
+    let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
 
     let test_file = repo_path.join("ghost-test.txt");
@@ -276,7 +262,7 @@ fn test_ghost_commits_are_invisible_to_git_log() {
 #[test]
 fn test_restore_checkpoint_deletes_files_added_after_checkpoint() {
     // @step Given I have a git repository with a ghost commit checkpoint
-    let temp_dir = setup_test_repo();
+    let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
 
     let existing_file = repo_path.join("existing.txt");
@@ -317,7 +303,7 @@ fn test_restore_checkpoint_deletes_files_added_after_checkpoint() {
 #[test]
 fn test_ghost_commit_preserves_parent_relationship_to_head() {
     // @step Given I have a git repository with committed history
-    let temp_dir = setup_test_repo();
+    let temp_dir = common::setup_test_repo();
     let repo_path = temp_dir.path();
 
     // @step And I note the current HEAD commit SHA

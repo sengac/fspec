@@ -5,7 +5,6 @@
 @tui
 @GIT-032
 Feature: SessionHeader missing isIsolated prop - ISOLATED badge never shows
-
   """
   AgentView must import useIsIsolated from sessionStore and pass isIsolated prop to SessionHeader. SessionHeader already has rendering logic for [ISOLATED] badge (lines 170-172). Integration point: AgentView.tsx lines 7731-7747.
   """
@@ -24,7 +23,6 @@ Feature: SessionHeader missing isIsolated prop - ISOLATED badge never shows
   #   2. User creates normal session, header does NOT show [ISOLATED] badge
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to see my isolated session status in the header
@@ -35,9 +33,7 @@ Feature: SessionHeader missing isIsolated prop - ISOLATED badge never shows
     When I view the session header
     Then I should see the [ISOLATED] badge in green next to the model name
 
-
   Scenario: Do not display ISOLATED badge for normal session
     Given I have created a normal (non-isolated) session
     When I view the session header
     Then I should NOT see the [ISOLATED] badge
-

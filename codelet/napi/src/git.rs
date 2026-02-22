@@ -450,6 +450,7 @@ pub struct PruneResultJs {
 /// @param filter - Optional filter: "all", "active", "pending_merge", "clean", "orphaned"
 /// @returns Array of SessionInfo objects
 #[napi]
+#[allow(dead_code)]
 pub fn list_sessions(
     repo_path: String,
     active_sessions: Vec<String>,

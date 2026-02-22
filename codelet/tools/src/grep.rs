@@ -8,10 +8,12 @@
 //! The blocking operations are fast enough for typical use cases and
 //! acceptable given the search performance benefits of ripgrep's implementation.
 //!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, search paths are validated and resolved to the worktree
+//! to ensure the session cannot search files outside its isolated environment.
 
 use crate::{
     error::ToolError,
+    facade::validate_and_resolve_path,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
     ToolOutput,
@@ -47,21 +49,19 @@ impl OutputMode {
     }
 }
 
-/// GrepTool for content search using ripgrep crates
+/// GrepTool for content search using ripgrep crates.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, search paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct GrepTool {
-    /// Session ID for worktree isolation support
-    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
     session_id: Uuid,
 }
 
 impl GrepTool {
-    /// Create a new GrepTool with session awareness
+    /// Create a new GrepTool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
@@ -392,13 +392,27 @@ impl rig::tool::Tool for GrepTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Validate and resolve path (handles worktree isolation for isolated sessions)
+        let resolved_path = if let Some(ref path) = args.path {
+            match validate_and_resolve_path(self.session_id, path, "grep") {
+                Ok(resolved) => Some(resolved.to_string_lossy().to_string()),
+                Err(e) => return Err(e),
+            }
+        } else {
+            // No path specified - resolve current directory for worktree isolation
+            match validate_and_resolve_path(self.session_id, ".", "grep") {
+                Ok(resolved) => Some(resolved.to_string_lossy().to_string()),
+                Err(e) => return Err(e),
+            }
+        };
+
         // Delegate to existing execute method by converting args to Value
         let mut value_map = serde_json::Map::new();
         value_map.insert(
             "pattern".to_string(),
             serde_json::Value::String(args.pattern),
         );
-        if let Some(path) = args.path {
+        if let Some(path) = resolved_path {
             value_map.insert("path".to_string(), serde_json::Value::String(path));
         }
         if let Some(mode) = args.output_mode {

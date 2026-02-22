@@ -1,6 +1,5 @@
 @TUI-069
 Feature: Fix TUI-068 code smells: error handling, console statements, facade completion
-
   """
   Architecture notes:
   - sessionService provides facade functions (attachToWorkUnit, detachFromWorkUnit, destroySession, getAttachedWorkUnit) that orchestrate updates to fspecStore and sessionStore atomically
@@ -25,7 +24,6 @@ Feature: Fix TUI-068 code smells: error handling, console statements, facade com
   #   4. title parameter: All attachToWorkUnit calls in AgentView now pass workUnit?.title as the fourth argument
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have robust session-work unit state management with proper error handling

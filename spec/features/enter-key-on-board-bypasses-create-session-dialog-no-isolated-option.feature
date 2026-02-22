@@ -5,7 +5,6 @@
 @tui
 @GIT-030
 Feature: Enter key on board bypasses Create Session dialog - no isolated option
-
   """
   BoardView onEnter handler must call openCreateSessionDialog() instead of navigateToNewSession() when no attached session exists. The CreateSessionDialog already supports Normal/Isolated toggle. Integration point: BoardView.tsx onEnter callback around line 540.
   """
@@ -25,7 +24,6 @@ Feature: Enter key on board bypasses Create Session dialog - no isolated option
   #   3. User presses Enter on work unit, sees dialog, selects Isolated, confirms, isolated session is created
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to press Enter on a work unit from the board
@@ -36,9 +34,7 @@ Feature: Enter key on board bypasses Create Session dialog - no isolated option
     When I select the work unit and press Enter
     Then the Create Session dialog should appear with Normal/Isolated toggle
 
-
   Scenario: Navigate directly to attached session
     Given I am viewing the board with a work unit that has attached session abc-123
     When I select the work unit and press Enter
     Then I should navigate to session abc-123 without seeing the Create Session dialog
-

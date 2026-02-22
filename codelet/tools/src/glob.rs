@@ -4,10 +4,12 @@
 //! and globset for glob pattern matching.
 //! Uses tokio::fs for non-blocking async I/O.
 //!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, search paths are validated and resolved to the worktree
+//! to ensure the session cannot glob files outside its isolated environment.
 
 use crate::{
     error::ToolError,
+    facade::validate_and_resolve_path,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
 };
@@ -20,21 +22,19 @@ use std::path::PathBuf;
 use std::time::SystemTime;
 use uuid::Uuid;
 
-/// GlobTool for gitignore-aware file pattern matching
+/// GlobTool for gitignore-aware file pattern matching.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, search paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct GlobTool {
-    /// Session ID for worktree isolation support
-    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
     session_id: Uuid,
 }
 
 impl GlobTool {
-    /// Create a new GlobTool with session awareness
+    /// Create a new GlobTool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
@@ -88,6 +88,12 @@ impl rig::tool::Tool for GlobTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Validate and resolve path (handles worktree isolation for isolated sessions)
+        let search_path_input = args.path.as_deref().unwrap_or(".");
+        let resolved_path = validate_and_resolve_path(self.session_id, search_path_input, "glob")?;
+        let search_path = resolved_path.to_string_lossy().to_string();
+        let path = PathBuf::from(&search_path);
+
         // Build glob matcher with optional case insensitivity
         let mut builder = GlobBuilder::new(&args.pattern);
         builder.literal_separator(false);
@@ -104,10 +110,6 @@ impl rig::tool::Tool for GlobTool {
                 tool: "glob",
                 message: e.to_string(),
             })?;
-
-        // Get search path
-        let search_path = args.path.as_deref().unwrap_or(".");
-        let path = PathBuf::from(search_path);
 
         // Check if path exists (async, non-blocking)
         match tokio::fs::try_exists(&path).await {

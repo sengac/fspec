@@ -2,7 +2,6 @@
 @tui-component
 @GIT-029
 Feature: Session Management Panel
-
   """
   TUI components for isolated session management:
   - CreateSessionDialog with Isolated toggle option
@@ -17,7 +16,6 @@ Feature: Session Management Panel
   # ========================================
   # Part A: Session Creation
   # ========================================
-
   @tui
   Scenario: Create session with isolated toggle disabled (default)
     Given the TUI session creation dialog is open
@@ -38,7 +36,6 @@ Feature: Session Management Panel
   # ========================================
   # Part B: Session Management Panel
   # ========================================
-
   @tui
   Scenario: View Session Management Panel with pending sessions
     Given there are completed isolated sessions with worktrees

@@ -149,6 +149,7 @@ fn test_ai_has_isolation_context_for_merge_discard_advice() {
 
 // Additional test: Isolation fields appear between Working directory and Date
 #[test]
+#[allow(clippy::unwrap_used)]
 fn test_isolation_fields_appear_in_correct_position() {
     // @step Given isolation context with all fields
     let isolation = IsolationContext {

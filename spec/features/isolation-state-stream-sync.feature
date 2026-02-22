@@ -2,7 +2,6 @@
 @stream-chunk
 @GIT-029
 Feature: Isolation State Stream Sync
-
   """
   GlobalSessionStreamManager handles IsolationStateChange StreamChunk events
   to sync isolation state from Rust to TypeScript sessionStore.

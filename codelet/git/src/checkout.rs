@@ -1,6 +1,18 @@
 //! Checkout operations for worktrees
 //!
 //! Provides utilities for checking out files from git trees to directories.
+//!
+//! # IMPORTANT: Pure Gitoxide Implementation
+//!
+//! This module uses ONLY gitoxide (gix) - a pure Rust git implementation.
+//! **NEVER use `std::process::Command` to shell out to `git` CLI.**
+//!
+//! All operations including:
+//! - Tree traversal (`repo.find_object`, `tree.iter()`)
+//! - Blob reading (`repo.find_object(entry.id())`)
+//! - Object type inspection (`entry.mode().kind()`)
+//!
+//! Are implemented using gitoxide APIs, NOT git CLI commands.
 
 use crate::error::{GitError, Result};
 use std::fs;
@@ -11,9 +23,14 @@ use std::path::{Path, PathBuf};
 /// Walks the tree at the given commit and writes all files to the worktree.
 ///
 /// # Arguments
-/// * `repo` - Open git repository
+/// * `repo` - Open git repository (gix::Repository)
 /// * `worktree_path` - Target directory for checkout
 /// * `commit_id` - Commit to checkout from
+///
+/// # Implementation Note - PURE GITOXIDE
+///
+/// This function uses ONLY gitoxide (gix) APIs for all git operations.
+/// **NEVER use `std::process::Command` or shell out to `git` CLI.**
 pub fn checkout_to_worktree(
     repo: &gix::Repository,
     worktree_path: &Path,

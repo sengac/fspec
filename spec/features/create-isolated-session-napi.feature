@@ -1,6 +1,5 @@
 @GIT-028
 Feature: Add createIsolatedSession NAPI binding
-
   """
   Add session_manager_create_isolated() in codelet/napi/src/session_manager.rs, uses IsolatedSessionInfo::new_isolated() and create_session_manifest() from codelet-git
   TypeScript tests must be in src/tui/__tests__/ or similar, calling the actual NAPI binding - NOT Rust source-code-grep tests
@@ -26,7 +25,6 @@ Feature: Add createIsolatedSession NAPI binding
   #   5. After creating isolated session, listSessions() shows session with status 'active'
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to create isolated sessions via TypeScript

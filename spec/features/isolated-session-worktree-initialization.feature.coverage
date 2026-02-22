@@ -1,0 +1,92 @@
+{
+  "scenarios": [
+    {
+      "name": "Worktree has all tracked files in git index after creation",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "lines": "27-82",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/worktree.rs",
+              "lines": "220-305"
+            }
+          ]
+        },
+        {
+          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
+          "lines": "48-87",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Worktree has clean git status after creation",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "lines": "95-133",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/worktree.rs",
+              "lines": "220-305"
+            }
+          ]
+        },
+        {
+          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
+          "lines": "90-122",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Session Management Panel shows accurate file change count",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "lines": "148-196",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/worktree.rs",
+              "lines": "220-305"
+            }
+          ]
+        },
+        {
+          "file": "src/git/__tests__/worktree-index-initialization.test.ts",
+          "lines": "125-177",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "get_session_diff detects and reports corrupted index",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/worktree_index_initialization_tests.rs",
+          "lines": "211-284",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/worktree.rs",
+              "lines": "220-305"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/git/tests/worktree_index_initialization_tests.rs",
+      "src/git/__tests__/worktree-index-initialization.test.ts"
+    ],
+    "implFiles": [
+      "codelet/git/src/worktree.rs"
+    ],
+    "totalLinesCovered": 372
+  }
+}

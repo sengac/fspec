@@ -16,17 +16,16 @@ use tokio::sync::mpsc;
 use tokio::time::timeout;
 
 /// Fixture: Simulates the PromptInput structure used by session_send_input
+/// Only includes fields actually used in tests
 #[derive(Debug, Clone)]
 struct TestPromptInput {
     input: String,
-    thinking_config: Option<String>,
 }
 
 /// Fixture: Simulates WatcherInput for bridge/watcher messages
+/// Only includes fields actually used in tests
 #[derive(Debug, Clone)]
 struct TestWatcherInput {
-    source_session_id: String,
-    role_name: String,
     message: String,
 }
 
@@ -48,7 +47,6 @@ async fn test_mpsc_channel_single_delivery() {
     // Send exactly ONE message
     tx.send(TestPromptInput {
         input: "Hello".to_string(),
-        thinking_config: None,
     })
     .await
     .expect("send should succeed");
@@ -116,7 +114,6 @@ async fn test_select_biased_no_duplication() {
     user_tx
         .send(TestPromptInput {
             input: "Hi".to_string(),
-            thinking_config: None,
         })
         .await
         .expect("send should succeed");
@@ -124,8 +121,6 @@ async fn test_select_biased_no_duplication() {
     // Send ONE watcher message
     watcher_tx
         .send(TestWatcherInput {
-            source_session_id: "bridge".to_string(),
-            role_name: "bridge".to_string(),
             message: "Hello from bridge".to_string(),
         })
         .await
@@ -211,15 +206,12 @@ async fn test_mutex_receiver_in_select_no_duplication() {
     user_tx
         .send(TestPromptInput {
             input: "Test 1".to_string(),
-            thinking_config: None,
         })
         .await
         .unwrap();
 
     watcher_tx
         .send(TestWatcherInput {
-            source_session_id: "bridge".to_string(),
-            role_name: "bridge".to_string(),
             message: "Test 2".to_string(),
         })
         .await
@@ -262,7 +254,6 @@ async fn test_rapid_sends_no_duplication() {
     for i in 1..=3 {
         tx.send(TestPromptInput {
             input: format!("Message {}", i),
-            thinking_config: None,
         })
         .await
         .unwrap();

@@ -3,10 +3,12 @@
 //! Edits files by replacing the first occurrence of a string.
 //! Uses tokio::fs for non-blocking async I/O.
 //!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, file paths are validated and resolved to the worktree
+//! to ensure the session cannot edit files outside its isolated environment.
 
 use super::blocklist::check_file_path;
 use super::error::ToolError;
+use super::facade::validate_and_resolve_path;
 use super::validation::{
     read_file_contents, require_absolute_path, require_file_exists, write_file_contents,
 };
@@ -15,21 +17,19 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 
-/// Edit tool for modifying file contents
+/// Edit tool for modifying file contents.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, file paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct EditTool {
-    /// Session ID for worktree isolation support
-    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
     session_id: Uuid,
 }
 
 impl EditTool {
-    /// Create a new Edit tool instance with session awareness
+    /// Create a new Edit tool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
@@ -68,8 +68,12 @@ impl rig::tool::Tool for EditTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Validate and resolve path (handles worktree isolation for isolated sessions)
+        let resolved_path = validate_and_resolve_path(self.session_id, &args.file_path, "edit")?;
+        let file_path_str = resolved_path.to_string_lossy().to_string();
+
         // Check file path against blocklist before any I/O
-        if let Err(blocked) = check_file_path(&args.file_path) {
+        if let Err(blocked) = check_file_path(&file_path_str) {
             return Err(ToolError::Blocked {
                 tool: "edit",
                 message: blocked.to_string(),
@@ -77,13 +81,13 @@ impl rig::tool::Tool for EditTool {
         }
 
         // Validate absolute path (sync - no I/O)
-        let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
+        let path = require_absolute_path(&file_path_str).map_err(|e| ToolError::Validation {
             tool: "edit",
             message: e.content,
         })?;
 
         // Check file exists (async)
-        require_file_exists(path, &args.file_path)
+        require_file_exists(path, &file_path_str)
             .await
             .map_err(|e| ToolError::Validation {
                 tool: "edit",
@@ -117,6 +121,6 @@ impl rig::tool::Tool for EditTool {
                 message: e.content,
             })?;
 
-        Ok(format!("Successfully edited {}", args.file_path))
+        Ok(format!("Successfully edited {file_path_str}"))
     }
 }

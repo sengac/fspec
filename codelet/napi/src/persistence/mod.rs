@@ -318,6 +318,9 @@ pub fn cherry_pick(
 /// 
 /// Note: This is pub(crate) to avoid collision with git::list_sessions NAPI export.
 /// External callers should use persistence_list_sessions NAPI binding.
+/// 
+/// Only compiled when NAPI bindings are enabled or during tests.
+#[cfg(any(not(feature = "noop"), test))]
 pub(crate) fn list_sessions(project: &Path) -> Result<Vec<SessionManifest>, String> {
     init_stores()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;

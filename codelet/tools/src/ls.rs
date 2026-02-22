@@ -3,10 +3,12 @@
 //! Lists directory contents with file metadata (permissions, size, modification time).
 //! Uses tokio::fs for non-blocking async I/O.
 //!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, directory paths are validated and resolved to the worktree
+//! to ensure the session cannot list directories outside its isolated environment.
 
 use crate::{
     error::ToolError,
+    facade::validate_and_resolve_path,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
 };
@@ -33,21 +35,19 @@ const PERMISSION_BITS: &[(u32, char)] = &[
     (0o001, 'x'),
 ];
 
-/// LS tool for listing directory contents
+/// LS tool for listing directory contents.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, directory paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct LsTool {
-    /// Session ID for worktree isolation support
-    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
     session_id: Uuid,
 }
 
 impl LsTool {
-    /// Create a new LS tool instance with session awareness
+    /// Create a new LS tool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
@@ -84,13 +84,11 @@ impl LsTool {
         let secs = duration.as_secs() as i64;
 
         // Simple date formatting without external dependencies
-        // Calculate date components from Unix timestamp
         let days = secs / 86400;
         let time_of_day = secs % 86400;
         let hours = time_of_day / 3600;
         let minutes = (time_of_day % 3600) / 60;
 
-        // Calculate year, month, day from days since epoch (1970-01-01)
         let (year, month, day) = Self::days_to_ymd(days);
 
         format!("{year:04}-{month:02}-{day:02} {hours:02}:{minutes:02}")
@@ -147,8 +145,11 @@ impl rig::tool::Tool for LsTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let dir_path = args.path.as_deref().unwrap_or(".");
-        let path = Path::new(dir_path);
+        // Validate and resolve path (handles worktree isolation for isolated sessions)
+        let dir_path_input = args.path.as_deref().unwrap_or(".");
+        let resolved_path = validate_and_resolve_path(self.session_id, dir_path_input, "ls")?;
+        let dir_path = resolved_path.to_string_lossy().to_string();
+        let path = Path::new(&dir_path);
 
         // Check if path exists (async)
         match tokio::fs::try_exists(path).await {

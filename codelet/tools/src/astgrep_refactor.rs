@@ -4,9 +4,8 @@
 //! - Extract mode: Extract matched code to a target file
 //! - Replace mode: Replace matched code in-place with replacement text
 //!
-//! Feature: spec/features/ast-code-refactor-tool-for-codelet.feature
-//!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, file paths are validated and resolved to the worktree
+//! to ensure the session cannot refactor files outside its isolated environment.
 
 use crate::{error::ToolError, facade::validate_and_resolve_path, ToolOutput};
 use anyhow::Result;
@@ -110,20 +109,19 @@ pub enum Transform {
     Convert(ConvertTransform),
 }
 
-/// AstGrepRefactorTool for AST-based code refactoring
+/// AstGrepRefactorTool for AST-based code refactoring.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, file paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct AstGrepRefactorTool {
-    /// Session ID for worktree isolation support
     session_id: Uuid,
 }
 
 impl AstGrepRefactorTool {
-    /// Create a new AstGrepRefactorTool with session awareness
+    /// Create a new AstGrepRefactorTool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }

@@ -3,13 +3,15 @@
 //! Reads file contents with line numbers, supporting offset and limit.
 //! Supports multimodal content: images are returned as base64-encoded data.
 //!
-//! PROV-002: Text files are checked against token limits before being returned.
+//! Text files are checked against token limits before being returned.
 //! Images, PDFs, and Jupyter notebooks are exempt from token limits (processed differently).
 //!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, file paths are validated and resolved to the worktree
+//! to ensure the session cannot access files outside its isolated environment.
 
 use super::blocklist::check_file_path;
 use super::error::ToolError;
+use super::facade::validate_and_resolve_path;
 use super::file_type::{detect_file_type, ExemptFileType, FileType};
 use super::limits::OutputLimits;
 use super::pdf::{read_pdf_from_bytes, PdfError};
@@ -34,21 +36,19 @@ pub enum ReadOutput {
     Image { data: String, media_type: String },
 }
 
-/// Read tool for reading file contents
+/// Read tool for reading file contents.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, file paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct ReadTool {
-    /// Session ID for worktree isolation support
-    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
     session_id: Uuid,
 }
 
 impl ReadTool {
-    /// Create a new Read tool instance with session awareness
+    /// Create a new Read tool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
@@ -67,9 +67,7 @@ impl ReadTool {
         let total_lines = lines.len();
 
         // Calculate range (offset is 1-based)
-        // CRITICAL: Bound start_idx to prevent panic when offset > total_lines
-        // This can happen when a file is shortened between sessions and the old
-        // offset is cached or restored from history.
+        // Bound start_idx to prevent panic when offset > total_lines
         let start_idx = offset.saturating_sub(1).min(total_lines);
         let effective_limit = limit.min(OutputLimits::MAX_LINES);
         let end_idx = (start_idx + effective_limit).min(total_lines);
@@ -150,8 +148,12 @@ impl rig::tool::Tool for ReadTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Validate and resolve path (handles worktree isolation for isolated sessions)
+        let resolved_path = validate_and_resolve_path(self.session_id, &args.file_path, "read")?;
+        let file_path_str = resolved_path.to_string_lossy().to_string();
+
         // Check file path against blocklist before any I/O
-        if let Err(blocked) = check_file_path(&args.file_path) {
+        if let Err(blocked) = check_file_path(&file_path_str) {
             return Err(ToolError::Blocked {
                 tool: "read",
                 message: blocked.to_string(),
@@ -159,13 +161,13 @@ impl rig::tool::Tool for ReadTool {
         }
 
         // Validate absolute path (sync - no I/O)
-        let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
+        let path = require_absolute_path(&file_path_str).map_err(|e| ToolError::Validation {
             tool: "read",
             message: e.content,
         })?;
 
         // Check file exists (async)
-        require_file_exists(path, &args.file_path)
+        require_file_exists(path, &file_path_str)
             .await
             .map_err(|e| ToolError::Validation {
                 tool: "read",
@@ -188,11 +190,11 @@ impl rig::tool::Tool for ReadTool {
                 }
             }
             FileType::Exempt(exempt_type) => {
-                // PROV-002: PDF and IPYNB files are exempt from token limits
+                // PDF and IPYNB files are exempt from token limits
                 // They are processed differently (as structured documents)
                 match exempt_type {
                     ExemptFileType::Pdf => {
-                        // TOOLS-002: Support three PDF reading modes
+                        // Support three PDF reading modes
                         let mode = args.pdf_mode.as_deref().unwrap_or("visual");
 
                         // Map errors for all modes
@@ -218,7 +220,7 @@ impl rig::tool::Tool for ReadTool {
                         match mode {
                             "text" => {
                                 // TEXT MODE: Extract text page by page
-                                let pdf_content = read_pdf_from_bytes(&binary_content, &args.file_path)
+                                let pdf_content = read_pdf_from_bytes(&binary_content, &file_path_str)
                                     .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: pdf_content.format_display(),
@@ -226,7 +228,7 @@ impl rig::tool::Tool for ReadTool {
                             }
                             "images" => {
                                 // IMAGES MODE: Extract embedded images
-                                let images = super::pdf::extract_pdf_images(&binary_content, &args.file_path)
+                                let images = super::pdf::extract_pdf_images(&binary_content, &file_path_str)
                                     .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: serde_json::to_string_pretty(&images)
@@ -235,7 +237,7 @@ impl rig::tool::Tool for ReadTool {
                             }
                             _ => {
                                 // VISUAL MODE (default): Render pages as images
-                                let pages = super::pdf::render_pdf_pages(&binary_content, &args.file_path)
+                                let pages = super::pdf::render_pdf_pages(&binary_content, &file_path_str)
                                     .map_err(map_pdf_error)?;
                                 ReadOutput::Text {
                                     content: serde_json::to_string_pretty(&pages)
@@ -269,7 +271,7 @@ impl rig::tool::Tool for ReadTool {
                         message: format!("Error reading file: {e}"),
                     })?;
 
-                // PROV-002: Check token limit on the raw content BEFORE applying line limits
+                // Check token limit on the raw content BEFORE applying line limits
                 // This ensures large files are rejected even if they would be truncated
                 // If user provides offset/limit, check only the requested portion
                 let has_custom_range = args.offset.is_some() || args.limit.is_some();
@@ -279,7 +281,7 @@ impl rig::tool::Tool for ReadTool {
                     if let Some((estimated_tokens, max_tokens)) = check_token_limit(&text_content) {
                         return Err(ToolError::TokenLimit {
                             tool: "read",
-                            file_path: args.file_path.clone(),
+                            file_path: file_path_str.clone(),
                             estimated_tokens,
                             max_tokens,
                         });
@@ -295,7 +297,7 @@ impl rig::tool::Tool for ReadTool {
                     if let Some((estimated_tokens, max_tokens)) = check_token_limit(&formatted) {
                         return Err(ToolError::TokenLimit {
                             tool: "read",
-                            file_path: args.file_path.clone(),
+                            file_path: file_path_str.clone(),
                             estimated_tokens,
                             max_tokens,
                         });

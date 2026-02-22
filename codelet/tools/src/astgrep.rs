@@ -3,7 +3,8 @@
 //! Uses ast-grep-core and ast-grep-language for AST-based pattern matching,
 //! and ignore crate for gitignore-aware file walking.
 //!
-//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+//! For isolated sessions, search paths are validated and resolved to the worktree
+//! to ensure the session cannot search files outside its isolated environment.
 
 use crate::{
     error::ToolError,
@@ -22,20 +23,19 @@ use serde_json::{json, Value};
 use std::path::Path;
 use uuid::Uuid;
 
-/// AstGrepTool for AST-based code pattern matching
+/// AstGrepTool for AST-based code pattern matching.
 ///
-/// TOOL-014: Requires session_id for worktree isolation support.
-/// In isolated sessions, search paths are resolved to the session's worktree.
+/// Requires a session ID for path resolution. In isolated sessions, paths are
+/// resolved relative to the session's worktree directory.
 pub struct AstGrepTool {
-    /// Session ID for worktree isolation support
     session_id: Uuid,
 }
 
 impl AstGrepTool {
-    /// Create a new AstGrepTool with session awareness
+    /// Create a new AstGrepTool instance.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID used for path resolution in isolated sessions
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }

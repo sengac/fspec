@@ -64,6 +64,10 @@ pub enum GitError {
     #[error("Conflict detected: {files:?} have been modified in both session and main worktree")]
     ConflictError { files: Vec<String> },
 
+    /// Git index is corrupted or missing
+    #[error("Corrupted git index: {message}")]
+    CorruptedIndex { message: String },
+
     /// Other error
     #[error("{0}")]
     Other(String),

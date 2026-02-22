@@ -1,7 +1,6 @@
 @done
 @GIT-034
 Feature: AI System Reminder Includes Isolation State and Worktree Path
-
   """
   buildEnvironmentReminder in src/utils/system-reminder.ts needs IsolationContext parameter, IsolationStateChange chunk data must be passed through to reminder generation
   """
@@ -23,13 +22,13 @@ Feature: AI System Reminder Includes Isolation State and Worktree Path
   #   4. AI completes task and can advise user: 'I've made all the changes. Since this is an isolated session, use /merge to apply changes to main project or /discard to abandon them.'
   #
   # ========================================
-
   Background: User Story
     As a AI agent in an isolated session
     I want to see isolation state in my environment context
     So that explain to users that changes are in a worktree and require merging
 
-  @isolated @system-reminder
+  @isolated
+  @system-reminder
   Scenario: Isolated session environment reminder includes isolation fields
     Given a session is created with isolated mode enabled
     And the worktree is at ".fspec/worktrees/abc-123/"
@@ -39,7 +38,8 @@ Feature: AI System Reminder Includes Isolation State and Worktree Path
     And the reminder should contain "Worktree: .fspec/worktrees/abc-123/"
     And the reminder should contain "Base commit: 7a8b9c0d"
 
-  @non-isolated @system-reminder
+  @non-isolated
+  @system-reminder
   Scenario: Non-isolated session environment reminder excludes isolation fields
     Given a session is created with isolated mode disabled
     When the environment system-reminder is generated
@@ -48,7 +48,8 @@ Feature: AI System Reminder Includes Isolation State and Worktree Path
     And the reminder should NOT contain "Base commit:"
     And the reminder should contain "Working directory:"
 
-  @isolated @user-interaction
+  @isolated
+  @user-interaction
   Scenario: AI can explain worktree location to user
     Given a session is created with isolated mode enabled
     And the worktree is at ".fspec/worktrees/abc-123/"
@@ -57,7 +58,8 @@ Feature: AI System Reminder Includes Isolation State and Worktree Path
     Then the AI has context to respond with the worktree path
     And the AI has context to explain that merging is required
 
-  @isolated @user-interaction
+  @isolated
+  @user-interaction
   Scenario: AI can advise user about merge/discard options
     Given a session is created with isolated mode enabled
     And the AI has completed making changes
