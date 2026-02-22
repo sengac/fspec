@@ -4,7 +4,7 @@
   <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**The spec-driven, multi-agent coding agent.**
+**The spec-driven, multi-agent coding platform.**
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
