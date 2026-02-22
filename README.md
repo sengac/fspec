@@ -45,6 +45,8 @@ fspec works with any AI provider that supports tool calling. Set your API key an
 
 Configure providers with `/provider` in any session.
 
+> **⚠️ Subscription Tokens**: Some tokens (like `CLAUDE_CODE_OAUTH_TOKEN`) come from subscription services rather than pay-per-use APIs. Check your provider's terms of service before using subscription tokens with third-party tools.
+
 ---
 
 ## Quick Start
