@@ -4,7 +4,7 @@
   <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**The spec-driven coding agent.**
+**The spec-driven, multi-agent coding agent.**
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -14,9 +14,13 @@
 
 ## What is fspec?
 
-fspec is an AI coding agent that writes specifications, tests, and code—in that order. You describe what you want. fspec asks clarifying questions, generates Gherkin specs, writes failing tests, then implements the code to make them pass.
+fspec is an AI coding platform that runs multiple agents in parallel, each working on different tasks. Launch one agent to implement a feature while another fixes a bug. Switch between conversations. Let them run in the background.
 
-You don't write the specs. You don't write the tests. You answer questions and review the output. fspec does the hard work.
+When you want rigor, fspec follows **Acceptance Criteria Driven Development**: specs first, then tests, then code. The AI asks clarifying questions, writes Gherkin scenarios, generates failing tests, and implements just enough to pass. Every line of code traces back to a requirement.
+
+When you just want to code, skip all that. fspec is a capable coding assistant on its own—refactor, debug, explain, review. The workflow tools are there when you need them.
+
+Built with fspec. 432 feature files. Fully specified.
 
 ---
 
@@ -170,23 +174,3 @@ The agent learns fspec's workflow and manages your specs automatically.
 - **Coverage tracking** — Link code to requirements
 - **Multiple sessions** — Run concurrent AI conversations in background
 - **Isolated sessions** — Work in git worktrees for safe experimentation
-
----
-
-## Dogfooding
-
-fspec was built using fspec. **432 feature files** with complete Gherkin specifications. What would take a QA team 9-12 months took weeks with spec-driven AI development.
-
-Browse the specs: [spec/features](https://github.com/sengac/fspec/tree/main/spec/features)
-
----
-
-## Links
-
-**[fspec.dev](https://fspec.dev)** · **[GitHub](https://github.com/sengac/fspec)** · **[npm](https://www.npmjs.com/package/@sengac/fspec)**
-
----
-
-## Professional Services
-
-Legacy codebase? Untested? Undocumented? [SENGAC](https://sengac.com) transforms systems into fully-specified, AI-tested platforms using fspec.
