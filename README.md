@@ -172,3 +172,36 @@ The agent learns fspec's workflow and manages your specs automatically.
 - **Coverage tracking** — Link code to requirements
 - **Multiple sessions** — Run concurrent AI conversations in background
 - **Isolated sessions** — Work in git worktrees for safe experimentation
+
+---
+
+## Telegram Bridge
+
+Monitor and interact with your AI sessions from your phone. The Bridge tool connects any session to external WebSocket endpoints, with a built-in Telegram integration.
+
+### Setup
+
+1. **Create a Telegram bot** — Message [@BotFather](https://t.me/botfather), send `/newbot`, get your token
+
+2. **Configure the bridge** — Create `bridge/.env`:
+   ```bash
+   TELEGRAM_BOT_TOKEN=your_token_here
+   ```
+
+3. **Start the endpoint**:
+   ```bash
+   npm run bridge:telegram
+   ```
+
+4. **Message your bot** — Send any message to link your chat
+
+5. **Connect the AI** — Tell the agent:
+   ```
+   Connect to the Telegram bridge at ws://localhost:8080
+   ```
+
+Now all AI responses stream to Telegram. Send messages back to provide input. Run tasks overnight and check progress from bed.
+
+### Multiple Bridges
+
+Connect to multiple endpoints simultaneously—Telegram, Slack, Discord, or any WebSocket server. Each bridge receives the same stream.
