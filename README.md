@@ -39,10 +39,9 @@ fspec works with any AI provider that supports tool calling. Set your API key an
 | **Groq** | `GROQ_API_KEY` |
 | **OpenRouter** | `OPENROUTER_API_KEY` |
 | **Together AI** | `TOGETHER_API_KEY` |
-| **Ollama** | — |
 | **Azure OpenAI** | `AZURE_OPENAI_API_KEY` |
 
-**OpenAI-compatible APIs** — Ollama, vLLM, and any server implementing the OpenAI API format work automatically.
+**OpenAI-compatible APIs** — Ollama, vLLM, LM Studio, and any server implementing the OpenAI API format work via the OpenAI provider with `OPENAI_API_KEY`.
 
 Configure providers with `/provider` in any session.
 
