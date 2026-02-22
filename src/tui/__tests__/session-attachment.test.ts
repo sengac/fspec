@@ -2,24 +2,24 @@
  * Feature: spec/features/session-attachment-for-work-units-with-tui-resume-integration.feature
  *
  * Tests for session attachment to work units in TUI (SESS-001)
- *
- * CRITICAL: These tests are written BEFORE implementation (ACDD red phase).
- * All tests MUST FAIL initially to prove they actually test something.
+ * TUI-068: Updated to use sessionStore for currentWorkUnitId
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useFspecStore } from '../store/fspecStore';
+import { useSessionStore } from '../store/sessionStore';
 
 describe('Feature: Session attachment for work units with TUI resume integration', () => {
   beforeEach(() => {
-    // Reset store state before each test using Zustand's setState
+    // Reset fspecStore state
     useFspecStore.setState({
       workUnits: [],
       isLoaded: false,
       error: null,
       sessionAttachments: new Map(),
-      currentWorkUnitId: null,
     });
+    // Reset sessionStore state
+    useSessionStore.getState().setCurrentWorkUnit(null, null);
   });
 
   describe('Scenario: Session auto-attaches to work unit on first message', () => {
@@ -34,8 +34,8 @@ describe('Feature: Session attachment for work units with TUI resume integration
       expect(store.getAttachedSession?.('AUTH-001')).toBeUndefined();
 
       // @step When I press Enter to open the agent view
-      // Simulated by setting currentWorkUnitId
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      // Simulated by setting currentWorkUnitId via sessionStore
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
 
       // @step And I send my first message
       // This triggers session creation - simulated by calling attachSession
@@ -93,7 +93,7 @@ describe('Feature: Session attachment for work units with TUI resume integration
       store.attachSession?.('AUTH-001', sessionId);
 
       // @step When I press Enter on "AUTH-001"
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
       const attachedSession = store.getAttachedSession?.('AUTH-001');
 
       // @step Then the agent view should open
@@ -110,7 +110,7 @@ describe('Feature: Session attachment for work units with TUI resume integration
       store.workUnits = [
         { id: 'AUTH-001', title: 'Test', status: 'specifying', type: 'story' },
       ];
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
 
       // @step And "AUTH-001" has an attached session with messages
       store.attachSession?.('AUTH-001', 'session-123');
@@ -135,7 +135,7 @@ describe('Feature: Session attachment for work units with TUI resume integration
       store.workUnits = [
         { id: 'AUTH-001', title: 'Test', status: 'specifying', type: 'story' },
       ];
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
 
       // @step And "AUTH-001" has no attached session
       expect(store.getAttachedSession?.('AUTH-001')).toBeUndefined();
@@ -160,7 +160,7 @@ describe('Feature: Session attachment for work units with TUI resume integration
       store.workUnits = [
         { id: 'AUTH-001', title: 'Test', status: 'specifying', type: 'story' },
       ];
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
 
       // @step And "AUTH-001" has "session-A" attached
       store.attachSession?.('AUTH-001', 'session-A');
@@ -225,7 +225,7 @@ describe('Feature: Session attachment for work units with TUI resume integration
       store.workUnits = [
         { id: 'AUTH-001', title: 'Test', status: 'specifying', type: 'story' },
       ];
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
 
       // @step And "AUTH-001" has an attached session
       store.attachSession?.('AUTH-001', 'session-to-destroy');
@@ -294,20 +294,20 @@ describe('Feature: Session attachment for work units with TUI resume integration
         { id: 'UI-002', title: 'UI', status: 'implementing', type: 'story' },
       ];
       store.attachSession?.('AUTH-001', 'persistent-session');
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
 
       // @step When I navigate to a different work unit
-      store.setCurrentWorkUnitId?.('UI-002');
+      useSessionStore.getState().setCurrentWorkUnit('UI-002', 'implementing');
 
       // @step Then "AUTH-001" should still have its session attached
       expect(store.getAttachedSession?.('AUTH-001')).toBe('persistent-session');
       expect(store.hasAttachedSession?.('AUTH-001')).toBe(true);
 
       // @step And the current work unit should be "UI-002"
-      expect(store.getCurrentWorkUnitId?.()).toBe('UI-002');
+      expect(useSessionStore.getState().currentWorkUnitId).toBe('UI-002');
 
       // @step When I return to the board view
-      store.setCurrentWorkUnitId?.(null);
+      useSessionStore.getState().setCurrentWorkUnit(null, null);
 
       // @step Then the attachment should still persist
       expect(store.getAttachedSession?.('AUTH-001')).toBe('persistent-session');
@@ -363,26 +363,26 @@ describe('Feature: Session attachment for work units with TUI resume integration
       store.workUnits = [
         { id: 'AUTH-001', title: 'Test', status: 'specifying', type: 'story' },
       ];
-      expect(store.getCurrentWorkUnitId?.()).toBeNull();
+      expect(useSessionStore.getState().currentWorkUnitId).toBeNull();
 
       // @step When I enter the agent view for "AUTH-001"
-      store.setCurrentWorkUnitId?.('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
 
       // @step Then the current work unit should be "AUTH-001"
-      expect(store.getCurrentWorkUnitId?.()).toBe('AUTH-001');
+      expect(useSessionStore.getState().currentWorkUnitId).toBe('AUTH-001');
     });
 
     it('should clear current work unit when returning to board', () => {
       // @step Given I am in the agent view for "AUTH-001"
       const store = useFspecStore.getState();
-      store.setCurrentWorkUnitId?.('AUTH-001');
-      expect(store.getCurrentWorkUnitId?.()).toBe('AUTH-001');
+      useSessionStore.getState().setCurrentWorkUnit('AUTH-001', 'specifying');
+      expect(useSessionStore.getState().currentWorkUnitId).toBe('AUTH-001');
 
       // @step When I return to the board view
-      store.setCurrentWorkUnitId?.(null);
+      useSessionStore.getState().setCurrentWorkUnit(null, null);
 
       // @step Then the current work unit should be null
-      expect(store.getCurrentWorkUnitId?.()).toBeNull();
+      expect(useSessionStore.getState().currentWorkUnitId).toBeNull();
     });
   });
 });

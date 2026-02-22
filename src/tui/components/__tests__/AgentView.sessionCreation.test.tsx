@@ -2,10 +2,12 @@
  * Tests for AgentView session creation context awareness
  *
  * SESS-001: Session creation should be context-aware (board vs navigation)
+ * TUI-068: Updated to use sessionStore for currentWorkUnitId
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useFspecStore } from '../../store/fspecStore';
+import { useSessionStore } from '../../store/sessionStore';
 
 // Mock all external dependencies
 vi.mock('@sengac/codelet-napi', () => ({
@@ -20,16 +22,20 @@ vi.mock('../../services/sessionService', () => ({
   restoreSession: vi.fn(),
 }));
 
-vi.mock('../../store/sessionStore', () => ({
-  useShowCreateSessionDialog: vi.fn(() => false),
-  useShouldAutoCreateSession: vi.fn(() => false),
-  useSessionActions: vi.fn(() => ({
-    activateSession: vi.fn(),
-    closeCreateSessionDialog: vi.fn(),
-    prepareForNewSession: vi.fn(),
-    clearAutoCreateRequest: vi.fn(),
-  })),
-}));
+vi.mock('../../store/sessionStore', async () => {
+  const actual = await vi.importActual('../../store/sessionStore');
+  return {
+    ...actual,
+    useShowCreateSessionDialog: vi.fn(() => false),
+    useShouldAutoCreateSession: vi.fn(() => false),
+    useSessionActions: vi.fn(() => ({
+      activateSession: vi.fn(),
+      closeCreateSessionDialog: vi.fn(),
+      prepareForNewSession: vi.fn(),
+      clearAutoCreateRequest: vi.fn(),
+    })),
+  };
+});
 
 vi.mock('../../../utils/logger', () => ({
   logger: {
@@ -44,11 +50,12 @@ describe('AgentView Session Creation Logic', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Reset store state
+    // Reset fspecStore state
     useFspecStore.setState({
       sessionAttachments: new Map<string, string>(),
-      currentWorkUnitId: null,
     });
+    // Reset sessionStore state
+    useSessionStore.getState().setCurrentWorkUnit(null, null);
   });
 
   describe('Context-Aware Session Creation', () => {
@@ -58,7 +65,7 @@ describe('AgentView Session Creation Logic', () => {
       const store = useFspecStore.getState();
 
       // Simulate user selecting work unit from board
-      store.setCurrentWorkUnitId(workUnitId);
+      useSessionStore.getState().setCurrentWorkUnit(workUnitId, 'specifying');
 
       // Simulate session creation (in real app this would be triggered by user action)
       store.attachSession(workUnitId, sessionId);
@@ -73,7 +80,7 @@ describe('AgentView Session Creation Logic', () => {
       const store = useFspecStore.getState();
 
       // No work unit selected (direct navigation to agent view)
-      expect(store.getCurrentWorkUnitId()).toBeNull();
+      expect(useSessionStore.getState().currentWorkUnitId).toBeNull();
 
       // Session created but not attached to any work unit
       expect(store.getWorkUnitBySession(sessionId)).toBeUndefined();
@@ -86,10 +93,10 @@ describe('AgentView Session Creation Logic', () => {
       const store = useFspecStore.getState();
 
       // User selects first work unit
-      store.setCurrentWorkUnitId(workUnit1);
+      useSessionStore.getState().setCurrentWorkUnit(workUnit1, 'specifying');
 
       // User changes selection before creating session
-      store.setCurrentWorkUnitId(workUnit2);
+      useSessionStore.getState().setCurrentWorkUnit(workUnit2, 'implementing');
 
       // Session is created for the currently selected work unit
       store.attachSession(workUnit2, sessionId);
@@ -144,11 +151,11 @@ describe('AgentView Session Creation Logic', () => {
       store.attachSession(workUnit2, session2);
 
       // Switch to first session context
-      store.setCurrentWorkUnitId(workUnit1);
+      useSessionStore.getState().setCurrentWorkUnit(workUnit1, 'specifying');
       expect(store.getAttachedSession(workUnit1)).toBe(session1);
 
       // Switch to second session context  
-      store.setCurrentWorkUnitId(workUnit2);
+      useSessionStore.getState().setCurrentWorkUnit(workUnit2, 'implementing');
       expect(store.getAttachedSession(workUnit2)).toBe(session2);
 
       // Both attachments should be maintained
@@ -196,13 +203,13 @@ describe('AgentView Session Creation Logic', () => {
       const store = useFspecStore.getState();
 
       // Simulate selection without successful session creation
-      store.setCurrentWorkUnitId(workUnitId);
+      useSessionStore.getState().setCurrentWorkUnit(workUnitId, 'specifying');
 
       // No session should be attached if creation failed
       expect(store.getAttachedSession(workUnitId)).toBeUndefined();
 
       // Work unit selection should remain
-      expect(store.getCurrentWorkUnitId()).toBe(workUnitId);
+      expect(useSessionStore.getState().currentWorkUnitId).toBe(workUnitId);
     });
 
     it('should handle concurrent session operations', () => {

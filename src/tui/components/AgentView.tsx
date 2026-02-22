@@ -100,7 +100,7 @@ import {
   sessionGetTokens,
   sessionManagerList,
   sessionManagerCreateWithId,
-  sessionManagerDestroy,
+  // TUI-068: session destroy REMOVED - use destroySession from sessionService
   sessionRestoreMessages,
   sessionRestoreTokenState,
   sessionSetPendingInput,
@@ -221,7 +221,15 @@ import {
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
-import { createSession, createIsolatedSession, restoreSession } from '../services/sessionService';
+import {
+  createSession,
+  createIsolatedSession,
+  restoreSession,
+  destroySession,
+  attachToWorkUnit,
+  detachFromWorkUnit,
+  getAttachedWorkUnit,
+} from '../services/sessionService';
 import { applyPendingIsolationState } from '../services/globalSessionStreamManager';
 
 // TUI-034: Model selection types
@@ -1090,15 +1098,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const [isRefreshingModels, setIsRefreshingModels] = useState(false);
 
   // SESS-001: Session attachment state and actions from store
-  const attachSessionToWorkUnit = useFspecStore(state => state.attachSession);
-  const detachSessionFromWorkUnit = useFspecStore(state => state.detachSession);
+  // TUI-068: attachToWorkUnit and detachFromWorkUnit imported from sessionService
+  // TUI-069: getAttachedWorkUnit imported from sessionService (completes facade)
   const getAttachedSession = useFspecStore(state => state.getAttachedSession);
-  const setCurrentWorkUnitId = useFspecStore(
-    state => state.setCurrentWorkUnitId
-  );
-  const getWorkUnitBySession = useFspecStore(
-    state => state.getWorkUnitBySession
-  );
 
   // PERF-002: Compaction with retry logic hook
   const compaction = useCompaction();
@@ -1470,10 +1472,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
   // Sync work unit info to sessionStore for SessionHeader display
   // TUI-060: Inline work unit lookup - don't use useMemo as a dependency
+  // TUI-069: Use getAttachedWorkUnit from sessionService facade
   const workUnits = useFspecStore(state => state.workUnits);
   useEffect(() => {
     const attachedWorkUnitId = currentSessionId
-      ? getWorkUnitBySession(currentSessionId)
+      ? getAttachedWorkUnit(currentSessionId)
       : null;
     
     if (attachedWorkUnitId) {
@@ -1482,7 +1485,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     } else {
       setCurrentWorkUnit(null, null);
     }
-  }, [currentSessionId, getWorkUnitBySession, workUnits, setCurrentWorkUnit]);
+  }, [currentSessionId, workUnits, setCurrentWorkUnit]);
 
   // Extract remaining display state from Rust snapshot
   const displayIsLoading = rustSnapshot.isLoading;
@@ -2076,15 +2079,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
   }, []);
 
   // SESS-001: Set current work unit ID on mount/unmount
+  // TUI-068: Use sessionStore.setCurrentWorkUnit instead of fspecStore.setCurrentWorkUnitId
   useEffect(() => {
     if (workUnitId) {
-      setCurrentWorkUnitId(workUnitId);
+      // Get work unit status if available
+      const workUnit = workUnits.find(wu => wu.id === workUnitId);
+      setCurrentWorkUnit(workUnitId, workUnit?.status ?? null);
     }
     return () => {
       // Clear current work unit when unmounting (returning to board)
-      setCurrentWorkUnitId(null);
+      setCurrentWorkUnit(null, null);
     };
-  }, [workUnitId, setCurrentWorkUnitId]);
+  }, [workUnitId, setCurrentWorkUnit, workUnits]);
 
   // SESS-001: Track if we need to auto-resume an attached session
   const needsAutoResumeRef = useRef<string | null>(null);
@@ -2411,13 +2417,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // SESS-001: Handle /detach command - detach session from work unit and clear conversation
     if (userMessage === '/detach') {
       setInputValue('');
-      // TUI-068: Use getWorkUnitBySession to find the ACTUAL attached work unit,
+      // TUI-069: Use getAttachedWorkUnit from sessionService facade to find the ACTUAL attached work unit,
       // not the workUnitId prop (which is the original board context).
       const attachedWorkUnitId = currentSessionId
-        ? getWorkUnitBySession(currentSessionId)
+        ? getAttachedWorkUnit(currentSessionId)
         : undefined;
-      if (attachedWorkUnitId) {
-        detachSessionFromWorkUnit(attachedWorkUnitId);
+      if (attachedWorkUnitId && currentSessionId) {
+        // TUI-068: Use sessionService facade for detachment
+        detachFromWorkUnit(currentSessionId);
         logger.debug(`SESS-001: Detached session from work unit ${attachedWorkUnitId}`);
         // Clear conversation for fresh start
         setConversation([]);
@@ -2762,7 +2769,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // SESS-001: Auto-attach session to work unit on first message
         if (workUnitId) {
-          attachSessionToWorkUnit(workUnitId, activeSessionId);
+          // TUI-068: Use sessionService facade for attachment
+          // TUI-069: Pass work unit title to avoid hardcoded placeholder
+          const workUnit = workUnits.find(wu => wu.id === workUnitId);
+          attachToWorkUnit(activeSessionId, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
           logger.debug(
             `SESS-001: Attached session ${activeSessionId} to work unit ${workUnitId}`
           );
@@ -3585,9 +3595,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     currentProvider,
     currentModel,
     workUnitId,
-    attachSessionToWorkUnit,
-    getWorkUnitBySession,
-    detachSessionFromWorkUnit,
+    workUnits,
+    // TUI-068: attachToWorkUnit, detachFromWorkUnit, getAttachedWorkUnit are module-level imports (stable)
     isReadyForNewSession,
     activateSession,
     prepareForNewSession,
@@ -3800,13 +3809,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Handle /detach command
       if (userMessage === '/detach') {
         setInputValue('');
-        // TUI-068: Use getWorkUnitBySession to find the ACTUAL attached work unit,
+        // TUI-069: Use getAttachedWorkUnit from sessionService facade to find the ACTUAL attached work unit,
         // not the workUnitId prop (which is the original board context).
         const attachedWorkUnitId = currentSessionId
-          ? getWorkUnitBySession(currentSessionId)
+          ? getAttachedWorkUnit(currentSessionId)
           : undefined;
-        if (attachedWorkUnitId) {
-          detachSessionFromWorkUnit(attachedWorkUnitId);
+        if (attachedWorkUnitId && currentSessionId) {
+          // TUI-068: Use sessionService facade for detachment
+          detachFromWorkUnit(currentSessionId);
           setConversation([]);
           setTokenUsage({ inputTokens: 0, outputTokens: 0 });
           prepareForNewSession();
@@ -3993,8 +4003,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
       providerSections,
       currentModel,
       currentSessionId,
-      getWorkUnitBySession,
-      detachSessionFromWorkUnit,
+      // TUI-068/TUI-069: detachFromWorkUnit, getAttachedWorkUnit are module-level imports (stable)
       prepareForNewSession,
     ]
   );
@@ -4889,7 +4898,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // SESS-001: Only auto-attach session to work unit when creating from board context
       // If we were in a session, we're creating via navigation (Shift+Right) and shouldn't auto-attach
       if (workUnitId && !wasInSession) {
-        attachSessionToWorkUnit(workUnitId, result.sessionId);
+        // TUI-068: Use sessionService facade for attachment
+        // TUI-069: Pass work unit title to avoid hardcoded placeholder
+        const workUnit = workUnits.find(wu => wu.id === workUnitId);
+        attachToWorkUnit(result.sessionId, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
         logger.debug(
           `SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`
         );
@@ -4923,7 +4935,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     closeCreateSessionDialog,
     prepareForNewSession,
     workUnitId,
-    attachSessionToWorkUnit,
+    workUnits,
+    // TUI-068: attachToWorkUnit is a module-level import (stable)
     applyDefaultThinkingLevel,
   ]);
 
@@ -5062,7 +5075,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // SESS-001: Auto-attach session to work unit when auto-creating
         if (workUnitId) {
-          attachSessionToWorkUnit(workUnitId, result.sessionId);
+          // TUI-068: Use sessionService facade for attachment
+          // TUI-069: Pass work unit title to avoid hardcoded placeholder
+          const workUnit = workUnits.find(wu => wu.id === workUnitId);
+          attachToWorkUnit(result.sessionId, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
           logger.debug(
             `SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`
           );
@@ -5088,7 +5104,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     activateSession,
     clearAutoCreateRequest,
     workUnitId,
-    attachSessionToWorkUnit,
+    workUnits,
+    // TUI-068: attachToWorkUnit is a module-level import (stable)
     getAttachedSession,
     applyDefaultThinkingLevel,
   ]);
@@ -5360,7 +5377,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
     try {
       // Destroy the watcher session
-      sessionManagerDestroy(selectedWatcher.id);
+      // TUI-068: Use destroySession from sessionService
+      await destroySession(selectedWatcher.id);
 
       // Remove from list
       const newList = watcherList.filter((_, i) => i !== watcherIndex);
@@ -5530,7 +5548,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Kill all instances first
       for (const instance of templateToDelete.instances) {
         try {
-          sessionManagerDestroy(instance.sessionId);
+          // TUI-068: Use destroySession from sessionService
+          await destroySession(instance.sessionId);
         } catch (err) {
           // Failed to destroy session manager instance - indicates backend issues
           logger.error(
@@ -5574,7 +5593,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     if (!instanceToKill) return;
 
     try {
-      sessionManagerDestroy(instanceToKill.sessionId);
+      // TUI-068: Use destroySession from sessionService
+      await destroySession(instanceToKill.sessionId);
 
       setWatcherNotification('Killed watcher instance');
 
@@ -5790,7 +5810,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // SESS-001: Attach resumed session to work unit
       if (workUnitId) {
-        attachSessionToWorkUnit(workUnitId, selectedSession.id);
+        // TUI-068: Use sessionService facade for attachment
+        // TUI-069: Pass work unit title to avoid hardcoded placeholder
+        const workUnit = workUnits.find(wu => wu.id === workUnitId);
+        attachToWorkUnit(selectedSession.id, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
         logger.debug(
           `SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`
         );
@@ -5838,8 +5861,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
           const selectedSession = availableSessions[resumeSessionIndex];
           if (selectedSession) {
             // TUI-047: Check if background session - destroy it first
+            // TUI-068: Use destroySession from sessionService
             if (selectedSession.isBackgroundSession) {
-              sessionManagerDestroy(selectedSession.id);
+              await destroySession(selectedSession.id);
             }
             // Always delete from persistence too
             await persistenceDeleteSession(selectedSession.id);
@@ -5853,8 +5877,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
           // Delete all sessions
           for (const session of availableSessions) {
             // TUI-047: Destroy background sessions first
+            // TUI-068: Use destroySession from sessionService
             if (session.isBackgroundSession) {
-              sessionManagerDestroy(session.id);
+              await destroySession(session.id);
             }
             await persistenceDeleteSession(session.id);
           }
@@ -5901,30 +5926,21 @@ export const AgentView: React.FC<AgentViewProps> = ({
         cleanupCurrentSessionHandler();
         if (currentSessionId) {
           try {
-            sessionManagerDestroy(currentSessionId);
+            // TUI-068: Use destroySession from sessionService
+            // destroySession already handles detaching from work unit internally
+            await destroySession(currentSessionId);
+            logger.debug(
+              `SESS-001: Session ${currentSessionId} destroyed and detached from work unit`
+            );
           } catch (err) {
             // Log but continue - session may not be in background manager
             logger.error('Failed to destroy session:', err);
           }
         }
-        // SESS-001: Clear session attachment when session is destroyed
-        // TUI-068: Use getWorkUnitBySession to find the ACTUAL attached work unit,
-        // not the workUnitId prop (which is the original board context).
-        // The session may have been attached to a different work unit via IPC
-        // when AI ran 'fspec update-work-unit-status'.
-        const attachedWorkUnitId = currentSessionId
-          ? getWorkUnitBySession(currentSessionId)
-          : undefined;
-        if (attachedWorkUnitId) {
-          detachSessionFromWorkUnit(attachedWorkUnitId);
-          logger.debug(
-            `SESS-001: Cleared session attachment for work unit ${attachedWorkUnitId} (session destroyed)`
-          );
-        }
         onExit();
       }
     },
-    [currentSessionId, onExit, getWorkUnitBySession, detachSessionFromWorkUnit]
+    [currentSessionId, onExit]
   );
 
   // Mouse scroll acceleration state (like VirtualList)

@@ -9,6 +9,7 @@ import {
   sessionManagerCreateWithId,
   sessionManagerCreateIsolated,
   sessionManagerList,
+  sessionManagerDestroy,
   sessionRestoreMessages,
   sessionRestoreTokenState,
   sessionRestoreAnchorPoints,
@@ -31,6 +32,9 @@ import type {
 import type { StreamChunk } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
 import { GlobalSessionStreamManager } from './globalSessionStreamManager';
+import { useFspecStore } from '../store/fspecStore';
+import { useSessionStore } from '../store/sessionStore';
+import { setWorkUnitContext } from './workUnitContextService';
 
 /**
  * Result of creating a new session
@@ -432,4 +436,199 @@ export function pruneOrphanedSessions(
   activeSessions: string[]
 ): PruneResultJs {
   return pruneOrphaned(repoPath, activeSessions);
+}
+
+// ========================================
+// TUI-068: Session Lifecycle Facade
+// ========================================
+
+/**
+ * Destroy a session and clean up all associated state (TUI-068)
+ *
+ * Orchestrates the complete cleanup of a session:
+ * 1. Destroys the Rust background session
+ * 2. Detaches from any associated work unit in fspecStore
+ * 3. Clears the current work unit in sessionStore
+ * 4. Unsubscribes from the stream manager
+ *
+ * @param sessionId - Session identifier to destroy
+ */
+export async function destroySession(sessionId: string): Promise<void> {
+  logger.info(`[SessionService] Destroying session ${sessionId}`);
+
+  // Get the work unit this session is attached to (if any)
+  const fspecState = useFspecStore.getState();
+  const workUnitId = fspecState.getWorkUnitBySession(sessionId);
+
+  // 1. Destroy the Rust background session
+  try {
+    sessionManagerDestroy(sessionId);
+  } catch (err) {
+    logger.error(
+      `[SessionService] Failed to destroy Rust session ${sessionId}:`,
+      err
+    );
+  }
+
+  // 2. Detach from work unit in fspecStore
+  if (workUnitId) {
+    fspecState.detachSession(workUnitId);
+  }
+
+  // 3. Clear current work unit in sessionStore
+  const sessionState = useSessionStore.getState();
+  sessionState.setCurrentWorkUnit(null, null);
+
+  // 4. Unsubscribe from stream manager
+  const manager = GlobalSessionStreamManager.getInstance();
+  manager.unsubscribeFromSession(sessionId);
+
+  logger.info(`[SessionService] Session ${sessionId} destroyed successfully`);
+}
+
+/**
+ * Attach a session to a work unit (TUI-068)
+ *
+ * Orchestrates the attachment of a session to a work unit:
+ * 1. Updates fspecStore.sessionAttachments
+ * 2. Updates sessionStore.currentWorkUnitId
+ * 3. Sets the work unit context in Rust via workUnitContextService
+ *
+ * TUI-069: Added error handling with rollback on failure
+ *
+ * @param sessionId - Session identifier
+ * @param workUnitId - Work unit identifier to attach to
+ * @param status - Work unit status (e.g., "specifying", "implementing")
+ * @param title - Optional work unit title (defaults to workUnitId if not provided)
+ */
+export function attachToWorkUnit(
+  sessionId: string,
+  workUnitId: string,
+  status: string,
+  title?: string
+): void {
+  logger.info(
+    `[SessionService] Attaching session ${sessionId} to work unit ${workUnitId}`
+  );
+
+  const fspecState = useFspecStore.getState();
+  const sessionState = useSessionStore.getState();
+
+  // Track previous state for rollback
+  const previousWorkUnitId = fspecState.getWorkUnitBySession(sessionId);
+  const previousSessionStoreWorkUnit = sessionState.currentWorkUnitId;
+  const previousSessionStoreStatus = sessionState.currentWorkUnitStatus;
+
+  try {
+    // 1. Update fspecStore.sessionAttachments
+    fspecState.attachSession(workUnitId, sessionId);
+
+    // 2. Update sessionStore.currentWorkUnitId
+    sessionState.setCurrentWorkUnit(workUnitId, status);
+
+    // 3. Set work unit context in Rust
+    setWorkUnitContext(sessionId, {
+      id: workUnitId,
+      title: title ?? workUnitId,
+      status,
+    });
+
+    logger.info(
+      `[SessionService] Session ${sessionId} attached to ${workUnitId}`
+    );
+  } catch (err) {
+    // TUI-069: Rollback on failure
+    logger.error(
+      `[SessionService] Failed to attach session ${sessionId} to ${workUnitId}, rolling back:`,
+      err
+    );
+
+    // Rollback fspecStore
+    if (previousWorkUnitId) {
+      fspecState.attachSession(previousWorkUnitId, sessionId);
+    } else {
+      fspecState.detachSession(workUnitId);
+    }
+
+    // Rollback sessionStore
+    sessionState.setCurrentWorkUnit(
+      previousSessionStoreWorkUnit,
+      previousSessionStoreStatus
+    );
+
+    throw err;
+  }
+}
+
+/**
+ * Get the work unit attached to a session (TUI-069)
+ *
+ * Provides read access to session-work unit attachments through the facade,
+ * avoiding direct store access in components.
+ *
+ * @param sessionId - Session identifier
+ * @returns Work unit ID if attached, undefined otherwise
+ */
+export function getAttachedWorkUnit(sessionId: string): string | undefined {
+  return useFspecStore.getState().getWorkUnitBySession(sessionId);
+}
+
+/**
+ * Detach a session from its current work unit (TUI-068)
+ *
+ * Orchestrates the detachment of a session from a work unit:
+ * 1. Removes from fspecStore.sessionAttachments
+ * 2. Clears sessionStore.currentWorkUnitId
+ * 3. Clears the work unit context in Rust via workUnitContextService
+ *
+ * TUI-069: Added error handling with rollback on failure
+ *
+ * @param sessionId - Session identifier to detach
+ */
+export function detachFromWorkUnit(sessionId: string): void {
+  logger.info(`[SessionService] Detaching session ${sessionId} from work unit`);
+
+  const fspecState = useFspecStore.getState();
+  const sessionState = useSessionStore.getState();
+
+  // Get the work unit this session is attached to (for potential rollback)
+  const workUnitId = fspecState.getWorkUnitBySession(sessionId);
+  const previousSessionStoreWorkUnit = sessionState.currentWorkUnitId;
+  const previousSessionStoreStatus = sessionState.currentWorkUnitStatus;
+
+  try {
+    // 1. Remove from fspecStore.sessionAttachments
+    if (workUnitId) {
+      fspecState.detachSession(workUnitId);
+    }
+
+    // 2. Clear sessionStore.currentWorkUnitId
+    sessionState.setCurrentWorkUnit(null, null);
+
+    // 3. Clear work unit context in Rust
+    setWorkUnitContext(sessionId, null);
+
+    logger.info(
+      `[SessionService] Session ${sessionId} detached from work unit`
+    );
+  } catch (err) {
+    // TUI-069: Rollback on failure
+    logger.error(
+      `[SessionService] Failed to detach session ${sessionId}, rolling back:`,
+      err
+    );
+
+    // Rollback fspecStore
+    if (workUnitId) {
+      fspecState.attachSession(workUnitId, sessionId);
+    }
+
+    // Rollback sessionStore
+    sessionState.setCurrentWorkUnit(
+      previousSessionStoreWorkUnit,
+      previousSessionStoreStatus
+    );
+
+    throw err;
+  }
 }

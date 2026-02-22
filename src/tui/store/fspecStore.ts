@@ -70,8 +70,7 @@ interface FspecState {
   // Session attachment state (SESS-001)
   // Maps workUnitId → sessionId for in-memory session tracking
   sessionAttachments: Map<string, string>;
-  // Tracks which work unit the user currently entered (for session context)
-  currentWorkUnitId: string | null;
+  // TUI-068: currentWorkUnitId REMOVED - sessionStore is single source of truth
 
   // Actions
   setCwd: (cwd: string) => void;
@@ -100,7 +99,7 @@ interface FspecState {
   // Session attachment actions (SESS-001)
   attachSession: (workUnitId: string, sessionId: string) => void;
   detachSession: (workUnitId: string) => void;
-  setCurrentWorkUnitId: (workUnitId: string | null) => void;
+  // TUI-068: setCurrentWorkUnitId REMOVED - use sessionStore.setCurrentWorkUnit instead
   clearAllSessionAttachments: () => void;
 
   // Selectors
@@ -110,7 +109,7 @@ interface FspecState {
   // Session attachment selectors (SESS-001)
   getAttachedSession: (workUnitId: string) => string | undefined;
   hasAttachedSession: (workUnitId: string) => boolean;
-  getCurrentWorkUnitId: () => string | null;
+  // TUI-068: getCurrentWorkUnitId REMOVED - use sessionStore.currentWorkUnitId instead
   getWorkUnitBySession: (sessionId: string) => string | undefined;
 }
 
@@ -128,7 +127,7 @@ export const useFspecStore = create<FspecState>()(
 
     // Session attachment state (SESS-001)
     sessionAttachments: new Map<string, string>(),
-    currentWorkUnitId: null,
+    // TUI-068: currentWorkUnitId initial state REMOVED
 
     setCwd: (cwd: string) => {
       set(state => {
@@ -175,8 +174,8 @@ export const useFspecStore = create<FspecState>()(
         });
       } catch (error) {
         const err = error as Error;
-        console.error('[ZUSTAND] loadData error:', err);
-        console.error('[ZUSTAND] Stack trace:', err.stack);
+        logger.error('[ZUSTAND] loadData error:', err);
+        logger.error('[ZUSTAND] Stack trace:', err.stack);
 
         // INIT-016: Only handle corrupted JSON gracefully (temporary state during upgrades)
         // Other errors (permissions, disk full, bugs) should be shown to user
@@ -187,7 +186,7 @@ export const useFspecStore = create<FspecState>()(
           err.message.includes('JSON');
 
         if (isJsonParseError) {
-          console.warn(
+          logger.warn(
             '[ZUSTAND] Corrupted JSON detected, showing empty board and watching for fix'
           );
           set(state => {
@@ -445,11 +444,7 @@ export const useFspecStore = create<FspecState>()(
       });
     },
 
-    setCurrentWorkUnitId: (workUnitId: string | null) => {
-      set(state => {
-        state.currentWorkUnitId = workUnitId;
-      });
-    },
+    // TUI-068: setCurrentWorkUnitId REMOVED - use sessionStore.setCurrentWorkUnit instead
 
     clearAllSessionAttachments: () => {
       set(state => {
@@ -474,9 +469,7 @@ export const useFspecStore = create<FspecState>()(
       return get().sessionAttachments.has(workUnitId);
     },
 
-    getCurrentWorkUnitId: () => {
-      return get().currentWorkUnitId;
-    },
+    // TUI-068: getCurrentWorkUnitId REMOVED - use sessionStore.currentWorkUnitId instead
 
     getWorkUnitBySession: (sessionId: string) => {
       const attachments = get().sessionAttachments;
