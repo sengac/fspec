@@ -20,8 +20,6 @@ When you want rigor, fspec follows **Acceptance Criteria Driven Development**: s
 
 When you just want to code, skip all that. fspec is a capable coding assistant on its own—refactor, debug, explain, review. The workflow tools are there when you need them.
 
-Built with fspec. 432 feature files. Fully specified.
-
 ---
 
 ## Quick Start
