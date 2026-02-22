@@ -207,6 +207,10 @@ Now all AI responses stream to Telegram. Send messages back to provide input. Ru
 
 Connect to multiple endpoints simultaneously—Telegram, Slack, Discord, or any WebSocket server. Each bridge receives the same stream.
 
+### Mobile App (Coming Soon)
+
+A dedicated mobile app for iOS and Android is in development at [github.com/sengac/fspec.app](https://github.com/sengac/fspec.app). It connects to fspec via the Bridge protocol, providing a native interface for monitoring sessions, sending input, and managing tasks from your phone.
+
 ---
 
 ## Watcher Sessions
