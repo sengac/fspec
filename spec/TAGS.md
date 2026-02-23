@@ -92,6 +92,7 @@ Tags that categorize features by functional area.
 | `@checkpoint` | Checkpoint and snapshot management for experimentation and recovery |
 | `@checkpoint-management` | Checkpoint creation, restoration, and management functionality |
 | `@chunking` | Content chunking and message splitting for size-limited platforms |
+| `@cloud-fallback` | Fallback to cloud providers |
 | `@code-analysis` | Code analysis and AST research features |
 | `@code-quality` | Code quality validation and review features |
 | `@command-history` | Command history navigation scenarios |
@@ -149,12 +150,14 @@ Tags that categorize features by functional area.
 | `@kanban` | Kanban board and workflow management |
 | `@language-support` | Programming language support and integration |
 | `@list` | List operations |
+| `@local-models` | Local LLM model support |
 | `@masked-display` | Masked display of sensitive data |
 | `@merge-preserves-references` | Merge reference preservation |
 | `@metrics` | Metrics and measurements |
 | `@metrics-estimation` | Metrics and estimation tracking |
 | `@migration` | Migration & Data Transformation |
 | `@model-selection` | Model selection and provider management features |
+| `@model-selector` | Model selection TUI interface |
 | `@modification` | Feature Modification Operations |
 | `@multi-agent-support` | Features related to supporting multiple AI coding agents beyond Claude |
 | `@multiple` | Multiple simultaneous connections |
@@ -167,9 +170,11 @@ Tags that categorize features by functional area.
 | `@prefix-epic` | Prefix and epic management |
 | `@prefixes` | Work unit ID prefix management |
 | `@priority` | Priority management and reordering |
+| `@profiles` | Provider profile configuration |
 | `@progress` | Progress tracking and reporting |
 | `@project-management` | Project management features including work units, epics, and workflow |
 | `@provider-abstraction` | Provider abstraction layer for multi-provider support |
+| `@provider-screen` | Provider configuration screen |
 | `@provider-settings` | Provider configuration settings |
 | `@publish` | npm publishing functionality |
 | `@quality-assurance` | Quality assurance and code review features |
@@ -198,6 +203,7 @@ Tags that categorize features by functional area.
 | `@security` | Security-related features and bug fixes |
 | `@session-attachment` | Session attachment behavior and IPC |
 | `@session-cherry-pick` | Cherry-pick message scenarios |
+| `@session-creation` | Session creation from profile |
 | `@session-delete` | Session deletion and cleanup |
 | `@session-fork` | Session forking scenarios |
 | `@session-lineage` | Session fork lineage tracking |
@@ -843,7 +849,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-22T12:00:39.199Z_
+_Last updated: 2026-02-23T01:46:50.238Z_
 
 **Update Command**: `fspec tag-stats`
 

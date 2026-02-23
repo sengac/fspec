@@ -298,6 +298,10 @@
           "description": "Content chunking and message splitting for size-limited platforms"
         },
         {
+          "name": "@cloud-fallback",
+          "description": "Fallback to cloud providers"
+        },
+        {
           "name": "@code-analysis",
           "description": "Code analysis and AST research features"
         },
@@ -526,6 +530,10 @@
           "description": "List operations"
         },
         {
+          "name": "@local-models",
+          "description": "Local LLM model support"
+        },
+        {
           "name": "@masked-display",
           "description": "Masked display of sensitive data"
         },
@@ -548,6 +556,10 @@
         {
           "name": "@model-selection",
           "description": "Model selection and provider management features"
+        },
+        {
+          "name": "@model-selector",
+          "description": "Model selection TUI interface"
         },
         {
           "name": "@modification",
@@ -598,6 +610,10 @@
           "description": "Priority management and reordering"
         },
         {
+          "name": "@profiles",
+          "description": "Provider profile configuration"
+        },
+        {
           "name": "@progress",
           "description": "Progress tracking and reporting"
         },
@@ -608,6 +624,10 @@
         {
           "name": "@provider-abstraction",
           "description": "Provider abstraction layer for multi-provider support"
+        },
+        {
+          "name": "@provider-screen",
+          "description": "Provider configuration screen"
         },
         {
           "name": "@provider-settings",
@@ -720,6 +740,10 @@
         {
           "name": "@session-cherry-pick",
           "description": "Cherry-pick message scenarios"
+        },
+        {
+          "name": "@session-creation",
+          "description": "Session creation from profile"
         },
         {
           "name": "@session-delete",
@@ -2406,7 +2430,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-22T12:00:39.199Z",
+    "lastUpdated": "2026-02-23T01:46:50.238Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

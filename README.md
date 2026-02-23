@@ -4,7 +4,7 @@
   <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**The spec-driven, multi-agent coding platform.**
+**The Spec-Driven, Multi-Agent Coding Factory**
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -14,21 +14,48 @@
 
 ## What is fspec?
 
-fspec is infrastructure for the **dark factory**—the emerging model of fully autonomous software development where AI agents handle all implementation while humans focus on defining *what* to build and *why*.
+**fspec** (Factory Spec) is infrastructure for running a software factory—multiple AI agents working jobs in parallel, driven by specifications, managed on a Kanban board.
 
-The term comes from [Dan Shapiro's framework](https://www.danshapiro.com/blog/2026/01/the-five-levels-from-spicy-autocomplete-to-the-software-factory/) mapping AI-assisted coding to five levels, borrowing from self-driving car autonomy. Most developers today operate at Levels 2-3: pair programming with AI or reviewing AI-generated code. fspec is built for **Levels 4 and 5**—where specifications become the primary human input and AI agents autonomously produce working software.
+This isn't another coding assistant. It's a **coding factory**.
 
-In a dark factory, the bottleneck shifts from coding to specification. The quality of output is entirely determined by the quality of input. fspec addresses this with **Acceptance Criteria Driven Development (ACDD)**: you describe what you want, the AI asks clarifying questions, writes Gherkin scenarios capturing your intent, generates failing tests that prove the spec isn't implemented, then writes just enough code to pass. Every line traces back to a requirement. The specification *is* the source of truth.
+### Coding Agent vs. Coding Factory
 
-fspec runs multiple agents in parallel, each working on different tasks—one implements a feature while another fixes a bug. Switch between conversations. Let them run in the background. This is the "lights-out" factory model: specs go in, software comes out.
+A **coding agent** is a single AI that helps you write code. You chat with it, it writes some code, you review it, repeat. One conversation, one task, one developer. It's pair programming with a robot.
 
-When you just want to code, skip all that. fspec is a capable coding assistant on its own—refactor, debug, explain, review. The workflow tools are there when you need them.
+A **coding factory** is fundamentally different:
+
+| | Coding Agent | Coding Factory |
+|---|---|---|
+| **Concurrency** | One conversation at a time | Multiple agents working simultaneously |
+| **Input** | Informal chat prompts | Structured specifications |
+| **Workflow** | Ad-hoc | Systematic (backlog → done) |
+| **Traceability** | None | Every line links to a requirement |
+| **Overnight work** | Not practical | Agents run while you sleep |
+| **Scale** | One developer's productivity | Factory-level throughput |
+
+In a factory, you don't stand at every machine. You design the product, write the specifications, and let the production line run. You check output quality. You fix bottlenecks. But the machines do the work.
+
+### Why Kanban?
+
+In the 1940s, Toyota engineer Taiichi Ohno faced a problem: American car factories outproduced Japanese ones by a factor of ten. His solution was **Kanban**—a visual system where cards represent work items flowing through production stages. Each station pulls work when ready. Nothing gets built without a card. Nothing moves forward until quality checks pass.
+
+Toyota's production system revolutionized manufacturing. The Kanban board became the heartbeat of the factory floor.
+
+fspec applies the same principle to software production. Work units are jobs. The Kanban board is your production floor. AI agents are workstations. Specifications are blueprints. Tests are quality control. The factory runs whether you're watching or not.
+
+### The Dark Factory
+
+The term comes from [Dan Shapiro's framework](https://www.danshapiro.com/blog/2026/01/the-five-levels-from-spicy-autocomplete-to-the-software-factory/) mapping AI-assisted coding to five levels of autonomy—borrowing from self-driving cars. Most developers operate at Levels 2-3: pair programming with AI, reviewing AI-generated code. fspec is built for **Levels 4 and 5**, where specifications become the primary human input and AI agents autonomously produce working software.
+
+The "dark factory" references the [Fanuc factory in Japan](https://en.wikipedia.org/wiki/Lights_out_(manufacturing))—a robot factory staffed by robots, running with the lights off because no humans are present. In software, it means: specs go in, code comes out. The factory runs in the dark.
+
+fspec makes this possible through **Acceptance Criteria Driven Development (ACDD)**: you describe what you want, the AI asks clarifying questions, writes Gherkin scenarios capturing your intent, generates failing tests, then writes just enough code to pass. Every line traces back to a requirement. The specification *is* the source of truth.
 
 ---
 
 ## Supported Providers
 
-fspec works with any AI provider that supports tool calling. Set your API key and start coding:
+fspec works with any AI provider that supports tool calling. Set your API key and start the factory:
 
 | Provider | Environment Variable |
 |----------|---------------------|
@@ -61,19 +88,19 @@ cd /path/to/your/project
 fspec
 ```
 
-This opens the interactive platform with a Kanban board and AI conversations.
+This opens the factory floor—your Kanban board with AI workstations ready to take jobs.
 
 ![Interactive Kanban](interactive-kanban.png)
 
 ---
 
-## First Run: Getting Started
+## First Run: Starting the Factory
 
-When you first run `fspec` on a new project, the board is empty—no work units yet. Here's how to begin:
+When you first run `fspec`, the production floor is empty—no jobs queued. Here's how to get the factory running:
 
-### 1. Start an AI Agent
+### 1. Spin Up an Agent
 
-Press **`/`** (or **Shift+Right**) to start a new AI conversation. A dialog appears:
+Press **`/`** (or **Shift+Right**) to start a new AI workstation. A dialog appears:
 
 ```
 Start New Agent?
@@ -85,21 +112,21 @@ Mode:  Normal  / Isolated
 - **Normal** — Agent works directly in your project
 - **Isolated** — Agent works in a git worktree (safe for experimental changes)
 
-Press **Enter** on "Yes" to launch the agent.
+Press **Enter** on "Yes" to bring the workstation online.
 
 ### 2. Use It However You Want
 
-**fspec doesn't force any workflow.** The AI agent is a full-featured coding assistant. You can:
+**fspec doesn't force any workflow.** Each AI agent is a full-featured coding assistant. You can:
 
 - Ask it to write code, refactor, debug, or explain things
 - Have it review PRs, write documentation, or answer questions
 - Use it exactly like any other AI coding tool
 
-The ACDD workflow is available when you want it, not required. fspec provides the tools—you decide how to use them.
+The factory workflow is available when you want it, not required. fspec provides the infrastructure—you decide how to run your production line.
 
-### 3. Foundation Discovery (When Using ACDD)
+### 3. Foundation Discovery (Setting Up the Factory)
 
-If you want to use the spec-driven workflow, start with **Foundation Discovery**. For new projects without `spec/foundation.json`, tell the AI:
+To run the full factory workflow, start with **Foundation Discovery**. This establishes your product blueprint. For new projects without `spec/foundation.json`, tell the AI:
 
 ```
 "Let's set up fspec for this project"
@@ -113,11 +140,11 @@ The AI guides you through creating your project's requirements document:
 - Builds `foundation.json` field by field
 - Finalizes with `fspec discover-foundation --finalize`
 
-This is a one-time setup that establishes project context for the ACDD workflow.
+This is a one-time setup that establishes the blueprint for all future production.
 
-### 4. Create Work Units
+### 4. Queue Jobs
 
-Once foundation exists (or skip it for quick tasks), tell the AI what you want:
+Once the foundation exists (or skip it for quick tasks), tell the AI what you want to build:
 
 ```
 "Create a story for user authentication"
@@ -125,21 +152,23 @@ Once foundation exists (or skip it for quick tasks), tell the AI what you want:
 "There's a bug where login fails on mobile"
 ```
 
-The AI creates work units (stories, bugs, or tasks) and adds them to your backlog.
+The AI creates work units (stories, bugs, or tasks) and queues them in the backlog. These are your production jobs.
 
-### 5. Work the Kanban Board
+### 5. Run the Production Line
 
-Now you have cards on the board! The workflow is:
+Now you have jobs on the board! Work flows through the factory:
 
 ```
 BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
 ```
 
-- Press **Enter** on any card to work on it with the AI
-- The AI moves cards through stages automatically
-- Each stage has specific goals (see "How It Works" below)
+- Press **Enter** on any job to assign it to an agent
+- Agents move jobs through stages automatically
+- Each stage has quality gates (see "How the Factory Works" below)
 
-Or ignore the board entirely and just chat with the agent—it's your choice.
+Multiple agents can work different jobs simultaneously—one implements a feature while another fixes a bug. This is parallel production.
+
+Or ignore the board entirely and just chat with an agent—the factory infrastructure is there when you need it.
 
 ---
 
@@ -147,10 +176,10 @@ Or ignore the board entirely and just chat with the agent—it's your choice.
 
 | Key | Action |
 |-----|--------|
-| `/` | Start new AI agent |
+| `/` | Spin up new AI agent |
 | **Shift+Right** | Navigate to next session (or create new) |
 | **Shift+Left** | Navigate to previous session (or back to board) |
-| **Enter** | Open selected work unit with AI |
+| **Enter** | Assign selected job to an agent |
 | **↑ ↓ ← →** | Navigate board |
 | **C** | View git checkpoints |
 | **F** | View changed files |
@@ -159,22 +188,22 @@ Or ignore the board entirely and just chat with the agent—it's your choice.
 
 ---
 
-## How It Works
+## How the Factory Works
 
-1. **You describe what you want** — A feature, a bug fix, a task
-2. **fspec asks questions** — Clarifies edge cases, rules, and expectations
-3. **fspec writes specs** — Generates Gherkin scenarios from your answers
-4. **fspec writes tests** — Failing tests that prove the spec isn't implemented
-5. **fspec writes code** — Just enough to make the tests pass
-6. **Coverage tracks everything** — Every line of code links back to a requirement
+1. **You specify what to build** — A feature, a bug fix, a task
+2. **The agent asks questions** — Clarifies edge cases, rules, and expectations
+3. **The agent writes specs** — Generates Gherkin scenarios from your answers
+4. **The agent writes tests** — Failing tests that prove the spec isn't implemented
+5. **The agent writes code** — Just enough to make the tests pass
+6. **Quality control** — Every line of code links back to a requirement
 
-This is **Acceptance Criteria Driven Development (ACDD)**. The agent drives. You steer.
+This is **Acceptance Criteria Driven Development (ACDD)**. Specifications are blueprints. Tests are quality control. Code is the product. The factory produces software that provably meets requirements.
 
 ---
 
 ## Using with External Agents
 
-fspec also works as a tool for Claude Code, Cursor, Codex, or any AI agent:
+fspec also works as tooling for Claude Code, Cursor, Codex, or any AI agent:
 
 ```bash
 cd /path/to/your/project
@@ -189,7 +218,7 @@ This installs agent-specific documentation and slash commands. Then tell your ag
 "Show me the board"
 ```
 
-The agent learns fspec's workflow and manages your specs automatically.
+The agent learns the factory workflow and manages production automatically.
 
 ---
 
@@ -234,7 +263,7 @@ chmod +x ~/.local/bin/exitbox
 exitbox setup
 # Select "node" in development profiles
 
-# 3. Run agent in sandbox
+# 3. Run factory in sandbox
 cd /path/to/your/project
 exitbox run claude
 
@@ -263,7 +292,7 @@ For local development on your primary machine, **the sandbox is strongly recomme
 
 ## Command & File Blocklist
 
-fspec includes a blocklist system that can block, allow, or prompt for approval on specific commands and file access patterns. This provides fine-grained control over what the AI agent can do—without requiring a full sandbox.
+fspec includes a blocklist system that can block, allow, or prompt for approval on specific commands and file access patterns. This provides fine-grained control over what agents can do—without requiring a full sandbox.
 
 ### Configuration Files
 
@@ -335,7 +364,7 @@ Patterns use **regex**. Common patterns:
 
 ### Session Allowances
 
-When a user selects **Allow Session** on a prompt, that pattern is remembered for the current session. The AI can access matching resources without re-prompting until the TUI is restarted.
+When a user selects **Allow Session** on a prompt, that pattern is remembered for the current session. The agent can access matching resources without re-prompting until the TUI is restarted.
 
 ### Example: Protecting Sensitive Files
 
@@ -396,21 +425,21 @@ Block agents from using shell commands when proper tools exist:
 
 ## Key Capabilities
 
-- **Example Mapping** — Agent discovers rules, examples, and edge cases by asking you questions
+- **Parallel production** — Multiple agents working different jobs simultaneously
+- **Example Mapping** — Agents discover rules, examples, and edge cases by asking questions
 - **Gherkin generation** — Specs written automatically from your answers
 - **Test-first development** — Tests before code, always
-- **Kanban workflow** — Track work from backlog to done
+- **Kanban workflow** — Toyota-style production flow from backlog to done
 - **Git checkpoints** — Automatic save points for safe experimentation
 - **Coverage tracking** — Link code to requirements
-- **Multiple sessions** — Run concurrent AI conversations in background
 - **Isolated sessions** — Work in git worktrees for safe experimentation
-- **Watcher sessions** — Child AIs that observe and review parent sessions in real-time
+- **Watcher sessions** — Supervisor agents that review production in real-time
 
 ---
 
 ## Telegram Bridge
 
-Monitor and interact with your AI sessions from your phone. The Bridge tool connects any session to external WebSocket endpoints, with a built-in Telegram integration.
+Monitor and interact with your factory from your phone. The Bridge tool connects any session to external WebSocket endpoints, with a built-in Telegram integration.
 
 ### Setup
 
@@ -429,12 +458,12 @@ Monitor and interact with your AI sessions from your phone. The Bridge tool conn
 
 4. **Message your bot** — Send any message to link your chat
 
-5. **Connect the AI** — Tell the agent:
+5. **Connect the agent** — Tell it:
    ```
    Connect to the Telegram bridge at ws://localhost:8080
    ```
 
-Now all AI responses stream to Telegram. Send messages back to provide input. Run tasks overnight and check progress from bed.
+Now all agent output streams to Telegram. Send messages back to provide input. Run the factory overnight and check production from bed.
 
 ### Security: User Whitelist
 
@@ -456,18 +485,18 @@ Connect to multiple endpoints simultaneously—Telegram, Slack, Discord, or any 
 
 ### Mobile App (Coming Soon)
 
-A dedicated mobile app for iOS and Android is in development at [github.com/sengac/fspec.app](https://github.com/sengac/fspec.app). It connects to fspec via the Bridge protocol, providing a native interface for monitoring sessions, sending input, and managing tasks from your phone.
+A dedicated mobile app for iOS and Android is in development at [github.com/sengac/fspec.app](https://github.com/sengac/fspec.app). It connects to fspec via the Bridge protocol, providing a native interface for monitoring production, sending input, and managing jobs from your phone.
 
 ---
 
 ## Watcher Sessions
 
-Watchers are child AI sessions that observe a parent session in real-time and can automatically interject with feedback. Think of them as specialized reviewers running alongside your main coding agent.
+Watchers are supervisor agents that observe production in real-time and automatically interject with feedback. Think of them as quality inspectors on the factory floor.
 
 ### Use Cases
 
 - **Security Reviewer** — Watches for SQL injection, XSS, authentication issues
-- **Test Enforcer** — Reminds the agent to write tests before implementation  
+- **Test Enforcer** — Ensures tests are written before implementation  
 - **Architecture Advisor** — Suggests patterns and flags structural problems
 - **Documentation Checker** — Ensures code changes include doc updates
 
@@ -479,21 +508,21 @@ Type `/watcher` in any session to open the watcher overlay. Press **N** to creat
 - **Authority** — Peer (suggestions) or Supervisor (directives)
 - **Model** — Which AI model to use
 - **Brief** — Instructions for what to watch for
-- **Auto-inject** — Whether to automatically send feedback to the parent
+- **Auto-inject** — Whether to automatically send feedback to the production agent
 
 ### How It Works
 
-1. Watcher observes parent session output in real-time
+1. Watcher observes production agent output in real-time
 2. At breakpoints (tool results, turn completion), watcher evaluates what it saw
 3. If the watching brief is triggered, watcher decides to interject or continue
-4. **Auto-inject ON**: Feedback automatically appears in parent session as a purple message
+4. **Auto-inject ON**: Feedback automatically appears in production session as a purple message
 5. **Auto-inject OFF**: You review the feedback and manually inject if desired
 
 ### Split View
 
 When viewing a watcher session, the screen splits:
 
-- **Left pane** — Parent session (read-only, dimmed)
+- **Left pane** — Production session (read-only, dimmed)
 - **Right pane** — Watcher conversation (interactive)
 - **←/→ arrows** — Switch between panes
 - **Tab** — Select specific turns to discuss

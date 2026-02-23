@@ -1,4 +1,5 @@
-@PROV-007
+@done
+@PROV-007 @providers @provider-settings
 Feature: Provider Configuration Persistence and TUI Display
 
   """
