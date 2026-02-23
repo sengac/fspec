@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import type { Key } from 'ink';
+import { sessionGetEffectiveCwd } from '@sengac/codelet-napi';
 import { callGlobTool } from '../../utils/toolIntegration';
 import { logger } from '../../utils/logger';
 import { DIALOG_WIDTH } from '../constants/dialogSizes';
@@ -33,6 +34,15 @@ export interface UseFileSearchInputOptions {
    * Use this when other modes (resume, watcher, model selector) are active
    */
   disabled?: boolean;
+
+  /**
+   * GIT-033: Current session ID for worktree path resolution.
+   * When provided, file search uses sessionGetEffectiveCwd to determine search path:
+   * - Isolated sessions: searches the worktree (.fspec/worktrees/<session-id>/)
+   * - Non-isolated sessions: searches the project root
+   * When undefined/null: searches the current working directory (project root)
+   */
+  sessionId?: string;
 }
 
 export interface UseFileSearchInputResult {
@@ -76,6 +86,7 @@ export function useFileSearchInput(
     onInputChange,
     terminalWidth,
     disabled = false,
+    sessionId,
   } = options;
 
   // Internal state
@@ -113,34 +124,45 @@ export function useFileSearchInput(
   }, []);
 
   // Update filter and search files
-  const updateFilter = useCallback(async (newFilter: string) => {
-    setFilter(newFilter);
-    setSelectedIndex(0); // Reset selection when filter changes
+  const updateFilter = useCallback(
+    async (newFilter: string) => {
+      setFilter(newFilter);
+      setSelectedIndex(0); // Reset selection when filter changes
 
-    if (!newFilter.trim()) {
-      setFiles([]);
-      return;
-    }
+      if (!newFilter.trim()) {
+        setFiles([]);
+        return;
+      }
 
-    try {
-      // Use Glob tool to search for files with case-insensitive matching
-      const pattern = `**/*${newFilter}*`;
-      const result = await callGlobTool(pattern, undefined, true); // Enable case-insensitive
+      try {
+        // GIT-033: Get effective path for this session (worktree or project root)
+        // - Isolated sessions: returns worktree path (.fspec/worktrees/<session-id>/)
+        // - Non-isolated sessions: returns project root
+        // - No session / null: falls back to undefined (current working directory)
+        const searchPath = sessionId
+          ? (sessionGetEffectiveCwd(sessionId) ?? undefined)
+          : undefined;
 
-      if (result.success && result.data) {
-        const filePaths = result.data.split('\n').filter(Boolean);
-        const fileResults: FileSearchResult[] = filePaths.map(path => ({
-          path,
-        }));
-        setFiles(fileResults);
-      } else {
+        // Use Glob tool to search for files with case-insensitive matching
+        const pattern = `**/*${newFilter}*`;
+        const result = await callGlobTool(pattern, searchPath, true); // Enable case-insensitive
+
+        if (result.success && result.data) {
+          const filePaths = result.data.split('\n').filter(Boolean);
+          const fileResults: FileSearchResult[] = filePaths.map(path => ({
+            path,
+          }));
+          setFiles(fileResults);
+        } else {
+          setFiles([]);
+        }
+      } catch (error) {
+        logger.debug('File search error:', error);
         setFiles([]);
       }
-    } catch (error) {
-      logger.debug('File search error:', error);
-      setFiles([]);
-    }
-  }, []);
+    },
+    [sessionId]
+  );
 
   // Move selection up (with wrap-around)
   const moveUp = useCallback(() => {

@@ -1539,6 +1539,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const terminalHeight = stdout?.rows ?? 24;
 
   // TUI-055: File search popup following the EXACT same architecture as slash commands
+  // GIT-033: Pass sessionId for worktree path resolution in isolated sessions
   const fileSearch = useFileSearchInput({
     inputValue,
     onInputChange: setInputValue,
@@ -1552,6 +1553,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
       showModelSelector ||
       showSettingsTab ||
       showThinkingLevelDialog,
+    sessionId: currentSessionId ?? undefined,
   });
 
   // Model selector scrolling: build flat list and manage scroll offset

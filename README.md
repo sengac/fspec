@@ -189,6 +189,74 @@ The agent learns fspec's workflow and manages your specs automatically.
 
 ---
 
+## ⚠️ Security: Running in a Sandbox
+
+**fspec agents have full access to your file system, network, and shell.** They can read, write, and execute anything your user account can. This is by design—agents need these capabilities to write code, run tests, and manage your project.
+
+However, this means a compromised or misbehaving agent could:
+- Read sensitive files (SSH keys, credentials, other projects)
+- Make network requests to arbitrary endpoints
+- Execute destructive commands
+
+### Recommended: Use ExitBox
+
+[ExitBox](https://github.com/cloud-exit/exitbox) runs AI agents in isolated containers with defense-in-depth security:
+
+- **Network firewall** — Agents can only reach allowlisted domains
+- **File isolation** — Only your project directory is mounted
+- **Capability restrictions** — No raw sockets, no privilege escalation
+- **Credential protection** — SSH keys and cloud credentials are not exposed
+
+### Quick Setup
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/sengac/fspec/main/scripts/setup-sandbox.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/sengac/fspec/main/scripts/setup-sandbox.ps1 | iex
+```
+
+**Or manually:**
+```bash
+# 1. Install ExitBox
+mkdir -p ~/.local/bin
+curl -fsSL https://github.com/Cloud-Exit/ExitBox/releases/latest/download/exitbox-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/') -o ~/.local/bin/exitbox
+chmod +x ~/.local/bin/exitbox
+
+# 2. Run setup wizard
+exitbox setup
+# Select "node" in development profiles
+
+# 3. Run agent in sandbox
+cd /path/to/your/project
+exitbox run claude
+
+# 4. Inside container, install fspec
+npm install -g @sengac/fspec
+fspec
+```
+
+### What Gets Restricted
+
+| Resource | Without Sandbox | With ExitBox |
+|----------|-----------------|--------------|
+| File system | Full access | Only `/workspace` (your project) |
+| Network | Unrestricted | Allowlisted domains only |
+| SSH keys | Accessible | Hidden (unless `--full-git-support`) |
+| Other projects | Accessible | Isolated |
+| System commands | Full shell | Restricted capabilities |
+
+### When to Skip the Sandbox
+
+If you're running fspec on throwaway VMs, CI environments, or fully trust the agent, you can run directly. The sandbox adds a small amount of overhead and complexity.
+
+For local development on your primary machine, **the sandbox is strongly recommended**.
+
+---
+
 ## Key Capabilities
 
 - **Example Mapping** — Agent discovers rules, examples, and edge cases by asking you questions
