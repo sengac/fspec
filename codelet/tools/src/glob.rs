@@ -151,10 +151,15 @@ impl rig::tool::Tool for GlobTool {
         // Sort by modification time (newest first)
         files_with_mtime.sort_by(|a, b| b.1.cmp(&a.1));
 
-        // Format output
+        // Format output - strip search path prefix to get relative paths
         let lines: Vec<String> = files_with_mtime
             .iter()
-            .map(|(p, _)| p.display().to_string())
+            .map(|(p, _)| {
+                // Strip the search path prefix to get relative paths
+                p.strip_prefix(&path)
+                    .map(|rel| rel.display().to_string())
+                    .unwrap_or_else(|_| p.display().to_string())
+            })
             .collect();
 
         // Process and truncate output
