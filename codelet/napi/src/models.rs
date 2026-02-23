@@ -261,3 +261,32 @@ pub async fn models_refresh_cache() -> Result<u32> {
 
     Ok(response.providers.len() as u32)
 }
+
+// ============================================================================
+// Local Model Listing (PROV-006)
+// ============================================================================
+
+/// List models from a local OpenAI-compatible server (async)
+///
+/// PROV-006: Makes HTTP GET request to {base_url}/v1/models endpoint.
+/// Used by TUI when OPENAI_BASE_URL is set.
+///
+/// # Arguments
+/// * `base_url` - The base URL of the local server (e.g., "http://localhost:8888")
+///
+/// # Returns
+/// Array of model ID strings
+///
+/// # Example
+/// ```typescript
+/// const models = await modelsListLocalOpenai("http://localhost:8888");
+/// // Returns: ["Qwen/Qwen3-80B", "mistral-7b"]
+/// ```
+#[napi]
+pub async fn models_list_local_openai(base_url: String) -> Result<Vec<String>> {
+    use codelet_providers::OpenAIProvider;
+
+    OpenAIProvider::list_local_models(&base_url)
+        .await
+        .map_err(|e| Error::from_reason(format!("Failed to list local models: {}", e)))
+}

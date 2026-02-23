@@ -83,6 +83,7 @@ tempfile = "3"
 sha2 = "0.10"
 hex = "0.4"
 serial_test = "3"
+wiremock = "0.6.5"
 
 [build-dependencies]
 napi-build = "2"

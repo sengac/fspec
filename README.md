@@ -14,9 +14,13 @@
 
 ## What is fspec?
 
-fspec is an AI coding platform that runs multiple agents in parallel, each working on different tasks. Launch one agent to implement a feature while another fixes a bug. Switch between conversations. Let them run in the background.
+fspec is infrastructure for the **dark factory**—the emerging model of fully autonomous software development where AI agents handle all implementation while humans focus on defining *what* to build and *why*.
 
-When you want rigor, fspec follows **Acceptance Criteria Driven Development**: specs first, then tests, then code. The AI asks clarifying questions, writes Gherkin scenarios, generates failing tests, and implements just enough to pass. Every line of code traces back to a requirement.
+The term comes from [Dan Shapiro's framework](https://www.danshapiro.com/blog/2026/01/the-five-levels-from-spicy-autocomplete-to-the-software-factory/) mapping AI-assisted coding to five levels, borrowing from self-driving car autonomy. Most developers today operate at Levels 2-3: pair programming with AI or reviewing AI-generated code. fspec is built for **Levels 4 and 5**—where specifications become the primary human input and AI agents autonomously produce working software.
+
+In a dark factory, the bottleneck shifts from coding to specification. The quality of output is entirely determined by the quality of input. fspec addresses this with **Acceptance Criteria Driven Development (ACDD)**: you describe what you want, the AI asks clarifying questions, writes Gherkin scenarios capturing your intent, generates failing tests that prove the spec isn't implemented, then writes just enough code to pass. Every line traces back to a requirement. The specification *is* the source of truth.
+
+fspec runs multiple agents in parallel, each working on different tasks—one implements a feature while another fixes a bug. Switch between conversations. Let them run in the background. This is the "lights-out" factory model: specs go in, software comes out.
 
 When you just want to code, skip all that. fspec is a capable coding assistant on its own—refactor, debug, explain, review. The workflow tools are there when you need them.
 

@@ -897,6 +897,28 @@ export declare function modelsListForProvider(
 ): Promise<Array<NapiModelInfo>>;
 
 /**
+ * List models from a local OpenAI-compatible server (async)
+ *
+ * PROV-006: Makes HTTP GET request to {base_url}/v1/models endpoint.
+ * Used by TUI when OPENAI_BASE_URL is set.
+ *
+ * # Arguments
+ * * `base_url` - The base URL of the local server (e.g., "http://localhost:8888")
+ *
+ * # Returns
+ * Array of model ID strings
+ *
+ * # Example
+ * ```typescript
+ * const models = await modelsListLocalOpenai("http://localhost:8888");
+ * // Returns: ["Qwen/Qwen3-80B", "mistral-7b"]
+ * ```
+ */
+export declare function modelsListLocalOpenai(
+  baseUrl: string
+): Promise<Array<string>>;
+
+/**
  * Refresh the model cache from models.dev API (async)
  *
  * Forces a fresh fetch from the API, ignoring cached data.

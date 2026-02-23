@@ -2,6 +2,9 @@
 //!
 //! Implements the LlmProvider trait for OpenAI API communication.
 //! Uses rig::providers::openai for HTTP communication.
+//!
+//! PROV-006: Supports custom base URLs for local model servers (vLLM, Ollama, LM Studio)
+//! via OPENAI_BASE_URL environment variable.
 
 use crate::{
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
@@ -15,24 +18,46 @@ use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
 use tracing::warn;
 
-/// GPT-4 Turbo context window size
-pub const CONTEXT_WINDOW: usize = 128_000;
+/// Default context window size (fallback when not configured)
+/// For local servers, use OPENAI_CONTEXT_WINDOW to match your model's actual limit
+const DEFAULT_CONTEXT_WINDOW: usize = 128_000;
 
-/// GPT-4 Turbo max output tokens (CTX-002)
-pub const MAX_OUTPUT_TOKENS: usize = 4096;
+/// Default max output tokens (fallback when not configured)
+/// For local servers, use OPENAI_MAX_OUTPUT_TOKENS to match your model's actual limit
+const DEFAULT_MAX_OUTPUT_TOKENS: usize = 4096;
+
+/// Context window size constant (for backwards compatibility)
+pub const CONTEXT_WINDOW: usize = DEFAULT_CONTEXT_WINDOW;
+
+/// Max output tokens constant (for backwards compatibility)
+pub const MAX_OUTPUT_TOKENS: usize = DEFAULT_MAX_OUTPUT_TOKENS;
 
 /// OpenAI Provider for OpenAI API (using rig)
+///
+/// PROV-006: Now supports custom base URLs for local model servers via:
+/// - OPENAI_BASE_URL: Custom API endpoint (e.g., http://localhost:8888)
+/// - OPENAI_CONTEXT_WINDOW: Custom context window size
+/// - OPENAI_MAX_OUTPUT_TOKENS: Custom max output tokens
 #[derive(Clone)]
 pub struct OpenAIProvider {
     completion_model: openai::completion::CompletionModel,
     rig_client: openai::CompletionsClient,
     model_name: String,
+    /// Custom base URL if set (None for default OpenAI API)
+    base_url: Option<String>,
+    /// Context window size (configurable via OPENAI_CONTEXT_WINDOW)
+    context_window: usize,
+    /// Max output tokens (configurable via OPENAI_MAX_OUTPUT_TOKENS)
+    max_output_tokens: usize,
 }
 
 impl std::fmt::Debug for OpenAIProvider {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("OpenAIProvider")
             .field("model", &self.model_name)
+            .field("base_url", &self.base_url)
+            .field("context_window", &self.context_window)
+            .field("max_output_tokens", &self.max_output_tokens)
             .finish()
     }
 }
@@ -49,6 +74,9 @@ impl OpenAIProvider {
     /// Checks for API key in OPENAI_API_KEY environment variable.
     /// Model MUST be provided via OPENAI_MODEL environment variable.
     ///
+    /// PROV-006: Also checks OPENAI_BASE_URL for custom endpoint,
+    /// OPENAI_CONTEXT_WINDOW and OPENAI_MAX_OUTPUT_TOKENS for custom limits.
+    ///
     /// Uses shared detect_credential_from_env() helper (REFAC-013).
     pub fn new() -> Result<Self, ProviderError> {
         // Use shared credential detection helper (REFAC-013)
@@ -59,23 +87,66 @@ impl OpenAIProvider {
             ProviderError::config("openai", "Model is required. Set OPENAI_MODEL environment variable.")
         })?;
 
-        Self::from_api_key(&api_key, &model_name)
+        // PROV-006: Check for custom base URL
+        let base_url = std::env::var("OPENAI_BASE_URL").ok();
+
+        Self::from_api_key_with_options(&api_key, &model_name, base_url.as_deref())
     }
 
     /// Create a new OpenAIProvider with an explicit API key and model
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
     pub fn from_api_key(api_key: &str, model: &str) -> Result<Self, ProviderError> {
+        // Check for custom base URL from environment
+        let base_url = std::env::var("OPENAI_BASE_URL").ok();
+        Self::from_api_key_with_options(api_key, model, base_url.as_deref())
+    }
+
+    /// Create a new OpenAIProvider with explicit API key, model, and optional base URL
+    ///
+    /// PROV-006: New constructor that supports custom base URLs for local model servers.
+    ///
+    /// # Arguments
+    /// * `api_key` - The API key (any non-empty value for local servers)
+    /// * `model` - The model name
+    /// * `base_url` - Optional custom base URL (e.g., "http://localhost:8888")
+    pub fn from_api_key_with_options(
+        api_key: &str,
+        model: &str,
+        base_url: Option<&str>,
+    ) -> Result<Self, ProviderError> {
         // Use shared validation helper (REFAC-013)
         validate_api_key_static("openai", api_key)?;
 
-        // Build rig completions client (standard OpenAI Chat Completions API)
-        let rig_client = openai::CompletionsClient::builder()
-            .api_key(api_key)
-            .build()
-            .map_err(|e| {
-                ProviderError::config("openai", format!("Failed to build OpenAI client: {e}"))
-            })?;
+        // Read configurable context window and max output tokens from environment
+        let context_window = std::env::var("OPENAI_CONTEXT_WINDOW")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok())
+            .unwrap_or(DEFAULT_CONTEXT_WINDOW);
+
+        let max_output_tokens = std::env::var("OPENAI_MAX_OUTPUT_TOKENS")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok())
+            .unwrap_or(DEFAULT_MAX_OUTPUT_TOKENS);
+
+        // Build rig completions client
+        // PROV-006: Use custom base_url if provided (for vLLM, Ollama, etc.)
+        let rig_client = if let Some(url) = base_url {
+            openai::CompletionsClient::builder()
+                .api_key(api_key)
+                .base_url(url)
+                .build()
+                .map_err(|e| {
+                    ProviderError::config("openai", format!("Failed to build OpenAI client with custom base URL: {e}"))
+                })?
+        } else {
+            openai::CompletionsClient::builder()
+                .api_key(api_key)
+                .build()
+                .map_err(|e| {
+                    ProviderError::config("openai", format!("Failed to build OpenAI client: {e}"))
+                })?
+        };
 
         // Create completion model using the client
         let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model);
@@ -84,13 +155,110 @@ impl OpenAIProvider {
             completion_model,
             rig_client,
             model_name: model.to_string(),
+            base_url: base_url.map(String::from),
+            context_window,
+            max_output_tokens,
         })
+    }
+
+    /// Get the custom base URL if set
+    ///
+    /// PROV-006: Returns the custom base URL for local model servers.
+    /// Returns None if using the default OpenAI API endpoint.
+    pub fn base_url(&self) -> Option<&str> {
+        self.base_url.as_deref()
+    }
+
+    /// Check if this provider is using a custom (local) endpoint
+    ///
+    /// PROV-006: Returns true if OPENAI_BASE_URL was set.
+    pub fn is_local_endpoint(&self) -> bool {
+        self.base_url.is_some()
+    }
+
+    /// Fetch available models from a local OpenAI-compatible server
+    ///
+    /// Makes HTTP GET request to {base_url}/v1/models and parses the response.
+    /// Returns a list of model IDs available on the server.
+    ///
+    /// PROV-006: This method is used by the TUI to populate the model selection dialog
+    /// when OPENAI_BASE_URL is set.
+    ///
+    /// # Arguments
+    /// * `base_url` - The base URL of the local server (e.g., "http://localhost:8888")
+    ///
+    /// # Returns
+    /// * `Ok(Vec<String>)` - List of model IDs
+    /// * `Err(ProviderError)` - If server is unreachable or response is invalid
+    pub async fn list_local_models(base_url: &str) -> Result<Vec<String>, ProviderError> {
+        use reqwest::Client;
+        use std::time::Duration;
+
+        // Create HTTP client with 5-second timeout
+        let client = Client::builder()
+            .timeout(Duration::from_secs(5))
+            .build()
+            .map_err(|e| {
+                ProviderError::api("openai", format!("Failed to create HTTP client: {e}"))
+            })?;
+
+        // Build URL for /v1/models endpoint
+        let url = format!("{}/v1/models", base_url.trim_end_matches('/'));
+
+        // Make GET request
+        let response = client
+            .get(&url)
+            .send()
+            .await
+            .map_err(|e| {
+                ProviderError::api(
+                    "openai",
+                    format!("Failed to connect to local server at {}: {}", base_url, e),
+                )
+            })?;
+
+        // Check for successful response
+        if !response.status().is_success() {
+            return Err(ProviderError::api(
+                "openai",
+                format!(
+                    "Local server at {} returned error status: {}",
+                    base_url,
+                    response.status()
+                ),
+            ));
+        }
+
+        // Parse JSON response
+        let body: serde_json::Value = response.json().await.map_err(|e| {
+            ProviderError::api(
+                "openai",
+                format!("Failed to parse models response from {}: {}", base_url, e),
+            )
+        })?;
+
+        // Extract model IDs from data array
+        let models = body
+            .get("data")
+            .and_then(|d| d.as_array())
+            .ok_or_else(|| {
+                ProviderError::api(
+                    "openai",
+                    format!("Invalid models response from {}: missing 'data' array", base_url),
+                )
+            })?
+            .iter()
+            .filter_map(|m| m.get("id").and_then(|id| id.as_str()).map(String::from))
+            .collect();
+
+        Ok(models)
     }
 
     /// Get the configured rig openai::CompletionsClient
     ///
     /// This client is fully configured with:
     /// - API key authentication
+    /// - Custom base URL (if OPENAI_BASE_URL is set)
     ///
     /// Use this client to create rig agents with tools.
     pub fn client(&self) -> &openai::CompletionsClient {
@@ -101,7 +269,7 @@ impl OpenAIProvider {
     ///
     /// This method encapsulates all OpenAI-specific configuration:
     /// - Model name (gpt-4-turbo or custom)
-    /// - Max tokens (4096)
+    /// - Max tokens (configurable via OPENAI_MAX_OUTPUT_TOKENS)
     /// - All 10 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, AstGrepRefactor, WebSearchTool)
     ///
     /// # Arguments
@@ -136,7 +304,7 @@ impl OpenAIProvider {
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
-            .max_tokens(MAX_OUTPUT_TOKENS as u64)
+            .max_tokens(self.max_output_tokens as u64)
             .tool(ReadTool::new(session_id))
             .tool(WriteTool::new(session_id))
             .tool(EditTool::new(session_id))
@@ -201,11 +369,11 @@ impl LlmProvider for OpenAIProvider {
     }
 
     fn context_window(&self) -> usize {
-        CONTEXT_WINDOW
+        self.context_window
     }
 
     fn max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
+        self.max_output_tokens
     }
 
     fn supports_caching(&self) -> bool {
@@ -237,7 +405,7 @@ impl LlmProvider for OpenAIProvider {
 
         // Build and send completion request using rig's builder pattern
         let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
-            .max_tokens(MAX_OUTPUT_TOKENS as u64)
+            .max_tokens(self.max_output_tokens as u64)
             .tools(rig_tools);
 
         if let Some(preamble_text) = preamble {
@@ -252,5 +420,16 @@ impl LlmProvider for OpenAIProvider {
 
         // Convert rig response to our CompletionResponse format
         self.rig_response_to_completion(response)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_constants() {
+        assert_eq!(CONTEXT_WINDOW, DEFAULT_CONTEXT_WINDOW);
+        assert_eq!(MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS);
     }
 }
