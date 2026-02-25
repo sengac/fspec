@@ -2,243 +2,128 @@
 
 **Work Unit:** PROV-008  
 **Date:** 2026-02-25  
-**Status:** Analysis Complete
+**Status:** Analysis Complete (Verified)
 
 ---
 
 ## Executive Summary
 
-The model selection system spanning TypeScript (TUI) and Rust (codelet-providers) layers exhibits multiple code smells that violate DRY, SOLID principles, and separation of concerns. This document details the findings and proposes targeted fixes.
+The model selection system has one primary issue: **duplicated TypeScript code** in `AgentView.tsx`. The Rust layer is already well-designed and handles profile models correctly. This is a focused TypeScript refactoring task.
 
 ---
 
-## 1. Root Cause: The Warning Noise
+## 1. Root Cause: The Warning Noise - ✅ ALREADY RESOLVED
 
-### Symptom
+The original complaint about warnings like:
 ```
 [RUST:WARN] parse_model_string: provider 'Qwen' not in registry
 ```
-This warning appears repeatedly when using profile-based models (vLLM, Ollama, etc.).
 
-### Cause
-The `ProviderManager::selected_model_id()` method in `codelet/providers/src/manager.rs` (lines 297-312) always attempts registry lookup, even for profile-based models:
+**This is NOT an issue in the current codebase.**
+
+The `selected_model_id()` method in `manager.rs` (lines 287-302) silently catches errors from `parse_model_string` and falls through to return the model string directly:
 
 ```rust
 pub fn selected_model_id(&self) -> Option<String> {
     let model_string = self.selected_model.as_ref()?;
 
-    // PROBLEM: Always tries registry lookup, even for profile models
+    // If we have a registry, try to look up the model
     if let Some(registry) = self.model_registry.as_ref() {
         if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
-            // This triggers the warning because "Qwen/..." is parsed as provider=Qwen
-            ...
-        }
-    }
-    // Falls through to return the string directly (correct for profiles)
-    Some(model_string.clone())
-}
-```
-
-When `set_model_direct` stores `"Qwen/Qwen3-Next-80B-A3B-Instruct-FP8"`, subsequent calls try to parse it as `provider/model-id`, treating `"Qwen"` as a cloud provider name.
-
----
-
-## 2. DRY Violations
-
-### 2.1 TypeScript: Duplicate Model Selection Handlers
-
-**Location:** `src/tui/components/AgentView.tsx` lines 3615-3749
-
-Two nearly identical functions exist:
-- `handleModelSelect` (lines 3615-3689) - Takes `ModelSelection`
-- `handleSelectModel` (lines 3693-3749) - Takes `ProviderSection` + `NapiModelInfo` (marked deprecated)
-
-**Duplicated Logic:**
-1. Environment variable setup for profile configs
-2. Calling `sessionSetModel` or `sessionSetModelProfile`
-3. Refreshing Rust state
-4. Persisting model selection to user config
-5. Setting local state when no session exists
-
-**Fix Required:** Delete `handleSelectModel`, update all callers to use `handleModelSelect`.
-
-### 2.2 Rust: Repeated Provider Mapping
-
-**Location:** `codelet/providers/src/manager.rs`
-
-The provider ID to ProviderType mapping appears in:
-- `map_provider_id_to_type()` (lines 340-354)
-- `ProviderType::from_str()` (lines 32-44)
-- `detect_default_provider()` (lines 357-381)
-
-**Fix Required:** Create a single `ProviderType::from_models_dev_id()` method.
-
----
-
-## 3. Single Responsibility Principle (SRP) Violations
-
-### 3.1 `ModelRegistry::parse_model_string` Does Too Much
-
-**Location:** `codelet/providers/src/models/registry.rs` lines 52-79
-
-Current responsibilities:
-1. Parses the model string (splitting on `/`)
-2. Validates provider exists in registry
-3. Logs debug warnings
-4. Returns detailed error with suggestions
-
-**Fix Required:** Split into:
-```rust
-// Pure parsing - no validation, no logging
-pub fn parse_model_string(input: &str) -> Option<(String, String)>
-
-// Separate validation
-pub fn validate_provider(&self, provider_id: &str) -> Result<(), ProviderError>
-```
-
-### 3.2 `ProviderManager::selected_model_id` Has Implicit Branching
-
-**Location:** `codelet/providers/src/manager.rs` lines 297-312
-
-The method has two behaviors based on implicit conditions:
-1. Registry-validated lookup (for cloud models)
-2. Direct string return (for profile models)
-
-**Fix Required:** Make this explicit with a discriminated union type or explicit method variants.
-
----
-
-## 4. Open/Closed Principle Violations
-
-### 4.1 Hardcoded Provider Mapping
-
-**Location:** `codelet/providers/src/manager.rs` lines 340-354
-
-```rust
-fn map_provider_id_to_type(provider_id: &str) -> Result<ProviderType, ProviderError> {
-    match provider_id {
-        "anthropic" => Ok(ProviderType::Claude),
-        "openai" => Ok(ProviderType::OpenAI),
-        "google" => Ok(ProviderType::Gemini),
-        "zai" | "z-ai" => Ok(ProviderType::ZAI),
-        _ => Err(...),
-    }
-}
-```
-
-Adding a new provider requires modifying this function.
-
-**Fix Required:** Use a registry pattern or trait-based dispatch.
-
----
-
-## 5. Separation of Concerns Issues
-
-### 5.1 Model State Scattered Across 5 Locations
-
-| Location | Type | What it stores |
-|----------|------|----------------|
-| `ProviderManager.selected_model` | Rust | Model string |
-| `BackgroundSession.provider_id` | Rust | Provider ID |
-| `BackgroundSession.model_id` | Rust | Model ID |
-| `modelStore.currentModel` | TypeScript/Zustand | Full `ModelSelection` object |
-| User config `lastUsedModel` | JSON file | Persisted model string |
-
-**Problems:**
-- State can become inconsistent between layers
-- No single source of truth
-- Debugging requires checking multiple locations
-
-**Fix Required:** 
-1. Define Rust as the authoritative source
-2. TypeScript reads from Rust, never caches independently
-3. Persistence happens once, in one place
-
-### 5.2 Environment Variable Setup in Component
-
-**Location:** `src/tui/components/AgentView.tsx` lines 3626-3641
-
-```typescript
-if (selection.profileConfig) {
-  process.env.OPENAI_BASE_URL = selection.profileConfig.baseUrl;
-  process.env.OPENAI_API_KEY = selection.profileConfig.apiKey;
-  // ...
-}
-```
-
-Environment variable setup is a side effect buried in a UI component.
-
-**Fix Required:** Extract to a dedicated service:
-```typescript
-// src/tui/services/profileEnvironmentService.ts
-export function configureProfileEnvironment(config: ProfileConfig): void
-```
-
----
-
-## 6. Missing Type Discrimination
-
-### 6.1 Cloud vs Profile Models Use Same Type
-
-There's no way to distinguish between:
-- Cloud model strings: `"anthropic/claude-sonnet-4"`
-- Profile model IDs: `"Qwen/Qwen3-Next-80B-A3B-Instruct-FP8"`
-
-Both are stored as `String` in `ProviderManager.selected_model`.
-
-**Fix Required:** Introduce a discriminated union:
-
-```rust
-pub enum SelectedModel {
-    /// Cloud provider model (validated via registry)
-    Cloud { provider_id: String, model_id: String },
-    /// Profile-based model (direct API model ID, no registry validation)
-    Profile { provider_type: ProviderType, model_id: String },
-}
-```
-
----
-
-## 7. Proposed Fixes
-
-### 7.1 Quick Fix: Suppress Warning for Profile Models
-
-**File:** `codelet/providers/src/manager.rs`
-
-```rust
-pub fn selected_model_id(&self) -> Option<String> {
-    let model_string = self.selected_model.as_ref()?;
-
-    // Only attempt registry lookup for recognized cloud providers
-    if let Some(registry) = self.model_registry.as_ref() {
-        if let Some((provider, _)) = model_string.split_once('/') {
-            // Check if provider is in registry before parsing
-            if registry.list_provider_ids().iter().any(|&p| p == provider) {
-                if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
-                    if let Ok(model_info) = registry.get_model(&provider_id, &model_id) {
-                        return Some(model_info.id.clone());
-                    }
-                }
+            if let Ok(model_info) = registry.get_model(&provider_id, &model_id) {
+                return Some(model_info.id.clone());
             }
         }
     }
 
+    // No registry or lookup failed - return the stored string directly
     Some(model_string.clone())
 }
 ```
 
-### 7.2 Medium-Term: Extract Model Selection Service
+**No Rust changes are needed.**
 
-**New File:** `src/tui/services/modelSelectionService.ts`
+---
+
+## 2. The Actual Problem: Duplicate TypeScript Handlers
+
+### Location: `src/tui/components/AgentView.tsx`
+
+Two nearly identical callback functions exist:
+
+| Function | Lines | Status | Input Type |
+|----------|-------|--------|------------|
+| `handleModelSelect` | 3601-3665 | ✅ ACTIVE | `ModelSelection` |
+| `handleSelectModel` | 3669-3747 | ❌ DEPRECATED & UNUSED | `ProviderSection, NapiModelInfo` |
+
+**Verification:** `handleSelectModel` is defined but **never called anywhere**:
+```bash
+grep -r "handleSelectModel[^e]" src/
+# Only result: the definition itself on line 3669
+```
+
+### Duplicated Logic (78 lines each):
+
+Both handlers do exactly the same thing:
+1. **Build model string** (lines 3604-3607 vs 3671-3673)
+2. **Set env vars for profile** (lines 3612-3625 vs 3678-3694) - **14 identical lines**
+3. **Update Rust session** (lines 3627-3640 vs 3696-3709) - **13 identical lines**
+4. **Set local state** (lines 3642-3645 vs 3711-3726)
+5. **Persist to config** (lines 3648-3662 vs 3729-3744) - **14 identical lines**
+
+---
+
+## 3. What Actually Needs To Be Done
+
+### Phase 1: Delete Dead Code (5 minutes)
+- **Delete** `handleSelectModel` (lines 3667-3747) - 80 lines of unused code
+
+### Phase 2: Extract Profile Environment Service (30 minutes)
+**Create:** `src/tui/services/profileEnvironmentService.ts`
 
 ```typescript
+import type { ProfileConfig } from '../store/modelStore';
+
+/**
+ * Configure environment variables for profile-based models.
+ * 
+ * Called before any Rust session operations to ensure
+ * OPENAI_BASE_URL and OPENAI_API_KEY are set correctly.
+ */
+export function configureProfileEnvironment(config: ProfileConfig): void {
+  process.env.OPENAI_BASE_URL = config.baseUrl;
+  process.env.OPENAI_API_KEY = config.apiKey;
+  
+  if (config.contextWindow) {
+    process.env.OPENAI_CONTEXT_WINDOW = String(config.contextWindow);
+  }
+  if (config.maxOutputTokens) {
+    process.env.OPENAI_MAX_OUTPUT_TOKENS = String(config.maxOutputTokens);
+  }
+}
+```
+
+### Phase 3: Extract Model Selection Service (1 hour)
+**Create:** `src/tui/services/modelSelectionService.ts`
+
+```typescript
+import { sessionSetModel, sessionSetModelProfile } from '@sengac/codelet-napi';
+import { useModelStore, type ModelSelection } from '../store/modelStore';
+import { loadConfig, writeConfig } from '../../utils/config';
+import { buildModelString } from '../../utils/provider-config';
+import { configureProfileEnvironment } from './profileEnvironmentService';
+import { logger } from '../../utils/logger';
+
 export interface SelectModelOptions {
   sessionId: string | null;
   selection: ModelSelection;
+  onRefreshRustState?: (sessionId: string) => void;
+  onSetCurrentModel?: (selection: ModelSelection) => void;
+  onSetCurrentProvider?: (provider: string) => void;
 }
 
 export async function selectModel(options: SelectModelOptions): Promise<void> {
-  const { sessionId, selection } = options;
+  const { sessionId, selection, onRefreshRustState, onSetCurrentModel, onSetCurrentProvider } = options;
   
   // 1. Configure environment for profile-based models
   if (selection.profileConfig) {
@@ -247,109 +132,128 @@ export async function selectModel(options: SelectModelOptions): Promise<void> {
   
   // 2. Update Rust session if exists
   if (sessionId) {
-    if (selection.profileConfig) {
-      await sessionSetModelProfile(sessionId, selection.providerId, selection.modelId);
-    } else {
-      await sessionSetModel(sessionId, selection.providerId, selection.modelId);
+    try {
+      if (selection.profileConfig) {
+        await sessionSetModelProfile(sessionId, selection.providerId, selection.modelId);
+      } else {
+        await sessionSetModel(sessionId, selection.providerId, selection.modelId);
+      }
+      onRefreshRustState?.(sessionId);
+    } catch (err) {
+      logger.error('Failed to update background session model', { error: err });
     }
+  } else {
+    // No session - store for later sync
+    onSetCurrentModel?.(selection);
+    onSetCurrentProvider?.(mapProviderIdToInternal(selection.providerId));
   }
   
-  // 3. Update store
-  useModelStore.getState().setCurrentModel(selection);
-  
-  // 4. Persist to config
-  await persistModelSelection(selection);
+  // 3. Persist to config
+  try {
+    const modelString = buildModelString(
+      { providerId: selection.providerId, profileName: selection.profileName },
+      selection.modelId
+    );
+    const existingConfig = await loadConfig();
+    await writeConfig('user', {
+      ...existingConfig,
+      tui: { ...existingConfig?.tui, lastUsedModel: modelString },
+    });
+  } catch (err) {
+    logger.error('Failed to persist model selection', { error: err });
+  }
 }
 ```
 
-### 7.3 Long-Term: Discriminated Union for Model Types
+### Phase 4: Simplify handleModelSelect (30 minutes)
 
-**File:** `codelet/providers/src/manager.rs`
+After extraction, `handleModelSelect` becomes:
 
-```rust
-#[derive(Debug, Clone)]
-pub enum SelectedModel {
-    Cloud {
-        provider_id: String,
-        model_id: String,
-        api_model_id: String,  // From registry lookup
-    },
-    Profile {
-        provider_type: ProviderType,
-        model_id: String,
-    },
-    None,
-}
-
-impl SelectedModel {
-    pub fn api_model_id(&self) -> Option<&str> {
-        match self {
-            SelectedModel::Cloud { api_model_id, .. } => Some(api_model_id),
-            SelectedModel::Profile { model_id, .. } => Some(model_id),
-            SelectedModel::None => None,
-        }
-    }
-}
+```typescript
+const handleModelSelect = useCallback(
+  async (selection: ModelSelection) => {
+    setShowModelSelector(false);
+    
+    await selectModel({
+      sessionId: currentSessionId,
+      selection,
+      onRefreshRustState: refreshRustState,
+      onSetCurrentModel: setCurrentModel,
+      onSetCurrentProvider: setCurrentProvider,
+    });
+  },
+  [currentSessionId]
+);
 ```
 
----
-
-## 8. Files Requiring Changes
-
-| File | Changes Required |
-|------|------------------|
-| `codelet/providers/src/manager.rs` | Add provider check before registry lookup; consider `SelectedModel` enum |
-| `codelet/providers/src/models/registry.rs` | Split `parse_model_string` into parse + validate |
-| `src/tui/components/AgentView.tsx` | Remove `handleSelectModel`, extract env setup |
-| `src/tui/services/modelSelectionService.ts` | **NEW FILE** - Centralized model selection |
-| `src/tui/services/profileEnvironmentService.ts` | **NEW FILE** - Profile env setup |
+**Reduction:** From 64 lines to 12 lines.
 
 ---
 
-## 9. Testing Strategy
+## 4. Files Requiring Changes
 
-1. **Unit Tests:**
-   - `SelectedModel` enum methods
-   - `parse_model_string` pure parsing
-   - `validate_provider` validation
+| File | Action | Lines Changed |
+|------|--------|---------------|
+| `src/tui/components/AgentView.tsx` | Delete `handleSelectModel`, simplify `handleModelSelect` | -80, -52 |
+| `src/tui/services/profileEnvironmentService.ts` | **CREATE** | +20 |
+| `src/tui/services/modelSelectionService.ts` | **CREATE** | +60 |
+| `src/tui/services/index.ts` | Export new services | +2 |
 
-2. **Integration Tests:**
-   - Switch from cloud to profile model
-   - Switch from profile to cloud model
-   - Profile model with custom base URL
-
-3. **E2E Tests:**
-   - Model selection persistence across sessions
-   - Profile environment variables applied correctly
+**Net change:** ~-50 lines (deletion of duplicates)
 
 ---
 
-## 10. Priority
+## 5. What Does NOT Need To Change
 
-| Fix | Effort | Impact | Priority |
-|-----|--------|--------|----------|
-| Quick fix (suppress warning) | Low | Medium | **P1** |
-| Extract model selection service | Medium | High | **P2** |
-| Delete deprecated handler | Low | Low | **P2** |
-| Discriminated union type | High | High | **P3** |
-| Split parse/validate | Medium | Medium | **P3** |
+| File | Reason |
+|------|--------|
+| `codelet/providers/src/manager.rs` | Already handles profile models correctly |
+| `codelet/providers/src/models/registry.rs` | Error handling is appropriate |
+| Model store types | Already has `ProfileConfig` |
 
 ---
 
-## Appendix: Log Trace Evidence
+## 6. Testing Strategy
 
-From `~/.fspec/fspec.log`:
+### Unit Tests Needed:
+1. `profileEnvironmentService.test.ts`
+   - Test env var setup with full config
+   - Test env var setup with partial config (no contextWindow)
+   - Test env var setup overwrites previous values
 
-```
-23:25:50.154Z - set_model_direct: set current_provider=OpenAI, selected_model=Qwen/Qwen3-Next-80B-A3B-Instruct-FP8
-23:25:52.971Z - parse_model_string: provider 'Qwen' not in registry
-23:25:52.971Z - get_openai: model_id=Qwen/Qwen3-Next-80B-A3B-Instruct-FP8, base_url=Some("http://192.168.0.50:8888")
-```
+2. `modelSelectionService.test.ts`
+   - Test cloud provider selection with session
+   - Test profile model selection with session
+   - Test selection without session (stores for later)
+   - Test config persistence
+   - Test error handling
 
-The flow is:
-1. `set_model_direct` stores the model ID directly ✓
-2. Later, `selected_model_id()` tries to parse it as `provider/model` format
-3. Registry lookup fails because "Qwen" isn't a cloud provider
-4. Falls through to direct return (correct behavior, but logs warning)
+### Integration Test:
+- Verify `handleModelSelect` still works after refactor
+- Switch between cloud and profile models
 
-The model selection ultimately works, but the warning is noise.
+---
+
+## 7. Acceptance Criteria
+
+1. ✅ `handleSelectModel` callback is deleted from `AgentView.tsx`
+2. ✅ `profileEnvironmentService.ts` exists and is exported
+3. ✅ `modelSelectionService.ts` exists and is exported
+4. ✅ `handleModelSelect` delegates to the new service
+5. ✅ TypeScript compiles without errors
+6. ✅ All existing model selection behavior works unchanged
+7. ✅ Unit tests pass for new services
+
+---
+
+## Appendix: Verified Line Numbers (as of 2026-02-25)
+
+| Item | File | Lines |
+|------|------|-------|
+| `handleModelSelect` | `AgentView.tsx` | 3601-3665 |
+| `handleSelectModel` (deprecated) | `AgentView.tsx` | 3669-3747 |
+| Env var setup (dup 1) | `AgentView.tsx` | 3612-3625 |
+| Env var setup (dup 2) | `AgentView.tsx` | 3678-3694 |
+| `selected_model_id()` | `manager.rs` | 287-302 |
+| `parse_model_string()` | `registry.rs` | 51-75 |
+| `set_model_direct()` | `manager.rs` | 265-279 |

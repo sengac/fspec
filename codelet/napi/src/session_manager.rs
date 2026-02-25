@@ -4158,25 +4158,23 @@ impl SessionManager {
             tracing::error!("Failed to resolve credentials for provider {}: {}", registry_provider, e);
         }
 
-        // PROV-007: For profile models, use with_provider_and_model() to skip registry validation
-        // Profile models are served by local servers (vLLM, Ollama, etc.) and their model IDs
-        // won't exist in the models.dev registry. The env vars (OPENAI_BASE_URL, etc.) are set
-        // by TypeScript before calling this function.
-        let provider_manager = if is_profile_model {
-            tracing::info!("PROV-007: Profile model detected, skipping registry validation for {}", model);
-            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part))
-                .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?
-        } else {
-            // Cloud model: use model registry for validation
-            let mut pm = codelet_providers::ProviderManager::with_model_support()
-                .await
-                .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
+        // Create provider manager with model registry support for ALL sessions.
+        // This ensures sessionSetModel works regardless of initial model type.
+        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
+            .await
+            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
 
-            // Select the model (validates against registry)
-            pm.select_model(&model)
+        if is_profile_model {
+            // Profile model: use set_model_direct to bypass registry validation
+            // Profile models are served by local servers (vLLM, Ollama, etc.)
+            tracing::info!("PROV-007: Profile model detected, using set_model_direct for {}", model);
+            provider_manager.set_model_direct(registry_provider, model_part)
+                .map_err(|e| Error::from_reason(format!("Failed to set model: {}", e)))?;
+        } else {
+            // Cloud model: validate against registry
+            provider_manager.select_model(&model)
                 .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
-            pm
-        };
+        }
 
         // Create session from the configured provider manager
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
@@ -5050,7 +5048,10 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             // Lock briefly, then release before the heavy processing
             let current_provider = {
                 let inner = session.inner.lock().await;
-                inner.current_provider_name().to_string()
+                let provider = inner.current_provider_name().to_string();
+                let model = inner.current_model_id();
+                tracing::warn!("[AGENT-LOOP] current_provider={}, current_model={:?}", provider, model);
+                provider
             };
 
             // BRIDGE-006: Unified thinking level detection
@@ -6370,6 +6371,9 @@ pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Re
 
 #[napi]
 pub async fn session_set_model(session_id: String, provider_id: String, model_id: String) -> Result<()> {
+    tracing::warn!("session_set_model called: session_id={}, provider_id={}, model_id={}", 
+          session_id, provider_id, model_id);
+    
     let session = SessionManager::instance().get_session(&session_id)?;
 
     // Update metadata for display
@@ -6377,11 +6381,19 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 
     // Construct model string and update the inner ProviderManager
     let model_string = format!("{}/{}", provider_id, model_id);
+    tracing::warn!("session_set_model: selecting model_string={}", model_string);
+    
     let mut inner = session.inner.lock().await;
-    inner.provider_manager_mut().select_model(&model_string)
-        .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
-
-    Ok(())
+    match inner.provider_manager_mut().select_model(&model_string) {
+        Ok(_) => {
+            tracing::warn!("session_set_model: model set successfully");
+            Ok(())
+        }
+        Err(e) => {
+            tracing::warn!("session_set_model: failed to select model: {}", e);
+            Err(Error::from_reason(format!("Failed to select model: {}", e)))
+        }
+    }
 }
 
 /// PROV-007: Set model for profile-based models (vLLM, Ollama, etc.)
@@ -6391,6 +6403,9 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 /// The caller must ensure OPENAI_BASE_URL and OPENAI_API_KEY are set before calling.
 #[napi]
 pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String) -> Result<()> {
+    tracing::warn!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}", 
+          session_id, provider_id, model_id);
+    
     let session = SessionManager::instance().get_session(&session_id)?;
 
     // Update metadata for display
@@ -6398,10 +6413,16 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
 
     // Use set_model_direct which skips registry validation
     let mut inner = session.inner.lock().await;
-    inner.provider_manager_mut().set_model_direct(&provider_id, &model_id)
-        .map_err(|e| Error::from_reason(format!("Failed to set model: {}", e)))?;
-
-    Ok(())
+    match inner.provider_manager_mut().set_model_direct(&provider_id, &model_id) {
+        Ok(()) => {
+            tracing::warn!("session_set_model_profile: model set successfully");
+            Ok(())
+        }
+        Err(e) => {
+            tracing::warn!("session_set_model_profile: failed to set model: {}", e);
+            Err(Error::from_reason(format!("Failed to set model: {}", e)))
+        }
+    }
 }
 
 /// Get the model info for a background session
@@ -6412,6 +6433,21 @@ pub fn session_get_model(session_id: String) -> Result<SessionModel> {
     let model_id = session.model_id.read().unwrap().clone();
     Ok(SessionModel {
         provider_id,
+        model_id,
+    })
+}
+
+/// Get the INTERNAL provider state from the provider_manager
+/// This reads the actual provider that will be used for API calls, not just metadata.
+/// BUG-097: Used to verify that sessionSetModelProfile actually updates the provider_manager.
+#[napi]
+pub async fn session_get_internal_provider(session_id: String) -> Result<SessionModel> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let inner = session.inner.lock().await;
+    let provider_name = inner.current_provider_name().to_string();
+    let model_id = inner.current_model_id();
+    Ok(SessionModel {
+        provider_id: Some(provider_name),
         model_id,
     })
 }

@@ -1,0 +1,108 @@
+{
+  "scenarios": [
+    {
+      "name": "Delete deprecated handler without breaking build",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
+          "lines": "111-142",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": "3575-3588",
+              "note": "handleModelSelect now delegates to selectModel service"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Persist model selection to config file",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
+          "lines": "204-230",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelSelectionService.ts",
+              "lines": "107-123"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Configure environment variables for profile-based model",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
+          "lines": "149-198",
+          "implMappings": [
+            {
+              "file": "src/tui/services/profileEnvironmentService.ts",
+              "lines": "1-38"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select cloud provider model with active session",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
+          "lines": "236-273",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelSelectionService.ts",
+              "lines": "65-105"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select profile-based model with active session",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
+          "lines": "279-316",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelSelectionService.ts",
+              "lines": "65-105"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select model without active session",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/modelSelectionService.test.ts",
+          "lines": "322-372",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelSelectionService.ts",
+              "lines": "65-123"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/modelSelectionService.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx",
+      "src/tui/services/modelSelectionService.ts",
+      "src/tui/services/profileEnvironmentService.ts"
+    ]
+  }
+}

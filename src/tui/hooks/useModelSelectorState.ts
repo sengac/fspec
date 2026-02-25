@@ -33,54 +33,23 @@ import {
 } from '../store/modelStore';
 import { initializeModels } from '../services/modelInitializationService';
 
+// PROV-008: Import provider mapping from shared utility (DRY)
+import {
+  mapProviderIdToInternal,
+  mapInternalToProviderId,
+  mapModelsDevToRegistryId,
+} from '../utils/provider-mapping';
+
+// Re-export for backwards compatibility with existing consumers
+export {
+  mapProviderIdToInternal,
+  mapInternalToProviderId,
+  mapModelsDevToRegistryId,
+};
+
 // =============================================================================
 // HELPER FUNCTIONS (Pure functions for flat list operations)
 // =============================================================================
-
-/**
- * Provider ID mapping: models.dev to internal name
- * anthropic → claude, google → gemini
- */
-export const mapProviderIdToInternal = (providerId: string): string => {
-  switch (providerId) {
-    case 'anthropic':
-      return 'claude';
-    case 'google':
-      return 'gemini';
-    default:
-      return providerId;
-  }
-};
-
-/**
- * Provider ID mapping: internal name to models.dev
- * claude → anthropic, gemini → google
- */
-export const mapInternalToProviderId = (internalName: string): string => {
-  switch (internalName) {
-    case 'claude':
-      return 'anthropic';
-    case 'gemini':
-      return 'google';
-    default:
-      return internalName;
-  }
-};
-
-/**
- * Map models.dev provider IDs to registry/credentials provider IDs
- * google → gemini (for credential lookup)
- */
-export const mapModelsDevToRegistryId = (
-  modelsDevProviderId: string
-): string => {
-  switch (modelsDevProviderId) {
-    case 'google':
-      return 'gemini';
-    default:
-      return modelsDevProviderId;
-  }
-};
 
 /**
  * Build flattened list from sections and expanded state

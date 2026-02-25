@@ -246,40 +246,14 @@ import {
 } from '../services/sessionService';
 import { applyPendingIsolationState } from '../services/globalSessionStreamManager';
 import { initializeModels } from '../services/modelInitializationService';
-
-// TUI-034: Provider ID mapping (models.dev to internal)
-const mapProviderIdToInternal = (providerId: string): string => {
-  switch (providerId) {
-    case 'anthropic':
-      return 'claude';
-    case 'google':
-      return 'gemini';
-    default:
-      return providerId;
-  }
-};
-
-const mapInternalToProviderId = (internalName: string): string => {
-  switch (internalName) {
-    case 'claude':
-      return 'anthropic';
-    case 'gemini':
-      return 'google';
-    default:
-      return internalName;
-  }
-};
-
-// CONFIG-004: Map models.dev provider IDs to our registry/credentials provider IDs
-// models.dev uses "google" but our registry/credentials uses "gemini"
-const mapModelsDevToRegistryId = (modelsDevProviderId: string): string => {
-  switch (modelsDevProviderId) {
-    case 'google':
-      return 'gemini';
-    default:
-      return modelsDevProviderId;
-  }
-};
+import { selectModel } from '../services/modelSelectionService';
+import { configureProfileEnvironment } from '../services/profileEnvironmentService';
+// PROV-008: Import provider mapping from shared utility (DRY)
+import {
+  mapProviderIdToInternal,
+  mapInternalToProviderId,
+  mapModelsDevToRegistryId,
+} from '../utils/provider-mapping';
 
 interface StreamChunk {
   type: string;
@@ -3598,149 +3572,22 @@ export const AgentView: React.FC<AgentViewProps> = ({
   }, []);
 
   // Handle model selection from ModelSelectorScreen
+  // PROV-008: Delegates to selectModel service for DRY/SOLID compliance
+  // BUG-097: Now handles failure result and shows error to user
   const handleModelSelect = useCallback(
     async (selection: ModelSelection) => {
-      // PROV-007: Use buildModelString for profile-qualified model IDs
-      const modelString = buildModelString(
-        { providerId: selection.providerId, profileName: selection.profileName },
-        selection.modelId
-      );
-
       setShowModelSelector(false);
 
-      // PROV-007: Set env vars from profile config before any session operations
-      if (selection.profileConfig) {
-        process.env.OPENAI_BASE_URL = selection.profileConfig.baseUrl;
-        process.env.OPENAI_API_KEY = selection.profileConfig.apiKey;
-        if (selection.profileConfig.contextWindow) {
-          process.env.OPENAI_CONTEXT_WINDOW = String(
-            selection.profileConfig.contextWindow
-          );
-        }
-        if (selection.profileConfig.maxOutputTokens) {
-          process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
-            selection.profileConfig.maxOutputTokens
-          );
-        }
-      }
+      const result = await selectModel({
+        sessionId: currentSessionId,
+        selection,
+        onRefreshRustState: refreshRustState,
+        onSetCurrentModel: setCurrentModel,
+        onSetCurrentProvider: setCurrentProvider,
+      });
 
-      if (currentSessionId) {
-        try {
-          // PROV-007: Use sessionSetModelProfile for profile-based models (skips registry validation)
-          if (selection.profileConfig) {
-            await sessionSetModelProfile(currentSessionId, selection.providerId, selection.modelId);
-          } else {
-            await sessionSetModel(currentSessionId, selection.providerId, selection.modelId);
-          }
-          refreshRustState(currentSessionId);
-        } catch (err) {
-          logger.error('Failed to update background session model', {
-            error: err,
-          });
-        }
-      } else {
-        // No session yet - set local state directly (will be synced when session is created)
-        setCurrentModel(selection);
-        setCurrentProvider(mapProviderIdToInternal(selection.providerId));
-      }
-
-      // TUI-035: Persist model selection to user config
-      try {
-        const existingConfig = await loadConfig();
-        const updatedConfig = {
-          ...existingConfig,
-          tui: {
-            ...existingConfig?.tui,
-            lastUsedModel: modelString,
-          },
-        };
-        await writeConfig('user', updatedConfig);
-      } catch (persistErr) {
-        logger.error('Failed to persist model selection', {
-          error: persistErr,
-        });
-      }
-    },
-    [currentSessionId]
-  );
-
-  // TUI-034: Handle model selection (deprecated - use handleModelSelect)
-  // Kept for compatibility with internal callers that have section/model
-  const handleSelectModel = useCallback(
-    async (section: ProviderSection, model: NapiModelInfo) => {
-      const modelId = extractModelIdForRegistry(model.id);
-      // PROV-007: Use buildModelString for profile-qualified model IDs
-      const modelString = buildModelString(section, modelId);
-
-      setShowModelSelector(false);
-
-      // PROV-007: Set env vars from profile config before any session operations
-      if (section.profileConfig) {
-        process.env.OPENAI_BASE_URL = section.profileConfig.baseUrl;
-        process.env.OPENAI_API_KEY = section.profileConfig.apiKey;
-        if (section.profileConfig.contextWindow) {
-          process.env.OPENAI_CONTEXT_WINDOW = String(
-            section.profileConfig.contextWindow
-          );
-        }
-        if (section.profileConfig.maxOutputTokens) {
-          process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
-            section.profileConfig.maxOutputTokens
-          );
-        }
-        logger.debug(
-          `PROV-007: Set env vars from profile ${section.profileName}`
-        );
-      }
-
-      if (currentSessionId) {
-        try {
-          // PROV-007: Use sessionSetModelProfile for profile-based models (skips registry validation)
-          if (section.profileConfig) {
-            await sessionSetModelProfile(currentSessionId, section.providerId, modelId);
-          } else {
-            await sessionSetModel(currentSessionId, section.providerId, modelId);
-          }
-          refreshRustState(currentSessionId);
-        } catch (err) {
-          logger.error('Failed to update background session model', {
-            error: err,
-          });
-        }
-      } else {
-        // No session yet - set local state directly (will be synced when session is created)
-        setCurrentModel({
-          providerId: section.providerId,
-          modelId,
-          apiModelId: model.id,
-          displayName: model.name,
-          reasoning: model.reasoning,
-          hasVision: model.hasVision,
-          contextWindow: model.contextWindow,
-          maxOutput: model.maxOutput,
-          // PROV-007: Include profile name and config for session creation
-          profileName: section.profileName,
-          profileConfig: section.profileConfig,
-        });
-        setCurrentProvider(section.internalName);
-      }
-
-      // TUI-035: Persist model selection to user config
-      try {
-        const existingConfig = await loadConfig();
-        const updatedConfig = {
-          ...existingConfig,
-          tui: {
-            ...existingConfig?.tui,
-            lastUsedModel: modelString,
-          },
-        };
-        await writeConfig('user', updatedConfig);
-        logger.debug(`Persisted model selection: ${modelString}`);
-      } catch (persistErr) {
-        logger.error('Failed to persist model selection', {
-          error: persistErr,
-        });
+      if (!result.success) {
+        setError(`Failed to switch model: ${result.error || 'Unknown error'}`);
       }
     },
     [currentSessionId]
@@ -4319,20 +4166,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
         throw new Error('Cannot create session: model not initialized');
       }
 
-      // PROV-007: Set env vars from profile config before session creation
+      // PROV-008: Set env vars from profile config before session creation
       if (currentModel.profileConfig) {
-        process.env.OPENAI_BASE_URL = currentModel.profileConfig.baseUrl;
-        process.env.OPENAI_API_KEY = currentModel.profileConfig.apiKey;
-        if (currentModel.profileConfig.contextWindow) {
-          process.env.OPENAI_CONTEXT_WINDOW = String(
-            currentModel.profileConfig.contextWindow
-          );
-        }
-        if (currentModel.profileConfig.maxOutputTokens) {
-          process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
-            currentModel.profileConfig.maxOutputTokens
-          );
-        }
+        configureProfileEnvironment(currentModel.profileConfig);
       }
 
       // PROV-007: Use buildModelString for profile-qualified model paths
@@ -4517,22 +4353,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
           throw new Error('Cannot auto-create session: model not initialized');
         }
 
-        // PROV-007: Set env vars from profile config before session creation
+        // PROV-008: Set env vars from profile config before session creation
         if (currentModel.profileConfig) {
-          process.env.OPENAI_BASE_URL = currentModel.profileConfig.baseUrl;
-          process.env.OPENAI_API_KEY = currentModel.profileConfig.apiKey;
-          if (currentModel.profileConfig.contextWindow) {
-            process.env.OPENAI_CONTEXT_WINDOW = String(
-              currentModel.profileConfig.contextWindow
-            );
-          }
-          if (currentModel.profileConfig.maxOutputTokens) {
-            process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
-              currentModel.profileConfig.maxOutputTokens
-            );
-          }
+          configureProfileEnvironment(currentModel.profileConfig);
           logger.debug(
-            `PROV-007: Set env vars from profile config before auto-create session`
+            `PROV-008: Set env vars from profile config before auto-create session`
           );
         }
 

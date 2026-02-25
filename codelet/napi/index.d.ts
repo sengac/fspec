@@ -548,6 +548,12 @@ export declare function getCheckpointDiffFiles(
 export declare function getCurrentBranch(dir: string): string | null;
 
 /**
+ * Read an environment variable from Rust
+ * Used to verify if Node.js process.env changes are visible to Rust
+ */
+export declare function getEnvVar(name: string): string | null;
+
+/**
  * Get unified diff for a file comparing working directory to HEAD
  *
  * @param dir - Path to the repository root
@@ -1640,6 +1646,15 @@ export declare function sessionGetEffectiveCwd(
  * Returns None if no sessions exist
  */
 export declare function sessionGetFirst(): string | null;
+
+/**
+ * Get the INTERNAL provider state from the provider_manager
+ * This reads the actual provider that will be used for API calls, not just metadata.
+ * BUG-097: Used to verify that sessionSetModelProfile actually updates the provider_manager.
+ */
+export declare function sessionGetInternalProvider(
+  sessionId: string
+): Promise<SessionModel>;
 
 /**
  * Get buffered output with consecutive Text/Thinking chunks merged.

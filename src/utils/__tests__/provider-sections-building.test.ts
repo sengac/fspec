@@ -19,20 +19,8 @@ import {
   type ProfileConfig,
 } from '../provider-config';
 
-// Local helper matching AgentView's implementation
-const mapProviderIdToInternal = (providerId: string): string => {
-  switch (providerId) {
-    case 'anthropic':
-      return 'claude';
-    case 'google':
-    case 'gemini':
-      return 'gemini';
-    case 'x-ai':
-      return 'xai';
-    default:
-      return providerId;
-  }
-};
+// PROV-008: Import provider mapping from shared utility (DRY)
+import { mapProviderIdToInternal } from '../../tui/utils/provider-mapping';
 
 // ============================================
 // TEST FIXTURES

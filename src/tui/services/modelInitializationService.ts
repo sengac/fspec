@@ -28,38 +28,18 @@ import {
   type ProviderSection,
   type ModelSelection,
 } from '../store/modelStore';
+import {
+  mapProviderIdToInternal,
+  mapModelsDevToRegistryId,
+} from '../utils/provider-mapping';
+import {
+  parseModelString,
+  findSectionForPersistedModel,
+} from '../utils/model-selection';
 
 // =============================================================================
 // HELPER FUNCTIONS
 // =============================================================================
-
-/**
- * Map models.dev provider ID to internal provider name
- */
-export const mapProviderIdToInternal = (providerId: string): string => {
-  switch (providerId) {
-    case 'anthropic':
-      return 'claude';
-    case 'google':
-      return 'gemini';
-    default:
-      return providerId;
-  }
-};
-
-/**
- * Map models.dev provider ID to registry ID for credential lookup
- */
-export const mapModelsDevToRegistryId = (
-  modelsDevProviderId: string
-): string => {
-  switch (modelsDevProviderId) {
-    case 'google':
-      return 'gemini';
-    default:
-      return modelsDevProviderId;
-  }
-};
 
 /**
  * Extract model ID for registry lookup (strips date suffix)
@@ -214,9 +194,9 @@ async function loadPersistedModelString(): Promise<string | null> {
   try {
     const config = await loadConfig();
     const persistedModelString = config?.tui?.lastUsedModel || null;
-    if (persistedModelString) {
-      logger.debug(`Found persisted model selection: ${persistedModelString}`);
-    }
+    logger.warn(
+      `[MODEL-RESTORE] loadPersistedModelString: config.tui=${JSON.stringify(config?.tui)}`
+    );
     return persistedModelString;
   } catch (err) {
     logger.warn('Failed to load config for persisted model, using default', {
@@ -333,33 +313,73 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
 
     // Load persisted model string
     const persistedModelString = await loadPersistedModelString();
+    logger.warn(
+      `[MODEL-RESTORE] Persisted model string: ${persistedModelString || 'null'}`
+    );
 
     // Try to restore persisted model
     let currentModel: ModelSelection | null = null;
     let currentProvider: string | null = null;
     let persistedModelRestored = false;
 
-    if (persistedModelString && persistedModelString.includes('/')) {
-      const [persistedProviderId, persistedModelId] =
-        persistedModelString.split('/');
-      const found = findModelInSections(
-        sections,
-        persistedProviderId,
-        persistedModelId
-      );
+    if (persistedModelString) {
+      try {
+        // BUG-097: Use parseModelString to correctly handle profile format
+        // 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen/Qwen3-80B')
+        const parsed = parseModelString(persistedModelString);
+        logger.warn(
+          `[MODEL-RESTORE] Parsed: providerId=${parsed.providerId}, profileName=${parsed.profileName}, modelId=${parsed.modelId}`
+        );
 
-      if (found) {
-        currentModel = createModelSelection(found.section, found.model);
-        currentProvider = found.section.internalName;
-        persistedModelRestored = true;
-        logger.debug(
-          `Restored persisted model: ${persistedProviderId}/${persistedModelId}`
+        // BUG-097: Use findSectionForPersistedModel to match by BOTH providerId AND profileName
+        const section = findSectionForPersistedModel(
+          sections,
+          persistedModelString
+        );
+        logger.warn(
+          `[MODEL-RESTORE] Found section: ${section ? `${section.providerName} (hasCredentials=${section.hasCredentials})` : 'null'}`
+        );
+
+        if (section && section.hasCredentials) {
+          // Find the model within the section
+          const normalizedModelId = extractModelIdForRegistry(parsed.modelId);
+          logger.warn(
+            `[MODEL-RESTORE] Looking for normalizedModelId: ${normalizedModelId}`
+          );
+          logger.warn(
+            `[MODEL-RESTORE] Section models: ${section.models.map(m => extractModelIdForRegistry(m.id)).join(', ')}`
+          );
+          const model = section.models.find(
+            m => extractModelIdForRegistry(m.id) === normalizedModelId
+          );
+
+          if (model) {
+            currentModel = createModelSelection(section, model);
+            currentProvider = section.internalName;
+            persistedModelRestored = true;
+            logger.warn(
+              `[MODEL-RESTORE] SUCCESS: Restored ${parsed.providerId}/${parsed.modelId}${parsed.profileName ? ` (profile: ${parsed.profileName})` : ''}`
+            );
+          } else {
+            logger.warn(`[MODEL-RESTORE] FAILED: Model not found in section`);
+          }
+        } else {
+          logger.warn(
+            `[MODEL-RESTORE] FAILED: Section not found or no credentials`
+          );
+        }
+      } catch (err) {
+        // Invalid model string format - fall back to default
+        logger.warn(
+          `[MODEL-RESTORE] ERROR: Invalid persisted model string format: ${persistedModelString}`,
+          err
         );
       }
     }
 
     // Fall back to first available model if no persisted model
     if (!currentModel) {
+      logger.warn(`[MODEL-RESTORE] FALLBACK: Using default model selection`);
       const defaultSelection = selectDefaultModel(sections);
       if (defaultSelection) {
         currentModel = createModelSelection(
@@ -367,8 +387,8 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
           defaultSelection.model
         );
         currentProvider = defaultSelection.section.internalName;
-        logger.debug(
-          `Using default model: ${currentModel.providerId}/${currentModel.modelId}`
+        logger.warn(
+          `[MODEL-RESTORE] FALLBACK: Selected ${currentModel.providerId}/${currentModel.modelId}`
         );
       }
     }

@@ -442,4 +442,110 @@ describe('Feature: Model Initialization Service', () => {
       expect(store.modelsInitialized).toBe(true);
     });
   });
+
+  // =============================================================================
+  // BUG-097: Profile-based model restoration tests
+  // Feature: spec/features/profile-based-model-selection-not-restored-on-session-startup.feature
+  // =============================================================================
+
+  describe('Scenario: Restore persisted profile-based model on new session', () => {
+    it('should restore profile model with correct providerId, profileName, and modelId', async () => {
+      // @step Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "openai:work-vllm/Qwen/Qwen3-80B"
+      const configContent = {
+        tui: {
+          lastUsedModel: 'openai:work-vllm/Qwen/Qwen3-80B',
+        },
+        providers: {
+          openai: {
+            profiles: {
+              'work-vllm': {
+                baseUrl: 'http://localhost:8888',
+                apiKey: 'test-key',
+              },
+            },
+          },
+        },
+      };
+      await writeFile(
+        join(setup.testDir, '.fspec', 'fspec-config.json'),
+        JSON.stringify(configContent, null, 2)
+      );
+
+      // @step And I have a profile "work-vllm" configured for "openai" provider
+      // (done in config above)
+
+      // @step And the profile's local server is reachable
+      napiMocks.modelsListLocalOpenai.mockResolvedValue([
+        'Qwen/Qwen3-80B',
+        'Qwen/Qwen3-32B',
+      ]);
+
+      // @step And NAPI returns cloud providers (which we don't have credentials for)
+      napiMocks.modelsListAll.mockResolvedValue([createOpenAIProvider()]);
+
+      // @step When I call initializeModels()
+      const result = await initializeModels();
+
+      // @step Then the restored model should have providerId="openai"
+      expect(result.currentModel?.providerId).toBe('openai');
+
+      // @step And the restored model should have profileName="work-vllm"
+      expect(result.currentModel?.profileName).toBe('work-vllm');
+
+      // @step And the restored model should have modelId containing "Qwen"
+      expect(result.currentModel?.modelId).toContain('Qwen');
+
+      // @step And persistedModelRestored should be true
+      expect(result.persistedModelRestored).toBe(true);
+    });
+  });
+
+  describe('Scenario: Restore persisted cloud model on new session', () => {
+    it('should restore cloud model with providerId, null profileName, and modelId', async () => {
+      // @step Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "anthropic/claude-sonnet-4"
+      const configContent = {
+        tui: {
+          lastUsedModel: 'anthropic/claude-sonnet-4',
+        },
+      };
+      await writeFile(
+        join(setup.testDir, '.fspec', 'fspec-config.json'),
+        JSON.stringify(configContent, null, 2)
+      );
+
+      // @step And I have credentials for anthropic
+      const credentialsContent = {
+        version: 1,
+        providers: {
+          anthropic: {
+            apiKey: 'sk-ant-test-key',
+            lastUpdated: new Date().toISOString(),
+          },
+        },
+      };
+      await writeFile(
+        join(setup.testDir, '.fspec', 'credentials', 'credentials.json'),
+        JSON.stringify(credentialsContent, null, 2),
+        { mode: 0o600 }
+      );
+
+      // @step And NAPI returns anthropic models
+      napiMocks.modelsListAll.mockResolvedValue([createAnthropicProvider()]);
+
+      // @step When I call initializeModels()
+      const result = await initializeModels();
+
+      // @step Then the restored model should have providerId="anthropic"
+      expect(result.currentModel?.providerId).toBe('anthropic');
+
+      // @step And the restored model should have profileName=null (undefined)
+      expect(result.currentModel?.profileName).toBeUndefined();
+
+      // @step And the restored model should have modelId="claude-sonnet-4"
+      expect(result.currentModel?.modelId).toBe('claude-sonnet-4');
+
+      // @step And persistedModelRestored should be true
+      expect(result.persistedModelRestored).toBe(true);
+    });
+  });
 });
