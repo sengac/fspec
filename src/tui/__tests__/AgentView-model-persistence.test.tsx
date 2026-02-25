@@ -232,6 +232,7 @@ vi.mock('ink', async () => {
 
 // Import the component after mocks are set up
 import { AgentView } from '../components/AgentView';
+import { useModelStore } from '../store/modelStore';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -332,6 +333,8 @@ const resetMockSession = (overrides: Partial<typeof mockState.session> = {}) => 
 describe('Feature: Persist Last Used Model Selection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset Zustand store to clear modelsInitialized flag between tests
+    useModelStore.getState().reset();
     resetMockSession();
     mockConfig.loadConfig.mockResolvedValue({});
     mockConfig.writeConfig.mockResolvedValue(undefined);
@@ -349,11 +352,11 @@ describe('Feature: Persist Last Used Model Selection', () => {
 
   describe('Scenario: Restore persisted model on new session', () => {
     it('should start with persisted model when config exists', async () => {
-      // @step Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "anthropic/claude-opus-4-20250514"
-      // NOTE: Must use FULL model ID (with date suffix) because extractModelIdForRegistry 
-      // preserves full ID for Anthropic models
+      // @step Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "anthropic/claude-opus-4"
+      // NOTE: The persisted model ID is stored WITHOUT the date suffix (extractModelIdForRegistry
+      // strips it when saving). The lookup also uses extractModelIdForRegistry on both sides.
       mockConfig.loadConfig.mockResolvedValue({
-        tui: { lastUsedModel: 'anthropic/claude-opus-4-20250514' },
+        tui: { lastUsedModel: 'anthropic/claude-opus-4' },
       });
 
       // @step And ANTHROPIC_API_KEY is set

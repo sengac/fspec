@@ -239,8 +239,10 @@ function findModelInSections(
     return null;
   }
 
+  // Compare both sides using extractModelIdForRegistry to handle date suffixes
+  const normalizedModelId = extractModelIdForRegistry(modelId);
   const model = section.models.find(
-    m => extractModelIdForRegistry(m.id) === modelId
+    m => extractModelIdForRegistry(m.id) === normalizedModelId
   );
   if (!model) {
     return null;

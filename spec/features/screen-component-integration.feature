@@ -1,4 +1,4 @@
-@wip
+@done
 @provider-settings
 @model-selector
 @integration

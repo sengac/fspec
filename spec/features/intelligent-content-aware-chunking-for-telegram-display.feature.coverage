@@ -1053,11 +1053,6 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "175-195",
-          "implMappings": []
-        },
-        {
-          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
           "lines": "175-196",
           "implMappings": [
             {
@@ -1168,11 +1163,6 @@
     {
       "name": "Table boundary takes priority - splits before table not mid-table",
       "testMappings": [
-        {
-          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "197-220",
-          "implMappings": []
-        },
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
           "lines": "198-222",
@@ -1287,11 +1277,6 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "222-243",
-          "implMappings": []
-        },
-        {
-          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
           "lines": "224-243",
           "implMappings": [
             {
@@ -1404,11 +1389,6 @@
       "testMappings": [
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "249-280",
-          "implMappings": []
-        },
-        {
-          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
           "lines": "251-277",
           "implMappings": [
             {
@@ -1459,11 +1439,6 @@
     {
       "name": "Multiple thinking chunks stream as continuous content",
       "testMappings": [
-        {
-          "file": "bridge/__tests__/telegram-content-chunker.test.ts",
-          "lines": "282-312",
-          "implMappings": []
-        },
         {
           "file": "bridge/__tests__/telegram-content-chunker.test.ts",
           "lines": "279-309",
@@ -1524,6 +1499,6 @@
     "implFiles": [
       "bridge/telegram-content-chunker.ts"
     ],
-    "totalLinesCovered": 1660
+    "totalLinesCovered": 1530
   }
 }
