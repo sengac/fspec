@@ -6,6 +6,12 @@
 //! # TOOL-008: Uses SystemPromptFacade
 //! This module uses the SystemPromptFacade from codelet_tools for provider-specific
 //! system prompt formatting, eliminating duplicate code.
+//!
+//! # PROV-005: Adaptive Thinking Support
+//! This module supports model-aware thinking configuration:
+//! - Opus 4.6, Sonnet 4.6: Use adaptive thinking (type: "adaptive")
+//! - Opus 4.5, Sonnet 4.5, older: Use budgeted thinking (type: "enabled", budget_tokens: N)
+//! Beta headers are also model-specific based on official Anthropic documentation.
 
 use crate::{
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
@@ -16,6 +22,8 @@ use async_trait::async_trait;
 use codelet_common::{Message, MessageContent, MessageRole};
 // TOOL-008: Import CLAUDE_CODE_PROMPT_PREFIX from facade (single source of truth)
 use codelet_tools::facade::CLAUDE_CODE_PROMPT_PREFIX;
+// PROV-005: Import model constants and helpers for adaptive thinking
+use codelet_tools::facade::{is_adaptive_thinking_model, supports_1m_context};
 use codelet_tools::ToolDefinition as OurToolDefinition;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue, AUTHORIZATION};
 use rig::completion::CompletionRequestBuilder;
@@ -24,7 +32,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::warn;
 
-/// Claude Sonnet 4 context window size
+/// Claude default context window size
+/// NOTE: Some models support 1M context with Tier 4 API access, but we use 200k
+/// as the default until CONFIG-007 implements user opt-in for extended context.
 pub const CONTEXT_WINDOW: usize = 200_000;
 
 /// Claude Sonnet 4 max output tokens (CTX-002)
@@ -33,12 +43,70 @@ pub const MAX_OUTPUT_TOKENS: usize = 8192;
 // TOOL-008: CLAUDE_CODE_PROMPT_PREFIX is now imported from codelet_tools::facade
 // (single source of truth - see imports at top)
 
-/// Anthropic beta features header for API key mode (standard features)
+// =============================================================================
+// BETA HEADER CONSTANTS (PROV-005)
+// =============================================================================
+
+/// Beta header constants for Anthropic API features
+pub mod beta_headers {
+    /// Prompt caching feature (all models)
+    pub const PROMPT_CACHING: &str = "prompt-caching-2024-07-31";
+    /// Interleaved thinking for budgeted models (NOT needed for adaptive 4.6 models)
+    pub const INTERLEAVED_THINKING: &str = "interleaved-thinking-2025-05-14";
+    /// 1M context window (Opus 4.6, Sonnet 4.6, Sonnet 4.5 - NOT Opus 4.5)
+    pub const CONTEXT_1M: &str = "context-1m-2025-08-07";
+    /// Claude Code identifier for OAuth mode
+    pub const CLAUDE_CODE: &str = "claude-code-20250219";
+    /// OAuth feature for OAuth mode
+    pub const OAUTH: &str = "oauth-2025-04-20";
+}
+
+/// Build model-aware beta headers for Claude API requests.
+///
+/// PROV-005: Beta headers depend on model capabilities:
+/// - Adaptive thinking models (4.6): NO interleaved-thinking header needed
+/// - Budgeted thinking models: Need interleaved-thinking header
+/// - 1M context models: Include context-1m header
+///
+/// # Arguments
+/// * `model` - The Claude model name
+/// * `is_oauth` - Whether OAuth authentication is being used
+///
+/// # Returns
+/// Comma-separated string of beta headers for the model
+pub fn build_beta_headers(model: &str, is_oauth: bool) -> String {
+    let mut headers = Vec::new();
+
+    // OAuth mode headers (must be first for Claude Code compatibility)
+    if is_oauth {
+        headers.push(beta_headers::CLAUDE_CODE);
+        headers.push(beta_headers::OAUTH);
+    }
+
+    // Always include prompt caching
+    headers.push(beta_headers::PROMPT_CACHING);
+
+    // PROV-005: Interleaved thinking only for non-adaptive models
+    // Adaptive thinking models (Opus 4.6, Sonnet 4.6) don't need this header
+    if !is_adaptive_thinking_model(model) {
+        headers.push(beta_headers::INTERLEAVED_THINKING);
+    }
+
+    // PROV-005: 1M context for specific models (not Opus 4.5)
+    if supports_1m_context(model) {
+        headers.push(beta_headers::CONTEXT_1M);
+    }
+
+    headers.join(",")
+}
+
+/// Legacy: Anthropic beta features header for API key mode (standard features)
+/// DEPRECATED: Use build_beta_headers() for model-aware headers
 const ANTHROPIC_BETA_HEADER_API_KEY: &str =
     "prompt-caching-2024-07-31,interleaved-thinking-2025-05-14";
 
-/// Anthropic beta features header for OAuth mode (must match Claude Code exactly)
-/// claude-code-20250219 identifies as Claude Code, oauth-2025-04-20 enables OAuth auth
+/// Legacy: Anthropic beta features header for OAuth mode (must match Claude Code exactly)
+/// DEPRECATED: Use build_beta_headers() for model-aware headers
 const ANTHROPIC_BETA_HEADER_OAUTH: &str =
     "claude-code-20250219,oauth-2025-04-20,prompt-caching-2024-07-31,interleaved-thinking-2025-05-14";
 
@@ -151,6 +219,7 @@ impl ClaudeProvider {
     /// MODEL-001: Create a new ClaudeProvider with explicit API key, auth mode, and model
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
+    /// PROV-005: Uses model-aware beta headers for adaptive thinking support.
     pub fn from_api_key_with_mode_and_model(
         api_key: &str,
         auth_mode: AuthMode,
@@ -158,13 +227,14 @@ impl ClaudeProvider {
     ) -> Result<Self, ProviderError> {
         validate_api_key_static("claude", api_key)?;
 
+        // PROV-005: Build model-aware beta headers
+        let beta_header_string = build_beta_headers(model, auth_mode == AuthMode::OAuth);
+        let beta_features: Vec<&str> = beta_header_string.split(',').collect();
+
         // Build rig client based on auth mode
         // Note: The patched rig-core's AnthropicKey::into_header() automatically skips
         // x-api-key for OAuth tokens (those starting with "sk-ant-oat")
         let rig_client: anthropic::Client = if auth_mode == AuthMode::OAuth {
-            // For OAuth mode, use Claude Code headers exactly
-            let beta_features: Vec<&str> = ANTHROPIC_BETA_HEADER_OAUTH.split(',').collect();
-
             let mut headers = HeaderMap::new();
 
             // Authorization: Bearer token (instead of x-api-key)
@@ -197,8 +267,6 @@ impl ClaudeProvider {
                 })?
         } else {
             // Standard API key mode - x-api-key header is added automatically
-            let beta_features: Vec<&str> = ANTHROPIC_BETA_HEADER_API_KEY.split(',').collect();
-
             anthropic::Client::builder()
                 .api_key(api_key)
                 .anthropic_betas(&beta_features)
@@ -256,13 +324,27 @@ impl ClaudeProvider {
         CLAUDE_CODE_PROMPT_PREFIX
     }
 
-    /// Get the anthropic-beta header value based on auth mode
+    /// Get the anthropic-beta header value based on auth mode (legacy, non-model-aware)
+    ///
+    /// DEPRECATED: Use get_anthropic_beta_header_for_model() for model-aware headers.
+    /// This method is kept for backward compatibility but doesn't include
+    /// adaptive thinking or 1M context headers for 4.6 models.
     pub fn get_anthropic_beta_header(&self) -> &'static str {
         if self.auth_mode == AuthMode::OAuth {
             ANTHROPIC_BETA_HEADER_OAUTH
         } else {
             ANTHROPIC_BETA_HEADER_API_KEY
         }
+    }
+
+    /// Get the anthropic-beta header value for the current model (PROV-005)
+    ///
+    /// Returns model-aware beta headers based on official Anthropic documentation:
+    /// - Adaptive thinking models (4.6): NO interleaved-thinking, YES context-1m
+    /// - Budgeted thinking models (4.5, older): YES interleaved-thinking
+    /// - 1M context models (Opus 4.6, Sonnet 4.6, Sonnet 4.5): YES context-1m
+    pub fn get_anthropic_beta_header_for_model(&self) -> String {
+        build_beta_headers(&self.model_name, self.auth_mode == AuthMode::OAuth)
     }
 
     /// Create a rig Agent with all 10 tools configured for this provider
@@ -433,7 +515,15 @@ impl ClaudeProvider {
         let content_parts = convert_assistant_content(response.choice, "claude")?;
 
         // Map Anthropic's stop_reason to our StopReason enum (provider-specific)
-        let stop_reason = match response.raw_response.stop_reason.as_deref() {
+        // PROV-005-DEBUG: Log the raw stop_reason for debugging Opus 4.6 compaction
+        let raw_stop_reason = response.raw_response.stop_reason.as_deref();
+        warn!(
+            "[ClaudeProvider] raw stop_reason={:?}, content_len={}",
+            raw_stop_reason,
+            response.raw_response.content.len()
+        );
+        
+        let stop_reason = match raw_stop_reason {
             Some("tool_use") => StopReason::ToolUse,
             Some("max_tokens") => StopReason::MaxTokens,
             Some("end_turn") | Some("stop_sequence") | None => StopReason::EndTurn,
@@ -461,6 +551,10 @@ impl LlmProvider for ClaudeProvider {
     }
 
     fn context_window(&self) -> usize {
+        // CONFIG-007: 1M context opt-in not yet implemented
+        // Until then, use 200k for all models (the default for non-Tier-4 users)
+        // NOTE: We still send context-1m beta header for Tier 4 users who benefit
+        // from it, but compaction uses 200k threshold until opt-in is implemented.
         CONTEXT_WINDOW
     }
 

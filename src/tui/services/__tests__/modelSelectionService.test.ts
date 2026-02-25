@@ -249,6 +249,8 @@ describe('Feature: Model Selection Service', () => {
       // @step Given an active session with id "session-123"
       const sessionId = 'session-123';
       const onRefreshRustState = vi.fn();
+      const onSetCurrentModel = vi.fn();
+      const onSetCurrentProvider = vi.fn();
 
       // @step And a cloud model selection for provider "anthropic" model "claude-sonnet-4"
       const selection = createCloudModelSelection();
@@ -258,6 +260,8 @@ describe('Feature: Model Selection Service', () => {
         sessionId,
         selection,
         onRefreshRustState,
+        onSetCurrentModel,
+        onSetCurrentProvider,
       });
 
       // @step Then the result should indicate success
@@ -272,6 +276,10 @@ describe('Feature: Model Selection Service', () => {
 
       // @step And the model store should be updated
       expect(onRefreshRustState).toHaveBeenCalledWith('session-123');
+
+      // @step And the Zustand store should be updated (BUG-097: always update on success)
+      expect(onSetCurrentModel).toHaveBeenCalledWith(selection);
+      expect(onSetCurrentProvider).toHaveBeenCalledWith('claude');
 
       // @step And the selection should be persisted to config
       expect(configMocks.writeConfig).toHaveBeenCalled();
@@ -295,6 +303,8 @@ describe('Feature: Model Selection Service', () => {
       // @step Given an active session with id "session-123"
       const sessionId = 'session-123';
       const onRefreshRustState = vi.fn();
+      const onSetCurrentModel = vi.fn();
+      const onSetCurrentProvider = vi.fn();
 
       // @step And a model selection with profileConfig containing baseUrl and apiKey
       const selection = createProfileModelSelection();
@@ -304,6 +314,8 @@ describe('Feature: Model Selection Service', () => {
         sessionId,
         selection,
         onRefreshRustState,
+        onSetCurrentModel,
+        onSetCurrentProvider,
       });
 
       // @step Then the result should indicate success
@@ -321,6 +333,10 @@ describe('Feature: Model Selection Service', () => {
         'Qwen3-80B'
       );
       expect(napiMocks.sessionSetModel).not.toHaveBeenCalled();
+
+      // @step And the Zustand store should be updated (BUG-097: always update on success)
+      expect(onSetCurrentModel).toHaveBeenCalledWith(selection);
+      expect(onSetCurrentProvider).toHaveBeenCalledWith('openai');
     });
   });
 
@@ -397,6 +413,8 @@ describe('Feature: Model Selection Service', () => {
     it('should not persist when sessionSetModel fails', async () => {
       // @step Given an active session
       const sessionId = 'session-123';
+      const onSetCurrentModel = vi.fn();
+      const onSetCurrentProvider = vi.fn();
 
       // @step And sessionSetModel will fail
       napiMocks.sessionSetModel.mockRejectedValue(
@@ -408,6 +426,8 @@ describe('Feature: Model Selection Service', () => {
       const result = await selectModel({
         sessionId,
         selection,
+        onSetCurrentModel,
+        onSetCurrentProvider,
       });
 
       // @step Then the result should indicate failure
@@ -416,6 +436,10 @@ describe('Feature: Model Selection Service', () => {
 
       // @step And writeConfig should NOT be called
       expect(configMocks.writeConfig).not.toHaveBeenCalled();
+
+      // @step And the Zustand store should NOT be updated (BUG-097: only update on success)
+      expect(onSetCurrentModel).not.toHaveBeenCalled();
+      expect(onSetCurrentProvider).not.toHaveBeenCalled();
     });
   });
 });

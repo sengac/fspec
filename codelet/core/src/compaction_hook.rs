@@ -164,11 +164,28 @@ where
         history: &[Message],
         cancel_sig: CancelSignal,
     ) {
+        // PROV-005-DEBUG: Log entry into hook with backtrace context
+        tracing::warn!(
+            "[CompactionHook] on_completion_call ENTERED - history_len={}, threshold={}",
+            history.len(),
+            self.threshold
+        );
+
         // Handle mutex lock gracefully - if poisoned, skip the check
         let Ok(mut state) = self.state.lock() else {
             tracing::error!("CompactionHook state mutex poisoned, skipping compaction check");
             return;
         };
+
+        // PROV-005-DEBUG: Log current token state
+        tracing::warn!(
+            "[CompactionHook] token_state: input={}, cache_read={}, cache_creation={}, output={}, total={}",
+            state.input_tokens,
+            state.cache_read_input_tokens,
+            state.cache_creation_input_tokens,
+            state.output_tokens,
+            state.total()
+        );
 
         // Estimate tokens from actual payload being sent
         let mut all_messages = history.to_vec();
@@ -179,22 +196,30 @@ where
         let last_known_total = state.total();
         let effective_total = last_known_total.max(estimated_payload);
 
-        tracing::debug!(
-            "Compaction check: last_known={}, estimated={}, effective={}, threshold={}",
+        // PROV-005-DEBUG: Log compaction decision calculation (changed to warn!)
+        tracing::warn!(
+            "[CompactionHook] compaction_check: last_known={}, estimated={}, effective={}, threshold={}, will_trigger={}",
             last_known_total,
             estimated_payload,
             effective_total,
-            self.threshold
+            self.threshold,
+            effective_total > self.threshold
         );
 
         if effective_total > self.threshold {
             state.compaction_needed = true;
-            tracing::info!(
-                "Compaction triggered: {} tokens > {} threshold",
+            tracing::warn!(
+                "[CompactionHook] COMPACTION TRIGGERED: {} tokens > {} threshold",
                 effective_total,
                 self.threshold
             );
             cancel_sig.cancel();
+        } else {
+            tracing::warn!(
+                "[CompactionHook] compaction NOT triggered: {} tokens <= {} threshold",
+                effective_total,
+                self.threshold
+            );
         }
     }
 

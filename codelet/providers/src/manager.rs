@@ -497,7 +497,7 @@ impl ProviderManager {
     /// Get context window size for the current provider
     ///
     /// Returns the context window in tokens for the currently selected provider.
-    /// References the canonical CONTEXT_WINDOW constant from each provider module.
+    /// CONFIG-007: 1M context opt-in not yet implemented - uses 200k for all Claude models.
     pub fn context_window(&self) -> usize {
         match self.current_provider {
             ProviderType::Claude => claude::CONTEXT_WINDOW,

@@ -454,8 +454,6 @@ export function pruneOrphanedSessions(
  * @param sessionId - Session identifier to destroy
  */
 export async function destroySession(sessionId: string): Promise<void> {
-  logger.info(`[SessionService] Destroying session ${sessionId}`);
-
   // Get the work unit this session is attached to (if any)
   const fspecState = useFspecStore.getState();
   const workUnitId = fspecState.getWorkUnitBySession(sessionId);
@@ -482,8 +480,6 @@ export async function destroySession(sessionId: string): Promise<void> {
   // 4. Unsubscribe from stream manager
   const manager = GlobalSessionStreamManager.getInstance();
   manager.unsubscribeFromSession(sessionId);
-
-  logger.info(`[SessionService] Session ${sessionId} destroyed successfully`);
 }
 
 /**
@@ -507,10 +503,6 @@ export function attachToWorkUnit(
   status: string,
   title?: string
 ): void {
-  logger.info(
-    `[SessionService] Attaching session ${sessionId} to work unit ${workUnitId}`
-  );
-
   const fspecState = useFspecStore.getState();
   const sessionState = useSessionStore.getState();
 
@@ -532,10 +524,6 @@ export function attachToWorkUnit(
       title: title ?? workUnitId,
       status,
     });
-
-    logger.info(
-      `[SessionService] Session ${sessionId} attached to ${workUnitId}`
-    );
   } catch (err) {
     // TUI-069: Rollback on failure
     logger.error(
@@ -586,8 +574,6 @@ export function getAttachedWorkUnit(sessionId: string): string | undefined {
  * @param sessionId - Session identifier to detach
  */
 export function detachFromWorkUnit(sessionId: string): void {
-  logger.info(`[SessionService] Detaching session ${sessionId} from work unit`);
-
   const fspecState = useFspecStore.getState();
   const sessionState = useSessionStore.getState();
 
@@ -607,10 +593,6 @@ export function detachFromWorkUnit(sessionId: string): void {
 
     // 3. Clear work unit context in Rust
     setWorkUnitContext(sessionId, null);
-
-    logger.info(
-      `[SessionService] Session ${sessionId} detached from work unit`
-    );
   } catch (err) {
     // TUI-069: Rollback on failure
     logger.error(

@@ -15,7 +15,7 @@ use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
 use crate::compaction_threshold::calculate_usable_context;
-use crate::interactive_helpers::execute_compaction;
+use crate::interactive_helpers::{convert_messages_to_turns, execute_compaction};
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
@@ -42,8 +42,19 @@ use tokio::time::interval;
 use tracing::{error, info, trace, warn};
 
 /// Check if an error indicates the prompt/context is too long
-fn is_prompt_too_long_error(error_str: &str) -> bool {
+/// PROV-010: Exclude thinking budget configuration errors (budget_tokens)
+///
+/// This function is public for testing. Tests MUST import and test the
+/// real function, NOT a copy. See: codelet/cli/tests/prompt_too_long_recovery_test.rs
+pub fn is_prompt_too_long_error(error_str: &str) -> bool {
     let error_lower = error_str.to_lowercase();
+    
+    // PROV-010: Exclude thinking budget configuration errors
+    // These contain "budget_tokens" and should NOT trigger compaction
+    if error_lower.contains("budget_tokens") {
+        return false;
+    }
+    
     error_lower.contains("prompt is too long")
         || error_lower.contains("maximum context length")
         || error_lower.contains("context_length_exceeded")
@@ -62,6 +73,11 @@ fn is_compaction_cancelled(error: &anyhow::Error) -> bool {
 /// CMPCT-002: Signal that compaction is needed by setting the flag in token state
 /// This allows the post-loop compaction logic to detect and handle it
 fn signal_compaction_needed(token_state: &Arc<Mutex<TokenState>>) {
+    // PROV-009-DEBUG: Log when signal_compaction_needed is called with backtrace
+    warn!(
+        "[signal_compaction_needed] CALLED - setting compaction_needed=true - BACKTRACE:\n{:?}",
+        std::backtrace::Backtrace::capture()
+    );
     if let Ok(mut state) = token_state.lock() {
         state.compaction_needed = true;
     }
@@ -214,15 +230,42 @@ where
     // CTX-002: Use usable_context (context_window - output_reservation) instead of 90% threshold
     let threshold = calculate_usable_context(context_window, max_output_tokens);
 
+    // DIAG: Log compaction parameters for debugging
+    warn!(
+        "DIAG stream_loop: model={:?}, context_window={}, max_output={}, threshold={}, input_tokens={}, output_tokens={}",
+        session.current_model_id(),
+        context_window,
+        max_output_tokens,
+        threshold,
+        session.token_tracker.input_tokens,
+        session.token_tracker.output_tokens
+    );
+
     // CTX-005: PRE-PROMPT COMPACTION CHECK
     // Before adding the new prompt, estimate if current context + new prompt would exceed threshold.
     // This prevents "prompt is too long" API errors when resuming a session at high context fill.
     // The hook only checks AFTER API responses, but we need to check BEFORE the first API call.
+    // PROV-005: Also check for actual conversation turns - system messages alone can't be compacted.
     let prompt_tokens = count_tokens(prompt) as u64;
     let current_tokens = session.token_tracker.input_tokens + session.token_tracker.output_tokens;
     let estimated_total = current_tokens + prompt_tokens;
+    
+    // PROV-005: Check if there are actual conversation turns to compact
+    // convert_messages_to_turns returns empty if there are only system messages (no user+assistant pairs)
+    let has_turns_to_compact = !convert_messages_to_turns(&session.messages).is_empty();
 
-    if estimated_total > threshold && !session.messages.is_empty() {
+    // DIAG: Log pre-prompt compaction decision
+    warn!(
+        "DIAG pre-prompt check: prompt_tokens={}, current_tokens={}, estimated_total={}, threshold={}, has_turns={}, will_compact={}",
+        prompt_tokens,
+        current_tokens,
+        estimated_total,
+        threshold,
+        has_turns_to_compact,
+        estimated_total > threshold && has_turns_to_compact
+    );
+
+    if estimated_total > threshold && has_turns_to_compact {
         trace!(
             "Pre-prompt compaction triggered: estimated {} > threshold {}",
             estimated_total, threshold
@@ -618,6 +661,11 @@ where
                     }
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
+                    // PROV-005-DEBUG: Log FinalResponse received
+                    warn!(
+                        "[stream_loop] FinalResponse received - checking compaction_needed state"
+                    );
+                    
                     // Get usage from FinalResponse
                     let usage = final_resp.usage();
 
@@ -1098,6 +1146,13 @@ where
                     break;
                 }
                 Some(Err(e)) => {
+                    // PROV-009-DEBUG: Log EVERY error at warn level to trace compaction issues
+                    warn!(
+                        "[stream_loop] STREAM ERROR RECEIVED: error={}, type={:?}",
+                        e,
+                        std::any::type_name_of_val(&e)
+                    );
+                    
                     // CMPCT-002: Check if this error is due to compaction hook cancellation
                     // using the helper function for DRY compliance
                     let is_compaction_cancel = is_compaction_cancelled(&e);
@@ -1108,9 +1163,17 @@ where
                         .map(|state| state.compaction_needed)
                         .unwrap_or(false);
 
+                    // PROV-009-DEBUG: Log error classification
+                    warn!(
+                        "[stream_loop] Error classification: is_compaction_cancel={}, compaction_triggered={}",
+                        is_compaction_cancel,
+                        compaction_triggered
+                    );
+
                     if is_compaction_cancel && compaction_triggered {
                         // This is a compaction cancellation - break to run compaction logic
                         // Don't log as error, this is expected behavior
+                        warn!("[stream_loop] Breaking due to compaction cancellation (expected)");
                         break;
                     }
 
@@ -1118,7 +1181,11 @@ where
                     let error_str = e.to_string();
                     let is_prompt_too_long = is_prompt_too_long_error(&error_str);
 
-                    if is_prompt_too_long && !session.messages.is_empty() {
+                    // PROV-010: Only trigger compaction if there are actual user/assistant turns to compact
+                    // session.messages may contain system prompts but no compactable turns
+                    let has_compactable_turns = !convert_messages_to_turns(&session.messages).is_empty();
+                    
+                    if is_prompt_too_long && has_compactable_turns {
                         info!("Received 'prompt is too long' error, triggering recovery compaction");
                         // UX-002: Use structured compaction event instead of string status
                         output.emit_compaction_started();
@@ -1177,6 +1244,21 @@ where
                     return Err(anyhow::anyhow!("Agent error: {e}"));
                 }
                 None => {
+                    // PROV-005-DEBUG: Log stream ended
+                    warn!(
+                        "[stream_loop] Stream ended (None) - assistant_text_len={}, checking compaction_needed",
+                        assistant_text.len()
+                    );
+                    // Check compaction state at stream end
+                    if let Ok(state) = token_state.lock() {
+                        warn!(
+                            "[stream_loop] At stream end: compaction_needed={}, input={}, output={}",
+                            state.compaction_needed,
+                            state.input_tokens,
+                            state.output_tokens
+                        );
+                    }
+                    
                     // Stream ended
                     if !assistant_text.is_empty() {
                         handle_final_response(&assistant_text, &mut session.messages)?;
@@ -1185,7 +1267,8 @@ where
                     break;
                 }
                 _ => {
-                    // Other stream items (ignored)
+                    // PROV-005-DEBUG: Log unknown stream items
+                    warn!("[stream_loop] Unknown stream item received (ignored)");
                 }
             }
 
@@ -1208,7 +1291,20 @@ where
         .map(|state| state.compaction_needed)
         .unwrap_or(false);
 
+    // PROV-005-DEBUG: Log post-loop compaction state
+    warn!(
+        "[stream_loop] POST-LOOP: compaction_needed={}, is_interrupted={}",
+        compaction_needed,
+        is_interrupted.load(Acquire)
+    );
+
     if compaction_needed && !is_interrupted.load(Acquire) {
+        // PROV-005-DEBUG: Log entry to compaction block
+        warn!(
+            "[stream_loop] ENTERING compaction block - messages_len={}, approx_turns={}",
+            session.messages.len(),
+            session.messages.len() / 2
+        );
         // UX-002: Use structured compaction event - this triggers both CLI display and NAPI state change
         output.emit_compaction_started();
         

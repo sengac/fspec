@@ -235,6 +235,14 @@ pub enum Content {
         #[serde(skip_serializing_if = "Option::is_none")]
         signature: Option<String>,
     },
+    /// Server-side compaction block (Opus 4.6+)
+    /// Contains a summary of previous conversation context
+    Compaction {
+        content: String,
+    },
+    /// Catch-all for unknown content types to prevent deserialization failures
+    #[serde(other)]
+    Unknown,
 }
 
 impl FromStr for Content {

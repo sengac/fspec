@@ -122,19 +122,12 @@ async function buildCloudSections(
  * Load profile sections for local servers (vLLM, Ollama, etc.)
  */
 async function loadProfileSections(): Promise<ProviderSection[]> {
-  logger.info('PROV-007: Starting profile section loading...');
   const profileSections: ProviderSection[] = [];
 
   for (const providerId of SUPPORTED_PROVIDERS) {
     try {
       const profiles = await loadProviderProfiles(providerId);
       const profileNames = Object.keys(profiles);
-
-      if (profileNames.length > 0) {
-        logger.info(
-          `PROV-007: Found ${profileNames.length} profiles for ${providerId}: ${profileNames.join(', ')}`
-        );
-      }
 
       for (const profileName of profileNames) {
         const profile = profiles[profileName];
@@ -193,15 +186,9 @@ async function loadProfileSections(): Promise<ProviderSection[]> {
 async function loadPersistedModelString(): Promise<string | null> {
   try {
     const config = await loadConfig();
-    const persistedModelString = config?.tui?.lastUsedModel || null;
-    logger.warn(
-      `[MODEL-RESTORE] loadPersistedModelString: config.tui=${JSON.stringify(config?.tui)}`
-    );
-    return persistedModelString;
+    return config?.tui?.lastUsedModel || null;
   } catch (err) {
-    logger.warn('Failed to load config for persisted model, using default', {
-      error: err,
-    });
+    logger.error('Failed to load config for persisted model', { error: err });
     return null;
   }
 }
@@ -307,15 +294,9 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
 
     // Combine: profiles first, then cloud
     const sections: ProviderSection[] = [...profileSections, ...cloudSections];
-    logger.info(
-      `PROV-007: Combined sections: ${profileSections.length} profile sections + ${cloudSections.length} cloud sections = ${sections.length} total`
-    );
 
     // Load persisted model string
     const persistedModelString = await loadPersistedModelString();
-    logger.warn(
-      `[MODEL-RESTORE] Persisted model string: ${persistedModelString || 'null'}`
-    );
 
     // Try to restore persisted model
     let currentModel: ModelSelection | null = null;
@@ -327,28 +308,16 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
         // BUG-097: Use parseModelString to correctly handle profile format
         // 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen/Qwen3-80B')
         const parsed = parseModelString(persistedModelString);
-        logger.warn(
-          `[MODEL-RESTORE] Parsed: providerId=${parsed.providerId}, profileName=${parsed.profileName}, modelId=${parsed.modelId}`
-        );
 
         // BUG-097: Use findSectionForPersistedModel to match by BOTH providerId AND profileName
         const section = findSectionForPersistedModel(
           sections,
           persistedModelString
         );
-        logger.warn(
-          `[MODEL-RESTORE] Found section: ${section ? `${section.providerName} (hasCredentials=${section.hasCredentials})` : 'null'}`
-        );
 
         if (section && section.hasCredentials) {
           // Find the model within the section
           const normalizedModelId = extractModelIdForRegistry(parsed.modelId);
-          logger.warn(
-            `[MODEL-RESTORE] Looking for normalizedModelId: ${normalizedModelId}`
-          );
-          logger.warn(
-            `[MODEL-RESTORE] Section models: ${section.models.map(m => extractModelIdForRegistry(m.id)).join(', ')}`
-          );
           const model = section.models.find(
             m => extractModelIdForRegistry(m.id) === normalizedModelId
           );
@@ -357,29 +326,18 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
             currentModel = createModelSelection(section, model);
             currentProvider = section.internalName;
             persistedModelRestored = true;
-            logger.warn(
-              `[MODEL-RESTORE] SUCCESS: Restored ${parsed.providerId}/${parsed.modelId}${parsed.profileName ? ` (profile: ${parsed.profileName})` : ''}`
-            );
-          } else {
-            logger.warn(`[MODEL-RESTORE] FAILED: Model not found in section`);
           }
-        } else {
-          logger.warn(
-            `[MODEL-RESTORE] FAILED: Section not found or no credentials`
-          );
         }
       } catch (err) {
-        // Invalid model string format - fall back to default
-        logger.warn(
-          `[MODEL-RESTORE] ERROR: Invalid persisted model string format: ${persistedModelString}`,
-          err
-        );
+        logger.error('Invalid persisted model string format', {
+          modelString: persistedModelString,
+          error: err,
+        });
       }
     }
 
     // Fall back to first available model if no persisted model
     if (!currentModel) {
-      logger.warn(`[MODEL-RESTORE] FALLBACK: Using default model selection`);
       const defaultSelection = selectDefaultModel(sections);
       if (defaultSelection) {
         currentModel = createModelSelection(
@@ -387,9 +345,6 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
           defaultSelection.model
         );
         currentProvider = defaultSelection.section.internalName;
-        logger.warn(
-          `[MODEL-RESTORE] FALLBACK: Selected ${currentModel.providerId}/${currentModel.modelId}`
-        );
       }
     }
 

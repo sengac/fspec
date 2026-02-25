@@ -5,8 +5,54 @@
 //! native format while the codebase uses a common ThinkingLevel abstraction.
 //!
 //! Feature: spec/features/thinking-config-facade-for-provider-specific-reasoning.feature
+//!
+//! PROV-005: Added adaptive thinking support for Claude Opus 4.6 and Sonnet 4.6.
+//! These models use `{"type": "adaptive"}` instead of budgeted thinking.
 
 use serde_json::{json, Value};
+
+// =============================================================================
+// CLAUDE MODEL CONSTANTS (PROV-005)
+// =============================================================================
+
+/// Claude Opus 4.6 model identifier
+pub const CLAUDE_OPUS_4_6: &str = "claude-opus-4-6";
+
+/// Claude Sonnet 4.6 model identifier
+pub const CLAUDE_SONNET_4_6: &str = "claude-sonnet-4-6";
+
+/// Claude Sonnet 4.5 model identifier
+pub const CLAUDE_SONNET_4_5: &str = "claude-sonnet-4-5";
+
+/// Claude Opus 4.5 model identifier
+pub const CLAUDE_OPUS_4_5: &str = "claude-opus-4-5";
+
+/// Models that use adaptive thinking (exact equality checks - PROV-005)
+/// Per official Anthropic docs, these models use `{"type": "adaptive"}` instead of budgeted thinking.
+pub const ADAPTIVE_THINKING_MODELS: &[&str] = &[CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6];
+
+/// Models that support 1M context window (exact equality checks - PROV-005)
+/// Note: Opus 4.5 does NOT support 1M context.
+pub const CONTEXT_1M_MODELS: &[&str] = &[
+    CLAUDE_OPUS_4_6,
+    CLAUDE_SONNET_4_6,
+    CLAUDE_SONNET_4_5,
+    "claude-sonnet-4-5-20250929", // Versioned model
+];
+
+/// Check if a model uses adaptive thinking.
+/// Uses exact equality, NOT pattern matching (PROV-005 rule [7]).
+#[inline]
+pub fn is_adaptive_thinking_model(model: &str) -> bool {
+    ADAPTIVE_THINKING_MODELS.contains(&model)
+}
+
+/// Check if a model supports 1M context window.
+/// Uses exact equality, NOT pattern matching (PROV-005 rule [7]).
+#[inline]
+pub fn supports_1m_context(model: &str) -> bool {
+    CONTEXT_1M_MODELS.contains(&model)
+}
 
 /// Provider-agnostic thinking intensity levels.
 ///
@@ -136,8 +182,49 @@ impl ThinkingConfigFacade for Gemini25ThinkingFacade {
     }
 }
 
-/// Claude thinking facade - uses thinking.type + budget_tokens
+/// Claude thinking facade - uses thinking.type + budget_tokens (budgeted models)
+/// or thinking.type: "adaptive" (4.6 models)
+///
+/// PROV-005: This facade now supports both budgeted and adaptive thinking:
+/// - Opus 4.6, Sonnet 4.6: Always returns `{"type": "adaptive"}` (budget ignored)
+/// - Opus 4.5, Sonnet 4.5, older: Returns `{"type": "enabled", "budget_tokens": N}`
 pub struct ClaudeThinkingFacade;
+
+impl ClaudeThinkingFacade {
+    /// Build thinking configuration for a specific Claude model.
+    ///
+    /// PROV-005: Model-aware thinking configuration.
+    /// - For Opus/Sonnet 4.6: Returns adaptive thinking, ignoring user budget
+    /// - For other models: Returns budgeted thinking based on level
+    /// - For ThinkingLevel::Off: Always returns None (respects user intent)
+    ///
+    /// # Arguments
+    /// * `model` - The Claude model name (e.g., "claude-opus-4-6")
+    /// * `level` - The thinking intensity level
+    ///
+    /// # Returns
+    /// Some(Value) with thinking config, or None for Off level
+    pub fn request_config_for_model(&self, model: &str, level: ThinkingLevel) -> Option<Value> {
+        // Off always disables thinking (respects user intent - PROV-005 rule [15])
+        if level == ThinkingLevel::Off {
+            return None;
+        }
+
+        // PROV-005: Adaptive thinking models (Opus 4.6, Sonnet 4.6)
+        // User-provided budget_tokens and thinking levels (low/med/high) are ignored
+        // - they all default to adaptive mode
+        if is_adaptive_thinking_model(model) {
+            return Some(json!({
+                "thinking": {
+                    "type": "adaptive"
+                }
+            }));
+        }
+
+        // Budget-based thinking for other models
+        Some(self.request_config(level))
+    }
+}
 
 impl ThinkingConfigFacade for ClaudeThinkingFacade {
     fn provider(&self) -> &'static str {
@@ -549,5 +636,160 @@ mod tests {
             is_thinking,
             "NAPI should correctly identify thinking content"
         );
+    }
+
+    // =========================================================================
+    // PROV-005: Model-aware Claude thinking configuration tests
+    // =========================================================================
+
+    #[test]
+    fn test_claude_opus_4_6_returns_adaptive_thinking() {
+        // @step Given a ClaudeThinkingFacade
+        let facade = ClaudeThinkingFacade;
+
+        // @step And model "claude-opus-4-6" with ThinkingLevel::High
+        let model = CLAUDE_OPUS_4_6;
+        let level = ThinkingLevel::High;
+
+        // @step When I call request_config_for_model
+        let config = facade.request_config_for_model(model, level);
+
+        // @step Then the result should contain thinking.type set to "adaptive"
+        assert!(config.is_some(), "Config should exist for High level");
+        let config = config.unwrap();
+        assert_eq!(
+            config["thinking"]["type"].as_str(),
+            Some("adaptive"),
+            "Opus 4.6 should use adaptive thinking"
+        );
+
+        // @step And the result should NOT contain budget_tokens
+        assert!(
+            config["thinking"]["budget_tokens"].is_null(),
+            "Opus 4.6 should NOT have budget_tokens"
+        );
+    }
+
+    #[test]
+    fn test_claude_sonnet_4_6_returns_adaptive_thinking() {
+        // @step Given a ClaudeThinkingFacade
+        let facade = ClaudeThinkingFacade;
+
+        // @step And model "claude-sonnet-4-6" with ThinkingLevel::Medium
+        let model = CLAUDE_SONNET_4_6;
+        let level = ThinkingLevel::Medium;
+
+        // @step When I call request_config_for_model
+        let config = facade.request_config_for_model(model, level);
+
+        // @step Then the result should contain thinking.type set to "adaptive"
+        assert!(config.is_some(), "Config should exist for Medium level");
+        let config = config.unwrap();
+        assert_eq!(
+            config["thinking"]["type"].as_str(),
+            Some("adaptive"),
+            "Sonnet 4.6 should use adaptive thinking"
+        );
+
+        // @step And the result should NOT contain budget_tokens
+        assert!(
+            config["thinking"]["budget_tokens"].is_null(),
+            "Sonnet 4.6 should NOT have budget_tokens"
+        );
+    }
+
+    #[test]
+    fn test_claude_opus_4_5_returns_budgeted_thinking() {
+        // @step Given a ClaudeThinkingFacade
+        let facade = ClaudeThinkingFacade;
+
+        // @step And model "claude-opus-4-5" with ThinkingLevel::High
+        let model = CLAUDE_OPUS_4_5;
+        let level = ThinkingLevel::High;
+
+        // @step When I call request_config_for_model
+        let config = facade.request_config_for_model(model, level);
+
+        // @step Then the result should contain thinking.type set to "enabled"
+        assert!(config.is_some(), "Config should exist for High level");
+        let config = config.unwrap();
+        assert_eq!(
+            config["thinking"]["type"].as_str(),
+            Some("enabled"),
+            "Opus 4.5 should use budgeted thinking"
+        );
+
+        // @step And the result should contain budget_tokens
+        assert!(
+            config["thinking"]["budget_tokens"].as_u64().is_some(),
+            "Opus 4.5 should have budget_tokens"
+        );
+    }
+
+    #[test]
+    fn test_claude_thinking_off_returns_none_for_adaptive_model() {
+        // @step Given a ClaudeThinkingFacade
+        let facade = ClaudeThinkingFacade;
+
+        // @step And model "claude-opus-4-6" with ThinkingLevel::Off
+        let model = CLAUDE_OPUS_4_6;
+        let level = ThinkingLevel::Off;
+
+        // @step When I call request_config_for_model
+        let config = facade.request_config_for_model(model, level);
+
+        // @step Then the result should be None
+        assert!(
+            config.is_none(),
+            "Off should return None even for adaptive thinking models"
+        );
+    }
+
+    #[test]
+    fn test_claude_unknown_model_uses_budgeted_thinking() {
+        // @step Given a ClaudeThinkingFacade
+        let facade = ClaudeThinkingFacade;
+
+        // @step And unknown model "claude-opus-4-7" with ThinkingLevel::High
+        let model = "claude-opus-4-7";
+        let level = ThinkingLevel::High;
+
+        // @step When I call request_config_for_model
+        let config = facade.request_config_for_model(model, level);
+
+        // @step Then the result should use budgeted thinking (default behavior)
+        assert!(config.is_some(), "Config should exist for High level");
+        let config = config.unwrap();
+        assert_eq!(
+            config["thinking"]["type"].as_str(),
+            Some("enabled"),
+            "Unknown model should use budgeted thinking"
+        );
+        assert!(
+            config["thinking"]["budget_tokens"].as_u64().is_some(),
+            "Unknown model should have budget_tokens"
+        );
+    }
+
+    #[test]
+    fn test_adaptive_thinking_model_detection() {
+        // PROV-005: Verify exact equality matching
+        assert!(is_adaptive_thinking_model(CLAUDE_OPUS_4_6));
+        assert!(is_adaptive_thinking_model(CLAUDE_SONNET_4_6));
+        assert!(!is_adaptive_thinking_model(CLAUDE_OPUS_4_5));
+        assert!(!is_adaptive_thinking_model(CLAUDE_SONNET_4_5));
+        assert!(!is_adaptive_thinking_model("claude-opus-4-6-preview")); // Partial match
+        assert!(!is_adaptive_thinking_model("claude-opus-4-7")); // Unknown
+    }
+
+    #[test]
+    fn test_context_1m_support_detection() {
+        // PROV-005: Verify exact equality matching for 1M context
+        assert!(supports_1m_context(CLAUDE_OPUS_4_6));
+        assert!(supports_1m_context(CLAUDE_SONNET_4_6));
+        assert!(supports_1m_context(CLAUDE_SONNET_4_5));
+        assert!(supports_1m_context("claude-sonnet-4-5-20250929")); // Versioned
+        assert!(!supports_1m_context(CLAUDE_OPUS_4_5)); // Opus 4.5 does NOT support 1M
+        assert!(!supports_1m_context("claude-opus-4-7")); // Unknown
     }
 }

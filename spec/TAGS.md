@@ -264,6 +264,7 @@ Tags for specific technical concerns or architectural patterns.
 
 | Tag | Description |
 |-----|-------------|
+| `@adaptive-thinking` | Adaptive thinking mode for Claude 4.6+ models |
 | `@ai-agent` | AI agent integration features |
 | `@ai-assisted` | Features using AI-driven analysis and interaction |
 | `@ai-driven` | AI-driven interactive and conversational commands |
@@ -283,10 +284,13 @@ Tags for specific technical concerns or architectural patterns.
 | `@backward-compatibility` | Features ensuring compatibility with older file formats or legacy systems |
 | `@base64` | Base64 encoded content scenarios |
 | `@bdd` | Behavior-Driven Development methodology |
+| `@beta-headers` | Anthropic beta header configuration |
 | `@blob` | Blob storage scenarios |
 | `@blob-storage` | Blob storage for large content |
 | `@boundary` | Boundary condition scenarios |
 | `@browser-integration` | Features requiring browser launcher integration |
+| `@budget-ignored` | User-provided budget tokens are ignored |
+| `@budget-thinking` | Budget-based thinking mode for Claude models |
 | `@buffer-overflow` | Buffer overflow handling scenarios |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -387,6 +391,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@message-immutability` | Message immutability invariant |
 | `@modal` | Modal overlay and dialog components |
 | `@model` | Model identifier scenarios |
+| `@model-detection` | Model detection and identification features |
 | `@mouse-events` | Features that handle mouse and trackpad events |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@multi-model` | Multi-model session scenarios |
@@ -849,7 +854,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-23T01:46:50.238Z_
+_Last updated: 2026-02-25T05:53:45.940Z_
 
 **Update Command**: `fspec tag-stats`
 

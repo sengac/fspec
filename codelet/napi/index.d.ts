@@ -480,7 +480,7 @@ export declare function discardSession(
  * Extract thinking text from a response part.
  *
  * # Arguments
- * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+ * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", or specific Claude model names
  * * `part_json` - JSON string of the response part
  *
  * # Returns
@@ -593,18 +593,33 @@ export declare function getStagedFiles(dir: string): Array<string>;
  * Get thinking configuration JSON for a provider at a specific level.
  *
  * # Arguments
- * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+ * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", or specific Claude model names
  * * `level` - Thinking intensity level
  *
  * # Returns
  * JSON string containing the provider-specific thinking configuration.
+ * Returns empty object for Off level or unknown providers.
+ *
+ * # PROV-005: Model-aware Claude thinking
+ * All Claude models are routed through the model-aware facade. The facade uses
+ * exact equality checks (per rule [7]) to determine whether to use adaptive or
+ * budgeted thinking. This ensures no duplicate model detection logic in the NAPI layer.
  *
  * # Example
  * ```typescript
  * import { getThinkingConfig, JsThinkingLevel } from '@anthropic/codelet-napi';
  *
- * const config = JSON.parse(getThinkingConfig('gemini-3', JsThinkingLevel.High));
+ * // Gemini - uses thinkingLevel enum
+ * const geminiConfig = JSON.parse(getThinkingConfig('gemini-3', JsThinkingLevel.High));
  * // { thinkingConfig: { includeThoughts: true, thinkingLevel: "high" } }
+ *
+ * // Claude 4.6 - uses adaptive thinking (PROV-005)
+ * const opus46Config = JSON.parse(getThinkingConfig('claude-opus-4-6', JsThinkingLevel.High));
+ * // { thinking: { type: "adaptive" } }
+ *
+ * // Claude 4.5 - uses budgeted thinking
+ * const opus45Config = JSON.parse(getThinkingConfig('claude-opus-4-5', JsThinkingLevel.High));
+ * // { thinking: { type: "enabled", budget_tokens: 32000 } }
  * ```
  */
 export declare function getThinkingConfig(
@@ -705,7 +720,7 @@ export interface IsolatedSessionResult {
  * Check if a response part contains thinking content.
  *
  * # Arguments
- * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+ * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", or specific Claude model names
  * * `part_json` - JSON string of the response part
  *
  * # Returns

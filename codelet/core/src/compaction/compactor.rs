@@ -107,11 +107,22 @@ impl ContextCompactor {
         F: Fn(String) -> Fut,
         Fut: std::future::Future<Output = Result<String>>,
     {
+        // PROV-009-DEBUG: Log entry with full details
+        warn!(
+            "[Compactor::compact] ENTERED - turns_len={}, target_tokens={}, confidence_threshold={}, min_compression_ratio={}",
+            turns.len(),
+            target_tokens,
+            self.confidence_threshold,
+            self.min_compression_ratio
+        );
+        
         // Validate parameters
         if target_tokens == 0 {
+            warn!("[Compactor::compact] FAILING: target_tokens is 0");
             anyhow::bail!("Target tokens must be positive");
         }
         if turns.is_empty() {
+            warn!("[Compactor::compact] FAILING: turns is empty - WHO CALLED THIS WITH EMPTY TURNS?");
             anyhow::bail!("Cannot compact empty turn history");
         }
 

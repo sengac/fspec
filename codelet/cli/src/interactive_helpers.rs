@@ -171,9 +171,22 @@ fn collect_items<T: Clone>(content: &OneOrMany<T>) -> Vec<T> {
 pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetrics, Option<codelet_core::compaction::AnchorPoint>)> {
     use crate::session::system_reminders::partition_for_compaction;
     
+    // PROV-005-DEBUG: Log entry to execute_compaction
+    warn!(
+        "[execute_compaction] ENTERED - messages_len={}",
+        session.messages.len()
+    );
+    
     // Step 1: Extract system reminders BEFORE any compaction
     // CRITICAL: System reminders (environment, CLAUDE.md, fspec guidance) must persist through compaction
     let (system_reminders, _compactable) = partition_for_compaction(&session.messages);
+    
+    // PROV-005-DEBUG: Log partition results
+    warn!(
+        "[execute_compaction] partition: system_reminders={}, compactable={}",
+        system_reminders.len(),
+        _compactable.len()
+    );
     
     // Step 2: Create LLM prompt function that uses the provider
     let provider_manager = session.provider_manager();
@@ -205,8 +218,22 @@ pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetr
     // This follows the TypeScript implementation - create turns during compaction, not after each interaction
     let turns = convert_messages_to_turns(&session.messages);
 
+    // PROV-005-DEBUG: Log turns conversion result
+    warn!(
+        "[execute_compaction] convert_messages_to_turns: turns_count={}, budget={}",
+        turns.len(),
+        budget
+    );
+
     // Step 5: Create compactor and run compaction
     let compactor = ContextCompactor::new();
+    
+    // PROV-005-DEBUG: Log before compactor.compact call
+    warn!(
+        "[execute_compaction] CALLING compactor.compact with {} turns",
+        turns.len()
+    );
+    
     let result = compactor.compact(&turns, budget, llm_prompt).await?;
 
     // Step 6: Reconstruct messages array

@@ -341,10 +341,26 @@ where
 
                 if let Some(ref hook) = self.hook {
                     let reader = chat_history.read().await;
+                    // PROV-009-DEBUG: Log before hook call
+                    tracing::warn!(
+                        "[rig/streaming] BEFORE on_completion_call - history_len={}, cancel_signal_cancelled={}",
+                        reader.len(),
+                        cancel_signal.is_cancelled()
+                    );
+                    
                     hook.on_completion_call(&current_prompt, &reader.to_vec(), cancel_signal.clone())
                         .await;
 
+                    // PROV-009-DEBUG: Log after hook call
+                    tracing::warn!(
+                        "[rig/streaming] AFTER on_completion_call - cancel_signal_cancelled={}",
+                        cancel_signal.is_cancelled()
+                    );
+                    
                     if cancel_signal.is_cancelled() {
+                        tracing::warn!(
+                            "[rig/streaming] !!! CANCEL SIGNAL IS SET - yielding PromptCancelled !!!"
+                        );
                         yield Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
                     }
                 }
@@ -508,7 +524,11 @@ where
                             if let Some(ref hook) = self.hook {
                                 hook.on_stream_completion_response_finish(&prompt, &final_resp, cancel_signal.clone()).await;
 
+                                // PROV-005-DEBUG: Log cancel signal state after hook
                                 if cancel_signal.is_cancelled() {
+                                    tracing::warn!(
+                                        "[rig/streaming] cancel_signal is CANCELLED after on_stream_completion_response_finish - yielding PromptCancelled"
+                                    );
                                     yield Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
                                 }
                             }
@@ -569,6 +589,13 @@ where
                     current_span.record("gen_ai.usage.input_tokens", aggregated_usage.input_tokens);
                     current_span.record("gen_ai.usage.output_tokens", aggregated_usage.output_tokens);
                     tracing::info!("Agent multi-turn stream finished");
+                    // PROV-005-DEBUG: Log before yielding final response
+                    tracing::warn!(
+                        "[rig/streaming] yielding final_response - text_len={}, input_tokens={}, output_tokens={}",
+                        last_text_response.len(),
+                        aggregated_usage.input_tokens,
+                        aggregated_usage.output_tokens
+                    );
                     yield Ok(MultiTurnStreamItem::final_response(&last_text_response, aggregated_usage));
                     break;
                 }

@@ -958,6 +958,10 @@
       "required": false,
       "tags": [
         {
+          "name": "@adaptive-thinking",
+          "description": "Adaptive thinking mode for Claude 4.6+ models"
+        },
+        {
           "name": "@ai-agent",
           "description": "AI agent integration features"
         },
@@ -1034,6 +1038,10 @@
           "description": "Behavior-Driven Development methodology"
         },
         {
+          "name": "@beta-headers",
+          "description": "Anthropic beta header configuration"
+        },
+        {
           "name": "@blob",
           "description": "Blob storage scenarios"
         },
@@ -1048,6 +1056,14 @@
         {
           "name": "@browser-integration",
           "description": "Features requiring browser launcher integration"
+        },
+        {
+          "name": "@budget-ignored",
+          "description": "User-provided budget tokens are ignored"
+        },
+        {
+          "name": "@budget-thinking",
+          "description": "Budget-based thinking mode for Claude models"
         },
         {
           "name": "@buffer-overflow",
@@ -1448,6 +1464,10 @@
         {
           "name": "@model",
           "description": "Model identifier scenarios"
+        },
+        {
+          "name": "@model-detection",
+          "description": "Model detection and identification features"
         },
         {
           "name": "@mouse-events",
@@ -2430,7 +2450,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-23T01:46:50.238Z",
+    "lastUpdated": "2026-02-25T05:53:45.940Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

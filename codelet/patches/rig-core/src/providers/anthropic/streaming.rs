@@ -63,6 +63,11 @@ pub enum ContentDelta {
     InputJsonDelta { partial_json: String },
     ThinkingDelta { thinking: String },
     SignatureDelta { signature: String },
+    /// Server-side compaction delta (Opus 4.6+)
+    CompactionDelta { content: String },
+    /// Catch-all for unknown delta types
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Deserialize)]
@@ -287,9 +292,28 @@ where
             let mut text_content = String::new();
 
             while let Some(sse_result) = sse_stream.next().await {
+                // PROV-009-DEBUG: Log every SSE result at the lowest level
+                tracing::warn!(
+                    "[anthropic/streaming] SSE_RESULT received: is_ok={}, variant={:?}",
+                    sse_result.is_ok(),
+                    match &sse_result {
+                        Ok(Event::Open) => "Open",
+                        Ok(Event::Message(_)) => "Message",
+                        Err(_) => "Error",
+                    }
+                );
+                
                 match sse_result {
-                    Ok(Event::Open) => {}
+                    Ok(Event::Open) => {
+                        tracing::warn!("[anthropic/streaming] SSE Event::Open received");
+                    }
                     Ok(Event::Message(sse)) => {
+                        // PROV-009-DEBUG: Log raw SSE data before parsing
+                        tracing::warn!(
+                            "[anthropic/streaming] SSE Message raw data (first 500 chars): {}",
+                            sse.data.chars().take(500).collect::<String>()
+                        );
+                        
                         // Parse the SSE data as a StreamingEvent
                         match serde_json::from_str::<StreamingEvent>(&sse.data) {
                             Ok(event) => {
@@ -319,6 +343,22 @@ where
                                         crate_usage.total_tokens = input_tokens + usage.output_tokens as u64;
                                         yield Ok(RawStreamingChoice::Usage(crate_usage));
 
+                                        // PROV-005-DEBUG: Log stop_reason for debugging Opus 4.6 compaction
+                                        if let Some(ref reason) = delta.stop_reason {
+                                            tracing::warn!(
+                                                "[anthropic/streaming] MessageDelta stop_reason={:?}, stop_sequence={:?}",
+                                                reason,
+                                                delta.stop_sequence
+                                            );
+                                            
+                                            // PROV-009-DEBUG: Check if this is a compaction stop reason
+                                            if reason == "compaction" {
+                                                tracing::warn!(
+                                                    "[anthropic/streaming] !!! SERVER-SIDE COMPACTION stop_reason DETECTED !!!"
+                                                );
+                                            }
+                                        }
+
                                         if delta.stop_reason.is_some() {
                                             let usage = PartialUsage {
                                                  output_tokens: usage.output_tokens,
@@ -333,6 +373,13 @@ where
                                             break;
                                         }
                                     }
+                                    StreamingEvent::Unknown => {
+                                        // PROV-005-DEBUG: Log unknown event type
+                                        tracing::warn!(
+                                            "[anthropic/streaming] Unknown StreamingEvent received - raw data: {}",
+                                            &sse.data
+                                        );
+                                    }
                                     _ => {}
                                 }
 
@@ -345,6 +392,12 @@ where
                             },
                             Err(e) => {
                                 if !sse.data.trim().is_empty() {
+                                    // PROV-005-DEBUG: Log JSON parsing failures with full data
+                                    tracing::warn!(
+                                        "[anthropic/streaming] JSON parse error: {} - Raw data: {}",
+                                        e,
+                                        &sse.data
+                                    );
                                     yield Err(CompletionError::ResponseError(
                                         format!("Failed to parse JSON: {} (Data: {})", e, sse.data)
                                     ));
@@ -353,6 +406,11 @@ where
                         }
                     },
                     Err(e) => {
+                        // PROV-009-DEBUG: Log SSE errors at the lowest level
+                        tracing::warn!(
+                            "[anthropic/streaming] SSE ERROR received: {}",
+                            e
+                        );
                         yield Err(CompletionError::ProviderError(format!("SSE Error: {e}")));
                         break;
                     }
@@ -421,8 +479,30 @@ fn handle_event(
                 // Don't yield signature chunks, they will be included in the final Reasoning
                 None
             }
+            ContentDelta::CompactionDelta { content } => {
+                // PROV-005-DEBUG: Server-side compaction delta received
+                tracing::warn!(
+                    "[anthropic/streaming] Server-side COMPACTION delta received - content_len={}",
+                    content.len()
+                );
+                // For now, just log - we may need to emit this as a special event
+                None
+            }
+            ContentDelta::Unknown => {
+                // PROV-005-DEBUG: Unknown delta type
+                tracing::warn!("[anthropic/streaming] Unknown ContentDelta type received");
+                None
+            }
         },
-        StreamingEvent::ContentBlockStart { content_block, .. } => match content_block {
+        StreamingEvent::ContentBlockStart { content_block, index } => {
+            // PROV-005-DEBUG: Log all content block starts
+            tracing::warn!(
+                "[anthropic/streaming] ContentBlockStart index={} type={:?}",
+                index,
+                std::mem::discriminant(content_block)
+            );
+            
+            match content_block {
             Content::ToolUse { id, name, .. } => {
                 *current_tool_call = Some(ToolCallState {
                     name: name.clone(),
@@ -438,9 +518,23 @@ fn handle_event(
                 *current_thinking = Some(ThinkingState::default());
                 None
             }
+            Content::Compaction { content } => {
+                // PROV-005-DEBUG: Server-side compaction block received
+                tracing::warn!(
+                    "[anthropic/streaming] Server-side COMPACTION block received - content_len={}",
+                    content.len()
+                );
+                // For now, just log - we may need to handle this specially
+                None
+            }
+            Content::Unknown => {
+                // PROV-005-DEBUG: Unknown content block type
+                tracing::warn!("[anthropic/streaming] Unknown Content type in ContentBlockStart");
+                None
+            }
             // Handle other content types - they don't need special handling
             _ => None,
-        },
+        }},
         StreamingEvent::ContentBlockStop { .. } => {
             if let Some(thinking_state) = Option::take(current_thinking)
                 && !thinking_state.thinking.is_empty()

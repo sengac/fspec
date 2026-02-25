@@ -4920,6 +4920,13 @@ macro_rules! run_with_provider {
     ($inner:expr, $getter:ident, $input:expr, $images:expr, $session:expr, $output:expr, $thinking:expr) => {
         match $inner.provider_manager_mut().$getter() {
             Ok(provider) => {
+                // PROV-009-DEBUG: Log provider creation
+                tracing::warn!(
+                    "[run_with_provider] Creating agent - session={}, getter={}",
+                    $session.id,
+                    stringify!($getter)
+                );
+                
                 // TOOL-012: Pass session.id as first parameter so tools store it at construction
                 let agent = codelet_core::RigAgent::with_default_depth(
                     provider.create_rig_agent($session.id, None, $thinking.clone())
@@ -4936,7 +4943,10 @@ macro_rules! run_with_provider {
                 )
                 .await
             }
-            Err(e) => Err(anyhow::anyhow!("Failed to get provider: {}", e)),
+            Err(e) => {
+                tracing::warn!("[run_with_provider] Failed to get provider: {}", e);
+                Err(anyhow::anyhow!("Failed to get provider: {}", e))
+            }
         }
     };
 }
@@ -5044,14 +5054,17 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             session.set_status(SessionStatus::Running);
             session.reset_interrupt();
 
-            // Get provider name early (needed for thinking config)
+            // Get provider name and model ID early (needed for thinking config)
             // Lock briefly, then release before the heavy processing
-            let current_provider = {
+            // PROV-005: We need both provider AND model to correctly determine thinking config.
+            // Adaptive thinking models (claude-opus-4-6, claude-sonnet-4-6) need the model name,
+            // not just the provider name, to trigger adaptive thinking in get_thinking_config().
+            let (current_provider, current_model) = {
                 let inner = session.inner.lock().await;
                 let provider = inner.current_provider_name().to_string();
-                let model = inner.current_model_id();
+                let model = inner.current_model_id().map(|s| s.to_string());
                 tracing::warn!("[AGENT-LOOP] current_provider={}, current_model={:?}", provider, model);
-                provider
+                (provider, model)
             };
 
             // BRIDGE-006: Unified thinking level detection
@@ -5059,21 +5072,29 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             // This replaces the old approach where TypeScript passed thinking_config
             // only for TUI input (watcher/bridge was hardcoded to None).
             //
-            // Priority:
-            // 1. If TypeScript passed an explicit thinking_config, use it (backwards compat)
-            // 2. Otherwise, detect from message text + session base level
+            // Priority (PROV-005 fix):
+            // 1. ALWAYS use model-aware config for adaptive thinking models (Opus 4.6, Sonnet 4.6)
+            //    This overrides any TypeScript-provided config to prevent budget_tokens errors
+            // 2. Otherwise, if TypeScript passed an explicit thinking_config, use it (backwards compat)
+            // 3. Otherwise, detect from message text + session base level
             let thinking_config_value: Option<serde_json::Value> = {
-                // First try TypeScript-provided config (for backwards compatibility)
-                if let Some(config_str) = input_with_images.thinking_config.as_deref() {
-                    serde_json::from_str(config_str).ok()
-                } else {
-                    // Unified detection: detect level from message text
-                    use crate::thinking_level_detection::{
-                        detect_thinking_level, has_disable_keywords,
-                        compute_effective_thinking_level, thinking_level_from_u8,
-                    };
-                    use crate::thinking_config::{get_thinking_config, JsThinkingLevel};
-                    
+                use crate::thinking_level_detection::{
+                    detect_thinking_level, has_disable_keywords,
+                    compute_effective_thinking_level, thinking_level_from_u8,
+                };
+                use crate::thinking_config::{get_thinking_config, JsThinkingLevel};
+                use codelet_tools::facade::is_adaptive_thinking_model;
+                
+                // PROV-005 FIX: For adaptive thinking models, ALWAYS use model-aware config
+                // regardless of what TypeScript passed. This prevents the bug where TypeScript
+                // calls getThinkingConfig('claude', level) and gets budgeted thinking, which
+                // Opus 4.6 rejects with "max_tokens must be greater than thinking.budget_tokens".
+                let is_adaptive_model = current_model.as_deref()
+                    .map(|m| is_adaptive_thinking_model(m))
+                    .unwrap_or(false);
+                
+                if is_adaptive_model {
+                    // Adaptive models: detect level and use model-aware config
                     let detected_level = detect_thinking_level(input);
                     let force_off = has_disable_keywords(input);
                     let base_level = thinking_level_from_u8(session.get_base_thinking_level());
@@ -5082,11 +5103,41 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                     if effective_level == JsThinkingLevel::Off {
                         None
                     } else {
-                        // Get thinking config for this provider and level
-                        match get_thinking_config(current_provider.clone(), effective_level) {
+                        // Use the actual model name for adaptive config
+                        let config_key = current_model.as_deref().unwrap();
+                        match get_thinking_config(config_key.to_string(), effective_level) {
                             Ok(config_str) => {
-                                tracing::info!("Thinking level detected: {:?} (base={:?}, detected={:?}, force_off={})", 
-                                    effective_level, base_level, detected_level, force_off);
+                                tracing::info!("Adaptive thinking model detected: {:?} (base={:?}, detected={:?}, force_off={}, config_key={})", 
+                                    effective_level, base_level, detected_level, force_off, config_key);
+                                serde_json::from_str(&config_str).ok()
+                            }
+                            Err(e) => {
+                                tracing::warn!("Failed to get thinking config for adaptive model: {}", e);
+                                None
+                            }
+                        }
+                    }
+                } else if let Some(config_str) = input_with_images.thinking_config.as_deref() {
+                    // Non-adaptive: use TypeScript-provided config (for backwards compatibility)
+                    serde_json::from_str(config_str).ok()
+                } else {
+                    // Unified detection: detect level from message text
+                    let detected_level = detect_thinking_level(input);
+                    let force_off = has_disable_keywords(input);
+                    let base_level = thinking_level_from_u8(session.get_base_thinking_level());
+                    let effective_level = compute_effective_thinking_level(base_level, detected_level, force_off);
+                    
+                    if effective_level == JsThinkingLevel::Off {
+                        None
+                    } else {
+                        // PROV-005: Get thinking config using model name (if available) for model-aware config.
+                        // For Claude 4.6 models, this triggers adaptive thinking instead of budgeted.
+                        // Falls back to provider name for providers that don't have model-specific configs.
+                        let config_key = current_model.as_deref().unwrap_or(&current_provider);
+                        match get_thinking_config(config_key.to_string(), effective_level) {
+                            Ok(config_str) => {
+                                tracing::info!("Thinking level detected: {:?} (base={:?}, detected={:?}, force_off={}, config_key={})", 
+                                    effective_level, base_level, detected_level, force_off, config_key);
                                 serde_json::from_str(&config_str).ok()
                             }
                             Err(e) => {
@@ -5364,6 +5415,13 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             // Note: run_agent_stream emits StreamEvent::Done on successful completion,
             // so we only emit Done here on error (to ensure the turn is properly terminated)
             if let Err(e) = result {
+                // PROV-009-DEBUG: Log full error with chain at warn level
+                tracing::warn!(
+                    "[AGENT-LOOP] ERROR received - session={}, error={}, error_chain={:?}",
+                    session.id,
+                    e,
+                    e.chain().map(|c| c.to_string()).collect::<Vec<_>>()
+                );
                 tracing::error!("Agent stream error for session {}: {}", session.id, e);
                 session.handle_output(StreamChunk::error(e.to_string()));
                 // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk

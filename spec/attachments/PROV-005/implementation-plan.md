@@ -1,354 +1,342 @@
-# Claude Opus 4.6 Implementation Plan for fspec/codelet
+# Claude Opus 4.6 & Sonnet 4.6 Implementation Plan for fspec/codelet
 
 ## Overview
 
-This document outlines the specific changes needed in the fspec/codelet codebase to support Claude Opus 4.6 with adaptive thinking.
+This document provides the implementation plan for supporting Claude Opus 4.6 and Sonnet 4.6 with adaptive thinking, based on the **official Anthropic documentation** at platform.claude.com/docs.
+
+**Key Principle**: Explicit model constants + exact equality checks. No pattern matching.
 
 ---
 
-## Current Codebase Analysis
+## Official Anthropic Specification
 
-### Relevant Files
+Source: https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
 
-| File | Purpose | Changes Needed |
-|------|---------|----------------|
-| `codelet/providers/src/claude.rs` | Claude provider implementation | Add model detection, skip beta headers |
-| `codelet/patches/rig-core/src/providers/anthropic/streaming.rs` | Streaming SSE handling | Add AdaptiveDelta handling (if needed) |
-| `codelet/patches/rig-core/src/providers/anthropic/completion.rs` | Completion API types | Add Adaptive thinking type |
-| `codelet/patches/rig-core.patch` | Upstream rig-core modifications | Update patch with Adaptive support |
-| `codelet/core/src/` | Core types and traits | May need ThinkingConfig updates |
+### Adaptive Thinking Models
+
+| Model | ID | Thinking Type |
+|-------|-----|---------------|
+| Claude Opus 4.6 | `claude-opus-4-6` | `{"type": "adaptive"}` |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | `{"type": "adaptive"}` |
+
+> `thinking.type: "enabled"` and `budget_tokens` are **deprecated** on Opus 4.6 and Sonnet 4.6 and will be removed in a future model release. Use `thinking.type: "adaptive"` instead.
+
+### Budgeted Thinking Models (Older)
+
+| Model | ID | Thinking Type |
+|-------|-----|---------------|
+| Claude Opus 4.5 | `claude-opus-4-5` | `{"type": "enabled", "budget_tokens": N}` |
+| Claude Sonnet 4.5 | `claude-sonnet-4-5` | `{"type": "enabled", "budget_tokens": N}` |
+| Older models | Various | `{"type": "enabled", "budget_tokens": N}` |
+
+### 1M Context Window Support
+
+Source: https://platform.claude.com/docs/en/build-with-claude/context-windows
+
+> Claude Opus 4.6, Sonnet 4.6, Sonnet 4.5, and Sonnet 4 support a 1-million token context window.
+
+Requires `context-1m-2025-08-07` beta header.
+
+### Beta Headers Summary
+
+| Header | Opus 4.6 | Sonnet 4.6 | Sonnet 4.5 | Opus 4.5 | Unknown |
+|--------|----------|------------|------------|----------|---------|
+| `prompt-caching-2024-07-31` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `output-64k-2025-02-19` | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `interleaved-thinking-2025-05-14` | ✗ | ✗ | ✓ | ✓ | ✓ |
+| `context-1m-2025-08-07` | ✓ | ✓ | ✓ | ✗ | ✗ |
+
+**Key insight**: Adaptive thinking models (4.6) get interleaved thinking **automatically** - no beta header needed.
 
 ---
 
-## Detailed Implementation Plan
+## Implementation
 
-### Phase 1: Model Registration and Detection
-
-#### 1.1 Add Model Constant
-
-**File:** `codelet/providers/src/claude.rs` (or create constants module)
+### Model Constants (Explicit, Not Pattern Matching)
 
 ```rust
 /// Claude Opus 4.6 model identifier
 pub const CLAUDE_OPUS_4_6: &str = "claude-opus-4-6";
 
-/// Check if a model is Claude Opus 4.6
-pub fn is_opus_4_6(model: &str) -> bool {
-    model == CLAUDE_OPUS_4_6 
-        || model == "claude-opus-4.6"
-        || model.starts_with("claude-opus-4-6-")
+/// Claude Sonnet 4.6 model identifier  
+pub const CLAUDE_SONNET_4_6: &str = "claude-sonnet-4-6";
+
+/// Claude Sonnet 4.5 model identifier
+pub const CLAUDE_SONNET_4_5: &str = "claude-sonnet-4-5";
+
+/// Models that use adaptive thinking (exact equality checks)
+pub const ADAPTIVE_THINKING_MODELS: &[&str] = &[
+    CLAUDE_OPUS_4_6,
+    CLAUDE_SONNET_4_6,
+];
+
+/// Models that support 1M context window (exact equality checks)
+pub const CONTEXT_1M_MODELS: &[&str] = &[
+    CLAUDE_OPUS_4_6,
+    CLAUDE_SONNET_4_6,
+    CLAUDE_SONNET_4_5,
+    "claude-sonnet-4-5-20250929",
+];
+
+/// Check if a model uses adaptive thinking
+/// Uses exact equality, NOT pattern matching
+pub fn is_adaptive_thinking_model(model: &str) -> bool {
+    ADAPTIVE_THINKING_MODELS.contains(&model)
+}
+
+/// Check if a model supports 1M context window
+/// Uses exact equality, NOT pattern matching
+pub fn supports_1m_context(model: &str) -> bool {
+    CONTEXT_1M_MODELS.contains(&model)
 }
 ```
 
-### Phase 2: rig-core Patch Updates
-
-#### 2.1 Add Adaptive Thinking Type
-
-**File:** `codelet/patches/rig-core/src/providers/anthropic/completion.rs`
-
-Current thinking-related types need updating. Look for `Content` enum and add `Adaptive` handling:
+### Thinking Configuration
 
 ```rust
-// In the Content enum or similar structure
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
-pub enum ThinkingConfig {
-    Enabled { budget_tokens: u32 },
-    #[serde(rename = "adaptive")]
-    Adaptive,
-    Disabled,
-}
-```
-
-#### 2.2 Update Streaming Handler
-
-**File:** `codelet/patches/rig-core/src/providers/anthropic/streaming.rs`
-
-The streaming handler already handles `ThinkingDelta` and `SignatureDelta`. No changes should be needed here since adaptive thinking uses the same stream format - the API just decides internally how much to think.
-
-#### 2.3 Update Request Building
-
-**File:** `codelet/patches/rig-core/src/providers/anthropic/streaming.rs` (in the `stream` function)
-
-When building the request body, detect Opus 4.6 and use adaptive thinking:
-
-```rust
-// In the stream() function where additional_params are merged
-if let Some(ref params) = completion_request.additional_params {
-    // Check if this is Opus 4.6 and modify thinking config
-    let mut params = params.clone();
-    if self.model.contains("opus-4-6") {
-        // Force adaptive thinking for Opus 4.6
-        if let Some(thinking) = params.get_mut("thinking") {
-            *thinking = json!({"type": "adaptive"});
+impl ClaudeProvider {
+    /// Build thinking configuration for the current model.
+    /// 
+    /// For Opus/Sonnet 4.6: Returns adaptive thinking config, ignoring any user budget.
+    /// For other models: Returns user config as-is (budgeted thinking).
+    /// 
+    /// THINKING LEVEL HANDLING:
+    /// - "off" → No thinking configuration (disabled)
+    /// - "low", "med", "high", "adaptive" → type: "adaptive" (budget levels ignored)
+    fn build_thinking_config(
+        &self,
+        user_budget: Option<u32>,
+        thinking_level: Option<&str>,
+    ) -> Option<serde_json::Value> {
+        // Check for explicit "off" - respects user intent to disable thinking
+        if thinking_level == Some("off") {
+            return None;
         }
-    }
-    merge_inplace(&mut body, params)
-}
-```
-
-### Phase 3: Beta Header Management
-
-#### 3.1 Update Beta Headers for Opus 4.6
-
-**File:** `codelet/providers/src/claude.rs`
-
-Current headers:
-```rust
-const ANTHROPIC_BETA_HEADER_API_KEY: &str =
-    "prompt-caching-2024-07-31,interleaved-thinking-2025-05-14";
-```
-
-Need to add a function to get model-specific headers:
-
-```rust
-/// Get the appropriate beta header for a model
-pub fn get_anthropic_beta_header(model: &str, auth_mode: AuthMode) -> String {
-    let mut features = vec!["prompt-caching-2024-07-31"];
-    
-    // Opus 4.6 doesn't need extended thinking beta - it uses adaptive
-    // Also doesn't need effort beta (effort is GA for 4.6)
-    if !is_opus_4_6(model) {
-        features.push("interleaved-thinking-2025-05-14");
-    }
-    
-    // Opus 4.6 and Sonnet 4.5 support 1M context
-    if is_opus_4_6(model) || model.contains("sonnet-4-5") {
-        features.push("context-1m-2025-08-07");
-    }
-    
-    if auth_mode == AuthMode::OAuth {
-        // OAuth mode requires additional headers
-        features.insert(0, "claude-code-20250219");
-        features.insert(1, "oauth-2025-04-20");
-    }
-    
-    features.join(",")
-}
-```
-
-#### 3.2 Update ClaudeProvider Construction
-
-**File:** `codelet/providers/src/claude.rs`
-
-In `from_api_key_with_mode_and_model`:
-
-```rust
-// Current code builds beta features statically
-// Change to dynamic based on model:
-let beta_header = get_anthropic_beta_header(model, auth_mode);
-let beta_features: Vec<&str> = beta_header.split(',').collect();
-
-anthropic::Client::builder()
-    .api_key(api_key)
-    .anthropic_betas(&beta_features)
-    // ... rest of builder
-```
-
-### Phase 4: Agent Creation Updates
-
-#### 4.1 Update create_rig_agent
-
-**File:** `codelet/providers/src/claude.rs`
-
-The `create_rig_agent` method accepts `thinking_config: Option<serde_json::Value>`. Need to handle Opus 4.6:
-
-```rust
-pub fn create_rig_agent(
-    &self,
-    preamble: Option<&str>,
-    thinking_config: Option<serde_json::Value>,
-) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
-    // ... existing code ...
-
-    // TOOL-010: Merge thinking config with system prompt in additional_params
-    let mut additional = json!({
-        "system": cached_system
-    });
-
-    // Handle thinking config - force adaptive for Opus 4.6
-    if let Some(thinking) = thinking_config {
-        if is_opus_4_6(&self.model_name) {
-            // Override to adaptive for Opus 4.6
-            if let Some(obj) = additional.as_object_mut() {
-                obj.insert("thinking".to_string(), json!({"type": "adaptive"}));
-            }
-        } else if let Some(obj) = additional.as_object_mut() {
-            if let Some(thinking_obj) = thinking.as_object() {
-                for (key, value) in thinking_obj {
-                    obj.insert(key.clone(), value.clone());
+        
+        // EXACT EQUALITY CHECK - not pattern matching
+        if is_adaptive_thinking_model(&self.model_name) {
+            // Opus/Sonnet 4.6: Always use adaptive thinking
+            // User-provided budget_tokens is intentionally ignored
+            // thinking levels (low/med/high) default to adaptive
+            return Some(json!({
+                "thinking": {
+                    "type": "adaptive"
                 }
-            }
+            }));
         }
-    } else if is_opus_4_6(&self.model_name) {
-        // Default to adaptive for Opus 4.6 even without explicit config
-        if let Some(obj) = additional.as_object_mut() {
-            obj.insert("thinking".to_string(), json!({"type": "adaptive"}));
+        
+        // Other Claude models: Use budgeted thinking
+        if let Some(budget) = user_budget {
+            return Some(json!({
+                "thinking": {
+                    "type": "enabled",
+                    "budget_tokens": budget
+                }
+            }));
         }
+        
+        None
     }
-
-    // ... rest of method
 }
 ```
 
-### Phase 5: Effort Parameter Support
-
-#### 5.1 Add Effort Mapping
-
-**File:** `codelet/providers/src/claude.rs` (or new module)
+### Beta Header Construction
 
 ```rust
-/// Reasoning effort levels
-#[derive(Debug, Clone, Copy)]
-pub enum ReasoningEffort {
-    Low,
-    Medium,
-    High,
-    Max,
+mod beta_headers {
+    pub const PROMPT_CACHING: &str = "prompt-caching-2024-07-31";
+    pub const INTERLEAVED_THINKING: &str = "interleaved-thinking-2025-05-14";
+    pub const OUTPUT_64K: &str = "output-64k-2025-02-19";
+    pub const CONTEXT_1M: &str = "context-1m-2025-08-07";
 }
 
-impl ReasoningEffort {
-    /// Convert to API effort string
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            ReasoningEffort::Low => "low",
-            ReasoningEffort::Medium => "medium",
-            ReasoningEffort::High => "high",
-            ReasoningEffort::Max => "max",
+impl ClaudeProvider {
+    /// Get beta headers appropriate for the current model.
+    /// Based on official Anthropic documentation.
+    fn get_beta_headers(&self) -> Vec<&'static str> {
+        let mut headers = Vec::new();
+        
+        // Always include prompt caching and output-64k
+        headers.push(beta_headers::PROMPT_CACHING);
+        headers.push(beta_headers::OUTPUT_64K);
+        
+        // Adaptive thinking models do NOT need interleaved-thinking header
+        // (it's automatic in adaptive mode)
+        if !is_adaptive_thinking_model(&self.model_name) {
+            headers.push(beta_headers::INTERLEAVED_THINKING);
         }
+        
+        // 1M context for specific models
+        if supports_1m_context(&self.model_name) {
+            headers.push(beta_headers::CONTEXT_1M);
+        }
+        
+        headers
     }
 }
 ```
-
-#### 5.2 Add Effort to Request
-
-For Opus 4.6, effort can be included in the request without a beta header:
-
-```rust
-// In request building for Opus 4.6
-if is_opus_4_6(model) {
-    if let Some(effort) = config.effort {
-        merge_inplace(&mut body, json!({
-            "output_config": {
-                "effort": effort.as_str()
-            }
-        }));
-    }
-}
-```
-
-### Phase 6: Update rig-core Patch
-
-#### 6.1 Regenerate Patch
-
-After making changes to `codelet/patches/rig-core/`, regenerate the patch:
-
-```bash
-cd codelet
-diff -ruN /tmp/rig-upstream/rig/rig-core patches/rig-core > patches/rig-core.patch
-```
-
-Changes to include in the patch:
-1. `ThinkingConfig::Adaptive` variant in completion types
-2. Any streaming handler updates
-3. Header handling if done at rig level
 
 ---
 
-## Testing Strategy
+## Test Cases
 
-### Unit Tests
+### Adaptive Thinking Tests
 
 ```rust
-#[test]
-fn test_opus_4_6_detection() {
-    assert!(is_opus_4_6("claude-opus-4-6"));
-    assert!(is_opus_4_6("claude-opus-4.6"));
-    assert!(is_opus_4_6("claude-opus-4-6-20260205"));
-    assert!(!is_opus_4_6("claude-opus-4-5"));
-    assert!(!is_opus_4_6("claude-sonnet-4-5"));
-}
-
-#[test]
-fn test_opus_4_6_beta_headers() {
-    let headers = get_anthropic_beta_header("claude-opus-4-6", AuthMode::ApiKey);
-    
-    // Should include 1M context
-    assert!(headers.contains("context-1m-2025-08-07"));
-    
-    // Should NOT include extended thinking beta
-    assert!(!headers.contains("interleaved-thinking-2025-05-14"));
-    
-    // Should include prompt caching
-    assert!(headers.contains("prompt-caching-2024-07-31"));
-}
-
 #[test]
 fn test_opus_4_6_uses_adaptive_thinking() {
-    let provider = ClaudeProvider::from_api_key_with_model(
-        "test-key", 
-        "claude-opus-4-6"
-    ).unwrap();
-    
-    let agent = provider.create_rig_agent(None, None);
-    // Verify additional_params contains {"thinking": {"type": "adaptive"}}
+    assert!(is_adaptive_thinking_model("claude-opus-4-6"));
+    let config = build_thinking_config("claude-opus-4-6", Some(16000), None);
+    assert_eq!(config["thinking"]["type"], "adaptive");
+    assert!(config["thinking"].get("budget_tokens").is_none());
+}
+
+#[test]
+fn test_sonnet_4_6_uses_adaptive_thinking() {
+    assert!(is_adaptive_thinking_model("claude-sonnet-4-6"));
+    let config = build_thinking_config("claude-sonnet-4-6", Some(16000), None);
+    assert_eq!(config["thinking"]["type"], "adaptive");
+}
+
+#[test]
+fn test_opus_4_5_uses_budgeted_thinking() {
+    assert!(!is_adaptive_thinking_model("claude-opus-4-5"));
+    let config = build_thinking_config("claude-opus-4-5", Some(16000), None);
+    assert_eq!(config["thinking"]["type"], "enabled");
+    assert_eq!(config["thinking"]["budget_tokens"], 16000);
+}
+
+#[test]
+fn test_thinking_level_high_defaults_to_adaptive_for_opus_4_6() {
+    let config = build_thinking_config("claude-opus-4-6", None, Some("high"));
+    assert_eq!(config["thinking"]["type"], "adaptive");
+    assert!(config["thinking"].get("budget_tokens").is_none());
+}
+
+#[test]
+fn test_thinking_level_low_defaults_to_adaptive_for_sonnet_4_6() {
+    let config = build_thinking_config("claude-sonnet-4-6", None, Some("low"));
+    assert_eq!(config["thinking"]["type"], "adaptive");
+}
+
+#[test]
+fn test_thinking_level_off_disables_thinking_for_opus_4_6() {
+    let config = build_thinking_config("claude-opus-4-6", None, Some("off"));
+    assert!(config.is_none());
+}
+
+#[test]
+fn test_thinking_level_off_disables_thinking_for_sonnet_4_6() {
+    let config = build_thinking_config("claude-sonnet-4-6", None, Some("off"));
+    assert!(config.is_none());
 }
 ```
 
-### Integration Tests
+### Beta Header Tests
 
-1. Test streaming with Opus 4.6 model
-2. Verify thinking blocks are still captured correctly
-3. Test effort parameter with different levels
-4. Verify OAuth mode works with Opus 4.6
+```rust
+#[test]
+fn test_opus_4_6_headers() {
+    let headers = get_beta_headers("claude-opus-4-6");
+    assert!(headers.contains(&PROMPT_CACHING));
+    assert!(headers.contains(&OUTPUT_64K));
+    assert!(headers.contains(&CONTEXT_1M));
+    assert!(!headers.contains(&INTERLEAVED_THINKING)); // Not needed for adaptive
+}
 
----
+#[test]
+fn test_sonnet_4_6_headers() {
+    let headers = get_beta_headers("claude-sonnet-4-6");
+    assert!(headers.contains(&CONTEXT_1M));
+    assert!(!headers.contains(&INTERLEAVED_THINKING)); // Not needed for adaptive
+}
 
-## Files to Modify Summary
+#[test]
+fn test_sonnet_4_5_headers() {
+    let headers = get_beta_headers("claude-sonnet-4-5");
+    assert!(headers.contains(&CONTEXT_1M)); // Sonnet 4.5 DOES support 1M
+    assert!(headers.contains(&INTERLEAVED_THINKING)); // Needed for budgeted
+}
 
-| Priority | File | Change Type |
-|----------|------|-------------|
-| High | `codelet/providers/src/claude.rs` | Add model detection, update headers |
-| High | `codelet/patches/rig-core/src/providers/anthropic/completion.rs` | Add Adaptive type |
-| Medium | `codelet/patches/rig-core/src/providers/anthropic/streaming.rs` | Verify no changes needed |
-| Medium | `codelet/patches/rig-core.patch` | Regenerate patch |
-| Low | `codelet/core/tests/` | Add tests for Opus 4.6 |
-
----
-
-## Migration Notes
-
-### Backward Compatibility
-
-- Existing models (Sonnet 4.5, Opus 4.5, etc.) continue to work unchanged
-- Extended thinking with budgets still works for non-Opus-4.6 models
-- No breaking changes to public APIs
-
-### Configuration
-
-Users can use Opus 4.6 by simply specifying the model:
-```
-ANTHROPIC_MODEL=claude-opus-4-6
+#[test]
+fn test_opus_4_5_headers() {
+    let headers = get_beta_headers("claude-opus-4-5");
+    assert!(!headers.contains(&CONTEXT_1M)); // Opus 4.5 does NOT support 1M
+    assert!(headers.contains(&INTERLEAVED_THINKING)); // Needed for budgeted
+}
 ```
 
-No additional configuration needed - adaptive thinking is automatic.
+### Explicit Constant Tests
+
+```rust
+#[test]
+fn test_unknown_model_uses_defaults() {
+    assert!(!is_adaptive_thinking_model("claude-opus-4-7"));
+    assert!(!supports_1m_context("claude-opus-4-7"));
+}
+
+#[test]
+fn test_partial_match_does_not_work() {
+    // Explicit constants mean partial matches don't work
+    assert!(!is_adaptive_thinking_model("claude-opus-4-6-preview"));
+    assert!(!is_adaptive_thinking_model("my-claude-opus-4-6"));
+}
+```
 
 ---
 
-## Open Questions
+## Checklist
 
-1. **Effort Parameter Exposure**: Should we expose effort levels in the TUI/CLI for Opus 4.6?
-2. **1M Context Default**: Should we enable 1M context by default for Opus 4.6, or make it opt-in?
-3. **Model Alias**: Should `claude-opus-4.6` (with dot) be supported in addition to `claude-opus-4-6`?
+### Model Constants
+- [ ] Add `CLAUDE_OPUS_4_6` constant
+- [ ] Add `CLAUDE_SONNET_4_6` constant
+- [ ] Add `ADAPTIVE_THINKING_MODELS` list (Opus 4.6, Sonnet 4.6)
+- [ ] Add `CONTEXT_1M_MODELS` list (Opus 4.6, Sonnet 4.6, Sonnet 4.5)
+- [ ] Implement `is_adaptive_thinking_model()` with exact equality
+- [ ] Implement `supports_1m_context()` with exact equality
+
+### Thinking Configuration
+- [ ] Check for "off" thinking level first - return None
+- [ ] Return `{"type": "adaptive"}` for Opus 4.6 AND Sonnet 4.6
+- [ ] Ignore user-provided `budget_tokens` for adaptive models
+- [ ] Ignore thinking levels (low/med/high) for adaptive models - default to adaptive
+- [ ] Return `{"type": "enabled", "budget_tokens": N}` for older models
+
+### Beta Headers
+- [ ] Exclude `interleaved-thinking` for adaptive models (Opus 4.6, Sonnet 4.6)
+- [ ] Include `context-1m` for Opus 4.6, Sonnet 4.6, Sonnet 4.5
+- [ ] Exclude `context-1m` for Opus 4.5 and unknown models
+
+### Testing
+- [ ] Test adaptive thinking for Opus 4.6
+- [ ] Test adaptive thinking for Sonnet 4.6
+- [ ] Test budgeted thinking for Opus 4.5
+- [ ] Test budgeted thinking for Sonnet 4.5
+- [ ] Test thinking level "high" defaults to adaptive for Opus 4.6
+- [ ] Test thinking level "low" defaults to adaptive for Sonnet 4.6
+- [ ] Test thinking level "off" disables thinking for Opus 4.6
+- [ ] Test thinking level "off" disables thinking for Sonnet 4.6
+- [ ] Test beta headers for all model types
+- [ ] Test explicit constant matching (no pattern matching)
 
 ---
 
-## Estimated Effort
+## Story Points: 3
 
-- **Phase 1-2**: 2 hours (Model detection and types)
-- **Phase 3-4**: 3 hours (Header and agent updates)
-- **Phase 5**: 1 hour (Effort parameter)
-- **Phase 6**: 1 hour (Patch regeneration)
-- **Testing**: 2 hours
+| Phase | Estimate |
+|-------|----------|
+| Model constants | 10 min |
+| Thinking config | 20 min |
+| Beta headers | 30 min |
+| Provider construction | 20 min |
+| Tests | 30 min |
+| **Total** | **~2 hrs** |
 
-**Total**: ~9 hours (estimate: 8 story points)
+---
+
+## References
+
+- Official Anthropic docs: https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking
+- Context windows: https://platform.claude.com/docs/en/build-with-claude/context-windows
+- VTCode implementation: `/tmp/VTCode/vtcode-core/src/llm/providers/anthropic/`
+- OpenCode implementation: `/tmp/opencode/packages/opencode/src/provider/transform.ts`

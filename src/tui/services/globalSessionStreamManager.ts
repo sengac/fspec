@@ -142,9 +142,6 @@ export class GlobalSessionStreamManager {
         }
       );
       globalCallbackRegistered = true;
-      logger.info(
-        '[GlobalSessionStreamManager] Global chunk callback registered'
-      );
     } catch (error) {
       logger.error(
         '[GlobalSessionStreamManager] Failed to register global callback:',
@@ -491,8 +488,5 @@ export function applyPendingIsolationState(sessionId: string): void {
     useSessionStore
       .getState()
       .setIsolationState(pendingState.isIsolated, pendingState.worktreePath);
-    logger.info(
-      `[GlobalSessionStreamManager] Applied pending isolation state for ${sessionId}: isIsolated=${pendingState.isIsolated}`
-    );
   }
 }

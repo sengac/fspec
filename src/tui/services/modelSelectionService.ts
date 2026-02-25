@@ -90,19 +90,9 @@ export async function selectModel(
 
   // 2. Update Rust session if exists
   if (sessionId) {
-    logger.warn('[ModelSelectionService] Attempting to set model', {
-      sessionId,
-      providerId: selection.providerId,
-      modelId: selection.modelId,
-      hasProfileConfig: !!selection.profileConfig,
-    });
-
     try {
       if (selection.profileConfig) {
         // Profile-based model: use sessionSetModelProfile (bypasses registry)
-        logger.warn(
-          '[ModelSelectionService] Using sessionSetModelProfile (profile-based)'
-        );
         await sessionSetModelProfile(
           sessionId,
           selection.providerId,
@@ -110,30 +100,27 @@ export async function selectModel(
         );
       } else {
         // Cloud provider: use sessionSetModel (uses registry validation)
-        logger.warn(
-          '[ModelSelectionService] Using sessionSetModel (cloud provider)'
-        );
         await sessionSetModel(
           sessionId,
           selection.providerId,
           selection.modelId
         );
       }
-      logger.warn('[ModelSelectionService] Model set successfully');
       onRefreshRustState?.(sessionId);
     } catch (err) {
       sessionUpdateSucceeded = false;
       errorMessage = err instanceof Error ? err.message : String(err);
-      logger.error('Failed to update background session model', {
+      logger.error('Failed to update session model', {
         error: err,
         sessionId,
         providerId: selection.providerId,
         modelId: selection.modelId,
-        errorMessage,
       });
     }
-  } else {
-    // 3. No session yet - set local state directly (will be synced when session is created)
+  }
+
+  // 3. Always update Zustand store on success (keeps store in sync for new sessions)
+  if (sessionUpdateSucceeded) {
     onSetCurrentModel?.(selection);
     onSetCurrentProvider?.(mapProviderIdToInternal(selection.providerId));
   }
@@ -160,10 +147,6 @@ export async function selectModel(
       logger.error('Failed to persist model selection', { error: err });
       // Don't fail the whole operation if persistence fails
     }
-  } else {
-    logger.warn(
-      '[ModelSelectionService] Skipping persistence due to session update failure'
-    );
   }
 
   return {

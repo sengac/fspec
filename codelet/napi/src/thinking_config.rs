@@ -2,6 +2,11 @@
 //!
 //! Exposes thinking configuration functionality to TypeScript/Node.js.
 //! Feature: spec/features/thinking-config-facade-for-provider-specific-reasoning.feature
+//!
+//! PROV-005: Updated to support model-aware thinking configuration for Claude.
+//! Opus 4.6 and Sonnet 4.6 use adaptive thinking instead of budgeted thinking.
+//! All Claude models are routed through the model-aware facade which handles
+//! exact equality checks internally (per rule [7]).
 
 use codelet_tools::facade::{
     ClaudeThinkingFacade, Gemini25ThinkingFacade, Gemini3ThinkingFacade, ThinkingConfigFacade,
@@ -34,43 +39,91 @@ impl From<JsThinkingLevel> for ThinkingLevel {
     }
 }
 
+/// Check if a provider string represents a Claude model.
+///
+/// This is used ONLY for routing to the Claude facade.
+/// The facade handles exact equality checks for model-specific behavior (PROV-005 rule [7]).
+#[inline]
+fn is_claude_provider(provider: &str) -> bool {
+    provider.starts_with("claude")
+}
+
+/// Check if a provider string represents a Gemini 3 model.
+#[inline]
+fn is_gemini3_provider(provider: &str) -> bool {
+    matches!(
+        provider,
+        "gemini-3"
+            | "gemini-3-pro"
+            | "gemini-3-flash"
+            | "gemini-3-pro-preview"
+            | "gemini-3-flash-preview"
+    )
+}
+
+/// Check if a provider string represents a Gemini 2.5 model.
+#[inline]
+fn is_gemini25_provider(provider: &str) -> bool {
+    matches!(
+        provider,
+        "gemini-2.5"
+            | "gemini-2.5-pro"
+            | "gemini-2.5-flash"
+            | "gemini-2.5-pro-preview"
+            | "gemini-2.5-flash-preview"
+    )
+}
+
 /// Get thinking configuration JSON for a provider at a specific level.
 ///
 /// # Arguments
-/// * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+/// * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", or specific Claude model names
 /// * `level` - Thinking intensity level
 ///
 /// # Returns
 /// JSON string containing the provider-specific thinking configuration.
+/// Returns empty object for Off level or unknown providers.
+///
+/// # PROV-005: Model-aware Claude thinking
+/// All Claude models are routed through the model-aware facade. The facade uses
+/// exact equality checks (per rule [7]) to determine whether to use adaptive or
+/// budgeted thinking. This ensures no duplicate model detection logic in the NAPI layer.
 ///
 /// # Example
 /// ```typescript
 /// import { getThinkingConfig, JsThinkingLevel } from '@anthropic/codelet-napi';
 ///
-/// const config = JSON.parse(getThinkingConfig('gemini-3', JsThinkingLevel.High));
+/// // Gemini - uses thinkingLevel enum
+/// const geminiConfig = JSON.parse(getThinkingConfig('gemini-3', JsThinkingLevel.High));
 /// // { thinkingConfig: { includeThoughts: true, thinkingLevel: "high" } }
+///
+/// // Claude 4.6 - uses adaptive thinking (PROV-005)
+/// const opus46Config = JSON.parse(getThinkingConfig('claude-opus-4-6', JsThinkingLevel.High));
+/// // { thinking: { type: "adaptive" } }
+///
+/// // Claude 4.5 - uses budgeted thinking
+/// const opus45Config = JSON.parse(getThinkingConfig('claude-opus-4-5', JsThinkingLevel.High));
+/// // { thinking: { type: "enabled", budget_tokens: 32000 } }
 /// ```
 #[napi]
 pub fn get_thinking_config(provider: String, level: JsThinkingLevel) -> napi::Result<String> {
     let level: ThinkingLevel = level.into();
 
-    let config = match provider.as_str() {
-        "gemini-3"
-        | "gemini-3-pro"
-        | "gemini-3-flash"
-        | "gemini-3-pro-preview"
-        | "gemini-3-flash-preview" => Gemini3ThinkingFacade.request_config(level),
-        "gemini-2.5"
-        | "gemini-2.5-pro"
-        | "gemini-2.5-flash"
-        | "gemini-2.5-pro-preview"
-        | "gemini-2.5-flash-preview" => Gemini25ThinkingFacade.request_config(level),
-        "claude" | "claude-3" | "claude-opus" | "claude-sonnet" | "claude-3-opus"
-        | "claude-3-sonnet" | "claude-3.5-sonnet" | "claude-3.5-haiku" => {
-            ClaudeThinkingFacade.request_config(level)
+    let config = if is_gemini3_provider(&provider) {
+        Gemini3ThinkingFacade.request_config(level)
+    } else if is_gemini25_provider(&provider) {
+        Gemini25ThinkingFacade.request_config(level)
+    } else if is_claude_provider(&provider) {
+        // PROV-005: All Claude models use model-aware config.
+        // The facade handles exact equality checks for adaptive vs budgeted thinking.
+        // Unknown Claude models fall back to budgeted thinking (safe default).
+        match ClaudeThinkingFacade.request_config_for_model(&provider, level) {
+            Some(config) => config,
+            None => serde_json::json!({}), // Off level returns empty
         }
+    } else {
         // Unknown provider - return empty config (no thinking)
-        _ => serde_json::json!({}),
+        serde_json::json!({})
     };
 
     serde_json::to_string(&config).map_err(|e| {
@@ -84,7 +137,7 @@ pub fn get_thinking_config(provider: String, level: JsThinkingLevel) -> napi::Re
 /// Check if a response part contains thinking content.
 ///
 /// # Arguments
-/// * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+/// * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", or specific Claude model names
 /// * `part_json` - JSON string of the response part
 ///
 /// # Returns
@@ -103,23 +156,16 @@ pub fn is_thinking_content(provider: String, part_json: String) -> napi::Result<
     let part: serde_json::Value = serde_json::from_str(&part_json)
         .map_err(|e| napi::Error::new(napi::Status::InvalidArg, format!("Invalid JSON: {}", e)))?;
 
-    let is_thinking = match provider.as_str() {
-        "gemini-3"
-        | "gemini-3-pro"
-        | "gemini-3-flash"
-        | "gemini-3-pro-preview"
-        | "gemini-3-flash-preview" => Gemini3ThinkingFacade.is_thinking_part(&part),
-        "gemini-2.5"
-        | "gemini-2.5-pro"
-        | "gemini-2.5-flash"
-        | "gemini-2.5-pro-preview"
-        | "gemini-2.5-flash-preview" => Gemini25ThinkingFacade.is_thinking_part(&part),
-        "claude" | "claude-3" | "claude-opus" | "claude-sonnet" | "claude-3-opus"
-        | "claude-3-sonnet" | "claude-3.5-sonnet" | "claude-3.5-haiku" => {
-            ClaudeThinkingFacade.is_thinking_part(&part)
-        }
+    let is_thinking = if is_gemini3_provider(&provider) {
+        Gemini3ThinkingFacade.is_thinking_part(&part)
+    } else if is_gemini25_provider(&provider) {
+        Gemini25ThinkingFacade.is_thinking_part(&part)
+    } else if is_claude_provider(&provider) {
+        // All Claude models use the same response format for thinking content
+        ClaudeThinkingFacade.is_thinking_part(&part)
+    } else {
         // Unknown provider - not thinking content
-        _ => false,
+        false
     };
 
     Ok(is_thinking)
@@ -128,7 +174,7 @@ pub fn is_thinking_content(provider: String, part_json: String) -> napi::Result<
 /// Extract thinking text from a response part.
 ///
 /// # Arguments
-/// * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+/// * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", or specific Claude model names
 /// * `part_json` - JSON string of the response part
 ///
 /// # Returns
@@ -138,24 +184,116 @@ pub fn extract_thinking_text(provider: String, part_json: String) -> napi::Resul
     let part: serde_json::Value = serde_json::from_str(&part_json)
         .map_err(|e| napi::Error::new(napi::Status::InvalidArg, format!("Invalid JSON: {}", e)))?;
 
-    let text = match provider.as_str() {
-        "gemini-3"
-        | "gemini-3-pro"
-        | "gemini-3-flash"
-        | "gemini-3-pro-preview"
-        | "gemini-3-flash-preview" => Gemini3ThinkingFacade.extract_thinking_text(&part),
-        "gemini-2.5"
-        | "gemini-2.5-pro"
-        | "gemini-2.5-flash"
-        | "gemini-2.5-pro-preview"
-        | "gemini-2.5-flash-preview" => Gemini25ThinkingFacade.extract_thinking_text(&part),
-        "claude" | "claude-3" | "claude-opus" | "claude-sonnet" | "claude-3-opus"
-        | "claude-3-sonnet" | "claude-3.5-sonnet" | "claude-3.5-haiku" => {
-            ClaudeThinkingFacade.extract_thinking_text(&part)
-        }
+    let text = if is_gemini3_provider(&provider) {
+        Gemini3ThinkingFacade.extract_thinking_text(&part)
+    } else if is_gemini25_provider(&provider) {
+        Gemini25ThinkingFacade.extract_thinking_text(&part)
+    } else if is_claude_provider(&provider) {
+        // All Claude models use the same response format for thinking content
+        ClaudeThinkingFacade.extract_thinking_text(&part)
+    } else {
         // Unknown provider - no text
-        _ => None,
+        None
     };
 
     Ok(text)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // =========================================================================
+    // PROV-005: Verify routing helpers work correctly
+    // =========================================================================
+
+    #[test]
+    fn test_is_claude_provider_routes_all_claude_models() {
+        // Specific 4.x models
+        assert!(is_claude_provider("claude-opus-4-6"));
+        assert!(is_claude_provider("claude-sonnet-4-6"));
+        assert!(is_claude_provider("claude-opus-4-5"));
+        assert!(is_claude_provider("claude-sonnet-4-5"));
+
+        // Versioned models
+        assert!(is_claude_provider("claude-opus-4-6-20260201"));
+        assert!(is_claude_provider("claude-sonnet-4-5-20250929"));
+
+        // Generic provider names
+        assert!(is_claude_provider("claude"));
+        assert!(is_claude_provider("claude-3"));
+        assert!(is_claude_provider("claude-opus"));
+        assert!(is_claude_provider("claude-sonnet"));
+        assert!(is_claude_provider("claude-3-opus"));
+        assert!(is_claude_provider("claude-3-sonnet"));
+        assert!(is_claude_provider("claude-3.5-sonnet"));
+        assert!(is_claude_provider("claude-3.5-haiku"));
+
+        // Unknown future models - should still route to Claude
+        assert!(is_claude_provider("claude-opus-4-7"));
+        assert!(is_claude_provider("claude-opus-5-0"));
+
+        // Non-Claude
+        assert!(!is_claude_provider("gemini-3"));
+        assert!(!is_claude_provider("gpt-4"));
+        assert!(!is_claude_provider(""));
+    }
+
+    #[test]
+    fn test_gemini_provider_routing() {
+        // Gemini 3
+        assert!(is_gemini3_provider("gemini-3"));
+        assert!(is_gemini3_provider("gemini-3-pro"));
+        assert!(is_gemini3_provider("gemini-3-flash"));
+        assert!(!is_gemini3_provider("gemini-2.5"));
+        assert!(!is_gemini3_provider("claude"));
+
+        // Gemini 2.5
+        assert!(is_gemini25_provider("gemini-2.5"));
+        assert!(is_gemini25_provider("gemini-2.5-pro"));
+        assert!(is_gemini25_provider("gemini-2.5-flash"));
+        assert!(!is_gemini25_provider("gemini-3"));
+        assert!(!is_gemini25_provider("claude"));
+    }
+
+    #[test]
+    fn test_get_thinking_config_routes_claude_to_model_aware() {
+        // Adaptive thinking model
+        let config = get_thinking_config("claude-opus-4-6".to_string(), JsThinkingLevel::High)
+            .expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(
+            parsed["thinking"]["type"].as_str(),
+            Some("adaptive"),
+            "Opus 4.6 should use adaptive thinking"
+        );
+
+        // Budgeted thinking model
+        let config = get_thinking_config("claude-opus-4-5".to_string(), JsThinkingLevel::High)
+            .expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(
+            parsed["thinking"]["type"].as_str(),
+            Some("enabled"),
+            "Opus 4.5 should use budgeted thinking"
+        );
+
+        // Generic "claude" also works (falls back to budgeted)
+        let config =
+            get_thinking_config("claude".to_string(), JsThinkingLevel::High).expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(
+            parsed["thinking"]["type"].as_str(),
+            Some("enabled"),
+            "Generic 'claude' should use budgeted thinking"
+        );
+    }
+
+    #[test]
+    fn test_unknown_provider_returns_empty_config() {
+        let config =
+            get_thinking_config("unknown-provider".to_string(), JsThinkingLevel::High).expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(parsed, serde_json::json!({}), "Unknown provider should return empty");
+    }
 }

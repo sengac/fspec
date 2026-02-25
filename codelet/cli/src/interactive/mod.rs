@@ -14,7 +14,9 @@ pub use output::{
     CliOutput, ContextFillInfo, StreamEvent, StreamOutput, TokenInfo, ToolCallEvent,
     ToolResultEvent,
 };
-pub use stream_loop::{run_agent_stream, run_agent_stream_with_images, BridgeImage};
+pub use stream_loop::{
+    is_prompt_too_long_error, run_agent_stream, run_agent_stream_with_images, BridgeImage,
+};
 
 use crate::session::Session;
 use anyhow::Result;
