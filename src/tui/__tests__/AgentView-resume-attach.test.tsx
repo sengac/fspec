@@ -14,6 +14,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { ModelSelection } from '../types/provider';
 
 // Mock state for tracking NAPI calls
 const mockState = {
@@ -1001,18 +1002,9 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
   });
 
   describe('Scenario: Model fallback when providerSections lookup fails', () => {
-    interface ModelSelection {
-      providerId: string;
-      modelId: string;
-      apiModelId: string;
-      displayName: string;
-      reasoning: boolean;
-      hasVision: boolean;
-      contextWindow: number;
-      maxOutput: number;
-    }
-
-    interface ProviderSection {
+    // TUI-076: Use canonical ModelSelection from types/provider
+    // Test-local simplified type for provider lookup (differs from ProviderSection which uses NapiModelInfo[])
+    interface TestProviderLookup {
       providerId: string;
       models: Array<{ id: string; name: string }>;
     }
@@ -1035,7 +1027,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       };
 
       // @step And providerSections is empty (not loaded yet)
-      const providerSections: ProviderSection[] = [];
+      const providerSections: TestProviderLookup[] = [];
 
       // @step When model restoration runs
       let currentModel: ModelSelection | null = null;
@@ -1091,7 +1083,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       };
 
       // @step And providerSections has the matching model
-      const providerSections: ProviderSection[] = [
+      const providerSections: TestProviderLookup[] = [
         {
           providerId: 'anthropic',
           models: [
@@ -1154,7 +1146,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       };
 
       // @step And providerSections has different providers
-      const providerSections: ProviderSection[] = [
+      const providerSections: TestProviderLookup[] = [
         {
           providerId: 'anthropic',
           models: [{ id: 'claude-opus-4-20250514', name: 'Claude Opus 4' }],

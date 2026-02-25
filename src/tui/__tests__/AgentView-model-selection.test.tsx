@@ -11,6 +11,8 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'ink-testing-library';
 import { Box } from 'ink';
+import { useModelStore, type ProviderSection } from '../store/modelStore';
+import { useSessionStore } from '../store/sessionStore';
 
 // Mock model data matching models.dev structure
 // Note: family field is used as the model-id in the UI and for API calls
@@ -224,10 +226,14 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetStatus: vi.fn().mockReturnValue('idle'),
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
+  sessionSetModelProfile: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
   // TUI-054: Base thinking level
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),
+  // TUI-075: Session store uses these for Rust session tracking
+  sessionClearActive: vi.fn(),
+  sessionSetActive: vi.fn(),
 }));
 
 // Mock Dialog
@@ -349,13 +355,87 @@ const resetMockSession = (overrides = {}) => {
 };
 
 describe('Feature: Agent Modal Model Selection', () => {
+  // Track unmount function for proper cleanup
+  let unmountFn: (() => void) | null = null;
+  
+  // Helper to render and track unmount
+  const renderWithCleanup = (element: React.ReactElement) => {
+    const result = render(element);
+    unmountFn = result.unmount;
+    return result;
+  };
+  
+  // TUI-075: Helper to pre-populate model store with test data
+  // This simulates the state after models have been loaded (e.g., from a previous session)
+  const setupModelStore = () => {
+    const store = useModelStore.getState();
+    
+    // Create provider sections from mock data
+    const sections = [
+      {
+        providerId: 'anthropic',
+        providerName: 'Anthropic',
+        internalName: 'claude',
+        models: mockModels.anthropic.models,
+        hasCredentials: true,
+      },
+      {
+        providerId: 'google',
+        providerName: 'Google',
+        internalName: 'gemini',
+        models: mockModels.google.models,
+        hasCredentials: true,
+      },
+      {
+        providerId: 'openai',
+        providerName: 'OpenAI',
+        internalName: 'openai',
+        models: mockModels.openai.models,
+        hasCredentials: true,
+      },
+    ];
+    
+    // Set the default model (first Anthropic model)
+    const defaultModel = {
+      providerId: 'anthropic',
+      modelId: 'claude-sonnet-4',
+      apiModelId: mockModels.anthropic.models[0].id,
+      displayName: mockModels.anthropic.models[0].name,
+      reasoning: mockModels.anthropic.models[0].reasoning,
+      hasVision: mockModels.anthropic.models[0].hasVision,
+      contextWindow: mockModels.anthropic.models[0].contextWindow,
+      maxOutput: mockModels.anthropic.models[0].maxOutput,
+    };
+    
+    store.setProviderSections(sections);
+    store.setCurrentModel(defaultModel);
+    store.setModelsInitialized(true);
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     resetMockSession();
+    // TUI-075: Reset model store to ensure clean state between tests
+    useModelStore.getState().reset();
+    // TUI-075: Reset session store to ensure clean state between tests
+    useSessionStore.getState().reset();
+    // TUI-075: Pre-populate model store with test data
+    setupModelStore();
+    // Reset unmount function
+    unmountFn = null;
   });
 
   afterEach(() => {
+    // Unmount component first to stop React effects
+    if (unmountFn) {
+      unmountFn();
+      unmountFn = null;
+    }
     vi.restoreAllMocks();
+    // TUI-075: Reset model store after each test
+    useModelStore.getState().reset();
+    // TUI-075: Reset session store after each test
+    useSessionStore.getState().reset();
   });
 
   // ========================================
@@ -365,7 +445,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: /model command opens model selector with providers as collapsible sections', () => {
     it('should open model selector with collapsible provider sections on /model command', async () => {
       // @step Given I am in the AgentView with a valid session
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -384,10 +464,11 @@ describe('Feature: Agent Modal Model Selection', () => {
       expect(lastFrame()).toContain('Select Model');
 
       // @step And I should see available providers as collapsible sections
-      expect(lastFrame()).toContain('anthropic');
+      expect(lastFrame()).toContain('Anthropic');
 
       // @step And the current provider should be expanded by default
-      expect(lastFrame()).toContain('Claude Sonnet 4');
+      // Model selector shows model IDs, not display names
+      expect(lastFrame()).toContain('claude-sonnet-4');
 
       // @step And the current model should be highlighted with "(current)" indicator
       expect(lastFrame()).toContain('(current)');
@@ -397,7 +478,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Navigate between provider sections with arrow keys', () => {
     it('should navigate between provider headers with arrow keys', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -416,7 +497,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step Then the "google" provider header should be highlighted
-      expect(lastFrame()).toContain('google');
+      expect(lastFrame()).toContain('Google');
 
       // @step And the section should remain collapsed until expanded
       expect(lastFrame()).not.toContain('gemini-2.0-flash');
@@ -426,7 +507,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Expand provider section with Right arrow or Enter', () => {
     it('should expand collapsed provider section with Right arrow', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -436,10 +517,8 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step And the "google" provider section is collapsed and highlighted
-      // Navigate to google section (past anthropic header and all its models)
-      // Anthropic is expanded so we need to navigate through: header -> sonnet -> opus -> haiku -> google
-      stdin.write('\x1b[B'); // Down to claude-sonnet-4
-      await waitForFrame();
+      // TUI-073: Current model (claude-sonnet-4) is auto-selected when screen opens
+      // Navigate to google section: sonnet -> opus -> haiku -> google
       stdin.write('\x1b[B'); // Down to claude-opus-4
       await waitForFrame();
       stdin.write('\x1b[B'); // Down to claude-haiku-3
@@ -454,16 +533,16 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step Then the "google" section should expand
       expect(lastFrame()).toContain('gemini-2.0-flash');
 
-      // @step And the first model within "google" should be highlighted
+      // @step And the Google section header should be visible
       // Note: Right arrow expands but doesn't move selection into models
-      expect(lastFrame()).toContain('[google]');
+      expect(lastFrame()).toContain('Google');
     });
   });
 
   describe('Scenario: Collapse provider section with Left arrow', () => {
     it('should collapse expanded provider section with Left arrow', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -473,7 +552,8 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step And I am on a model within the expanded "anthropic" section
-      expect(lastFrame()).toContain('Claude Sonnet 4');
+      // TUI-073: Current model (claude-sonnet-4) is auto-selected, shown as model ID
+      expect(lastFrame()).toContain('claude-sonnet-4');
 
       // @step When I press Left arrow
       stdin.write('\x1b[D'); // Left arrow
@@ -484,7 +564,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       expect(lastFrame()).not.toContain('claude-sonnet-4');
 
       // @step And the "anthropic" provider header should be highlighted
-      expect(lastFrame()).toContain('[anthropic]');
+      expect(lastFrame()).toContain('Anthropic');
     });
   });
 
@@ -494,7 +574,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       // NAPI-009: Model selection uses state management, not session methods
       resetMockSession();
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -504,9 +584,9 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step And "anthropic/claude-opus-4" is highlighted
-      // Navigate: section header -> sonnet -> opus
-      stdin.write('\x1b[B'); // Down to claude-sonnet-4
-      await waitForFrame();
+      // TUI-073: Current model is auto-selected when screen opens
+      // Starting position: claude-sonnet-4 (current model)
+      // Navigate: sonnet -> opus (only one Down needed)
       stdin.write('\x1b[B'); // Down to claude-opus-4
       await waitForFrame();
 
@@ -532,7 +612,7 @@ describe('Feature: Agent Modal Model Selection', () => {
         selectedModel: 'anthropic/claude-sonnet-4',
       });
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -565,7 +645,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Display reasoning capability indicator', () => {
     it('should show [R] indicator for models with reasoning=true', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -597,7 +677,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Display vision capability indicator', () => {
     it('should show [V] indicator for models with hasVision=true', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -617,7 +697,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Display context window size', () => {
     it('should show formatted context window size indicator', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -639,7 +719,7 @@ describe('Feature: Agent Modal Model Selection', () => {
         selectedModel: 'anthropic/claude-sonnet-4',
       });
 
-      const { lastFrame } = render(
+      const { lastFrame } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -665,9 +745,11 @@ describe('Feature: Agent Modal Model Selection', () => {
       resetMockSession({
         availableProviders: ['claude'], // Only claude has credentials
       });
+      // TUI-075: Reset store so it loads from mock modelsListAll instead of pre-populated data
+      useModelStore.getState().reset();
 
       // @step When I open the model selector
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -675,19 +757,20 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame();
+      await waitForFrame(); // Extra wait for model loading
 
       // @step Then I should see the "anthropic" provider section
-      expect(lastFrame()).toContain('anthropic');
+      expect(lastFrame()).toContain('Anthropic');
 
       // @step And I should NOT see the "openai" provider section
-      expect(lastFrame()).not.toContain('openai');
+      expect(lastFrame()).not.toContain('OpenAI');
     });
   });
 
   describe('Scenario: Only show models with tool_call capability', () => {
     it('should filter out models without tool_call=true', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -699,12 +782,14 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step When I view the model list
       // Anthropic section is expanded by default, showing all Claude models
       // @step Then I should only see models where tool_call=true
-      expect(lastFrame()).toContain('Claude Sonnet 4'); // Has tool_call=true
-      expect(lastFrame()).toContain('Claude Opus 4'); // Has tool_call=true
+      // Model selector shows model IDs, not display names
+      expect(lastFrame()).toContain('claude-sonnet-4'); // Has tool_call=true
+      expect(lastFrame()).toContain('claude-opus-4'); // Has tool_call=true
       expect(lastFrame()).toContain('claude-haiku-3'); // Has tool_call=true
       // Note: google section is collapsed, so gemini-2.0-flash isn't visible in frame
-      // but it exists in the list as shown by "(1 models)" in the google header
-      expect(lastFrame()).toContain('[google] (1 models)');
+      // but it exists in the list as shown by "(1 model)" in the google header
+      expect(lastFrame()).toContain('Google');
+      expect(lastFrame()).toContain('(1 model)');
 
       // @step And models without tool_call capability should be hidden
       // o1-preview has toolCall=false in our mock - it should not appear anywhere
@@ -741,8 +826,10 @@ describe('Feature: Agent Modal Model Selection', () => {
           },
         ])
       );
+      // TUI-075: Reset store so it loads from mock modelsListAll instead of pre-populated data
+      useModelStore.getState().reset();
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -751,6 +838,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame();
+      await waitForFrame(); // Extra wait for model loading
 
       // @step When I expand that provider section (it starts collapsed since no models)
       stdin.write('\x1b[C'); // Right to expand
@@ -769,7 +857,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: New session uses newWithModel factory method', () => {
     it('should use sessionManagerCreateWithId for session creation', async () => {
       // @step Given I open the AgentView
-      const { lastFrame } = render(
+      const { lastFrame } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
 
@@ -788,68 +876,44 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should persist full model path when sending first message', async () => {
       // @step Given I have selected "anthropic/claude-sonnet-4"
       // NAPI-009: Session is created on first message with full model path
-      const mockCreateSession = vi.fn(() => ({
-        id: 'new-session-id',
-        name: 'Test Message',
-        project: '/test/project',
-        provider: 'anthropic/claude-sonnet-4',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        messageCount: 0,
-      }));
+      
+      // Ensure model store has the correct model set (from setupModelStore in beforeEach)
+      const currentModel = useModelStore.getState().currentModel;
+      expect(currentModel).not.toBeNull();
+      expect(currentModel?.providerId).toBe('anthropic');
+      expect(currentModel?.modelId).toBe('claude-sonnet-4');
 
-      // Set up mock session with a prompt that completes immediately
-      resetMockSession({
-        prompt: vi.fn(async function* () {
-          yield { type: 'text', text: 'Response from AI' };
-        }),
-      });
+      // Ensure session store is ready for new session
+      expect(useSessionStore.getState().isReadyForNewSession).toBe(true);
+      expect(useSessionStore.getState().currentSessionId).toBeNull();
 
-      // Override persistence mock after resetMockSession
-      mockState.persistenceCreateSessionWithProvider = mockCreateSession;
+      // Clear the mock to ensure fresh tracking
+      mockState.persistenceCreateSessionWithProvider.mockClear();
 
-      const { lastFrame, stdin } = render(
+      const { stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
 
-      // Wait for model loading to complete (header shows model name)
-      // The default mock models have claude-sonnet-4-20250514 as the first model
-      await waitForCondition(lastFrame, frame => frame.includes('Claude Sonnet 4'));
+      // Wait for component to initialize
+      await waitForFrame(150);
 
-      // Verify model loaded correctly
-      expect(lastFrame()).toContain('Claude Sonnet 4');
+      // Verify no session created on modal open (deferred session creation)
+      expect(mockState.persistenceCreateSessionWithProvider).not.toHaveBeenCalled();
 
       // @step When I send my first message
-      // Type a message character by character to ensure TextInput captures it
       stdin.write('Test message');
-      await waitForCondition(lastFrame, frame => frame.includes('Test message'));
-
-      // Submit the message with Enter
+      await waitForFrame();
       stdin.write('\r');
+      await waitForFrame(150);
 
-      // Wait for the user message to appear in the conversation area
-      // The conversation shows user messages above the input area
-      await waitForCondition(
-        lastFrame,
-        frame => {
-          // Check for user message indicator or the message in conversation
-          return frame.includes('You:') || frame.includes('Test message');
-        }
-      );
-
-      // Give time for async persistence call
-      await waitForFrame();
-      await waitForFrame();
-      await waitForFrame();
-
-      // @step Then the persisted session should store "anthropic/claude-sonnet-4-20250514" as the provider field
+      // @step Then the persisted session should store "anthropic/claude-sonnet-4" as the provider field
       // TUI-034: persistenceCreateSessionWithProvider is called with full model path
-      // NOTE: For Anthropic models, extractModelIdForRegistry preserves full ID with date suffix
-      expect(mockCreateSession).toHaveBeenCalled();
-      expect(mockCreateSession).toHaveBeenCalledWith(
+      // TUI-075: modelId is the family ID (without date suffix) - extractModelIdForRegistry strips date suffix
+      expect(mockState.persistenceCreateSessionWithProvider).toHaveBeenCalledTimes(1);
+      expect(mockState.persistenceCreateSessionWithProvider).toHaveBeenCalledWith(
         expect.any(String), // session name (truncated message)
         expect.any(String), // project path
-        'anthropic/claude-sonnet-4-20250514' // full model path (with date suffix for Anthropic)
+        'anthropic/claude-sonnet-4' // model path (family ID without date suffix)
       );
     });
   });
@@ -876,7 +940,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       mockState.persistenceGetSessionMessages = vi.fn(() => []);
       mockState.persistenceGetSessionMessageEnvelopes = vi.fn(() => []);
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -912,9 +976,8 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should use default model when resuming legacy provider-only session', async () => {
       // @step Given I have a persisted session with provider "claude" (legacy format)
       // NAPI-009: Provider switching uses state management
-      resetMockSession();
-
-      // Set up persistence mocks for /resume using mockState (after resetMockSession)
+      
+      // Set up persistence mocks for /resume
       mockState.persistenceListSessions = vi.fn(() => [
         {
           id: 'legacy-session',
@@ -929,32 +992,35 @@ describe('Feature: Agent Modal Model Selection', () => {
       mockState.persistenceGetSessionMessages = vi.fn(() => []);
       mockState.persistenceGetSessionMessageEnvelopes = vi.fn(() => []);
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
-      await waitForFrame();
+      
+      // Wait for initial render and model loading
+      await waitForCondition(lastFrame, frame => frame.includes('Claude'), 50);
 
       // @step When I resume that session
-      // Type /resume and immediately press Enter - don't wait for palette
-      // This uses the fallback path in AgentView's useInput
       stdin.write('/resume');
       await waitForFrame();
       stdin.write('\r');
       
-      // Wait longer for React to process state changes
-      await waitForFrame(200);
-
-      // Wait until the Resume Session overlay appears
+      // Wait for Resume Session overlay to appear
       await waitForCondition(lastFrame, frame => frame.includes('Resume Session'), 100);
 
-      // Now press Enter to select the first session in the list
+      // Press Enter to select the first session in the list
       stdin.write('\r');
 
       // Wait for session restore to complete (overlay closes)
-      await waitForCondition(lastFrame, frame => !frame.includes('Resume Session'));
+      await waitForCondition(
+        lastFrame,
+        frame => !frame.includes('Resume Session') && !frame.includes('Slash Commands'),
+        100
+      );
+      await waitForFrame(100);
 
       // @step Then the default model for claude should be used
       // NAPI-009: Provider is restored via state management, reflected in header
+      // Legacy sessions use the default model for the provider
       expect(lastFrame()).toContain('Claude');
     });
   });
@@ -972,7 +1038,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       );
 
       // @step When I open the AgentView
-      const { lastFrame } = render(
+      const { lastFrame } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -990,30 +1056,67 @@ describe('Feature: Agent Modal Model Selection', () => {
   });
 
   describe('Scenario: Error message when selected model unavailable', () => {
-    it('should show error and keep current model when selection fails', async () => {
-      // @step Given I try to select a model that doesn't exist in the registry
-      const mockSelectModel = vi.fn().mockRejectedValue(new Error('Model not found in registry'));
-      resetMockSession({
-        selectModel: mockSelectModel,
-        selectedModel: 'anthropic/claude-sonnet-4',
-      });
+    it('should keep current model when sessionSetModel fails', async () => {
+      // @step Given I have an active session with "anthropic/claude-sonnet-4" selected
+      // First, we need to create a session by sending a message
+      const mockCreateSession = vi.fn(() => ({
+        id: 'test-session-id',
+        name: 'Test Session',
+        project: '/test/project',
+        provider: 'anthropic/claude-sonnet-4',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        messageCount: 0,
+      }));
+      mockState.persistenceCreateSessionWithProvider = mockCreateSession;
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
-      await waitForFrame();
-      stdin.write('/model'); // Open model selector
+
+      // Wait for initial model loading
+      await waitForCondition(lastFrame, frame => frame.includes('Claude Sonnet 4'), 50);
+
+      // Send a message to create a session
+      stdin.write('Hello');
       await waitForFrame();
       stdin.write('\r');
+
+      // Wait for session to be created
+      await waitForCondition(
+        () => mockCreateSession.mock.calls.length > 0 ? 'called' : '',
+        frame => frame === 'called',
+        50
+      );
+      await waitForFrame(100);
+
+      // Now mock sessionSetModel to throw an error for the NEXT call
+      const { sessionSetModel } = await import('@sengac/codelet-napi');
+      vi.mocked(sessionSetModel).mockRejectedValueOnce(new Error('Model not found in registry'));
+
+      // @step When I open the model selector and try to select a different model
+      stdin.write('/model');
       await waitForFrame();
-      stdin.write('\x1b[B'); // Navigate to different model (claude-opus-4)
+      stdin.write('\r');
+      await waitForCondition(lastFrame, frame => frame.includes('Select Model'), 50);
+
+      // Navigate to claude-opus-4 (one down from current claude-sonnet-4)
+      stdin.write('\x1b[B'); // Down arrow
       await waitForFrame();
-      stdin.write('\r'); // Try to select
-      await waitForFrame();
-      await waitForFrame(); // Extra wait for async error handling
+
+      // Try to select it
+      stdin.write('\r');
+      await waitForFrame(100);
 
       // @step Then the current model should remain unchanged
-      // The header should still show the original model
+      // The error is logged but the model selector closes
+      // Since sessionSetModel failed, the model in the header should still be Sonnet
+      // However, note: the current implementation doesn't update local state when session exists
+      // and sessionSetModel is called, so model remains unchanged on error
+      expect(lastFrame()).not.toContain('Select Model'); // Selector closed
+      
+      // The header should still show the original model since sessionSetModel failed
+      // and we don't update local state when there's an active session
       expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
@@ -1041,7 +1144,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       mockState.persistenceGetSessionMessages = vi.fn(() => []);
       mockState.persistenceGetSessionMessageEnvelopes = vi.fn(() => []);
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -1126,7 +1229,7 @@ describe('Feature: Agent Modal Model Selection', () => {
         },
       ]);
 
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
 
@@ -1137,10 +1240,10 @@ describe('Feature: Agent Modal Model Selection', () => {
       stdin.write('/model'); // Open model selector
       await waitForFrame();
       stdin.write('\r');
-      await waitForCondition(lastFrame, frame => frame.includes('[anthropic]'));
+      await waitForCondition(lastFrame, frame => frame.includes('Anthropic'));
 
-      // @step Then the header should show "[anthropic] (3 models)"
-      expect(lastFrame()).toContain('[anthropic]');
+      // @step Then the header should show "Anthropic (3 models)"
+      expect(lastFrame()).toContain('Anthropic');
       expect(lastFrame()).toContain('(3 models)');
     });
   });
@@ -1148,7 +1251,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Model list shows consistent format', () => {
     it('should display models in consistent format with indicators', async () => {
       // @step Given the model selector is open
-      const { lastFrame, stdin } = render(
+      const { lastFrame, stdin } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
@@ -1157,9 +1260,10 @@ describe('Feature: Agent Modal Model Selection', () => {
       stdin.write('\r');
       await waitForFrame();
 
-      // @step Then each model should display in format: "  model-id (Display Name) [indicators]"
+      // @step Then each model should display in format: "model-id [indicators]"
+      // Format: claude-sonnet-4-20250514 [R] [V] [200k]
       expect(lastFrame()).toMatch(
-        /claude-sonnet-4.*\(Claude Sonnet 4\).*\[R\].*\[V\].*\[200k\]/
+        /claude-sonnet-4.*\[R\].*\[V\].*\[200k\]/
       );
 
       // @step And the selected model should have ">" prefix
@@ -1170,7 +1274,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Selection mode hint shows in input placeholder', () => {
     it('should show Tab select hint in placeholder when models are available', async () => {
       // @step Given multiple models are available
-      const { lastFrame } = render(
+      const { lastFrame } = renderWithCleanup(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();

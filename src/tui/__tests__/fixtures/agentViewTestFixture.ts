@@ -225,6 +225,7 @@ export const createNapiMock = () => ({
     .fn()
     .mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
+  sessionSetModelProfile: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
   sessionSetPendingInput: vi.fn(),
   sessionGetPendingInput: vi.fn().mockReturnValue(null),

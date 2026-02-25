@@ -30,7 +30,6 @@ import {
   useShowCreateSessionDialog,
   useSessionActions,
 } from '../store/sessionStore';
-import { useFspecStore } from '../store/fspecStore';
 import { useRustSessionState } from '../hooks/useRustSessionState';
 import { 
   sessionGetAnchorPoints, 
@@ -49,7 +48,30 @@ const waitForFrame = (ms = 50): Promise<void> =>
 
 // Mock necessary stores and modules
 vi.mock('../store/sessionStore');
-vi.mock('../store/fspecStore');
+
+// Mock fspecStore with both hook and getState() support
+const mockFspecState = {
+  cwd: '/tmp/test-project',
+  workUnits: [],
+  selectedWorkUnitId: null,
+  setWorkUnits: vi.fn(),
+  loadData: vi.fn(),
+  getWorkUnitBySession: vi.fn().mockReturnValue(undefined),
+  detachSession: vi.fn(),
+  getAttachedSession: vi.fn().mockReturnValue(null),
+  setCurrentWorkUnitId: vi.fn(),
+};
+
+vi.mock('../store/fspecStore', () => {
+  const mockStore = (selector?: (state: typeof mockFspecState) => unknown) => {
+    return selector ? selector(mockFspecState) : mockFspecState;
+  };
+  // Add getState() for direct access (used by sessionService.ts)
+  mockStore.getState = () => mockFspecState;
+  return {
+    useFspecStore: mockStore,
+  };
+});
 vi.mock('../hooks/useRustSessionState');
 vi.mock('@sengac/codelet-napi', () => ({
   sessionGetAnchorPoints: vi.fn().mockReturnValue([]),
@@ -125,6 +147,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetPendingInput: vi.fn().mockReturnValue(null),
   sessionGetCompactionProgress: vi.fn().mockReturnValue(null),
   sessionSetModel: vi.fn(),
+  sessionSetModelProfile: vi.fn(),
   sessionCreate: vi.fn(),
   sessionDestroy: vi.fn(),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
@@ -156,7 +179,6 @@ const mockUseIsReadyForNewSession = vi.mocked(useIsReadyForNewSession);
 const mockUseShouldAutoCreateSession = vi.mocked(useShouldAutoCreateSession);
 const mockUseShowCreateSessionDialog = vi.mocked(useShowCreateSessionDialog);
 const mockUseSessionActions = vi.mocked(useSessionActions);
-const mockUseFspecStore = vi.mocked(useFspecStore);
 const mockUseRustSessionState = vi.mocked(useRustSessionState);
 const mockSessionGetAnchorPoints = vi.mocked(sessionGetAnchorPoints);
 const mockSessionGetTurnDetails = vi.mocked(sessionGetTurnDetails);
@@ -214,21 +236,7 @@ describe('Feature: Fix Anchor Viewer Integration with Thinking Dialog System', (
       reset: vi.fn(),
     });
 
-    // Mock fspec store
-    mockUseFspecStore.mockImplementation((selector) => {
-      const mockState = {
-        cwd: '/tmp/test-project',
-        workUnits: [],
-        selectedWorkUnitId: null,
-        setWorkUnits: vi.fn(),
-        loadData: vi.fn(),
-        getWorkUnitBySession: vi.fn().mockReturnValue(undefined),
-        detachSession: vi.fn(),
-        getAttachedSession: vi.fn().mockReturnValue(null),
-        setCurrentWorkUnitId: vi.fn(),
-      };
-      return selector ? selector(mockState) : mockState;
-    });
+    // fspec store is mocked at module level with getState() support
     
     // Mock Rust session state
     mockUseRustSessionState.mockReturnValue({
@@ -427,21 +435,7 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
       reset: vi.fn(),
     });
 
-    // Mock fspec store
-    mockUseFspecStore.mockImplementation((selector) => {
-      const mockState = {
-        cwd: '/tmp/fspec-test-project',
-        workUnits: [],
-        selectedWorkUnitId: null,
-        setWorkUnits: vi.fn(),
-        loadData: vi.fn(),
-        getWorkUnitBySession: vi.fn().mockReturnValue(undefined),
-        detachSession: vi.fn(),
-        getAttachedSession: vi.fn().mockReturnValue(null),
-        setCurrentWorkUnitId: vi.fn(),
-      };
-      return selector ? selector(mockState) : mockState;
-    });
+    // fspec store is mocked at module level with getState() support
 
     // Mock NAPI functions have already been mocked at module level
     mockSessionGetAnchorPoints.mockReturnValue([]);

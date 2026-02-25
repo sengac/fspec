@@ -34,6 +34,8 @@ import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
 import { AnchorView } from './AnchorView';
 import { FileSearchPopup } from './FileSearchPopup';
+import { ProviderSettingsScreen } from './ProviderSettingsScreen';
+import { ModelSelectorScreen } from './ModelSelectorScreen';
 import {
   messagesToLines,
   wrapMessageToLines,
@@ -82,8 +84,7 @@ import {
   persistenceCleanupOrphanedMessages,
   getThinkingConfig,
   JsThinkingLevel,
-  modelsListAll,
-  modelsRefreshCache,
+  // TUI-075: Model-related NAPI functions removed (now in useModelSelectorState hook)
   sessionToggleDebug,
   sessionUpdateDebugMetadata,
   sessionGetDebugEnabled,
@@ -95,6 +96,7 @@ import {
   sessionGetMergedOutput,
   sessionInterrupt,
   sessionSetModel,
+  sessionSetModelProfile,
   sessionGetModel,
   sessionGetStatus,
   sessionGetTokens,
@@ -142,18 +144,21 @@ import {
   computeEffectiveThinkingLevel,
   hasDisableKeywords,
 } from '../../utils/thinkingLevel';
-import {
-  saveCredential,
-  deleteCredential,
-  getProviderConfig,
-  maskApiKey,
-} from '../../utils/credentials';
+import { getProviderConfig } from '../../utils/credentials';
 // REFAC-008: fspecCallback removed - handled by GlobalSessionStreamManager
 import {
   SUPPORTED_PROVIDERS,
   getProviderRegistryEntry,
+  loadProviderProfiles,
   type ProviderRegistryEntry,
+  type ProfileConfig,
 } from '../../utils/provider-config';
+import {
+  buildModelString,
+  parseModelString,
+  findSectionForPersistedModel,
+  generateSectionKey,
+} from '../utils/model-selection';
 import {
   findTemplateBySlug,
   loadWatcherTemplates,
@@ -180,16 +185,13 @@ import {
 } from '../../git/diff-parser';
 import { useCompaction } from '../hooks/useCompaction';
 import { useWorkUnitContext } from '../hooks/useWorkUnitContext';
+import { useDefaultThinkingLevel } from '../hooks/useDefaultThinkingLevel';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { NotificationDialog } from '../../components/NotificationDialog';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { SessionManagementPanel } from './SessionManagementPanel';
 import { ThinkingLevelDialog } from './ThinkingLevelDialog';
-import {
-  loadDefaultThinkingLevel,
-  saveDefaultThinkingLevel,
-} from '../config/defaultThinkingLevelConfig';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import {
   parseWatcherPrefix,
@@ -216,6 +218,18 @@ import {
   useSessionActions,
 } from '../store/sessionStore';
 import {
+  useProviderSections,
+  useCurrentModel,
+  useModelsInitialized,
+  useModelStoreActions,
+} from '../store/modelStore';
+import type {
+  ProviderModel,
+  ModelSelectorItem,
+  ModelSelection,
+  ProviderSection,
+} from '../types/provider';
+import {
   useRustSessionState,
   // BRIDGE-012: manualAttach, manualDetach, getSessionChunks removed - replaced by global callback
 } from '../hooks/useRustSessionState';
@@ -231,99 +245,7 @@ import {
   getAttachedWorkUnit,
 } from '../services/sessionService';
 import { applyPendingIsolationState } from '../services/globalSessionStreamManager';
-
-// TUI-034: Model selection types
-interface ModelSelection {
-  providerId: string; // "anthropic"
-  modelId: string; // "claude-sonnet-4"
-  apiModelId: string; // "claude-sonnet-4-20250514" (for API calls)
-  displayName: string; // "Claude Sonnet 4"
-  reasoning: boolean;
-  hasVision: boolean;
-  contextWindow: number; // 200000
-  maxOutput: number; // 16000
-}
-
-interface ProviderSection {
-  providerId: string; // "anthropic"
-  providerName: string; // "Anthropic"
-  internalName: string; // "claude" (for provider manager)
-  models: NapiModelInfo[]; // Filtered to tool_call=true
-  hasCredentials: boolean; // From availableProviders check
-}
-
-// Flattened item type for VirtualList-based model selector scrolling
-type ModelSelectorItem =
-  | {
-      type: 'section';
-      sectionIdx: number;
-      section: ProviderSection;
-      isExpanded: boolean;
-    }
-  | {
-      type: 'model';
-      sectionIdx: number;
-      modelIdx: number;
-      section: ProviderSection;
-      model: NapiModelInfo;
-    };
-
-// Build flattened list from sections and expanded state
-const buildFlatModelList = (
-  sections: ProviderSection[],
-  expandedProviders: Set<string>
-): ModelSelectorItem[] => {
-  const items: ModelSelectorItem[] = [];
-  sections.forEach((section, sectionIdx) => {
-    const isExpanded = expandedProviders.has(section.providerId);
-    items.push({ type: 'section', sectionIdx, section, isExpanded });
-    if (isExpanded) {
-      section.models.forEach((model, modelIdx) => {
-        items.push({ type: 'model', sectionIdx, modelIdx, section, model });
-      });
-    }
-  });
-  return items;
-};
-
-// Convert flat index to (sectionIdx, modelIdx) - modelIdx is -1 for section headers
-const flatIndexToSectionModel = (
-  flatIndex: number,
-  items: ModelSelectorItem[]
-): { sectionIdx: number; modelIdx: number } => {
-  const item = items[flatIndex];
-  if (!item) return { sectionIdx: 0, modelIdx: -1 };
-  if (item.type === 'section') {
-    return { sectionIdx: item.sectionIdx, modelIdx: -1 };
-  }
-  return { sectionIdx: item.sectionIdx, modelIdx: item.modelIdx };
-};
-
-// Convert (sectionIdx, modelIdx) to flat index
-const sectionModelToFlatIndex = (
-  sectionIdx: number,
-  modelIdx: number,
-  items: ModelSelectorItem[]
-): number => {
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (
-      item.type === 'section' &&
-      item.sectionIdx === sectionIdx &&
-      modelIdx === -1
-    ) {
-      return i;
-    }
-    if (
-      item.type === 'model' &&
-      item.sectionIdx === sectionIdx &&
-      item.modelIdx === modelIdx
-    ) {
-      return i;
-    }
-  }
-  return 0;
-};
+import { initializeModels } from '../services/modelInitializationService';
 
 // TUI-034: Provider ID mapping (models.dev to internal)
 const mapProviderIdToInternal = (providerId: string): string => {
@@ -1057,45 +979,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
   }
   const pendingToolDiffsRef = useRef<Map<string, PendingToolDiff>>(new Map());
 
-  // TUI-034: Model selection state
-  const [currentModel, setCurrentModel] = useState<ModelSelection | null>(null);
-  const [providerSections, setProviderSections] = useState<ProviderSection[]>(
-    []
-  );
-  const [modelsInitialized, setModelsInitialized] = useState(false);
-  const [showModelSelector, setShowModelSelector] = useState(false);
-  const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
-  const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = on section header
-  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(
-    new Set()
-  );
-  const [modelSelectorScrollOffset, setModelSelectorScrollOffset] = useState(0);
-  const [modelSelectorFilter, setModelSelectorFilter] = useState('');
-  const [isModelSelectorFilterMode, setIsModelSelectorFilterMode] =
-    useState(false);
+  // TUI-075: Model selection state from shared store
+  const currentModel = useCurrentModel();
+  const providerSections = useProviderSections();
+  const modelsInitialized = useModelsInitialized();
+  const { setCurrentModel } = useModelStoreActions();
 
-  // CONFIG-004: Settings tab state
+  // TUI-034: Local screen visibility state
+  const [showModelSelector, setShowModelSelector] = useState(false);
   const [showSettingsTab, setShowSettingsTab] = useState(false);
-  // TUI-050: Trigger state for provider status loading (avoids TDZ with loadProviderStatuses)
-  const [triggerProviderStatusLoad, setTriggerProviderStatusLoad] =
-    useState(false);
-  const [selectedSettingsIdx, setSelectedSettingsIdx] = useState(0);
-  const [settingsScrollOffset, setSettingsScrollOffset] = useState(0);
-  const [settingsFilter, setSettingsFilter] = useState('');
-  const [isSettingsFilterMode, setIsSettingsFilterMode] = useState(false);
-  const [editingProviderId, setEditingProviderId] = useState<string | null>(
-    null
-  );
-  const [editingApiKey, setEditingApiKey] = useState('');
-  const [providerStatuses, setProviderStatuses] = useState<
-    Record<string, { hasKey: boolean; maskedKey?: string }>
-  >({});
-  const [connectionTestResult, setConnectionTestResult] = useState<{
-    providerId: string;
-    success: boolean;
-    message: string;
-  } | null>(null);
-  const [isRefreshingModels, setIsRefreshingModels] = useState(false);
 
   // SESS-001: Session attachment state and actions from store
   // TUI-068: attachToWorkUnit and detachFromWorkUnit imported from sessionService
@@ -1292,18 +1184,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
   // TUI-054: Thinking level dialog state
   const [showThinkingLevelDialog, setShowThinkingLevelDialog] = useState(false);
-  // TUI-058: Default thinking level for new sessions
-  const [defaultThinkingLevel, setDefaultThinkingLevel] =
-    useState<JsThinkingLevel | null>(null);
-
-  // TUI-058: Load default thinking level from config on mount
-  useEffect(() => {
-    const loadDefault = async () => {
-      const level = await loadDefaultThinkingLevel();
-      setDefaultThinkingLevel(level);
-    };
-    void loadDefault();
-  }, []);
 
   // TUI-056: Anchor viewer dialog state
   const [showAnchorViewer, setShowAnchorViewer] = useState(false);
@@ -1372,6 +1252,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // CRITICAL: This must be declared BEFORE any useEffect hooks that use displayIsLoading
   const { snapshot: rustSnapshot, refresh: refreshRustState } =
     useRustSessionState(currentSessionId);
+
+  // TUI-075: Default thinking level - applies to every session when it becomes active
+  const { defaultLevel: defaultThinkingLevel, setDefault: setDefaultThinkingLevel } =
+    useDefaultThinkingLevel({
+      sessionId: currentSessionId,
+      refreshRustState,
+    });
 
   // Helper to find model details from provider sections (Single Responsibility Principle)
   const findModelInProviders = useCallback(
@@ -1556,95 +1443,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     sessionId: currentSessionId ?? undefined,
   });
 
-  // Model selector scrolling: build flat list and manage scroll offset
-  const flatModelItems = useMemo(
-    () => buildFlatModelList(providerSections, expandedProviders),
-    [providerSections, expandedProviders]
-  );
-
-  // Filter model items by search string (matches provider name or model name/id)
-  const filteredFlatModelItems = useMemo(() => {
-    if (!modelSelectorFilter) return flatModelItems;
-    const filterLower = modelSelectorFilter.toLowerCase();
-    return flatModelItems.filter(item => {
-      if (item.type === 'section') {
-        return (
-          item.section.providerId.toLowerCase().includes(filterLower) ||
-          item.section.providerName.toLowerCase().includes(filterLower)
-        );
-      } else {
-        return (
-          item.model.id.toLowerCase().includes(filterLower) ||
-          item.model.name.toLowerCase().includes(filterLower) ||
-          item.section.providerId.toLowerCase().includes(filterLower)
-        );
-      }
-    });
-  }, [flatModelItems, modelSelectorFilter]);
-
-  const modelSelectorVisibleHeight = Math.max(
-    1,
-    terminalHeight - (isModelSelectorFilterMode ? 11 : 10)
-  ); // Extra line for filter input
-  const selectedFlatIdx = useMemo(
-    () =>
-      sectionModelToFlatIndex(
-        selectedSectionIdx,
-        selectedModelIdx,
-        filteredFlatModelItems
-      ),
-    [selectedSectionIdx, selectedModelIdx, filteredFlatModelItems]
-  );
-
-  // Keep selected item visible by adjusting scroll offset
-  useEffect(() => {
-    if (!showModelSelector) return;
-    if (selectedFlatIdx < modelSelectorScrollOffset) {
-      setModelSelectorScrollOffset(selectedFlatIdx);
-    } else if (
-      selectedFlatIdx >=
-      modelSelectorScrollOffset + modelSelectorVisibleHeight
-    ) {
-      setModelSelectorScrollOffset(
-        selectedFlatIdx - modelSelectorVisibleHeight + 1
-      );
-    }
-  }, [
-    selectedFlatIdx,
-    modelSelectorScrollOffset,
-    modelSelectorVisibleHeight,
-    showModelSelector,
-  ]);
-
-  // Reset scroll/filter when model selector opens
-  useEffect(() => {
-    if (showModelSelector) {
-      setModelSelectorScrollOffset(0);
-      setModelSelectorFilter('');
-      setIsModelSelectorFilterMode(false);
-    }
-  }, [showModelSelector]);
-
-  // Reset selection when filter changes
-  useEffect(() => {
-    if (filteredFlatModelItems.length > 0) {
-      const firstItem = filteredFlatModelItems[0];
-      if (firstItem.type === 'section') {
-        setSelectedSectionIdx(firstItem.sectionIdx);
-        setSelectedModelIdx(-1);
-      } else {
-        setSelectedSectionIdx(firstItem.sectionIdx);
-        setSelectedModelIdx(firstItem.modelIdx);
-      }
-      setModelSelectorScrollOffset(0);
-    }
-  }, [modelSelectorFilter]);
-
-  // Settings tab scrolling
-  const settingsVisibleHeight = Math.max(
-    1,
-    terminalHeight - (isSettingsFilterMode ? 11 : 10)
-  ); // Extra line for filter input
+  // TUI-074: Settings tab scrolling now handled by ProviderSettingsScreen
 
   // Resume mode scrolling (each session takes 2 lines: name + details)
   const resumeVisibleHeight = Math.max(
@@ -1763,53 +1562,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, [currentSessionId]);
 
-  // Filter settings providers by search string
-  const filteredSettingsProviders = useMemo(() => {
-    if (!settingsFilter) return SUPPORTED_PROVIDERS;
-    const filterLower = settingsFilter.toLowerCase();
-    return SUPPORTED_PROVIDERS.filter(providerId => {
-      const registryEntry = getProviderRegistryEntry(providerId);
-      return (
-        providerId.toLowerCase().includes(filterLower) ||
-        (registryEntry?.name?.toLowerCase().includes(filterLower) ?? false)
-      );
-    });
-  }, [settingsFilter]);
-
-  // Keep selected settings item visible by adjusting scroll offset
-  useEffect(() => {
-    if (!showSettingsTab) return;
-    if (selectedSettingsIdx < settingsScrollOffset) {
-      setSettingsScrollOffset(selectedSettingsIdx);
-    } else if (
-      selectedSettingsIdx >=
-      settingsScrollOffset + settingsVisibleHeight
-    ) {
-      setSettingsScrollOffset(selectedSettingsIdx - settingsVisibleHeight + 1);
-    }
-  }, [
-    selectedSettingsIdx,
-    settingsScrollOffset,
-    settingsVisibleHeight,
-    showSettingsTab,
-  ]);
-
-  // Reset scroll/filter when settings tab opens
-  useEffect(() => {
-    if (showSettingsTab) {
-      setSettingsScrollOffset(0);
-      setSettingsFilter('');
-      setIsSettingsFilterMode(false);
-    }
-  }, [showSettingsTab]);
-
-  // Reset selection when settings filter changes
-  useEffect(() => {
-    if (filteredSettingsProviders.length > 0) {
-      setSelectedSettingsIdx(0);
-      setSettingsScrollOffset(0);
-    }
-  }, [settingsFilter]);
+  // TUI-074: Settings filtering and scroll now handled by ProviderSettingsScreen
 
   // TUI-051: Sync input to Rust on every change (real-time persistence)
   useEffect(() => {
@@ -1883,162 +1636,26 @@ export const AgentView: React.FC<AgentViewProps> = ({
           logger.warn('Failed to initialize blocklist:', err);
         }
 
-        // TUI-034: Load models and build provider sections
-        let allModels: NapiProviderModels[] = [];
+        // TUI-075: Initialize models (loads from NAPI, restores persisted selection)
         try {
-          allModels = await modelsListAll();
-          logger.debug(`Loaded ${allModels.length} providers from models.dev`);
-        } catch (err) {
-          const errorMsg = err instanceof Error ? err.message : String(err);
-          logger.error(`Failed to load models from models.dev: ${errorMsg}`);
-        }
-
-        // Build provider sections: filter by credentials, keep even if no compatible models
-        // TUI-034: Show all providers with credentials so we can display "No compatible models" message
-        // CONFIG-004: TypeScript-side credential check for all 19 providers (including .env loading)
-        const sectionsWithCreds = await Promise.all(
-          allModels.map(async pm => {
-            const internalName = mapProviderIdToInternal(pm.providerId);
-            const registryId = mapModelsDevToRegistryId(pm.providerId);
-            const registryEntry = getProviderRegistryEntry(registryId);
-            const providerConfig = await getProviderConfig(registryId);
-            const hasCredentials =
-              registryEntry?.requiresApiKey === false ||
-              !!providerConfig.apiKey;
-            const toolCallModels = pm.models.filter(m => m.toolCall);
-            logger.debug(
-              `Provider ${pm.providerId}: registryId=${registryId}, hasApiKey=${!!providerConfig.apiKey}, source=${providerConfig.source}, hasCredentials=${hasCredentials}`
-            );
-            return {
-              providerId: pm.providerId,
-              providerName: pm.providerName,
-              internalName,
-              models: toolCallModels,
-              hasCredentials,
-            };
-          })
-        );
-        const sections: ProviderSection[] = sectionsWithCreds.filter(
-          s => s.hasCredentials
-        );
-        logger.debug(
-          `Found ${sections.length} providers with credentials (from ${sectionsWithCreds.length} total)`
-        );
-
-        setProviderSections(sections);
-        // TUI-034: Only include providers with compatible models in availableProviders for actual use
-        setAvailableProviders(
-          sections.filter(s => s.models.length > 0).map(s => s.internalName)
-        );
-
-        // TUI-035: Load persisted model selection from config
-        let persistedModelString: string | null = null;
-        try {
-          const config = await loadConfig();
-          persistedModelString = config?.tui?.lastUsedModel || null;
-          if (persistedModelString) {
-            logger.debug(
-              `Found persisted model selection: ${persistedModelString}`
-            );
+          const initResult = await initializeModels();
+          
+          // Set available providers for the provider selector
+          setAvailableProviders(initResult.availableProviders);
+          
+          // Set current provider from initialization result
+          if (initResult.currentProvider) {
+            setCurrentProvider(initResult.currentProvider);
           }
-        } catch (err) {
-          // Log at warn level since we gracefully fall back to defaults
-          // This can happen if config has invalid JSON - not a critical error
-          logger.warn(
-            'Failed to load config for persisted model, using default',
-            { error: err }
+          
+          logger.debug(
+            `Model initialization complete: ${initResult.sections.length} sections, ` +
+            `current=${initResult.currentModel?.displayName || 'none'}, ` +
+            `persisted=${initResult.persistedModelRestored}`
           );
+        } catch (err) {
+          logger.error('Failed to initialize models:', err);
         }
-
-        // Find default model (first available with tool_call=true)
-        // NO HARDCODED FALLBACKS - must come from models.dev or persisted config
-        let defaultModelString: string | null = null;
-        let defaultModelInfo: NapiModelInfo | null = null;
-        let defaultSection: ProviderSection | null = null;
-
-        // TUI-035: Check if persisted model is available and has credentials
-        if (persistedModelString && persistedModelString.includes('/')) {
-          const [persistedProviderId, persistedModelId] =
-            persistedModelString.split('/');
-          const persistedSection = sections.find(
-            s => s.providerId === persistedProviderId
-          );
-
-          if (persistedSection && persistedSection.hasCredentials) {
-            // Find the model in the section
-            const persistedModel = persistedSection.models.find(
-              m => extractModelIdForRegistry(m.id) === persistedModelId
-            );
-
-            if (persistedModel) {
-              // Use persisted model
-              defaultModelString = persistedModelString;
-              defaultModelInfo = persistedModel;
-              defaultSection = persistedSection;
-            }
-            // else: no persisted model found, will fall through to use first available
-          }
-          // else: section not found or no credentials, will fall through to use first available
-        }
-
-        // Use first available model if no persisted model was restored
-        if (!defaultModelInfo && sections.length > 0) {
-          defaultSection = sections[0];
-          if (defaultSection.models.length > 0) {
-            defaultModelInfo = defaultSection.models[0];
-            // Extract model-id from the API ID (e.g., "claude-sonnet-4-20250514" -> "claude-sonnet-4")
-            const modelId = extractModelIdForRegistry(defaultModelInfo.id);
-            defaultModelString = `${defaultSection.providerId}/${modelId}`;
-          }
-        }
-
-        // Session creation is deferred until first message (in handleSubmit)
-        // This prevents empty sessions and enables background execution
-
-        // TUI-035: Use persisted model if found, otherwise use first available
-        if (defaultModelInfo && defaultSection) {
-          // Use the persisted model that was found earlier
-          const modelId = extractModelIdForRegistry(defaultModelInfo.id);
-
-          setCurrentProvider(defaultSection.internalName);
-          setCurrentModel({
-            providerId: defaultSection.providerId,
-            modelId,
-            apiModelId: defaultModelInfo.id,
-            displayName: defaultModelInfo.name,
-            reasoning: defaultModelInfo.reasoning,
-            hasVision: defaultModelInfo.hasVision,
-            contextWindow: defaultModelInfo.contextWindow,
-            maxOutput: defaultModelInfo.maxOutput,
-          });
-          setExpandedProviders(new Set([defaultSection.providerId]));
-        } else if (sections.length > 0 && sections[0].models.length > 0) {
-          // Fall back to first available section
-          const fallbackSection = sections[0];
-          const fallbackModelInfo = fallbackSection.models[0];
-          const modelId = extractModelIdForRegistry(fallbackModelInfo.id);
-
-          setCurrentProvider(fallbackSection.internalName);
-          setCurrentModel({
-            providerId: fallbackSection.providerId,
-            modelId,
-            apiModelId: fallbackModelInfo.id,
-            displayName: fallbackModelInfo.name,
-            reasoning: fallbackModelInfo.reasoning,
-            hasVision: fallbackModelInfo.hasVision,
-            contextWindow: fallbackModelInfo.contextWindow,
-            maxOutput: fallbackModelInfo.maxOutput,
-          });
-          setExpandedProviders(new Set([fallbackSection.providerId]));
-        }
-
-        // NAPI-006: Session creation is deferred until first message is sent
-        // This prevents empty sessions from being persisted when user opens
-        // the modal but doesn't send any messages. See handleSubmit() for
-        // the actual session creation logic.
-
-        // Mark models as initialized so session creation can proceed
-        setModelsInitialized(true);
 
         // NAPI-006: Load history for current project
         try {
@@ -2144,36 +1761,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // the palette being visible (e.g., after Tab completion closes the palette).
     if (userMessage.startsWith('/') && userMessage.length > 1) {
       executeSlashCommandRef.current?.(userMessage);
-      return;
-    }
-
-    // TUI-034: Handle /model command - open model selector view (doesn't require session)
-    if (userMessage === '/model') {
-      setInputValue('');
-      if (providerSections.length > 0) {
-        setShowModelSelector(true);
-        // Find current section and expand it
-        const currentSectionIdx = providerSections.findIndex(
-          s => s.providerId === currentModel?.providerId
-        );
-        setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
-        setSelectedModelIdx(-1); // Start on section header
-        // Expand current provider's section
-        if (currentModel?.providerId) {
-          setExpandedProviders(new Set([currentModel.providerId]));
-        }
-      }
-      return;
-    }
-
-    // CONFIG-004: Handle /provider command - open provider settings view (doesn't require session)
-    if (userMessage === '/provider') {
-      setInputValue('');
-      setShowSettingsTab(true);
-      setSelectedSettingsIdx(0);
-      setEditingProviderId(null);
-      setEditingApiKey('');
-      void loadProviderStatuses();
       return;
     }
 
@@ -3611,31 +3198,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
       const userMessage = commandText.trim();
 
       // Handle /model command
+      // TUI-073: ModelSelectorScreen now manages its own state via useModelSelectorState hook
+      // TUI-075: Models are loaded lazily when ModelSelectorScreen mounts (no pre-check needed)
       if (userMessage === '/model') {
         setInputValue('');
-        if (providerSections.length > 0) {
-          setShowModelSelector(true);
-          const currentSectionIdx = providerSections.findIndex(
-            s => s.providerId === currentModel?.providerId
-          );
-          setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
-          setSelectedModelIdx(-1);
-          if (currentModel?.providerId) {
-            setExpandedProviders(new Set([currentModel.providerId]));
-          }
-        }
+        setShowModelSelector(true);
         return;
       }
 
-      // Handle /provider command - inline loadProviderStatuses to avoid TDZ
+      // Handle /provider command - TUI-074: ProviderSettingsScreen manages its own state
       if (userMessage === '/provider') {
         setInputValue('');
         setShowSettingsTab(true);
-        setSelectedSettingsIdx(0);
-        setEditingProviderId(null);
-        setEditingApiKey('');
-        // Trigger provider status loading via state flag (avoiding TDZ with loadProviderStatuses)
-        setTriggerProviderStatusLoad(true);
         return;
       }
 
@@ -4023,231 +3597,110 @@ export const AgentView: React.FC<AgentViewProps> = ({
     setShowProviderSelector(false);
   }, []);
 
-  // CONFIG-004: Load provider statuses (API key presence and masked display)
-  const loadProviderStatuses = useCallback(async () => {
-    const statuses: Record<string, { hasKey: boolean; maskedKey?: string }> =
-      {};
-    for (const providerId of SUPPORTED_PROVIDERS) {
-      try {
-        const config = await getProviderConfig(providerId);
-        if (config.apiKey) {
-          statuses[providerId] = {
-            hasKey: true,
-            maskedKey: maskApiKey(config.apiKey),
-          };
-        } else {
-          statuses[providerId] = { hasKey: false };
-        }
-      } catch (err) {
-        // Failed to get provider configuration - indicates config issues or file system problems
-        logger.error(`Failed to get provider config for ${providerId}:`, err);
-        statuses[providerId] = { hasKey: false };
-      }
-    }
-    setProviderStatuses(statuses);
-  }, []);
-
-  // CONFIG-004: Handle saving API key for a provider
-  const handleSaveApiKey = useCallback(
-    async (providerId: string, apiKey: string) => {
-      try {
-        await saveCredential(providerId, apiKey);
-        setEditingProviderId(null);
-        setEditingApiKey('');
-        setConnectionTestResult(null);
-        // Reload statuses to reflect the change
-        await loadProviderStatuses();
-        // Show success message briefly
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `✓ API key saved for ${providerId}. Refreshing models...`,
-          },
-        ]);
-        // Refresh models to pick up newly available providers
-        // Use setTimeout to allow the success message to appear first
-        setTimeout(async () => {
-          await modelsRefreshCache();
-          // Rebuild provider sections with new credentials
-
-          let allModels: NapiProviderModels[] = [];
-          try {
-            allModels = await modelsListAll();
-          } catch (err) {
-            // Failed to list all models after refreshing cache - indicates models system issues
-            logger.error('Failed to list all models after cache refresh:', err);
-          }
-
-          // CONFIG-004: Use TypeScript-side credential check for all 19 providers
-          const sectionsWithCreds = await Promise.all(
-            allModels.map(async pm => {
-              const internalName = mapProviderIdToInternal(pm.providerId);
-              const registryId = mapModelsDevToRegistryId(pm.providerId);
-              const registryEntry = getProviderRegistryEntry(registryId);
-              const providerConfig = await getProviderConfig(registryId);
-              const hasCredentials =
-                registryEntry?.requiresApiKey === false ||
-                !!providerConfig.apiKey;
-              const toolCallModels = pm.models.filter(m => m.toolCall);
-              return {
-                providerId: pm.providerId,
-                providerName: pm.providerName,
-                internalName,
-                models: toolCallModels,
-                hasCredentials,
-              };
-            })
-          );
-          const sections: ProviderSection[] = sectionsWithCreds.filter(
-            s => s.hasCredentials
-          );
-
-          setProviderSections(sections);
-          setAvailableProviders(
-            sections.filter(s => s.models.length > 0).map(s => s.internalName)
-          );
-        }, 100);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to save API key';
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `✗ Failed to save API key: ${errorMessage}`,
-          },
-        ]);
-      }
-    },
-    [loadProviderStatuses]
-  );
-
-  // CONFIG-004: Handle deleting API key for a provider
-  const handleDeleteApiKey = useCallback(
-    async (providerId: string) => {
-      try {
-        await deleteCredential(providerId);
-        setConnectionTestResult(null);
-        await loadProviderStatuses();
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `✓ API key deleted for ${providerId}` },
-        ]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to delete API key';
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `✗ Failed to delete API key: ${errorMessage}`,
-          },
-        ]);
-      }
-    },
-    [loadProviderStatuses]
-  );
-
-  // CONFIG-004: Test provider connection with a lightweight API call
-  const handleTestConnection = useCallback(async (providerId: string) => {
-    setConnectionTestResult({
-      providerId,
-      success: false,
-      message: 'Testing...',
-    });
-    try {
-      // Get the internal name for the provider
-      const internalName = mapProviderIdToInternal(providerId);
-
-      // Test provider connection - validates credentials without creating a full session
-      testProviderConnection(internalName);
-
-      setConnectionTestResult({
-        providerId,
-        success: true,
-        message: '✓ Connection successful',
-      });
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Connection failed';
-      setConnectionTestResult({
-        providerId,
-        success: false,
-        message: `✗ ${errorMessage}`,
-      });
-    }
-  }, []);
-
-  // CONFIG-004: Refresh models from models.dev and rebuild provider sections
-  const refreshModels = useCallback(async () => {
-    setIsRefreshingModels(true);
-    try {
-      // Refresh the cache from models.dev
-      await modelsRefreshCache();
-
-      // Fetch the updated models
-      let allModels: NapiProviderModels[] = [];
-      try {
-        allModels = await modelsListAll();
-      } catch (err) {
-        logger.error('Failed to load models from models.dev', { error: err });
-      }
-
-      // Rebuild provider sections
-      // CONFIG-004: Use TypeScript-side credential check for all 19 providers
-      const sectionsWithCreds = await Promise.all(
-        allModels.map(async pm => {
-          const internalName = mapProviderIdToInternal(pm.providerId);
-          const registryId = mapModelsDevToRegistryId(pm.providerId);
-          // Get registry entry to check if API key is required
-          const registryEntry = getProviderRegistryEntry(registryId);
-          // Check credentials using TypeScript side (supports all 19 providers)
-          const providerConfig = await getProviderConfig(registryId);
-          // Provider is configured if: no API key required (e.g., Ollama) OR has API key
-          const hasCredentials =
-            registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
-          const toolCallModels = pm.models.filter(m => m.toolCall);
-          return {
-            providerId: pm.providerId,
-            providerName: pm.providerName,
-            internalName,
-            models: toolCallModels,
-            hasCredentials,
-          };
-        })
+  // Handle model selection from ModelSelectorScreen
+  const handleModelSelect = useCallback(
+    async (selection: ModelSelection) => {
+      // PROV-007: Use buildModelString for profile-qualified model IDs
+      const modelString = buildModelString(
+        { providerId: selection.providerId, profileName: selection.profileName },
+        selection.modelId
       );
-      const sections: ProviderSection[] = sectionsWithCreds.filter(
-        s => s.hasCredentials
-      );
-
-      setProviderSections(sections);
-      setAvailableProviders(
-        sections.filter(s => s.models.length > 0).map(s => s.internalName)
-      );
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to refresh models';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `✗ Refresh failed: ${errorMessage}` },
-      ]);
-    } finally {
-      setIsRefreshingModels(false);
-    }
-  }, []);
-
-  // TUI-034: Handle model selection
-  const handleSelectModel = useCallback(
-    async (section: ProviderSection, model: NapiModelInfo) => {
-      const modelId = extractModelIdForRegistry(model.id);
-      const modelString = `${section.providerId}/${modelId}`;
 
       setShowModelSelector(false);
 
+      // PROV-007: Set env vars from profile config before any session operations
+      if (selection.profileConfig) {
+        process.env.OPENAI_BASE_URL = selection.profileConfig.baseUrl;
+        process.env.OPENAI_API_KEY = selection.profileConfig.apiKey;
+        if (selection.profileConfig.contextWindow) {
+          process.env.OPENAI_CONTEXT_WINDOW = String(
+            selection.profileConfig.contextWindow
+          );
+        }
+        if (selection.profileConfig.maxOutputTokens) {
+          process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
+            selection.profileConfig.maxOutputTokens
+          );
+        }
+      }
+
       if (currentSessionId) {
         try {
-          await sessionSetModel(currentSessionId, section.providerId, modelId);
+          // PROV-007: Use sessionSetModelProfile for profile-based models (skips registry validation)
+          if (selection.profileConfig) {
+            await sessionSetModelProfile(currentSessionId, selection.providerId, selection.modelId);
+          } else {
+            await sessionSetModel(currentSessionId, selection.providerId, selection.modelId);
+          }
+          refreshRustState(currentSessionId);
+        } catch (err) {
+          logger.error('Failed to update background session model', {
+            error: err,
+          });
+        }
+      } else {
+        // No session yet - set local state directly (will be synced when session is created)
+        setCurrentModel(selection);
+        setCurrentProvider(mapProviderIdToInternal(selection.providerId));
+      }
+
+      // TUI-035: Persist model selection to user config
+      try {
+        const existingConfig = await loadConfig();
+        const updatedConfig = {
+          ...existingConfig,
+          tui: {
+            ...existingConfig?.tui,
+            lastUsedModel: modelString,
+          },
+        };
+        await writeConfig('user', updatedConfig);
+      } catch (persistErr) {
+        logger.error('Failed to persist model selection', {
+          error: persistErr,
+        });
+      }
+    },
+    [currentSessionId]
+  );
+
+  // TUI-034: Handle model selection (deprecated - use handleModelSelect)
+  // Kept for compatibility with internal callers that have section/model
+  const handleSelectModel = useCallback(
+    async (section: ProviderSection, model: NapiModelInfo) => {
+      const modelId = extractModelIdForRegistry(model.id);
+      // PROV-007: Use buildModelString for profile-qualified model IDs
+      const modelString = buildModelString(section, modelId);
+
+      setShowModelSelector(false);
+
+      // PROV-007: Set env vars from profile config before any session operations
+      if (section.profileConfig) {
+        process.env.OPENAI_BASE_URL = section.profileConfig.baseUrl;
+        process.env.OPENAI_API_KEY = section.profileConfig.apiKey;
+        if (section.profileConfig.contextWindow) {
+          process.env.OPENAI_CONTEXT_WINDOW = String(
+            section.profileConfig.contextWindow
+          );
+        }
+        if (section.profileConfig.maxOutputTokens) {
+          process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
+            section.profileConfig.maxOutputTokens
+          );
+        }
+        logger.debug(
+          `PROV-007: Set env vars from profile ${section.profileName}`
+        );
+      }
+
+      if (currentSessionId) {
+        try {
+          // PROV-007: Use sessionSetModelProfile for profile-based models (skips registry validation)
+          if (section.profileConfig) {
+            await sessionSetModelProfile(currentSessionId, section.providerId, modelId);
+          } else {
+            await sessionSetModel(currentSessionId, section.providerId, modelId);
+          }
           refreshRustState(currentSessionId);
         } catch (err) {
           logger.error('Failed to update background session model', {
@@ -4265,6 +3718,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
           hasVision: model.hasVision,
           contextWindow: model.contextWindow,
           maxOutput: model.maxOutput,
+          // PROV-007: Include profile name and config for session creation
+          profileName: section.profileName,
+          profileConfig: section.profileConfig,
         });
         setCurrentProvider(section.internalName);
       }
@@ -4750,28 +4206,36 @@ export const AgentView: React.FC<AgentViewProps> = ({
         }
 
         // Update provider state if available
+        // PROV-007: Use parseModelString for profile-aware model string parsing
         if (result.provider?.includes('/')) {
-          const [providerId, modelId] = result.provider.split('/');
-          const internalName = mapProviderIdToInternal(providerId);
-          setCurrentProvider(internalName);
-          // Find matching model info from provider sections
-          const section = providerSections.find(
-            s => s.providerId === providerId
-          );
-          const model = section?.models.find(
-            m => extractModelIdForRegistry(m.id) === modelId
-          );
-          if (model && section) {
-            setCurrentModel({
-              providerId,
-              modelId,
-              apiModelId: model.id,
-              displayName: model.name,
-              reasoning: model.reasoning,
-              hasVision: model.hasVision,
-              contextWindow: model.contextWindow,
-              maxOutput: model.maxOutput,
-            });
+          try {
+            const parsed = parseModelString(result.provider);
+            const { providerId, profileName, modelId } = parsed;
+            const internalName = mapProviderIdToInternal(providerId);
+            setCurrentProvider(internalName);
+            // PROV-007: Find matching section by both providerId AND profileName
+            const section = findSectionForPersistedModel(providerSections, result.provider);
+            const model = section?.models.find(
+              m => extractModelIdForRegistry(m.id) === modelId
+            );
+            if (model && section) {
+              setCurrentModel({
+                providerId,
+                modelId,
+                apiModelId: model.id,
+                displayName: model.name,
+                reasoning: model.reasoning,
+                hasVision: model.hasVision,
+                contextWindow: model.contextWindow,
+                maxOutput: model.maxOutput,
+                // PROV-007: Include profile name and config for session operations
+                profileName,
+                profileConfig: section.profileConfig,
+              });
+            }
+          } catch {
+            // Invalid model string format - ignore
+            logger.warn(`Invalid model string format in restore: ${result.provider}`);
           }
         }
 
@@ -4829,21 +4293,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     [handleStreamChunk, currentProvider, providerSections, activateSession]
   );
 
-  // TUI-058: Helper to apply default thinking level to a new session
-  // Extracted to avoid duplication between handleCreateSessionConfirm and auto-create effect
-  const applyDefaultThinkingLevel = useCallback(
-    (sessionId: string) => {
-      if (defaultThinkingLevel !== null) {
-        getRustStateSource().setBaseThinkingLevel(
-          sessionId,
-          defaultThinkingLevel
-        );
-        refreshRustState();
-      }
-    },
-    [defaultThinkingLevel, refreshRustState]
-  );
-
   // VIEWNV-001: Handle create session dialog confirmation
   // GIT-029: Now accepts isolated parameter to create isolated session with git worktree
   // Creates session immediately so /thinking and other commands work right away
@@ -4870,8 +4319,29 @@ export const AgentView: React.FC<AgentViewProps> = ({
         throw new Error('Cannot create session: model not initialized');
       }
 
-      // Always use full model path format (provider/model-id)
-      const modelPath = `${currentModel.providerId}/${currentModel.modelId}`;
+      // PROV-007: Set env vars from profile config before session creation
+      if (currentModel.profileConfig) {
+        process.env.OPENAI_BASE_URL = currentModel.profileConfig.baseUrl;
+        process.env.OPENAI_API_KEY = currentModel.profileConfig.apiKey;
+        if (currentModel.profileConfig.contextWindow) {
+          process.env.OPENAI_CONTEXT_WINDOW = String(
+            currentModel.profileConfig.contextWindow
+          );
+        }
+        if (currentModel.profileConfig.maxOutputTokens) {
+          process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
+            currentModel.profileConfig.maxOutputTokens
+          );
+        }
+      }
+
+      // PROV-007: Use buildModelString for profile-qualified model paths
+      // Profile models: 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen3-80B')
+      // Cloud models: 'provider/modelId' (e.g., 'openai/gpt-4')
+      const modelPath = buildModelString(
+        { providerId: currentModel.providerId, profileName: currentModel.profileName },
+        currentModel.modelId
+      );
 
       // GIT-029: Use isolated session creation when requested
       let result;
@@ -4880,7 +4350,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
           modelPath,
           project,
         });
-        logger.debug(`GIT-029: Created isolated session ${result.sessionId} at ${result.worktreePath}`);
       } else {
         result = await createSession({
           modelPath,
@@ -4894,8 +4363,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // GIT-029: Apply any pending isolation state that arrived before activation
       applyPendingIsolationState(result.sessionId);
 
-      // TUI-058: Apply default thinking level to new session
-      applyDefaultThinkingLevel(result.sessionId);
+      // TUI-075: Default thinking level is applied automatically by useDefaultThinkingLevel
+      // hook when currentSessionId changes after activateSession
 
       // SESS-001: Only auto-attach session to work unit when creating from board context
       // If we were in a session, we're creating via navigation (Shift+Right) and shouldn't auto-attach
@@ -4939,7 +4408,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     workUnitId,
     workUnits,
     // TUI-068: attachToWorkUnit is a module-level import (stable)
-    applyDefaultThinkingLevel,
   ]);
 
   // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
@@ -5049,8 +4517,32 @@ export const AgentView: React.FC<AgentViewProps> = ({
           throw new Error('Cannot auto-create session: model not initialized');
         }
 
-        // Always use full model path format (provider/model-id)
-        const modelPath = `${currentModel.providerId}/${currentModel.modelId}`;
+        // PROV-007: Set env vars from profile config before session creation
+        if (currentModel.profileConfig) {
+          process.env.OPENAI_BASE_URL = currentModel.profileConfig.baseUrl;
+          process.env.OPENAI_API_KEY = currentModel.profileConfig.apiKey;
+          if (currentModel.profileConfig.contextWindow) {
+            process.env.OPENAI_CONTEXT_WINDOW = String(
+              currentModel.profileConfig.contextWindow
+            );
+          }
+          if (currentModel.profileConfig.maxOutputTokens) {
+            process.env.OPENAI_MAX_OUTPUT_TOKENS = String(
+              currentModel.profileConfig.maxOutputTokens
+            );
+          }
+          logger.debug(
+            `PROV-007: Set env vars from profile config before auto-create session`
+          );
+        }
+
+        // PROV-007: Use buildModelString for profile-qualified model paths
+        // Profile models: 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen3-80B')
+        // Cloud models: 'provider/modelId' (e.g., 'openai/gpt-4')
+        const modelPath = buildModelString(
+          { providerId: currentModel.providerId, profileName: currentModel.profileName },
+          currentModel.modelId
+        );
 
         // GIT-031: Use pendingIsolatedSession to determine if isolated session should be created
         let result;
@@ -5072,8 +4564,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // GIT-029: Apply any pending isolation state that arrived before activation
         applyPendingIsolationState(result.sessionId);
 
-        // TUI-058: Apply default thinking level to new session
-        applyDefaultThinkingLevel(result.sessionId);
+        // TUI-075: Default thinking level is applied automatically by useDefaultThinkingLevel
+        // hook when currentSessionId changes after activateSession
 
         // SESS-001: Auto-attach session to work unit when auto-creating
         if (workUnitId) {
@@ -5109,7 +4601,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     workUnits,
     // TUI-068: attachToWorkUnit is a module-level import (stable)
     getAttachedSession,
-    applyDefaultThinkingLevel,
   ]);
 
   // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
@@ -5311,14 +4802,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
       void handleWatcherMode();
     }
   }, [triggerWatcherModeInit, handleWatcherMode]);
-
-  // TUI-050: Trigger useEffect for provider status loading (called from handleSubmitWithCommand)
-  useEffect(() => {
-    if (triggerProviderStatusLoad) {
-      setTriggerProviderStatusLoad(false);
-      void loadProviderStatuses();
-    }
-  }, [triggerProviderStatusLoad, loadProviderStatuses]);
 
   // WATCH-008: Select watcher and switch to it
   const handleWatcherSelect = useCallback(async () => {
@@ -5715,26 +5198,36 @@ export const AgentView: React.FC<AgentViewProps> = ({
       );
 
       // Update provider/model state from service result
+      // PROV-007: Use parseModelString for profile-aware model string parsing
       if (result.provider?.includes('/')) {
-        const [providerId, modelId] = result.provider.split('/');
-        const internalName = mapProviderIdToInternal(providerId);
-        setCurrentProvider(internalName);
-        // Find matching model info from provider sections
-        const section = providerSections.find(s => s.providerId === providerId);
-        const model = section?.models.find(
-          m => extractModelIdForRegistry(m.id) === modelId
-        );
-        if (model && section) {
-          setCurrentModel({
-            providerId,
-            modelId,
-            apiModelId: model.id,
-            displayName: model.name,
-            reasoning: model.reasoning,
-            hasVision: model.hasVision,
-            contextWindow: model.contextWindow,
-            maxOutput: model.maxOutput,
-          });
+        try {
+          const parsed = parseModelString(result.provider);
+          const { providerId, profileName, modelId } = parsed;
+          const internalName = mapProviderIdToInternal(providerId);
+          setCurrentProvider(internalName);
+          // PROV-007: Find matching section by both providerId AND profileName
+          const section = findSectionForPersistedModel(providerSections, result.provider);
+          const model = section?.models.find(
+            m => extractModelIdForRegistry(m.id) === modelId
+          );
+          if (model && section) {
+            setCurrentModel({
+              providerId,
+              modelId,
+              apiModelId: model.id,
+              displayName: model.name,
+              reasoning: model.reasoning,
+              hasVision: model.hasVision,
+              contextWindow: model.contextWindow,
+              maxOutput: model.maxOutput,
+              // PROV-007: Include profile name and config for session operations
+              profileName,
+              profileConfig: section.profileConfig,
+            });
+          }
+        } catch {
+          // Invalid model string format - ignore
+          logger.warn(`Invalid model string format in resume: ${result.provider}`);
         }
       } else if (result.provider) {
         setCurrentProvider(result.provider);
@@ -5946,80 +5439,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
   );
 
   // Mouse scroll acceleration state (like VirtualList)
-  const modelSelectorLastScrollTime = useRef<number>(0);
-  const modelSelectorScrollVelocity = useRef<number>(1);
-  const settingsLastScrollTime = useRef<number>(0);
-  const settingsScrollVelocity = useRef<number>(1);
   const resumeLastScrollTime = useRef<number>(0);
   const resumeScrollVelocity = useRef<number>(1);
 
-  // Mouse scroll navigation helper for model selector (navigates through filtered flat list)
-  const navigateModelSelectorByDelta = useCallback(
-    (delta: number) => {
-      if (filteredFlatModelItems.length === 0) return;
-
-      // Acceleration: scroll faster when scrolling rapidly
-      const now = Date.now();
-      const timeDelta = now - modelSelectorLastScrollTime.current;
-      if (timeDelta < 150) {
-        modelSelectorScrollVelocity.current = Math.min(
-          modelSelectorScrollVelocity.current + 1,
-          5
-        );
-      } else {
-        modelSelectorScrollVelocity.current = 1;
-      }
-      modelSelectorLastScrollTime.current = now;
-      const scrollAmount = modelSelectorScrollVelocity.current * delta;
-
-      const currentFlatIdx = sectionModelToFlatIndex(
-        selectedSectionIdx,
-        selectedModelIdx,
-        filteredFlatModelItems
-      );
-      const newFlatIdx = Math.max(
-        0,
-        Math.min(
-          filteredFlatModelItems.length - 1,
-          currentFlatIdx + scrollAmount
-        )
-      );
-      const { sectionIdx, modelIdx } = flatIndexToSectionModel(
-        newFlatIdx,
-        filteredFlatModelItems
-      );
-      setSelectedSectionIdx(sectionIdx);
-      setSelectedModelIdx(modelIdx);
-    },
-    [filteredFlatModelItems, selectedSectionIdx, selectedModelIdx]
-  );
-
-  // Mouse scroll navigation helper for settings tab (navigates through filtered list)
-  const navigateSettingsByDelta = useCallback(
-    (delta: number) => {
-      // Acceleration: scroll faster when scrolling rapidly
-      const now = Date.now();
-      const timeDelta = now - settingsLastScrollTime.current;
-      if (timeDelta < 150) {
-        settingsScrollVelocity.current = Math.min(
-          settingsScrollVelocity.current + 1,
-          5
-        );
-      } else {
-        settingsScrollVelocity.current = 1;
-      }
-      settingsLastScrollTime.current = now;
-      const scrollAmount = settingsScrollVelocity.current * delta;
-
-      setSelectedSettingsIdx(prev =>
-        Math.max(
-          0,
-          Math.min(filteredSettingsProviders.length - 1, prev + scrollAmount)
-        )
-      );
-    },
-    [filteredSettingsProviders.length]
-  );
+  // TUI-074: Settings tab scroll now handled by ProviderSettingsScreen
 
   // Mouse scroll navigation helper for resume mode
   const navigateResumeByDelta = useCallback(
@@ -6157,24 +5580,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               return true;
             }
           }
-          if (showModelSelector) {
-            if (buttonByte === 96) {
-              navigateModelSelectorByDelta(-1);
-              return true;
-            } else if (buttonByte === 97) {
-              navigateModelSelectorByDelta(1);
-              return true;
-            }
-          }
-          if (showSettingsTab) {
-            if (buttonByte === 96) {
-              navigateSettingsByDelta(-1);
-              return true;
-            } else if (buttonByte === 97) {
-              navigateSettingsByDelta(1);
-              return true;
-            }
-          }
+          // TUI-074: Settings tab mouse scroll now handled by ProviderSettingsScreen
         }
         // Handle parsed mouse events from Ink
         // Note: TUI-042 turn selection scroll is handled by VirtualList via getNextIndex
@@ -6188,24 +5594,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               return true;
             }
           }
-          if (showModelSelector) {
-            if (key.mouse.button === 'wheelUp') {
-              navigateModelSelectorByDelta(-1);
-              return true;
-            } else if (key.mouse.button === 'wheelDown') {
-              navigateModelSelectorByDelta(1);
-              return true;
-            }
-          }
-          if (showSettingsTab) {
-            if (key.mouse.button === 'wheelUp') {
-              navigateSettingsByDelta(-1);
-              return true;
-            } else if (key.mouse.button === 'wheelDown') {
-              navigateSettingsByDelta(1);
-              return true;
-            }
-          }
+          // TUI-074: Settings tab mouse scroll now handled by ProviderSettingsScreen
         }
         // Let unhandled mouse events propagate to VirtualList (BACKGROUND priority)
         // This allows conversation scrolling when not in a modal/overlay mode
@@ -6478,308 +5867,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return true;
       }
 
-      // TUI-034: Model selector keyboard handling
-      if (showModelSelector) {
-        // Filter mode handling
-        if (isModelSelectorFilterMode) {
-          if (key.escape) {
-            setIsModelSelectorFilterMode(false);
-            setModelSelectorFilter('');
-            return true;
-          }
-          if (key.return) {
-            setIsModelSelectorFilterMode(false);
-            return true;
-          }
-          if (key.backspace || key.delete) {
-            setModelSelectorFilter(prev => prev.slice(0, -1));
-            return true;
-          }
-          // Accept printable characters for filter
-          const clean = input
-            .split('')
-            .filter(ch => {
-              const code = ch.charCodeAt(0);
-              return code >= 32 && code <= 126;
-            })
-            .join('');
-          if (clean) {
-            setModelSelectorFilter(prev => prev + clean);
-          }
-          return true;
-        }
-
-        if (key.escape) {
-          if (modelSelectorFilter) {
-            setModelSelectorFilter('');
-            return true;
-          }
-          setShowModelSelector(false);
-          return true;
-        }
-
-        // '/' to enter filter mode
-        if (input === '/') {
-          setIsModelSelectorFilterMode(true);
-          return true;
-        }
-
-        // Left arrow: collapse current section
-        if (key.leftArrow) {
-          const currentSection = providerSections[selectedSectionIdx];
-          if (
-            currentSection &&
-            expandedProviders.has(currentSection.providerId)
-          ) {
-            setExpandedProviders(prev => {
-              const next = new Set(prev);
-              next.delete(currentSection.providerId);
-              return next;
-            });
-            setSelectedModelIdx(-1); // Move back to section header
-          }
-          return true;
-        }
-
-        // Right arrow: expand current section
-        if (key.rightArrow) {
-          const currentSection = providerSections[selectedSectionIdx];
-          if (
-            currentSection &&
-            !expandedProviders.has(currentSection.providerId)
-          ) {
-            setExpandedProviders(
-              prev => new Set([...prev, currentSection.providerId])
-            );
-          }
-          return true;
-        }
-
-        // Up arrow: navigate up through models and sections
-        if (key.upArrow) {
-          const currentSection = providerSections[selectedSectionIdx];
-          const isExpanded =
-            currentSection && expandedProviders.has(currentSection.providerId);
-
-          if (selectedModelIdx > 0 && isExpanded) {
-            // Move up within models
-            setSelectedModelIdx(prev => prev - 1);
-          } else if (selectedModelIdx === 0 && isExpanded) {
-            // Move from first model to section header
-            setSelectedModelIdx(-1);
-          } else if (selectedSectionIdx > 0) {
-            // Move to previous section
-            const prevSection = providerSections[selectedSectionIdx - 1];
-            const prevExpanded = expandedProviders.has(prevSection.providerId);
-            setSelectedSectionIdx(prev => prev - 1);
-            if (prevExpanded && prevSection.models.length > 0) {
-              // Move to last model of previous section
-              setSelectedModelIdx(prevSection.models.length - 1);
-            } else {
-              setSelectedModelIdx(-1);
-            }
-          }
-          return true;
-        }
-
-        // Down arrow: navigate down through models and sections
-        if (key.downArrow) {
-          const currentSection = providerSections[selectedSectionIdx];
-          const isExpanded =
-            currentSection && expandedProviders.has(currentSection.providerId);
-          const modelCount = currentSection?.models.length ?? 0;
-
-          if (selectedModelIdx === -1 && isExpanded && modelCount > 0) {
-            // Move from section header to first model
-            setSelectedModelIdx(0);
-          } else if (selectedModelIdx < modelCount - 1 && isExpanded) {
-            // Move down within models
-            setSelectedModelIdx(prev => prev + 1);
-          } else if (selectedSectionIdx < providerSections.length - 1) {
-            // Move to next section
-            setSelectedSectionIdx(prev => prev + 1);
-            setSelectedModelIdx(-1);
-          }
-          return true;
-        }
-
-        // Enter: select model or toggle section
-        if (key.return) {
-          const currentSection = providerSections[selectedSectionIdx];
-          if (selectedModelIdx === -1) {
-            // On section header - toggle expand/collapse
-            if (expandedProviders.has(currentSection.providerId)) {
-              setExpandedProviders(prev => {
-                const next = new Set(prev);
-                next.delete(currentSection.providerId);
-                return next;
-              });
-            } else {
-              setExpandedProviders(
-                prev => new Set([...prev, currentSection.providerId])
-              );
-            }
-          } else {
-            // On model - select it
-            const model = currentSection.models[selectedModelIdx];
-            if (model) {
-              void handleSelectModel(currentSection, model);
-            }
-          }
-          return true;
-        }
-
-        // CONFIG-004: 'r' to refresh models from models.dev
-        if ((input === 'r' || input === 'R') && !isRefreshingModels) {
-          void refreshModels();
-          return true;
-        }
-
-        // CONFIG-004: Tab to switch to Settings view
-        if (key.tab) {
-          setShowModelSelector(false);
-          setShowSettingsTab(true);
-          setSelectedSettingsIdx(0);
-          setEditingProviderId(null);
-          setEditingApiKey('');
-          void loadProviderStatuses();
-          return true;
-        }
-        return true;
-      }
-
-      // CONFIG-004: Settings tab keyboard handling
+      // CONFIG-004 + PROV-007: Settings tab keyboard handling
+      // TUI-074: Now handled by ProviderSettingsScreen component via useInput
+      // AgentView should NOT intercept keys when settings tab is shown
       if (showSettingsTab) {
-        // Filter mode handling
-        if (isSettingsFilterMode) {
-          if (key.escape) {
-            setIsSettingsFilterMode(false);
-            setSettingsFilter('');
-            return true;
-          }
-          if (key.return) {
-            setIsSettingsFilterMode(false);
-            return true;
-          }
-          if (key.backspace || key.delete) {
-            setSettingsFilter(prev => prev.slice(0, -1));
-            return true;
-          }
-          // Accept printable characters for filter
-          const clean = input
-            .split('')
-            .filter(ch => {
-              const code = ch.charCodeAt(0);
-              return code >= 32 && code <= 126;
-            })
-            .join('');
-          if (clean) {
-            setSettingsFilter(prev => prev + clean);
-          }
-          return true;
-        }
-
-        if (key.escape) {
-          if (settingsFilter) {
-            setSettingsFilter('');
-            return true;
-          }
-          if (editingProviderId) {
-            // Cancel editing
-            setEditingProviderId(null);
-            setEditingApiKey('');
-          } else {
-            setShowSettingsTab(false);
-          }
-          return true;
-        }
-
-        // '/' to enter filter mode (when not editing)
-        if (input === '/' && !editingProviderId) {
-          setIsSettingsFilterMode(true);
-          return true;
-        }
-
-        // Tab to switch back to Model selector
-        if (key.tab && !editingProviderId) {
-          setShowSettingsTab(false);
-          setShowModelSelector(true);
-          return true;
-        }
-
-        // Up/Down arrow to navigate providers (when not editing)
-        if (!editingProviderId) {
-          if (key.upArrow && selectedSettingsIdx > 0) {
-            setSelectedSettingsIdx(prev => prev - 1);
-            setConnectionTestResult(null);
-            return true;
-          }
-          if (
-            key.downArrow &&
-            selectedSettingsIdx < filteredSettingsProviders.length - 1
-          ) {
-            setSelectedSettingsIdx(prev => prev + 1);
-            setConnectionTestResult(null);
-            return true;
-          }
-        }
-
-        // Enter to start editing or save
-        if (key.return) {
-          if (editingProviderId) {
-            // Save the key
-            if (editingApiKey.trim()) {
-              void handleSaveApiKey(editingProviderId, editingApiKey.trim());
-            } else {
-              // Cancel if empty
-              setEditingProviderId(null);
-              setEditingApiKey('');
-            }
-          } else {
-            // Start editing the selected provider
-            const providerId = filteredSettingsProviders[selectedSettingsIdx];
-            setEditingProviderId(providerId);
-            setEditingApiKey('');
-          }
-          return true;
-        }
-
-        // 't' to test connection (when not editing)
-        if (!editingProviderId && (input === 't' || input === 'T')) {
-          const providerId = filteredSettingsProviders[selectedSettingsIdx];
-          void handleTestConnection(providerId);
-          return true;
-        }
-
-        // 'd' to delete API key (when not editing)
-        if (!editingProviderId && (input === 'd' || input === 'D')) {
-          const providerId = filteredSettingsProviders[selectedSettingsIdx];
-          if (providerStatuses[providerId]?.hasKey) {
-            void handleDeleteApiKey(providerId);
-          }
-          return true;
-        }
-
-        // Handle text input when editing
-        if (editingProviderId) {
-          if (key.backspace || key.delete) {
-            setEditingApiKey(prev => prev.slice(0, -1));
-            return true;
-          }
-          // Filter to printable characters
-          const clean = input
-            .split('')
-            .filter(ch => {
-              const code = ch.charCodeAt(0);
-              return code >= 32 && code <= 126;
-            })
-            .join('');
-          if (clean) {
-            setEditingApiKey(prev => prev + clean);
-          }
-          return true;
-        }
-        return true;
+        // Let ProviderSettingsScreen handle all input
+        return false;
       }
 
       // VIEWNV-001: Shift+Left/Right for unified session navigation
@@ -7049,312 +6142,35 @@ export const AgentView: React.FC<AgentViewProps> = ({
     );
   }
 
-  // TUI-034: Model selector overlay (hierarchical with collapsible sections)
   if (showModelSelector) {
-    // Calculate available width for model text (terminal width minus padding and scrollbar)
-    const modelTextWidth = terminalWidth - 4 - 3; // 4 for padding (2 each side), 3 for scrollbar margin
     return (
-      <Box
-        position="absolute"
-        flexDirection="column"
+      <ModelSelectorScreen
         width={terminalWidth}
         height={terminalHeight}
-      >
-        <Box flexDirection="column" flexGrow={1} backgroundColor="black">
-          <Box flexDirection="column" padding={2} flexGrow={1}>
-            <Box marginBottom={1}>
-              <Text bold color="cyan">
-                Select Model
-              </Text>
-              {isRefreshingModels && (
-                <Text color="yellow"> (refreshing...)</Text>
-              )}
-              <Text dimColor>
-                {' '}
-                ({filteredFlatModelItems.length} items, showing{' '}
-                {modelSelectorScrollOffset + 1}-
-                {Math.min(
-                  modelSelectorScrollOffset + modelSelectorVisibleHeight,
-                  filteredFlatModelItems.length
-                )}
-                )
-              </Text>
-            </Box>
-            {/* Filter input box */}
-            {(isModelSelectorFilterMode || modelSelectorFilter) && (
-              <Box marginBottom={1}>
-                <Text color="yellow">Filter: </Text>
-                <Text>{modelSelectorFilter}</Text>
-                {isModelSelectorFilterMode && <Text inverse> </Text>}
-              </Box>
-            )}
-            {/* Scrollable list with viewport */}
-            <Box flexDirection="row" flexGrow={1}>
-              <Box flexDirection="column" flexGrow={1}>
-                {filteredFlatModelItems
-                  .slice(
-                    modelSelectorScrollOffset,
-                    modelSelectorScrollOffset + modelSelectorVisibleHeight
-                  )
-                  .map(item => {
-                    if (item.type === 'section') {
-                      const isSectionSelected =
-                        item.sectionIdx === selectedSectionIdx &&
-                        selectedModelIdx === -1;
-                      const sectionIcon = item.isExpanded ? '▼' : '▶';
-                      return (
-                        <Box
-                          key={`section-${item.section.providerId}`}
-                          width={modelTextWidth}
-                        >
-                          <Text
-                            backgroundColor={
-                              isSectionSelected ? 'cyan' : undefined
-                            }
-                            color={isSectionSelected ? 'black' : 'white'}
-                            wrap="truncate"
-                          >
-                            {isSectionSelected ? '> ' : '  '}
-                            {sectionIcon} [{item.section.providerId}] (
-                            {item.section.models.length} models)
-                          </Text>
-                        </Box>
-                      );
-                    } else {
-                      const isModelSelected =
-                        item.sectionIdx === selectedSectionIdx &&
-                        item.modelIdx === selectedModelIdx;
-                      const isCurrent =
-                        currentModel?.apiModelId === item.model.id;
-                      const modelId = extractModelIdForRegistry(item.model.id);
-                      return (
-                        <Box
-                          key={`model-${item.model.id}`}
-                          width={modelTextWidth}
-                        >
-                          <Text
-                            backgroundColor={
-                              isModelSelected ? 'cyan' : undefined
-                            }
-                            color={isModelSelected ? 'black' : 'white'}
-                            wrap="truncate"
-                          >
-                            {isModelSelected ? '  > ' : '    '}
-                            {modelId} ({item.model.name})
-                            {item.model.reasoning && (
-                              <Text
-                                color={isModelSelected ? 'black' : 'magenta'}
-                              >
-                                {' '}
-                                [R]
-                              </Text>
-                            )}
-                            {item.model.hasVision && (
-                              <Text color={isModelSelected ? 'black' : 'blue'}>
-                                {' '}
-                                [V]
-                              </Text>
-                            )}
-                            <Text color={isModelSelected ? 'black' : 'gray'}>
-                              {' '}
-                              [{formatContextWindow(item.model.contextWindow)}]
-                            </Text>
-                            {isCurrent && (
-                              <Text color={isModelSelected ? 'black' : 'green'}>
-                                {' '}
-                                (current)
-                              </Text>
-                            )}
-                          </Text>
-                        </Box>
-                      );
-                    }
-                  })}
-              </Box>
-              {/* Scrollbar */}
-              {filteredFlatModelItems.length > modelSelectorVisibleHeight && (
-                <Box flexDirection="column" marginLeft={1}>
-                  {Array.from({ length: modelSelectorVisibleHeight }).map(
-                    (_, i) => {
-                      const thumbHeight = Math.max(
-                        1,
-                        Math.floor(
-                          (modelSelectorVisibleHeight /
-                            filteredFlatModelItems.length) *
-                            modelSelectorVisibleHeight
-                        )
-                      );
-                      const thumbPos = Math.floor(
-                        (modelSelectorScrollOffset /
-                          filteredFlatModelItems.length) *
-                          modelSelectorVisibleHeight
-                      );
-                      const isThumb =
-                        i >= thumbPos && i < thumbPos + thumbHeight;
-                      return (
-                        <Text key={i} dimColor>
-                          {isThumb ? '■' : '│'}
-                        </Text>
-                      );
-                    }
-                  )}
-                </Box>
-              )}
-            </Box>
-            <Box marginTop={1}>
-              <Text dimColor>
-                Enter Select | ←→ Expand/Collapse | ↑↓ Navigate | / Filter | r
-                Refresh | Tab Settings | Esc Cancel
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+        currentModelId={currentModel?.apiModelId}
+        onSelectModel={handleModelSelect}
+        onClose={() => setShowModelSelector(false)}
+        onSwitchToSettings={() => {
+          setShowModelSelector(false);
+          setShowSettingsTab(true);
+        }}
+      />
     );
   }
 
-  // CONFIG-004: Settings tab overlay (provider API key management)
+  // CONFIG-004 + PROV-007: Settings tab overlay with profile management
+  // TUI-074: Now using ProviderSettingsScreen orchestrator component
   if (showSettingsTab) {
-    // Calculate available width for settings text (terminal width minus padding and scrollbar)
-    const settingsTextWidth = terminalWidth - 4 - 3; // 4 for padding (2 each side), 3 for scrollbar margin
     return (
-      <Box
-        position="absolute"
-        flexDirection="column"
+      <ProviderSettingsScreen
         width={terminalWidth}
         height={terminalHeight}
-      >
-        <Box flexDirection="column" flexGrow={1} backgroundColor="black">
-          <Box flexDirection="column" padding={2} flexGrow={1}>
-            <Box marginBottom={1}>
-              <Text bold color="yellow">
-                Provider Settings
-              </Text>
-              <Text dimColor>
-                {' '}
-                ({filteredSettingsProviders.length} providers, showing{' '}
-                {settingsScrollOffset + 1}-
-                {Math.min(
-                  settingsScrollOffset + settingsVisibleHeight,
-                  filteredSettingsProviders.length
-                )}
-                )
-              </Text>
-            </Box>
-            {/* Filter input box */}
-            {(isSettingsFilterMode || settingsFilter) && (
-              <Box marginBottom={1}>
-                <Text color="yellow">Filter: </Text>
-                <Text>{settingsFilter}</Text>
-                {isSettingsFilterMode && <Text inverse> </Text>}
-              </Box>
-            )}
-
-            {/* Scrollable list of providers with viewport */}
-            <Box flexDirection="row" flexGrow={1}>
-              <Box flexDirection="column" flexGrow={1}>
-                {filteredSettingsProviders
-                  .slice(
-                    settingsScrollOffset,
-                    settingsScrollOffset + settingsVisibleHeight
-                  )
-                  .map((providerId, visibleIdx) => {
-                    const actualIdx = settingsScrollOffset + visibleIdx;
-                    const isSelected = actualIdx === selectedSettingsIdx;
-                    const status = providerStatuses[providerId];
-                    const registryEntry = getProviderRegistryEntry(providerId);
-                    const isEditing = editingProviderId === providerId;
-                    const testResult =
-                      connectionTestResult?.providerId === providerId
-                        ? connectionTestResult
-                        : null;
-
-                    return (
-                      <Box
-                        key={providerId}
-                        flexDirection="column"
-                        marginBottom={0}
-                      >
-                        <Box width={settingsTextWidth}>
-                          <Text
-                            backgroundColor={
-                              isSelected && !isEditing ? 'yellow' : undefined
-                            }
-                            color={isSelected && !isEditing ? 'black' : 'white'}
-                            wrap="truncate"
-                          >
-                            {isSelected ? '> ' : '  '}
-                            {registryEntry?.name || providerId}
-                            {status?.hasKey ? (
-                              <Text color="green"> ✓ {status.maskedKey}</Text>
-                            ) : (
-                              <Text color="gray"> (not configured)</Text>
-                            )}
-                            {testResult && (
-                              <Text
-                                color={testResult.success ? 'green' : 'red'}
-                              >
-                                {' '}
-                                {testResult.message}
-                              </Text>
-                            )}
-                          </Text>
-                        </Box>
-
-                        {/* Editing input */}
-                        {isEditing && (
-                          <Box marginLeft={4}>
-                            <Text color="yellow">API Key: </Text>
-                            <Text>
-                              {editingApiKey
-                                ? '•'.repeat(editingApiKey.length)
-                                : ''}
-                              <Text inverse> </Text>
-                            </Text>
-                          </Box>
-                        )}
-                      </Box>
-                    );
-                  })}
-              </Box>
-              {/* Scrollbar */}
-              {filteredSettingsProviders.length > settingsVisibleHeight && (
-                <Box flexDirection="column" marginLeft={1}>
-                  {Array.from({ length: settingsVisibleHeight }).map((_, i) => {
-                    const thumbHeight = Math.max(
-                      1,
-                      Math.floor(
-                        (settingsVisibleHeight /
-                          filteredSettingsProviders.length) *
-                          settingsVisibleHeight
-                      )
-                    );
-                    const thumbPos = Math.floor(
-                      (settingsScrollOffset /
-                        filteredSettingsProviders.length) *
-                        settingsVisibleHeight
-                    );
-                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
-                    return (
-                      <Text key={i} dimColor>
-                        {isThumb ? '■' : '│'}
-                      </Text>
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
-
-            <Box marginTop={1}>
-              <Text dimColor>
-                {editingProviderId
-                  ? 'Type API key | Enter Save | Esc Cancel'
-                  : 'Enter Edit | t Test | d Delete | / Filter | Tab Models | Esc Close'}
-              </Text>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
+        onClose={() => setShowSettingsTab(false)}
+        onSwitchToModels={() => {
+          setShowSettingsTab(false);
+          setShowModelSelector(true);
+        }}
+      />
     );
   }
 
@@ -8181,10 +6997,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
             setShowThinkingLevelDialog(false);
           }}
           onSetDefault={async level => {
-            // TUI-058: Save default thinking level to config
-            await saveDefaultThinkingLevel(level);
-            // Update local state so indicator moves immediately
-            setDefaultThinkingLevel(level);
+            // TUI-075: Hook handles persist + apply to current session
+            await setDefaultThinkingLevel(level);
           }}
           onClose={() => setShowThinkingLevelDialog(false)}
         />

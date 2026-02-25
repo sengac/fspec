@@ -288,3 +288,22 @@ export function getProviderEnvVar(providerId: string): string | undefined {
 export function getProviderEnvVars(providerId: string): string[] | undefined {
   return PROVIDER_ENV_VARS[providerId];
 }
+
+/**
+ * Alias for saveCredential - used by TUI components
+ */
+export async function setProviderCredential(
+  providerId: string,
+  apiKey: string
+): Promise<void> {
+  return saveCredential(providerId, apiKey);
+}
+
+/**
+ * Alias for deleteCredential - used by TUI components
+ */
+export async function deleteProviderCredential(
+  providerId: string
+): Promise<void> {
+  return deleteCredential(providerId);
+}

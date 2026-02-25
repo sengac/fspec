@@ -2013,6 +2013,19 @@ export declare function sessionSetModel(
 ): Promise<void>;
 
 /**
+ * PROV-007: Set model for profile-based models (vLLM, Ollama, etc.)
+ *
+ * This function sets the model without validating against the models.dev registry.
+ * Use this for profile-based models where OPENAI_BASE_URL points to a local server.
+ * The caller must ensure OPENAI_BASE_URL and OPENAI_API_KEY are set before calling.
+ */
+export declare function sessionSetModelProfile(
+  sessionId: string,
+  providerId: string,
+  modelId: string
+): Promise<void>;
+
+/**
  * Set pending observed correlation IDs for a watcher session (WATCH-011)
  *
  * When processing observations, call this before sending the evaluation prompt.

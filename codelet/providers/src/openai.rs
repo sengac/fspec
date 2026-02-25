@@ -32,6 +32,23 @@ pub const CONTEXT_WINDOW: usize = DEFAULT_CONTEXT_WINDOW;
 /// Max output tokens constant (for backwards compatibility)
 pub const MAX_OUTPUT_TOKENS: usize = DEFAULT_MAX_OUTPUT_TOKENS;
 
+/// Normalize base URL to ensure it includes /v1 suffix
+///
+/// The rig library's default OpenAI base URL is "https://api.openai.com/v1",
+/// which includes the /v1 prefix. When using custom base URLs for local servers
+/// (vLLM, Ollama, etc.), the URL typically doesn't include /v1, but the rig
+/// client expects it because it appends paths like /chat/completions directly.
+///
+/// This function ensures consistency by adding /v1 if not present.
+fn normalize_base_url(url: &str) -> String {
+    let trimmed = url.trim_end_matches('/');
+    if trimmed.ends_with("/v1") {
+        trimmed.to_string()
+    } else {
+        format!("{}/v1", trimmed)
+    }
+}
+
 /// OpenAI Provider for OpenAI API (using rig)
 ///
 /// PROV-006: Now supports custom base URLs for local model servers via:
@@ -87,8 +104,8 @@ impl OpenAIProvider {
             ProviderError::config("openai", "Model is required. Set OPENAI_MODEL environment variable.")
         })?;
 
-        // PROV-006: Check for custom base URL
-        let base_url = std::env::var("OPENAI_BASE_URL").ok();
+        // PROV-006: Check for custom base URL and normalize it
+        let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
 
         Self::from_api_key_with_options(&api_key, &model_name, base_url.as_deref())
     }
@@ -97,8 +114,8 @@ impl OpenAIProvider {
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
     pub fn from_api_key(api_key: &str, model: &str) -> Result<Self, ProviderError> {
-        // Check for custom base URL from environment
-        let base_url = std::env::var("OPENAI_BASE_URL").ok();
+        // Check for custom base URL from environment and normalize it
+        let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
         Self::from_api_key_with_options(api_key, model, base_url.as_deref())
     }
 

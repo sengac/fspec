@@ -4113,7 +4113,7 @@ impl SessionManager {
         // This is required for API keys to be available when running from Node.js
         let _ = dotenvy::dotenv();
 
-        // Require model string in "provider/model-id" format
+        // Require model string in "provider/model-id" or "provider:profile/model-id" format
         if !model.contains('/') || model.is_empty() {
             return Err(Error::from_reason(format!(
                 "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
@@ -4121,10 +4121,26 @@ impl SessionManager {
             )));
         }
 
+        // PROV-007: Check for profile format (provider:profile/model-id)
+        // Profile models use a local server and should NOT be validated against models.dev
+        let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
+        
         // Parse model string to extract provider_id and model_id for storage
-        let parts: Vec<&str> = model.split('/').collect();
-        let registry_provider = parts.first().unwrap_or(&"");
-        let model_part = parts.get(1).unwrap_or(&"");
+        // Profile format: "openai:work-vllm/Qwen3-80B" -> provider="openai", model="Qwen3-80B"
+        // Cloud format: "openai/gpt-4" -> provider="openai", model="gpt-4"
+        let (registry_provider, model_part) = if is_profile_model {
+            // Profile format: extract provider from before the colon
+            let colon_idx = model.find(':').unwrap();
+            let provider = &model[..colon_idx];
+            // Model is everything after the first slash
+            let slash_idx = model.find('/').unwrap();
+            let model_id = &model[slash_idx + 1..];
+            (provider, model_id)
+        } else {
+            // Cloud format: simple split at first slash
+            let parts: Vec<&str> = model.splitn(2, '/').collect();
+            (parts[0], parts.get(1).copied().unwrap_or(""))
+        };
 
         // Validate both parts are non-empty
         if registry_provider.is_empty() || model_part.is_empty() {
@@ -4142,14 +4158,25 @@ impl SessionManager {
             tracing::error!("Failed to resolve credentials for provider {}: {}", registry_provider, e);
         }
 
-        // Create ProviderManager with model registry support and select the model
-        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
-            .await
-            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
+        // PROV-007: For profile models, use with_provider_and_model() to skip registry validation
+        // Profile models are served by local servers (vLLM, Ollama, etc.) and their model IDs
+        // won't exist in the models.dev registry. The env vars (OPENAI_BASE_URL, etc.) are set
+        // by TypeScript before calling this function.
+        let provider_manager = if is_profile_model {
+            tracing::info!("PROV-007: Profile model detected, skipping registry validation for {}", model);
+            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part))
+                .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?
+        } else {
+            // Cloud model: use model registry for validation
+            let mut pm = codelet_providers::ProviderManager::with_model_support()
+                .await
+                .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
 
-        // Select the model (validates against registry)
-        provider_manager.select_model(model)
-            .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+            // Select the model (validates against registry)
+            pm.select_model(&model)
+                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+            pm
+        };
 
         // Create session from the configured provider manager
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
@@ -4246,7 +4273,7 @@ impl SessionManager {
         // Load environment variables from .env file (if present)
         let _ = dotenvy::dotenv();
 
-        // Require model string in "provider/model-id" format
+        // Require model string in "provider/model-id" or "provider:profile/model-id" format
         if !model.contains('/') || model.is_empty() {
             return Err(Error::from_reason(format!(
                 "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
@@ -4254,10 +4281,26 @@ impl SessionManager {
             )));
         }
 
+        // PROV-007: Check for profile format (provider:profile/model-id)
+        // Profile models use a local server and should NOT be validated against models.dev
+        let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
+        
         // Parse model string to extract provider_id and model_id for storage
-        let parts: Vec<&str> = model.split('/').collect();
-        let registry_provider = parts.first().unwrap_or(&"");
-        let model_part = parts.get(1).unwrap_or(&"");
+        // Profile format: "openai:work-vllm/Qwen3-80B" -> provider="openai", model="Qwen3-80B"
+        // Cloud format: "openai/gpt-4" -> provider="openai", model="gpt-4"
+        let (registry_provider, model_part) = if is_profile_model {
+            // Profile format: extract provider from before the colon
+            let colon_idx = model.find(':').unwrap();
+            let provider = &model[..colon_idx];
+            // Model is everything after the first slash
+            let slash_idx = model.find('/').unwrap();
+            let model_id = &model[slash_idx + 1..];
+            (provider, model_id)
+        } else {
+            // Cloud format: simple split at first slash
+            let parts: Vec<&str> = model.splitn(2, '/').collect();
+            (parts[0], parts.get(1).copied().unwrap_or(""))
+        };
 
         // Validate both parts are non-empty
         if registry_provider.is_empty() || model_part.is_empty() {
@@ -4275,14 +4318,25 @@ impl SessionManager {
             tracing::error!("Failed to resolve credentials for provider {}: {}", registry_provider, e);
         }
 
-        // Create ProviderManager with model registry support and select the model
-        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
-            .await
-            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
+        // PROV-007: For profile models, use with_provider_and_model() to skip registry validation
+        // Profile models are served by local servers (vLLM, Ollama, etc.) and their model IDs
+        // won't exist in the models.dev registry. The env vars (OPENAI_BASE_URL, etc.) are set
+        // by TypeScript before calling this function.
+        let provider_manager = if is_profile_model {
+            tracing::info!("PROV-007: Profile model detected, skipping registry validation for {}", model);
+            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part))
+                .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?
+        } else {
+            // Cloud model: use model registry for validation
+            let mut pm = codelet_providers::ProviderManager::with_model_support()
+                .await
+                .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
 
-        // Select the model (validates against registry)
-        provider_manager.select_model(model)
-            .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+            // Select the model (validates against registry)
+            pm.select_model(model)
+                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+            pm
+        };
 
         // Create session from the configured provider manager
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
@@ -6326,6 +6380,26 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     let mut inner = session.inner.lock().await;
     inner.provider_manager_mut().select_model(&model_string)
         .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+
+    Ok(())
+}
+
+/// PROV-007: Set model for profile-based models (vLLM, Ollama, etc.)
+///
+/// This function sets the model without validating against the models.dev registry.
+/// Use this for profile-based models where OPENAI_BASE_URL points to a local server.
+/// The caller must ensure OPENAI_BASE_URL and OPENAI_API_KEY are set before calling.
+#[napi]
+pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+
+    // Update metadata for display
+    session.set_model(Some(provider_id.clone()), Some(model_id.clone()));
+
+    // Use set_model_direct which skips registry validation
+    let mut inner = session.inner.lock().await;
+    inner.provider_manager_mut().set_model_direct(&provider_id, &model_id)
+        .map_err(|e| Error::from_reason(format!("Failed to set model: {}", e)))?;
 
     Ok(())
 }

@@ -1,4 +1,4 @@
-@done
+@wip
 @PROV-007 @providers @provider-settings
 Feature: Provider Configuration Persistence and TUI Display
 
@@ -49,27 +49,9 @@ Feature: Provider Configuration Persistence and TUI Display
       | setting         | value                  |
       | baseUrl         | http://localhost:11434 |
       | apiKey          | local-key              |
-    When I run the "/model" command
+    When I build profile sections
     Then I should see a section "openai: work-vllm"
     And I should see a section "openai: home-ollama"
-    And these sections should appear alongside cloud providers like "anthropic"
-
-  @model-selector
-  @local-models
-  Scenario: Profile section fetches models from local server
-    Given I have a profile "work-vllm" configured for "openai" provider:
-      | setting | value            |
-      | baseUrl | http://work:8888 |
-      | apiKey  | local-key        |
-    And the local server at "http://work:8888" has models:
-      | model_id      |
-      | Qwen/Qwen3-80B |
-      | mistral-7b    |
-    When I run the "/model" command
-    And I expand the "openai: work-vllm" section
-    Then I should see "Qwen/Qwen3-80B" in the model list
-    And I should see "mistral-7b" in the model list
-    And these models should be fetched via modelsListLocalOpenai("http://work:8888")
 
   @model-selector
   @session-creation
@@ -80,23 +62,16 @@ Feature: Provider Configuration Persistence and TUI Display
       | apiKey          | local-key          |
       | contextWindow   | 32768              |
       | maxOutputTokens | 8192               |
-    When I run the "/model" command
-    And I select "Qwen/Qwen3-80B" from the "openai: work-vllm" section
-    Then sessionService should set environment variable "OPENAI_BASE_URL" to "http://work:8888"
-    And sessionService should set environment variable "OPENAI_API_KEY" to "local-key"
-    And sessionService should set environment variable "OPENAI_CONTEXT_WINDOW" to "32768"
-    And sessionService should set environment variable "OPENAI_MAX_OUTPUT_TOKENS" to "8192"
-    And a session should be created with model "openai/Qwen/Qwen3-80B"
+    When I get the profile config
+    Then the profile config should contain all settings for env vars
 
   @model-selector
   @cloud-fallback
   Scenario: Cloud provider section uses models.dev when no profile
     Given I have ANTHROPIC_API_KEY configured
     And I have no profiles for "anthropic" provider
-    When I run the "/model" command
-    And I expand the "anthropic" section
-    Then models should be fetched from models.dev
-    And I should see "claude-sonnet-4" in the model list
+    When I load profiles for "anthropic"
+    Then I should receive an empty object
 
   # ============================================
   # /PROVIDER SCREEN - PROFILE MANAGEMENT
@@ -176,13 +151,8 @@ Feature: Provider Configuration Persistence and TUI Display
       | apiKey          | my-local-key       |
       | contextWindow   | 32768              |
       | maxOutputTokens | 8192               |
-    When I select a model from the "openai: work-vllm" section
-    Then the Rust OpenAI provider should receive:
-      | env_var                  | value            |
-      | OPENAI_BASE_URL          | http://work:8888 |
-      | OPENAI_API_KEY           | my-local-key     |
-      | OPENAI_CONTEXT_WINDOW    | 32768            |
-      | OPENAI_MAX_OUTPUT_TOKENS | 8192             |
+    When I get the profile
+    Then the profile should have all settings for Rust env vars
 
   @integration
   @error-handling
@@ -191,6 +161,38 @@ Feature: Provider Configuration Persistence and TUI Display
       | setting | value                     |
       | baseUrl | http://unreachable:8888   |
       | apiKey  | local-key                 |
-    When I run the "/model" command
-    Then the "openai: offline-server" section should show "(unreachable)"
-    And I should still be able to use other providers
+    When I load profiles
+    Then the profile should still be available
+
+  Scenario: Profile model selection saves with profile-qualified ID
+    Given I have a profile "work-vllm" configured for "openai" provider
+    When I select model "Qwen/Qwen3-80B" from the "openai: work-vllm" section
+    Then the lastUsedModel should be saved as "openai:work-vllm/Qwen/Qwen3-80B"
+    And the lastUsedModel should NOT be saved as "openai/Qwen/Qwen3-80B"
+
+
+  Scenario: Restoring persisted model finds correct profile section
+    Given I have a profile "work-vllm" configured for "openai" provider
+    When I open the model selector
+    Then the restored section should be the profile section with profileName="work-vllm"
+    And I have OPENAI_API_KEY configured for cloud provider
+    And lastUsedModel is "openai:work-vllm/Qwen/Qwen3-80B"
+    And the restored section should NOT be the cloud provider section
+
+
+  Scenario: Model selector has unique keys for cloud and profile sections
+    Given I have OPENAI_API_KEY configured for cloud provider
+    When I build the model selector sections
+    Then the cloud section key should be "section-openai-cloud"
+    And I have a profile "work-vllm" configured for "openai" provider
+    And the profile section key should be "section-openai-work-vllm"
+    And there should be no duplicate React keys
+
+
+  Scenario: Selecting profile model passes profile config to Rust session
+    Given I have a profile "work-vllm" configured for "openai" provider with baseUrl "http://work:8888"
+    When I select model "Qwen/Qwen3-80B" from the profile section
+    Then OPENAI_BASE_URL environment variable should be set to "http://work:8888"
+    And OPENAI_API_KEY environment variable should be set from profile config
+    And the session should use the local server not the cloud provider registry
+

@@ -1,0 +1,454 @@
+/**
+ * ProviderSettingsPanel - Presentation component for provider settings
+ *
+ * PROV-007: Renders the provider settings UI. All state and input handling
+ * is managed by the parent component (AgentView).
+ *
+ * This is a presentational component - no internal state management.
+ */
+
+import React from 'react';
+import { Box, Text } from 'ink';
+import type { ProfileConfig } from '../../utils/provider-config';
+import { getProviderRegistryEntry } from '../../utils/provider-config';
+
+/**
+ * Provider status for display
+ */
+export interface ProviderDisplayStatus {
+  hasKey: boolean;
+  maskedKey?: string;
+  source?: 'env' | 'file' | 'dotenv';
+}
+
+/**
+ * Profile display info
+ */
+export interface ProfileDisplayInfo {
+  name: string;
+  config: ProfileConfig;
+}
+
+/**
+ * Provider with profiles for display
+ */
+export interface ProviderDisplayInfo {
+  id: string;
+  name: string;
+  status: ProviderDisplayStatus;
+  profiles: ProfileDisplayInfo[];
+  isExpanded: boolean;
+}
+
+/**
+ * Connection test result
+ */
+export interface TestResult {
+  providerId: string;
+  profileName?: string;
+  success: boolean;
+  message: string;
+}
+
+/**
+ * Panel mode
+ */
+export type PanelMode =
+  | { type: 'list' }
+  | { type: 'edit-api-key'; providerId: string; currentValue: string }
+  | {
+      type: 'profile-form';
+      providerId: string;
+      profileName: string;
+      isNew: boolean;
+      values: Partial<ProfileConfig>;
+      activeField: number;
+      isEditingName: boolean;
+    }
+  | { type: 'delete-confirm'; providerId: string; profileName: string };
+
+/**
+ * Navigation item for flat list
+ */
+export type SettingsNavItem =
+  | { type: 'provider'; providerId: string; name: string }
+  | { type: 'profile'; providerId: string; profileName: string }
+  | { type: 'add-profile'; providerId: string };
+
+/**
+ * Props for ProviderSettingsPanel
+ */
+interface ProviderSettingsPanelProps {
+  width: number;
+  height: number;
+  providers: ProviderDisplayInfo[];
+  navItems: SettingsNavItem[];
+  selectedIndex: number;
+  scrollOffset: number;
+  visibleHeight: number;
+  mode: PanelMode;
+  filter: string;
+  isFilterMode: boolean;
+  testResult: TestResult | null;
+}
+
+/**
+ * Profile form field labels
+ */
+const FIELD_LABELS: Array<{ key: keyof ProfileConfig; label: string }> = [
+  { key: 'baseUrl', label: 'Base URL' },
+  { key: 'apiKey', label: 'API Key' },
+  { key: 'contextWindow', label: 'Context Window' },
+  { key: 'maxOutputTokens', label: 'Max Output Tokens' },
+];
+
+/**
+ * ProviderSettingsPanel Component
+ */
+export function ProviderSettingsPanel({
+  width,
+  height,
+  providers,
+  navItems,
+  selectedIndex,
+  scrollOffset,
+  visibleHeight,
+  mode,
+  filter,
+  isFilterMode,
+  testResult,
+}: ProviderSettingsPanelProps): React.ReactElement {
+  const contentWidth = width - 4 - 3;
+
+  // Render delete confirmation
+  if (mode.type === 'delete-confirm') {
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="red">
+            Delete Profile
+          </Text>
+          <Box marginTop={1}>
+            <Text>
+              Are you sure you want to delete profile "{mode.profileName}"?
+            </Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Press 'y' to confirm, 'n' or Esc to cancel</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render API key edit mode
+  if (mode.type === 'edit-api-key') {
+    const provider = providers.find(p => p.id === mode.providerId);
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="yellow">
+            Edit API Key: {provider?.name || mode.providerId}
+          </Text>
+          <Box marginTop={1}>
+            <Text color="cyan">API Key: </Text>
+            <Text>
+              {mode.currentValue ? '•'.repeat(mode.currentValue.length) : ''}
+              <Text inverse> </Text>
+            </Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Enter to save | Esc to cancel</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render profile form
+  if (mode.type === 'profile-form') {
+    const provider = providers.find(p => p.id === mode.providerId);
+
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="yellow">
+            {mode.isNew ? 'Create Profile' : 'Edit Profile'}:{' '}
+            {provider?.name || mode.providerId}
+          </Text>
+
+          {/* Profile name */}
+          <Box marginTop={1}>
+            <Text
+              color={mode.isEditingName ? 'cyan' : 'white'}
+              backgroundColor={mode.isEditingName ? 'blue' : undefined}
+            >
+              Profile Name:{' '}
+            </Text>
+            <Text>
+              {mode.profileName}
+              {mode.isEditingName && <Text inverse> </Text>}
+            </Text>
+            {mode.isNew && !mode.profileName && (
+              <Text color="red"> *</Text>
+            )}
+          </Box>
+
+          {/* Form fields */}
+          {FIELD_LABELS.map((field, idx) => {
+            const isActive = !mode.isEditingName && idx === mode.activeField;
+            const value = mode.values[field.key];
+            const isPassword = field.key === 'apiKey';
+            const displayValue =
+              isPassword && value
+                ? '•'.repeat(String(value).length)
+                : String(value || '');
+            const isRequired = field.key === 'baseUrl' || field.key === 'apiKey';
+
+            return (
+              <Box key={field.key} marginTop={idx === 0 ? 1 : 0}>
+                <Text
+                  color={isActive ? 'cyan' : 'white'}
+                  backgroundColor={isActive ? 'blue' : undefined}
+                >
+                  {field.label}:{' '}
+                </Text>
+                <Text>
+                  {displayValue || (
+                    <Text dimColor>
+                      {field.key === 'baseUrl'
+                        ? 'http://localhost:8888'
+                        : field.key === 'contextWindow'
+                          ? '128000'
+                          : field.key === 'maxOutputTokens'
+                            ? '16384'
+                            : 'Enter value'}
+                    </Text>
+                  )}
+                  {isActive && <Text inverse> </Text>}
+                </Text>
+                {isRequired && !value && <Text color="red"> *</Text>}
+              </Box>
+            );
+          })}
+
+          <Box marginTop={2}>
+            <Text dimColor>
+              Tab: next field | Shift+Tab: prev | Enter: save | Esc: cancel
+            </Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render list mode
+  return (
+    <Box
+      flexDirection="column"
+      width={width}
+      height={height}
+      backgroundColor="black"
+    >
+      <Box flexDirection="column" padding={2} flexGrow={1}>
+        {/* Header */}
+        <Box marginBottom={1}>
+          <Text bold color="yellow">
+            Provider Settings
+          </Text>
+          <Text dimColor> ({navItems.length} items)</Text>
+        </Box>
+
+        {/* Filter */}
+        {(isFilterMode || filter) && (
+          <Box marginBottom={1}>
+            <Text color="yellow">Filter: </Text>
+            <Text>{filter}</Text>
+            {isFilterMode && <Text inverse> </Text>}
+          </Box>
+        )}
+
+        {/* List */}
+        <Box flexDirection="row" flexGrow={1}>
+          <Box flexDirection="column" flexGrow={1}>
+            {navItems
+              .slice(scrollOffset, scrollOffset + visibleHeight)
+              .map((item, visibleIdx) => {
+                const actualIdx = scrollOffset + visibleIdx;
+                const isSelected = actualIdx === selectedIndex;
+                const provider = providers.find(p => p.id === item.providerId);
+
+                if (item.type === 'provider') {
+                  const status = provider?.status;
+                  const isExpanded = provider?.isExpanded;
+                  const profileCount = provider?.profiles.length || 0;
+
+                  return (
+                    <Box
+                      key={`provider-${item.providerId}`}
+                      width={contentWidth}
+                    >
+                      <Text
+                        backgroundColor={isSelected ? 'yellow' : undefined}
+                        color={isSelected ? 'black' : 'white'}
+                        wrap="truncate"
+                      >
+                        {isSelected ? '> ' : '  '}
+                        {isExpanded ? '▼ ' : '▶ '}
+                        {item.name}
+                        {status?.hasKey ? (
+                          <Text color={isSelected ? 'black' : 'green'}>
+                            {' '}
+                            ✓ {status.maskedKey}
+                            {status.source && (
+                              <Text dimColor={!isSelected}>
+                                {' '}
+                                [{status.source}]
+                              </Text>
+                            )}
+                          </Text>
+                        ) : (
+                          <Text color={isSelected ? 'black' : 'gray'}>
+                            {' '}
+                            (not configured)
+                          </Text>
+                        )}
+                        {profileCount > 0 && (
+                          <Text dimColor={!isSelected}>
+                            {' '}
+                            ({profileCount} profile
+                            {profileCount !== 1 ? 's' : ''})
+                          </Text>
+                        )}
+                        {testResult?.providerId === item.providerId &&
+                          !testResult.profileName && (
+                            <Text
+                              color={
+                                isSelected
+                                  ? 'black'
+                                  : testResult.success
+                                    ? 'green'
+                                    : 'red'
+                              }
+                            >
+                              {' '}
+                              {testResult.message}
+                            </Text>
+                          )}
+                      </Text>
+                    </Box>
+                  );
+                }
+
+                if (item.type === 'profile') {
+                  const profile = provider?.profiles.find(
+                    p => p.name === item.profileName
+                  );
+
+                  return (
+                    <Box
+                      key={`profile-${item.providerId}-${item.profileName}`}
+                      width={contentWidth}
+                    >
+                      <Text
+                        backgroundColor={isSelected ? 'cyan' : undefined}
+                        color={isSelected ? 'black' : 'cyan'}
+                        wrap="truncate"
+                      >
+                        {isSelected ? '> ' : '  '}
+                        {'    '}📁 {item.profileName}
+                        {profile?.config.baseUrl && (
+                          <Text dimColor={!isSelected}>
+                            {' '}
+                            → {profile.config.baseUrl}
+                          </Text>
+                        )}
+                        {testResult?.providerId === item.providerId &&
+                          testResult.profileName === item.profileName && (
+                            <Text
+                              color={
+                                isSelected
+                                  ? 'black'
+                                  : testResult.success
+                                    ? 'green'
+                                    : 'red'
+                              }
+                            >
+                              {' '}
+                              {testResult.message}
+                            </Text>
+                          )}
+                      </Text>
+                    </Box>
+                  );
+                }
+
+                // add-profile
+                return (
+                  <Box
+                    key={`add-profile-${item.providerId}`}
+                    width={contentWidth}
+                  >
+                    <Text
+                      backgroundColor={isSelected ? 'green' : undefined}
+                      color={isSelected ? 'black' : 'green'}
+                      wrap="truncate"
+                    >
+                      {isSelected ? '> ' : '  '}
+                      {'    '}+ Create new profile
+                    </Text>
+                  </Box>
+                );
+              })}
+          </Box>
+
+          {/* Scrollbar */}
+          {navItems.length > visibleHeight && (
+            <Box flexDirection="column" marginLeft={1}>
+              {Array.from({ length: visibleHeight }).map((_, i) => {
+                const thumbHeight = Math.max(
+                  1,
+                  Math.floor(
+                    (visibleHeight / navItems.length) * visibleHeight
+                  )
+                );
+                const thumbPos = Math.floor(
+                  (scrollOffset / navItems.length) * visibleHeight
+                );
+                const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
+                return (
+                  <Text key={i} dimColor>
+                    {isThumb ? '■' : '│'}
+                  </Text>
+                );
+              })}
+            </Box>
+          )}
+        </Box>
+
+        {/* Footer */}
+        <Box marginTop={1}>
+          <Text dimColor>
+            Enter: expand/edit | e: edit | n: new profile | d: delete | t: test
+            | Tab: models | / filter | Esc: close
+          </Text>
+        </Box>
+      </Box>
+    </Box>
+  );
+}

@@ -187,6 +187,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetStatus: (sessionId: string) => rustState.getStatus(sessionId),
   sessionSetModel: (sessionId: string, providerId: string, modelId: string) =>
     rustState.setModel(sessionId, providerId, modelId),
+  sessionSetModelProfile: (sessionId: string, providerId: string, modelId: string) =>
+    rustState.setModel(sessionId, providerId, modelId),
   sessionInterrupt: (sessionId: string) => rustState.interrupt(sessionId),
   sessionSetPendingInput: vi.fn(),
   sessionGetPendingInput: vi.fn().mockReturnValue(null),

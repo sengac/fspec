@@ -34,7 +34,6 @@ import {
   type RustStateSource as _RustStateSource,
   type CompactionProgress,
 } from './rustStateSource';
-import { logger as _logger } from '../../utils/logger';
 
 // Re-exports for backwards compatibility
 export type { PauseInfo } from '../types/pause';
@@ -152,6 +151,7 @@ function fetchFreshSnapshot(
   const compactionProgress = isCompacting
     ? source.getCompactionProgress(sessionId)
     : null;
+  const model = source.getModel(sessionId);
 
   return {
     status,
@@ -160,7 +160,7 @@ function fetchFreshSnapshot(
     pauseInfo,
     isCompacting,
     compactionProgress,
-    model: source.getModel(sessionId),
+    model,
     tokens: source.getTokens(sessionId),
     isDebugEnabled: source.getDebugEnabled(sessionId),
     baseThinkingLevel: source.getBaseThinkingLevel(sessionId), // TUI-054

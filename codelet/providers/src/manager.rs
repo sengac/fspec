@@ -250,6 +250,34 @@ impl ProviderManager {
         Ok(model_info)
     }
 
+    /// PROV-007: Select a model directly without registry validation
+    ///
+    /// For profile-based models (vLLM, Ollama, etc.) that aren't in the models.dev registry.
+    /// This assumes the caller has already validated the model exists on the remote server
+    /// AND has set up the required environment variables (OPENAI_API_KEY, OPENAI_BASE_URL).
+    ///
+    /// NOTE: This skips credentials validation because profile credentials are passed via
+    /// environment variables that were set AFTER the session was created.
+    ///
+    /// # Arguments
+    /// * `provider_id` - The provider ID (e.g., "openai" for OpenAI-compatible APIs)
+    /// * `model_id` - The model ID as recognized by the remote server
+    pub fn set_model_direct(&mut self, provider_id: &str, model_id: &str) -> Result<(), ProviderError> {
+        // Map provider ID to our ProviderType
+        let provider_type = Self::map_provider_id_to_type(provider_id)?;
+
+        // NOTE: We intentionally skip credentials validation here.
+        // For profile-based models, TypeScript sets OPENAI_API_KEY and OPENAI_BASE_URL
+        // as environment variables AFTER the session was created. The OpenAIProvider
+        // will read these from the environment when get_openai() is called.
+
+        // Update state - store the model_id directly (no provider/ prefix needed for local models)
+        self.current_provider = provider_type;
+        self.selected_model = Some(model_id.to_string());
+
+        Ok(())
+    }
+
     /// Get the selected model ID (the actual API model ID)
     ///
     /// Returns the model ID to use for API calls. If a model registry is available,

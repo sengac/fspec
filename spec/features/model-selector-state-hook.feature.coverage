@@ -1,0 +1,1186 @@
+{
+  "scenarios": [
+    {
+      "name": "Hook initializes with loading state and loads cloud models",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "276-298",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook loads profile sections from local servers",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "300-333",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hook handles unreachable local servers gracefully",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "335-365",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flatItems is built from providerSections and expandedProviders",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "368-410",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "filteredFlatItems filters by provider name case-insensitively",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "412-444",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "filteredFlatItems filters by model name or ID",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "446-480",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Toggle section expansion adds provider to expanded set",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "482-508",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Toggle section expansion removes provider from expanded set",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "510-544",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate down from section header to first model",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "546-572",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate down within models in expanded section",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "574-599",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate down from last model to next section",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "601-632",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate up from first model to section header",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "634-659",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate up skips collapsed sections",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "661-695",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate up from section header to previous section's last model",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "697-730",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "getCurrentFlatIndex returns correct position",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "732-766",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                397,
+                398,
+                399,
+                400,
+                401,
+                402
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-scroll keeps selection visible when moving down",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "768-794",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-scroll keeps selection visible when moving up",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "796-824",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll and filter reset when model selector opens",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "826-863",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter change resets selection to first result",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "865-893",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter matches provider ID and model name",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "895-925",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refresh models updates cache and reloads all models",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "927-958",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select cloud provider model returns complete ModelSelection",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "960-1012",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select profile model includes profile configuration",
+      "testMappings": [
+        {
+          "file": "src/tui/hooks/__tests__/useModelSelectorState.test.tsx",
+          "lines": "1014-1053",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useModelSelectorState.ts",
+              "lines": [
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 23,
+    "coveredScenarios": 23,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/hooks/__tests__/useModelSelectorState.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/hooks/useModelSelectorState.ts"
+    ],
+    "totalLinesCovered": 1557
+  }
+}

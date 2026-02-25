@@ -1,0 +1,197 @@
+{
+  "scenarios": [
+    {
+      "name": "Open model selector screen via /model command",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "145-178",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3420,
+                3421,
+                3422,
+                3423,
+                3424,
+                3425,
+                3426,
+                3427,
+                3428
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Open provider settings screen via /provider command",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "181-209",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3430,
+                3431,
+                3432,
+                3433,
+                3434,
+                3435
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch from model selector to provider settings via Tab",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "213-258",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6389,
+                6390,
+                6391,
+                6392
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch from provider settings to model selector via Tab",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "261-301",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6405,
+                6406,
+                6407,
+                6408
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model selection updates session",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "304-365",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6381,
+                6382,
+                6383,
+                6384,
+                6385,
+                6386,
+                6387,
+                6388,
+                6389,
+                6390,
+                6391,
+                6392,
+                6393,
+                6394
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Close model selector screen via Escape",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "368-408",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6388
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Close provider settings screen via Escape",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "412-452",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6404
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AgentView does not have duplicate model state",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "609-649",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Model data is loaded lazily when model selector opens",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "655-691",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Shared store provides model data to both AgentView and ModelSelectorScreen",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/screen-component-integration.test.tsx",
+          "lines": "697-714",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/screen-component-integration.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 429
+  }
+}

@@ -157,6 +157,7 @@ export const createSessionNAPIMocks = () => ({
   sessionRestoreTokenState: vi.fn(),
   sessionToggleDebug: vi.fn(),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
+  sessionSetModelProfile: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),
