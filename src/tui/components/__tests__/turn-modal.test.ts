@@ -144,7 +144,7 @@ const getModalTitle = (state: ModalTestState): string => {
 const isExpandCommandRecognized = (input: string): boolean => {
   // OLD behavior would return true for '/expand'
   // NEW behavior: /expand is NOT a special command
-  const specialCommands = ['/clear', '/debug', '/search', '/history'];
+  const specialCommands = ['/clear', '/debug', '/search'];
   return specialCommands.includes(input.trim().toLowerCase());
 };
 

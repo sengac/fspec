@@ -66,12 +66,9 @@ describe('Feature: Slash Command Autocomplete Palette', () => {
         cmd.description.toLowerCase().includes('m')
       )).toBe(true);
 
-      // @step And the commands "model", "mode", "merge", "mcp" should be visible
+      // @step And the command "model" should be visible
       const commandNames = filteredCommands.map((c) => c.name);
       expect(commandNames).toContain('model');
-      expect(commandNames).toContain('mode');
-      expect(commandNames).toContain('merge');
-      expect(commandNames).toContain('mcp');
 
       // @step And the first matching command should be selected
       const selectedIndex = 0;
@@ -271,9 +268,6 @@ describe('useSlashCommand hook behavior (logic verification)', () => {
 describe('filterCommands', () => {
   const testCommands: SlashCommand[] = [
     { name: 'model', description: 'Select AI model' },
-    { name: 'mode', description: 'Cycle through modes' },
-    { name: 'merge', description: 'Merge messages' },
-    { name: 'mcp', description: 'Manage MCP providers' },
     { name: 'clear', description: 'Clear history' },
     { name: 'compact', description: 'Compact context' },
     { name: 'resume', description: 'Resume session' },
@@ -287,13 +281,11 @@ describe('filterCommands', () => {
   it('filters by prefix first', () => {
     const result = filterCommands(testCommands, 'mo');
     expect(result[0].name).toBe('model');
-    expect(result[1].name).toBe('mode');
   });
 
   it('filters by substring second', () => {
     const result = filterCommands(testCommands, 'de');
-    // 'mode' contains 'de', 'model' contains 'de'
-    expect(result.some((c) => c.name === 'mode')).toBe(true);
+    // 'model' contains 'de'
     expect(result.some((c) => c.name === 'model')).toBe(true);
   });
 

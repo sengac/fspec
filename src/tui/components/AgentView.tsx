@@ -9,10 +9,10 @@
  * - Supports Esc key interruption via session.interrupt()
  * - Full-screen view for maximum conversation space
  *
- * Implements NAPI-006: Session Persistence with Fork and Merge
+ * Implements NAPI-006: Session Persistence
  * - Shift+Arrow-Up/Down for command history navigation
- * - /search command for history search
- * - Session commands: /resume, /fork, /merge, /switch, /rename, /cherry-pick, /search
+ * - /search command for interactive history search
+ * - /resume command for session selection
  */
 
 import React, {
@@ -26,7 +26,6 @@ import React, {
 import fs from 'fs';
 import { Box, Text, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
-import { MultiLineInput } from './MultiLineInput';
 import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
@@ -39,7 +38,6 @@ import { ModelSelectorScreen } from './ModelSelectorScreen';
 import {
   messagesToLines,
   wrapMessageToLines,
-  getDisplayRole,
 } from '../utils/conversationUtils';
 import {
   extractTokenStateFromChunks,
@@ -61,25 +59,19 @@ import {
 import type {
   ConversationMessage,
   ConversationLine,
-  MessageType,
 } from '../types/conversation';
-import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
+import { getFspecUserDir } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import {
-  testProviderConnection,
   // REFAC-007: persistenceStoreMessageEnvelope removed - now handled by Rust
+  // TUI-077: testProviderConnection, persistenceLoadSession, persistenceGetSessionMessageEnvelopes removed (unused after slash command cleanup)
   persistenceGetHistory,
-  persistenceForkSession,
   persistenceAddHistory,
   persistenceSearchHistory,
   persistenceListSessions,
   persistenceSetDataDirectory,
-  persistenceLoadSession,
   persistenceRenameSession,
-  persistenceMergeMessages,
-  persistenceCherryPick,
   persistenceCreateSessionWithProvider,
-  persistenceGetSessionMessageEnvelopes,
   persistenceDeleteSession,
   persistenceCleanupOrphanedMessages,
   getThinkingConfig,
@@ -87,24 +79,15 @@ import {
   // TUI-075: Model-related NAPI functions removed (now in useModelSelectorState hook)
   sessionToggleDebug,
   sessionUpdateDebugMetadata,
-  sessionGetDebugEnabled,
   sessionSetDebugEnabled,
   toggleDebug,
-  sessionCompact,
   sessionSendInput,
-  sessionGetBufferedOutput,
   sessionGetMergedOutput,
   sessionInterrupt,
-  sessionSetModel,
-  sessionSetModelProfile,
-  sessionGetModel,
   sessionGetStatus,
-  sessionGetTokens,
   sessionManagerList,
   sessionManagerCreateWithId,
   // TUI-068: session destroy REMOVED - use destroySession from sessionService
-  sessionRestoreMessages,
-  sessionRestoreTokenState,
   sessionSetPendingInput,
   sessionGetPendingInput,
   // WATCH-008: Watcher management NAPI functions
@@ -132,11 +115,7 @@ import {
   blocklistLoad,
   blocklistInit,
   // REFAC-008: sessionSendFspecResult removed - handled by GlobalSessionStreamManager
-  type NapiAnchorPoint,
   type SessionRoleInfo,
-  type NapiProviderModels,
-  type NapiModelInfo,
-  type CompactionProgress,
 } from '@sengac/codelet-napi';
 import {
   detectThinkingLevel,
@@ -144,20 +123,11 @@ import {
   computeEffectiveThinkingLevel,
   hasDisableKeywords,
 } from '../../utils/thinkingLevel';
-import { getProviderConfig } from '../../utils/credentials';
 // REFAC-008: fspecCallback removed - handled by GlobalSessionStreamManager
-import {
-  SUPPORTED_PROVIDERS,
-  getProviderRegistryEntry,
-  loadProviderProfiles,
-  type ProviderRegistryEntry,
-  type ProfileConfig,
-} from '../../utils/provider-config';
 import {
   buildModelString,
   parseModelString,
   findSectionForPersistedModel,
-  generateSectionKey,
 } from '../utils/model-selection';
 import {
   findTemplateBySlug,
@@ -165,7 +135,6 @@ import {
   saveWatcherTemplates,
   createTemplate,
   updateTemplate,
-  buildFlatWatcherList,
 } from '../utils/watcherTemplateStorage';
 import type {
   WatcherTemplate,
@@ -175,14 +144,9 @@ import { WatcherTemplateList } from './WatcherTemplateList';
 import { WatcherTemplateForm } from './WatcherTemplateForm';
 import { BlocklistListView, type BlocklistRule } from './BlocklistListView';
 import { SessionHeader } from './SessionHeader';
-import { formatContextWindow } from '../utils/sessionHeaderUtils';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
 import type { AnchorPoint, AnchorType } from '../types/anchor';
-import {
-  computeLineDiff,
-  changesToDiffLines,
-  type DiffLine,
-} from '../../git/diff-parser';
+import { computeLineDiff, changesToDiffLines } from '../../git/diff-parser';
 import { useCompaction } from '../hooks/useCompaction';
 import { useWorkUnitContext } from '../hooks/useWorkUnitContext';
 import { useDefaultThinkingLevel } from '../hooks/useDefaultThinkingLevel';
@@ -208,7 +172,6 @@ import {
 } from '../utils/thinkingBlockManager';
 import { useFspecStore } from '../store/fspecStore';
 import {
-  useSessionStore,
   useCurrentSessionId,
   useIsReadyForNewSession,
   useShouldAutoCreateSession,
@@ -223,12 +186,7 @@ import {
   useModelsInitialized,
   useModelStoreActions,
 } from '../store/modelStore';
-import type {
-  ProviderModel,
-  ModelSelectorItem,
-  ModelSelection,
-  ProviderSection,
-} from '../types/provider';
+import type { ModelSelection } from '../types/provider';
 import {
   useRustSessionState,
   // BRIDGE-012: manualAttach, manualDetach, getSessionChunks removed - replaced by global callback
@@ -249,11 +207,7 @@ import { initializeModels } from '../services/modelInitializationService';
 import { selectModel } from '../services/modelSelectionService';
 import { configureProfileEnvironment } from '../services/profileEnvironmentService';
 // PROV-008: Import provider mapping from shared utility (DRY)
-import {
-  mapProviderIdToInternal,
-  mapInternalToProviderId,
-  mapModelsDevToRegistryId,
-} from '../utils/provider-mapping';
+import { mapProviderIdToInternal } from '../utils/provider-mapping';
 
 interface StreamChunk {
   type: string;
@@ -271,27 +225,6 @@ interface StreamChunk {
   // WATCH-011: Correlation IDs for cross-pane selection highlighting
   correlationId?: string;
   observedCorrelationIds?: string[];
-}
-
-interface Message {
-  role: string;
-  content: string;
-}
-
-// AGENT-021: Debug command result from toggleDebug()
-interface DebugCommandResult {
-  enabled: boolean;
-  sessionFile: string | null;
-  message: string;
-}
-
-// NAPI-005: Compaction result from compact()
-interface CompactionResult {
-  originalTokens: number;
-  compactedTokens: number;
-  compressionRatio: number;
-  turnsSummarized: number;
-  turnsKept: number;
 }
 
 // NAPI-006: History entry from persistence
@@ -342,7 +275,7 @@ export interface AgentViewProps {
   initialSessionId?: string; // VIEWNV-001: Initial session ID to resume (from navigation)
 }
 
-// ConversationMessage, ConversationLine, and MessageType are imported from '../types/conversation'
+// ConversationMessage and ConversationLine are imported from '../types/conversation'
 
 /**
  * Process merged chunks into conversation messages for reattachment.
@@ -915,7 +848,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   // TUI-049: Skip input animation when switching sessions
-  const [skipInputAnimation, setSkipInputAnimation] = useState(false);
+  const [skipInputAnimation, _setSkipInputAnimation] = useState(false);
 
   // TUI-050: Ref for slash command executor (set after handleSubmitWithCommand is defined)
   const executeSlashCommandRef = useRef<(cmd: string) => void>();
@@ -1027,9 +960,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // NOTE: We use a ref to access setContextFillPercentage since it's defined later
   // in the component and would cause a TDZ error if included in dependencies.
   // This is safe because React setters are stable and never change.
-  const setContextFillPercentageRef = useRef<
-    React.Dispatch<React.SetStateAction<number>>
-  >(null);
+  const setContextFillPercentageRef =
+    useRef<React.Dispatch<React.SetStateAction<number>>>(null);
 
   const persistentChunkHandler = useCallback(
     (chunk: StreamChunk) => {
@@ -1102,7 +1034,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const [watcherList, setWatcherList] = useState<WatcherInfo[]>([]);
   const [watcherIndex, setWatcherIndex] = useState(0);
   const [watcherScrollOffset, setWatcherScrollOffset] = useState(0);
-  const [showWatcherDeleteDialog, setShowWatcherDeleteDialog] = useState(false);
+  const [_showWatcherDeleteDialog, setShowWatcherDeleteDialog] =
+    useState(false);
   const [isWatcherEditMode, setIsWatcherEditMode] = useState(false);
   const [watcherEditValue, setWatcherEditValue] = useState('');
   // WATCH-009: Watcher creation view state
@@ -1139,7 +1072,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // WATCH-010: Watcher split view state
   const [isWatcherSessionView, setIsWatcherSessionView] = useState(false);
   const [activePane, setActivePane] = useState<'parent' | 'watcher'>('watcher');
-  const [parentSessionId, setParentSessionId] = useState<string | null>(null);
+  const [_parentSessionId, setParentSessionId] = useState<string | null>(null);
   const [parentSessionName, setParentSessionName] = useState<string>('');
   const [parentConversation, setParentConversation] = useState<
     ConversationLine[]
@@ -1163,12 +1096,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const [showAnchorViewer, setShowAnchorViewer] = useState(false);
 
   // GIT-029: Session management panel state
-  const [showSessionManagementPanel, setShowSessionManagementPanel] = useState(false);
+  const [showSessionManagementPanel, setShowSessionManagementPanel] =
+    useState(false);
 
   // BLOCK-004: Blocklist management state
   const [isBlocklistMode, setIsBlocklistMode] = useState(false);
   const [blocklistRules, setBlocklistRules] = useState<BlocklistRule[]>([]);
-  const [disabledBlocklistRules, setDisabledBlocklistRules] = useState<Set<string>>(new Set());
+  const [disabledBlocklistRules, setDisabledBlocklistRules] = useState<
+    Set<string>
+  >(new Set());
   const [anchorPoints, setAnchorPoints] = useState<AnchorPoint[]>([]);
 
   // TUI-050: Slash command palette with clean input handling
@@ -1228,11 +1164,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
     useRustSessionState(currentSessionId);
 
   // TUI-075: Default thinking level - applies to every session when it becomes active
-  const { defaultLevel: defaultThinkingLevel, setDefault: setDefaultThinkingLevel } =
-    useDefaultThinkingLevel({
-      sessionId: currentSessionId,
-      refreshRustState,
-    });
+  const {
+    defaultLevel: defaultThinkingLevel,
+    setDefault: setDefaultThinkingLevel,
+  } = useDefaultThinkingLevel({
+    sessionId: currentSessionId,
+    refreshRustState,
+  });
 
   // Helper to find model details from provider sections (Single Responsibility Principle)
   const findModelInProviders = useCallback(
@@ -1339,7 +1277,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     const attachedWorkUnitId = currentSessionId
       ? getAttachedWorkUnit(currentSessionId)
       : null;
-    
+
     if (attachedWorkUnitId) {
       const workUnit = workUnits.find(wu => wu.id === attachedWorkUnitId);
       setCurrentWorkUnit(attachedWorkUnitId, workUnit?.status ?? null);
@@ -1501,22 +1439,28 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // BRIDGE-012: Subscribe to parent session for live updates via GlobalSessionStreamManager
         // This uses the global callback architecture - no per-session NAPI attach/detach
-        const unregisterParentHandler = attachToSession(parentId, (chunk: StreamChunk) => {
-          if (chunk) {
-            const updatedChunks = sessionGetMergedOutput(parentId);
-            const updatedMessages = processChunksToConversation(
-              updatedChunks,
-              formatToolHeader,
-              formatCollapsedOutput
-            );
-            const updatedPaneWidth = calculatePaneWidth(terminalWidth, 'split');
-            const updatedLines = messagesToLines(
-              updatedMessages,
-              updatedPaneWidth
-            );
-            setParentConversation(updatedLines);
+        const unregisterParentHandler = attachToSession(
+          parentId,
+          (chunk: StreamChunk) => {
+            if (chunk) {
+              const updatedChunks = sessionGetMergedOutput(parentId);
+              const updatedMessages = processChunksToConversation(
+                updatedChunks,
+                formatToolHeader,
+                formatCollapsedOutput
+              );
+              const updatedPaneWidth = calculatePaneWidth(
+                terminalWidth,
+                'split'
+              );
+              const updatedLines = messagesToLines(
+                updatedMessages,
+                updatedPaneWidth
+              );
+              setParentConversation(updatedLines);
+            }
           }
-        });
+        );
 
         // Cleanup: unregister handler when effect re-runs or component unmounts
         // BRIDGE-012: Handler cleanup only - global callback stays registered
@@ -1530,7 +1474,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         setParentSessionName('');
         setParentConversation([]);
       }
-    } catch (err) {
+    } catch {
       // Error checking parent - not a watcher
       setIsWatcherSessionView(false);
     }
@@ -1613,19 +1557,19 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // TUI-075: Initialize models (loads from NAPI, restores persisted selection)
         try {
           const initResult = await initializeModels();
-          
+
           // Set available providers for the provider selector
           setAvailableProviders(initResult.availableProviders);
-          
+
           // Set current provider from initialization result
           if (initResult.currentProvider) {
             setCurrentProvider(initResult.currentProvider);
           }
-          
+
           logger.debug(
             `Model initialization complete: ${initResult.sections.length} sections, ` +
-            `current=${initResult.currentModel?.displayName || 'none'}, ` +
-            `persisted=${initResult.persistedModelRestored}`
+              `current=${initResult.currentModel?.displayName || 'none'}, ` +
+              `persisted=${initResult.persistedModelRestored}`
           );
         } catch (err) {
           logger.error('Failed to initialize models:', err);
@@ -1800,42 +1744,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
       return;
     }
 
-    // NAPI-006: Handle /history command - show command history
-    if (userMessage === '/history' || userMessage.startsWith('/history ')) {
-      setInputValue('');
-      const allProjects = userMessage.includes('--all-projects');
-      try {
-        const history = persistenceGetHistory(
-          allProjects ? null : currentProjectRef.current,
-          20
-        );
-        if (history.length === 0) {
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: 'No history entries found' },
-          ]);
-        } else {
-          const historyList = history
-            .map(
-              (h: { display: string; timestamp: string }) => `- ${h.display}`
-            )
-            .join('\n');
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: `Command history:\n${historyList}` },
-          ]);
-        }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to get history';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `History failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-
     // NAPI-003: Handle /resume command - show session selection overlay
     if (userMessage === '/resume') {
       setInputValue('');
@@ -1944,7 +1852,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Look up parent session name for status message
         const sessions = sessionManagerList();
         const parentSession = sessions.find(s => s.id === parentId);
-        const parentName = parentSession?.name || parentId;
+        const _parentName = parentSession?.name || parentId;
 
         // REFAC-008: Cleanup current handler before switching
         cleanupCurrentSessionHandler();
@@ -1956,9 +1864,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
         applyPendingIsolationState(parentId);
 
         // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-        sessionCleanupRef.current = attachToSession(parentId, (chunk: StreamChunk) => {
-          handleStreamChunk(chunk);
-        });
+        sessionCleanupRef.current = attachToSession(
+          parentId,
+          (chunk: StreamChunk) => {
+            handleStreamChunk(chunk);
+          }
+        );
 
         // Get buffered output and display
         const mergedChunks = sessionGetMergedOutput(parentId);
@@ -1988,7 +1899,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       if (attachedWorkUnitId && currentSessionId) {
         // TUI-068: Use sessionService facade for detachment
         detachFromWorkUnit(currentSessionId);
-        logger.debug(`SESS-001: Detached session from work unit ${attachedWorkUnitId}`);
+        logger.debug(
+          `SESS-001: Detached session from work unit ${attachedWorkUnitId}`
+        );
         // Clear conversation for fresh start
         setConversation([]);
         setTokenUsage({ inputTokens: 0, outputTokens: 0 });
@@ -2009,253 +1922,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
             content:
               '/detach only works when viewing a work unit from the board.',
           },
-        ]);
-      }
-      return;
-    }
-
-    // NAPI-006: Handle /switch <name> command - switch to another session
-    if (userMessage.startsWith('/switch ')) {
-      setInputValue('');
-      const targetName = userMessage.slice(8).trim();
-      try {
-        const sessions = persistenceListSessions(currentProjectRef.current);
-        const target = sessions.find(
-          (s: SessionManifest) => s.name === targetName
-        );
-        if (target) {
-          activateSession(target.id);
-
-          // GIT-029: Apply any pending isolation state that arrived before activation
-          applyPendingIsolationState(target.id);
-
-          setConversation(prev => [
-            ...prev,
-            {
-              type: 'status',
-              content: `Switched to session: "${target.name}"`,
-            },
-          ]);
-        } else {
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: `Session not found: "${targetName}"` },
-          ]);
-        }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to switch session';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Switch failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-
-    // NAPI-006: Handle /rename <new-name> command - rename current session
-    if (userMessage.startsWith('/rename ')) {
-      setInputValue('');
-      const newName = userMessage.slice(8).trim();
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'No active session to rename' },
-        ]);
-        return;
-      }
-      try {
-        persistenceRenameSession(currentSessionId, newName);
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Session renamed to: "${newName}"` },
-        ]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to rename session';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Rename failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-
-    // NAPI-006: Handle /fork <index> <name> command - fork session at index
-    if (userMessage.startsWith('/fork ')) {
-      setInputValue('');
-      const parts = userMessage.slice(6).trim().split(/\s+/);
-      const index = parseInt(parts[0], 10);
-      const name = parts.slice(1).join(' ');
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'No active session to fork' },
-        ]);
-        return;
-      }
-      if (isNaN(index) || !name) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'Usage: /fork <index> <name>' },
-        ]);
-        return;
-      }
-      try {
-        const forkedSession = persistenceForkSession(
-          currentSessionId,
-          index,
-          name
-        );
-        activateSession(forkedSession.id);
-
-        // GIT-029: Apply any pending isolation state that arrived before activation
-        applyPendingIsolationState(forkedSession.id);
-
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `Session forked at index ${index}: "${name}"`,
-          },
-        ]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to fork session';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Fork failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-
-    // NAPI-006: Handle /merge <session> <indices> command - merge messages from another session
-    if (userMessage.startsWith('/merge ')) {
-      setInputValue('');
-      const parts = userMessage.slice(7).trim().split(/\s+/);
-      const sourceName = parts[0];
-      const indicesStr = parts[1];
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'No active session to merge into' },
-        ]);
-        return;
-      }
-      if (!sourceName || !indicesStr) {
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content:
-              'Usage: /merge <session-name> <indices> (e.g., /merge session-b 3,4)',
-          },
-        ]);
-        return;
-      }
-      try {
-        const sessions = persistenceListSessions(currentProjectRef.current);
-        const source = sessions.find(
-          (s: SessionManifest) => s.name === sourceName || s.id === sourceName
-        );
-        if (!source) {
-          setConversation(prev => [
-            ...prev,
-            {
-              type: 'status',
-              content: `Source session not found: "${sourceName}"`,
-            },
-          ]);
-          return;
-        }
-        const indices = indicesStr
-          .split(',')
-          .map((s: string) => parseInt(s.trim(), 10));
-        const result = persistenceMergeMessages(
-          currentSessionId,
-          source.id,
-          indices
-        );
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `Merged ${indices.length} messages from "${source.name}"`,
-          },
-        ]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to merge messages';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Merge failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-
-    // NAPI-006: Handle /cherry-pick <session> <index> --context <n> command
-    if (userMessage.startsWith('/cherry-pick ')) {
-      setInputValue('');
-      const args = userMessage.slice(13).trim();
-      const contextMatch = args.match(/--context\s+(\d+)/);
-      const context = contextMatch ? parseInt(contextMatch[1], 10) : 0;
-      const cleanArgs = args.replace(/--context\s+\d+/, '').trim();
-      const parts = cleanArgs.split(/\s+/);
-      const sourceName = parts[0];
-      const index = parseInt(parts[1], 10);
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'No active session for cherry-pick' },
-        ]);
-        return;
-      }
-      if (!sourceName || isNaN(index)) {
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: 'Usage: /cherry-pick <session> <index> [--context N]',
-          },
-        ]);
-        return;
-      }
-      try {
-        const sessions = persistenceListSessions(currentProjectRef.current);
-        const source = sessions.find(
-          (s: SessionManifest) => s.name === sourceName || s.id === sourceName
-        );
-        if (!source) {
-          setConversation(prev => [
-            ...prev,
-            {
-              type: 'status',
-              content: `Source session not found: "${sourceName}"`,
-            },
-          ]);
-          return;
-        }
-        const result = persistenceCherryPick(
-          currentSessionId,
-          source.id,
-          index,
-          context
-        );
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `Cherry-picked message ${index} with ${context} context messages from "${source.name}"`,
-          },
-        ]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to cherry-pick';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Cherry-pick failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -2335,7 +2001,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
           // TUI-068: Use sessionService facade for attachment
           // TUI-069: Pass work unit title to avoid hardcoded placeholder
           const workUnit = workUnits.find(wu => wu.id === workUnitId);
-          attachToWorkUnit(activeSessionId, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
+          attachToWorkUnit(
+            activeSessionId,
+            workUnitId,
+            workUnit?.status ?? 'backlog',
+            workUnit?.title
+          );
           logger.debug(
             `SESS-001: Attached session ${activeSessionId} to work unit ${workUnitId}`
           );
@@ -2442,9 +2113,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Track current text segment (resets after tool calls)
       let currentSegment = '';
       // CLAUDE-THINK: Track current thinking segment for streaming accumulation
-      let currentThinking = '';
+      let _currentThinking = '';
       // Track full assistant response for persistence (includes ALL content blocks)
-      let fullAssistantResponse = '';
+      let _fullAssistantResponse = '';
       // Track assistant message content blocks for envelope storage
       const assistantContentBlocks: Array<{
         type: string;
@@ -2467,13 +2138,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
       const promptComplete = new Promise<void>((resolve, reject) => {
         // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
         // FspecCommandRequest is handled globally - we only get UI chunks here
-        sessionCleanupRef.current = attachToSession(activeSessionId, (chunk: StreamChunk) => {
+        sessionCleanupRef.current = attachToSession(
+          activeSessionId,
+          (chunk: StreamChunk) => {
             if (!chunk) return;
 
             if (chunk.type === 'Text' && chunk.text) {
               // Text chunks are batched in Rust for efficiency
               currentSegment += chunk.text;
-              fullAssistantResponse += chunk.text; // Accumulate for display persistence
+              _fullAssistantResponse += chunk.text; // Accumulate for display persistence
               // Add to content blocks for envelope storage
               const lastBlock =
                 assistantContentBlocks[assistantContentBlocks.length - 1];
@@ -2497,7 +2170,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               });
             } else if (chunk.type === 'Thinking' && chunk.thinking) {
               // CLAUDE-THINK: Handle thinking/reasoning content from extended thinking
-              currentThinking += chunk.thinking;
+              _currentThinking += chunk.thinking;
 
               // Store thinking block for envelope persistence
               const lastBlock =
@@ -2519,7 +2192,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               );
             } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
               // Reset thinking state - new thinking after tool call needs new block
-              currentThinking = '';
+              _currentThinking = '';
 
               // Finalize any active thinking block before tool call
               setConversation(prev => createFinalizationUpdate(prev));
@@ -3277,42 +2950,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // Handle /history command
-      if (userMessage === '/history' || userMessage.startsWith('/history ')) {
-        setInputValue('');
-        const allProjects = userMessage.includes('--all-projects');
-        try {
-          const history = persistenceGetHistory(
-            allProjects ? null : currentProjectRef.current,
-            20
-          );
-          if (history.length === 0) {
-            setConversation(prev => [
-              ...prev,
-              { type: 'status', content: 'No history entries found' },
-            ]);
-          } else {
-            const historyList = history
-              .map(
-                (h: { display: string; timestamp: string }) => `- ${h.display}`
-              )
-              .join('\n');
-            setConversation(prev => [
-              ...prev,
-              { type: 'status', content: `Command history:\n${historyList}` },
-            ]);
-          }
-        } catch (err) {
-          const errorMessage =
-            err instanceof Error ? err.message : 'Failed to get history';
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: `History failed: ${errorMessage}` },
-          ]);
-        }
-        return;
-      }
-
       // Handle /resume command - trigger initialization (avoiding TDZ with handleResumeMode)
       if (userMessage === '/resume') {
         setInputValue('');
@@ -3387,29 +3024,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
             },
           ]);
         }
-        return;
-      }
-
-      // Handle /mcp command (just show status for now)
-      if (userMessage === '/mcp') {
-        setInputValue('');
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: 'MCP provider management not yet implemented.',
-          },
-        ]);
-        return;
-      }
-
-      // Handle /mode command (cycle through modes)
-      if (userMessage === '/mode') {
-        setInputValue('');
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'Mode cycling not yet implemented.' },
-        ]);
         return;
       }
 
@@ -4012,10 +3626,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
           ];
         } else {
           // Fallback: if parsing fails, display raw message
-          return [
-            ...prev,
-            { type: 'watcher-input', content: chunk.text! },
-          ];
+          return [...prev, { type: 'watcher-input', content: chunk.text! }];
         }
       });
     }
@@ -4061,7 +3672,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
             const internalName = mapProviderIdToInternal(providerId);
             setCurrentProvider(internalName);
             // PROV-007: Find matching section by both providerId AND profileName
-            const section = findSectionForPersistedModel(providerSections, result.provider);
+            const section = findSectionForPersistedModel(
+              providerSections,
+              result.provider
+            );
             const model = section?.models.find(
               m => extractModelIdForRegistry(m.id) === modelId
             );
@@ -4082,7 +3696,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
             }
           } catch {
             // Invalid model string format - ignore
-            logger.warn(`Invalid model string format in restore: ${result.provider}`);
+            logger.warn(
+              `Invalid model string format in restore: ${result.provider}`
+            );
           }
         }
 
@@ -4110,9 +3726,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
         cleanupCurrentSessionHandler();
 
         // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-        sessionCleanupRef.current = attachToSession(sessionId, (chunk: StreamChunk) => {
-          handleStreamChunk(chunk);
-        });
+        sessionCleanupRef.current = attachToSession(
+          sessionId,
+          (chunk: StreamChunk) => {
+            handleStreamChunk(chunk);
+          }
+        );
 
         // Update session state (atomic transition via store)
         activateSession(sessionId);
@@ -4125,7 +3744,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
           const pendingInput = sessionGetPendingInput(sessionId);
           // Always restore input (even if empty) to avoid showing wrong session's input
           setInputValue(pendingInput || '');
-        } catch (err) {
+        } catch {
           // Session may not have pending input, ignore
         }
 
@@ -4143,108 +3762,119 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // VIEWNV-001: Handle create session dialog confirmation
   // GIT-029: Now accepts isolated parameter to create isolated session with git worktree
   // Creates session immediately so /thinking and other commands work right away
-  const handleCreateSessionConfirm = useCallback(async (isolated: boolean = false) => {
-    // Wait for models to be initialized before creating session
-    // This prevents race condition where session is created with incomplete model info
-    if (!modelsInitialized) {
-      logger.warn('Models not yet initialized, waiting...');
-      // Return early - user can try again once models are loaded
-      return;
-    }
-
-    // Save reference to current session before detaching (to detect navigation context)
-    const wasInSession = !!currentSessionId;
-
-    // REFAC-008: Cleanup current handler before creating new session
-    cleanupCurrentSessionHandler();
-
-    try {
-      const project = currentProjectRef.current;
-
-      // Require currentModel to be set - throw if not
-      if (!currentModel) {
-        throw new Error('Cannot create session: model not initialized');
+  const handleCreateSessionConfirm = useCallback(
+    async (isolated: boolean = false) => {
+      // Wait for models to be initialized before creating session
+      // This prevents race condition where session is created with incomplete model info
+      if (!modelsInitialized) {
+        logger.warn('Models not yet initialized, waiting...');
+        // Return early - user can try again once models are loaded
+        return;
       }
 
-      // PROV-008: Set env vars from profile config before session creation
-      if (currentModel.profileConfig) {
-        configureProfileEnvironment(currentModel.profileConfig);
-      }
+      // Save reference to current session before detaching (to detect navigation context)
+      const wasInSession = !!currentSessionId;
 
-      // PROV-007: Use buildModelString for profile-qualified model paths
-      // Profile models: 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen3-80B')
-      // Cloud models: 'provider/modelId' (e.g., 'openai/gpt-4')
-      const modelPath = buildModelString(
-        { providerId: currentModel.providerId, profileName: currentModel.profileName },
-        currentModel.modelId
-      );
+      // REFAC-008: Cleanup current handler before creating new session
+      cleanupCurrentSessionHandler();
 
-      // GIT-029: Use isolated session creation when requested
-      let result;
-      if (isolated) {
-        result = await createIsolatedSession({
-          modelPath,
-          project,
-        });
-      } else {
-        result = await createSession({
-          modelPath,
-          project,
-        });
-      }
+      try {
+        const project = currentProjectRef.current;
 
-      // Activate the session in the store
-      activateSession(result.sessionId);
+        // Require currentModel to be set - throw if not
+        if (!currentModel) {
+          throw new Error('Cannot create session: model not initialized');
+        }
 
-      // GIT-029: Apply any pending isolation state that arrived before activation
-      applyPendingIsolationState(result.sessionId);
+        // PROV-008: Set env vars from profile config before session creation
+        if (currentModel.profileConfig) {
+          configureProfileEnvironment(currentModel.profileConfig);
+        }
 
-      // TUI-075: Default thinking level is applied automatically by useDefaultThinkingLevel
-      // hook when currentSessionId changes after activateSession
-
-      // SESS-001: Only auto-attach session to work unit when creating from board context
-      // If we were in a session, we're creating via navigation (Shift+Right) and shouldn't auto-attach
-      if (workUnitId && !wasInSession) {
-        // TUI-068: Use sessionService facade for attachment
-        // TUI-069: Pass work unit title to avoid hardcoded placeholder
-        const workUnit = workUnits.find(wu => wu.id === workUnitId);
-        attachToWorkUnit(result.sessionId, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
-        logger.debug(
-          `SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`
+        // PROV-007: Use buildModelString for profile-qualified model paths
+        // Profile models: 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen3-80B')
+        // Cloud models: 'provider/modelId' (e.g., 'openai/gpt-4')
+        const modelPath = buildModelString(
+          {
+            providerId: currentModel.providerId,
+            profileName: currentModel.profileName,
+          },
+          currentModel.modelId
         );
-      } else if (workUnitId && wasInSession) {
-        logger.debug(
-          `SESS-001: Skipped auto-attach for navigation-created session ${result.sessionId} (created via Shift+Right)`
-        );
+
+        // GIT-029: Use isolated session creation when requested
+        let result;
+        if (isolated) {
+          result = await createIsolatedSession({
+            modelPath,
+            project,
+          });
+        } else {
+          result = await createSession({
+            modelPath,
+            project,
+          });
+        }
+
+        // Activate the session in the store
+        activateSession(result.sessionId);
+
+        // GIT-029: Apply any pending isolation state that arrived before activation
+        applyPendingIsolationState(result.sessionId);
+
+        // TUI-075: Default thinking level is applied automatically by useDefaultThinkingLevel
+        // hook when currentSessionId changes after activateSession
+
+        // SESS-001: Only auto-attach session to work unit when creating from board context
+        // If we were in a session, we're creating via navigation (Shift+Right) and shouldn't auto-attach
+        if (workUnitId && !wasInSession) {
+          // TUI-068: Use sessionService facade for attachment
+          // TUI-069: Pass work unit title to avoid hardcoded placeholder
+          const workUnit = workUnits.find(wu => wu.id === workUnitId);
+          attachToWorkUnit(
+            result.sessionId,
+            workUnitId,
+            workUnit?.status ?? 'backlog',
+            workUnit?.title
+          );
+          logger.debug(
+            `SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`
+          );
+        } else if (workUnitId && wasInSession) {
+          logger.debug(
+            `SESS-001: Skipped auto-attach for navigation-created session ${result.sessionId} (created via Shift+Right)`
+          );
+        }
+
+        // Clear conversation and input for the new session
+        setConversation([]);
+        setInputValue('');
+
+        // Close the dialog
+        closeCreateSessionDialog();
+
+        logger.debug(`VIEWNV-001: Created new session ${result.sessionId}`);
+      } catch (err) {
+        logger.error('Failed to create new session:', err);
+        // Fall back to old behavior if creation fails
+        prepareForNewSession();
+        setConversation([]);
+        setInputValue('');
+        closeCreateSessionDialog();
       }
-
-      // Clear conversation and input for the new session
-      setConversation([]);
-      setInputValue('');
-
-      // Close the dialog
-      closeCreateSessionDialog();
-
-      logger.debug(`VIEWNV-001: Created new session ${result.sessionId}`);
-    } catch (err) {
-      logger.error('Failed to create new session:', err);
-      // Fall back to old behavior if creation fails
-      prepareForNewSession();
-      setConversation([]);
-      setInputValue('');
-      closeCreateSessionDialog();
-    }
-  }, [
-    currentSessionId,
-    currentModel,
-    modelsInitialized,
-    activateSession,
-    closeCreateSessionDialog,
-    prepareForNewSession,
-    workUnitId,
-    workUnits,
-    // TUI-068: attachToWorkUnit is a module-level import (stable)
-  ]);
+    },
+    [
+      currentSessionId,
+      currentModel,
+      modelsInitialized,
+      activateSession,
+      closeCreateSessionDialog,
+      prepareForNewSession,
+      workUnitId,
+      workUnits,
+      // TUI-068: attachToWorkUnit is a module-level import (stable)
+    ]
+  );
 
   // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
   // This provides the navigation logic that determines targets based on the session tree
@@ -4365,7 +3995,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Profile models: 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen3-80B')
         // Cloud models: 'provider/modelId' (e.g., 'openai/gpt-4')
         const modelPath = buildModelString(
-          { providerId: currentModel.providerId, profileName: currentModel.profileName },
+          {
+            providerId: currentModel.providerId,
+            profileName: currentModel.profileName,
+          },
           currentModel.modelId
         );
 
@@ -4376,7 +4009,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
             modelPath,
             project,
           });
-          logger.debug(`GIT-031: Auto-created isolated session ${result.sessionId} at ${result.worktreePath}`);
+          logger.debug(
+            `GIT-031: Auto-created isolated session ${result.sessionId} at ${result.worktreePath}`
+          );
         } else {
           result = await createSession({
             modelPath,
@@ -4397,7 +4032,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
           // TUI-068: Use sessionService facade for attachment
           // TUI-069: Pass work unit title to avoid hardcoded placeholder
           const workUnit = workUnits.find(wu => wu.id === workUnitId);
-          attachToWorkUnit(result.sessionId, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
+          attachToWorkUnit(
+            result.sessionId,
+            workUnitId,
+            workUnit?.status ?? 'backlog',
+            workUnit?.title
+          );
           logger.debug(
             `SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`
           );
@@ -4572,7 +4212,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     try {
       // Load blocklist rules from system and project configs
       const config = blocklistLoad(process.cwd());
-      
+
       // Map rules with source information
       const rules: BlocklistRule[] = config.rules.map(rule => ({
         id: rule.id,
@@ -4629,7 +4269,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   }, [triggerWatcherModeInit, handleWatcherMode]);
 
   // WATCH-008: Select watcher and switch to it
-  const handleWatcherSelect = useCallback(async () => {
+  const _handleWatcherSelect = useCallback(async () => {
     if (watcherList.length === 0 || watcherIndex >= watcherList.length) {
       return;
     }
@@ -4650,9 +4290,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
       setWatcherList([]);
 
       // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-      sessionCleanupRef.current = attachToSession(selectedWatcher.id, (chunk: StreamChunk) => {
-        handleStreamChunk(chunk);
-      });
+      sessionCleanupRef.current = attachToSession(
+        selectedWatcher.id,
+        (chunk: StreamChunk) => {
+          handleStreamChunk(chunk);
+        }
+      );
 
       // Get buffered output and display
       const mergedChunks = sessionGetMergedOutput(selectedWatcher.id);
@@ -4678,7 +4321,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   ]);
 
   // WATCH-008: Delete selected watcher
-  const handleWatcherDelete = useCallback(async () => {
+  const _handleWatcherDelete = useCallback(async () => {
     if (watcherList.length === 0 || watcherIndex >= watcherList.length) {
       return;
     }
@@ -4808,9 +4451,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
         setWatcherList([]);
 
         // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-        sessionCleanupRef.current = attachToSession(instance.sessionId, (chunk: StreamChunk) => {
-          handleStreamChunk(chunk);
-        });
+        sessionCleanupRef.current = attachToSession(
+          instance.sessionId,
+          (chunk: StreamChunk) => {
+            handleStreamChunk(chunk);
+          }
+        );
 
         const mergedChunks = sessionGetMergedOutput(instance.sessionId);
         const restoredMessages = processChunksToConversation(
@@ -5031,7 +4677,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
           const internalName = mapProviderIdToInternal(providerId);
           setCurrentProvider(internalName);
           // PROV-007: Find matching section by both providerId AND profileName
-          const section = findSectionForPersistedModel(providerSections, result.provider);
+          const section = findSectionForPersistedModel(
+            providerSections,
+            result.provider
+          );
           const model = section?.models.find(
             m => extractModelIdForRegistry(m.id) === modelId
           );
@@ -5052,7 +4701,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
           }
         } catch {
           // Invalid model string format - ignore
-          logger.warn(`Invalid model string format in resume: ${result.provider}`);
+          logger.warn(
+            `Invalid model string format in resume: ${result.provider}`
+          );
         }
       } else if (result.provider) {
         setCurrentProvider(result.provider);
@@ -5113,9 +4764,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
       cleanupCurrentSessionHandler();
 
       // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-      sessionCleanupRef.current = attachToSession(selectedSession.id, (chunk: StreamChunk) => {
-        handleStreamChunk(chunk);
-      });
+      sessionCleanupRef.current = attachToSession(
+        selectedSession.id,
+        (chunk: StreamChunk) => {
+          handleStreamChunk(chunk);
+        }
+      );
 
       // Update session state (atomic transition via store)
       // Note: activateSession sets both currentSessionId and isReadyForNewSession=false atomically
@@ -5133,7 +4787,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // TUI-068: Use sessionService facade for attachment
         // TUI-069: Pass work unit title to avoid hardcoded placeholder
         const workUnit = workUnits.find(wu => wu.id === workUnitId);
-        attachToWorkUnit(selectedSession.id, workUnitId, workUnit?.status ?? 'backlog', workUnit?.title);
+        attachToWorkUnit(
+          selectedSession.id,
+          workUnitId,
+          workUnit?.status ?? 'backlog',
+          workUnit?.title
+        );
         logger.debug(
           `SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`
         );
@@ -5347,12 +5006,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
       if (displayPauseInfo.kind === 'triple') {
         // Left arrow: move selection left
         if (key.leftArrow) {
-          setTriplePauseSelection((prev) => (prev > 0 ? prev - 1 : 2));
+          setTriplePauseSelection(prev => (prev > 0 ? prev - 1 : 2));
           return true;
         }
         // Right arrow: move selection right
         if (key.rightArrow) {
-          setTriplePauseSelection((prev) => (prev < 2 ? prev + 1 : 0));
+          setTriplePauseSelection(prev => (prev < 2 ? prev + 1 : 0));
           return true;
         }
         // Enter: confirm current selection
@@ -6746,7 +6405,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
           description="Choose how to proceed after compaction failure:"
           options={['Retry', 'Continue without compacting', 'Cancel']}
           defaultSelectedIndex={0}
-          onSelect={(index, option) => {
+          onSelect={(index, _option) => {
             const optionKey = ['retry', 'continue', 'cancel'][index] as
               | 'retry'
               | 'continue'

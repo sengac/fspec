@@ -39,9 +39,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { name: 'clear', description: 'Clear conversation history' },
   { name: 'compact', description: 'Compact context window' },
 
-  // Mode cycling
-  { name: 'mode', description: 'Cycle through Edit/Plan/Agent modes' },
-
   // Thinking level (TUI-054)
   { name: 'thinking', description: 'Set base thinking level' },
 
@@ -50,36 +47,10 @@ export const SLASH_COMMANDS: SlashCommand[] = [
 
   // Session operations
   { name: 'resume', description: 'Resume a previous session' },
-  {
-    name: 'switch',
-    description: 'Switch to another session',
-    syntax: '/switch <name>',
-  },
-  {
-    name: 'fork',
-    description: 'Fork session at index',
-    syntax: '/fork <index> <name>',
-  },
-  {
-    name: 'merge',
-    description: 'Merge from another session',
-    syntax: '/merge <session> <indices>',
-  },
-  {
-    name: 'rename',
-    description: 'Rename current session',
-    syntax: '/rename <new-name>',
-  },
   { name: 'detach', description: 'Detach session from work unit' },
 
   // History
-  { name: 'history', description: 'Show command history' },
   { name: 'search', description: 'Search command history' },
-  {
-    name: 'cherry-pick',
-    description: 'Cherry-pick from session',
-    syntax: '/cherry-pick <session> <index>',
-  },
 
   // Watchers
   { name: 'watcher', description: 'Manage watcher sessions' },
@@ -87,9 +58,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
 
   // Blocklist (BLOCK-004)
   { name: 'blocklist', description: 'Manage blocklist rules' },
-
-  // MCP
-  { name: 'mcp', description: 'Manage MCP providers' },
 
   // GIT-029: Isolated session management
   {

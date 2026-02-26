@@ -12,11 +12,10 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'ink-testing-library';
-import { Box } from 'ink';
 import { useSessionStore } from '../store/sessionStore';
 
 // Mock model data matching models.dev structure
-const mockModels = vi.hoisted(() => ({
+const _mockModels = vi.hoisted(() => ({
   anthropic: {
     providerId: 'anthropic',
     providerName: 'Anthropic',
@@ -84,7 +83,13 @@ const mockState = vi.hoisted(() => ({
   errorMessage: 'No AI provider credentials configured',
   // Persistence module mocks
   persistence: {
-    historyEntries: [] as Array<{ display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }>,
+    historyEntries: [] as Array<{
+      display: string;
+      timestamp: string;
+      project: string;
+      sessionId: string;
+      hasPastedContent?: boolean;
+    }>,
     addHistoryCalled: false,
     getHistoryCalled: false,
     searchHistoryCalled: false,
@@ -104,10 +109,14 @@ vi.mock('@sengac/codelet-napi', () => ({
   // BRIDGE-006: Unified thinking level detection NAPI functions
   napiDetectThinkingLevel: vi.fn(() => 0), // Default to Off
   napiHasDisableKeywords: vi.fn(() => false),
-  napiComputeEffectiveThinkingLevel: vi.fn((base: number, detected: number, forceOff: boolean) => {
-    if (forceOff) { return 0; }
-    return Math.max(base, detected);
-  }),
+  napiComputeEffectiveThinkingLevel: vi.fn(
+    (base: number, detected: number, forceOff: boolean) => {
+      if (forceOff) {
+        return 0;
+      }
+      return Math.max(base, detected);
+    }
+  ),
   persistenceStoreMessageEnvelope: vi.fn(),
   persistenceGetHistory: vi.fn(() => {
     mockState.persistence.getHistoryCalled = true;
@@ -123,41 +132,49 @@ vi.mock('@sengac/codelet-napi', () => ({
     updatedAt: new Date().toISOString(),
     messageCount: 0,
   })),
-  persistenceAddHistory: vi.fn((display: string, project: string, sessionId: string) => {
-    mockState.persistence.addHistoryCalled = true;
-    mockState.persistence.historyEntries.push({
-      display,
-      project,
-      sessionId,
-      timestamp: new Date().toISOString(),
-    });
-  }),
-  persistenceSearchHistory: vi.fn((query) => {
+  persistenceAddHistory: vi.fn(
+    (display: string, project: string, sessionId: string) => {
+      mockState.persistence.addHistoryCalled = true;
+      mockState.persistence.historyEntries.push({
+        display,
+        project,
+        sessionId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  ),
+  persistenceSearchHistory: vi.fn(query => {
     mockState.persistence.searchHistoryCalled = true;
     mockState.persistence.lastSearchQuery = query;
-    return mockState.persistence.historyEntries.filter(e => 
+    return mockState.persistence.historyEntries.filter(e =>
       e.display?.toLowerCase().includes(query?.toLowerCase() || '')
     );
   }),
   persistenceListSessions: vi.fn(() => []),
   persistenceAppendMessage: vi.fn(),
   persistenceRenameSession: vi.fn(),
-  modelsListAll: vi.fn(() => Promise.resolve([{
-    providerId: 'anthropic',
-    providerName: 'Anthropic',
-    models: [{
-      id: 'claude-sonnet-4-20250514',
-      name: 'Claude Sonnet 4',
-      family: 'claude-sonnet-4',
-      reasoning: true,
-      toolCall: true,
-      attachment: true,
-      temperature: true,
-      contextWindow: 200000,
-      maxOutput: 16000,
-      hasVision: true,
-    }],
-  }])),
+  modelsListAll: vi.fn(() =>
+    Promise.resolve([
+      {
+        providerId: 'anthropic',
+        providerName: 'Anthropic',
+        models: [
+          {
+            id: 'claude-sonnet-4-20250514',
+            name: 'Claude Sonnet 4',
+            family: 'claude-sonnet-4',
+            reasoning: true,
+            toolCall: true,
+            attachment: true,
+            temperature: true,
+            contextWindow: 200000,
+            maxOutput: 16000,
+            hasVision: true,
+          },
+        ],
+      },
+    ])
+  ),
   setRustLogCallback: vi.fn(),
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
@@ -175,7 +192,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionToggleDebug: vi.fn().mockResolvedValue({
     enabled: true,
     sessionFile: '/tmp/debug-session.json',
-    message: 'Debug capture enabled. Events will be written to /tmp/debug-session.json',
+    message:
+      'Debug capture enabled. Events will be written to /tmp/debug-session.json',
   }),
   sessionCompact: vi.fn().mockResolvedValue({
     originalTokens: 10000,
@@ -187,7 +205,9 @@ vi.mock('@sengac/codelet-napi', () => ({
   // Rust state functions for model, status, and tokens
   sessionGetModel: vi.fn().mockReturnValue({ providerId: null, modelId: null }),
   sessionGetStatus: vi.fn().mockReturnValue('idle'),
-  sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
+  sessionGetTokens: vi
+    .fn()
+    .mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionSetModelProfile: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
@@ -217,7 +237,7 @@ vi.mock('../../utils/credentials', () => ({
   }),
   saveCredential: vi.fn(),
   deleteCredential: vi.fn(),
-  maskApiKey: vi.fn((key: string) => '***'),
+  maskApiKey: vi.fn((_key: string) => '***'),
 }));
 
 // Mock config utilities
@@ -233,7 +253,9 @@ vi.mock('ink', async () => {
   return {
     ...actual,
     Box: (props: React.ComponentProps<typeof actual.Box>) => {
-      const { position, ...rest } = props as { position?: string } & typeof props;
+      const { position: _position, ...rest } = props as {
+        position?: string;
+      } & typeof props;
       return <actual.Box {...rest} />;
     },
   };
@@ -253,9 +275,13 @@ const resetMockSession = (overrides = {}) => {
     availableProviders: ['claude', 'openai'],
     tokenTracker: { inputTokens: 0, outputTokens: 0 },
     messages: [],
-    prompt: vi.fn().mockImplementation(async (_input: string, callback: (chunk: { type: string }) => void) => {
-      callback({ type: 'Done' });
-    }),
+    prompt: vi
+      .fn()
+      .mockImplementation(
+        async (_input: string, callback: (chunk: { type: string }) => void) => {
+          callback({ type: 'Done' });
+        }
+      ),
     switchProvider: vi.fn(),
     clearHistory: vi.fn(),
     interrupt: vi.fn(),
@@ -306,14 +332,27 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Given I have entered commands in the current project across multiple sessions
       // Pre-populate history with some commands
       mockState.persistence.historyEntries = [
-        { display: 'implement auth flow', timestamp: '2025-01-15T11:00:00Z', project: '/test/project', sessionId: 'session-1' },
-        { display: 'fix login bug', timestamp: '2025-01-15T10:00:00Z', project: '/test/project', sessionId: 'session-2' },
-        { display: 'add user validation', timestamp: '2025-01-15T09:00:00Z', project: '/test/project', sessionId: 'session-1' },
+        {
+          display: 'implement auth flow',
+          timestamp: '2025-01-15T11:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-1',
+        },
+        {
+          display: 'fix login bug',
+          timestamp: '2025-01-15T10:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-2',
+        },
+        {
+          display: 'add user validation',
+          timestamp: '2025-01-15T09:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-1',
+        },
       ];
 
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150); // Allow time for async initSession to load history
 
@@ -345,16 +384,16 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step Then I should return to the empty prompt for new input
       // Input should be empty
-      expect(lastFrame()).toContain("Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn");
+      expect(lastFrame()).toContain(
+        "Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn"
+      );
 
       // @step And history is navigated with Shift+Arrow-Up (older) and Shift+Arrow-Down (newer)
       // Verified by the navigation above
     });
 
     it('should persist new commands to history when submitted', async () => {
-      const { stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame();
 
@@ -380,14 +419,27 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
     it('should enter search mode when /search command is used', async () => {
       // @step Given I have command history containing "implement" keyword
       mockState.persistence.historyEntries = [
-        { display: 'implement feature X', timestamp: '2025-01-15T11:00:00Z', project: '/test/project', sessionId: 'session-1' },
-        { display: 'fix bug in login', timestamp: '2025-01-15T10:00:00Z', project: '/test/project', sessionId: 'session-2' },
-        { display: 'implement auth flow', timestamp: '2025-01-15T09:00:00Z', project: '/test/project', sessionId: 'session-1' },
+        {
+          display: 'implement feature X',
+          timestamp: '2025-01-15T11:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-1',
+        },
+        {
+          display: 'fix bug in login',
+          timestamp: '2025-01-15T10:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-2',
+        },
+        {
+          display: 'implement auth flow',
+          timestamp: '2025-01-15T09:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-1',
+        },
       ];
 
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150);
 
@@ -427,13 +479,21 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Given I entered "fix login bug" in session B at 10:00am
       // @step And I entered "implement auth flow" in session A at 11:00am
       mockState.persistence.historyEntries = [
-        { display: 'implement auth flow', timestamp: '2025-01-15T11:00:00Z', project: '/test/project', sessionId: 'session-a' },
-        { display: 'fix login bug', timestamp: '2025-01-15T10:00:00Z', project: '/test/project', sessionId: 'session-b' },
+        {
+          display: 'implement auth flow',
+          timestamp: '2025-01-15T11:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-a',
+        },
+        {
+          display: 'fix login bug',
+          timestamp: '2025-01-15T10:00:00Z',
+          project: '/test/project',
+          sessionId: 'session-b',
+        },
       ];
 
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150); // Allow time for async initSession to load history
 
@@ -458,59 +518,6 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
   });
 
   // ============================================================================
-  // @history-project-filter - History can be filtered by project
-  // ============================================================================
-
-  describe('Scenario: History can be filtered by project', () => {
-    it('should filter history by current project by default', async () => {
-      // @step Given I have history entries from project "/home/user/project-a"
-      // @step And I have history entries from project "/home/user/project-b"
-      mockState.persistence.historyEntries = [
-        { display: 'cmd from project-a', timestamp: '2025-01-15T11:00:00Z', project: '/home/user/project-a', sessionId: 'session-1' },
-        { display: 'cmd from project-b', timestamp: '2025-01-15T10:30:00Z', project: '/home/user/project-b', sessionId: 'session-2' },
-        { display: 'another from project-a', timestamp: '2025-01-15T10:00:00Z', project: '/home/user/project-a', sessionId: 'session-1' },
-      ];
-
-      // Get the mock function to verify calls
-      const { persistenceGetHistory } = await import('@sengac/codelet-napi');
-      vi.mocked(persistenceGetHistory).mockClear();
-
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
-
-      await waitForFrame(150);
-
-      // @step When I am in project (current working directory)
-      // @step And I run "/history"
-      stdin.write('/history');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then persistenceGetHistory should be called with the current project
-      expect(vi.mocked(persistenceGetHistory)).toHaveBeenCalledWith(
-        expect.any(String), // Current project path (process.cwd())
-        20
-      );
-
-      vi.mocked(persistenceGetHistory).mockClear();
-
-      // @step When I run "/history --all-projects"
-      stdin.write('/history --all-projects');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then persistenceGetHistory should be called with null (all projects)
-      expect(vi.mocked(persistenceGetHistory)).toHaveBeenCalledWith(null, 20);
-
-      // @step And the view should still show the agent view (model name in header)
-      expect(lastFrame()).toContain('Claude Sonnet 4');
-    });
-  });
-
-  // ============================================================================
   // @session-resume - Resume session after closing terminal
   // ============================================================================
 
@@ -521,9 +528,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step When I reopen codelet the next day
       // @step And I run "codelet --resume" (or /resume in view)
 
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150);
 
@@ -539,164 +544,6 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
   });
 
   // ============================================================================
-  // @session-fork - Fork session at specific message
-  // ============================================================================
-
-  describe('Scenario: Fork session at specific message to try alternative approach', () => {
-    it('should create a forked session with /fork command', async () => {
-      // @step Given I have a session with 5 messages
-      mockState.session.messages = [
-        { role: 'user', content: 'msg 0' },
-        { role: 'assistant', content: 'msg 1' },
-        { role: 'user', content: 'msg 2' },
-        { role: 'assistant', content: 'msg 3' },
-        { role: 'user', content: 'msg 4' },
-      ];
-
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
-
-      await waitForFrame(150);
-
-      // First send a message to create a session (deferred session creation)
-      stdin.write('Initial message');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(150);
-
-      // @step When I run "/fork 3 Alternative approach"
-      stdin.write('/fork 3 Alternative approach');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then the view should show the agent view (model name in header)
-      expect(lastFrame()).toContain('Claude Sonnet 4');
-    });
-  });
-
-  // ============================================================================
-  // @session-merge - Merge messages from another session
-  // ============================================================================
-
-  describe('Scenario: Merge messages from another session', () => {
-    it('should import messages from another session with /merge command', async () => {
-      // @step Given I have session A as the current session
-      // @step And session B contains an auth solution at messages 3 and 4
-
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
-
-      await waitForFrame(150);
-
-      // First send a message to create a session (deferred session creation)
-      stdin.write('Initial message');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(150);
-
-      // @step When I run "/merge session-b 3,4"
-      stdin.write('/merge session-b 3,4');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then the view should show the agent view (model name in header)
-      expect(lastFrame()).toContain('Claude Sonnet 4');
-    });
-  });
-
-  // ============================================================================
-  // @session-switch - Switch to a different session
-  // ============================================================================
-
-  describe('Scenario: Switch to a different session', () => {
-    it('should switch sessions with /switch command', async () => {
-      // @step Given I have session "Auth Work" as the current session
-      // @step And I have session "Bug Fix" available
-
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
-
-      await waitForFrame();
-
-      // @step When I run "/switch Bug Fix"
-      stdin.write('/switch Bug Fix');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then the view should show the agent view (model name in header)
-      expect(lastFrame()).toContain('Claude Sonnet 4');
-    });
-  });
-
-  // ============================================================================
-  // @session-rename - Rename session for better organization
-  // ============================================================================
-
-  describe('Scenario: Rename session for better organization', () => {
-    it('should rename current session with /rename command', async () => {
-      // @step Given I have a session named "New Session 2025-01-15"
-
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
-
-      await waitForFrame(150);
-
-      // First send a message to create a session (deferred session creation)
-      stdin.write('Initial message');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(150);
-
-      // @step When I run "/rename Authentication Implementation"
-      stdin.write('/rename Authentication Implementation');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then the view should show the agent view (model name in header)
-      expect(lastFrame()).toContain('Claude Sonnet 4');
-    });
-  });
-
-  // ============================================================================
-  // @session-cherry-pick - Cherry-pick message with preceding context
-  // ============================================================================
-
-  describe('Scenario: Cherry-pick message with preceding context', () => {
-    it('should import messages with context using /cherry-pick command', async () => {
-      // @step Given session B has a question at message 6 and answer at message 7
-
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
-
-      await waitForFrame(150);
-
-      // First send a message to create a session (deferred session creation)
-      stdin.write('Initial message');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(150);
-
-      // @step When I run "/cherry-pick session-b 7 --context 1"
-      stdin.write('/cherry-pick session-b 7 --context 1');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then the view should show the agent view (model name in header)
-      expect(lastFrame()).toContain('Claude Sonnet 4');
-    });
-  });
-
-  // ============================================================================
   // @deferred-session-creation - Session not persisted until first message
   // VIEWNV-001: By default, sessions are created on first message (deferred creation).
   // Immediate creation only happens when user confirms "Start New Agent?" dialog,
@@ -707,19 +554,21 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
     it('should NOT create a session when modal opens without sending a message', async () => {
       // @step Given the agent modal is closed
       // @step And no session exists for the current project
-      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      const { persistenceCreateSessionWithProvider } = await import(
+        '@sengac/codelet-napi'
+      );
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
       // @step When I open the agent modal
-      const { unmount } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { unmount } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150); // Allow time for async initSession
 
       // @step Then NO session should be created in persistence
       // @step Because no message has been sent yet (and no dialog was confirmed)
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).not.toHaveBeenCalled();
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).not.toHaveBeenCalled();
 
       unmount();
     });
@@ -727,17 +576,19 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
     it('should create session with first message as name when first message is sent', async () => {
       // @step Given I have the agent modal open
       // @step And no session has been created yet
-      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      const { persistenceCreateSessionWithProvider } = await import(
+        '@sengac/codelet-napi'
+      );
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
-      const { stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150);
 
       // Verify no session created on modal open
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).not.toHaveBeenCalled();
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).not.toHaveBeenCalled();
 
       // @step When I type "Help me implement authentication" and press Enter
       stdin.write('Help me implement authentication');
@@ -746,24 +597,28 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       await waitForFrame(150);
 
       // @step Then a session should be created
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).toHaveBeenCalledTimes(1);
 
       // @step And the session name should be the first message content
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledWith(
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).toHaveBeenCalledWith(
         'Help me implement authentication',
         expect.any(String), // project path
-        expect.any(String)  // provider name
+        expect.any(String) // provider name
       );
     });
 
     it('should NOT create additional sessions for subsequent messages', async () => {
       // @step Given I have sent my first message and a session was created
-      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      const { persistenceCreateSessionWithProvider } = await import(
+        '@sengac/codelet-napi'
+      );
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
-      const { stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150);
 
@@ -773,7 +628,9 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       stdin.write('\r');
       await waitForFrame(150);
 
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).toHaveBeenCalledTimes(1);
 
       // @step When I send a second message "Now add password validation"
       stdin.write('Now add password validation');
@@ -783,17 +640,19 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step Then NO new session should be created
       // @step And the message should be added to the existing session
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).toHaveBeenCalledTimes(1);
     });
 
     it('should truncate long first messages to 500 characters for session name', async () => {
       // @step Given the agent modal is open
-      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      const { persistenceCreateSessionWithProvider } = await import(
+        '@sengac/codelet-napi'
+      );
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
-      const { stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150);
 
@@ -806,7 +665,9 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step Then the session name should be truncated to 500 characters with "..."
       // Note: slice(0, 500) gives exactly 500 chars, then "..." is appended
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledWith(
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).toHaveBeenCalledWith(
         'A'.repeat(500) + '...',
         expect.any(String),
         expect.any(String)
@@ -815,12 +676,12 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
     it('should not persist commands-only usage (no session for /debug, /clear, etc.)', async () => {
       // @step Given the agent modal is open
-      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      const { persistenceCreateSessionWithProvider } = await import(
+        '@sengac/codelet-napi'
+      );
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
-      const { stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
+      const { stdin } = render(<AgentView onExit={() => {}} />);
 
       await waitForFrame(150);
 
@@ -837,7 +698,9 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step Then NO session should be created
       // @step Because no actual conversation message was sent
-      expect(vi.mocked(persistenceCreateSessionWithProvider)).not.toHaveBeenCalled();
+      expect(
+        vi.mocked(persistenceCreateSessionWithProvider)
+      ).not.toHaveBeenCalled();
     });
   });
 });
