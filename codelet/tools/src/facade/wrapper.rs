@@ -16,7 +16,7 @@ use rig::completion::ToolDefinition as RigToolDefinition;
 use rig::tool::Tool;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Wrapper that adapts a ToolFacade to rig's Tool trait.
 ///
@@ -758,7 +758,7 @@ pub fn validate_and_resolve_path_with_cwd(
 ///
 /// Worktrees are typically at: /project/.fspec/worktrees/<session-id>
 /// This function extracts /project from that path.
-fn derive_project_root_from_worktree(worktree: &PathBuf) -> PathBuf {
+fn derive_project_root_from_worktree(worktree: &Path) -> PathBuf {
     // Look for .fspec/worktrees in the path and get the parent
     let worktree_str = worktree.to_string_lossy();
     if let Some(idx) = worktree_str.find(".fspec/worktrees") {
@@ -772,7 +772,7 @@ fn derive_project_root_from_worktree(worktree: &PathBuf) -> PathBuf {
         }
     } else {
         // Fallback: assume worktree is the project root itself
-        worktree.clone()
+        worktree.to_path_buf()
     }
 }
 

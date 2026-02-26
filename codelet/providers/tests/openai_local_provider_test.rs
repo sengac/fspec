@@ -5,6 +5,7 @@
 //!
 //! Note: These tests use environment variables and must run serially
 //! to avoid test pollution. Use --test-threads=1 or serial_test crate.
+#![allow(clippy::expect_used, clippy::unwrap_used, clippy::uninlined_format_args)]
 
 use std::env;
 use codelet_providers::{OpenAIProvider, LlmProvider};
@@ -34,7 +35,8 @@ mod connect_to_local_vllm_server {
         let provider = OpenAIProvider::new().expect("Should create provider");
         
         // @step Then the provider should connect to the local vLLM server
-        assert_eq!(provider.base_url(), Some("http://localhost:8888"));
+        // Note: normalize_openai_base_url appends /v1 if not present
+        assert_eq!(provider.base_url(), Some("http://localhost:8888/v1"));
         assert!(provider.is_local_endpoint());
         
         // @step And the provider should use the model "Qwen/Qwen3-80B"

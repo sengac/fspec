@@ -4,6 +4,7 @@
 //! adaptive thinking support. Tests use PRODUCTION code from codelet_tools and codelet_providers.
 //!
 //! PROV-005: Tests verify both the facade logic AND the actual wiring.
+#![allow(clippy::expect_used, clippy::unwrap_used)]
 
 // Import from PRODUCTION code - no local redefinitions
 use codelet_tools::facade::{

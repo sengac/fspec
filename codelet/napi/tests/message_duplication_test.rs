@@ -126,6 +126,9 @@ async fn test_select_biased_no_duplication() {
         .await
         .expect("send should succeed");
 
+    // Allow the processor task to consume both messages before closing channels
+    tokio::time::sleep(Duration::from_millis(50)).await;
+
     // Close channels
     drop(user_tx);
     drop(watcher_tx);

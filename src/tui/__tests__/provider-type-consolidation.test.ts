@@ -116,7 +116,7 @@ describe('Feature: Consolidate provider types', () => {
   });
 
   describe('Scenario: AgentView imports types from provider.ts', () => {
-    it('should import ModelSelection, ModelSelectorItem, and ProviderSection from types/provider', () => {
+    it('should import ModelSelection from types/provider', () => {
       // @step Given types are consolidated in types/provider.ts
       const typeResult = verifyTypeDefinition(
         TUI_DIR,
@@ -127,20 +127,15 @@ describe('Feature: Consolidate provider types', () => {
       expect(typeResult.isValid).toBe(true);
 
       // @step When I check AgentView.tsx imports
+      // AgentView only needs ModelSelection directly.
+      // ModelSelectorItem and ProviderSection are used by ModelSelector component,
+      // not by AgentView directly. AgentView accesses providers via useProviderSections hook.
       const importResult = verifyImports(AGENT_VIEW_PATH, '../types/provider', [
         'ModelSelection',
-        'ModelSelectorItem',
-        'ProviderSection',
       ]);
 
       // @step Then AgentView imports ModelSelection from ../types/provider
       expect(importResult.found).toContain('ModelSelection');
-
-      // @step And AgentView imports ModelSelectorItem from ../types/provider
-      expect(importResult.found).toContain('ModelSelectorItem');
-
-      // @step And AgentView imports ProviderSection from ../types/provider
-      expect(importResult.found).toContain('ProviderSection');
 
       // All required imports present
       expect(importResult.allFound).toBe(true);

@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::uninlined_format_args)]
 //! Tests for prompt too long error detection and recovery
 //!
 //! Tests the is_prompt_too_long_error helper and related compaction recovery logic.

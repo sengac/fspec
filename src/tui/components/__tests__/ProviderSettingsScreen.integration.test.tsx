@@ -24,6 +24,7 @@ import {
   pressKey,
   typeString,
   waitFor,
+  waitForCondition,
 } from './fixtures/keyboardHelpers';
 
 // =============================================================================
@@ -391,7 +392,10 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
 
       // @step When the user presses the "y" key
       pressKey(stdin, 'y');
-      await waitFor(100);
+      await waitForCondition(
+        () => !(lastFrame() ?? '').includes('Delete Profile'),
+        2000, 50
+      );
 
       // @step Then removeProfile is called with the profile name
       // @step And mode returns to list
@@ -493,7 +497,10 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
 
       // @step When the user presses the Enter key
       pressKey(stdin, { name: 'enter' });
-      await waitFor(100);
+      await waitForCondition(
+        () => (lastFrame() ?? '').includes('Anthropic'),
+        2000, 50
+      );
 
       // @step Then saveApiKey is called with the key value
       // @step And mode returns to list

@@ -11,6 +11,7 @@
 //! This module supports model-aware thinking configuration:
 //! - Opus 4.6, Sonnet 4.6: Use adaptive thinking (type: "adaptive")
 //! - Opus 4.5, Sonnet 4.5, older: Use budgeted thinking (type: "enabled", budget_tokens: N)
+//!
 //! Beta headers are also model-specific based on official Anthropic documentation.
 
 use crate::{

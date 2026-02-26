@@ -1,0 +1,281 @@
+{
+  "scenarios": [
+    {
+      "name": "Successful merge closes session and returns to board",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/merge-worktree-command.test.ts",
+          "lines": "269-321",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Merge worktree in non-isolated session shows error",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/merge-worktree-command.test.ts",
+          "lines": "328-355",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Merge worktree with no changes shows nothing to merge",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/merge-worktree-command.test.ts",
+          "lines": "360-391",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Merge worktree with conflicts keeps session open",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/merge-worktree-command.test.ts",
+          "lines": "395-445",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/merge-worktree command is registered in slash command registry",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/merge-worktree-command.test.ts",
+          "lines": "451-470",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/slashCommands.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/sessions command is removed from slash command registry",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/merge-worktree-command.test.ts",
+          "lines": "475-484",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/slashCommands.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionManagementPanel component and tests are removed",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/merge-worktree-command.test.ts",
+          "lines": "487-530",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/merge-worktree-command.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/handlers/mergeWorktreeHandler.ts",
+      "src/tui/utils/slashCommands.ts",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 389
+  }
+}

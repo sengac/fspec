@@ -59,11 +59,10 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   // Blocklist (BLOCK-004)
   { name: 'blocklist', description: 'Manage blocklist rules' },
 
-  // GIT-029: Isolated session management
+  // GIT-036: Merge worktree and close session
   {
-    name: 'sessions',
-    description: 'Manage isolated session worktrees',
-    requiresSession: false,
+    name: 'merge-worktree',
+    description: 'Merge worktree changes and close session',
   },
 ];
 

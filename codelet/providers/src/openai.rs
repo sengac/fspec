@@ -45,7 +45,7 @@ fn normalize_base_url(url: &str) -> String {
     if trimmed.ends_with("/v1") {
         trimmed.to_string()
     } else {
-        format!("{}/v1", trimmed)
+        format!("{trimmed}/v1")
     }
 }
 
@@ -230,7 +230,7 @@ impl OpenAIProvider {
             .map_err(|e| {
                 ProviderError::api(
                     "openai",
-                    format!("Failed to connect to local server at {}: {}", base_url, e),
+                    format!("Failed to connect to local server at {base_url}: {e}"),
                 )
             })?;
 
@@ -250,7 +250,7 @@ impl OpenAIProvider {
         let body: serde_json::Value = response.json().await.map_err(|e| {
             ProviderError::api(
                 "openai",
-                format!("Failed to parse models response from {}: {}", base_url, e),
+                format!("Failed to parse models response from {base_url}: {e}"),
             )
         })?;
 
@@ -261,7 +261,7 @@ impl OpenAIProvider {
             .ok_or_else(|| {
                 ProviderError::api(
                     "openai",
-                    format!("Invalid models response from {}: missing 'data' array", base_url),
+                    format!("Invalid models response from {base_url}: missing 'data' array"),
                 )
             })?
             .iter()

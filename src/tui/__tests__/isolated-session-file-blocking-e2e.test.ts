@@ -400,7 +400,10 @@ describe('Feature: Isolated Session File Operations - BLOCKING Access to Main Pr
 
         // @step And the output should list directory contents
         // Note: On macOS, /var -> /private/var symlink causes canonicalized path to differ
-        expect(result.resolvedPath).toContain('/var/folders');
+        // On Linux, /tmp resolves to /tmp directly
+        const expectedTmpPath =
+          os.platform() === 'darwin' ? '/var/folders' : '/tmp';
+        expect(result.resolvedPath).toContain(expectedTmpPath);
       } finally {
         cleanup();
       }
@@ -431,7 +434,10 @@ describe('Feature: Isolated Session File Operations - BLOCKING Access to Main Pr
 
           // @step And the results should include matches from /tmp
           // Note: On macOS, /var -> /private/var symlink causes canonicalized path to differ
-          expect(result.resolvedPath).toContain('/var/folders');
+          // On Linux, /tmp resolves to /tmp directly
+          const expectedTmpPath =
+            os.platform() === 'darwin' ? '/var/folders' : '/tmp';
+          expect(result.resolvedPath).toContain(expectedTmpPath);
         } finally {
           fs.unlinkSync(tmpFile);
         }

@@ -4172,7 +4172,7 @@ impl SessionManager {
                 .map_err(|e| Error::from_reason(format!("Failed to set model: {}", e)))?;
         } else {
             // Cloud model: validate against registry
-            provider_manager.select_model(&model)
+            provider_manager.select_model(model)
                 .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
         }
 
@@ -5090,7 +5090,7 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 // calls getThinkingConfig('claude', level) and gets budgeted thinking, which
                 // Opus 4.6 rejects with "max_tokens must be greater than thinking.budget_tokens".
                 let is_adaptive_model = current_model.as_deref()
-                    .map(|m| is_adaptive_thinking_model(m))
+                    .map(is_adaptive_thinking_model)
                     .unwrap_or(false);
                 
                 if is_adaptive_model {
