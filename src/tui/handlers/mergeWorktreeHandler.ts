@@ -4,7 +4,7 @@
  * Extracted from AgentView.tsx for separation of concerns and testability.
  * Merges worktree changes back to main project and closes the session.
  *
- * GIT-036
+ * GIT-036, GIT-037
  */
 
 import {
@@ -12,6 +12,14 @@ import {
   mergeSessionChanges,
   destroySession,
 } from '../services/sessionService';
+import type { ActionPrompt } from '../types/actionPrompt';
+import {
+  buildMergeSummary,
+  buildConflictSummary,
+} from './mergeSummaryFormatting';
+
+// Re-export ActionPrompt for consumers that import from the handler
+export type { ActionPrompt } from '../types/actionPrompt';
 
 /**
  * Dependencies injected from AgentView to enable testing without React.
@@ -28,6 +36,7 @@ export interface MergeWorktreeContext {
   setInputValue: (value: string) => void;
   cleanupCurrentSessionHandler: () => void;
   onExit: () => void;
+  setActionPrompt: (prompt: ActionPrompt | null) => void;
 }
 
 /**
@@ -44,8 +53,8 @@ function addStatusMessage(ctx: MergeWorktreeContext, content: string): void {
  * 1. Check isIsolated - show error if not isolated
  * 2. Check session exists
  * 3. Inspect session for changes - show "Nothing to merge" if empty
- * 4. Merge changes - on success: show summary, cleanup, destroy, exit
- * 5. On conflict: show conflict details, keep session open
+ * 4. Merge changes - on success: show rich summary, set action prompt
+ * 5. On conflict: show conflict details with guidance, keep session open
  * 6. On other error: show generic error, keep session open
  */
 export async function handleMergeWorktree(
@@ -84,22 +93,25 @@ export async function handleMergeWorktree(
 
     // Attempt merge
     const mergeResult = mergeSessionChanges(ctx.repoPath, ctx.currentSessionId);
-    const modified = mergeResult.filesModified.length;
-    const added = mergeResult.filesAdded.length;
-    const deleted = mergeResult.filesDeleted.length;
-    addStatusMessage(
-      ctx,
-      `✓ Merged: ${modified} modified, ${added} added, ${deleted} deleted`
-    );
 
-    // Close session: cleanup + destroy + return to board
-    ctx.cleanupCurrentSessionHandler();
-    await destroySession(ctx.currentSessionId);
-    ctx.onExit();
+    // GIT-037: Show rich file-by-file summary
+    addStatusMessage(ctx, buildMergeSummary(mergeResult));
+
+    // GIT-037: Set action prompt instead of immediately exiting
+    const sessionId = ctx.currentSessionId;
+    ctx.setActionPrompt({
+      message: 'Merge complete — Press Enter to close session',
+      onConfirm: async () => {
+        ctx.cleanupCurrentSessionHandler();
+        await destroySession(sessionId);
+        ctx.onExit();
+      },
+    });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (errorMessage.includes('Conflict')) {
-      addStatusMessage(ctx, errorMessage);
+      // GIT-037: Show rich conflict summary with file paths and guidance
+      addStatusMessage(ctx, buildConflictSummary(errorMessage));
     } else {
       addStatusMessage(ctx, `Merge failed: ${errorMessage}`);
     }

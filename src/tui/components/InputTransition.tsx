@@ -22,6 +22,7 @@ import { useThinkingText, ThinkingIndicator } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
 import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants';
 import type { PauseInfo } from '../types/pause';
+import type { ActionPrompt } from '../types/actionPrompt';
 import { type CompactionProgress } from '../hooks/useRustSessionState';
 import { useInputCompat, InputPriority } from '../input/index';
 import { logger } from '../../utils/logger';
@@ -84,6 +85,19 @@ export interface InputTransitionProps extends MultiLineInputProps {
    * Only used when pauseInfo.kind is 'triple'
    */
   triplePauseSelection?: number;
+
+  /**
+   * GIT-037: Generic action prompt for deferred user confirmation.
+   * When set, renders a message with Enter/Esc to confirm.
+   * Takes priority over loading/animation states but NOT over pause.
+   */
+  actionPrompt?: ActionPrompt | null;
+
+  /**
+   * GIT-037: Callback to clear the action prompt after onConfirm.
+   * Bound to setActionPrompt(null) in AgentView.
+   */
+  clearActionPrompt?: () => void;
 }
 
 /**
@@ -120,6 +134,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   compactionProgress,
   suppressEnter = false,
   triplePauseSelection = 0,
+  actionPrompt,
+  clearActionPrompt,
 }) => {
   // All useState hooks grouped together
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>(
@@ -196,6 +212,43 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
 
   // Handle keyboard input during animation to interrupt it
   const isAnimating = animationPhase === 'hiding' || animationPhase === 'showing';
+  
+  // GIT-037: Handle keyboard input during action prompt
+  const isClosingRef = useRef(false);
+  
+  // Reset isClosingRef when action prompt changes
+  useEffect(() => {
+    if (!actionPrompt) {
+      isClosingRef.current = false;
+    }
+  }, [actionPrompt]);
+  
+  useInputCompat({
+    id: 'input-transition-action-prompt',
+    priority: InputPriority.MEDIUM,
+    description: 'Action prompt keyboard handler (Enter/Esc to confirm)',
+    isActive: isActive && !!actionPrompt && !(isPaused && pauseInfo),
+    handler: async (_input, key) => {
+      if (!actionPrompt) {
+        return false;
+      }
+      
+      if (key.return || key.escape) {
+        // Guard against double-invocation
+        if (isClosingRef.current) {
+          return true;
+        }
+        isClosingRef.current = true;
+        
+        await actionPrompt.onConfirm();
+        clearActionPrompt?.();
+        return true;
+      }
+      
+      // Block all other keys
+      return true;
+    },
+  });
   
   useInputCompat({
     id: 'input-transition-animation',
@@ -287,8 +340,6 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     return () => clearTimeout(timer);
   }, [animationPhase, visibleChars, placeholder.length]);
 
-  // Render based on current state
-  
   // Show pause indicator when paused
   if (isPaused && pauseInfo) {
     if (pauseInfo.kind === 'confirm') {
@@ -356,6 +407,16 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
         </Text>
       );
     }
+  }
+
+  // GIT-037: Show action prompt when set (after pause, before loading)
+  if (actionPrompt) {
+    return (
+      <Text>
+        <Text color="green">✓ {actionPrompt.message}</Text>
+        <Text dimColor> (Press Enter or Esc to close)</Text>
+      </Text>
+    );
   }
   
   if (animationPhase === 'loading') {

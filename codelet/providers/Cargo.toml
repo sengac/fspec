@@ -58,3 +58,6 @@ wiremock = "0.6.5"
 
 [lints]
 workspace = true
+
+[features]
+integration-tests = []

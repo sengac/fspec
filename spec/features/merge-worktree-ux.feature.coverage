@@ -1,0 +1,379 @@
+{
+  "scenarios": [
+    {
+      "name": "Successful merge shows file-by-file summary and action prompt",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "85-153",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Escape in action prompt closes session same as Enter",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "158-187",
+          "implMappings": [
+            {
+              "file": "src/tui/components/InputTransition.tsx",
+              "lines": [
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Character input is blocked during action prompt",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "192-225",
+          "implMappings": [
+            {
+              "file": "src/tui/components/InputTransition.tsx",
+              "lines": [
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Merge conflicts show detailed file list and guidance",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "230-278",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeSummaryFormatting.ts",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nothing to merge keeps session open without action prompt",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "283-311",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-conflict error keeps session open without action prompt",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "316-359",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action prompt is a generic reusable mechanism",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "364-434",
+          "implMappings": [
+            {
+              "file": "src/tui/components/InputTransition.tsx",
+              "lines": [
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action prompt guards against double invocation",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx",
+          "lines": "439-521",
+          "implMappings": [
+            {
+              "file": "src/tui/components/InputTransition.tsx",
+              "lines": [
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/handlers/__tests__/mergeWorktreeHandler-ux.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/handlers/mergeWorktreeHandler.ts",
+      "src/tui/components/InputTransition.tsx",
+      "src/tui/handlers/mergeSummaryFormatting.ts"
+    ],
+    "totalLinesCovered": 642
+  }
+}

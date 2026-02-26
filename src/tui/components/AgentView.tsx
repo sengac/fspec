@@ -159,6 +159,7 @@ import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import {
   handleMergeWorktree,
 } from '../handlers/mergeWorktreeHandler';
+import type { ActionPrompt } from '../types/actionPrompt';
 import {
   parseWatcherPrefix,
   extractToolArgsDisplay,
@@ -1096,6 +1097,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
   // TUI-056: Anchor viewer dialog state
   const [showAnchorViewer, setShowAnchorViewer] = useState(false);
+
+  // GIT-037: Generic action prompt state for deferred user confirmation
+  const [actionPrompt, setActionPrompt] = useState<ActionPrompt | null>(null);
 
   // BLOCK-004: Blocklist management state
   const [isBlocklistMode, setIsBlocklistMode] = useState(false);
@@ -3089,7 +3093,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // GIT-036: Handle /merge-worktree command - merge worktree changes and close session
+      // GIT-036, GIT-037: Handle /merge-worktree command - merge worktree changes and close session
       if (userMessage === '/merge-worktree') {
         await handleMergeWorktree({
           isIsolated,
@@ -3099,6 +3103,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
           setInputValue,
           cleanupCurrentSessionHandler,
           onExit,
+          setActionPrompt,
         });
         return;
       }
@@ -6317,6 +6322,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
             triplePauseSelection={triplePauseSelection}
             isCompacting={compaction.state.isActive}
             compactionProgress={compaction.state.progress}
+            actionPrompt={actionPrompt}
+            clearActionPrompt={() => setActionPrompt(null)}
             value={inputValue}
             onChange={handleInputChange}
             onSubmit={handleSubmit}

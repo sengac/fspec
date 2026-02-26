@@ -16,263 +16,25 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
-import { randomUUID } from 'crypto';
-import { mkdir, writeFile, rm } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
-import * as git from 'isomorphic-git';
-import * as fs from 'fs';
 
 import { handleMergeWorktree } from '../handlers/mergeWorktreeHandler';
-import type { MergeWorktreeContext } from '../handlers/mergeWorktreeHandler';
 import { SLASH_COMMANDS } from '../utils/slashCommands';
-import { useFspecStore } from '../store/fspecStore';
-import { useSessionStore } from '../store/sessionStore';
-
-// ============================================================================
-// E2E Fixture - Real git repos, real NAPI sessions, real stores
-// ============================================================================
-
-const TEST_MODEL = 'anthropic/claude-sonnet-4-20250514';
-const CLEANUP_DELAY_MS = 100;
-
-interface E2EFixture {
-  testDir: string;
-  createdSessionIds: string[];
-  initGitRepo: () => Promise<void>;
-  createIsolatedSession: (name?: string) => Promise<{
-    sessionId: string;
-    worktreePath: string;
-  }>;
-  destroyAllSessions: () => Promise<void>;
-  resetStores: () => void;
-  cleanup: () => Promise<void>;
-}
-
-async function createE2EFixture(testName: string): Promise<E2EFixture> {
-  const testDir = join(
-    tmpdir(),
-    `fspec-merge-wt-${testName}-${randomUUID().slice(0, 8)}`
-  );
-  const specDir = join(testDir, 'spec');
-  const createdSessionIds: string[] = [];
-
-  // Create project structure
-  await mkdir(specDir, { recursive: true });
-  await mkdir(join(specDir, 'features'), { recursive: true });
-
-  // Create work-units.json
-  await writeFile(
-    join(specDir, 'work-units.json'),
-    JSON.stringify(
-      {
-        meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
-        workUnits: {},
-        states: {
-          backlog: [],
-          specifying: [],
-          testing: [],
-          implementing: [],
-          validating: [],
-          done: [],
-          blocked: [],
-        },
-      },
-      null,
-      2
-    )
-  );
-
-  // Set persistence directory for NAPI
-  const { persistenceSetDataDirectory } = await import('@sengac/codelet-napi');
-  persistenceSetDataDirectory(testDir);
-
-  const resetStores = (): void => {
-    useFspecStore.setState({ sessionAttachments: new Map() });
-    useSessionStore.getState().setCurrentWorkUnit(null, null);
-  };
-
-  resetStores();
-
-  const initGitRepo = async (): Promise<void> => {
-    await git.init({ fs, dir: testDir, defaultBranch: 'main' });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
-    // Create initial files for conflict testing
-    await mkdir(join(testDir, 'src'), { recursive: true });
-    await writeFile(join(testDir, 'README.md'), '# Test Project\n');
-    await writeFile(
-      join(testDir, 'src', 'main.ts'),
-      'export const VERSION = 1;\n'
-    );
-    await git.add({ fs, dir: testDir, filepath: 'README.md' });
-    await git.add({ fs, dir: testDir, filepath: 'src/main.ts' });
-    await git.commit({
-      fs,
-      dir: testDir,
-      message: 'Initial commit',
-      author: { name: 'Test User', email: 'test@example.com' },
-    });
-  };
-
-  const createIsolatedSession = async (
-    name = 'Merge Worktree E2E Session'
-  ): Promise<{ sessionId: string; worktreePath: string }> => {
-    const { sessionManagerCreateIsolated } = await import(
-      '@sengac/codelet-napi'
-    );
-    const sessionId = randomUUID();
-    const result = await sessionManagerCreateIsolated(
-      sessionId,
-      TEST_MODEL,
-      testDir,
-      name
-    );
-    createdSessionIds.push(sessionId);
-    return { sessionId, worktreePath: result.worktreePath };
-  };
-
-  const destroyAllSessions = async (): Promise<void> => {
-    const {
-      sessionManagerDestroy,
-      sessionManagerList,
-      removeWorktree,
-      listWorktrees,
-    } = await import('@sengac/codelet-napi');
-
-    for (const id of [...createdSessionIds]) {
-      try {
-        sessionManagerDestroy(id);
-      } catch {
-        /* cleanup */
-      }
-    }
-    createdSessionIds.length = 0;
-
-    try {
-      const allSessions = sessionManagerList();
-      for (const session of allSessions) {
-        try {
-          sessionManagerDestroy(session.id);
-        } catch {
-          /* cleanup */
-        }
-      }
-    } catch {
-      /* cleanup */
-    }
-
-    try {
-      const worktrees = listWorktrees(testDir);
-      for (const worktree of worktrees) {
-        try {
-          removeWorktree(testDir, worktree.sessionId);
-        } catch {
-          /* cleanup */
-        }
-      }
-    } catch {
-      /* cleanup */
-    }
-  };
-
-  const cleanup = async (): Promise<void> => {
-    await destroyAllSessions();
-    resetStores();
-    await new Promise(resolve => setTimeout(resolve, CLEANUP_DELAY_MS));
-    if (existsSync(testDir)) {
-      await rm(testDir, { recursive: true, force: true });
-    }
-  };
-
-  return {
-    testDir,
-    createdSessionIds,
-    initGitRepo,
-    createIsolatedSession,
-    destroyAllSessions,
-    resetStores,
-    cleanup,
-  };
-}
-
-// ============================================================================
-// Context factory - creates real context with tracking
-// ============================================================================
-
-function createTestContext(
-  fixture: E2EFixture,
-  sessionId: string,
-  overrides: Partial<MergeWorktreeContext> = {}
-): {
-  ctx: MergeWorktreeContext;
-  conversation: Array<{ type: string; content: string }>;
-  calls: {
-    cleanupCalled: boolean;
-    onExitCalled: boolean;
-    inputValueSet: string | null;
-  };
-} {
-  const conversation: Array<{ type: string; content: string }> = [];
-  const calls = {
-    cleanupCalled: false,
-    onExitCalled: false,
-    inputValueSet: null as string | null,
-  };
-
-  const ctx: MergeWorktreeContext = {
-    isIsolated: true,
-    currentSessionId: sessionId,
-    repoPath: fixture.testDir,
-    setConversation: updater => {
-      const result = updater(conversation);
-      conversation.length = 0;
-      conversation.push(...result);
-    },
-    setInputValue: (value: string) => {
-      calls.inputValueSet = value;
-    },
-    cleanupCurrentSessionHandler: () => {
-      calls.cleanupCalled = true;
-    },
-    onExit: () => {
-      calls.onExitCalled = true;
-    },
-    ...overrides,
-  };
-
-  return { ctx, conversation, calls };
-}
-
-function getStatusMessages(
-  conversation: Array<{ type: string; content: string }>
-): Array<{ type: string; content: string }> {
-  return conversation.filter(m => m.type === 'status');
-}
+import {
+  createE2EFixture,
+  createTestContext,
+  getStatusMessages,
+} from '../handlers/__tests__/fixtures/mergeWorktreeFixture';
+import type { E2EFixture } from '../handlers/__tests__/fixtures/mergeWorktreeFixture';
 
 // ============================================================================
 // Resolve project paths for file-system checks
 // ============================================================================
 
-const PROJECT_ROOT = join(__dirname, '..', '..', '..');
-const AGENTVIEW_PATH = join(
-  PROJECT_ROOT,
-  'src',
-  'tui',
-  'components',
-  'AgentView.tsx'
-);
+const PROJECT_ROOT = join(__dirname, '..', '..');
+const AGENTVIEW_PATH = join(PROJECT_ROOT, 'tui', 'components', 'AgentView.tsx');
 
 describe('Feature: Merge worktree slash command with auto-close session workflow', () => {
   let fixture: E2EFixture;
@@ -334,15 +96,14 @@ describe('Feature: Merge worktree slash command with auto-close session workflow
       // @step And I should see a merge summary status message showing counts
       const statusMessages = getStatusMessages(conversation);
       expect(statusMessages.length).toBeGreaterThanOrEqual(1);
-      const mergeMsg = statusMessages.find(m =>
-        m.content.includes('✓ Merged:')
-      );
+      // GIT-037: Now shows rich file-by-file summary instead of counts
+      const mergeMsg = statusMessages.find(m => m.includes('Merge successful'));
       expect(mergeMsg).toBeDefined();
-      expect(mergeMsg?.content).toMatch(/\d+ modified/);
-      expect(mergeMsg?.content).toMatch(/\d+ added/);
-      expect(mergeMsg?.content).toMatch(/\d+ deleted/);
 
       // @step And cleanupCurrentSessionHandler should be called
+      // GIT-037: Cleanup now deferred via action prompt - invoke it
+      expect(calls.actionPromptSet).not.toBeNull();
+      await calls.actionPromptSet?.onConfirm();
       expect(calls.cleanupCalled).toBe(true);
 
       // @step And destroySession should be called with the current session ID
@@ -375,7 +136,7 @@ describe('Feature: Merge worktree slash command with auto-close session workflow
       // @step Then I should see a status message "This command is only available in isolated sessions"
       const statusMessages = getStatusMessages(conversation);
       expect(statusMessages).toHaveLength(1);
-      expect(statusMessages[0].content).toBe(
+      expect(statusMessages[0]).toBe(
         'This command is only available in isolated sessions'
       );
 
@@ -413,12 +174,11 @@ describe('Feature: Merge worktree slash command with auto-close session workflow
       // @step And I should see a status message "Nothing to merge"
       const statusMessages = getStatusMessages(conversation);
       expect(statusMessages).toHaveLength(1);
-      expect(statusMessages[0].content).toBe('Nothing to merge');
+      expect(statusMessages[0]).toBe('Nothing to merge');
 
       // @step And mergeSessionChanges should not be called
       // Verified: If merge had been called on a clean worktree, the worktree would be removed.
       // Instead it should still exist since we returned early.
-      // (The worktree dir still exists because inspect doesn't modify it)
 
       // @step And the session should remain active
       expect(calls.cleanupCalled).toBe(false);
@@ -464,7 +224,7 @@ describe('Feature: Merge worktree slash command with auto-close session workflow
       const statusMessages = getStatusMessages(conversation);
       expect(statusMessages).toHaveLength(1);
       // The error message from Rust contains "Conflict" and the file path
-      const conflictMsg = statusMessages[0].content;
+      const conflictMsg = statusMessages[0];
       expect(conflictMsg.toLowerCase()).toContain('conflict');
       expect(conflictMsg).toContain('main.ts');
 
@@ -531,13 +291,7 @@ describe('Feature: Merge worktree slash command with auto-close session workflow
       // @step Then the file "src/tui/components/SessionManagementPanel.tsx" should not exist
       expect(
         existsSync(
-          join(
-            PROJECT_ROOT,
-            'src',
-            'tui',
-            'components',
-            'SessionManagementPanel.tsx'
-          )
+          join(PROJECT_ROOT, 'tui', 'components', 'SessionManagementPanel.tsx')
         )
       ).toBe(false);
 
@@ -546,7 +300,6 @@ describe('Feature: Merge worktree slash command with auto-close session workflow
         existsSync(
           join(
             PROJECT_ROOT,
-            'src',
             'tui',
             'components',
             '__tests__',
@@ -560,7 +313,6 @@ describe('Feature: Merge worktree slash command with auto-close session workflow
         existsSync(
           join(
             PROJECT_ROOT,
-            'src',
             'tui',
             'components',
             '__tests__',
