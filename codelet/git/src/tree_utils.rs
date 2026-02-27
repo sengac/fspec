@@ -80,7 +80,7 @@ pub fn collect_worktree_files(worktree_path: &Path) -> Result<HashMap<String, Ve
         // Walk the working directory
         for entry in walkdir::WalkDir::new(workdir)
             .into_iter()
-            .filter_entry(|e| !is_git_or_fspec_dir(e))
+            .filter_entry(|e| !is_git_or_fspec_internal(e))
             .filter_map(|e| e.ok())
         {
             if entry.file_type().is_file() {
@@ -120,10 +120,10 @@ pub fn collect_worktree_files(worktree_path: &Path) -> Result<HashMap<String, Ve
     Ok(files)
 }
 
-/// Check if entry is .git or .fspec directory (should be skipped)
-fn is_git_or_fspec_dir(entry: &walkdir::DirEntry) -> bool {
+/// Check if entry is a git/fspec internal file or directory (should be skipped)
+fn is_git_or_fspec_internal(entry: &walkdir::DirEntry) -> bool {
     let name = entry.file_name();
-    name == ".git" || name == ".fspec"
+    name == ".git" || name == ".fspec" || name == ".fspec-pending-conflicts"
 }
 
 /// Get all files from a commit tree as a map of path -> content

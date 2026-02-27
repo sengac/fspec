@@ -5,7 +5,7 @@
  * and conflict error messages. Extracted from mergeWorktreeHandler.ts
  * for separation of concerns and testability.
  *
- * GIT-037
+ * GIT-037 (buildConflictLlmContext moved to conflictLlmContext.ts for GIT-038)
  */
 
 /**

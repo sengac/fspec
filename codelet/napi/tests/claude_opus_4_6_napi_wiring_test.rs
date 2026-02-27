@@ -7,12 +7,13 @@
 //! PROV-005: This tests the critical wiring that was missing - the NAPI
 //! function must receive the MODEL NAME (e.g., "claude-opus-4-6"), not just
 //! the provider name ("claude"), to trigger adaptive thinking.
+//!
+//! NOTE: These tests require the real NAPI bindings (not noop stubs),
+//! so they are gated behind `not(feature = "noop")`.
 
-use codelet_napi::{get_thinking_config, JsThinkingLevel};
-
-#[cfg(test)]
+#[cfg(all(test, not(feature = "noop")))]
 mod tests {
-    use super::*;
+    use codelet_napi::{get_thinking_config, JsThinkingLevel};
 
     // =========================================================================
     // NAPI Wiring Tests - Verify model names trigger adaptive thinking

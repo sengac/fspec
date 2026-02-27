@@ -2,14 +2,14 @@
 //!
 //! Tests for NAPI binding: models_list_local_openai
 //! This test file validates the NAPI integration layer for local model listing.
+//!
+//! NOTE: These tests require the real NAPI bindings (not noop stubs),
+//! so they are gated behind `not(feature = "noop")`.
 
-use wiremock::{MockServer, Mock, ResponseTemplate};
-use wiremock::matchers::{method, path};
-
-/// Scenario: NAPI binding exposes local model listing to TUI
-/// @napi @integration
+#[cfg(all(test, not(feature = "noop")))]
 mod napi_binding_exposes_local_model_listing {
-    use super::*;
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+    use wiremock::matchers::{method, path};
     
     #[tokio::test]
     async fn test_models_list_local_openai_function() {

@@ -20,6 +20,7 @@ mod isolated_session;
 mod session_result;
 mod session_status;
 mod status;
+pub mod three_way_merge;
 mod tree_utils;
 pub mod utils;
 pub mod worktree;

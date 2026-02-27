@@ -24,6 +24,9 @@ thiserror.workspace = true
 # Diff algorithm (for unified diff generation)
 similar = "2"
 
+# Three-way merge (for conflict marker generation)
+diffy = "0.4"
+
 # Directory walking
 walkdir = "2"
 

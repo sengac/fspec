@@ -1,0 +1,241 @@
+{
+  "scenarios": [
+    {
+      "name": "Single file conflict sends context to LLM",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts",
+          "lines": "85-132",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple file conflicts send context listing all files",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts",
+          "lines": "141-182",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Conflict context triggers auto-submit to Rust session",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts",
+          "lines": "188-226",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3112,
+                3113,
+                3114,
+                3115,
+                3116,
+                3117,
+                3118,
+                3119,
+                3120,
+                3121,
+                3122,
+                3123,
+                3124,
+                3125,
+                3126,
+                3127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful merge does not send context to LLM",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts",
+          "lines": "232-261",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-conflict error does not send context to LLM",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts",
+          "lines": "267-305",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Context message does not contain system-reminder tags",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts",
+          "lines": "311-344",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/conflictLlmContext.ts",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No context sent when session ID is missing",
+      "testMappings": [
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts",
+          "lines": "350-371",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/mergeWorktreeHandler.ts",
+              "lines": [
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/handlers/__tests__/mergeConflictLlmContext.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/handlers/mergeWorktreeHandler.ts",
+      "src/tui/components/AgentView.tsx",
+      "src/tui/handlers/conflictLlmContext.ts"
+    ],
+    "totalLinesCovered": 365
+  }
+}

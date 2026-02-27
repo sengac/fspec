@@ -4,7 +4,7 @@
  * Extracted from AgentView.tsx for separation of concerns and testability.
  * Merges worktree changes back to main project and closes the session.
  *
- * GIT-036, GIT-037
+ * GIT-036, GIT-037, GIT-038
  */
 
 import {
@@ -17,6 +17,7 @@ import {
   buildMergeSummary,
   buildConflictSummary,
 } from './mergeSummaryFormatting';
+import { buildConflictLlmContext } from './conflictLlmContext';
 
 // Re-export ActionPrompt for consumers that import from the handler
 export type { ActionPrompt } from '../types/actionPrompt';
@@ -28,6 +29,11 @@ export interface MergeWorktreeContext {
   isIsolated: boolean;
   currentSessionId: string | null;
   repoPath: string;
+  /**
+   * GIT-038: The worktree path for isolated sessions.
+   * Used to tell the LLM where conflicting files are located.
+   */
+  worktreePath: string | null;
   setConversation: (
     updater: (
       prev: Array<{ type: string; content: string }>
@@ -37,6 +43,13 @@ export interface MergeWorktreeContext {
   cleanupCurrentSessionHandler: () => void;
   onExit: () => void;
   setActionPrompt: (prompt: ActionPrompt | null) => void;
+  /**
+   * GIT-038: Inject a context message into the LLM's session history.
+   * This is separate from setConversation (which is UI-only).
+   * The AgentView wires this to persist the message as assistant-role
+   * in both the Rust session and the React conversation state.
+   */
+  injectLlmContext: (content: string) => void;
 }
 
 /**
@@ -110,8 +123,16 @@ export async function handleMergeWorktree(
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (errorMessage.includes('Conflict')) {
-      // GIT-037: Show rich conflict summary with file paths and guidance
+      // GIT-037: Show rich conflict summary in TUI (visual, for user's eyes)
       addStatusMessage(ctx, buildConflictSummary(errorMessage));
+
+      // GIT-038: Inject context into LLM conversation history so the AI
+      // knows about the conflict and can help resolve it
+      if (ctx.currentSessionId) {
+        ctx.injectLlmContext(
+          buildConflictLlmContext(errorMessage, ctx.worktreePath)
+        );
+      }
     } else {
       addStatusMessage(ctx, `Merge failed: ${errorMessage}`);
     }

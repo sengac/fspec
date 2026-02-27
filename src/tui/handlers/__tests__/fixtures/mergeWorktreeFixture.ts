@@ -220,6 +220,7 @@ export interface ContextCallTracker {
   onExitCalled: boolean;
   inputValueSet: string | null;
   actionPromptSet: ActionPrompt | null;
+  llmContextInjected: string[];
 }
 
 /**
@@ -240,12 +241,14 @@ export function createTestContext(
     onExitCalled: false,
     inputValueSet: null,
     actionPromptSet: null,
+    llmContextInjected: [],
   };
 
   const ctx: MergeWorktreeContext = {
     isIsolated: true,
     currentSessionId: sessionId,
     repoPath: fixture.testDir,
+    worktreePath: null,
     setConversation: updater => {
       const result = updater(conversation);
       conversation.length = 0;
@@ -262,6 +265,9 @@ export function createTestContext(
     },
     setActionPrompt: (prompt: ActionPrompt | null) => {
       calls.actionPromptSet = prompt;
+    },
+    injectLlmContext: (content: string) => {
+      calls.llmContextInjected.push(content);
     },
     ...overrides,
   };

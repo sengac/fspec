@@ -1,0 +1,771 @@
+{
+  "scenarios": [
+    {
+      "name": "Conflicting text file gets standard git conflict markers written to worktree",
+      "testMappings": [
+        {
+          "file": "codelet/git/src/three_way_merge.rs",
+          "lines": "143-196",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/three_way_merge.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "lines": "38-107",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictMarkers.test.ts",
+          "lines": "82-132",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-overlapping changes in same file merge cleanly without conflict markers",
+      "testMappings": [
+        {
+          "file": "codelet/git/src/three_way_merge.rs",
+          "lines": "201-257",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/three_way_merge.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "lines": "114-173",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictMarkers.test.ts",
+          "lines": "139-186",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "File added in both session and main with different content gets conflict markers",
+      "testMappings": [
+        {
+          "file": "codelet/git/src/three_way_merge.rs",
+          "lines": "262-300",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/three_way_merge.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "lines": "180-218",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictMarkers.test.ts",
+          "lines": "192-243",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Binary file conflict is reported without writing conflict markers",
+      "testMappings": [
+        {
+          "file": "codelet/git/src/three_way_merge.rs",
+          "lines": "305-361",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/three_way_merge.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "lines": "225-280",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictMarkers.test.ts",
+          "lines": "249-299",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identical changes from session and main do not produce a conflict",
+      "testMappings": [
+        {
+          "file": "codelet/git/src/three_way_merge.rs",
+          "lines": "366-401",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/three_way_merge.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "lines": "287-326",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/handlers/__tests__/mergeConflictMarkers.test.ts",
+          "lines": "305-326",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                230,
+                231,
+                232,
+                233
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Re-running merge after resolving conflict markers succeeds",
+      "testMappings": [
+        {
+          "file": "codelet/git/src/three_way_merge.rs",
+          "lines": "406-414",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/three_way_merge.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/git/tests/three_way_merge_integration_tests.rs",
+          "lines": "333-389",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/git/src/three_way_merge.rs",
+      "codelet/git/tests/three_way_merge_integration_tests.rs",
+      "src/tui/handlers/__tests__/mergeConflictMarkers.test.ts"
+    ],
+    "implFiles": [
+      "codelet/git/src/three_way_merge.rs",
+      "codelet/git/src/session_result.rs",
+      "codelet/napi/src/git.rs"
+    ],
+    "totalLinesCovered": 1332
+  }
+}

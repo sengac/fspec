@@ -180,6 +180,7 @@ import {
   useShouldAutoCreateSession,
   usePendingIsolatedSession,
   useIsIsolated,
+  useWorktreePath,
   useShowCreateSessionDialog,
   useSessionActions,
 } from '../store/sessionStore';
@@ -856,6 +857,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-050: Ref for slash command executor (set after handleSubmitWithCommand is defined)
   const executeSlashCommandRef = useRef<(cmd: string) => void>();
 
+  // GIT-038: Flag for auto-submitting conflict resolution message to Rust session
+  const pendingAutoSubmitRef = useRef(false);
+
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [tokenUsage, setTokenUsage] = useState<TokenTracker>({
     inputTokens: 0,
@@ -934,6 +938,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const shouldAutoCreateSession = useShouldAutoCreateSession();
   const pendingIsolatedSession = usePendingIsolatedSession();
   const isIsolated = useIsIsolated();
+  const worktreePath = useWorktreePath();
   const showCreateSessionDialog = useShowCreateSessionDialog();
   const {
     activateSession,
@@ -3093,17 +3098,26 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // GIT-036, GIT-037: Handle /merge-worktree command - merge worktree changes and close session
+      // GIT-036, GIT-037, GIT-038: Handle /merge-worktree command - merge worktree changes and close session
       if (userMessage === '/merge-worktree') {
         await handleMergeWorktree({
           isIsolated,
           currentSessionId,
           repoPath: currentProjectRef.current,
+          worktreePath,
           setConversation,
           setInputValue,
           cleanupCurrentSessionHandler,
           onExit,
           setActionPrompt,
+          // GIT-038: Send conflict context as a user message to the Rust session.
+          // Setting inputValue + flagging auto-submit causes handleSubmit to fire
+          // on the next render, sending the conflict details to the LLM as real input
+          // so it can read the files and resolve the conflict markers.
+          injectLlmContext: (content: string) => {
+            setInputValue(content);
+            pendingAutoSubmitRef.current = true;
+          },
         });
         return;
       }
@@ -3186,6 +3200,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
     executeSlashCommandRef.current = (cmd: string) =>
       void handleSubmitWithCommand(cmd);
   }, [handleSubmitWithCommand]);
+
+  // GIT-038: Auto-submit conflict resolution message to Rust session.
+  // When /merge-worktree detects conflicts, it sets inputValue to the conflict
+  // details and flags pendingAutoSubmitRef. On the next render (after inputValue
+  // and handleSubmit have updated), this effect fires and submits the message
+  // to the Rust session so the LLM actually sees the conflict info.
+  useEffect(() => {
+    if (pendingAutoSubmitRef.current && inputValue) {
+      pendingAutoSubmitRef.current = false;
+      void handleSubmit();
+    }
+  }, [inputValue, handleSubmit]);
 
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
