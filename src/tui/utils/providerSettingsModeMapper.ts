@@ -43,5 +43,15 @@ export function mapToEffectivePanelMode(
     };
   }
 
+  // OAuth modes pass through directly (they are already PanelMode-compatible)
+  if (
+    hookMode.type === 'oauth-browser-waiting' ||
+    hookMode.type === 'oauth-device-waiting' ||
+    hookMode.type === 'oauth-success' ||
+    hookMode.type === 'oauth-error'
+  ) {
+    return hookMode;
+  }
+
   return { type: 'list' };
 }

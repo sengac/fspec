@@ -9,3 +9,4 @@ export { handleApiKeyEditMode } from './apiKeyEditModeHandler';
 export { handleProfileFormMode } from './profileFormModeHandler';
 export { handleFilterMode } from './filterModeHandler';
 export { handleListMode, type ListModeHandlerOptions } from './listModeHandler';
+export { handleOauthMode } from './oauthModeHandler';

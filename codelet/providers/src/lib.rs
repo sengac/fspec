@@ -31,6 +31,9 @@ pub use caching_client::{
 // TOOL-008: build_cached_system_prompt removed - use codelet_tools::facade::select_claude_facade instead
 pub use claude::{AuthMode, CacheControl, ClaudeProvider};
 pub use codex::CodexProvider;
+pub use codex::CODEX_BASE_INSTRUCTIONS; // PROV-019: Codex backend requires instructions field
+pub use codex::codex_oauth_server::browser_oauth_login; // PROV-013: OAuth login for NAPI binding (PROV-015)
+pub use codex::codex_device_auth::device_auth_login; // PROV-014: Device auth login for NAPI binding (PROV-015)
 pub use credentials::ProviderCredentials;
 pub use gemini::GeminiProvider;
 pub use manager::{ProviderManager, ProviderType};

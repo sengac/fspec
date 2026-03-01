@@ -1,0 +1,273 @@
+{
+  "scenarios": [
+    {
+      "name": "Edit key on Codex provider starts OAuth flow",
+      "testMappings": [
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "112-149",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "112-149",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Edit key on non-OAuth provider shows API key editor",
+      "testMappings": [
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "151-189",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "151-189",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex provider with OAuth tokens shows connected status",
+      "testMappings": [
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "246-280",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "246-280",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete on Codex provider disconnects OAuth",
+      "testMappings": [
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "191-243",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts",
+          "lines": "191-243",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/inputHandlers/__tests__/listModeHandler-codex-oauth.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/inputHandlers/listModeHandler.ts",
+      "src/tui/hooks/useProviderSettingsState.ts"
+    ],
+    "totalLinesCovered": 478
+  }
+}

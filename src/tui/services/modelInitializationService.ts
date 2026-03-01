@@ -13,7 +13,11 @@
  * This runs on AgentView mount to ensure models are available for session creation.
  */
 
-import { modelsListAll, modelsListLocalOpenai } from '@sengac/codelet-napi';
+import {
+  modelsListAll,
+  modelsListLocalOpenai,
+  codexOauthGetTokens,
+} from '@sengac/codelet-napi';
 import type { NapiModelInfo, NapiProviderModels } from '@sengac/codelet-napi';
 import {
   loadProviderProfiles,
@@ -54,6 +58,14 @@ export const extractModelIdForRegistry = (modelId: string): string => {
   return modelId;
 };
 
+/**
+ * PROV-018: Check if a model ID belongs to the Codex family.
+ * Codex models are identified by their ID containing 'codex' (case-insensitive).
+ */
+export const isCodexModel = (modelId: string): boolean => {
+  return modelId.toLowerCase().includes('codex');
+};
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -91,6 +103,9 @@ async function loadCloudModels(): Promise<NapiProviderModels[]> {
 async function buildCloudSections(
   allModels: NapiProviderModels[]
 ): Promise<ProviderSection[]> {
+  // PROV-018: Check for Codex OAuth tokens once, reuse across all providers
+  const hasCodexOAuth = checkCodexOAuthTokens();
+
   const sectionsWithCreds = await Promise.all(
     allModels.map(async pm => {
       const internalName = mapProviderIdToInternal(pm.providerId);
@@ -115,7 +130,90 @@ async function buildCloudSections(
     })
   );
 
-  return sectionsWithCreds.filter(s => s.hasCredentials);
+  const credentialSections = sectionsWithCreds.filter(s => s.hasCredentials);
+
+  // PROV-018: Extract codex models from OpenAI section when OAuth tokens exist
+  if (hasCodexOAuth) {
+    return extractCodexSection(credentialSections, sectionsWithCreds);
+  }
+
+  return credentialSections;
+}
+
+/**
+ * PROV-018: Check if Codex OAuth tokens exist.
+ * Pure boolean check — isolates NAPI call for testability.
+ */
+function checkCodexOAuthTokens(): boolean {
+  try {
+    const tokens = codexOauthGetTokens();
+    return tokens !== null && tokens !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * PROV-018: Extract codex models from the OpenAI provider section
+ * into a synthetic "Codex (ChatGPT)" section.
+ *
+ * When Codex OAuth tokens exist:
+ * 1. Find the OpenAI section (from all sections, even those without API keys)
+ * 2. Split its models into codex vs non-codex
+ * 3. Create a synthetic Codex section with providerId='codex'
+ * 4. If OpenAI also has credentials, keep non-codex models in OpenAI section
+ *
+ * @param credentialSections - Sections that already passed credentials check
+ * @param allSections - All sections (including those without credentials)
+ * @returns Updated sections array with synthetic Codex section appended
+ */
+function extractCodexSection(
+  credentialSections: ProviderSection[],
+  allSections: ProviderSection[]
+): ProviderSection[] {
+  // Find the OpenAI section — may or may not have credentials
+  const openaiSection = allSections.find(s => s.providerId === 'openai');
+
+  if (!openaiSection) {
+    return credentialSections;
+  }
+
+  const codexModels = openaiSection.models.filter(m => isCodexModel(m.id));
+
+  if (codexModels.length === 0) {
+    return credentialSections;
+  }
+
+  // Build the synthetic Codex section
+  const codexSection: ProviderSection = {
+    providerId: 'codex',
+    providerName: 'Codex (ChatGPT)',
+    internalName: mapProviderIdToInternal('codex'),
+    models: codexModels,
+    hasCredentials: true,
+  };
+
+  // If OpenAI section exists in credentialSections, strip codex models from it
+  const updatedSections = credentialSections.map(s => {
+    if (s.providerId === 'openai') {
+      return {
+        ...s,
+        models: s.models.filter(m => !isCodexModel(m.id)),
+      };
+    }
+    return s;
+  });
+
+  // Remove empty OpenAI section (if all models were codex)
+  const filteredSections = updatedSections.filter(
+    s => s.providerId !== 'openai' || s.models.length > 0
+  );
+
+  logger.debug(
+    `PROV-018: Extracted ${codexModels.length} codex models into synthetic Codex section`
+  );
+
+  return [...filteredSections, codexSection];
 }
 
 /**

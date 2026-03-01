@@ -11,9 +11,7 @@ use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::path::Path;
 
-/// OAuth constants from Codex CLI
-const CODEX_ISSUER: &str = "https://auth.openai.com";
-const CODEX_CLIENT_ID: &str = "app_EMoamEEZ73f0CkXaXp7hrann";
+use super::codex_oauth::{CODEX_CLIENT_ID, CODEX_ISSUER, TokenRefreshResponse};
 
 /// Keyring service name for macOS keychain
 #[cfg(target_os = "macos")]
@@ -38,14 +36,6 @@ pub struct CodexTokens {
     pub access_token: String,
     pub refresh_token: String,
     pub account_id: String,
-}
-
-/// Response from token refresh endpoint
-#[derive(Debug, Deserialize)]
-struct RefreshResponse {
-    id_token: String,
-    access_token: String,
-    refresh_token: String,
 }
 
 /// Response from token exchange endpoint
@@ -146,73 +136,6 @@ pub fn write_codex_auth(auth: &CodexAuthJson) -> Result<()> {
     Ok(())
 }
 
-/// Refresh OAuth tokens using refresh_token (async version for future use)
-#[allow(dead_code)]
-async fn refresh_tokens(refresh_token: &str) -> Result<RefreshResponse> {
-    let client = reqwest::Client::new();
-
-    let body = serde_json::json!({
-        "client_id": CODEX_CLIENT_ID,
-        "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
-        "scope": "openid profile email offline_access",
-    });
-
-    let response = client
-        .post(format!("{CODEX_ISSUER}/oauth/token"))
-        .header("Content-Type", "application/json")
-        .json(&body)
-        .send()
-        .await?;
-
-    if !response.status().is_success() {
-        return Err(anyhow!(
-            "Failed to refresh Codex tokens. Token may be expired. Run codex auth login to re-authenticate. Status: {}",
-            response.status()
-        ));
-    }
-
-    let refresh_response: RefreshResponse = response.json().await?;
-    Ok(refresh_response)
-}
-
-/// Exchange id_token for OpenAI API key via token exchange grant (async version for future use)
-#[allow(dead_code)]
-async fn exchange_token_for_api_key(id_token: &str) -> Result<String> {
-    let client = reqwest::Client::new();
-
-    let params = [
-        (
-            "grant_type",
-            "urn:ietf:params:oauth:grant-type:token-exchange",
-        ),
-        ("client_id", CODEX_CLIENT_ID),
-        ("requested_token", "openai-api-key"),
-        ("subject_token", id_token),
-        (
-            "subject_token_type",
-            "urn:ietf:params:oauth:token-type:id_token",
-        ),
-    ];
-
-    let response = client
-        .post(format!("{CODEX_ISSUER}/oauth/token"))
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .form(&params)
-        .send()
-        .await?;
-
-    if !response.status().is_success() {
-        return Err(anyhow!(
-            "Failed to exchange token for API key. Status: {}",
-            response.status()
-        ));
-    }
-
-    let exchange_response: ExchangeResponse = response.json().await?;
-    Ok(exchange_response.access_token)
-}
-
 /// Get OpenAI API key from Codex credentials (synchronous version)
 /// Performs full flow: read → refresh → exchange → cache
 pub fn get_codex_api_key_sync() -> Result<String> {
@@ -237,17 +160,18 @@ pub fn get_codex_api_key_sync() -> Result<String> {
     let client = reqwest::blocking::Client::new();
 
     // Refresh tokens to get fresh id_token
-    let body = serde_json::json!({
-        "client_id": CODEX_CLIENT_ID,
-        "grant_type": "refresh_token",
-        "refresh_token": &tokens.refresh_token,
-        "scope": "openid profile email offline_access",
-    });
+    // NOTE: Using form-encoded body per OAuth 2.0 RFC 6749
+    let refresh_params = [
+        ("client_id", CODEX_CLIENT_ID),
+        ("grant_type", "refresh_token"),
+        ("refresh_token", &tokens.refresh_token),
+        ("scope", "openid profile email offline_access"),
+    ];
 
     let refresh_response = client
         .post(format!("{CODEX_ISSUER}/oauth/token"))
-        .header("Content-Type", "application/json")
-        .json(&body)
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .form(&refresh_params)
         .send()?;
 
     if !refresh_response.status().is_success() {
@@ -257,7 +181,7 @@ pub fn get_codex_api_key_sync() -> Result<String> {
         ));
     }
 
-    let refreshed: RefreshResponse = refresh_response.json()?;
+    let refreshed: TokenRefreshResponse = refresh_response.json()?;
 
     // Exchange id_token for API key
     let exchange_params = [
@@ -296,49 +220,6 @@ pub fn get_codex_api_key_sync() -> Result<String> {
         account_id: tokens.account_id.clone(),
     });
     auth.openai_api_key = Some(api_key.clone());
-    write_codex_auth(&auth)?;
-
-    Ok(api_key)
-}
-
-/// Get OpenAI API key from Codex credentials (async version for future use)
-/// Performs full flow: read → refresh → exchange → cache
-#[allow(dead_code)]
-async fn get_codex_api_key() -> Result<String> {
-    let mut auth = read_codex_auth()?.ok_or_else(|| {
-        anyhow!(
-            "CODEX auth.json not found at {}. Run codex auth login to authenticate.",
-            get_auth_path().display()
-        )
-    })?;
-
-    // If cached API key exists, use it directly
-    if let Some(api_key) = &auth.openai_api_key {
-        return Ok(api_key.clone());
-    }
-
-    // No cached API key - need to refresh and exchange
-    let tokens = auth.tokens.as_ref().ok_or_else(|| {
-        anyhow!("No tokens found in auth.json. Run codex auth login to authenticate.")
-    })?;
-
-    // Refresh tokens to get fresh id_token
-    let refreshed = refresh_tokens(&tokens.refresh_token).await?;
-
-    // Exchange id_token for API key
-    let api_key = exchange_token_for_api_key(&refreshed.id_token).await?;
-
-    // Update auth.json with new tokens and cached API key
-    auth.tokens = Some(CodexTokens {
-        id_token: refreshed.id_token,
-        access_token: refreshed.access_token,
-        refresh_token: refreshed.refresh_token,
-        account_id: tokens.account_id.clone(),
-    });
-    auth.openai_api_key = Some(api_key.clone());
-    auth.last_refresh = Some(chrono::Utc::now().to_rfc3339());
-
-    // Write back to auth.json
     write_codex_auth(&auth)?;
 
     Ok(api_key)

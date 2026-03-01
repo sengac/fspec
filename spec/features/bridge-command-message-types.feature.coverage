@@ -1,0 +1,151 @@
+{
+  "scenarios": [
+    {
+      "name": "Deserialize command InboundMessage with all fields populated",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/bridge_relay.rs",
+          "lines": "886-906",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/bridge_relay.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backward compatible deserialization of input message without command fields",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/bridge_relay.rs",
+          "lines": "909-925",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/bridge_relay.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Serialize OutboundMessage with request_id for commandResponse",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/bridge_relay.rs",
+          "lines": "928-949",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/bridge.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Serialize OutboundMessage without request_id for regular chunks",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/bridge_relay.rs",
+          "lines": "952-968",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/bridge.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/bridge_relay.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/bridge_relay.rs",
+      "codelet/tools/src/bridge.rs"
+    ],
+    "totalLinesCovered": 147
+  }
+}

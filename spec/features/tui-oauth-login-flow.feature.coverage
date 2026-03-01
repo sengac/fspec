@@ -1,0 +1,431 @@
+{
+  "scenarios": [
+    {
+      "name": "Codex provider shows OAuth login options when no tokens exist",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "303-349",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-codex providers do not show OAuth login options",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "481-523",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful browser OAuth login flow",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "136-210",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful device auth login flow",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "213-297",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Browser OAuth login times out after 5 minutes",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "422-477",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Escape cancels browser OAuth waiting state",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "356-420",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/oauthModeHandler.ts",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Escape cancels device auth waiting state",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "528-597",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/oauthModeHandler.ts",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex provider shows as configured when OAuth tokens exist",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "601-648",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Retry browser OAuth after error",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "651-716",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/oauthModeHandler.ts",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Go back to provider list after OAuth error",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "719-778",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/oauthModeHandler.ts",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI codex OAuth bindings are importable",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx",
+          "lines": "781-803",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/TuiOauthLoginFlow.integration.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/hooks/useProviderSettingsState.ts",
+      "src/tui/inputHandlers/oauthModeHandler.ts"
+    ],
+    "totalLinesCovered": 1514
+  }
+}

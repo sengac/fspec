@@ -13,6 +13,7 @@ import {
   getProfile,
   getProviderRegistry,
   getProviderRegistryEntry,
+  isOAuthProvider,
   type ProfileConfig,
 } from '../../utils/provider-config';
 import {
@@ -23,6 +24,8 @@ import {
 import {
   modelsListLocalOpenai,
   testProviderConnection,
+  codexOauthGetTokens,
+  codexOauthClearTokens,
 } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
 import type {
@@ -81,6 +84,10 @@ interface UseProviderProfilesReturn {
   toggleProviderExpansion: (providerId: string) => void;
   /** Toggle profile expansion */
   toggleProfileExpansion: (providerId: string, profileName: string) => void;
+  /** Start browser OAuth login for OAuth providers */
+  startBrowserLogin: (providerId: string) => void;
+  /** Disconnect OAuth tokens for OAuth providers */
+  disconnectOauth: (providerId: string) => Promise<void>;
 }
 
 /**
@@ -111,7 +118,7 @@ export function useProviderProfiles(): UseProviderProfilesReturn {
 
         // Get provider credentials/status
         const providerConfig = await getProviderConfig(providerId);
-        const status: ProviderStatus = {
+        let status: ProviderStatus = {
           hasKey: !!providerConfig.apiKey,
           maskedKey: providerConfig.apiKey
             ? maskApiKey(providerConfig.apiKey)
@@ -122,6 +129,24 @@ export function useProviderProfiles(): UseProviderProfilesReturn {
             | 'profile'
             | undefined,
         };
+
+        // Check for OAuth tokens on OAuth providers
+        let hasOAuthTokens = false;
+        if (isOAuthProvider(providerId)) {
+          try {
+            const tokens = codexOauthGetTokens();
+            if (tokens) {
+              hasOAuthTokens = true;
+              status = {
+                hasKey: true,
+                maskedKey: 'OAuth',
+                source: 'config',
+              };
+            }
+          } catch {
+            // OAuth token check failed, continue with normal status
+          }
+        }
 
         // Load profiles for this provider
         const profiles = await loadProviderProfiles(providerId);
@@ -139,6 +164,7 @@ export function useProviderProfiles(): UseProviderProfilesReturn {
           status,
           profiles: profileDisplays,
           isExpanded: false,
+          hasOAuthTokens,
         });
       }
 
@@ -330,6 +356,34 @@ export function useProviderProfiles(): UseProviderProfilesReturn {
     []
   );
 
+  /**
+   * Start browser OAuth login (stub — ProviderSettingsView is legacy;
+   * the active code path uses useProviderSettingsState which implements
+   * the full OAuth flow via codexOauthBrowserLogin)
+   */
+  const startBrowserLogin = useCallback((_providerId: string) => {
+    // Implemented in useProviderSettingsState; this stub exists for
+    // ProviderSettingsView compile-compatibility only.
+    logger.warn('startBrowserLogin called on legacy useProviderProfiles hook');
+  }, []);
+
+  /**
+   * Disconnect OAuth tokens for a provider
+   */
+  const disconnectOauth = useCallback(
+    async (providerId: string): Promise<void> => {
+      try {
+        if (isOAuthProvider(providerId)) {
+          codexOauthClearTokens();
+        }
+        await reload();
+      } catch (err) {
+        logger.error('Failed to disconnect OAuth:', err);
+      }
+    },
+    [reload]
+  );
+
   return {
     state,
     reload,
@@ -342,6 +396,8 @@ export function useProviderProfiles(): UseProviderProfilesReturn {
     testConnection,
     toggleProviderExpansion,
     toggleProfileExpansion,
+    startBrowserLogin,
+    disconnectOauth,
   };
 }
 

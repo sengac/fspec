@@ -331,6 +331,84 @@ export declare function callFspecCommand(
   callback: (arg0: string, arg1: string, arg2: string) => string
 ): string;
 
+/**
+ * Start the browser OAuth login flow.
+ *
+ * Spawns a tokio task that:
+ * 1. Binds the local HTTP server on port 1455
+ * 2. Opens the browser to the authorize URL
+ * 3. Awaits the callback with a 5-minute timeout
+ * 4. Exchanges the authorization code for tokens
+ * 5. Persists tokens to auth.json
+ *
+ * Returns a Promise<NapiCodexTokens> that resolves when the flow completes.
+ *
+ * Rule [0]: codex_oauth_browser_login() is an async NAPI function that spawns
+ * a tokio task to run browser_oauth_login().
+ */
+export declare function codexOauthBrowserLogin(): Promise<NapiCodexTokens>;
+
+/**
+ * Clear stored OAuth tokens from auth.json (disconnect Codex OAuth).
+ *
+ * Removes the `tokens` field from auth.json while preserving any cached
+ * OPENAI_API_KEY. Used by the TUI when the user presses 'd' on the
+ * Codex provider to disconnect their ChatGPT OAuth session.
+ */
+export declare function codexOauthClearTokens(): void;
+
+/**
+ * Phase 2: Poll for device auth completion.
+ *
+ * Polls the device token endpoint at the given interval until the user
+ * authorizes, the code expires, or a terminal error occurs.
+ *
+ * On success: exchanges the authorization code for tokens, extracts
+ * account_id from the JWT, persists to auth.json, and returns NapiCodexTokens.
+ *
+ * Rule [1]: Returns a Promise<NapiCodexTokens> that resolves when polling completes.
+ */
+export declare function codexOauthDeviceLoginPoll(
+  deviceAuthId: string,
+  interval: number
+): Promise<NapiCodexTokens>;
+
+/**
+ * Phase 1: Start device auth flow — request a device code.
+ *
+ * Returns NapiDeviceAuthStartResult with user_code and verification_url
+ * so the TUI can display them immediately. The TUI then calls
+ * codex_oauth_device_login_poll() to wait for the user to authorize.
+ *
+ * Rule [6]: Two-phase design — first returns user_code and verification_url
+ * synchronously, then a separate async function handles the polling.
+ */
+export declare function codexOauthDeviceLoginStart(): Promise<NapiDeviceAuthStartResult>;
+
+/**
+ * Read stored tokens from auth.json.
+ *
+ * Returns NapiCodexTokens if tokens exist, or null if no auth.json is found.
+ * This is a synchronous function — no network calls needed.
+ *
+ * Rule [3]: Synchronous NAPI function that reads auth.json via
+ * read_codex_auth() and returns NapiCodexTokens or null.
+ */
+export declare function codexOauthGetTokens(): NapiCodexTokens | null;
+
+/**
+ * Refresh an access token using a refresh_token.
+ *
+ * Calls refresh_access_token(), extracts account_id from the new JWT,
+ * persists the refreshed tokens to auth.json, and returns NapiCodexTokens.
+ *
+ * Rule [2]: Async NAPI function that calls refresh_access_token() and
+ * returns refreshed NapiCodexTokens.
+ */
+export declare function codexOauthRefreshToken(
+  refreshToken: string
+): Promise<NapiCodexTokens>;
+
 /** PERF-002: Progress information for compaction process */
 export interface CompactionProgress {
   /** Current compaction phase (e.g., "Analyzing anchors", "Generating summary") */
@@ -1004,6 +1082,19 @@ export interface NapiCherryPickResult {
   importedIndices: Array<number>;
 }
 
+/**
+ * Codex OAuth tokens exposed to TypeScript.
+ *
+ * Rule [5]: Maps 1:1 to the Rust CodexTokens struct.
+ * All fields are strings.
+ */
+export interface NapiCodexTokens {
+  idToken: string;
+  accessToken: string;
+  refreshToken: string;
+  accountId: string;
+}
+
 export interface NapiCompactionState {
   summary: string;
   compactedBeforeIndex: number;
@@ -1024,6 +1115,20 @@ export declare function napiComputeEffectiveThinkingLevel(
  * while Rust remains the single source of truth for detection logic.
  */
 export declare function napiDetectThinkingLevel(prompt: string): number;
+
+/**
+ * Result from device auth login start — returned synchronously so the TUI
+ * can display user_code and verification_url immediately.
+ *
+ * Architecture note [3]: Two-phase design avoids the complexity of returning
+ * both a sync result and a promise from a single function.
+ */
+export interface NapiDeviceAuthStartResult {
+  userCode: string;
+  verificationUrl: string;
+  deviceAuthId: string;
+  interval: number;
+}
 
 /** TUI-056: File modification info for turn details */
 export interface NapiFileModification {

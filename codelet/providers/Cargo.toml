@@ -38,6 +38,16 @@ tracing.workspace = true
 # Codex Provider
 keyring.workspace = true
 sha2.workspace = true
+base64 = "0.22"
+rand = "0.8"
+http = "1"
+
+# Browser OAuth HTTP Server (PROV-013)
+hyper = { version = "1", features = ["http1", "server"] }
+hyper-util = { version = "0.1", features = ["tokio", "service"] }
+http-body-util = "0.1"
+bytes = "1"
+open = "5"
 
 # Configuration
 dotenvy.workspace = true
@@ -55,6 +65,7 @@ tokio-test.workspace = true
 codelet-core.workspace = true
 serial_test.workspace = true
 wiremock = "0.6.5"
+base64 = "0.22"
 
 [lints]
 workspace = true

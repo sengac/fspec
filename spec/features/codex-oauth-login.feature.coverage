@@ -1,0 +1,739 @@
+{
+  "scenarios": [
+    {
+      "name": "Browser OAuth login with PKCE completes successfully",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "62-112",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "62-112",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Device auth login for headless environments",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "117-148",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "117-148",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Access token auto-refresh when expired",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "153-196",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Account ID extracted from JWT id_token claims",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "201-228",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Account ID extracted from nested JWT claims",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "233-250",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Account ID extracted from organizations claim as fallback",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "255-270",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuth callback rejects mismatched state parameter",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "275-299",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Browser OAuth times out after 5 minutes",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "304-319",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API requests rewritten to Codex endpoint with OAuth headers",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "324-350",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Existing credentials used without fresh login",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "355-391",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/mod.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PKCE code verifier meets RFC 7636 requirements",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/codex_oauth_test.rs",
+          "lines": "22-57",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/codex/codex_oauth.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/codex_oauth_test.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/codex/codex_oauth.rs",
+      "codelet/providers/src/codex/mod.rs"
+    ],
+    "totalLinesCovered": 937
+  }
+}

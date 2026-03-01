@@ -4124,6 +4124,10 @@ impl SessionManager {
         // PROV-007: Check for profile format (provider:profile/model-id)
         // Profile models use a local server and should NOT be validated against models.dev
         let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
+
+        // PROV-018: Codex models are not in models.dev under 'codex' provider,
+        // so they must bypass registry validation like profile models.
+        let is_codex_model = model.starts_with("codex/");
         
         // Parse model string to extract provider_id and model_id for storage
         // Profile format: "openai:work-vllm/Qwen3-80B" -> provider="openai", model="Qwen3-80B"
@@ -4170,6 +4174,11 @@ impl SessionManager {
             tracing::info!("PROV-007: Profile model detected, using set_model_direct for {}", model);
             provider_manager.set_model_direct(registry_provider, model_part)
                 .map_err(|e| Error::from_reason(format!("Failed to set model: {}", e)))?;
+        } else if is_codex_model {
+            // PROV-018: Codex model: bypass registry (codex is not a models.dev provider)
+            tracing::info!("PROV-018: Codex model detected, using set_model_direct for {}", model);
+            provider_manager.set_model_direct(registry_provider, model_part)
+                .map_err(|e| Error::from_reason(format!("Failed to set codex model: {}", e)))?;
         } else {
             // Cloud model: validate against registry
             provider_manager.select_model(model)
@@ -4282,6 +4291,10 @@ impl SessionManager {
         // PROV-007: Check for profile format (provider:profile/model-id)
         // Profile models use a local server and should NOT be validated against models.dev
         let is_profile_model = model.contains(':') && model.find(':') < model.find('/');
+
+        // PROV-018: Codex models are not in models.dev under 'codex' provider,
+        // so they must bypass registry validation like profile models.
+        let is_codex_model = model.starts_with("codex/");
         
         // Parse model string to extract provider_id and model_id for storage
         // Profile format: "openai:work-vllm/Qwen3-80B" -> provider="openai", model="Qwen3-80B"
@@ -4324,6 +4337,11 @@ impl SessionManager {
             tracing::info!("PROV-007: Profile model detected, skipping registry validation for {}", model);
             codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part))
                 .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?
+        } else if is_codex_model {
+            // PROV-018: Codex model: bypass registry (codex is not a models.dev provider)
+            tracing::info!("PROV-018: Codex model detected, skipping registry validation for {}", model);
+            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part))
+                .map_err(|e| Error::from_reason(format!("Failed to create codex provider manager: {}", e)))?
         } else {
             // Cloud model: use model registry for validation
             let mut pm = codelet_providers::ProviderManager::with_model_support()
@@ -4470,8 +4488,14 @@ impl SessionManager {
             .await
             .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
 
-        provider_manager.select_model(model)
-            .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+        // PROV-018: Codex models bypass registry validation
+        if model.starts_with("codex/") {
+            provider_manager.set_model_direct(registry_provider, model_part)
+                .map_err(|e| Error::from_reason(format!("Failed to set codex model: {}", e)))?;
+        } else {
+            provider_manager.select_model(model)
+                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+        }
 
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
         inner.inject_context_reminders();
@@ -5357,11 +5381,32 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             });
             
             // Set the session context for bridge relay tasks
+            // BRIDGE-017: Create command emitter for fspec command execution via bridge
+            let session_for_command = session.clone();
+            let command_emitter: codelet_tools::CommandEmitter = Arc::new(move |command, args_json, project_root, tool_call_id| {
+                // Check global chunk callback is registered
+                if GLOBAL_CHUNK_CALLBACK.get().is_none() {
+                    tracing::warn!("Cannot emit FspecCommandRequest - no global chunk callback");
+                    return;
+                }
+                
+                let fspec_request = crate::types::FspecRequest {
+                    command,
+                    args_json,
+                    project_root,
+                    tool_call_id,
+                };
+                
+                // Fire-and-forget: emit into the session's broadcast channel
+                session_for_command.handle_output(StreamChunk::fspec_command_request(fspec_request));
+            });
+            
             codelet_tools::set_bridge_session_context(
                 session_id_for_bridge,
                 broadcast_rx_factory,
                 input_injector,
                 Some(control_handler),
+                Some(command_emitter),
             );
             
             // Set the bridge handler that calls handle_bridge_action
@@ -5399,6 +5444,7 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 "openai" => run_with_provider!(&mut inner_session, get_openai, input, bridge_images.clone(), session, &output, thinking_config_value),
                 "gemini" => run_with_provider!(&mut inner_session, get_gemini, input, bridge_images.clone(), session, &output, thinking_config_value),
                 "zai" => run_with_provider!(&mut inner_session, get_zai, input, bridge_images, session, &output, thinking_config_value),
+                "codex" => run_with_provider!(&mut inner_session, get_codex, input, bridge_images.clone(), session, &output, thinking_config_value),
                 _ => {
                     tracing::error!("Unsupported provider: {}", current_provider);
                     Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
@@ -5514,6 +5560,7 @@ async fn watcher_agent_loop(
                 "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
                 "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
                 "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
+                "codex" => run_with_provider!(&mut inner_session, get_codex, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
                 _ => {
                     tracing::error!("Unsupported provider: {}", current_provider);
                     Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
@@ -6442,8 +6489,14 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     tracing::warn!("session_set_model: selecting model_string={}", model_string);
     
     let mut inner = session.inner.lock().await;
-    match inner.provider_manager_mut().select_model(&model_string) {
-        Ok(_) => {
+    // PROV-018: Codex models bypass registry validation (not in models.dev under 'codex')
+    let result = if provider_id == "codex" {
+        inner.provider_manager_mut().set_model_direct(&provider_id, &model_id)
+    } else {
+        inner.provider_manager_mut().select_model(&model_string).map(|_| ())
+    };
+    match result {
+        Ok(()) => {
             tracing::warn!("session_set_model: model set successfully");
             Ok(())
         }

@@ -1,0 +1,793 @@
+{
+  "scenarios": [
+    {
+      "name": "Successful browser OAuth login via NAPI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "97-165",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "97-165",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Browser OAuth login times out",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "171-204",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "171-204",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Device auth login start returns user code and verification URL",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "210-254",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "210-254",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Device auth login poll resolves with tokens after user authorizes",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "260-377",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "260-377",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Device auth polling fails with expired token",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "383-429",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "383-429",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token refresh returns new tokens",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "435-501",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "435-501",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token refresh fails with invalid refresh token",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "507-536",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "507-536",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get tokens returns stored tokens from auth.json",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "542-579",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "542-579",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get tokens returns null when no auth.json exists",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "585-603",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/codex_oauth_napi_test.rs",
+          "lines": "585-603",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/codex_oauth.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/codex_oauth_napi_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/codex_oauth.rs"
+    ],
+    "totalLinesCovered": 1468
+  }
+}

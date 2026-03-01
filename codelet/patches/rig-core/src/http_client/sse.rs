@@ -19,7 +19,6 @@ use futures::{future::LocalBoxFuture, stream::LocalBoxStream};
 use futures_timer::Delay;
 use http::Response;
 use http::{HeaderName, HeaderValue, Request, StatusCode};
-use mime_guess::mime;
 use pin_project_lite::pin_project;
 
 use crate::{
@@ -286,28 +285,8 @@ fn check_response<T>(response: Response<T>) -> Result<Response<T>, super::Error>
             return Err(super::Error::InvalidStatusCode(status));
         }
     }
-    let content_type =
-        if let Some(content_type) = response.headers().get(&reqwest::header::CONTENT_TYPE) {
-            content_type
-        } else {
-            return Err(super::Error::InvalidContentType(HeaderValue::from_static(
-                "",
-            )));
-        };
-    if content_type
-        .to_str()
-        .map_err(|_| ())
-        .and_then(|s| s.parse::<mime::Mime>().map_err(|_| ()))
-        .map(|mime_type| {
-            matches!(
-                (mime_type.type_(), mime_type.subtype()),
-                (mime::TEXT, mime::EVENT_STREAM)
-            )
-        })
-        .unwrap_or(false)
-    {
-        Ok(response)
-    } else {
-        Err(super::Error::InvalidContentType(content_type.clone()))
-    }
+    // Don't reject based on Content-Type. Some providers (e.g. OpenAI Codex)
+    // return responses without a Content-Type header or with a non-standard one.
+    // The eventsource parser will handle the byte stream regardless.
+    Ok(response)
 }

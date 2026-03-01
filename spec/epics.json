@@ -324,7 +324,11 @@
         "BRIDGE-004",
         "BRIDGE-005",
         "BRIDGE-009",
-        "BRIDGE-013"
+        "BRIDGE-013",
+        "BRIDGE-015",
+        "BRIDGE-016",
+        "BRIDGE-017",
+        "BRIDGE-018"
       ]
     },
     "gitoxide-integration": {
@@ -358,6 +362,21 @@
         "GIT-038",
         "BUG-098",
         "BUG-099"
+      ]
+    },
+    "codex-oauth": {
+      "id": "codex-oauth",
+      "title": "Codex OAuth Integration",
+      "createdAt": "2026-02-27T11:13:07.253Z",
+      "workUnits": [
+        "PROV-013",
+        "PROV-014",
+        "PROV-015",
+        "PROV-016",
+        "PROV-017",
+        "PROV-011",
+        "PROV-018",
+        "PROV-019"
       ]
     }
   }

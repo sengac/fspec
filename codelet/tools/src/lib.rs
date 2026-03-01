@@ -74,7 +74,7 @@ pub use bridge_handler::{
     set_bridge_handler, set_bridge_session_context, remove_bridge_session_context,
     BridgeHandler, BridgeRequest, BroadcastReceiverFactory,
 };
-pub use bridge_relay::{spawn_relay_task, InputInjector, InjectedInput, ImageData, ControlHandler};
+pub use bridge_relay::{spawn_relay_task, InputInjector, InjectedInput, ImageData, ControlHandler, CommandEmitter};
 pub use chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 pub use edit::EditTool;
 pub use fspec::FspecTool;

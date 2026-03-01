@@ -34,6 +34,10 @@
           "description": "Dialog and modal UI components in TUI"
         },
         {
+          "name": "@external-bridge",
+          "description": "External bridge endpoints (relay, Telegram) for connecting fspec to external systems"
+        },
+        {
           "name": "@file-ops",
           "description": "File Operations"
         },
@@ -2450,7 +2454,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-25T05:53:45.940Z",
+    "lastUpdated": "2026-02-27T01:41:07.789Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

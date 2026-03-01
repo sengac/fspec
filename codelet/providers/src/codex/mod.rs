@@ -15,7 +15,28 @@ use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
 use tracing::warn;
 
+/// Type alias for the OpenAI Responses API client parameterized with our RefreshingCodexClient.
+/// The Responses API uses `input` + `instructions` (from preamble) instead of `messages`,
+/// which is required by the Codex endpoint (chatgpt.com/backend-api/codex/responses).
+type CodexResponsesClient = openai::Client<RefreshingCodexClient>;
+
+/// Type alias for the Responses API completion model.
+type CodexResponsesModel = openai::responses_api::ResponsesCompletionModel<RefreshingCodexClient>;
+
 pub mod codex_auth;
+pub mod codex_device_auth;
+pub mod codex_oauth;
+pub mod codex_oauth_server;
+pub mod refreshing_client;
+
+use refreshing_client::RefreshingCodexClient;
+
+/// Base instructions for the Codex Responses API.
+/// This is the exact system prompt from the official Codex CLI
+/// (codex-rs/protocol/src/prompts/base_instructions/default.md).
+/// The Codex backend API **requires** a non-empty `instructions` field;
+/// omitting it returns 400 `{"detail":"Instructions are required"}`.
+pub const CODEX_BASE_INSTRUCTIONS: &str = include_str!("codex_base_instructions.md");
 
 /// GPT-5.1 Codex context window size (272K tokens)
 pub const CONTEXT_WINDOW: usize = 272_000;
@@ -23,12 +44,28 @@ pub const CONTEXT_WINDOW: usize = 272_000;
 /// GPT-5.1 Codex max output tokens (CTX-002) (assumption: same as GPT-4)
 pub const MAX_OUTPUT_TOKENS: usize = 4096;
 
+/// Authentication mode for the Codex provider
+#[derive(Clone, Debug)]
+pub enum CodexAuthMode {
+    /// Legacy mode: uses OpenAI API key from token exchange
+    ApiKey,
+    /// Direct Codex API mode: uses Bearer access_token to chatgpt.com/backend-api/codex
+    OAuthDirect {
+        account_id: String,
+    },
+}
+
 /// Codex Provider for ChatGPT Backend API (using rig with OAuth)
+///
+/// Uses the OpenAI Responses API (not Chat Completions API) because the Codex
+/// endpoint requires the `instructions` field and `input` array format.
+/// The preamble is mapped to `instructions` by rig's Responses API implementation.
 #[derive(Clone)]
 pub struct CodexProvider {
-    completion_model: openai::completion::CompletionModel,
-    rig_client: openai::CompletionsClient,
+    completion_model: CodexResponsesModel,
+    rig_client: CodexResponsesClient,
     model_name: String,
+    auth_mode: CodexAuthMode,
 }
 
 impl std::fmt::Debug for CodexProvider {
@@ -53,22 +90,50 @@ impl CodexProvider {
     /// 2. ~/.codex/auth.json file
     /// 3. $CODEX_HOME/auth.json if CODEX_HOME is set
     ///
-    /// If cached OPENAI_API_KEY exists in auth.json, uses it directly.
-    /// Otherwise, performs OAuth refresh and token exchange.
+    /// Two modes:
+    /// 1. **Direct Codex API** (preferred): If OAuth tokens with account_id exist,
+    ///    route requests to chatgpt.com/backend-api/codex with Bearer token.
+    /// 2. **Legacy token-exchange**: If cached OPENAI_API_KEY exists, use standard
+    ///    OpenAI API. If not, refresh tokens and exchange for API key.
     ///
     /// Model MUST be provided via CODEX_MODEL environment variable.
-    ///
-    /// Note: CodexProvider uses OAuth authentication via codex_auth module,
-    /// which is different from the standard detect_credential_from_env() pattern.
     pub fn new() -> Result<Self, ProviderError> {
-        // Get API key from Codex auth (synchronous version using reqwest blocking)
-        let api_key = codex_auth::get_codex_api_key_sync()
-            .map_err(|e| ProviderError::auth("codex", format!("{e}")))?;
-
         // Model is REQUIRED via CODEX_MODEL env var
         let model_name = std::env::var("CODEX_MODEL").map_err(|_| {
-            ProviderError::config("codex", "Model is required. Set CODEX_MODEL environment variable.")
+            ProviderError::config(
+                "codex",
+                "Model is required. Set CODEX_MODEL environment variable.",
+            )
         })?;
+
+        // Read existing auth data
+        let auth = codex_auth::read_codex_auth()
+            .map_err(|e| ProviderError::auth("codex", format!("{e}")))?;
+
+        if let Some(auth_data) = &auth {
+            // Mode 1: Direct Codex API - use OAuth tokens with access_token + account_id
+            if let Some(tokens) = &auth_data.tokens {
+                if !tokens.access_token.is_empty() && !tokens.account_id.is_empty() {
+                    return Self::from_oauth_tokens(
+                        &tokens.access_token,
+                        &tokens.refresh_token,
+                        &tokens.account_id,
+                        Some(0), // Force immediate refresh — tokens from disk are of unknown age
+                        codex_oauth::CODEX_ISSUER,
+                        &model_name,
+                    );
+                }
+            }
+
+            // Mode 2: Legacy - use cached OpenAI API key
+            if let Some(api_key) = &auth_data.openai_api_key {
+                return Self::from_api_key(api_key, &model_name);
+            }
+        }
+
+        // Fallback: try the full refresh + exchange flow (legacy mode)
+        let api_key = codex_auth::get_codex_api_key_sync()
+            .map_err(|e| ProviderError::auth("codex", format!("{e}")))?;
 
         Self::from_api_key(&api_key, &model_name)
     }
@@ -76,34 +141,105 @@ impl CodexProvider {
     /// Create a new CodexProvider with an explicit API key and model
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
+    /// PROV-016: Uses RefreshingCodexClient in ApiKey pass-through mode.
+    /// Uses the Responses API client so requests go to /responses (rewritten
+    /// to the Codex endpoint) with `instructions` from preamble.
     pub fn from_api_key(api_key: &str, model: &str) -> Result<Self, ProviderError> {
         // Use shared validation helper (REFAC-013)
         validate_api_key_static("codex", api_key)?;
 
-        // Build rig completions client (standard OpenAI Chat Completions API)
-        // Note: We can optionally use custom base URL for ChatGPT backend:
-        // .base_url("https://chatgpt.com/backend-api/codex")
-        // But for now, prefer standard OpenAI API via token exchange
-        let rig_client = openai::CompletionsClient::builder()
+        // PROV-016: Create RefreshingCodexClient in API key pass-through mode
+        let http_client = RefreshingCodexClient::new_api_key();
+
+        // Build rig Responses API client with RefreshingCodexClient as HTTP backend
+        let rig_client = CodexResponsesClient::builder()
             .api_key(api_key)
+            .http_client(http_client)
             .build()
             .map_err(|e| {
                 ProviderError::config("codex", format!("Failed to build Codex client: {e}"))
             })?;
 
-        // Create completion model using the client
-        let completion_model = openai::completion::CompletionModel::new(rig_client.clone(), model);
+        // Create Responses API completion model using the client
+        let completion_model = CodexResponsesModel::new(rig_client.clone(), model);
 
         Ok(Self {
             completion_model,
             rig_client,
             model_name: model.to_string(),
+            auth_mode: CodexAuthMode::ApiKey,
         })
     }
 
-    /// Get the configured rig openai::CompletionsClient
-    pub fn client(&self) -> &openai::CompletionsClient {
+    /// Create a new CodexProvider using OAuth tokens (Direct Codex API mode)
+    ///
+    /// This mode routes requests directly to chatgpt.com/backend-api/codex/responses
+    /// using Bearer access_token and ChatGPT-Account-Id header.
+    ///
+    /// PROV-016: Uses RefreshingCodexClient in OAuth mode for dynamic token refresh,
+    /// URL rewriting, and header injection. No static base_url or headers needed —
+    /// RefreshingCodexClient handles everything dynamically per-request.
+    ///
+    /// Uses the Responses API client so the request body contains `instructions`
+    /// (mapped from preamble) and `input` (mapped from chat history), which is
+    /// the format required by the Codex endpoint.
+    ///
+    /// # Arguments
+    /// * `access_token` - OAuth access token (used as Bearer token)
+    /// * `refresh_token` - OAuth refresh token (used for token refresh)
+    /// * `account_id` - ChatGPT account ID (sent as ChatGPT-Account-Id header)
+    /// * `expires_in_secs` - Token expiry in seconds (None defaults to 3600s)
+    /// * `issuer_url` - OAuth issuer URL for token refresh (e.g., CODEX_ISSUER)
+    /// * `model` - Model name (e.g., "gpt-5.1-codex")
+    pub fn from_oauth_tokens(
+        access_token: &str,
+        refresh_token: &str,
+        account_id: &str,
+        expires_in_secs: Option<u64>,
+        issuer_url: &str,
+        model: &str,
+    ) -> Result<Self, ProviderError> {
+        // PROV-016: Create RefreshingCodexClient in OAuth mode with token refresh support
+        let http_client = RefreshingCodexClient::new_oauth(
+            access_token.to_string(),
+            refresh_token.to_string(),
+            account_id.to_string(),
+            expires_in_secs,
+            issuer_url.to_string(),
+        );
+
+        // Build rig Responses API client with RefreshingCodexClient as HTTP backend.
+        // - .api_key("dummy") is required by rig but RefreshingCodexClient strips and replaces it
+        // - No .base_url() needed — RefreshingCodexClient rewrites URLs dynamically
+        // - No .http_headers() needed — RefreshingCodexClient injects headers dynamically
+        let rig_client = CodexResponsesClient::builder()
+            .api_key("dummy")
+            .http_client(http_client)
+            .build()
+            .map_err(|e| {
+                ProviderError::config("codex", format!("Failed to build Codex OAuth client: {e}"))
+            })?;
+
+        let completion_model = CodexResponsesModel::new(rig_client.clone(), model);
+
+        Ok(Self {
+            completion_model,
+            rig_client,
+            model_name: model.to_string(),
+            auth_mode: CodexAuthMode::OAuthDirect {
+                account_id: account_id.to_string(),
+            },
+        })
+    }
+
+    /// Get the configured rig openai::Client (Responses API)
+    pub fn client(&self) -> &CodexResponsesClient {
         &self.rig_client
+    }
+
+    /// Get the authentication mode (ApiKey or OAuthDirect)
+    pub fn auth_mode(&self) -> &CodexAuthMode {
+        &self.auth_mode
     }
 
     /// Create a rig Agent with all 10 tools configured for this provider (WEB-001: Added WebSearchTool)
@@ -125,7 +261,7 @@ impl CodexProvider {
         session_id: uuid::Uuid,
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
-    ) -> rig::agent::Agent<openai::completion::CompletionModel> {
+    ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WebSearchTool, WriteTool,
@@ -135,10 +271,12 @@ impl CodexProvider {
         // Build agent with all 10 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         // Note: Codex doesn't have Fspec/Bridge tools - simpler toolset for code completion
         // TOOL-014: All tools require session_id for worktree isolation
+        // NOTE: Do NOT set .max_tokens() — the Codex backend API rejects
+        // `max_output_tokens` with 400: {"detail":"Unsupported parameter: max_output_tokens"}
+        // Both codex-cli and opencode omit this parameter for Codex endpoints.
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
-            .max_tokens(MAX_OUTPUT_TOKENS as u64)
             .tool(ReadTool::new(session_id))
             .tool(WriteTool::new(session_id))
             .tool(EditTool::new(session_id))
@@ -150,35 +288,56 @@ impl CodexProvider {
             .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(WebSearchTool::new(session_id)); // WEB-001, TOOL-014: WebSearchTool with session_id
 
-        // Set preamble if provided
-        if let Some(p) = preamble {
-            agent_builder = agent_builder.preamble(p);
-        }
+        // The Codex backend API REQUIRES non-empty `instructions` in every
+        // Responses API request.  The rig layer maps preamble → instructions,
+        // so we must ALWAYS set a preamble.  Use the caller's value if given,
+        // otherwise fall back to the official Codex base instructions.
+        let effective_preamble = preamble.unwrap_or(CODEX_BASE_INSTRUCTIONS);
+        agent_builder = agent_builder.preamble(effective_preamble);
+
+        // The Codex backend API REQUIRES `store: false` in the request body.
+        // Omitting it or setting it to true returns 400:
+        //   {"detail":"Store must be set to false"}
+        // Both the official codex-cli and opencode set this explicitly.
+        agent_builder = agent_builder.additional_params(serde_json::json!({"store": false}));
 
         agent_builder.build()
     }
 
-    /// Convert rig response to our CompletionResponse format
+    /// Convert rig Responses API response to our CompletionResponse format
     fn rig_response_to_completion(
         &self,
-        response: rig::completion::CompletionResponse<openai::completion::CompletionResponse>,
+        response: rig::completion::CompletionResponse<openai::responses_api::CompletionResponse>,
     ) -> Result<CompletionResponse, ProviderError> {
         // Convert rig AssistantContent to our ContentPart format using shared helper (REFAC-013)
         let content_parts = convert_assistant_content(response.choice, "codex")?;
 
-        // Map OpenAI's finish_reason to our StopReason enum (provider-specific)
-        let stop_reason = match response.raw_response.choices.first() {
-            Some(choice) => match choice.finish_reason.as_str() {
-                "tool_calls" => StopReason::ToolUse,
-                "length" => StopReason::MaxTokens,
-                "stop" | "end_turn" => StopReason::EndTurn,
-                other => {
-                    warn!(finish_reason = %other, "Unknown finish_reason from Codex API");
+        // Map Responses API status to our StopReason enum
+        let stop_reason = match response.raw_response.status {
+            openai::responses_api::ResponseStatus::Completed => {
+                // Check if any output contains a function call (tool use)
+                let has_tool_calls = response.raw_response.output.iter().any(|o| {
+                    matches!(o, openai::responses_api::Output::FunctionCall(_))
+                });
+                if has_tool_calls {
+                    StopReason::ToolUse
+                } else {
                     StopReason::EndTurn
                 }
-            },
-            None => {
-                warn!("No choices in Codex response");
+            }
+            openai::responses_api::ResponseStatus::Incomplete => StopReason::MaxTokens,
+            openai::responses_api::ResponseStatus::Failed => {
+                let err_msg = response
+                    .raw_response
+                    .error
+                    .as_ref()
+                    .map(|e| e.message.as_str())
+                    .unwrap_or("unknown error");
+                warn!(error = %err_msg, "Codex API response failed");
+                StopReason::EndTurn
+            }
+            other => {
+                warn!(status = ?other, "Unexpected response status from Codex API");
                 StopReason::EndTurn
             }
         };
@@ -236,13 +395,18 @@ impl LlmProvider for CodexProvider {
         let rig_tools = convert_tools_to_rig(tools);
 
         // Build and send completion request using rig's builder pattern
-        let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
-            .max_tokens(MAX_OUTPUT_TOKENS as u64)
-            .tools(rig_tools);
-
-        if let Some(preamble_text) = preamble {
-            builder = builder.preamble(preamble_text);
-        }
+        // PROV-019: Codex backend API REQUIRES non-empty `instructions`.
+        // Always set preamble — use extracted preamble or fall back to base instructions.
+        let effective_preamble = preamble.unwrap_or_else(|| CODEX_BASE_INSTRUCTIONS.to_string());
+        // NOTE: Do NOT set .max_tokens() — the Codex backend API rejects
+        // `max_output_tokens` with 400: {"detail":"Unsupported parameter: max_output_tokens"}
+        // Both codex-cli and opencode omit this parameter for Codex endpoints.
+        let builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
+            .tools(rig_tools)
+            .preamble(effective_preamble)
+            // Codex backend API REQUIRES `store: false`; omitting it returns 400:
+            //   {"detail":"Store must be set to false"}
+            .additional_params(serde_json::json!({"store": false}));
 
         // Send request and get response
         let response = builder

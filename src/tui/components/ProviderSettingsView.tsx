@@ -16,6 +16,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { useProviderProfiles } from '../hooks/useProviderProfiles';
 import type { ProfileConfig } from '../../utils/provider-config';
+import { isOAuthProvider } from '../../utils/provider-config';
 import type {
   SettingsViewMode,
   ConnectionTestResult,
@@ -489,8 +490,13 @@ export function ProviderSettingsView({
         // 'e' to edit API key (provider) or profile
         if ((input === 'e' || input === 'E') && currentItem) {
           if (currentItem.type === 'provider') {
-            setEditingApiKey('');
-            setMode({ type: 'edit-api-key', providerId: currentItem.providerId });
+            if (isOAuthProvider(currentItem.providerId)) {
+              // OAuth providers use OAuth flow, not API keys
+              profiles.startBrowserLogin(currentItem.providerId);
+            } else {
+              setEditingApiKey('');
+              setMode({ type: 'edit-api-key', providerId: currentItem.providerId });
+            }
           } else if (currentItem.type === 'profile') {
             startEditProfile();
           }
@@ -514,7 +520,13 @@ export function ProviderSettingsView({
             setShowDeleteConfirm(true);
           } else if (currentItem.type === 'provider') {
             const provider = getCurrentProvider();
-            if (provider?.status.hasKey) {
+            if (
+              provider?.hasOAuthTokens &&
+              isOAuthProvider(currentItem.providerId)
+            ) {
+              // OAuth provider — disconnect OAuth tokens
+              void profiles.disconnectOauth(currentItem.providerId);
+            } else if (provider?.status.hasKey) {
               void profiles.removeApiKey(currentItem.providerId);
             }
           }

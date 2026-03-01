@@ -53,12 +53,20 @@ export interface ProfileConfig {
 /**
  * Provider registry entry
  */
+/**
+ * Provider authentication type (credential acquisition strategy)
+ * - 'api-key': Traditional API key authentication
+ * - 'oauth': OAuth 2.0 flow (browser or device auth)
+ */
+export type AuthType = 'api-key' | 'oauth';
+
 export interface ProviderRegistryEntry {
   id: string;
   name: string;
   baseUrl: string;
   envVar: string;
   authMethod: AuthMethod;
+  authType: AuthType;
   requiresApiKey: boolean;
   description: string;
 }
@@ -87,6 +95,7 @@ export const SUPPORTED_PROVIDERS = [
   'azure',
   'voyageai',
   'zai',
+  'codex',
 ] as const;
 
 export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number];
@@ -101,6 +110,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.openai.com/v1',
     envVar: 'OPENAI_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'OpenAI GPT models',
   },
@@ -110,6 +120,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.anthropic.com/v1',
     envVar: 'ANTHROPIC_API_KEY',
     authMethod: 'x-api-key',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Anthropic Claude models',
   },
@@ -119,6 +130,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.cohere.ai/v1',
     envVar: 'COHERE_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Cohere language models',
   },
@@ -128,6 +140,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     envVar: 'GOOGLE_GENERATIVE_AI_API_KEY',
     authMethod: 'query_param',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Google Gemini models',
   },
@@ -137,6 +150,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.mistral.ai/v1',
     envVar: 'MISTRAL_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Mistral AI models',
   },
@@ -146,6 +160,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.x.ai/v1',
     envVar: 'XAI_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'xAI Grok models',
   },
@@ -155,6 +170,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.together.xyz/v1',
     envVar: 'TOGETHER_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Together AI hosted models',
   },
@@ -164,6 +180,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api-inference.huggingface.co/models',
     envVar: 'HUGGINGFACE_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Hugging Face inference API',
   },
@@ -173,6 +190,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://openrouter.ai/api/v1',
     envVar: 'OPENROUTER_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'OpenRouter unified API',
   },
@@ -182,6 +200,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.groq.com/openai/v1',
     envVar: 'GROQ_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Groq fast inference',
   },
@@ -191,6 +210,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'http://localhost:11434',
     envVar: 'OLLAMA_API_KEY',
     authMethod: 'none',
+    authType: 'api-key',
     requiresApiKey: false,
     description: 'Local Ollama models',
   },
@@ -200,6 +220,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.deepseek.com/v1',
     envVar: 'DEEPSEEK_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'DeepSeek models',
   },
@@ -209,6 +230,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.perplexity.ai',
     envVar: 'PERPLEXITY_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Perplexity AI models',
   },
@@ -218,6 +240,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.moonshot.cn/v1',
     envVar: 'MOONSHOT_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Moonshot AI models',
   },
@@ -227,6 +250,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.hyperbolic.xyz/v1',
     envVar: 'HYPERBOLIC_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Hyperbolic AI models',
   },
@@ -236,6 +260,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.mira.network/v1',
     envVar: 'MIRA_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Mira network models',
   },
@@ -245,6 +270,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.galadriel.com/v1',
     envVar: 'GALADRIEL_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Galadriel AI models',
   },
@@ -254,6 +280,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: '', // Requires custom endpoint
     envVar: 'AZURE_OPENAI_API_KEY',
     authMethod: 'x-api-key',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Azure OpenAI Service',
   },
@@ -263,6 +290,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.voyageai.com/v1',
     envVar: 'VOYAGEAI_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description: 'Voyage AI embeddings',
   },
@@ -272,9 +300,20 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.z.ai/api/paas/v4',
     envVar: 'ZAI_API_KEY',
     authMethod: 'bearer',
+    authType: 'api-key',
     requiresApiKey: true,
     description:
       'Z.AI GLM models. Use ZAI_API_KEY for normal API, ZAI_PLAN_API_KEY for coding plan API (https://api.z.ai/api/coding/paas/v4)',
+  },
+  {
+    id: 'codex',
+    name: 'Codex (ChatGPT)',
+    baseUrl: 'https://api.openai.com/v1',
+    envVar: 'CODEX_API_KEY',
+    authMethod: 'bearer',
+    authType: 'oauth',
+    requiresApiKey: false,
+    description: 'OpenAI Codex via ChatGPT Pro/Plus OAuth',
   },
 ];
 
@@ -292,6 +331,14 @@ export function getProviderRegistryEntry(
   providerId: string
 ): ProviderRegistryEntry | undefined {
   return PROVIDER_REGISTRY.find(p => p.id === providerId);
+}
+
+/**
+ * Check if a provider uses OAuth authentication
+ */
+export function isOAuthProvider(providerId: string): boolean {
+  const entry = getProviderRegistryEntry(providerId);
+  return entry?.authType === 'oauth';
 }
 
 /**

@@ -5,7 +5,7 @@
  * Handles provider list, profiles, expansion, and navigation.
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   loadProviderProfiles,
   saveProfile,
@@ -13,6 +13,7 @@ import {
   getProfile,
   getProviderRegistry,
   getProviderRegistryEntry,
+  isOAuthProvider,
   type ProfileConfig,
 } from '../../utils/provider-config';
 import {
@@ -24,6 +25,11 @@ import {
 import {
   modelsListLocalOpenai,
   testProviderConnection,
+  codexOauthGetTokens,
+  codexOauthBrowserLogin,
+  codexOauthDeviceLoginStart,
+  codexOauthDeviceLoginPoll,
+  codexOauthClearTokens,
 } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
 import type {
@@ -63,6 +69,9 @@ export interface UseProviderSettingsStateReturn {
   // API key edit state
   editingApiKey: string;
 
+  // OAuth retry context (needed to know which flow to restart)
+  oauthLastMethod: 'browser' | 'device' | null;
+
   // Actions
   reload: () => Promise<void>;
   setSelectedIndex: (index: number) => void;
@@ -98,6 +107,13 @@ export interface UseProviderSettingsStateReturn {
   getCurrentItem: () => SettingsNavItem | undefined;
   getCurrentProvider: () => ProviderDisplayInfo | undefined;
   getCurrentProfile: () => ProfileDisplayInfo | undefined;
+
+  // OAuth operations
+  startBrowserLogin: (providerId: string) => void;
+  startDeviceLogin: (providerId: string) => void;
+  cancelOauth: () => void;
+  retryOauth: () => void;
+  disconnectOauth: (providerId: string) => Promise<void>;
 }
 
 /**
@@ -127,6 +143,13 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
   // API key edit state
   const [editingApiKey, setEditingApiKey] = useState('');
 
+  // OAuth retry context (not used for rendering — refs avoid unnecessary re-renders)
+  const oauthLastMethodRef = useRef<'browser' | 'device' | null>(null);
+  const oauthProviderIdRef = useRef<string | null>(null);
+
+  // Generation counter to invalidate stale OAuth promises after cancel
+  const oauthGeneration = useRef(0);
+
   /**
    * Load all providers and their profiles
    */
@@ -145,7 +168,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
 
         // Get provider credentials/status
         const providerConfig = await getProviderConfig(providerId);
-        const status: ProviderDisplayStatus = {
+        let status: ProviderDisplayStatus = {
           hasKey: !!providerConfig.apiKey,
           maskedKey: providerConfig.apiKey
             ? maskApiKey(providerConfig.apiKey)
@@ -156,6 +179,24 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
             | 'dotenv'
             | undefined,
         };
+
+        // Check for OAuth tokens on OAuth providers
+        let hasOAuthTokens = false;
+        if (isOAuthProvider(providerId)) {
+          try {
+            const tokens = codexOauthGetTokens();
+            if (tokens) {
+              hasOAuthTokens = true;
+              status = {
+                hasKey: true,
+                maskedKey: 'OAuth',
+                source: 'ChatGPT',
+              };
+            }
+          } catch {
+            // OAuth token check failed, continue with normal status
+          }
+        }
 
         // Load profiles for this provider
         const profiles = await loadProviderProfiles(providerId);
@@ -172,6 +213,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
           status,
           profiles: profileInfos,
           isExpanded: false,
+          hasOAuthTokens,
         });
       }
 
@@ -214,6 +256,22 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
 
       // Add profiles if expanded
       if (provider.isExpanded) {
+        // Add OAuth login options for OAuth providers when no tokens exist
+        if (isOAuthProvider(provider.id) && !provider.hasOAuthTokens) {
+          items.push({
+            type: 'oauth-login',
+            providerId: provider.id,
+            method: 'browser',
+            label: 'Login with ChatGPT (browser)',
+          });
+          items.push({
+            type: 'oauth-login',
+            providerId: provider.id,
+            method: 'headless',
+            label: 'Login with ChatGPT (headless)',
+          });
+        }
+
         for (const profile of provider.profiles) {
           items.push({
             type: 'profile',
@@ -221,11 +279,13 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
             profileName: profile.name,
           });
         }
-        // Add "Create Profile" option
-        items.push({
-          type: 'add-profile',
-          providerId: provider.id,
-        });
+        // Add "Create Profile" option (not for OAuth providers — they use OAuth, not profiles)
+        if (!isOAuthProvider(provider.id)) {
+          items.push({
+            type: 'add-profile',
+            providerId: provider.id,
+          });
+        }
       }
     }
 
@@ -381,6 +441,130 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
     return provider?.profiles.find(pr => pr.name === item.profileName);
   }, [navItems, selectedIndex, providers]);
 
+  /**
+   * Reset OAuth retry context
+   */
+  const resetOauthState = useCallback(() => {
+    oauthLastMethodRef.current = null;
+    oauthProviderIdRef.current = null;
+  }, []);
+
+  /**
+   * Start browser OAuth login flow
+   */
+  const startBrowserLogin = useCallback(
+    (providerId: string) => {
+      const thisGeneration = ++oauthGeneration.current;
+      oauthLastMethodRef.current = 'browser';
+      oauthProviderIdRef.current = providerId;
+      setMode({ type: 'oauth-browser-waiting', providerId });
+
+      void (async () => {
+        try {
+          await codexOauthBrowserLogin();
+          if (oauthGeneration.current !== thisGeneration) {
+            return;
+          }
+          setMode({ type: 'oauth-success', providerId });
+          await reload();
+        } catch (err) {
+          if (oauthGeneration.current !== thisGeneration) {
+            return;
+          }
+          const errorMsg =
+            err instanceof Error ? err.message : 'OAuth login failed';
+          setMode({ type: 'oauth-error', providerId, error: errorMsg });
+        }
+      })();
+    },
+    [reload]
+  );
+
+  /**
+   * Start device auth login flow
+   */
+  const startDeviceLogin = useCallback(
+    (providerId: string) => {
+      const thisGeneration = ++oauthGeneration.current;
+      oauthLastMethodRef.current = 'device';
+      oauthProviderIdRef.current = providerId;
+
+      void (async () => {
+        try {
+          const result = await codexOauthDeviceLoginStart();
+          if (oauthGeneration.current !== thisGeneration) {
+            return;
+          }
+          setMode({
+            type: 'oauth-device-waiting',
+            providerId,
+            userCode: result.userCode,
+            verificationUrl: result.verificationUrl,
+          });
+
+          // Start polling
+          await codexOauthDeviceLoginPoll(result.deviceAuthId, result.interval);
+          if (oauthGeneration.current !== thisGeneration) {
+            return;
+          }
+          setMode({ type: 'oauth-success', providerId });
+          await reload();
+        } catch (err) {
+          if (oauthGeneration.current !== thisGeneration) {
+            return;
+          }
+          const errorMsg =
+            err instanceof Error ? err.message : 'Device auth failed';
+          setMode({ type: 'oauth-error', providerId, error: errorMsg });
+        }
+      })();
+    },
+    [reload]
+  );
+
+  /**
+   * Cancel OAuth flow
+   */
+  const cancelOauth = useCallback(() => {
+    oauthGeneration.current++; // Invalidate any running OAuth promise
+    resetOauthState();
+    setMode({ type: 'list' });
+  }, [resetOauthState]);
+
+  /**
+   * Retry OAuth flow
+   */
+  const retryOauth = useCallback(() => {
+    const pid = oauthProviderIdRef.current;
+    const method = oauthLastMethodRef.current;
+    if (!pid) {
+      return;
+    }
+    resetOauthState();
+    if (method === 'browser') {
+      startBrowserLogin(pid);
+    } else if (method === 'device') {
+      startDeviceLogin(pid);
+    }
+  }, [resetOauthState, startBrowserLogin, startDeviceLogin]);
+
+  /**
+   * Disconnect OAuth (clear stored tokens)
+   */
+  const disconnectOauth = useCallback(
+    async (providerId: string): Promise<void> => {
+      try {
+        if (isOAuthProvider(providerId)) {
+          codexOauthClearTokens();
+        }
+        await reload();
+      } catch (err) {
+        logger.error('Failed to disconnect OAuth:', err);
+      }
+    },
+    [reload]
+  );
+
   return {
     providers,
     navItems,
@@ -396,6 +580,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
     formFieldIndex,
     isEditingName,
     editingApiKey,
+    oauthLastMethod: oauthLastMethodRef.current,
     reload,
     setSelectedIndex,
     setScrollOffset,
@@ -417,5 +602,10 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
     getCurrentItem,
     getCurrentProvider,
     getCurrentProfile,
+    startBrowserLogin,
+    startDeviceLogin,
+    cancelOauth,
+    retryOauth,
+    disconnectOauth,
   };
 }

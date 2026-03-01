@@ -13,6 +13,7 @@ import {
   handleProfileFormMode,
   handleFilterMode,
   handleListMode,
+  handleOauthMode,
 } from '../inputHandlers';
 
 export interface UseProviderSettingsInputOptions {
@@ -39,6 +40,9 @@ export function useProviderSettingsInput({
       const { mode } = providerSettings;
 
       // Handle each mode in priority order
+      if (handleOauthMode(input, key, providerSettings)) {
+        return;
+      }
       if (handleDeleteConfirmMode(mode, input, key, providerSettings)) {
         return;
       }

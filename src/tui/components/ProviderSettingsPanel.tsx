@@ -18,7 +18,7 @@ import { getProviderRegistryEntry } from '../../utils/provider-config';
 export interface ProviderDisplayStatus {
   hasKey: boolean;
   maskedKey?: string;
-  source?: 'env' | 'file' | 'dotenv';
+  source?: 'env' | 'file' | 'dotenv' | 'ChatGPT';
 }
 
 /**
@@ -38,6 +38,8 @@ export interface ProviderDisplayInfo {
   status: ProviderDisplayStatus;
   profiles: ProfileDisplayInfo[];
   isExpanded: boolean;
+  /** Whether this provider has existing OAuth tokens */
+  hasOAuthTokens?: boolean;
 }
 
 /**
@@ -65,7 +67,26 @@ export type PanelMode =
       activeField: number;
       isEditingName: boolean;
     }
-  | { type: 'delete-confirm'; providerId: string; profileName: string };
+  | { type: 'delete-confirm'; providerId: string; profileName: string }
+  | {
+      type: 'oauth-browser-waiting';
+      providerId: string;
+    }
+  | {
+      type: 'oauth-device-waiting';
+      providerId: string;
+      userCode: string;
+      verificationUrl: string;
+    }
+  | {
+      type: 'oauth-success';
+      providerId: string;
+    }
+  | {
+      type: 'oauth-error';
+      providerId: string;
+      error: string;
+    };
 
 /**
  * Navigation item for flat list
@@ -73,7 +94,13 @@ export type PanelMode =
 export type SettingsNavItem =
   | { type: 'provider'; providerId: string; name: string }
   | { type: 'profile'; providerId: string; profileName: string }
-  | { type: 'add-profile'; providerId: string };
+  | { type: 'add-profile'; providerId: string }
+  | {
+      type: 'oauth-login';
+      providerId: string;
+      method: 'browser' | 'headless';
+      label: string;
+    };
 
 /**
  * Props for ProviderSettingsPanel
@@ -257,6 +284,111 @@ export function ProviderSettingsPanel({
     );
   }
 
+  // Render OAuth browser waiting
+  if (mode.type === 'oauth-browser-waiting') {
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="yellow">
+            Codex OAuth Login
+          </Text>
+          <Box marginTop={1}>
+            <Text color="cyan">⠋ </Text>
+            <Text>Waiting for authorization...</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Press Esc to cancel</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render OAuth device waiting
+  if (mode.type === 'oauth-device-waiting') {
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="yellow">
+            Codex Device Login
+          </Text>
+          <Box marginTop={1}>
+            <Text>Your code: </Text>
+            <Text bold color="cyan">
+              {mode.userCode}
+            </Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text>Visit: </Text>
+            <Text color="blue">{mode.verificationUrl}</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text color="cyan">⠋ </Text>
+            <Text>Enter the code on another device</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Press Esc to cancel</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render OAuth success
+  if (mode.type === 'oauth-success') {
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="green">
+            ✓ Connected to ChatGPT
+          </Text>
+          <Box marginTop={1}>
+            <Text dimColor>Press Enter or Esc to continue</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render OAuth error
+  if (mode.type === 'oauth-error') {
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="red">
+            OAuth Login error
+          </Text>
+          <Box marginTop={1}>
+            <Text color="red">{mode.error}</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Press Enter to retry | Esc to go back</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
   // Render list mode
   return (
     <Box
@@ -393,6 +525,25 @@ export function ProviderSettingsPanel({
                               {testResult.message}
                             </Text>
                           )}
+                      </Text>
+                    </Box>
+                  );
+                }
+
+                // oauth-login
+                if (item.type === 'oauth-login') {
+                  return (
+                    <Box
+                      key={`oauth-${item.providerId}-${item.method}`}
+                      width={contentWidth}
+                    >
+                      <Text
+                        backgroundColor={isSelected ? 'magenta' : undefined}
+                        color={isSelected ? 'black' : 'magenta'}
+                        wrap="truncate"
+                      >
+                        {isSelected ? '> ' : '  '}
+                        {'    '}🔑 {item.label}
                       </Text>
                     </Box>
                   );

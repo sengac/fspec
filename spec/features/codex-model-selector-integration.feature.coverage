@@ -1,0 +1,111 @@
+{
+  "scenarios": [
+    {
+      "name": "Codex models appear in model selector when OAuth tokens exist",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
+          "lines": "193-218",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No Codex section when OAuth tokens absent",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
+          "lines": "228-253",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both OpenAI API key and Codex OAuth show separate sections",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
+          "lines": "255-316",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selecting a Codex model creates session with codex provider",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
+          "lines": "318-348",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Persisted Codex model restored on startup",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
+          "lines": "350-385",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/codexModelInitialization.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/services/modelInitializationService.ts"
+    ],
+    "totalLinesCovered": 196
+  }
+}

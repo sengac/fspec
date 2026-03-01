@@ -98,6 +98,13 @@ export async function selectModel(
           selection.providerId,
           selection.modelId
         );
+      } else if (selection.providerId === 'codex') {
+        // PROV-018: Codex models bypass registry (not in models.dev under 'codex')
+        await sessionSetModelProfile(
+          sessionId,
+          selection.providerId,
+          selection.modelId
+        );
       } else {
         // Cloud provider: use sessionSetModel (uses registry validation)
         await sessionSetModel(

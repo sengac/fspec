@@ -333,11 +333,11 @@ impl ProviderManager {
             "openai" => Ok(ProviderType::OpenAI),
             "google" => Ok(ProviderType::Gemini),
             "zai" | "z-ai" => Ok(ProviderType::ZAI),
-            // Codex uses OAuth flow, not a models.dev provider
+            "codex" => Ok(ProviderType::Codex),
             _ => Err(ProviderError::config(
                 "manager",
                 format!(
-                    "Provider '{provider_id}' is not supported. Supported providers: anthropic, openai, google, zai"
+                    "Provider '{provider_id}' is not supported. Supported providers: anthropic, openai, google, zai, codex"
                 ),
             )),
         }
@@ -413,15 +413,25 @@ impl ProviderManager {
     }
 
     /// Get Codex provider (if selected)
+    ///
+    /// PROV-018: Sets CODEX_MODEL env var from the selected model so that
+    /// CodexProvider::new() can read it. This bridges the TUI model selection
+    /// (which stores the model in ProviderManager state) with the CodexProvider
+    /// (which reads from the CODEX_MODEL env var).
     pub fn get_codex(&self) -> Result<CodexProvider, ProviderError> {
-        if self.current_provider == ProviderType::Codex {
-            CodexProvider::new()
-        } else {
-            Err(ProviderError::config(
+        if self.current_provider != ProviderType::Codex {
+            return Err(ProviderError::config(
                 "manager",
                 "Current provider is not Codex",
-            ))
+            ));
         }
+
+        // Set CODEX_MODEL from selected model for CodexProvider::new() to read
+        if let Some(model_id) = self.selected_model_id() {
+            std::env::set_var("CODEX_MODEL", &model_id);
+        }
+
+        CodexProvider::new()
     }
 
     /// Get Gemini provider (if selected)

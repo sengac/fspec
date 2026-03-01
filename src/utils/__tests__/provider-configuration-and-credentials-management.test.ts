@@ -328,12 +328,12 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     });
   });
 
-  describe('Scenario: All 19 rig providers are registered', () => {
-    it('should have exactly 19 providers in registry', async () => {
+  describe('Scenario: All 21 providers are registered', () => {
+    it('should have exactly 21 providers in registry', async () => {
       // @step When I query the provider registry
       const registry = getProviderRegistry();
 
-      // @step Then I should see exactly 19 providers:
+      // @step Then I should see exactly 21 providers:
       const expectedProviders = [
         'openai',
         'anthropic',
@@ -355,9 +355,10 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
         'azure',
         'voyageai',
         'zai',
+        'codex',
       ];
 
-      expect(registry.length).toBe(20);
+      expect(registry.length).toBe(21);
       for (const provider of expectedProviders) {
         expect(registry).toContain(provider);
       }
@@ -448,7 +449,7 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
   });
 
   describe('Scenario: Navigate to Settings view with Tab key', () => {
-    it('should show all 19 providers with status', async () => {
+    it('should show all 21 providers with status', async () => {
       // @step Given I am in the model selection screen
       // (user context, no setup needed)
 
@@ -459,8 +460,8 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
       // UI state tested in component tests
       const registry = getProviderRegistry();
 
-      // @step And I should see a list of all 20 providers
-      expect(registry).toHaveLength(20);
+      // @step And I should see a list of all 21 providers
+      expect(registry).toHaveLength(21);
 
       // @step And each provider should show its configuration status
       // This tests that we can get config for each provider
@@ -630,13 +631,14 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
 // ============================================
 
 describe('Provider Registry Constants', () => {
-  it('SUPPORTED_PROVIDERS should contain all 20 providers', () => {
-    expect(SUPPORTED_PROVIDERS).toHaveLength(20);
+  it('SUPPORTED_PROVIDERS should contain all 21 providers', () => {
+    expect(SUPPORTED_PROVIDERS).toHaveLength(21);
     expect(SUPPORTED_PROVIDERS).toContain('anthropic');
     expect(SUPPORTED_PROVIDERS).toContain('openai');
     expect(SUPPORTED_PROVIDERS).toContain('gemini');
     expect(SUPPORTED_PROVIDERS).toContain('ollama');
     expect(SUPPORTED_PROVIDERS).toContain('azure');
     expect(SUPPORTED_PROVIDERS).toContain('zai');
+    expect(SUPPORTED_PROVIDERS).toContain('codex');
   });
 });

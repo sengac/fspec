@@ -61,6 +61,9 @@ pub struct OutboundMessage {
     pub msg_type: String,
     pub session_id: String,
     pub data: serde_json::Value,
+    /// BRIDGE-016: Optional request_id for commandResponse correlation
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub request_id: Option<String>,
 }
 
 impl BridgeConnection {
@@ -571,6 +574,7 @@ mod tests {
                     "type": "text",
                     "text": "I can help with that"
                 }),
+                request_id: None,
             };
 
             // @step Then "ws://localhost:8080" should receive a JSON message with:
@@ -611,6 +615,9 @@ mod tests {
                 images: None, // BRIDGE-007: No images in this test
                 action: None, // BRIDGE-008: No action for input messages
                 response: None, // BRIDGE-014: No response for input messages
+                request_id: None, // BRIDGE-016: No command fields for input messages
+                command: None,
+                args_json: None,
             };
 
             // @step Then the agent should receive "build the app" as user input
@@ -658,12 +665,14 @@ mod tests {
                         msg_type: "chunk".to_string(),
                         session_id: session_id.to_string(),
                         data: json!({"type": "text", "text": "Message 1"}),
+                        request_id: None,
                     })
                     .expect("Should buffer message 1");
                     conn.buffer_message(OutboundMessage {
                         msg_type: "chunk".to_string(),
                         session_id: session_id.to_string(),
                         data: json!({"type": "text", "text": "Message 2"}),
+                        request_id: None,
                     })
                     .expect("Should buffer message 2");
                 }
@@ -729,6 +738,7 @@ mod tests {
                         msg_type: "chunk".to_string(),
                         session_id: session_id.to_string(),
                         data: json!({"type": "text", "text": "This message should cause overflow".repeat(10)}),
+                        request_id: None,
                     })
                 } else {
                     Ok(())

@@ -1,0 +1,527 @@
+{
+  "scenarios": [
+    {
+      "name": "Successful authentication with relay server",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "27-67",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentication failure with invalid API key",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "69-109",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing required configuration",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "111-129",
+          "implMappings": [
+            {
+              "file": "bridge/relay-message-translation.ts",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codelet BridgeTool establishes session connection",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "131-170",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple concurrent codelet sessions",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "172-221",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Translate relay input message to fspec format",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "223-258",
+          "implMappings": [
+            {
+              "file": "bridge/relay-message-translation.ts",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Translate relay sessionControl to fspec control format",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "260-292",
+          "implMappings": [
+            {
+              "file": "bridge/relay-message-translation.ts",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Drop messages for unknown session",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "294-335",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Forward StreamChunk from codelet to relay without transformation",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "420-465",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                262,
+                263,
+                264,
+                265,
+                266,
+                267
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reconnect to relay after connection drops",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "467-504",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Send periodic heartbeat to relay",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "506-536",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute fspec command via StreamChunk pipeline and return result",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "432-490",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Command execution for unknown fspec command via StreamChunk pipeline",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "492-539",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Command execution timeout via StreamChunk pipeline",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "541-583",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecCommandResult chunks are intercepted and not forwarded as regular chunks",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-endpoint.test.ts",
+          "lines": "585-616",
+          "implMappings": [
+            {
+              "file": "bridge/relay-endpoint.ts",
+              "lines": [
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
+    "coveragePercent": 100,
+    "testFiles": [
+      "bridge/__tests__/relay-endpoint.test.ts"
+    ],
+    "implFiles": [
+      "bridge/relay-endpoint.ts",
+      "bridge/relay-message-translation.ts"
+    ],
+    "totalLinesCovered": 869
+  }
+}

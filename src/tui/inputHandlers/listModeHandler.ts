@@ -15,6 +15,7 @@ import {
   initializeNewProfile,
   initializeEditProfile,
 } from '../utils/providerSettingsHelpers';
+import { isOAuthProvider } from '../../utils/provider-config';
 
 export interface ListModeHandlerOptions {
   input: string;
@@ -118,6 +119,12 @@ function handleActions(
   if (key.return) {
     if (currentItem.type === 'provider') {
       providerSettings.toggleProviderExpansion(currentItem.providerId);
+    } else if (currentItem.type === 'oauth-login') {
+      if (currentItem.method === 'browser') {
+        providerSettings.startBrowserLogin(currentItem.providerId);
+      } else if (currentItem.method === 'headless') {
+        providerSettings.startDeviceLogin(currentItem.providerId);
+      }
     } else if (currentItem.type === 'profile' && currentProfile) {
       initializeEditProfile(
         providerSettings,
@@ -134,11 +141,16 @@ function handleActions(
   // 'e' to edit API key (provider) or profile
   if (input === 'e' || input === 'E') {
     if (currentItem.type === 'provider') {
-      providerSettings.setEditingApiKey('');
-      providerSettings.setMode({
-        type: 'edit-api-key',
-        providerId: currentItem.providerId,
-      });
+      if (isOAuthProvider(currentItem.providerId)) {
+        // OAuth providers use OAuth flow, not API keys
+        providerSettings.startBrowserLogin(currentItem.providerId);
+      } else {
+        providerSettings.setEditingApiKey('');
+        providerSettings.setMode({
+          type: 'edit-api-key',
+          providerId: currentItem.providerId,
+        });
+      }
     } else if (currentItem.type === 'profile' && currentProfile) {
       initializeEditProfile(
         providerSettings,
@@ -164,6 +176,13 @@ function handleActions(
         providerId: currentItem.providerId,
         profileName: currentItem.profileName,
       });
+    } else if (
+      currentItem.type === 'provider' &&
+      currentProvider?.hasOAuthTokens &&
+      isOAuthProvider(currentItem.providerId)
+    ) {
+      // OAuth provider — disconnect OAuth tokens instead of removing API key
+      void providerSettings.disconnectOauth(currentItem.providerId);
     } else if (
       currentItem.type === 'provider' &&
       currentProvider?.status.hasKey

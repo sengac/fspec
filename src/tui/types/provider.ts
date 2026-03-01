@@ -129,6 +129,8 @@ export interface ProviderWithProfiles {
   status: ProviderStatus;
   profiles: ProfileDisplay[];
   isExpanded: boolean;
+  /** Whether this provider has existing OAuth tokens */
+  hasOAuthTokens?: boolean;
 }
 
 /**

@@ -19,6 +19,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@codelet` | Codelet AI agent integration |
 | `@demos` | Demo script functionality and video recording infrastructure |
 | `@dialog` | Dialog and modal UI components in TUI |
+| `@external-bridge` | External bridge endpoints (relay, Telegram) for connecting fspec to external systems |
 | `@file-ops` | File Operations |
 | `@formatter` | Formatting & Prettification |
 | `@generator` | Template Generation |
@@ -854,7 +855,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-25T05:53:45.940Z_
+_Last updated: 2026-02-27T01:41:07.789Z_
 
 **Update Command**: `fspec tag-stats`
 

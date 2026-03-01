@@ -41,6 +41,8 @@ pub struct CompletionRequest {
     /// The model name
     pub model: String,
     /// Instructions (also referred to as preamble, although in other APIs this would be the "system prompt")
+    /// NOTE: The Codex backend API requires this field to be present and non-empty.
+    /// When targeting the Codex endpoint, callers MUST set a preamble so this is Some(...).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub instructions: Option<String>,
     /// The maximum number of output tokens.

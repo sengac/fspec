@@ -38,7 +38,7 @@ mod integration_tests {
                 // Mock input injector for tests
             });
         
-        set_bridge_session_context(session_id, broadcast_rx_factory, input_injector, None);
+        set_bridge_session_context(session_id, broadcast_rx_factory, input_injector, None, None);
     }
     
     /// Clean up session context after test
@@ -341,6 +341,7 @@ mod integration_tests {
                         "type": "text",
                         "text": "I can help with that"
                     }),
+                    request_id: None,
                 };
                 // In a real implementation, this would be sent via WebSocket
                 conn.buffer_message(msg).expect("Buffer should work");
@@ -443,6 +444,7 @@ mod integration_tests {
                     msg_type: "chunk".to_string(),
                     session_id: session_id.to_string(),
                     data: json!({"type": "text", "text": "Message 1"}),
+                    request_id: None,
                 })
                 .expect("Buffer 1 should work");
 
@@ -450,6 +452,7 @@ mod integration_tests {
                     msg_type: "chunk".to_string(),
                     session_id: session_id.to_string(),
                     data: json!({"type": "text", "text": "Message 2"}),
+                    request_id: None,
                 })
                 .expect("Buffer 2 should work");
             }
@@ -529,6 +532,7 @@ mod integration_tests {
                     msg_type: "chunk".to_string(),
                     session_id: session_id.to_string(),
                     data: json!({"type": "text", "text": "buffered"}),
+                    request_id: None,
                 })
                 .expect("Buffer should work");
             }
@@ -585,6 +589,7 @@ mod integration_tests {
                     msg_type: "chunk".to_string(),
                     session_id: session_id.to_string(),
                     data: json!({"type": "text", "text": "This message causes overflow".repeat(10)}),
+                    request_id: None,
                 })
             } else {
                 Ok(())
