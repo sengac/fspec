@@ -242,16 +242,16 @@ impl CodexProvider {
         &self.auth_mode
     }
 
-    /// Create a rig Agent with all 10 tools configured for this provider (WEB-001: Added WebSearchTool)
+    /// Create a rig Agent with all tools configured for this provider using Codex-native facades (TOOL-015)
     ///
     /// This method encapsulates all Codex-specific configuration:
     /// - Model name (GPT or compatible)
-    /// - Max tokens (4096)
-    /// - All 10 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, AstGrepRefactor, WebSearchTool)
+    /// - Codex-native tool names (shell_command, read_file, list_dir, grep_files) via facade wrappers
+    /// - Non-Codex tools kept with standard naming (Write, Edit, Glob, AstGrep, AstGrepRefactor)
+    /// - Fspec/Bridge tools reusing OpenAI facades
     ///
     /// # Arguments
-    /// * `session_id` - Session UUID for tool handler lookup (TOOL-012). Currently unused for Codex
-    ///   as it doesn't have Fspec/Bridge tools, but included for API consistency across providers.
+    /// * `session_id` - Session UUID for tool handler lookup (TOOL-012, TOOL-014)
     /// * `preamble` - Optional system prompt/preamble for the agent
     /// * `_thinking_config` - Optional thinking configuration JSON (TOOL-010, currently unused for Codex)
     ///
@@ -263,30 +263,61 @@ impl CodexProvider {
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-            ReadTool, WebSearchTool, WriteTool,
+            AstGrepRefactorTool, AstGrepTool, EditTool, GlobTool, WebSearchTool, WriteTool,
+        };
+        use codelet_tools::facade::{
+            BashToolFacadeWrapper, CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
+            CodexShellCommandFacade, FileToolFacadeWrapper, LsToolFacadeWrapper,
+            SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
         };
         use rig::client::CompletionClient;
+        use std::sync::Arc;
 
-        // Build agent with all 10 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
-        // Note: Codex doesn't have Fspec/Bridge tools - simpler toolset for code completion
-        // TOOL-014: All tools require session_id for worktree isolation
+        // Create Codex-native tool facades (TOOL-015)
+        // These provide Codex-native tool names and schemas that GPT-5.1-codex was trained on
+
+        // @step Given a CodexProvider with create_rig_agent configured
+        // @step When the agent is built with session_id
+
+        // @step Then shell_command uses BashToolFacadeWrapper with CodexShellCommandFacade
+        // Shell command facade: Bash → shell_command
+        let shell_command = BashToolFacadeWrapper::new(Arc::new(CodexShellCommandFacade), session_id);
+
+        // @step And read_file uses FileToolFacadeWrapper with CodexReadFileFacade
+        // File read facade: Read → read_file
+        let read_file = FileToolFacadeWrapper::new(Arc::new(CodexReadFileFacade), session_id);
+
+        // @step And list_dir uses LsToolFacadeWrapper with CodexListDirFacade
+        // Directory listing facade: Ls → list_dir
+        let list_dir = LsToolFacadeWrapper::new(Arc::new(CodexListDirFacade), session_id);
+
+        // @step And grep_files uses SearchToolFacadeWrapper with CodexGrepFilesFacade
+        // Grep facade: Grep → grep_files
+        let grep_files = SearchToolFacadeWrapper::new(Arc::new(CodexGrepFilesFacade), session_id);
+
+        // Build agent with Codex-native tools using rig's builder pattern
+        // TOOL-015: Uses FacadeToolWrapper for tools with Codex equivalents
         // NOTE: Do NOT set .max_tokens() — the Codex backend API rejects
         // `max_output_tokens` with 400: {"detail":"Unsupported parameter: max_output_tokens"}
-        // Both codex-cli and opencode omit this parameter for Codex endpoints.
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
-            .tool(ReadTool::new(session_id))
+            // Codex-native facade tools
+            .tool(shell_command)   // Codex-native shell_command
+            .tool(read_file)       // Codex-native read_file
+            .tool(list_dir)        // Codex-native list_dir
+            .tool(grep_files)      // Codex-native grep_files
+            // @step And Write, Edit, Glob, AstGrep, AstGrepRefactor remain as direct tool registrations
+            // Tools without Codex equivalent - keep standard naming
             .tool(WriteTool::new(session_id))
             .tool(EditTool::new(session_id))
-            .tool(BashTool::new(session_id))
-            .tool(GrepTool::new(session_id))
             .tool(GlobTool::new(session_id))
-            .tool(LsTool::new(session_id))
-            .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
-            .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
-            .tool(WebSearchTool::new(session_id)); // WEB-001, TOOL-014: WebSearchTool with session_id
+            .tool(AstGrepTool::new(session_id))
+            .tool(AstGrepRefactorTool::new(session_id))
+            .tool(WebSearchTool::new(session_id))
+            // Fspec/Bridge tools reusing OpenAI facades (TOOL-012)
+            .tool(codex_fspec_tool(session_id))
+            .tool(codex_bridge_tool(session_id));
 
         // The Codex backend API REQUIRES non-empty `instructions` in every
         // Responses API request.  The rig layer maps preamble → instructions,

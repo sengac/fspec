@@ -255,7 +255,7 @@ impl Tool for BridgeTool {
                             {
                                 "type": "object",
                                 "properties": {
-                                    "type": { "const": "connect" },
+                                    "type": { "type": "string", "const": "connect" },
                                     "url": {
                                         "type": "string",
                                         "description": "WebSocket URL to connect to (e.g., ws://localhost:8080)"
@@ -266,7 +266,7 @@ impl Tool for BridgeTool {
                             {
                                 "type": "object",
                                 "properties": {
-                                    "type": { "const": "disconnect" },
+                                    "type": { "type": "string", "const": "disconnect" },
                                     "url": {
                                         "type": "string",
                                         "description": "WebSocket URL to disconnect from"
@@ -277,7 +277,7 @@ impl Tool for BridgeTool {
                             {
                                 "type": "object",
                                 "properties": {
-                                    "type": { "const": "list" }
+                                    "type": { "type": "string", "const": "list" }
                                 },
                                 "required": ["type"]
                             }

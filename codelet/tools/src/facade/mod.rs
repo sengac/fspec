@@ -31,6 +31,7 @@
 mod bash;
 mod bridge_facade;
 mod bridge_registration;
+mod codex;
 mod file_ops;
 mod fspec_facade;
 mod fspec_registration;
@@ -51,20 +52,24 @@ pub use bridge_facade::{
     InternalBridgeParams, OpenAIBridgeFacade, ZAIBridgeFacade,
 };
 pub use bridge_registration::{
-    bridge_tool_for_provider, claude_bridge_tool, gemini_bridge_tool, openai_bridge_tool,
-    zai_bridge_tool,
+    bridge_tool_for_provider, claude_bridge_tool, codex_bridge_tool, gemini_bridge_tool,
+    openai_bridge_tool, zai_bridge_tool,
 };
 pub use file_ops::{GeminiReadFileFacade, GeminiReplaceFacade, GeminiWriteFileFacade};
 pub use fspec_facade::{
     ClaudeFspecFacade, GeminiFspecFacade, InternalFspecParams, OpenAIFspecFacade, ZAIFspecFacade,
 };
 pub use fspec_registration::{
-    claude_fspec_tool, fspec_tool_for_provider, gemini_fspec_tool, openai_fspec_tool, zai_fspec_tool,
+    claude_fspec_tool, codex_fspec_tool, fspec_tool_for_provider, gemini_fspec_tool,
+    openai_fspec_tool, zai_fspec_tool,
 };
 pub use ls::GeminiListDirectoryFacade;
 pub use zai::{
     ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade, ZAIListDirFacade,
     ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
+};
+pub use codex::{
+    CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade, CodexShellCommandFacade,
 };
 pub use registry::ProviderToolRegistry;
 pub use search::{GeminiGlobFacade, GeminiSearchFileContentFacade};

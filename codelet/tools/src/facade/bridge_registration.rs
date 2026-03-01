@@ -58,10 +58,22 @@ pub fn zai_bridge_tool(session_id: Uuid) -> BridgeToolFacadeWrapper {
     BridgeToolFacadeWrapper::new(Arc::new(ZAIBridgeFacade), session_id)
 }
 
+/// Create a BridgeTool wrapper for Codex provider with explicit session association (TOOL-015)
+///
+/// Codex reuses OpenAIBridgeFacade since both use OpenAI-compatible function calling format.
+///
+/// # Arguments
+/// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
+///
+/// NO CLI FALLBACKS - This will throw an error if handler is not configured.
+pub fn codex_bridge_tool(session_id: Uuid) -> BridgeToolFacadeWrapper {
+    BridgeToolFacadeWrapper::new(Arc::new(OpenAIBridgeFacade), session_id)
+}
+
 /// Create a BridgeTool wrapper for the specified provider with explicit session association (TOOL-012)
 ///
 /// # Arguments
-/// * `provider` - Provider name ("claude", "gemini", "openai", "zai")
+/// * `provider` - Provider name ("claude", "gemini", "openai", "zai", "codex")
 /// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
 ///
 /// NO CLI FALLBACKS - This will throw an error if handler is not configured.
@@ -71,6 +83,7 @@ pub fn bridge_tool_for_provider(provider: &str, session_id: Uuid) -> Option<Brid
         "gemini" => Some(gemini_bridge_tool(session_id)),
         "openai" => Some(openai_bridge_tool(session_id)),
         "zai" => Some(zai_bridge_tool(session_id)),
+        "codex" => Some(codex_bridge_tool(session_id)),
         _ => None,
     }
 }
@@ -98,6 +111,10 @@ mod tests {
         let zai = zai_bridge_tool(session_id);
         assert_eq!(zai.provider(), "zai");
         assert_eq!(zai.session_id(), session_id);
+
+        let codex = codex_bridge_tool(session_id);
+        assert_eq!(codex.provider(), "openai"); // Reuses OpenAIBridgeFacade
+        assert_eq!(codex.session_id(), session_id);
     }
 
     #[test]
@@ -108,6 +125,7 @@ mod tests {
         assert!(bridge_tool_for_provider("gemini", session_id).is_some());
         assert!(bridge_tool_for_provider("openai", session_id).is_some());
         assert!(bridge_tool_for_provider("zai", session_id).is_some());
+        assert!(bridge_tool_for_provider("codex", session_id).is_some());
         assert!(bridge_tool_for_provider("unknown", session_id).is_none());
     }
 

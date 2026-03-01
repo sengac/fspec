@@ -54,10 +54,22 @@ pub fn zai_fspec_tool(session_id: Uuid) -> FspecToolFacadeWrapper {
     FspecToolFacadeWrapper::new(Arc::new(ZAIFspecFacade), session_id)
 }
 
+/// Create an FspecTool wrapper for Codex provider with explicit session association (TOOL-015)
+/// 
+/// Codex reuses OpenAIFspecFacade since both use OpenAI-compatible function calling format.
+///
+/// # Arguments
+/// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
+///
+/// NO CLI FALLBACKS - This will throw an error if callback system is not working.
+pub fn codex_fspec_tool(session_id: Uuid) -> FspecToolFacadeWrapper {
+    FspecToolFacadeWrapper::new(Arc::new(OpenAIFspecFacade), session_id)
+}
+
 /// Create an FspecTool wrapper for the specified provider with explicit session association (TOOL-012)
 /// 
 /// # Arguments
-/// * `provider` - Provider name ("claude", "gemini", "openai", "zai")
+/// * `provider` - Provider name ("claude", "gemini", "openai", "zai", "codex")
 /// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
 ///
 /// NO CLI FALLBACKS - This will throw an error if callback system is not working.
@@ -67,6 +79,7 @@ pub fn fspec_tool_for_provider(provider: &str, session_id: Uuid) -> Option<Fspec
         "gemini" => Some(gemini_fspec_tool(session_id)),
         "openai" => Some(openai_fspec_tool(session_id)),
         "zai" => Some(zai_fspec_tool(session_id)),
+        "codex" => Some(codex_fspec_tool(session_id)),
         _ => None,
     }
 }
@@ -94,6 +107,10 @@ mod tests {
         let zai = zai_fspec_tool(session_id);
         assert_eq!(zai.provider(), "zai");
         assert_eq!(zai.session_id(), session_id);
+
+        let codex = codex_fspec_tool(session_id);
+        assert_eq!(codex.provider(), "openai"); // Reuses OpenAIFspecFacade
+        assert_eq!(codex.session_id(), session_id);
     }
 
     #[test]
@@ -104,6 +121,7 @@ mod tests {
         assert!(fspec_tool_for_provider("gemini", session_id).is_some());
         assert!(fspec_tool_for_provider("openai", session_id).is_some());
         assert!(fspec_tool_for_provider("zai", session_id).is_some());
+        assert!(fspec_tool_for_provider("codex", session_id).is_some());
         assert!(fspec_tool_for_provider("unknown", session_id).is_none());
     }
 
