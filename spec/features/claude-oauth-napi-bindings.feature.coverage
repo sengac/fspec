@@ -1,0 +1,394 @@
+{
+  "scenarios": [
+    {
+      "name": "Successful browser OAuth login via NAPI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "109-164",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Browser OAuth login times out",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "170-194",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Headless login start returns authorize URL and PKCE verifier",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "200-229",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Headless login complete exchanges code for tokens",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "235-284",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Headless login complete rejects mismatched state as CSRF",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "290-313",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Headless login complete rejects code without hash separator",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "319-340",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token refresh returns new tokens",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "346-398",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token refresh fails with invalid refresh token",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "404-428",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get tokens returns stored tokens from claude_auth.json",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "434-464",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get tokens returns null when no claude_auth.json exists",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "470-488",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear tokens removes stored credentials",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "494-525",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear tokens is idempotent when no credentials exist",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/claude_oauth_napi_test.rs",
+          "lines": "531-558",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/claude_oauth.rs",
+              "lines": [
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/claude_oauth_napi_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/claude_oauth.rs"
+    ],
+    "totalLinesCovered": 581
+  }
+}

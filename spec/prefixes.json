@@ -359,6 +359,11 @@
       "prefix": "SCHED",
       "description": "Scheduled workflow automation and cron-like job execution",
       "createdAt": "2026-02-13T03:26:48.726Z"
+    },
+    "RIG": {
+      "prefix": "RIG",
+      "description": "Custom LLM abstraction layer replacing rig-core dependency",
+      "createdAt": "2026-03-01T22:10:29.943Z"
     }
   }
 }

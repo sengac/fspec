@@ -47,6 +47,7 @@ export function mapToEffectivePanelMode(
   if (
     hookMode.type === 'oauth-browser-waiting' ||
     hookMode.type === 'oauth-device-waiting' ||
+    hookMode.type === 'oauth-headless-code-entry' ||
     hookMode.type === 'oauth-success' ||
     hookMode.type === 'oauth-error'
   ) {

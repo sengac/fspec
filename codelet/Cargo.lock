@@ -708,6 +708,7 @@ dependencies = [
  "tokio-stream",
  "tokio-test",
  "tracing",
+ "url",
  "uuid",
  "wiremock",
 ]

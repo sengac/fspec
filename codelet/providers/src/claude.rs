@@ -15,6 +15,7 @@
 //! Beta headers are also model-specific based on official Anthropic documentation.
 
 use crate::{
+    claude_refreshing_client::RefreshingClaudeClient,
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_text_from_content, validate_api_key_static, CompletionResponse, LlmProvider,
     ProviderAdapter, ProviderError, StopReason,
@@ -144,11 +145,19 @@ pub enum AuthMode {
     OAuth,
 }
 
+/// Type alias for the Anthropic client parameterized with RefreshingClaudeClient.
+/// In OAuth mode, RefreshingClaudeClient intercepts requests for token refresh.
+/// In API key mode, it passes through to reqwest unchanged.
+type ClaudeClient = anthropic::Client<RefreshingClaudeClient>;
+
+/// Type alias for the Anthropic completion model parameterized with RefreshingClaudeClient.
+type ClaudeCompletionModel = anthropic::completion::CompletionModel<RefreshingClaudeClient>;
+
 /// Claude Provider for Anthropic API (using rig)
 #[derive(Clone)]
 pub struct ClaudeProvider {
-    completion_model: anthropic::completion::CompletionModel,
-    rig_client: anthropic::Client,
+    completion_model: ClaudeCompletionModel,
+    rig_client: ClaudeClient,
     auth_mode: AuthMode,
     /// MODEL-001: Store model name for dynamic model selection
     model_name: String,
@@ -221,6 +230,9 @@ impl ClaudeProvider {
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
     /// PROV-005: Uses model-aware beta headers for adaptive thinking support.
+    /// PROV-023: Uses RefreshingClaudeClient as HTTP backend for all modes.
+    /// In OAuth mode, it intercepts requests for token refresh and auth header injection.
+    /// In API key mode, it passes through to reqwest unchanged.
     pub fn from_api_key_with_mode_and_model(
         api_key: &str,
         auth_mode: AuthMode,
@@ -232,10 +244,19 @@ impl ClaudeProvider {
         let beta_header_string = build_beta_headers(model, auth_mode == AuthMode::OAuth);
         let beta_features: Vec<&str> = beta_header_string.split(',').collect();
 
+        // PROV-023: Create RefreshingClaudeClient as HTTP backend.
+        // In API key mode: pass-through (no interception).
+        // In OAuth mode: requires from_oauth_tokens() constructor instead — this path
+        // uses API key mode pass-through since we don't have refresh tokens here.
+        // The OAuth-with-refresh path is from_oauth_tokens().
+        let http_client = RefreshingClaudeClient::new_api_key();
+
         // Build rig client based on auth mode
         // Note: The patched rig-core's AnthropicKey::into_header() automatically skips
         // x-api-key for OAuth tokens (those starting with "sk-ant-oat")
-        let rig_client: anthropic::Client = if auth_mode == AuthMode::OAuth {
+        // PROV-023: Start from reqwest::Client builder, then swap HTTP backend
+        // via .http_client() which transforms the type parameter to RefreshingClaudeClient.
+        let rig_client: ClaudeClient = if auth_mode == AuthMode::OAuth {
             let mut headers = HeaderMap::new();
 
             // Authorization: Bearer token (instead of x-api-key)
@@ -258,19 +279,21 @@ impl ClaudeProvider {
                 HeaderValue::from_static("cli"),
             );
 
-            anthropic::Client::builder()
+            anthropic::Client::<reqwest::Client>::builder()
                 .api_key(api_key)
                 .anthropic_betas(&beta_features)
                 .http_headers(headers)
+                .http_client(http_client)
                 .build()
                 .map_err(|e| {
                     ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
                 })?
         } else {
             // Standard API key mode - x-api-key header is added automatically
-            anthropic::Client::builder()
+            anthropic::Client::<reqwest::Client>::builder()
                 .api_key(api_key)
                 .anthropic_betas(&beta_features)
+                .http_client(http_client)
                 .build()
                 .map_err(|e| {
                     ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
@@ -291,6 +314,83 @@ impl ClaudeProvider {
         })
     }
 
+    /// Create a new ClaudeProvider using OAuth tokens with token refresh support
+    ///
+    /// PROV-023: This is the primary OAuth constructor. Creates a RefreshingClaudeClient
+    /// in OAuth mode that will:
+    /// - Automatically refresh expired tokens before each request
+    /// - Strip stale Authorization headers and inject fresh Bearer tokens
+    /// - Persist refreshed tokens to claude_auth.json (best-effort)
+    ///
+    /// Use `expires_in_secs: Some(0)` when loading tokens from disk to force
+    /// immediate refresh on first API request.
+    ///
+    /// # Arguments
+    /// * `access_token` - Current OAuth access token
+    /// * `refresh_token` - Refresh token for obtaining new access tokens
+    /// * `expires_in_secs` - Token expiry in seconds (Some(0) = force immediate refresh)
+    /// * `token_endpoint_base` - Base URL for token refresh (e.g., "https://console.anthropic.com")
+    /// * `model` - Model name (e.g., "claude-sonnet-4-20250514")
+    pub fn from_oauth_tokens(
+        access_token: &str,
+        refresh_token: &str,
+        expires_in_secs: Option<u64>,
+        token_endpoint_base: &str,
+        model: &str,
+    ) -> Result<Self, ProviderError> {
+        // PROV-005: Build model-aware beta headers for OAuth mode
+        let beta_header_string = build_beta_headers(model, true);
+        let beta_features: Vec<&str> = beta_header_string.split(',').collect();
+
+        // PROV-023: Create RefreshingClaudeClient in OAuth mode with token refresh
+        let http_client = RefreshingClaudeClient::new_oauth(
+            access_token.to_string(),
+            refresh_token.to_string(),
+            expires_in_secs,
+            token_endpoint_base.to_string(),
+        );
+
+        // Build static headers for rig client
+        // Note: Authorization header is set statically here but will be REPLACED
+        // by RefreshingClaudeClient on each request with the current (possibly refreshed) token
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            AUTHORIZATION,
+            HeaderValue::from_str(&format!("Bearer {access_token}")).map_err(|e| {
+                ProviderError::auth("claude", format!("Invalid OAuth token: {e}"))
+            })?,
+        );
+        headers.insert(
+            reqwest::header::USER_AGENT,
+            HeaderValue::from_static("claude-cli/2.1.3 (external, cli)"),
+        );
+        headers.insert(
+            HeaderName::from_static("x-app"),
+            HeaderValue::from_static("cli"),
+        );
+
+        let rig_client: ClaudeClient = anthropic::Client::<reqwest::Client>::builder()
+            .api_key(access_token)
+            .anthropic_betas(&beta_features)
+            .http_headers(headers)
+            .http_client(http_client)
+            .build()
+            .map_err(|e| {
+                ProviderError::config("claude", format!("Failed to build Anthropic OAuth client: {e}"))
+            })?;
+
+        let completion_model =
+            anthropic::completion::CompletionModel::new(rig_client.clone(), model)
+                .with_prompt_caching();
+
+        Ok(Self {
+            completion_model,
+            rig_client,
+            auth_mode: AuthMode::OAuth,
+            model_name: model.to_string(),
+        })
+    }
+
     /// Check if the provider is using OAuth mode
     pub fn is_oauth_mode(&self) -> bool {
         self.auth_mode == AuthMode::OAuth
@@ -302,9 +402,10 @@ impl ClaudeProvider {
     /// - API key or OAuth token authentication
     /// - Anthropic beta features (prompt caching, OAuth, thinking, tool examples)
     /// - Proper headers (x-api-key for API key mode, Authorization: Bearer for OAuth)
+    /// - PROV-023: RefreshingClaudeClient as HTTP backend for token refresh
     ///
     /// Use this client to create rig agents with tools.
-    pub fn client(&self) -> &anthropic::Client {
+    pub fn client(&self) -> &ClaudeClient {
         &self.rig_client
     }
 
@@ -387,7 +488,7 @@ impl ClaudeProvider {
         session_id: uuid::Uuid,
         preamble: Option<&str>,
         thinking_config: Option<serde_json::Value>,
-    ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
+    ) -> rig::agent::Agent<ClaudeCompletionModel> {
         // TOOL-008: Use facade for system prompt formatting
         use codelet_tools::facade::{
             claude_bridge_tool, claude_fspec_tool, select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,

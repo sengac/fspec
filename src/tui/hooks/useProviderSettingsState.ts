@@ -30,6 +30,11 @@ import {
   codexOauthDeviceLoginStart,
   codexOauthDeviceLoginPoll,
   codexOauthClearTokens,
+  claudeOauthBrowserLogin,
+  claudeOauthHeadlessStart,
+  claudeOauthHeadlessComplete,
+  claudeOauthGetTokens,
+  claudeOauthClearTokens,
 } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
 import type {
@@ -114,6 +119,79 @@ export interface UseProviderSettingsStateReturn {
   cancelOauth: () => void;
   retryOauth: () => void;
   disconnectOauth: (providerId: string) => Promise<void>;
+  submitHeadlessCode: (codeWithState: string, pkceVerifier: string) => void;
+}
+
+/**
+ * Build navigation items from provider list (pure function, extracted for testability)
+ */
+export function buildNavItems(
+  providers: ProviderDisplayInfo[],
+  filter: string
+): SettingsNavItem[] {
+  const items: SettingsNavItem[] = [];
+  const filterLower = filter.toLowerCase();
+
+  for (const provider of providers) {
+    // Filter check
+    if (
+      filter &&
+      !provider.name.toLowerCase().includes(filterLower) &&
+      !provider.id.toLowerCase().includes(filterLower)
+    ) {
+      continue;
+    }
+
+    // Add provider
+    items.push({
+      type: 'provider',
+      providerId: provider.id,
+      name: provider.name,
+    });
+
+    // Add profiles if expanded
+    if (provider.isExpanded) {
+      // Add OAuth login options for OAuth providers when no tokens exist
+      if (isOAuthProvider(provider.id) && !provider.hasOAuthTokens) {
+        const isAnthropic = provider.id === 'anthropic';
+        const browserLabel = isAnthropic
+          ? 'Login with Claude (browser)'
+          : 'Login with ChatGPT (browser)';
+        const headlessLabel = isAnthropic
+          ? 'Login with Claude (headless)'
+          : 'Login with ChatGPT (headless)';
+        items.push({
+          type: 'oauth-login',
+          providerId: provider.id,
+          method: 'browser',
+          label: browserLabel,
+        });
+        items.push({
+          type: 'oauth-login',
+          providerId: provider.id,
+          method: 'headless',
+          label: headlessLabel,
+        });
+      }
+
+      for (const profile of provider.profiles) {
+        items.push({
+          type: 'profile',
+          providerId: provider.id,
+          profileName: profile.name,
+        });
+      }
+      // Add "Create Profile" option (not for OAuth providers — they use OAuth, not profiles)
+      if (!isOAuthProvider(provider.id)) {
+        items.push({
+          type: 'add-profile',
+          providerId: provider.id,
+        });
+      }
+    }
+  }
+
+  return items;
 }
 
 /**
@@ -184,14 +262,28 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
         let hasOAuthTokens = false;
         if (isOAuthProvider(providerId)) {
           try {
-            const tokens = codexOauthGetTokens();
-            if (tokens) {
-              hasOAuthTokens = true;
-              status = {
-                hasKey: true,
-                maskedKey: 'OAuth',
-                source: 'ChatGPT',
-              };
+            if (providerId === 'anthropic') {
+              // Claude tokens are async (tokio::fs)
+              const tokens = await claudeOauthGetTokens();
+              if (tokens) {
+                hasOAuthTokens = true;
+                status = {
+                  hasKey: true,
+                  maskedKey: 'OAuth',
+                  source: 'Claude',
+                };
+              }
+            } else {
+              // Codex tokens are sync
+              const tokens = codexOauthGetTokens();
+              if (tokens) {
+                hasOAuthTokens = true;
+                status = {
+                  hasKey: true,
+                  maskedKey: 'OAuth',
+                  source: 'ChatGPT',
+                };
+              }
             }
           } catch {
             // OAuth token check failed, continue with normal status
@@ -233,64 +325,10 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
   /**
    * Build navigation items from providers
    */
-  const navItems = useMemo((): SettingsNavItem[] => {
-    const items: SettingsNavItem[] = [];
-    const filterLower = filter.toLowerCase();
-
-    for (const provider of providers) {
-      // Filter check
-      if (
-        filter &&
-        !provider.name.toLowerCase().includes(filterLower) &&
-        !provider.id.toLowerCase().includes(filterLower)
-      ) {
-        continue;
-      }
-
-      // Add provider
-      items.push({
-        type: 'provider',
-        providerId: provider.id,
-        name: provider.name,
-      });
-
-      // Add profiles if expanded
-      if (provider.isExpanded) {
-        // Add OAuth login options for OAuth providers when no tokens exist
-        if (isOAuthProvider(provider.id) && !provider.hasOAuthTokens) {
-          items.push({
-            type: 'oauth-login',
-            providerId: provider.id,
-            method: 'browser',
-            label: 'Login with ChatGPT (browser)',
-          });
-          items.push({
-            type: 'oauth-login',
-            providerId: provider.id,
-            method: 'headless',
-            label: 'Login with ChatGPT (headless)',
-          });
-        }
-
-        for (const profile of provider.profiles) {
-          items.push({
-            type: 'profile',
-            providerId: provider.id,
-            profileName: profile.name,
-          });
-        }
-        // Add "Create Profile" option (not for OAuth providers — they use OAuth, not profiles)
-        if (!isOAuthProvider(provider.id)) {
-          items.push({
-            type: 'add-profile',
-            providerId: provider.id,
-          });
-        }
-      }
-    }
-
-    return items;
-  }, [providers, filter]);
+  const navItems = useMemo(
+    () => buildNavItems(providers, filter),
+    [providers, filter]
+  );
 
   /**
    * Toggle provider expansion
@@ -461,7 +499,11 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
 
       void (async () => {
         try {
-          await codexOauthBrowserLogin();
+          if (providerId === 'anthropic') {
+            await claudeOauthBrowserLogin();
+          } else {
+            await codexOauthBrowserLogin();
+          }
           if (oauthGeneration.current !== thisGeneration) {
             return;
           }
@@ -481,7 +523,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
   );
 
   /**
-   * Start device auth login flow
+   * Start device auth login flow (Codex) or headless login (Anthropic)
    */
   const startDeviceLogin = useCallback(
     (providerId: string) => {
@@ -489,35 +531,64 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
       oauthLastMethodRef.current = 'device';
       oauthProviderIdRef.current = providerId;
 
-      void (async () => {
+      if (providerId === 'anthropic') {
+        // Anthropic uses two-phase headless: start returns URL + verifier,
+        // then user pastes code#state, then complete exchanges tokens
         try {
-          const result = await codexOauthDeviceLoginStart();
+          const result = claudeOauthHeadlessStart();
           if (oauthGeneration.current !== thisGeneration) {
             return;
           }
           setMode({
-            type: 'oauth-device-waiting',
+            type: 'oauth-headless-code-entry',
             providerId,
-            userCode: result.userCode,
-            verificationUrl: result.verificationUrl,
+            authorizeUrl: result.authorizeUrl,
+            pkceVerifier: result.pkceVerifier,
+            codeInput: '',
           });
-
-          // Start polling
-          await codexOauthDeviceLoginPoll(result.deviceAuthId, result.interval);
-          if (oauthGeneration.current !== thisGeneration) {
-            return;
-          }
-          setMode({ type: 'oauth-success', providerId });
-          await reload();
         } catch (err) {
           if (oauthGeneration.current !== thisGeneration) {
             return;
           }
           const errorMsg =
-            err instanceof Error ? err.message : 'Device auth failed';
+            err instanceof Error ? err.message : 'Headless login failed';
           setMode({ type: 'oauth-error', providerId, error: errorMsg });
         }
-      })();
+      } else {
+        // Codex uses device auth: get user_code + poll
+        void (async () => {
+          try {
+            const result = await codexOauthDeviceLoginStart();
+            if (oauthGeneration.current !== thisGeneration) {
+              return;
+            }
+            setMode({
+              type: 'oauth-device-waiting',
+              providerId,
+              userCode: result.userCode,
+              verificationUrl: result.verificationUrl,
+            });
+
+            // Start polling
+            await codexOauthDeviceLoginPoll(
+              result.deviceAuthId,
+              result.interval
+            );
+            if (oauthGeneration.current !== thisGeneration) {
+              return;
+            }
+            setMode({ type: 'oauth-success', providerId });
+            await reload();
+          } catch (err) {
+            if (oauthGeneration.current !== thisGeneration) {
+              return;
+            }
+            const errorMsg =
+              err instanceof Error ? err.message : 'Device auth failed';
+            setMode({ type: 'oauth-error', providerId, error: errorMsg });
+          }
+        })();
+      }
     },
     [reload]
   );
@@ -555,12 +626,45 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
     async (providerId: string): Promise<void> => {
       try {
         if (isOAuthProvider(providerId)) {
-          codexOauthClearTokens();
+          if (providerId === 'anthropic') {
+            await claudeOauthClearTokens();
+          } else {
+            codexOauthClearTokens();
+          }
         }
         await reload();
       } catch (err) {
         logger.error('Failed to disconnect OAuth:', err);
       }
+    },
+    [reload]
+  );
+
+  /**
+   * Submit headless code entry (Claude only)
+   */
+  const submitHeadlessCode = useCallback(
+    (codeWithState: string, pkceVerifier: string) => {
+      const thisGeneration = ++oauthGeneration.current;
+      const providerId = 'anthropic';
+
+      void (async () => {
+        try {
+          await claudeOauthHeadlessComplete(codeWithState, pkceVerifier);
+          if (oauthGeneration.current !== thisGeneration) {
+            return;
+          }
+          setMode({ type: 'oauth-success', providerId });
+          await reload();
+        } catch (err) {
+          if (oauthGeneration.current !== thisGeneration) {
+            return;
+          }
+          const errorMsg =
+            err instanceof Error ? err.message : 'Headless login failed';
+          setMode({ type: 'oauth-error', providerId, error: errorMsg });
+        }
+      })();
     },
     [reload]
   );
@@ -607,5 +711,6 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
     cancelOauth,
     retryOauth,
     disconnectOauth,
+    submitHeadlessCode,
   };
 }

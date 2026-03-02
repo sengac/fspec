@@ -120,7 +120,7 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     baseUrl: 'https://api.anthropic.com/v1',
     envVar: 'ANTHROPIC_API_KEY',
     authMethod: 'x-api-key',
-    authType: 'api-key',
+    authType: 'oauth',
     requiresApiKey: true,
     description: 'Anthropic Claude models',
   },

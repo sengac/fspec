@@ -374,7 +374,11 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
-      // Navigate to profile (first item under expanded provider)
+      // Navigate to profile (skip OAuth login items for Anthropic)
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
       pressKey(stdin, { name: 'down' });
       await waitFor(50);
 
@@ -438,7 +442,11 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
-      // Navigate to profile
+      // Navigate to profile (skip OAuth login items for Anthropic)
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
       pressKey(stdin, { name: 'down' });
       await waitFor(50);
 

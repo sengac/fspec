@@ -1,11 +1,17 @@
-//! Shared test fixtures for codex_oauth_server integration tests.
+//! Shared test fixtures for OAuth server integration tests.
 //!
 //! Provides reusable helpers for:
-//! - Building test JWTs with known account IDs
-//! - Constructing token endpoint response bodies
-//! - Setting up isolated CODEX_HOME temp directories
+//! - Building test JWTs with known account IDs (Codex)
+//! - Constructing token endpoint response bodies (Codex)
+//! - Setting up isolated CODEX_HOME temp directories (Codex)
+//! - Setting up isolated CODELET_HOME temp directories (Claude)
 //!
-//! These use REAL code from codex_oauth.rs / codex_auth.rs — no mocks.
+//! These use REAL code from codex_oauth.rs / codex_auth.rs / claude_auth.rs — no mocks.
+//!
+//! Note: Each integration test binary compiles this module independently,
+//! so some items may appear unused in a given binary but are used by others.
+
+#![allow(dead_code)]
 
 use base64::Engine;
 
@@ -61,5 +67,32 @@ pub fn setup_codex_home() -> (tempfile::TempDir, CodexHomeGuard) {
         original: std::env::var("CODEX_HOME").ok(),
     };
     std::env::set_var("CODEX_HOME", temp_dir.path());
+    (temp_dir, guard)
+}
+
+/// RAII guard that restores the original CODELET_HOME env var on drop.
+pub struct CodeletHomeGuard {
+    original: Option<String>,
+}
+
+impl Drop for CodeletHomeGuard {
+    fn drop(&mut self) {
+        match &self.original {
+            Some(val) => std::env::set_var("CODELET_HOME", val),
+            None => std::env::remove_var("CODELET_HOME"),
+        }
+    }
+}
+
+/// Create a temp directory and point CODELET_HOME to it.
+///
+/// Returns `(TempDir, CodeletHomeGuard)` — keep both alive for the test duration.
+/// The guard restores the original CODELET_HOME on drop.
+pub fn setup_codelet_home() -> (tempfile::TempDir, CodeletHomeGuard) {
+    let temp_dir = tempfile::TempDir::new().expect("Should create temp dir");
+    let guard = CodeletHomeGuard {
+        original: std::env::var("CODELET_HOME").ok(),
+    };
+    std::env::set_var("CODELET_HOME", temp_dir.path());
     (temp_dir, guard)
 }

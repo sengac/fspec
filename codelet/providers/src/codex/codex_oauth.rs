@@ -1,22 +1,27 @@
 //! Codex OAuth Login Flow (PROV-011)
 //!
-//! Implements PKCE-based browser OAuth and device auth flows for authenticating
+//! Implements browser OAuth and device auth flows for authenticating
 //! with ChatGPT Plus/Pro subscriptions. This module provides:
 //!
-//! - PKCE code challenge generation (RFC 7636, S256)
 //! - JWT claims parsing and account ID extraction
 //! - OAuth authorize URL construction
 //! - OAuth callback state validation
 //! - Codex API endpoint URL rewriting and header building
 //! - Token refresh via refresh_token grant
 //!
+//! PKCE generation and URL-encoding are in the shared `oauth_crypto` module
+//! and re-exported here for backward compatibility.
+//!
 //! Reference: OpenCode's codex.ts plugin
 
 use anyhow::{anyhow, Result};
 use base64::Engine;
 use rand::Rng;
-use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+
+// Re-export shared OAuth crypto primitives from the provider-agnostic module.
+// This preserves backward compatibility for existing Codex consumers.
+pub use crate::oauth_crypto::{generate_pkce, urlencoded, PkceCodes};
 
 /// OAuth constants from Codex CLI
 pub const CODEX_CLIENT_ID: &str = "app_EMoamEEZ73f0CkXaXp7hrann";
@@ -24,58 +29,6 @@ pub const CODEX_ISSUER: &str = "https://auth.openai.com";
 pub const CODEX_API_ENDPOINT: &str = "https://chatgpt.com/backend-api/codex/responses";
 pub const OAUTH_PORT: u16 = 1455;
 pub const OAUTH_TIMEOUT_MS: u64 = 5 * 60 * 1000; // 5 minutes
-
-/// Characters allowed in PKCE code verifier per RFC 7636 Section 4.1
-const PKCE_CHARSET: &[u8] =
-    b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
-
-/// PKCE code challenge and verifier pair
-#[derive(Debug, Clone)]
-pub struct PkceCodes {
-    pub verifier: String,
-    pub challenge: String,
-    pub challenge_method: String,
-}
-
-impl PkceCodes {
-    /// Create PkceCodes from an existing verifier (deterministic challenge derivation)
-    pub fn from_verifier(verifier: String) -> Self {
-        let challenge = compute_s256_challenge(&verifier);
-        Self {
-            verifier,
-            challenge,
-            challenge_method: "S256".to_string(),
-        }
-    }
-}
-
-/// Generate a new PKCE code verifier and S256 challenge per RFC 7636
-///
-/// The verifier is 43 characters of unreserved URI characters.
-/// The challenge is the Base64URL-encoded SHA-256 hash of the verifier.
-pub fn generate_pkce() -> PkceCodes {
-    let verifier = generate_random_string(43);
-    PkceCodes::from_verifier(verifier)
-}
-
-/// Generate a random string of the given length using unreserved URI characters
-fn generate_random_string(length: usize) -> String {
-    let mut rng = rand::thread_rng();
-    (0..length)
-        .map(|_| {
-            let idx = rng.gen_range(0..PKCE_CHARSET.len());
-            PKCE_CHARSET[idx] as char
-        })
-        .collect()
-}
-
-/// Compute S256 code challenge: Base64URL(SHA-256(verifier))
-fn compute_s256_challenge(verifier: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(verifier.as_bytes());
-    let hash = hasher.finalize();
-    base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(hash)
-}
 
 /// Generate a random state parameter for CSRF protection
 pub fn generate_state() -> String {
@@ -182,22 +135,6 @@ pub fn build_authorize_url(redirect_uri: &str, pkce: &PkceCodes, state: &str) ->
         .join("&");
 
     format!("{CODEX_ISSUER}/oauth/authorize?{query}")
-}
-
-/// Simple URL encoding for query parameters
-fn urlencoded(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    for c in s.chars() {
-        match c {
-            'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_' | '.' | '~' => result.push(c),
-            _ => {
-                for byte in c.to_string().as_bytes() {
-                    result.push_str(&format!("%{byte:02X}"));
-                }
-            }
-        }
-    }
-    result
 }
 
 /// Validate an OAuth callback's state parameter against the expected state

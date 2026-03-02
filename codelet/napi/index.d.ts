@@ -332,6 +332,88 @@ export declare function callFspecCommand(
 ): string;
 
 /**
+ * Start the Claude browser OAuth login flow.
+ *
+ * Spawns a tokio task that:
+ * 1. Binds a local HTTP server on an ephemeral port
+ * 2. Opens the browser to the authorize URL
+ * 3. Shows a form for the user to paste their code#state
+ * 4. Validates state, exchanges the authorization code for tokens
+ * 5. Persists tokens to claude_auth.json
+ *
+ * Returns a Promise<NapiClaudeTokens> that resolves when the flow completes.
+ *
+ * Rule [0]: claude_oauth_browser_login() is an async NAPI function that spawns
+ * a tokio task to run claude_browser_oauth_login().
+ */
+export declare function claudeOauthBrowserLogin(): Promise<NapiClaudeTokens>;
+
+/**
+ * Clear stored OAuth tokens by deleting claude_auth.json.
+ *
+ * Idempotent: returns Ok(()) even if the file doesn't exist.
+ * Used by the TUI when the user disconnects their Claude subscription.
+ *
+ * Rule [4]: Async NAPI function that deletes claude_auth.json for disconnect.
+ */
+export declare function claudeOauthClearTokens(): Promise<void>;
+
+/**
+ * Read stored tokens from claude_auth.json.
+ *
+ * Returns NapiClaudeTokens if tokens exist, or null if no claude_auth.json
+ * is found. This is an async function because claude_auth uses tokio::fs
+ * (unlike Codex which is sync).
+ *
+ * Rule [3]: Async NAPI function that reads claude_auth.json via
+ * read_claude_auth() and returns NapiClaudeTokens or null.
+ */
+export declare function claudeOauthGetTokens(): Promise<NapiClaudeTokens | null>;
+
+/**
+ * Phase 2: Complete headless login — validate state, exchange code, persist tokens.
+ *
+ * Receives the user-pasted code_with_state (in "code#state" format) and the
+ * pkce_verifier from Phase 1. Validates that the state matches the verifier
+ * (CSRF protection), exchanges the code for tokens, persists to claude_auth.json,
+ * and returns NapiClaudeTokens.
+ *
+ * Rule [1]: claude_oauth_headless_complete(code_with_state, pkce_verifier)
+ * validates state, exchanges code, and returns NapiClaudeTokens.
+ */
+export declare function claudeOauthHeadlessComplete(
+  codeWithState: string,
+  pkceVerifier: string
+): Promise<NapiClaudeTokens>;
+
+/**
+ * Phase 1: Start headless login flow — generate PKCE and build authorize URL.
+ *
+ * Returns NapiClaudeHeadlessStartResult with authorize_url and pkce_verifier
+ * so the TUI can display the URL immediately. The TUI then:
+ * 1. Shows the URL to the user
+ * 2. Collects the pasted code#state string
+ * 3. Calls claude_oauth_headless_complete() with the code and verifier
+ *
+ * Rule [1]: Two-phase design keeps the NAPI boundary clean — no
+ * CodeEntryFn callback needed.
+ */
+export declare function claudeOauthHeadlessStart(): NapiClaudeHeadlessStartResult;
+
+/**
+ * Refresh an access token using a refresh_token.
+ *
+ * Calls refresh_access_token_at(), persists the refreshed tokens to
+ * claude_auth.json, and returns NapiClaudeTokens.
+ *
+ * Rule [2]: Async NAPI function that calls refresh_access_token_at() and
+ * returns NapiClaudeTokens with refreshed tokens persisted.
+ */
+export declare function claudeOauthRefreshToken(
+  refreshToken: string
+): Promise<NapiClaudeTokens>;
+
+/**
  * Start the browser OAuth login flow.
  *
  * Spawns a tokio task that:
@@ -1080,6 +1162,33 @@ export interface NapiAppendResult {
 export interface NapiCherryPickResult {
   session: NapiSessionManifest;
   importedIndices: Array<number>;
+}
+
+/**
+ * Result from headless login start — returned synchronously so the TUI
+ * can display the authorize URL immediately.
+ *
+ * Architecture note [1]: authorize_url and pkce_verifier. The verifier is
+ * returned to TypeScript so it can be passed back to headless_complete().
+ */
+export interface NapiClaudeHeadlessStartResult {
+  authorizeUrl: string;
+  pkceVerifier: string;
+}
+
+/**
+ * Claude OAuth tokens exposed to TypeScript.
+ *
+ * Rule [6]: Maps to ClaudeAuthJson from claude_auth.rs.
+ * Fields: access_token, refresh_token, expires (f64 for JS compatibility).
+ *
+ * Unlike Codex, there is no id_token or account_id.
+ */
+export interface NapiClaudeTokens {
+  accessToken: string;
+  refreshToken: string;
+  /** Expiry timestamp in milliseconds since Unix epoch (f64 for JS Number) */
+  expires: number;
 }
 
 /**

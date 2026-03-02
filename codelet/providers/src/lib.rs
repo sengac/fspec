@@ -6,12 +6,19 @@ pub mod adapter;
 pub mod cache_token_extractor;
 pub mod caching_client;
 pub mod claude;
+pub mod claude_auth;
+pub mod claude_oauth;
+pub mod claude_headless_login;
+pub mod claude_refreshing_client;
+pub mod claude_oauth_server;
 pub mod codex;
 mod credentials;
 pub mod error;
 pub mod gemini;
 mod manager;
 pub mod models;
+pub mod oauth_crypto;
+pub mod oauth_http_utils;
 pub mod openai;
 pub mod zai;
 
@@ -34,6 +41,9 @@ pub use codex::CodexProvider;
 pub use codex::CODEX_BASE_INSTRUCTIONS; // PROV-019: Codex backend requires instructions field
 pub use codex::codex_oauth_server::browser_oauth_login; // PROV-013: OAuth login for NAPI binding (PROV-015)
 pub use codex::codex_device_auth::device_auth_login; // PROV-014: Device auth login for NAPI binding (PROV-015)
+pub use claude_oauth_server::claude_browser_oauth_login; // PROV-021: Claude browser OAuth for NAPI binding (PROV-024)
+pub use claude_auth::ClaudeAuthJson; // PROV-021: Return type for Claude browser OAuth login
+pub use claude_headless_login::claude_headless_login; // PROV-022: Claude headless login for NAPI binding (PROV-024)
 pub use credentials::ProviderCredentials;
 pub use gemini::GeminiProvider;
 pub use manager::{ProviderManager, ProviderType};

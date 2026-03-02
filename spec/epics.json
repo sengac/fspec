@@ -376,7 +376,33 @@
         "PROV-017",
         "PROV-011",
         "PROV-018",
-        "PROV-019"
+        "PROV-019",
+        "PROV-020",
+        "PROV-021",
+        "PROV-022",
+        "PROV-023",
+        "PROV-024",
+        "PROV-025",
+        "PROV-026",
+        "PROV-027"
+      ]
+    },
+    "replace-rig-core": {
+      "id": "replace-rig-core",
+      "title": "RIG",
+      "createdAt": "2026-03-01T22:10:44.297Z",
+      "description": "Replace rig-core with custom LLM abstraction layer - eliminate patched fork dependency, reduce compile surface by ~90%, gain full control over provider HTTP clients, streaming SSE parsing, multi-turn agent loop, and tool trait",
+      "workUnits": [
+        "RIG-001",
+        "RIG-002",
+        "RIG-003",
+        "RIG-004",
+        "RIG-005",
+        "RIG-006",
+        "RIG-007",
+        "RIG-008",
+        "RIG-009",
+        "RIG-010"
       ]
     }
   }

@@ -1,9 +1,10 @@
-//! Shared test fixtures for codex OAuth NAPI integration tests.
+//! Shared test fixtures for OAuth NAPI integration tests.
 //!
 //! Provides reusable helpers for:
-//! - Building test JWTs with known account IDs
-//! - Constructing token endpoint response bodies
-//! - Setting up isolated CODEX_HOME temp directories
+//! - Building test JWTs with known account IDs (Codex)
+//! - Constructing token endpoint response bodies (Codex + Claude)
+//! - Setting up isolated CODEX_HOME temp directories (Codex)
+//! - Setting up isolated CODELET_HOME temp directories (Claude)
 //!
 //! These mirror the fixtures from codelet-providers/tests/fixtures/mod.rs
 //! because test modules can't import across crate boundaries.
@@ -62,5 +63,56 @@ pub fn setup_codex_home() -> (tempfile::TempDir, CodexHomeGuard) {
         original: std::env::var("CODEX_HOME").ok(),
     };
     std::env::set_var("CODEX_HOME", temp_dir.path());
+    (temp_dir, guard)
+}
+
+// =========================================================================
+// Claude OAuth Fixtures (PROV-024)
+// =========================================================================
+
+/// Build a Claude token response JSON body for wiremock.
+///
+/// Matches the shape of `ClaudeTokenResponse` from claude_oauth.rs:
+/// { access_token, refresh_token, expires_in }
+///
+/// Unlike Codex, there is no id_token.
+pub fn build_claude_token_response_json(
+    access_token: &str,
+    refresh_token: &str,
+    expires_in: u64,
+) -> serde_json::Value {
+    serde_json::json!({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": expires_in
+    })
+}
+
+/// RAII guard that restores the original CODELET_HOME env var on drop.
+pub struct CodeletHomeGuard {
+    original: Option<String>,
+}
+
+impl Drop for CodeletHomeGuard {
+    fn drop(&mut self) {
+        match &self.original {
+            Some(val) => std::env::set_var("CODELET_HOME", val),
+            None => std::env::remove_var("CODELET_HOME"),
+        }
+    }
+}
+
+/// Create a temp directory and point CODELET_HOME to it.
+///
+/// Returns `(TempDir, CodeletHomeGuard)` — keep both alive for the test duration.
+/// The guard restores the original CODELET_HOME on drop.
+///
+/// Claude uses CODELET_HOME (not CODEX_HOME) for claude_auth.json.
+pub fn setup_codelet_home() -> (tempfile::TempDir, CodeletHomeGuard) {
+    let temp_dir = tempfile::TempDir::new().expect("Should create temp dir");
+    let guard = CodeletHomeGuard {
+        original: std::env::var("CODELET_HOME").ok(),
+    };
+    std::env::set_var("CODELET_HOME", temp_dir.path());
     (temp_dir, guard)
 }

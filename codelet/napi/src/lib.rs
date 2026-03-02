@@ -15,6 +15,8 @@ mod astgrep;
 #[cfg(not(feature = "noop"))]
 mod blocklist;
 #[cfg(not(feature = "noop"))]
+mod claude_oauth;
+#[cfg(not(feature = "noop"))]
 mod codex_oauth;
 #[cfg(not(feature = "noop"))]
 mod fspec;
@@ -54,6 +56,8 @@ pub use persistence::*;
 pub use astgrep::*;
 #[cfg(not(feature = "noop"))]
 pub use blocklist::*;
+#[cfg(not(feature = "noop"))]
+pub use claude_oauth::*;
 #[cfg(not(feature = "noop"))]
 pub use codex_oauth::*;
 #[cfg(not(feature = "noop"))]

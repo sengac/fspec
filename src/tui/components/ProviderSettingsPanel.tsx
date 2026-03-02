@@ -18,7 +18,7 @@ import { getProviderRegistryEntry } from '../../utils/provider-config';
 export interface ProviderDisplayStatus {
   hasKey: boolean;
   maskedKey?: string;
-  source?: 'env' | 'file' | 'dotenv' | 'ChatGPT';
+  source?: 'env' | 'file' | 'dotenv' | 'ChatGPT' | 'Claude';
 }
 
 /**
@@ -86,6 +86,13 @@ export type PanelMode =
       type: 'oauth-error';
       providerId: string;
       error: string;
+    }
+  | {
+      type: 'oauth-headless-code-entry';
+      providerId: string;
+      authorizeUrl: string;
+      pkceVerifier: string;
+      codeInput: string;
     };
 
 /**
@@ -286,6 +293,10 @@ export function ProviderSettingsPanel({
 
   // Render OAuth browser waiting
   if (mode.type === 'oauth-browser-waiting') {
+    const oauthTitle =
+      mode.providerId === 'anthropic'
+        ? 'Claude OAuth Login'
+        : 'Codex OAuth Login';
     return (
       <Box
         flexDirection="column"
@@ -295,7 +306,7 @@ export function ProviderSettingsPanel({
       >
         <Box flexDirection="column" padding={2}>
           <Text bold color="yellow">
-            Codex OAuth Login
+            {oauthTitle}
           </Text>
           <Box marginTop={1}>
             <Text color="cyan">⠋ </Text>
@@ -346,6 +357,10 @@ export function ProviderSettingsPanel({
 
   // Render OAuth success
   if (mode.type === 'oauth-success') {
+    const successLabel =
+      mode.providerId === 'anthropic'
+        ? '✓ Connected to Claude'
+        : '✓ Connected to ChatGPT';
     return (
       <Box
         flexDirection="column"
@@ -355,10 +370,45 @@ export function ProviderSettingsPanel({
       >
         <Box flexDirection="column" padding={2}>
           <Text bold color="green">
-            ✓ Connected to ChatGPT
+            {successLabel}
           </Text>
           <Box marginTop={1}>
             <Text dimColor>Press Enter or Esc to continue</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render OAuth headless code entry (Claude only)
+  if (mode.type === 'oauth-headless-code-entry') {
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="yellow">
+            Claude Headless Login
+          </Text>
+          <Box marginTop={1}>
+            <Text>Visit: </Text>
+            <Text color="blue">{mode.authorizeUrl}</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text>Authorize on claude.ai, then paste code#state below:</Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text color="cyan">Code: </Text>
+            <Text>
+              {mode.codeInput}
+              <Text inverse> </Text>
+            </Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Enter to submit | Esc to cancel</Text>
           </Box>
         </Box>
       </Box>
