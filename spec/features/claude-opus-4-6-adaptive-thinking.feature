@@ -28,7 +28,8 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
   BETA HEADERS:
   - prompt-caching-2024-07-31:       ALL models
   - interleaved-thinking-2025-05-14: ONLY non-adaptive models (4.6 models don't need it)
-  - context-1m-2025-08-07:           Opus 4.6, Sonnet 4.6, Sonnet 4.5
+  - context-1m-2025-08-07:           NOT sent by default (requires CONFIG-007 user opt-in)
+                                     This header triggers "Extra usage required" for non-Tier-4 users.
   
   NOTE: output-64k-2025-02-19 was removed as it's no longer a valid beta header.
   64K/128K output is now standard based on model (set via max_tokens parameter).
@@ -44,7 +45,7 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
   #   [2] ThinkingConfig enum MUST have Adaptive variant that serializes to {type: adaptive}
   #   [4] Non-adaptive models MUST continue using budget-based thinking (type: enabled, budget_tokens: N)
   #   [5] Adaptive thinking models MUST NOT include interleaved-thinking header (automatic)
-  #   [6] Opus 4.6, Sonnet 4.6, Sonnet 4.5 MUST include context-1m-2025-08-07 header
+  #   [6] context-1m-2025-08-07 header NOT sent until CONFIG-007 user opt-in is implemented
   #   [7] Model detection MUST use explicit string constants and exact equality (==)
   #   [8] New model versions MUST be added explicitly to capability lists when released
   #   [9] Opus 4.5 does NOT support 1M context - must NOT include context-1m header
@@ -127,7 +128,7 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     Given I have configured the Claude provider with model "claude-opus-4-6"
     When I make an API request
     Then the anthropic-beta header should include "prompt-caching-2024-07-31"
-    And the anthropic-beta header should include "context-1m-2025-08-07"
+    And the anthropic-beta header should NOT include "context-1m-2025-08-07"
     And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
 
   @beta-headers @adaptive-thinking
@@ -135,7 +136,7 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     Given I have configured the Claude provider with model "claude-sonnet-4-6"
     When I make an API request
     Then the anthropic-beta header should include "prompt-caching-2024-07-31"
-    And the anthropic-beta header should include "context-1m-2025-08-07"
+    And the anthropic-beta header should NOT include "context-1m-2025-08-07"
     And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
 
   # ===========================================
@@ -151,12 +152,12 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     And the anthropic-beta header should NOT include "context-1m-2025-08-07"
 
   @beta-headers @budget-thinking
-  Scenario: Sonnet 4.5 uses correct beta headers with 1M context
+  Scenario: Sonnet 4.5 uses correct beta headers
     Given I have configured the Claude provider with model "claude-sonnet-4-5"
     When I make an API request
     Then the anthropic-beta header should include "prompt-caching-2024-07-31"
     And the anthropic-beta header should include "interleaved-thinking-2025-05-14"
-    And the anthropic-beta header should include "context-1m-2025-08-07"
+    And the anthropic-beta header should NOT include "context-1m-2025-08-07"
 
   # ===========================================
   # EXPLICIT MODEL CONSTANT SCENARIOS

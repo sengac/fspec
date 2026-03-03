@@ -26,7 +26,9 @@ use codelet_common::{Message, MessageContent, MessageRole};
 // TOOL-008: Import CLAUDE_CODE_PROMPT_PREFIX from facade (single source of truth)
 use codelet_tools::facade::CLAUDE_CODE_PROMPT_PREFIX;
 // PROV-005: Import model constants and helpers for adaptive thinking
-use codelet_tools::facade::{is_adaptive_thinking_model, supports_1m_context};
+use codelet_tools::facade::is_adaptive_thinking_model;
+// CONFIG-007: supports_1m_context will be used when user opt-in toggle is implemented
+// use codelet_tools::facade::supports_1m_context;
 use codelet_tools::ToolDefinition as OurToolDefinition;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue, AUTHORIZATION};
 use rig::completion::CompletionRequestBuilder;
@@ -95,10 +97,13 @@ pub fn build_beta_headers(model: &str, is_oauth: bool) -> String {
         headers.push(beta_headers::INTERLEAVED_THINKING);
     }
 
-    // PROV-005: 1M context for specific models (not Opus 4.5)
-    if supports_1m_context(model) {
-        headers.push(beta_headers::CONTEXT_1M);
-    }
+    // CONFIG-007: 1M context header is NOT sent by default.
+    // This requires Anthropic API Tier 4 ($400+ cumulative spend) and triggers
+    // "Extra usage is required for long context requests" error for non-Tier-4 users.
+    // The header will only be sent when CONFIG-007 implements user opt-in toggle.
+    // if supports_1m_context(model) {
+    //     headers.push(beta_headers::CONTEXT_1M);
+    // }
 
     headers.join(",")
 }

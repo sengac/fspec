@@ -231,10 +231,13 @@ mod tests {
             "Should include prompt-caching, got: {headers}"
         );
 
-        // @step And the anthropic-beta header should include "context-1m-2025-08-07"
+        // CONFIG-007: context-1m header is NOT sent until user opt-in is implemented.
+        // Sending it by default causes "Extra usage is required for long context requests"
+        // errors for non-Tier-4 API users.
+        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07" (until CONFIG-007)
         assert!(
-            headers.contains("context-1m-2025-08-07"),
-            "Opus 4.6 should include context-1m, got: {headers}"
+            !headers.contains("context-1m-2025-08-07"),
+            "Opus 4.6 should NOT include context-1m until CONFIG-007, got: {headers}"
         );
 
         // @step And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
@@ -262,10 +265,11 @@ mod tests {
             "Should include prompt-caching, got: {headers}"
         );
 
-        // @step And the anthropic-beta header should include "context-1m-2025-08-07"
+        // CONFIG-007: context-1m header is NOT sent until user opt-in is implemented.
+        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07" (until CONFIG-007)
         assert!(
-            headers.contains("context-1m-2025-08-07"),
-            "Sonnet 4.6 should include context-1m, got: {headers}"
+            !headers.contains("context-1m-2025-08-07"),
+            "Sonnet 4.6 should NOT include context-1m until CONFIG-007, got: {headers}"
         );
 
         // @step And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
@@ -330,10 +334,11 @@ mod tests {
             "Sonnet 4.5 should include interleaved-thinking, got: {headers}"
         );
 
-        // @step And the anthropic-beta header should include "context-1m-2025-08-07"
+        // CONFIG-007: context-1m header is NOT sent until user opt-in is implemented.
+        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07" (until CONFIG-007)
         assert!(
-            headers.contains("context-1m-2025-08-07"),
-            "Sonnet 4.5 should include context-1m, got: {headers}"
+            !headers.contains("context-1m-2025-08-07"),
+            "Sonnet 4.5 should NOT include context-1m until CONFIG-007, got: {headers}"
         );
     }
 
