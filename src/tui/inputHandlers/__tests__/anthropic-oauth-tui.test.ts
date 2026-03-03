@@ -473,6 +473,7 @@ describe('Feature: TUI provider settings UX for Anthropic subscription connect a
       };
 
       // @step When the user presses "e" on the Anthropic provider row
+      // PROV-029: 'e' keybind removed. 'e' does nothing now.
       handleListMode({
         input: 'e',
         key: buildKey(),
@@ -485,102 +486,71 @@ describe('Feature: TUI provider settings UX for Anthropic subscription connect a
         onSwitchToModels,
       });
 
-      // @step Then the browser OAuth flow starts
-      expect(providerSettings.startBrowserLogin).toHaveBeenCalledWith(
-        'anthropic'
-      );
-
-      // @step And the API key editor is not shown
+      // @step Then nothing happens (e keybind removed in PROV-029)
+      expect(providerSettings.startBrowserLogin).not.toHaveBeenCalled();
       expect(providerSettings.setMode).not.toHaveBeenCalled();
       expect(providerSettings.setEditingApiKey).not.toHaveBeenCalled();
     });
   });
 
   describe('Scenario: Disconnect OAuth clears tokens and reverts status', () => {
-    it('should call disconnectOauth when pressing "d" on Anthropic with OAuth tokens', () => {
+    it('should set disconnect-oauth mode when pressing "d" on OAuth status item', () => {
       // @step Given the Anthropic provider has valid OAuth tokens
-      // @step And the Anthropic provider has no API key configured
+      // @step And the user has the cursor on the OAuth status nav item
       const currentItem: SettingsNavItem = {
-        type: 'provider',
+        type: 'oauth-status',
         providerId: 'anthropic',
-        name: 'Anthropic',
-      };
-      const currentProvider: ProviderDisplayInfo = {
-        id: 'anthropic',
-        name: 'Anthropic',
-        status: { hasKey: true, maskedKey: 'OAuth', source: 'Claude' },
-        profiles: [],
-        isExpanded: false,
-        hasOAuthTokens: true,
+        label: '✓ OAuth [Claude]',
       };
 
-      // @step When the user presses "d" on the Anthropic provider row
+      // @step When the user presses "d" on the OAuth status row
       handleListMode({
         input: 'd',
         key: buildKey(),
         providerSettings,
         currentItem,
-        currentProvider,
+        currentProvider: undefined,
         currentProfile: undefined,
         visibleHeight: 20,
         onClose,
         onSwitchToModels,
       });
 
-      // @step Then the Claude OAuth tokens are cleared
-      expect(providerSettings.disconnectOauth).toHaveBeenCalledWith(
-        'anthropic'
+      // @step Then the disconnect-oauth confirmation mode is set
+      expect(providerSettings.setMode).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'disconnect-oauth',
+          providerId: 'anthropic',
+        })
       );
-
-      // @step And the Anthropic provider shows "(not configured)" status
-      // After reload, provider with no tokens and no API key shows (not configured)
-
-      // @step When the user expands the Anthropic provider
-      // @step Then OAuth login options reappear in the expanded list
-      // hasOAuthTokens will be false after disconnect → login options regenerated
-      expect(providerSettings.removeApiKey).not.toHaveBeenCalled();
     });
   });
 
   describe('Scenario: Disconnect OAuth with existing API key reverts to API key status', () => {
-    it('should call disconnectOauth which triggers reload to resolve API key status', () => {
+    it('should do nothing when pressing "d" on provider row (PROV-029: use oauth-status item)', () => {
       // @step Given the Anthropic provider has valid OAuth tokens
       // @step And the Anthropic provider has an API key via ANTHROPIC_API_KEY env var
-      const currentProvider: ProviderDisplayInfo = {
-        id: 'anthropic',
-        name: 'Anthropic',
-        status: { hasKey: true, maskedKey: 'OAuth', source: 'Claude' },
-        profiles: [],
-        isExpanded: false,
-        hasOAuthTokens: true,
-      };
-
-      // @step When the user presses "d" on the Anthropic provider row
       const currentItem: SettingsNavItem = {
         type: 'provider',
         providerId: 'anthropic',
         name: 'Anthropic',
       };
+
+      // @step When the user presses "d" on the Anthropic provider row
       handleListMode({
         input: 'd',
         key: buildKey(),
         providerSettings,
         currentItem,
-        currentProvider,
+        currentProvider: undefined,
         currentProfile: undefined,
         visibleHeight: 20,
         onClose,
         onSwitchToModels,
       });
 
-      // @step Then the Claude OAuth tokens are cleared
-      expect(providerSettings.disconnectOauth).toHaveBeenCalledWith(
-        'anthropic'
-      );
-
-      // @step And the Anthropic provider reverts to showing the masked API key status
-      // disconnectOauth calls reload() internally, which re-resolves provider status
-      // When OAuth tokens are gone but API key exists, reload produces env-based status
+      // @step Then nothing happens ('d' on provider rows no longer active)
+      expect(providerSettings.disconnectOauth).not.toHaveBeenCalled();
       expect(providerSettings.removeApiKey).not.toHaveBeenCalled();
     });
   });

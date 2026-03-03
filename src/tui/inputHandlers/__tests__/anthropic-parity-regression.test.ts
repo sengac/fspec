@@ -139,8 +139,8 @@ describe('Feature: Anthropic subscription parity and regression hardening — TU
   // Same class of bug as PROV-019 where Codex showed 'Edit API Key' form
   // =========================================================================
 
-  describe('Scenario: Edit action on Claude OAuth provider starts OAuth flow', () => {
-    it('should start browser OAuth login when pressing "e" on Anthropic with OAuth tokens', () => {
+  describe('Scenario: Edit action on Claude OAuth provider - e keybind removed', () => {
+    it('should do nothing when pressing "e" on Anthropic (keybind removed in PROV-029)', () => {
       // @step Given the Claude provider is selected in provider settings
       const currentItem: SettingsNavItem = {
         type: 'provider',
@@ -171,13 +171,8 @@ describe('Feature: Anthropic subscription parity and regression hardening — TU
         onSwitchToModels,
       });
 
-      // @step Then the OAuth login flow starts (browser or headless)
-      expect(providerSettings.startBrowserLogin).toHaveBeenCalledWith(
-        'anthropic'
-      );
-
-      // @step And the API key editor form is not shown
-      // setMode would be called with edit-api-key if the API key form was shown
+      // @step Then nothing happens (e keybind removed in PROV-029)
+      expect(providerSettings.startBrowserLogin).not.toHaveBeenCalled();
       expect(providerSettings.setMode).not.toHaveBeenCalled();
       expect(providerSettings.setEditingApiKey).not.toHaveBeenCalled();
     });
@@ -189,7 +184,7 @@ describe('Feature: Anthropic subscription parity and regression hardening — TU
   // =========================================================================
 
   describe('Scenario: Delete action on Claude OAuth provider disconnects OAuth', () => {
-    it('should call disconnectOauth when pressing "d" on Anthropic with OAuth tokens', () => {
+    it('should do nothing when pressing "d" on a provider row (PROV-029: d only on oauth-status/api-key/profile)', () => {
       // @step Given the Claude provider has OAuth tokens stored
       const currentItem: SettingsNavItem = {
         type: 'provider',
@@ -205,7 +200,7 @@ describe('Feature: Anthropic subscription parity and regression hardening — TU
         hasOAuthTokens: true,
       };
 
-      // @step When the user presses 'd'
+      // @step When the user presses 'd' on a provider row
       handleListMode({
         input: 'd',
         key: buildKey(),
@@ -218,15 +213,10 @@ describe('Feature: Anthropic subscription parity and regression hardening — TU
         onSwitchToModels,
       });
 
-      // @step Then the OAuth tokens are cleared from claude_auth.json
-      expect(providerSettings.disconnectOauth).toHaveBeenCalledWith(
-        'anthropic'
-      );
-
-      // @step And the provider shows "(not configured)" status
-      // After disconnectOauth + reload, provider with no tokens shows (not configured)
-      // The removeApiKey should NOT be called (OAuth disconnect, not API key delete)
+      // @step Then nothing happens (d on provider rows no longer active — use oauth-status item)
+      expect(providerSettings.disconnectOauth).not.toHaveBeenCalled();
       expect(providerSettings.removeApiKey).not.toHaveBeenCalled();
+      expect(providerSettings.setMode).not.toHaveBeenCalled();
     });
   });
 

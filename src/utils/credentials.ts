@@ -73,15 +73,11 @@ const PROVIDER_ENV_VARS: Record<string, string[]> = {
   huggingface: ['HUGGINGFACE_API_KEY', 'HF_TOKEN'],
   openrouter: ['OPENROUTER_API_KEY'],
   groq: ['GROQ_API_KEY'],
-  ollama: ['OLLAMA_API_KEY'], // Optional for Ollama
   deepseek: ['DEEPSEEK_API_KEY'],
-  perplexity: ['PERPLEXITY_API_KEY'],
+  codex: ['CODEX_API_KEY'],
   moonshot: ['MOONSHOT_API_KEY'],
-  hyperbolic: ['HYPERBOLIC_API_KEY'],
-  mira: ['MIRA_API_KEY'],
   galadriel: ['GALADRIEL_API_KEY'],
   azure: ['AZURE_OPENAI_API_KEY'],
-  voyageai: ['VOYAGEAI_API_KEY'],
   zai: ['ZAI_API_KEY', 'ZAI_PLAN_API_KEY'],
 };
 

@@ -42,9 +42,9 @@ import type {
   ProviderDisplayStatus,
   ProfileDisplayInfo,
   SettingsNavItem,
-  PanelMode,
   TestResult,
 } from '../components/ProviderSettingsPanel';
+import type { HookMode } from '../types/settingsMode';
 
 /**
  * Hook return type
@@ -60,7 +60,7 @@ export interface UseProviderSettingsStateReturn {
   scrollOffset: number;
 
   // Mode state
-  mode: PanelMode;
+  mode: HookMode;
   filter: string;
   isFilterMode: boolean;
   testResult: TestResult | null;
@@ -81,7 +81,7 @@ export interface UseProviderSettingsStateReturn {
   reload: () => Promise<void>;
   setSelectedIndex: (index: number) => void;
   setScrollOffset: (offset: number) => void;
-  setMode: (mode: PanelMode) => void;
+  setMode: (mode: HookMode) => void;
   setFilter: (filter: string) => void;
   setIsFilterMode: (isFilterMode: boolean) => void;
   setTestResult: (result: TestResult | null) => void;
@@ -184,15 +184,27 @@ export function buildNavItems(
         });
       }
 
-      for (const profile of provider.profiles) {
-        items.push({
-          type: 'profile',
-          providerId: provider.id,
-          profileName: profile.name,
-        });
+      // API key row: show for providers with requiresApiKey or envVar, NOT for openai (profile-only)
+      if (provider.id !== 'openai') {
+        const registryEntry = getProviderRegistryEntry(provider.id);
+        if (registryEntry?.requiresApiKey || registryEntry?.envVar) {
+          items.push({
+            type: 'api-key',
+            providerId: provider.id,
+          });
+        }
       }
-      // Add "Create Profile" option (not for OAuth providers — they use OAuth, not profiles)
-      if (!isOAuthProvider(provider.id)) {
+
+      // Profiles: ONLY for OpenAI API provider (local models)
+      if (provider.id === 'openai') {
+        for (const profile of provider.profiles) {
+          items.push({
+            type: 'profile',
+            providerId: provider.id,
+            profileName: profile.name,
+          });
+        }
+        // Always show "Create Profile" for openai
         items.push({
           type: 'add-profile',
           providerId: provider.id,
@@ -217,7 +229,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
   const [scrollOffset, setScrollOffset] = useState(0);
 
   // Mode state
-  const [mode, setMode] = useState<PanelMode>({ type: 'list' });
+  const [mode, setMode] = useState<HookMode>({ type: 'list' });
   const [filter, setFilter] = useState('');
   const [isFilterMode, setIsFilterMode] = useState(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
@@ -300,14 +312,15 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
           }
         }
 
-        // Load profiles for this provider
-        const profiles = await loadProviderProfiles(providerId);
-        const profileInfos: ProfileDisplayInfo[] = Object.entries(profiles).map(
-          ([name, config]) => ({
+        // Load profiles only for OpenAI API provider (Rule 29: profiles are OpenAI-only)
+        let profileInfos: ProfileDisplayInfo[] = [];
+        if (providerId === 'openai') {
+          const profiles = await loadProviderProfiles(providerId);
+          profileInfos = Object.entries(profiles).map(([name, config]) => ({
             name,
             config,
-          })
-        );
+          }));
+        }
 
         loadedProviders.push({
           id: providerId,

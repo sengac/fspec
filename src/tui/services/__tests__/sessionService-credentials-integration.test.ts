@@ -230,7 +230,7 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
         },
         { modelPath: 'openai/gpt-4-turbo', expectedProvider: 'openai' },
         { modelPath: 'gemini/gemini-2.0-flash', expectedProvider: 'gemini' },
-        { modelPath: 'ollama/llama3', expectedProvider: 'ollama' },
+        { modelPath: 'openai/llama3', expectedProvider: 'openai' },
         { modelPath: 'azure/gpt-4', expectedProvider: 'azure' },
       ];
 

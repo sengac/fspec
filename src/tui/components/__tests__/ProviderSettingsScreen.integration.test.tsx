@@ -277,10 +277,11 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
     });
   });
 
-  describe('Scenario: Test connection with t key', () => {
-    it('should test connection when t is pressed on provider', async () => {
+  describe('Scenario: Test connection with t key (PROV-029: removed)', () => {
+    it('should do nothing when t is pressed on provider', async () => {
+      // PROV-029: 't' keybind removed. Connection testing belongs in models view.
       // @step Given ProviderSettingsScreen is rendered in list mode
-      const { stdin } = render(
+      const { stdin, lastFrame } = render(
         <ProviderSettingsScreen
           width={80}
           height={24}
@@ -299,9 +300,12 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       pressKey(stdin, 't');
       await waitFor(100);
 
-      // @step Then testConnection is called for the provider
-      // @step And testResult is displayed
-      expect(fixture.testProviderConnectionMock).toHaveBeenCalled();
+      // @step Then testConnection is NOT called (keybind removed in PROV-029)
+      expect(fixture.testProviderConnectionMock).not.toHaveBeenCalled();
+
+      // @step And the screen remains in list mode
+      const frame = lastFrame();
+      expect(frame).toContain('Provider');
     });
   });
 
@@ -343,8 +347,8 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
   describe('Scenario: Confirm profile deletion with y key', () => {
     it('should call removeProfile when y is pressed in delete mode', async () => {
       // @step Given ProviderSettingsScreen is in delete-profile mode for profile "my-server"
-      // Create profile under anthropic
-      await fixture.createProfile('anthropic', 'my-server', {
+      // PROV-029: Profiles only supported for OpenAI API provider
+      await fixture.createProfile('openai', 'my-server', {
         baseUrl: 'http://localhost:8888',
         apiKey: 'test-key',
       });
@@ -361,24 +365,19 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       await fixture.waitForProvidersLoaded();
       await waitFor(100);
 
-      // Navigate to Anthropic (providers are sorted, Anthropic after OpenAI in typical registry)
-      // First, expand using filter to find Anthropic reliably
+      // Navigate to OpenAI API using filter
       pressKey(stdin, '/');
       await waitFor(50);
-      stdin.write('anthropic');
+      stdin.write('openai');
       await waitFor(100);
       pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
-      // Now Anthropic is visible and selected, expand it
+      // Now OpenAI API is visible and selected, expand it
       pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
-      // Navigate to profile (skip OAuth login items for Anthropic)
-      pressKey(stdin, { name: 'down' });
-      await waitFor(50);
-      pressKey(stdin, { name: 'down' });
-      await waitFor(50);
+      // Navigate to profile (first sub-item under OpenAI API is the profile)
       pressKey(stdin, { name: 'down' });
       await waitFor(50);
 
@@ -412,8 +411,8 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
   describe('Scenario: Cancel profile deletion with n key', () => {
     it('should not call removeProfile when n is pressed in delete mode', async () => {
       // @step Given ProviderSettingsScreen is in delete-profile mode for profile "my-server"
-      // Create profile under anthropic
-      await fixture.createProfile('anthropic', 'my-server', {
+      // PROV-029: Profiles only supported for OpenAI API provider
+      await fixture.createProfile('openai', 'my-server', {
         baseUrl: 'http://localhost:8888',
         apiKey: 'test-key',
       });
@@ -430,23 +429,19 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       await fixture.waitForProvidersLoaded();
       await waitFor(100);
 
-      // Navigate to Anthropic using filter
+      // Navigate to OpenAI API using filter
       pressKey(stdin, '/');
       await waitFor(50);
-      stdin.write('anthropic');
+      stdin.write('openai');
       await waitFor(100);
       pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
-      // Expand Anthropic
+      // Expand OpenAI API
       pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
-      // Navigate to profile (skip OAuth login items for Anthropic)
-      pressKey(stdin, { name: 'down' });
-      await waitFor(50);
-      pressKey(stdin, { name: 'down' });
-      await waitFor(50);
+      // Navigate to profile
       pressKey(stdin, { name: 'down' });
       await waitFor(50);
 
@@ -491,8 +486,32 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       await fixture.waitForProvidersLoaded();
       await waitFor(100);
 
-      // Press 'e' to enter API key edit mode
-      pressKey(stdin, 'e');
+      // PROV-029: 'e' keybind removed. Navigate to api-key item via expand + down.
+      // Filter to Anthropic to ensure we're on the right provider
+      pressKey(stdin, '/');
+      await waitFor(50);
+      stdin.write('anthropic');
+      await waitFor(100);
+      pressKey(stdin, { name: 'enter' });
+      await waitFor(50);
+
+      // Expand Anthropic
+      pressKey(stdin, { name: 'enter' });
+      await waitFor(50);
+
+      // Navigate to the 🔑 API key row
+      // Anthropic (OAuth) expanded items: oauth-status, oauth-login (browser), oauth-login (headless), api-key
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+
+      // Press Enter on the api-key item to enter edit mode
+      pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
       // Verify we're in edit mode
@@ -533,8 +552,31 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       await fixture.waitForProvidersLoaded();
       await waitFor(100);
 
-      // Press 'e' to enter API key edit mode
-      pressKey(stdin, 'e');
+      // PROV-029: 'e' keybind removed. Navigate to api-key item via expand + down.
+      // Filter to Anthropic
+      pressKey(stdin, '/');
+      await waitFor(50);
+      stdin.write('anthropic');
+      await waitFor(100);
+      pressKey(stdin, { name: 'enter' });
+      await waitFor(50);
+
+      // Expand Anthropic
+      pressKey(stdin, { name: 'enter' });
+      await waitFor(50);
+
+      // Navigate to the 🔑 API key row
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+      pressKey(stdin, { name: 'down' });
+      await waitFor(50);
+
+      // Press Enter on the api-key item to enter edit mode
+      pressKey(stdin, { name: 'enter' });
       await waitFor(50);
 
       // Verify we're in edit mode

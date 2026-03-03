@@ -152,15 +152,6 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     });
   });
 
-  describe('Scenario: Explicit credentials take highest priority', () => {
-    // CONFIG-005: This scenario is obsolete - explicit credentials were used for
-    // passing to Rust, but Rust now resolves credentials internally.
-    // The UI no longer needs to resolve credentials for session creation.
-    it.skip('explicit credentials feature removed - Rust resolves internally', async () => {
-      // This test is skipped because the feature was removed in CONFIG-005
-    });
-  });
-
   describe('Scenario: .env file is lowest priority fallback', () => {
     it('should use .env file when no other sources available', async () => {
       // @step Given I do not have credentials in the credentials file
@@ -283,26 +274,25 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     });
   });
 
-  describe('Scenario: Configure Ollama without API key', () => {
-    it('should enable Ollama with just base URL', async () => {
-      // @step Given I want to use the local Ollama provider
-      // (user intent, no setup needed)
+  describe('Scenario: Configure Ollama via OpenAI API profile', () => {
+    it('should save profile under openai provider', async () => {
+      // @step Given I want to use a local Ollama server via OpenAI API profiles
 
-      // @step When I configure "ollama" with base URL "http://localhost:11434"
-      await saveProviderConfig('ollama', {
-        baseUrl: 'http://localhost:11434',
+      // @step When I configure "openai" with a profile for Ollama
+      await saveProviderConfig('openai', {
+        profiles: {
+          ollama: {
+            baseUrl: 'http://localhost:11434',
+            apiKey: '',
+          },
+        },
         enabled: true,
       });
 
-      // @step Then the provider should be enabled without requiring an API key
-      const config = await loadProviderConfig('ollama');
+      // @step Then the profile should be saved under the openai provider
+      const config = await loadProviderConfig('openai');
       expect(config.enabled).toBe(true);
-      expect(config.baseUrl).toBe('http://localhost:11434');
-      // No API key required for Ollama
-
-      // @step And I should be able to list available Ollama models
-      // This will be tested in integration tests with actual Ollama
-      expect(config.enabled).toBe(true);
+      expect(config.profiles?.ollama?.baseUrl).toBe('http://localhost:11434');
     });
   });
 
@@ -328,12 +318,12 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     });
   });
 
-  describe('Scenario: All 21 providers are registered', () => {
-    it('should have exactly 21 providers in registry', async () => {
+  describe('Scenario: All 16 providers are registered', () => {
+    it('should have exactly 16 providers in registry', async () => {
       // @step When I query the provider registry
       const registry = getProviderRegistry();
 
-      // @step Then I should see exactly 21 providers:
+      // @step Then I should see exactly 16 providers:
       const expectedProviders = [
         'openai',
         'anthropic',
@@ -345,20 +335,15 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
         'huggingface',
         'openrouter',
         'groq',
-        'ollama',
         'deepseek',
-        'perplexity',
         'moonshot',
-        'hyperbolic',
-        'mira',
         'galadriel',
         'azure',
-        'voyageai',
         'zai',
         'codex',
       ];
 
-      expect(registry.length).toBe(21);
+      expect(registry.length).toBe(16);
       for (const provider of expectedProviders) {
         expect(registry).toContain(provider);
       }
@@ -449,7 +434,7 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
   });
 
   describe('Scenario: Navigate to Settings view with Tab key', () => {
-    it('should show all 21 providers with status', async () => {
+    it('should show all 16 providers with status', async () => {
       // @step Given I am in the model selection screen
       // (user context, no setup needed)
 
@@ -460,8 +445,8 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
       // UI state tested in component tests
       const registry = getProviderRegistry();
 
-      // @step And I should see a list of all 21 providers
-      expect(registry).toHaveLength(21);
+      // @step And I should see a list of all 16 providers
+      expect(registry).toHaveLength(16);
 
       // @step And each provider should show its configuration status
       // This tests that we can get config for each provider
@@ -631,12 +616,11 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
 // ============================================
 
 describe('Provider Registry Constants', () => {
-  it('SUPPORTED_PROVIDERS should contain all 21 providers', () => {
-    expect(SUPPORTED_PROVIDERS).toHaveLength(21);
+  it('SUPPORTED_PROVIDERS should contain all 16 providers', () => {
+    expect(SUPPORTED_PROVIDERS).toHaveLength(16);
     expect(SUPPORTED_PROVIDERS).toContain('anthropic');
     expect(SUPPORTED_PROVIDERS).toContain('openai');
     expect(SUPPORTED_PROVIDERS).toContain('gemini');
-    expect(SUPPORTED_PROVIDERS).toContain('ollama');
     expect(SUPPORTED_PROVIDERS).toContain('azure');
     expect(SUPPORTED_PROVIDERS).toContain('zai');
     expect(SUPPORTED_PROVIDERS).toContain('codex');

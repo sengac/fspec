@@ -350,7 +350,7 @@ describe('Feature: Anthropic Provider Routing with Subscription Auth', () => {
   });
 
   describe('Scenario: Non-OAuth providers unaffected by Claude OAuth changes', () => {
-    it('should not show OpenAI section when no OpenAI credentials exist', async () => {
+    it('should show OpenAI section as always-available since it requires no API key', async () => {
       // @step Given I have authenticated with Claude via OAuth
       napiMocks.claudeOauthGetTokens.mockResolvedValue({
         accessToken: 'sk-ant-oat-test-access-token',
@@ -368,11 +368,14 @@ describe('Feature: Anthropic Provider Routing with Subscription Auth', () => {
       ]);
       const result = await initializeModels();
 
-      // @step Then I should not see any OpenAI section
+      // PROV-029: OpenAI API now has requiresApiKey=false (profile-only local model provider)
+      // so it always has hasCredentials=true and appears in the model list
+      // @step Then the OpenAI section should be present (requiresApiKey=false)
       const openaiSection = result.sections.find(
         s => s.providerId === 'openai'
       );
-      expect(openaiSection).toBeUndefined();
+      expect(openaiSection).toBeDefined();
+      expect(openaiSection!.hasCredentials).toBe(true);
 
       // @step And Codex OAuth behavior should be unchanged
       const codexSection = result.sections.find(s => s.providerId === 'codex');

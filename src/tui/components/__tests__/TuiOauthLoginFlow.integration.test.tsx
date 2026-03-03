@@ -343,8 +343,9 @@ describe('Feature: TUI OAuth Login Flow for Provider Settings', () => {
       // @step And I should see "Login with ChatGPT (headless)" option
       expect(frame).toContain('Login with ChatGPT (headless)');
 
-      // @step And I should see the existing API key edit option
-      expect(frame).toContain('e: edit');
+      // @step And I should see footer keybind hints
+      expect(frame).toContain('Enter');
+      expect(frame).toContain('Esc');
     });
   });
 
@@ -531,8 +532,9 @@ describe('Feature: TUI OAuth Login Flow for Provider Settings', () => {
       // Only check that the provider IS shown with its status
       expect(frame).toContain('Anthropic');
 
-      // @step And I should see the existing API key edit option
-      expect(frame).toContain('e: edit');
+      // @step And I should see footer keybind hints
+      expect(frame).toContain('Enter');
+      expect(frame).toContain('Esc');
     });
   });
 

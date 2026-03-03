@@ -72,7 +72,7 @@ export interface ProviderRegistryEntry {
 }
 
 /**
- * All 19 supported rig providers
+ * Supported providers (those with tool calling support)
  */
 export const SUPPORTED_PROVIDERS = [
   'openai',
@@ -85,15 +85,10 @@ export const SUPPORTED_PROVIDERS = [
   'huggingface',
   'openrouter',
   'groq',
-  'ollama',
   'deepseek',
-  'perplexity',
   'moonshot',
-  'hyperbolic',
-  'mira',
   'galadriel',
   'azure',
-  'voyageai',
   'zai',
   'codex',
 ] as const;
@@ -106,13 +101,13 @@ export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number];
 const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
   {
     id: 'openai',
-    name: 'OpenAI',
+    name: 'OpenAI API',
     baseUrl: 'https://api.openai.com/v1',
     envVar: 'OPENAI_API_KEY',
     authMethod: 'bearer',
     authType: 'api-key',
-    requiresApiKey: true,
-    description: 'OpenAI GPT models',
+    requiresApiKey: false,
+    description: 'OpenAI-compatible API for local models (vLLM, Ollama, etc.)',
   },
   {
     id: 'anthropic',
@@ -205,16 +200,6 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     description: 'Groq fast inference',
   },
   {
-    id: 'ollama',
-    name: 'Ollama',
-    baseUrl: 'http://localhost:11434',
-    envVar: 'OLLAMA_API_KEY',
-    authMethod: 'none',
-    authType: 'api-key',
-    requiresApiKey: false,
-    description: 'Local Ollama models',
-  },
-  {
     id: 'deepseek',
     name: 'DeepSeek',
     baseUrl: 'https://api.deepseek.com/v1',
@@ -225,16 +210,6 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     description: 'DeepSeek models',
   },
   {
-    id: 'perplexity',
-    name: 'Perplexity',
-    baseUrl: 'https://api.perplexity.ai',
-    envVar: 'PERPLEXITY_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Perplexity AI models',
-  },
-  {
     id: 'moonshot',
     name: 'Moonshot',
     baseUrl: 'https://api.moonshot.cn/v1',
@@ -243,26 +218,6 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     authType: 'api-key',
     requiresApiKey: true,
     description: 'Moonshot AI models',
-  },
-  {
-    id: 'hyperbolic',
-    name: 'Hyperbolic',
-    baseUrl: 'https://api.hyperbolic.xyz/v1',
-    envVar: 'HYPERBOLIC_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Hyperbolic AI models',
-  },
-  {
-    id: 'mira',
-    name: 'Mira',
-    baseUrl: 'https://api.mira.network/v1',
-    envVar: 'MIRA_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Mira network models',
   },
   {
     id: 'galadriel',
@@ -283,16 +238,6 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     authType: 'api-key',
     requiresApiKey: true,
     description: 'Azure OpenAI Service',
-  },
-  {
-    id: 'voyageai',
-    name: 'Voyage AI',
-    baseUrl: 'https://api.voyageai.com/v1',
-    envVar: 'VOYAGEAI_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Voyage AI embeddings',
   },
   {
     id: 'zai',
@@ -406,9 +351,9 @@ export async function isProviderConfigured(
     return false;
   }
 
-  // Ollama doesn't require API key
+  // Providers that don't require API key (e.g., OpenAI API for local models)
   if (!registry.requiresApiKey) {
-    return config.enabled !== false; // Default to enabled for Ollama
+    return config.enabled !== false;
   }
 
   // Azure requires endpoint
@@ -481,6 +426,11 @@ export async function saveProfile(
   profileName: string,
   profileConfig: ProfileConfig
 ): Promise<void> {
+  // Guard: profiles are only supported for OpenAI API provider
+  if (providerId !== 'openai') {
+    throw new Error('Profiles are only supported for OpenAI API provider');
+  }
+
   // Load existing user config
   const userConfigPath = join(getFspecUserDir(), 'fspec-config.json');
   let config: Record<string, unknown> = {};

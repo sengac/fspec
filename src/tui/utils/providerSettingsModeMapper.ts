@@ -1,19 +1,24 @@
 /**
  * Mode mapper for provider settings
  *
- * TUI-074: Maps hook mode types to panel mode types
+ * TUI-074: Maps hook mode types to panel mode types.
+ * This is the ONLY place that translates between HookMode and PanelMode.
  */
 
 import type { PanelMode } from '../components/ProviderSettingsPanel';
+import type { HookMode } from '../types/settingsMode';
 import type { UseProviderSettingsStateReturn } from '../hooks/useProviderSettingsState';
 
 /**
- * Maps hook state to the effective panel mode for rendering
+ * Maps hook state to the effective panel mode for rendering.
+ *
+ * Input: HookMode (from the hook's internal state machine)
+ * Output: PanelMode (the rendering variant for ProviderSettingsPanel)
  */
 export function mapToEffectivePanelMode(
   providerSettings: UseProviderSettingsStateReturn
 ): PanelMode {
-  const hookMode = providerSettings.mode;
+  const hookMode: HookMode = providerSettings.mode;
 
   if (hookMode.type === 'create-profile' || hookMode.type === 'edit-profile') {
     return {
@@ -33,6 +38,14 @@ export function mapToEffectivePanelMode(
       providerId: hookMode.providerId,
       profileName: hookMode.profileName,
     };
+  }
+
+  if (hookMode.type === 'delete-api-key') {
+    return hookMode;
+  }
+
+  if (hookMode.type === 'disconnect-oauth') {
+    return hookMode;
   }
 
   if (hookMode.type === 'edit-api-key') {

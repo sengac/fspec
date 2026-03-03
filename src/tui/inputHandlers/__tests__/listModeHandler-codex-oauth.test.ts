@@ -1,9 +1,10 @@
 /**
- * Feature: spec/features/codex-oauth-integration-bugs.feature
+ * Feature: spec/features/tui-codex-oauth-login.feature
  *
- * This test file validates the acceptance criteria for PROV-019:
- * Codex OAuth Integration Bugs - specifically the 'e' key handler
- * and 'd' key handler behavior for OAuth vs API key providers.
+ * PROV-019: TUI Provider Settings — Codex OAuth login flow
+ * Tests listModeHandler for Codex OAuth provider keybinds.
+ *
+ * Updated for PROV-029: 'e' keybind removed, 'd' only works on specific item types
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -14,13 +15,16 @@ import type {
   ProviderDisplayInfo,
 } from '../../components/ProviderSettingsPanel';
 
-/**
- * Create a minimal typed mock of UseProviderSettingsStateReturn.
- *
- * Uses Pick to extract only the subset of keys we need, then spreads
- * the mocked functions. This avoids `as unknown as` while keeping
- * handleListMode happy (it accesses a known subset of the interface).
- */
+vi.mock('../../../utils/provider-config', async importOriginal => {
+  const actual =
+    await importOriginal<typeof import('../../../utils/provider-config')>();
+  return {
+    ...actual,
+    isOAuthProvider: (providerId: string) =>
+      providerId === 'anthropic' || providerId === 'codex',
+  };
+});
+
 type MockedProviderSettings = {
   [K in keyof UseProviderSettingsStateReturn]: UseProviderSettingsStateReturn[K] extends (
     ...args: infer A
@@ -66,7 +70,7 @@ function buildMockProviderSettings(): MockedProviderSettings {
     testConnection: vi.fn().mockResolvedValue({
       providerId: '',
       success: true,
-      message: '',
+      message: '✓ Connected',
     }),
     getCurrentItem: vi.fn(),
     getCurrentProvider: vi.fn(),
@@ -76,6 +80,7 @@ function buildMockProviderSettings(): MockedProviderSettings {
     cancelOauth: vi.fn(),
     retryOauth: vi.fn(),
     disconnectOauth: vi.fn().mockResolvedValue(undefined),
+    submitHeadlessCode: vi.fn(),
   };
 }
 
@@ -101,17 +106,7 @@ function buildKey(
   };
 }
 
-// Mock isOAuthProvider to control behavior per-test without depending on registry data
-vi.mock('../../../utils/provider-config', async importOriginal => {
-  const actual =
-    await importOriginal<typeof import('../../../utils/provider-config')>();
-  return {
-    ...actual,
-    isOAuthProvider: (providerId: string) => providerId === 'codex',
-  };
-});
-
-describe('Feature: Codex OAuth Integration Bugs', () => {
+describe('Feature: TUI Provider Settings — Codex OAuth keybinds', () => {
   let providerSettings: MockedProviderSettings;
   const onClose = vi.fn();
   const onSwitchToModels = vi.fn();
@@ -121,21 +116,13 @@ describe('Feature: Codex OAuth Integration Bugs', () => {
     vi.clearAllMocks();
   });
 
-  describe('Scenario: Edit key on Codex provider starts OAuth flow', () => {
-    it('should start browser OAuth login instead of showing API key editor', () => {
+  describe('Scenario: Edit key on Codex provider - e keybind removed', () => {
+    it('should do nothing when pressing "e" (keybind removed in PROV-029)', () => {
       // @step Given the Codex provider is selected in provider settings
       const currentItem: SettingsNavItem = {
         type: 'provider',
         providerId: 'codex',
         name: 'Codex (ChatGPT)',
-      };
-      const currentProvider: ProviderDisplayInfo = {
-        id: 'codex',
-        name: 'Codex (ChatGPT)',
-        status: { hasKey: false },
-        profiles: [],
-        isExpanded: false,
-        hasOAuthTokens: false,
       };
 
       // @step When the user presses 'e'
@@ -144,40 +131,27 @@ describe('Feature: Codex OAuth Integration Bugs', () => {
         key: buildKey(),
         providerSettings,
         currentItem,
-        currentProvider,
+        currentProvider: undefined,
         currentProfile: undefined,
         visibleHeight: 20,
         onClose,
         onSwitchToModels,
       });
 
-      // @step Then the browser OAuth login flow starts
-      expect(providerSettings.startBrowserLogin).toHaveBeenCalledWith('codex');
-
-      // @step Then the API key editor form is not shown
+      // @step Then nothing happens (e keybind removed in PROV-029)
+      expect(providerSettings.startBrowserLogin).not.toHaveBeenCalled();
       expect(providerSettings.setMode).not.toHaveBeenCalled();
       expect(providerSettings.setEditingApiKey).not.toHaveBeenCalled();
     });
   });
 
-  describe('Scenario: Edit key on non-OAuth provider shows API key editor', () => {
-    it('should show API key editor for Anthropic provider', () => {
-      // @step Given a non-OAuth provider like Anthropic is selected in provider settings
+  describe('Scenario: Edit key on non-OAuth provider - e keybind removed', () => {
+    it('should do nothing when pressing "e" on Anthropic (keybind removed in PROV-029)', () => {
+      // @step Given a non-OAuth provider like Anthropic is selected
       const currentItem: SettingsNavItem = {
         type: 'provider',
         providerId: 'anthropic',
         name: 'Anthropic',
-      };
-      const currentProvider: ProviderDisplayInfo = {
-        id: 'anthropic',
-        name: 'Anthropic',
-        status: {
-          hasKey: true,
-          maskedKey: 'sk-ant-••••••••VgAA',
-          source: 'file',
-        },
-        profiles: [],
-        isExpanded: false,
       };
 
       // @step When the user presses 'e'
@@ -186,35 +160,53 @@ describe('Feature: Codex OAuth Integration Bugs', () => {
         key: buildKey(),
         providerSettings,
         currentItem,
-        currentProvider,
+        currentProvider: undefined,
         currentProfile: undefined,
         visibleHeight: 20,
         onClose,
         onSwitchToModels,
       });
 
-      // @step Then the API key editor form is shown
-      expect(providerSettings.setEditingApiKey).toHaveBeenCalledWith('');
-      expect(providerSettings.setMode).toHaveBeenCalledWith({
-        type: 'edit-api-key',
-        providerId: 'anthropic',
-      });
-
-      // And the OAuth login flow should NOT start
+      // @step Then nothing happens (e keybind removed in PROV-029)
+      expect(providerSettings.setEditingApiKey).not.toHaveBeenCalled();
+      expect(providerSettings.setMode).not.toHaveBeenCalled();
       expect(providerSettings.startBrowserLogin).not.toHaveBeenCalled();
     });
   });
 
-  describe('Scenario: Delete on Codex provider disconnects OAuth', () => {
-    it('should call disconnectOauth instead of removeApiKey for Codex with OAuth tokens', () => {
-      // @step Given the Codex provider has OAuth tokens stored
+  describe('Scenario: Delete on Codex provider row does nothing', () => {
+    it('should do nothing when pressing "d" on provider row (PROV-029: use oauth-status item)', () => {
       // @step Given the Codex provider is selected in provider settings
       const currentItem: SettingsNavItem = {
         type: 'provider',
         providerId: 'codex',
         name: 'Codex (ChatGPT)',
       };
-      const currentProvider: ProviderDisplayInfo = {
+
+      // @step When the user presses 'd' on a provider row
+      handleListMode({
+        input: 'd',
+        key: buildKey(),
+        providerSettings,
+        currentItem,
+        currentProvider: undefined,
+        currentProfile: undefined,
+        visibleHeight: 20,
+        onClose,
+        onSwitchToModels,
+      });
+
+      // @step Then nothing happens (d on provider rows no longer active)
+      expect(providerSettings.disconnectOauth).not.toHaveBeenCalled();
+      expect(providerSettings.removeApiKey).not.toHaveBeenCalled();
+      expect(providerSettings.setMode).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Scenario: Codex provider with OAuth tokens shows connected status', () => {
+    it('should build status with OAuth maskedKey and ChatGPT source', () => {
+      // @step Given the Codex provider has valid OAuth tokens stored
+      const codexProvider: ProviderDisplayInfo = {
         id: 'codex',
         name: 'Codex (ChatGPT)',
         status: { hasKey: true, maskedKey: 'OAuth', source: 'ChatGPT' },
@@ -223,61 +215,14 @@ describe('Feature: Codex OAuth Integration Bugs', () => {
         hasOAuthTokens: true,
       };
 
-      // @step When the user presses 'd'
-      handleListMode({
-        input: 'd',
-        key: buildKey(),
-        providerSettings,
-        currentItem,
-        currentProvider,
-        currentProfile: undefined,
-        visibleHeight: 20,
-        onClose,
-        onSwitchToModels,
-      });
+      // @step Then the status should show OAuth maskedKey
+      expect(codexProvider.status.maskedKey).toBe('OAuth');
 
-      // @step Then the OAuth tokens are cleared from storage
-      expect(providerSettings.disconnectOauth).toHaveBeenCalledWith('codex');
+      // @step And the status source should be ChatGPT
+      expect(codexProvider.status.source).toBe('ChatGPT');
 
-      // @step Then the provider shows '(not configured)' status
-      // (verified after reload completes — disconnectOauth triggers reload)
-      expect(providerSettings.removeApiKey).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('Scenario: Codex provider with OAuth tokens shows connected status', () => {
-    it('should build status with OAuth maskedKey and ChatGPT source', () => {
-      // @step Given the Codex provider has valid OAuth tokens stored
-      // This tests the data contract that useProviderSettingsState produces
-      // when codexOauthGetTokens() returns tokens for an OAuth provider.
-      // The hook sets: { hasKey: true, maskedKey: 'OAuth', source: 'ChatGPT' }
-
-      // @step When the provider settings list is rendered
-      // Build the provider display as the hook would produce it
-      const provider: ProviderDisplayInfo = {
-        id: 'codex',
-        name: 'Codex (ChatGPT)',
-        status: {
-          hasKey: true,
-          maskedKey: 'OAuth',
-          source: 'ChatGPT',
-        },
-        profiles: [],
-        isExpanded: false,
-        hasOAuthTokens: true,
-      };
-
-      // @step Then the Codex row displays a checkmark with 'OAuth' and '[ChatGPT]' source
-      // The ProviderSettingsPanel renders: ✓ {maskedKey} [{source}]
-      // So this produces: ✓ OAuth [ChatGPT]
-      expect(provider.status.hasKey).toBe(true);
-      expect(provider.status.maskedKey).toBe('OAuth');
-      expect(provider.status.source).toBe('ChatGPT');
-      expect(provider.hasOAuthTokens).toBe(true);
-
-      // Verify the rendering template matches spec: "✓ OAuth [ChatGPT]"
-      const renderedStatus = `✓ ${provider.status.maskedKey} [${provider.status.source}]`;
-      expect(renderedStatus).toBe('✓ OAuth [ChatGPT]');
+      // @step And the provider should have hasOAuthTokens set
+      expect(codexProvider.hasOAuthTokens).toBe(true);
     });
   });
 });

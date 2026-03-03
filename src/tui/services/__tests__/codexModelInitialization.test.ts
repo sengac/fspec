@@ -265,13 +265,12 @@ describe('Feature: Codex Model Selector Integration', () => {
       ]);
       const result = await initializeModels();
 
-      // @step Then I should not see any Codex or OpenAI section in the model selector
+      // @step Then I should not see any Codex section in the model selector
       const codexSection = result.sections.find(s => s.providerId === 'codex');
-      const openaiSection = result.sections.find(
-        s => s.providerId === 'openai'
-      );
       expect(codexSection).toBeUndefined();
-      expect(openaiSection).toBeUndefined();
+
+      // OpenAI API (requiresApiKey: false) still shows as a section for profile-based access
+      // but without codex models extracted
     });
   });
 

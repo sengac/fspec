@@ -6,7 +6,7 @@
 
 import type { Key } from 'ink';
 import type { UseProviderSettingsStateReturn } from '../hooks/useProviderSettingsState';
-import type { PanelMode } from '../components/ProviderSettingsPanel';
+import type { HookMode } from '../types/settingsMode';
 import { filterPrintableChars } from '../utils/providerSettingsHelpers';
 
 /**
@@ -14,7 +14,7 @@ import { filterPrintableChars } from '../utils/providerSettingsHelpers';
  * @returns true if input was handled (mode is active)
  */
 export function handleApiKeyEditMode(
-  mode: PanelMode,
+  mode: HookMode,
   input: string,
   key: Key,
   providerSettings: UseProviderSettingsStateReturn

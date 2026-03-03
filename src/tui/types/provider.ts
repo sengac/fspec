@@ -2,7 +2,7 @@
  * Provider types for TUI components
  *
  * PROV-007: Shared types for provider configuration and profile management.
- * Used by ProviderSettingsView, ModelSelectorView, and related hooks.
+ * Used by ModelSelectorView and related hooks.
  */
 
 import type { ProfileConfig } from '../../utils/provider-config';
@@ -103,47 +103,6 @@ export type ModelSelectorItem =
     };
 
 /**
- * Provider status for settings view
- */
-export interface ProviderStatus {
-  hasKey: boolean;
-  maskedKey?: string;
-  source?: 'env' | 'config' | 'profile';
-}
-
-/**
- * Profile with display metadata
- */
-export interface ProfileDisplay {
-  name: string;
-  config: ProfileConfig;
-  isExpanded: boolean;
-}
-
-/**
- * Provider with profiles for settings view
- */
-export interface ProviderWithProfiles {
-  id: string;
-  name: string;
-  status: ProviderStatus;
-  profiles: ProfileDisplay[];
-  isExpanded: boolean;
-  /** Whether this provider has existing OAuth tokens */
-  hasOAuthTokens?: boolean;
-}
-
-/**
- * Settings view mode
- */
-export type SettingsViewMode =
-  | { type: 'list' }
-  | { type: 'edit-api-key'; providerId: string }
-  | { type: 'create-profile'; providerId: string }
-  | { type: 'edit-profile'; providerId: string; profileName: string }
-  | { type: 'delete-profile'; providerId: string; profileName: string };
-
-/**
  * Profile form field
  */
 export interface ProfileFormField {
@@ -187,13 +146,3 @@ export const PROFILE_FORM_FIELDS: ProfileFormField[] = [
     placeholder: '16384',
   },
 ];
-
-/**
- * Connection test result
- */
-export interface ConnectionTestResult {
-  providerId: string;
-  profileName?: string;
-  success: boolean;
-  message: string;
-}

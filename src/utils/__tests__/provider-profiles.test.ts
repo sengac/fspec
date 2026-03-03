@@ -282,29 +282,27 @@ describe('Feature: Provider Configuration Persistence and TUI Display', () => {
   // ============================================
 
   describe('Scenario: Profiles for multiple providers', () => {
-    it('should store profiles independently per provider', async () => {
-      // @step Given I have profiles for "openai" and "anthropic" providers
+    it('should reject saving profiles for non-OpenAI providers', async () => {
+      // PROV-029: Profiles are only supported for OpenAI API provider
+      // @step Given I save a profile for "openai" provider
       await saveProfile('openai', 'work-vllm', {
         baseUrl: 'http://work:8888',
         apiKey: 'openai-key',
       });
 
-      await saveProfile('anthropic', 'proxy-server', {
-        baseUrl: 'http://anthropic-proxy:8888',
-        apiKey: 'anthropic-key',
-      });
+      // @step When I try to save a profile for "anthropic" provider
+      // @step Then the save should be rejected
+      await expect(
+        saveProfile('anthropic', 'proxy-server', {
+          baseUrl: 'http://anthropic-proxy:8888',
+          apiKey: 'anthropic-key',
+        })
+      ).rejects.toThrow('Profiles are only supported for OpenAI API provider');
 
-      // @step Then each provider should have its own profiles
+      // @step And the openai profile should still exist
       const openaiProfiles = await loadProviderProfiles('openai');
-      const anthropicProfiles = await loadProviderProfiles('anthropic');
-
       expect(openaiProfiles['work-vllm']).toBeDefined();
       expect(openaiProfiles['work-vllm'].baseUrl).toBe('http://work:8888');
-
-      expect(anthropicProfiles['proxy-server']).toBeDefined();
-      expect(anthropicProfiles['proxy-server'].baseUrl).toBe(
-        'http://anthropic-proxy:8888'
-      );
     });
   });
 

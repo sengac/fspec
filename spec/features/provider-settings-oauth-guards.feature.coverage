@@ -1,0 +1,2575 @@
+{
+  "scenarios": [
+    {
+      "name": "Confirming OAuth disconnect clears tokens",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "718-751",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
+          "lines": [
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PROVIDER_ENV_VARS includes codex entry",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "895-925",
+          "implMappings": [
+            {
+              "file": "src/utils/credentials.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/utils/credentials.ts",
+          "lines": [
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider list contains only providers with tool calling support",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "184-209",
+          "implMappings": [
+            {
+              "file": "src/utils/provider-config.ts",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/utils/provider-config.ts",
+          "lines": [
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding an OAuth provider shows OAuth items and API key but no profiles",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "211-271",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/hooks/useProviderSettingsState.ts",
+          "lines": [
+            184,
+            185,
+            186,
+            187,
+            188,
+            189,
+            190,
+            191,
+            192,
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210,
+            211,
+            212,
+            213,
+            214,
+            215
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding an OAuth provider with stale profiles in config ignores them",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "273-311",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/hooks/useProviderSettingsState.ts",
+          "lines": [
+            184,
+            185,
+            186,
+            187,
+            188,
+            189,
+            190,
+            191,
+            192,
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210,
+            211,
+            212,
+            213,
+            214,
+            215
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding a cloud API-key provider shows only the API key row",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "313-360",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/hooks/useProviderSettingsState.ts",
+          "lines": [
+            184,
+            185,
+            186,
+            187,
+            188,
+            189,
+            190,
+            191,
+            192,
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210,
+            211,
+            212,
+            213,
+            214,
+            215
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding OpenAI API with profiles shows profile rows and create button",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "362-407",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/hooks/useProviderSettingsState.ts",
+          "lines": [
+            184,
+            185,
+            186,
+            187,
+            188,
+            189,
+            190,
+            191,
+            192,
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210,
+            211,
+            212,
+            213,
+            214,
+            215
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding OpenAI API with no profiles shows only create button",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "409-442",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/hooks/useProviderSettingsState.ts",
+          "lines": [
+            184,
+            185,
+            186,
+            187,
+            188,
+            189,
+            190,
+            191,
+            192,
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210,
+            211,
+            212,
+            213,
+            214,
+            215
+          ]
+        }
+      ]
+    },
+    {
+      "name": "saveProfile rejects non-OpenAI-API providers",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "444-458",
+          "implMappings": [
+            {
+              "file": "src/utils/provider-config.ts",
+              "lines": [
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/utils/provider-config.ts",
+          "lines": [
+            427,
+            428,
+            429,
+            430,
+            431,
+            432,
+            433
+          ]
+        }
+      ]
+    },
+    {
+      "name": "saveProfile rejects OAuth providers",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "460-474",
+          "implMappings": [
+            {
+              "file": "src/utils/provider-config.ts",
+              "lines": [
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/utils/provider-config.ts",
+          "lines": [
+            427,
+            428,
+            429,
+            430,
+            431,
+            432,
+            433
+          ]
+        }
+      ]
+    },
+    {
+      "name": "saveProfile accepts OpenAI API provider",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "476-498",
+          "implMappings": [
+            {
+              "file": "src/utils/provider-config.ts",
+              "lines": [
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/utils/provider-config.ts",
+          "lines": [
+            427,
+            428,
+            429,
+            430,
+            431,
+            432,
+            433
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a provider row toggles expansion",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "500-515",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a login item starts the OAuth flow",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "517-533",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on an API key item opens the key editor",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "535-554",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a profile item opens the profile editor",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "556-581",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on create new profile starts profile creation",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "583-606",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'd' on an API key item shows delete confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "608-628",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Declining API key delete confirmation preserves the key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "630-661",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
+          "lines": [
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Confirming API key delete removes the key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "663-693",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
+          "lines": [
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'd' on an OAuth status item shows disconnect confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "695-716",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'd' on a profile item shows delete confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "753-778",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'e' does nothing on any item",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "780-798",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'n' does nothing on any item",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "800-817",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 't' does nothing on any item",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "819-838",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/inputHandlers/listModeHandler.ts",
+          "lines": [
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149,
+            150,
+            151,
+            152,
+            153,
+            154,
+            155,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163,
+            164,
+            165
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer updates based on selected item type",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "840-867",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/providerSettingsHelpers.ts",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/utils/providerSettingsHelpers.ts",
+          "lines": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab hint says \"Switch to models\" on provider settings panel",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "869-893",
+          "implMappings": [
+            {
+              "file": "src/tui/components/ProviderSettingsPanel.tsx",
+              "lines": [
+                762,
+                763,
+                764,
+                765,
+                766,
+                767,
+                768
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/components/ProviderSettingsPanel.tsx",
+          "lines": [
+            762,
+            763,
+            764,
+            765,
+            766,
+            767,
+            768
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dead code files are removed",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "927-944",
+          "implMappings": [
+            {
+              "file": "src/tui/types/provider.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/types/provider.ts",
+          "lines": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dead types in provider.ts are cleaned up",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-guards.test.ts",
+          "lines": "946-961",
+          "implMappings": [
+            {
+              "file": "src/tui/types/provider.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ],
+      "implementationMappings": [
+        {
+          "file": "src/tui/types/provider.ts",
+          "lines": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            117,
+            118,
+            119,
+            120,
+            121,
+            122,
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131,
+            132,
+            133,
+            134,
+            135,
+            136,
+            137,
+            138,
+            139,
+            140,
+            141,
+            142,
+            143,
+            144,
+            145,
+            146,
+            147,
+            148,
+            149
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 28,
+    "coveredScenarios": 28,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/provider-settings-oauth-guards.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/inputHandlers/deleteConfirmModeHandler.ts",
+      "src/utils/credentials.ts",
+      "src/utils/provider-config.ts",
+      "src/tui/hooks/useProviderSettingsState.ts",
+      "src/tui/inputHandlers/listModeHandler.ts",
+      "src/tui/utils/providerSettingsHelpers.ts",
+      "src/tui/components/ProviderSettingsPanel.tsx",
+      "src/tui/types/provider.ts"
+    ],
+    "totalLinesCovered": 2456
+  }
+}

@@ -6,35 +6,69 @@
 
 import type { Key } from 'ink';
 import type { UseProviderSettingsStateReturn } from '../hooks/useProviderSettingsState';
-import type { PanelMode } from '../components/ProviderSettingsPanel';
+import type { HookMode } from '../types/settingsMode';
+
+/**
+ * Generic confirmation handler — extracts the y/n/Esc pattern.
+ */
+function handleConfirmation(
+  input: string,
+  key: Key,
+  onConfirm: () => Promise<void>,
+  onCancel: () => void
+): boolean {
+  if (input === 'y' || input === 'Y') {
+    void onConfirm().then(onCancel);
+    return true;
+  }
+  if (key.escape || input === 'n' || input === 'N') {
+    onCancel();
+    return true;
+  }
+  return true; // Consume all input in confirmation mode
+}
 
 /**
  * Handles input in delete confirmation mode
+ * Supports: delete-profile, delete-api-key, disconnect-oauth
  * @returns true if input was handled (mode is active)
  */
 export function handleDeleteConfirmMode(
-  mode: PanelMode,
+  mode: HookMode,
   input: string,
   key: Key,
   providerSettings: UseProviderSettingsStateReturn
 ): boolean {
-  if (mode.type !== 'delete-profile') {
-    return false;
-  }
-
-  if (input === 'y' || input === 'Y') {
-    void providerSettings
-      .removeProfile(mode.providerId, mode.profileName)
-      .then(() => {
-        providerSettings.setMode({ type: 'list' });
-      });
-    return true;
-  }
-
-  if (key.escape || input === 'n' || input === 'N') {
+  const cancel = () => {
     providerSettings.setMode({ type: 'list' });
-    return true;
+  };
+
+  if (mode.type === 'delete-profile') {
+    return handleConfirmation(
+      input,
+      key,
+      () => providerSettings.removeProfile(mode.providerId, mode.profileName),
+      cancel
+    );
   }
 
-  return true; // Consume all input in delete mode
+  if (mode.type === 'delete-api-key') {
+    return handleConfirmation(
+      input,
+      key,
+      () => providerSettings.removeApiKey(mode.providerId),
+      cancel
+    );
+  }
+
+  if (mode.type === 'disconnect-oauth') {
+    return handleConfirmation(
+      input,
+      key,
+      () => providerSettings.disconnectOauth(mode.providerId),
+      cancel
+    );
+  }
+
+  return false;
 }

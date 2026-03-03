@@ -11,6 +11,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import type { ProfileConfig } from '../../utils/provider-config';
 import { getProviderRegistryEntry } from '../../utils/provider-config';
+import { getFooterHints } from '../utils/providerSettingsHelpers';
 
 /**
  * Provider status for display
@@ -57,7 +58,9 @@ export interface TestResult {
  */
 export type PanelMode =
   | { type: 'list' }
-  | { type: 'edit-api-key'; providerId: string; currentValue: string }
+  | { type: 'edit-api-key'; providerId: string; currentValue?: string }
+  | { type: 'delete-api-key'; providerId: string }
+  | { type: 'disconnect-oauth'; providerId: string }
   | {
       type: 'profile-form';
       providerId: string;
@@ -102,6 +105,7 @@ export type SettingsNavItem =
   | { type: 'provider'; providerId: string; name: string }
   | { type: 'profile'; providerId: string; profileName: string }
   | { type: 'add-profile'; providerId: string }
+  | { type: 'api-key'; providerId: string }
   | {
       type: 'oauth-login';
       providerId: string;
@@ -174,7 +178,62 @@ export function ProviderSettingsPanel({
           </Text>
           <Box marginTop={1}>
             <Text>
-              Are you sure you want to delete profile "{mode.profileName}"?
+              Delete profile {mode.profileName}? (y/n)
+            </Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Press 'y' to confirm, 'n' or Esc to cancel</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render delete-api-key confirmation
+  if (mode.type === 'delete-api-key') {
+    const provider = providers.find(p => p.id === mode.providerId);
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="red">
+            Delete API Key
+          </Text>
+          <Box marginTop={1}>
+            <Text>
+              Delete API key for {provider?.name || mode.providerId}? (y/n)
+            </Text>
+          </Box>
+          <Box marginTop={1}>
+            <Text dimColor>Press 'y' to confirm, 'n' or Esc to cancel</Text>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Render disconnect-oauth confirmation
+  if (mode.type === 'disconnect-oauth') {
+    const provider = providers.find(p => p.id === mode.providerId);
+    const oauthLabel = mode.providerId === 'anthropic' ? 'Claude' : 'ChatGPT';
+    return (
+      <Box
+        flexDirection="column"
+        width={width}
+        height={height}
+        backgroundColor="black"
+      >
+        <Box flexDirection="column" padding={2}>
+          <Text bold color="red">
+            Disconnect OAuth
+          </Text>
+          <Box marginTop={1}>
+            <Text>
+              Disconnect {oauthLabel} OAuth? (y/n)
             </Text>
           </Box>
           <Box marginTop={1}>
@@ -515,7 +574,7 @@ export function ProviderSettingsPanel({
                             (not configured)
                           </Text>
                         )}
-                        {profileCount > 0 && (
+                        {profileCount > 0 && item.providerId === 'openai' && (
                           <Text dimColor={!isSelected}>
                             {' '}
                             ({profileCount} profile
@@ -623,6 +682,41 @@ export function ProviderSettingsPanel({
                   );
                 }
 
+                // api-key
+                if (item.type === 'api-key') {
+                  const apiStatus = provider?.status;
+                  const registryEntry = getProviderRegistryEntry(item.providerId);
+                  return (
+                    <Box
+                      key={`api-key-${item.providerId}`}
+                      width={contentWidth}
+                    >
+                      <Text
+                        backgroundColor={isSelected ? 'yellow' : undefined}
+                        color={isSelected ? 'black' : 'yellow'}
+                        wrap="truncate"
+                      >
+                        {isSelected ? '> ' : '  '}
+                        {'    '}🔑 API key
+                        {apiStatus?.hasKey ? (
+                          <Text color={isSelected ? 'black' : 'green'}>
+                            {' '}✓ {apiStatus.maskedKey}
+                            {apiStatus.source && (
+                              <Text dimColor={!isSelected}>
+                                {' '}[{apiStatus.source}]
+                              </Text>
+                            )}
+                          </Text>
+                        ) : (
+                          <Text color={isSelected ? 'black' : 'gray'}>
+                            {' '}(not set)
+                          </Text>
+                        )}
+                      </Text>
+                    </Box>
+                  );
+                }
+
                 // add-profile
                 return (
                   <Box
@@ -669,8 +763,7 @@ export function ProviderSettingsPanel({
         {/* Footer */}
         <Box marginTop={1}>
           <Text dimColor>
-            Enter: expand/edit | e: edit | n: new profile | d: delete | t: test
-            | Tab: models | / filter | Esc: close
+            {getFooterHints(navItems[selectedIndex]?.type ?? 'provider')}
           </Text>
         </Box>
       </Box>

@@ -13,40 +13,24 @@
  * COMPOSABLE: Works with ProviderProfileFixture
  */
 
-import type { ProfileConfig } from '../../utils/provider-config';
+import type { ProfileConfig } from '../utils/provider-config';
+import type { HookMode } from '../tui/types/settingsMode';
+import type { PanelMode as ProductionPanelMode } from '../tui/components/ProviderSettingsPanel';
 
 // ========================================
 // TYPES - MATCHING REAL TYPES
 // ========================================
 
 /**
- * Settings view mode types (from types/provider.ts)
- * These are the HOOK mode types
+ * Re-export HookMode as SettingsViewMode for backward compatibility.
+ * These are the HOOK mode types — imported from production code.
  */
-export type SettingsViewMode =
-  | { type: 'list' }
-  | { type: 'edit-api-key'; providerId: string }
-  | { type: 'create-profile'; providerId: string }
-  | { type: 'edit-profile'; providerId: string; profileName: string }
-  | { type: 'delete-profile'; providerId: string; profileName: string };
+export type SettingsViewMode = HookMode;
 
 /**
- * Panel mode types (from ProviderSettingsPanel.tsx)
- * These are the PANEL mode types used for rendering
+ * Re-export PanelMode from production for test usage.
  */
-export type PanelMode =
-  | { type: 'list' }
-  | { type: 'edit-api-key'; providerId: string; currentValue: string }
-  | {
-      type: 'profile-form';
-      providerId: string;
-      profileName: string;
-      isNew: boolean;
-      values: Partial<ProfileConfig>;
-      activeField: number;
-      isEditingName: boolean;
-    }
-  | { type: 'delete-confirm'; providerId: string; profileName: string };
+export type PanelMode = ProductionPanelMode;
 
 // ========================================
 // MODE TYPE MAPPING

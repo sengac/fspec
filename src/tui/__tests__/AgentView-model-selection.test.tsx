@@ -762,8 +762,13 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step Then I should see the "anthropic" provider section
       expect(lastFrame()).toContain('Anthropic');
 
-      // @step And I should NOT see the "openai" provider section
-      expect(lastFrame()).not.toContain('OpenAI');
+      // PROV-029: OpenAI API now has requiresApiKey=false (profile-only local model provider),
+      // so it always has hasCredentials=true and appears in the model list.
+      // @step And I should see "OpenAI" since it is a profile-only provider (no API key required)
+      expect(lastFrame()).toContain('OpenAI');
+
+      // @step And I should NOT see "Google" since GOOGLE_API_KEY is NOT set
+      expect(lastFrame()).not.toContain('Google');
     });
   });
 

@@ -8,6 +8,30 @@ import type { UseProviderSettingsStateReturn } from '../hooks/useProviderSetting
 import type { ProfileConfig } from '../../utils/provider-config';
 import { DEFAULT_PROFILE_BASE_URL } from '../constants/providerSettings';
 
+const FOOTER_COMMON = '/ filter · Tab: Switch to models · Esc: close';
+
+/**
+ * Get context-sensitive footer hints for a given nav item type
+ */
+export function getFooterHints(itemType: string): string {
+  switch (itemType) {
+    case 'provider':
+      return `Enter: expand · ${FOOTER_COMMON}`;
+    case 'oauth-status':
+      return `d: disconnect · ${FOOTER_COMMON}`;
+    case 'oauth-login':
+      return `Enter: start login · ${FOOTER_COMMON}`;
+    case 'api-key':
+      return `Enter: edit · d: delete · ${FOOTER_COMMON}`;
+    case 'profile':
+      return `Enter: edit · d: delete · ${FOOTER_COMMON}`;
+    case 'add-profile':
+      return `Enter: create · ${FOOTER_COMMON}`;
+    default:
+      return FOOTER_COMMON;
+  }
+}
+
 /**
  * Filters input to only printable ASCII characters (32-126).
  * Used for text input fields to prevent control characters.
