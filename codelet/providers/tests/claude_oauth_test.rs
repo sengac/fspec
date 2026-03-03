@@ -364,7 +364,7 @@ fn test_oauth_headers_built_with_required_beta_headers() {
         beta
     );
 
-    // @step And the user-agent header should be "claude-cli/2.1.2 (external, cli)"
+    // @step And the user-agent header should be "claude-cli/2.1.3 (external, cli)"
     assert_eq!(
         headers.get("user-agent").unwrap(),
         CLAUDE_USER_AGENT
@@ -554,7 +554,7 @@ fn test_claude_oauth_constants() {
         "https://console.anthropic.com/oauth/code/callback"
     );
     assert_eq!(CLAUDE_SCOPE, "org:create_api_key user:profile user:inference");
-    assert_eq!(CLAUDE_USER_AGENT, "claude-cli/2.1.2 (external, cli)");
+    assert_eq!(CLAUDE_USER_AGENT, "claude-cli/2.1.3 (external, cli)");
     assert_eq!(TOOL_NAME_PREFIX, "mcp_");
     assert_eq!(REQUIRED_BETA_HEADERS.len(), 2);
     assert!(REQUIRED_BETA_HEADERS.contains(&"oauth-2025-04-20"));

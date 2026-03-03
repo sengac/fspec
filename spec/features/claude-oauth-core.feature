@@ -19,7 +19,7 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
   #   5. Authorization code format is 'code#state' — the auth server returns code and state concatenated with '#' separator. The exchange function must parse this.
   #   6. Token exchange request body is JSON with: code, state, grant_type=authorization_code, client_id, redirect_uri, code_verifier
   #   7. Token refresh uses JSON POST to token endpoint with: grant_type=refresh_token, refresh_token, client_id
-  #   8. OAuth API requests require: Authorization: Bearer {access_token}, anthropic-beta header with oauth-2025-04-20 and interleaved-thinking-2025-05-14, user-agent: claude-cli/2.1.2 (external, cli), x-api-key header removed
+  #   8. OAuth API requests require: Authorization: Bearer {access_token}, anthropic-beta header with oauth-2025-04-20 and interleaved-thinking-2025-05-14, user-agent: claude-cli/2.1.3 (external, cli), x-api-key header removed
   #   9. Tool names must be prefixed with 'mcp_' when using OAuth mode — tool_use blocks in messages and tool definitions both need this prefix. Responses must strip the prefix.
   #   10. The /v1/messages URL must have ?beta=true query parameter appended when using OAuth mode
   #   11. State parameter in the authorize URL is set to the PKCE verifier (not a separate random value like Codex) — this simplifies CSRF validation since state == verifier
@@ -29,7 +29,7 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
   #   1. PKCE generated with S256: verifier is 43-char random string, challenge is Base64URL(SHA-256(verifier)), authorize URL built with code=true, client_id, response_type=code, redirect_uri, scope, code_challenge, code_challenge_method=S256, state=verifier
   #   2. User pastes 'l0pnTslN...#FgE6g_6k...' — exchange fn splits on '#', sends JSON POST with code=l0pnTslN..., state=FgE6g_6k..., grant_type=authorization_code, client_id, redirect_uri, code_verifier to token endpoint, receives {access_token, refresh_token, expires_in}
   #   3. Token expired: refresh_access_token sends JSON POST with grant_type=refresh_token, refresh_token, client_id to https://console.anthropic.com/v1/oauth/token, receives new {access_token, refresh_token, expires_in}
-  #   4. Build OAuth headers: sets Authorization=Bearer {token}, anthropic-beta merges required [oauth-2025-04-20, interleaved-thinking-2025-05-14] with any existing beta headers, sets user-agent=claude-cli/2.1.2 (external, cli), removes x-api-key
+  #   4. Build OAuth headers: sets Authorization=Bearer {token}, anthropic-beta merges required [oauth-2025-04-20, interleaved-thinking-2025-05-14] with any existing beta headers, sets user-agent=claude-cli/2.1.3 (external, cli), removes x-api-key
   #   5. Tool name prefixing: 'Bash' → 'mcp_Bash' in tool definitions and tool_use content blocks. Response stream 'mcp_Bash' → 'Bash' in tool_result names.
   #   6. URL rewriting for OAuth: https://api.anthropic.com/v1/messages → https://api.anthropic.com/v1/messages?beta=true
   #   7. Code exchange fails (invalid code): token endpoint returns non-200, exchange fn returns error with status and body
@@ -128,7 +128,7 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
     Then the Authorization header should be "Bearer test_access_token"
     And the anthropic-beta header should contain "oauth-2025-04-20"
     And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
-    And the user-agent header should be "claude-cli/2.1.2 (external, cli)"
+    And the user-agent header should be "claude-cli/2.1.3 (external, cli)"
     And the x-api-key header should be removed
 
   @core
@@ -141,6 +141,9 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
     And the anthropic-beta header should contain "prompt-caching-2024-07-31"
 
   @core
+  # Architecture: mcp_ prefixing is a parity reference — codelet uses native tools
+  # (not MCP), so prefixing is not applied in the production request path. These
+  # functions exist for parity verification against opencode and future MCP support.
   Scenario: Tool names prefixed with mcp_ in OAuth mode
     Given a tool named "Bash"
     When the tool name is prefixed for OAuth mode

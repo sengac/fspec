@@ -35,6 +35,10 @@ pub const CLAUDE_AUTHORIZE_URL: &str = "https://claude.ai/oauth/authorize";
 /// Token endpoint for exchange and refresh
 pub const CLAUDE_TOKEN_ENDPOINT: &str = "https://console.anthropic.com/v1/oauth/token";
 
+/// Base URL for token endpoint (without /v1/oauth/token suffix)
+/// Used by RefreshingClaudeClient and manager.rs for token refresh
+pub const CLAUDE_TOKEN_ENDPOINT_BASE: &str = "https://console.anthropic.com";
+
 /// Redirect URI — Anthropic-hosted callback page (no local server)
 pub const CLAUDE_REDIRECT_URI: &str = "https://console.anthropic.com/oauth/code/callback";
 
@@ -42,7 +46,12 @@ pub const CLAUDE_REDIRECT_URI: &str = "https://console.anthropic.com/oauth/code/
 pub const CLAUDE_SCOPE: &str = "org:create_api_key user:profile user:inference";
 
 /// User-Agent header for OAuth requests
-pub const CLAUDE_USER_AGENT: &str = "claude-cli/2.1.2 (external, cli)";
+///
+/// Must match across all OAuth request paths:
+/// - `build_oauth_headers()` (parity reference)
+/// - `ClaudeProvider::from_api_key_with_mode_and_model()` (rig static headers)
+/// - `ClaudeProvider::from_oauth_tokens()` (rig static headers)
+pub const CLAUDE_USER_AGENT: &str = "claude-cli/2.1.3 (external, cli)";
 
 /// Required beta headers for OAuth mode
 pub const REQUIRED_BETA_HEADERS: &[&str] =
@@ -209,10 +218,16 @@ async fn post_json_to_token_endpoint(
 /// Returns a HashMap with:
 /// - `authorization`: Bearer {access_token}
 /// - `anthropic-beta`: merged required + existing beta headers
-/// - `user-agent`: claude-cli/2.1.2 (external, cli)
+/// - `user-agent`: claude-cli/2.1.3 (external, cli)
 ///
 /// Does NOT include `x-api-key` — callers must remove it from existing
 /// headers when switching to OAuth mode.
+///
+/// **Note:** This is a parity reference implementation that produces the same
+/// header set as opencode's custom fetch. Production requests use rig's
+/// `ClientBuilder::http_headers()` set in `ClaudeProvider::from_oauth_tokens()`.
+/// Both paths produce identical output — this function is tested directly
+/// for parity verification.
 pub fn build_oauth_headers(
     access_token: &str,
     existing_beta: Option<&str>,
@@ -247,6 +262,11 @@ pub fn build_oauth_headers(
 // =========================================================================
 
 /// Add the mcp_ prefix to a tool name for OAuth mode
+///
+/// Parity reference: opencode's custom fetch prefixes all tool names with `mcp_`
+/// because it routes tools through MCP servers. Our tools are native (not MCP),
+/// so this function is not in the production request path. It exists for parity
+/// verification testing and for future MCP integration.
 pub fn prefix_tool_name(name: &str) -> String {
     format!("{TOOL_NAME_PREFIX}{name}")
 }
@@ -254,6 +274,9 @@ pub fn prefix_tool_name(name: &str) -> String {
 /// Strip the mcp_ prefix from a tool name in a response
 ///
 /// If the name doesn't start with the prefix, it's returned unchanged.
+///
+/// Parity reference: opencode uses regex to strip `mcp_` from streaming responses.
+/// See `prefix_tool_name()` for context on why this isn't in the production path.
 pub fn strip_tool_name_prefix(name: &str) -> String {
     name.strip_prefix(TOOL_NAME_PREFIX)
         .unwrap_or(name)
@@ -269,6 +292,12 @@ pub fn strip_tool_name_prefix(name: &str) -> String {
 /// If the URL path is /v1/messages, append `?beta=true` (or `&beta=true`
 /// if query parameters already exist). Non-messages URLs pass through
 /// unchanged.
+///
+/// **Note:** This is a parity reference implementation. Production URL rewriting
+/// is handled by the patched rig `AnthropicExt::build_uri()` in
+/// `patches/rig-core/src/providers/anthropic/client.rs`, which detects OAuth
+/// mode via `AnthropicKey::is_oauth_token()` and appends `?beta=true` at the
+/// rig layer. Both paths produce identical output.
 pub fn rewrite_claude_url(url: &str) -> String {
     // Parse to check the path
     if let Ok(parsed) = url::Url::parse(url) {

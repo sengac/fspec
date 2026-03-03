@@ -2,7 +2,7 @@
 //!
 //! Detects available LLM provider credentials from:
 //! - Environment variables (ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN, OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, ZAI_API_KEY, ZAI_PLAN_API_KEY)
-//! - Auth files (~/.codex/auth.json for Codex OAuth)
+//! - Auth files (~/.codex/auth.json for Codex OAuth, ~/.config/codelet/claude_auth.json for Claude OAuth)
 
 /// Provider credentials detected from environment variables and auth files
 #[derive(Debug, Clone)]
@@ -19,7 +19,8 @@ impl ProviderCredentials {
     pub fn detect() -> Self {
         Self {
             claude_available: std::env::var("ANTHROPIC_API_KEY").is_ok()
-                || std::env::var("CLAUDE_CODE_OAUTH_TOKEN").is_ok(),
+                || std::env::var("CLAUDE_CODE_OAUTH_TOKEN").is_ok()
+                || has_claude_auth(),
             openai_available: std::env::var("OPENAI_API_KEY").is_ok(),
             codex_available: has_codex_auth(),
             gemini_available: std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").is_ok(),
@@ -98,6 +99,17 @@ fn has_codex_auth() -> bool {
         if let Some(tokens) = auth.tokens {
             return !tokens.refresh_token.is_empty() && !tokens.account_id.is_empty();
         }
+    }
+    false
+}
+
+/// Check if claude_auth.json exists with valid OAuth credentials
+/// Mirrors has_codex_auth() — checks claude_auth.json for OAuth tokens.
+fn has_claude_auth() -> bool {
+    use crate::claude_auth::read_claude_auth_sync;
+
+    if let Ok(Some(auth)) = read_claude_auth_sync() {
+        return !auth.access_token.is_empty() && !auth.refresh_token.is_empty();
     }
     false
 }

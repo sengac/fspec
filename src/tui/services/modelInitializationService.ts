@@ -17,6 +17,7 @@ import {
   modelsListAll,
   modelsListLocalOpenai,
   codexOauthGetTokens,
+  claudeOauthGetTokens,
 } from '@sengac/codelet-napi';
 import type { NapiModelInfo, NapiProviderModels } from '@sengac/codelet-napi';
 import {
@@ -105,6 +106,8 @@ async function buildCloudSections(
 ): Promise<ProviderSection[]> {
   // PROV-018: Check for Codex OAuth tokens once, reuse across all providers
   const hasCodexOAuth = checkCodexOAuthTokens();
+  // PROV-026: Check for Claude OAuth tokens (async — claude_auth.json uses tokio::fs)
+  const hasClaudeOAuth = await checkClaudeOAuthTokens();
 
   const sectionsWithCreds = await Promise.all(
     allModels.map(async pm => {
@@ -112,9 +115,14 @@ async function buildCloudSections(
       const registryId = mapModelsDevToRegistryId(pm.providerId);
       const registryEntry = getProviderRegistryEntry(registryId);
       const providerConfig = await getProviderConfig(registryId);
-      const hasCredentials =
+      let hasCredentials =
         registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
       const toolCallModels = pm.models.filter(m => m.toolCall);
+
+      // PROV-026: Override hasCredentials for anthropic when Claude OAuth tokens exist
+      if (pm.providerId === 'anthropic' && hasClaudeOAuth) {
+        hasCredentials = true;
+      }
 
       logger.debug(
         `Provider ${pm.providerId}: registryId=${registryId}, hasApiKey=${!!providerConfig.apiKey}, source=${providerConfig.source}, hasCredentials=${hasCredentials}`
@@ -147,6 +155,20 @@ async function buildCloudSections(
 function checkCodexOAuthTokens(): boolean {
   try {
     const tokens = codexOauthGetTokens();
+    return tokens !== null && tokens !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * PROV-026: Check if Claude OAuth tokens exist.
+ * Async because claudeOauthGetTokens() reads claude_auth.json via tokio::fs.
+ * Returns true if tokens exist, false otherwise.
+ */
+async function checkClaudeOAuthTokens(): Promise<boolean> {
+  try {
+    const tokens = await claudeOauthGetTokens();
     return tokens !== null && tokens !== undefined;
   } catch {
     return false;

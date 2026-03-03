@@ -1,4 +1,4 @@
-//! Claude OAuth Authentication Persistence Module (PROV-021)
+//! Claude OAuth Authentication Persistence Module (PROV-021, PROV-026)
 //!
 //! Handles reading/writing Claude OAuth credentials to
 //! ~/.config/codelet/claude_auth.json.
@@ -6,7 +6,9 @@
 //! Mirrors codex_auth.rs pattern but simpler — no keychain support,
 //! no id_token, no account_id.
 //!
-//! All file I/O is async (tokio::fs) to avoid blocking the tokio runtime.
+//! Provides both async (tokio::fs) and sync (std::fs) readers:
+//! - read_claude_auth() — async, for NAPI bindings
+//! - read_claude_auth_sync() — sync, for credentials.rs detection and manager.rs routing
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -40,7 +42,7 @@ pub fn get_claude_auth_path() -> PathBuf {
     get_codelet_home().join("claude_auth.json")
 }
 
-/// Read Claude auth credentials from file
+/// Read Claude auth credentials from file (async)
 pub async fn read_claude_auth() -> Result<Option<ClaudeAuthJson>> {
     let auth_path = get_claude_auth_path();
 
@@ -49,6 +51,23 @@ pub async fn read_claude_auth() -> Result<Option<ClaudeAuthJson>> {
     }
 
     let content = tokio::fs::read_to_string(&auth_path).await?;
+    let auth: ClaudeAuthJson = serde_json::from_str(&content)?;
+    Ok(Some(auth))
+}
+
+/// Read Claude auth credentials from file (sync)
+///
+/// Uses std::fs (not tokio::fs) for use in sync contexts like
+/// credentials.rs detection and manager.rs get_claude().
+/// Mirrors codex_auth::read_codex_auth() which is already sync.
+pub fn read_claude_auth_sync() -> Result<Option<ClaudeAuthJson>> {
+    let auth_path = get_claude_auth_path();
+
+    if !auth_path.exists() {
+        return Ok(None);
+    }
+
+    let content = std::fs::read_to_string(&auth_path)?;
     let auth: ClaudeAuthJson = serde_json::from_str(&content)?;
     Ok(Some(auth))
 }

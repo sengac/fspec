@@ -102,6 +102,19 @@ fn get_dotenv_api_key(provider_id: &str, project_dir: &Path) -> Option<String> {
     None
 }
 
+/// PROV-026: Get credential from Claude OAuth tokens (claude_auth.json)
+/// Returns the access_token if claude_auth.json exists with valid tokens.
+fn get_claude_oauth_credential() -> Option<String> {
+    use codelet_providers::claude_auth::read_claude_auth_sync;
+
+    if let Ok(Some(auth)) = read_claude_auth_sync() {
+        if !auth.access_token.is_empty() && !auth.refresh_token.is_empty() {
+            return Some(auth.access_token);
+        }
+    }
+    None
+}
+
 /// Extract provider ID from model string (e.g., "anthropic/claude-sonnet-4-20250514" -> "anthropic")
 pub fn extract_provider_from_model(model: &str) -> &str {
     model.split('/').next().unwrap_or("")
@@ -111,6 +124,7 @@ pub fn extract_provider_from_model(model: &str) -> &str {
 /// 1. Credentials file (~/.fspec/credentials/credentials.json)
 /// 2. Environment variables
 /// 3. Project .env file (if project_dir provided)
+/// 4. Claude OAuth tokens from claude_auth.json (anthropic provider only)
 ///
 /// Returns the API key if found, None otherwise.
 pub fn resolve_credential(
@@ -141,6 +155,13 @@ pub fn resolve_credential(
         }
     }
 
+    // 4. PROV-026: Check claude_auth.json as fallback for anthropic provider
+    if provider_id == "anthropic" {
+        if let Some(key) = get_claude_oauth_credential() {
+            return Ok(Some(key));
+        }
+    }
+
     Ok(None)
 }
 
@@ -159,6 +180,9 @@ pub fn resolve_credential_for_session(
 
 /// Resolve credential and set environment variable for rig/provider use.
 /// This is called during session creation to set up the env var that providers expect.
+///
+/// PROV-026: For anthropic provider, when credential comes from claude_auth.json,
+/// sets CLAUDE_CODE_OAUTH_TOKEN instead of ANTHROPIC_API_KEY (since it's an OAuth token).
 pub fn resolve_and_set_env_var(
     provider_id: &str,
     project_dir: Option<&Path>,
@@ -166,6 +190,13 @@ pub fn resolve_and_set_env_var(
     let key = resolve_credential(provider_id, project_dir, None)?;
 
     if let Some(api_key) = key {
+        // PROV-026: For anthropic, check if the credential is an OAuth token
+        // (starts with sk-ant-oat) and set CLAUDE_CODE_OAUTH_TOKEN instead
+        if provider_id == "anthropic" && api_key.starts_with("sk-ant-oat") {
+            std::env::set_var("CLAUDE_CODE_OAUTH_TOKEN", &api_key);
+            return Ok(true);
+        }
+
         if let Some(env_var) = get_primary_env_var(provider_id) {
             std::env::set_var(env_var, &api_key);
             return Ok(true);

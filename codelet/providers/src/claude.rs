@@ -15,6 +15,7 @@
 //! Beta headers are also model-specific based on official Anthropic documentation.
 
 use crate::{
+    claude_oauth::CLAUDE_USER_AGENT,
     claude_refreshing_client::RefreshingClaudeClient,
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_text_from_content, validate_api_key_static, CompletionResponse, LlmProvider,
@@ -267,10 +268,10 @@ impl ClaudeProvider {
                 })?,
             );
 
-            // User-Agent must match Claude Code exactly
+            // User-Agent must match Claude Code exactly (DRY: uses shared constant)
             headers.insert(
                 reqwest::header::USER_AGENT,
-                HeaderValue::from_static("claude-cli/2.1.3 (external, cli)"),
+                HeaderValue::from_static(CLAUDE_USER_AGENT),
             );
 
             // x-app header identifies the application type
@@ -362,7 +363,7 @@ impl ClaudeProvider {
         );
         headers.insert(
             reqwest::header::USER_AGENT,
-            HeaderValue::from_static("claude-cli/2.1.3 (external, cli)"),
+            HeaderValue::from_static(CLAUDE_USER_AGENT),
         );
         headers.insert(
             HeaderName::from_static("x-app"),

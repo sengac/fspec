@@ -1,0 +1,361 @@
+{
+  "scenarios": [
+    {
+      "name": "Anthropic models appear in model selector when OAuth tokens exist",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/claudeOAuthModelRouting.test.ts",
+          "lines": "204-235",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No Anthropic section when no OAuth tokens and no API key",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/claudeOAuthModelRouting.test.ts",
+          "lines": "237-255",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both API key and OAuth tokens show Anthropic section",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/claudeOAuthModelRouting.test.ts",
+          "lines": "257-298",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API key only shows Anthropic section without OAuth",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/claudeOAuthModelRouting.test.ts",
+          "lines": "300-335",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Persisted Anthropic model restored on startup with OAuth tokens",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/claudeOAuthModelRouting.test.ts",
+          "lines": "337-371",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-OAuth providers unaffected by Claude OAuth changes",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/claudeOAuthModelRouting.test.ts",
+          "lines": "373-411",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/claudeOAuthModelRouting.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/services/modelInitializationService.ts"
+    ],
+    "totalLinesCovered": 452
+  }
+}

@@ -378,9 +378,29 @@ impl ProviderManager {
     /// Get Claude provider (if selected)
     ///
     /// MODEL-001: Now uses selected_model_id() for dynamic model selection.
+    /// PROV-026: Checks claude_auth.json for OAuth tokens first (OAuth takes
+    /// precedence over API key). Falls back to new_with_model() if no OAuth.
     pub fn get_claude(&self) -> Result<ClaudeProvider, ProviderError> {
         if self.current_provider == ProviderType::Claude {
-            ClaudeProvider::new_with_model(self.selected_model_id().as_deref())
+            let model_id = self.selected_model_id();
+
+            // PROV-026: Check claude_auth.json for OAuth tokens first
+            if let Ok(Some(auth)) = crate::claude_auth::read_claude_auth_sync() {
+                if !auth.access_token.is_empty() && !auth.refresh_token.is_empty() {
+                    return ClaudeProvider::from_oauth_tokens(
+                        &auth.access_token,
+                        &auth.refresh_token,
+                        Some(0), // Force immediate refresh — tokens from disk are of unknown age
+                        crate::claude_oauth::CLAUDE_TOKEN_ENDPOINT_BASE,
+                        model_id.as_deref().ok_or_else(|| {
+                            ProviderError::config("claude", "Model is required. Please select a model before creating a session.")
+                        })?,
+                    );
+                }
+            }
+
+            // Fall back to env var-based authentication
+            ClaudeProvider::new_with_model(model_id.as_deref())
         } else {
             Err(ProviderError::config(
                 "manager",
