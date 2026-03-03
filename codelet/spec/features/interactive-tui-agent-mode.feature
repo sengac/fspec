@@ -76,7 +76,7 @@ Feature: Interactive TUI Agent Mode
   Scenario: Start interactive mode and see startup card
     Given I have Claude and OpenAI API keys configured
     When I run 'codelet' without any arguments
-    Then I should see a startup card with 'Codelet v'
+    Then I should see a startup card with 'fspec v'
     And I should see 'Available models: Claude (/claude), OpenAI (/openai)'
     And the terminal should be in raw mode for input capture
 

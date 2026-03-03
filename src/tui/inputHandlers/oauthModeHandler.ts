@@ -10,6 +10,8 @@
  */
 
 import type { Key } from 'ink';
+import { openInBrowser } from '../../utils/openBrowser';
+import { copyToClipboard } from '../../utils/clipboard';
 import type { UseProviderSettingsStateReturn } from '../hooks/useProviderSettingsState';
 
 /**
@@ -54,6 +56,30 @@ export function handleOauthMode(
           codeInput: mode.codeInput.slice(0, -1),
         });
       }
+      return true;
+    }
+    // PROV-028: 'c' copies the authorize URL to clipboard
+    if (
+      input === 'c' &&
+      !key.ctrl &&
+      !key.meta &&
+      mode.codeInput.length === 0
+    ) {
+      void copyToClipboard(mode.authorizeUrl).catch(() => {
+        // Clipboard copy failed silently — user can still manually copy
+      });
+      return true;
+    }
+    // PROV-028: 'o' opens the authorize URL in the default browser
+    if (
+      input === 'o' &&
+      !key.ctrl &&
+      !key.meta &&
+      mode.codeInput.length === 0
+    ) {
+      void openInBrowser({ url: mode.authorizeUrl, wait: false }).catch(() => {
+        // Browser open failed silently
+      });
       return true;
     }
     // Regular character input — append to codeInput

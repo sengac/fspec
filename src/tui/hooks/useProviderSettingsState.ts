@@ -151,8 +151,18 @@ export function buildNavItems(
 
     // Add profiles if expanded
     if (provider.isExpanded) {
-      // Add OAuth login options for OAuth providers when no tokens exist
-      if (isOAuthProvider(provider.id) && !provider.hasOAuthTokens) {
+      // Add OAuth status item when provider has tokens (shows current auth state)
+      if (isOAuthProvider(provider.id) && provider.hasOAuthTokens) {
+        items.push({
+          type: 'oauth-status',
+          providerId: provider.id,
+          label: `✓ OAuth [${provider.status?.source || provider.name}]`,
+        });
+      }
+
+      // Add OAuth login options for OAuth providers
+      // Show when no tokens exist (initial login) OR when tokens exist (re-login)
+      if (isOAuthProvider(provider.id)) {
         const isAnthropic = provider.id === 'anthropic';
         const browserLabel = isAnthropic
           ? 'Login with Claude (browser)'

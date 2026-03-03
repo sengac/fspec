@@ -1,4 +1,4 @@
-//! Codelet NAPI-RS Native Module Bindings
+//! fspec NAPI-RS Native Module Bindings
 //!
 //! This module exposes codelet's Rust AI agent functionality to Node.js via NAPI-RS.
 //! It enables fspec's Ink/React TUI to serve as the frontend for codelet.

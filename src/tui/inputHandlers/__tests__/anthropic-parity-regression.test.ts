@@ -261,11 +261,11 @@ describe('Feature: Anthropic subscription parity and regression hardening — TU
       expect(status.maskedKey).toBe('OAuth');
       expect(status.source).toBe('Claude');
 
-      // Also verify: when expanded, no OAuth login options shown (already connected)
+      // Also verify: when expanded, OAuth login options shown for re-login (PROV-028)
       providers[0].isExpanded = true;
       const navItems = buildNavItems(providers, '');
       const oauthLoginItems = navItems.filter(i => i.type === 'oauth-login');
-      expect(oauthLoginItems).toHaveLength(0);
+      expect(oauthLoginItems).toHaveLength(2);
     });
 
     it('should NOT show connected status when no OAuth tokens exist', () => {

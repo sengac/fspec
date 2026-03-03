@@ -1,4 +1,4 @@
-//! Codelet - A multi-provider AI coding agent CLI
+//! fspec - A multi-provider AI coding agent CLI
 
 use anyhow::Result;
 

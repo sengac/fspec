@@ -20,7 +20,7 @@ use codelet_core::RigAgent;
 use futures::StreamExt;
 use tracing::error;
 
-/// Codelet - A multi-provider AI coding agent
+/// fspec - A multi-provider AI coding agent
 #[derive(Debug, Parser)]
 #[clap(name = "codelet", version, about)]
 pub struct Cli {

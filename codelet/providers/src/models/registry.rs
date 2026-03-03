@@ -117,7 +117,7 @@ impl ModelRegistry {
             return Err(ProviderError::config(
                 "registry",
                 format!(
-                    "Model {provider}/{model} does not support tool_call. Codelet requires tool_call capability."
+                    "Model {provider}/{model} does not support tool_call. fspec requires tool_call capability."
                 ),
             ));
         }

@@ -332,7 +332,7 @@ impl OAuthTimeout {
 pub const HTML_SUCCESS: &str = r#"<!doctype html>
 <html>
   <head>
-    <title>Codelet - Authorization Successful</title>
+    <title>fspec - Authorization Successful</title>
     <style>
       body { font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #131010; color: #f1ecec; }
       .container { text-align: center; padding: 2rem; }
@@ -343,7 +343,7 @@ pub const HTML_SUCCESS: &str = r#"<!doctype html>
   <body>
     <div class="container">
       <h1>Authorization Successful</h1>
-      <p>You can close this window and return to codelet.</p>
+      <p>You can close this window and return to fspec.</p>
     </div>
     <script>setTimeout(() => window.close(), 2000)</script>
   </body>
@@ -353,7 +353,7 @@ pub const HTML_SUCCESS: &str = r#"<!doctype html>
 pub const HTML_CANCELLED: &str = r#"<!doctype html>
 <html>
   <head>
-    <title>Codelet - Login Cancelled</title>
+    <title>fspec - Login Cancelled</title>
     <style>
       body { font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #131010; color: #f1ecec; }
       .container { text-align: center; padding: 2rem; }
@@ -375,7 +375,7 @@ pub fn html_error(error: &str) -> String {
         r#"<!doctype html>
 <html>
   <head>
-    <title>Codelet - Authorization Failed</title>
+    <title>fspec - Authorization Failed</title>
     <style>
       body {{ font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #131010; color: #f1ecec; }}
       .container {{ text-align: center; padding: 2rem; }}

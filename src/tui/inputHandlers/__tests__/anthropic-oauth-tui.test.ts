@@ -396,8 +396,9 @@ describe('Feature: TUI provider settings UX for Anthropic subscription connect a
       const navItems = buildNavItems(providers, '');
 
       // @step Then no OAuth login options are shown in the expanded list
+      // PROV-028: OAuth login options are now always shown (for re-login)
       const oauthItems = navItems.filter(i => i.type === 'oauth-login');
-      expect(oauthItems).toHaveLength(0);
+      expect(oauthItems).toHaveLength(2);
     });
   });
 
@@ -447,7 +448,8 @@ describe('Feature: TUI provider settings UX for Anthropic subscription connect a
       const oauthItemsAfter = navItemsAfter.filter(
         i => i.type === 'oauth-login'
       );
-      expect(oauthItemsAfter).toHaveLength(0);
+      // PROV-028: OAuth login options are now always shown for re-login
+      expect(oauthItemsAfter).toHaveLength(2);
       expect(providers[0].status.maskedKey).toBe('OAuth');
       expect(providers[0].status.source).toBe('Claude');
     });

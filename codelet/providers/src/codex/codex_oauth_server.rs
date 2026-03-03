@@ -297,9 +297,9 @@ async fn handle_request(
                         }
                         
                         done.notify_one();
-                        let html = html_error(&format!(
+                        let html = html_error(
                             "CSRF validation failed. State mismatch detected."
-                        ));
+                        );
                         return Ok(html_response(StatusCode::BAD_REQUEST, &html));
                     }
 

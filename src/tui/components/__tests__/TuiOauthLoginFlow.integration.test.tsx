@@ -527,7 +527,9 @@ describe('Feature: TUI OAuth Login Flow for Provider Settings', () => {
       const frame = lastFrame();
 
       // @step Then I should not see any "Login with ChatGPT" options
-      expect(frame).not.toContain('Login with ChatGPT');
+      // PROV-028: OAuth login options now always show (for re-login)
+      // Only check that the provider IS shown with its status
+      expect(frame).toContain('Anthropic');
 
       // @step And I should see the existing API key edit option
       expect(frame).toContain('e: edit');
@@ -664,11 +666,12 @@ describe('Feature: TUI OAuth Login Flow for Provider Settings', () => {
       expect(frame).toContain('[ChatGPT]');
 
       // @step And no OAuth login options should be displayed in the expanded list
+      // PROV-028: OAuth login options now always show (for re-login)
       // Expand codex
       pressKey(stdin, { name: 'enter' });
       await waitFor(100);
       const expandedFrame = lastFrame();
-      expect(expandedFrame).not.toContain('Login with ChatGPT');
+      expect(expandedFrame).toContain('Login with ChatGPT');
     });
   });
 

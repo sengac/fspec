@@ -37,6 +37,9 @@ pub enum PollResult {
     TerminalError { error: String },
 }
 
+/// Type alias for the display callback used in device auth flows
+pub type DisplayCallback = Box<dyn Fn(&str, &str) + Send + Sync>;
+
 /// Configuration for `device_auth_login` to support both production and test use.
 pub struct DeviceAuthConfig {
     /// The issuer URL (e.g. "https://auth.openai.com" or a wiremock URL)
@@ -51,7 +54,7 @@ pub struct DeviceAuthConfig {
     pub slow_down_increment_override_ms: Option<u64>,
     /// Optional callback to display user_code and verification URL
     /// (default: prints to stderr)
-    pub display_fn: Option<Box<dyn Fn(&str, &str) + Send + Sync>>,
+    pub display_fn: Option<DisplayCallback>,
 }
 
 /// Configuration for polling the device token endpoint.

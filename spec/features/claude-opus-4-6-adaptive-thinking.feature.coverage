@@ -184,21 +184,6 @@
       ]
     },
     {
-      "name": "Sonnet 4.5 uses correct beta headers with 1M context",
-      "testMappings": [
-        {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "331-365",
-          "implMappings": [
-            {
-              "file": "codelet/providers/src/claude.rs",
-              "lines": "49-102"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Unknown model uses default behavior with explicit constant matching",
       "testMappings": [
         {
@@ -343,6 +328,15 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Sonnet 4.5 uses correct beta headers",
+      "testMappings": []
     }
-  ]
+  ],
+  "stats": {
+    "totalScenarios": 16,
+    "coveredScenarios": 15,
+    "coveragePercent": 94
+  }
 }

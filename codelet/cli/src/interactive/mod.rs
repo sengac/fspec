@@ -54,7 +54,7 @@ pub async fn run_interactive_mode(
 
 fn display_startup_card(session: &Session) -> Result<()> {
     let version = env!("CARGO_PKG_VERSION");
-    println!("\nCodelet v{version}");
+    println!("\nfspec v{version}");
 
     let manager = session.provider_manager();
     if !manager.has_any_provider() {

@@ -24,7 +24,7 @@ mod interactive_tui_tests {
         // @step When I run 'codelet' without any arguments
         let manager = ProviderManager::new()?;
 
-        // @step Then I should see a startup card with 'Codelet v'
+        // @step Then I should see a startup card with 'fspec v'
         assert!(manager.has_any_provider());
 
         // @step And I should see 'Available models: Claude (/claude), OpenAI (/openai)'

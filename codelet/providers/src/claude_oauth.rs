@@ -243,7 +243,7 @@ pub fn build_oauth_headers(
     // Merge beta headers: required + existing (deduplicated)
     let mut betas: Vec<&str> = REQUIRED_BETA_HEADERS.to_vec();
     if let Some(existing) = existing_beta {
-        for beta in existing.split(',').map(|b| b.trim()).filter(|b| !b.is_empty()) {
+        for beta in existing.split(',').map(str::trim).filter(|b| !b.is_empty()) {
             if !betas.contains(&beta) {
                 betas.push(beta);
             }
@@ -328,7 +328,7 @@ pub fn rewrite_claude_url(url: &str) -> String {
 pub fn calculate_expiry(expires_in: u64) -> u64 {
     let now_ms = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .expect("System clock is before Unix epoch")
+        .unwrap_or_default()
         .as_millis() as u64;
 
     now_ms + expires_in * 1000

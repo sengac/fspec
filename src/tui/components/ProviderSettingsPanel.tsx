@@ -107,6 +107,11 @@ export type SettingsNavItem =
       providerId: string;
       method: 'browser' | 'headless';
       label: string;
+    }
+  | {
+      type: 'oauth-status';
+      providerId: string;
+      label: string;
     };
 
 /**
@@ -400,15 +405,15 @@ export function ProviderSettingsPanel({
           <Box marginTop={1}>
             <Text>Authorize on claude.ai, then paste code#state below:</Text>
           </Box>
-          <Box marginTop={1}>
+          <Box marginTop={1} width={Math.max(20, width - 12)}>
             <Text color="cyan">Code: </Text>
-            <Text>
+            <Text wrap="truncate">
               {mode.codeInput}
               <Text inverse> </Text>
             </Text>
           </Box>
           <Box marginTop={1}>
-            <Text dimColor>Enter to submit | Esc to cancel</Text>
+            <Text dimColor>Enter to submit | c: copy URL | o: open URL | Esc to cancel</Text>
           </Box>
         </Box>
       </Box>
@@ -594,6 +599,25 @@ export function ProviderSettingsPanel({
                       >
                         {isSelected ? '> ' : '  '}
                         {'    '}🔑 {item.label}
+                      </Text>
+                    </Box>
+                  );
+                }
+
+                // oauth-status (PROV-028: show auth status when OAuth provider has tokens)
+                if (item.type === 'oauth-status') {
+                  return (
+                    <Box
+                      key={`oauth-status-${item.providerId}`}
+                      width={contentWidth}
+                    >
+                      <Text
+                        backgroundColor={isSelected ? 'green' : undefined}
+                        color={isSelected ? 'black' : 'green'}
+                        wrap="truncate"
+                      >
+                        {isSelected ? '> ' : '  '}
+                        {'    '}{item.label}
                       </Text>
                     </Box>
                   );

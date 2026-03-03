@@ -432,8 +432,11 @@ pub async fn handle_inbound_message(
                 
                 // Store the mapping: tool_call_id → (request_id, command_name)
                 if let Some(pending) = pending_commands {
-                    let mut map = pending.lock().expect("pending_commands lock poisoned");
-                    map.insert(tool_call_id.clone(), (request_id, command.clone()));
+                    if let Ok(mut map) = pending.lock() {
+                        map.insert(tool_call_id.clone(), (request_id, command.clone()));
+                    } else {
+                        tracing::error!("pending_commands lock poisoned — cannot store request_id mapping");
+                    }
                 }
                 
                 // Get project root from CWD
@@ -490,7 +493,7 @@ pub fn process_outbound_chunk(
             
             // Look up the pending command
             let pending_entry = pending_commands.and_then(|pending| {
-                let mut map = pending.lock().expect("pending_commands lock poisoned");
+                let mut map = pending.lock().ok()?;
                 map.remove(tool_call_id)
             });
             
@@ -499,7 +502,7 @@ pub fn process_outbound_chunk(
                     // Build the commandResponse
                     let success = fspec_result
                         .and_then(|r| r.get("success"))
-                        .and_then(|s| s.as_bool())
+                        .and_then(serde_json::Value::as_bool)
                         .unwrap_or(false);
                     let data = fspec_result
                         .and_then(|r| r.get("data"))
