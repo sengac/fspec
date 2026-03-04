@@ -39,6 +39,21 @@ impl From<JsThinkingLevel> for ThinkingLevel {
     }
 }
 
+/// Check if a provider string represents a Codex or OpenAI reasoning model.
+///
+/// Matches:
+/// - "codex" (generic provider name)
+/// - "gpt-*-codex" model names (e.g., "gpt-5.1-codex", "gpt-5.3-codex")
+/// - Future codex model variants that end with "-codex"
+///
+/// NOTE: Does NOT match "openai" because that provider also handles non-reasoning
+/// models like gpt-4o. When the session_manager passes a model name like
+/// "gpt-5.1-codex" it will match via ends_with("-codex").
+#[inline]
+fn is_codex_provider(provider: &str) -> bool {
+    provider == "codex" || provider.ends_with("-codex")
+}
+
 /// Check if a provider string represents a Claude model.
 ///
 /// This is used ONLY for routing to the Claude facade.
@@ -120,6 +135,26 @@ pub fn get_thinking_config(provider: String, level: JsThinkingLevel) -> napi::Re
         match ClaudeThinkingFacade.request_config_for_model(&provider, level) {
             Some(config) => config,
             None => serde_json::json!({}), // Off level returns empty
+        }
+    } else if is_codex_provider(&provider) {
+        // PROV-037: Codex/OpenAI reasoning models use OpenAI Responses API format.
+        // The reasoning parameter controls whether the model performs chain-of-thought
+        // reasoning before producing output. Without it, GPT-5.x Codex models
+        // cannot perform multi-step agentic reasoning and tool use.
+        //
+        // Reference: codex-rs core/src/client.rs lines 500-553
+        // Format matches what codex-rs sends for models with supports_reasoning_summaries=true
+        match level {
+            ThinkingLevel::Off => serde_json::json!({}),
+            ThinkingLevel::Low => serde_json::json!({
+                "reasoning": { "effort": "low", "summary": "auto" }
+            }),
+            ThinkingLevel::Medium => serde_json::json!({
+                "reasoning": { "effort": "medium", "summary": "auto" }
+            }),
+            ThinkingLevel::High => serde_json::json!({
+                "reasoning": { "effort": "high", "summary": "auto" }
+            }),
         }
     } else {
         // Unknown provider - return empty config (no thinking)
@@ -237,6 +272,61 @@ mod tests {
         assert!(!is_claude_provider("gemini-3"));
         assert!(!is_claude_provider("gpt-4"));
         assert!(!is_claude_provider(""));
+    }
+
+    // =========================================================================
+    // PROV-037: Verify codex provider routing helper
+    // =========================================================================
+
+    #[test]
+    fn test_is_codex_provider_matches_codex_model_patterns() {
+        // Generic provider name
+        assert!(is_codex_provider("codex"));
+
+        // GPT-x-codex model names
+        assert!(is_codex_provider("gpt-5.1-codex"));
+        assert!(is_codex_provider("gpt-5.3-codex"));
+        assert!(is_codex_provider("gpt-6.0-codex"));
+
+        // Should NOT match "openai" — that provider also handles non-reasoning models
+        assert!(!is_codex_provider("openai"));
+
+        // Should NOT match non-codex providers
+        assert!(!is_codex_provider("claude"));
+        assert!(!is_codex_provider("gemini-3"));
+        assert!(!is_codex_provider("gpt-4o"));
+        assert!(!is_codex_provider(""));
+
+        // Should NOT match substrings that happen to contain "codex" but don't
+        // follow the pattern (exact "codex" or ending with "-codex")
+        assert!(!is_codex_provider("my-codex-tool"));
+        assert!(!is_codex_provider("codex-helper"));
+    }
+
+    // =========================================================================
+    // PROV-037: Verify codex thinking config returns correct format
+    // =========================================================================
+
+    #[test]
+    fn test_get_thinking_config_codex_returns_reasoning_format() {
+        // High level
+        let config = get_thinking_config("codex".to_string(), JsThinkingLevel::High)
+            .expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(parsed["reasoning"]["effort"].as_str(), Some("high"));
+        assert_eq!(parsed["reasoning"]["summary"].as_str(), Some("auto"));
+
+        // Medium level
+        let config = get_thinking_config("gpt-5.3-codex".to_string(), JsThinkingLevel::Medium)
+            .expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(parsed["reasoning"]["effort"].as_str(), Some("medium"));
+
+        // Off level — empty config
+        let config = get_thinking_config("codex".to_string(), JsThinkingLevel::Off)
+            .expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(parsed, serde_json::json!({}));
     }
 
     #[test]

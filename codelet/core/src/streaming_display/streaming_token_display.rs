@@ -300,6 +300,7 @@ mod tests {
             total_tokens: input + output,
             cache_read_input_tokens: cache_read,
             cache_creation_input_tokens: cache_creation,
+            reasoning_tokens: None,
         }
     }
 

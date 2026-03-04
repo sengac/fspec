@@ -1,0 +1,298 @@
+{
+  "scenarios": [
+    {
+      "name": "Debug metadata records correct model identity in repl_loop",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "19-42",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "19-42",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/repl_loop.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "19-42",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/repl_loop.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug capture api.request event shows correct model",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "44-76",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "44-76",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "44-76",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug capture includes reasoning tokens in aggregatedUsage",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "80-112",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718,
+                719
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug capture includes reasoning tokens in token.update",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "110-125",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "114-145",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                736,
+                737,
+                738,
+                739,
+                740,
+                741,
+                742,
+                743,
+                744,
+                745,
+                746,
+                747,
+                748
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI session_update_debug_metadata uses model_id",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "132-154",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                7160,
+                7161,
+                7162,
+                7163,
+                7164,
+                7165
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "148-170",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "148-170",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                7160,
+                7161,
+                7162,
+                7163,
+                7164,
+                7165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI session_toggle_debug uses model_id",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "157-207",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                7198,
+                7199,
+                7200,
+                7201,
+                7202,
+                7203
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "173-222",
+          "implMappings": []
+        },
+        {
+          "file": "codelet/cli/tests/rig_011_debug_metadata.rs",
+          "lines": "173-222",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                7198,
+                7199,
+                7200,
+                7201,
+                7202,
+                7203
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/rig_011_debug_metadata.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/repl_loop.rs",
+      "codelet/cli/src/interactive/stream_loop.rs",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 581
+  }
+}

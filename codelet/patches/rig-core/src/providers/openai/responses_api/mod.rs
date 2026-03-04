@@ -1140,6 +1140,11 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
                 input_tokens: usage.input_tokens,
                 output_tokens: usage.output_tokens,
                 total_tokens: usage.total_tokens,
+                cache_read_input_tokens: usage
+                    .input_tokens_details
+                    .as_ref()
+                    .map(|d| d.cached_tokens),
+                reasoning_tokens: Some(usage.output_tokens_details.reasoning_tokens),
                 ..Default::default()
             })
             .unwrap_or_default();

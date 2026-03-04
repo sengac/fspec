@@ -573,6 +573,7 @@ where
             completion_tokens: None,
             total_tokens: 0,
             prompt_tokens_details: None,
+            completion_tokens_details: None,
         };
 
         let mut text_response = String::new();

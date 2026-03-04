@@ -81,6 +81,10 @@ impl GetTokenUsage for StreamingCompletionResponse {
         if let Some(details) = &self.usage.prompt_tokens_details {
             usage.cache_read_input_tokens = Some(details.cached_tokens as u64);
         }
+        // Reasoning tokens
+        if let Some(details) = &self.usage.completion_tokens_details {
+            usage.reasoning_tokens = Some(details.reasoning_tokens as u64);
+        }
         Some(usage)
     }
 }
@@ -200,11 +204,15 @@ where
                             .as_ref()
                             .map(|d| d.cached_tokens as u64)
                             .unwrap_or(0);
+                        let reasoning_tokens = usage.completion_tokens_details
+                            .as_ref()
+                            .map(|d| d.reasoning_tokens as u64);
                         let crate_usage = crate::completion::Usage {
                             input_tokens: usage.prompt_tokens as u64,
                             output_tokens: usage.output_tokens(),
                             total_tokens: usage.total_tokens as u64,
                             cache_read_input_tokens: if cached_tokens > 0 { Some(cached_tokens) } else { None },
+                            reasoning_tokens,
                             ..Default::default()
                         };
                         yield Ok(streaming::RawStreamingChoice::Usage(crate_usage));

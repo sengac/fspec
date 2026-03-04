@@ -242,6 +242,47 @@ impl CodexProvider {
         &self.auth_mode
     }
 
+    /// Build additional_params JSON with reasoning config matching codex-rs format.
+    ///
+    /// PROV-037: This is the fix for the missing reasoning configuration that prevented
+    /// GPT-5.x Codex models from performing multi-step agentic reasoning and tool use.
+    ///
+    /// If `thinking_config` contains a `reasoning` object, it is merged into the params.
+    /// If `thinking_config` is None or doesn't contain `reasoning`, default reasoning
+    /// (effort: "high", summary: "auto") is applied, because Codex models always need
+    /// reasoning enabled for agentic tool use.
+    ///
+    /// Reference: codex-rs core/src/client.rs lines 500-553
+    /// Wire format matches: reasoning, include, store
+    fn build_reasoning_params(thinking_config: Option<&serde_json::Value>) -> serde_json::Value {
+        let mut params = serde_json::json!({
+            "store": false,
+            "include": ["reasoning.encrypted_content"],
+        });
+
+        // Merge reasoning config from thinking_config if present
+        let has_reasoning = if let Some(config) = thinking_config {
+            if let Some(reasoning) = config.get("reasoning") {
+                params["reasoning"] = reasoning.clone();
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        };
+
+        // Default reasoning if none provided (Codex models always need reasoning)
+        if !has_reasoning {
+            params["reasoning"] = serde_json::json!({
+                "effort": "high",
+                "summary": "auto"
+            });
+        }
+
+        params
+    }
+
     /// Create a rig Agent with all tools configured for this provider using Codex-native facades (TOOL-015)
     ///
     /// This method encapsulates all Codex-specific configuration:
@@ -253,14 +294,14 @@ impl CodexProvider {
     /// # Arguments
     /// * `session_id` - Session UUID for tool handler lookup (TOOL-012, TOOL-014)
     /// * `preamble` - Optional system prompt/preamble for the agent
-    /// * `_thinking_config` - Optional thinking configuration JSON (TOOL-010, currently unused for Codex)
+    /// * `thinking_config` - Optional thinking configuration JSON (PROV-037: now consumed for reasoning)
     ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
         &self,
         session_id: uuid::Uuid,
         preamble: Option<&str>,
-        _thinking_config: Option<serde_json::Value>,
+        thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, EditTool, GlobTool, WebSearchTool, WriteTool,
@@ -330,7 +371,15 @@ impl CodexProvider {
         // Omitting it or setting it to true returns 400:
         //   {"detail":"Store must be set to false"}
         // Both the official codex-cli and opencode set this explicitly.
-        agent_builder = agent_builder.additional_params(serde_json::json!({"store": false}));
+        //
+        // PROV-037: Build additional_params with reasoning config matching codex-rs format.
+        // Without reasoning, GPT-5.x Codex models cannot perform multi-step agentic
+        // reasoning and tool use (the model produces ~33 tokens of commentary with
+        // 0 reasoning tokens and no function_call output items).
+        //
+        // Reference: codex-rs core/src/client.rs lines 500-553
+        let additional = Self::build_reasoning_params(thinking_config.as_ref());
+        agent_builder = agent_builder.additional_params(additional);
 
         agent_builder.build()
     }
@@ -377,6 +426,104 @@ impl CodexProvider {
             content: MessageContent::Parts(content_parts),
             stop_reason,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::CodexProvider;
+
+    // =========================================================================
+    // Unit tests for build_reasoning_params — the core function that constructs
+    // the reasoning JSON matching codex-rs wire format.
+    // Feature: spec/features/codex-provider-reasoning-configuration.feature
+    // =========================================================================
+
+    #[test]
+    fn build_reasoning_params_with_high_effort_config() {
+        // @step Given I have a thinking_config with reasoning effort "high" and summary "auto"
+        let config = serde_json::json!({"reasoning": {"effort": "high", "summary": "auto"}});
+
+        // @step When I call build_reasoning_params with the thinking_config
+        let params = CodexProvider::build_reasoning_params(Some(&config));
+
+        // @step Then the params should contain reasoning.effort "high"
+        assert_eq!(params["reasoning"]["effort"], "high");
+        // @step And the params should contain reasoning.summary "auto"
+        assert_eq!(params["reasoning"]["summary"], "auto");
+        // @step And the params should contain store as false
+        assert_eq!(params["store"], false);
+        // @step And the params should contain include with "reasoning.encrypted_content"
+        assert_eq!(params["include"][0], "reasoning.encrypted_content");
+    }
+
+    #[test]
+    fn build_reasoning_params_with_medium_effort_config() {
+        let config = serde_json::json!({"reasoning": {"effort": "medium", "summary": "auto"}});
+        let params = CodexProvider::build_reasoning_params(Some(&config));
+
+        assert_eq!(params["reasoning"]["effort"], "medium");
+        assert_eq!(params["reasoning"]["summary"], "auto");
+        assert_eq!(params["store"], false);
+        assert_eq!(params["include"][0], "reasoning.encrypted_content");
+    }
+
+    #[test]
+    fn build_reasoning_params_with_low_effort_config() {
+        let config = serde_json::json!({"reasoning": {"effort": "low", "summary": "auto"}});
+        let params = CodexProvider::build_reasoning_params(Some(&config));
+
+        assert_eq!(params["reasoning"]["effort"], "low");
+        assert_eq!(params["reasoning"]["summary"], "auto");
+    }
+
+    #[test]
+    fn build_reasoning_params_defaults_to_high_when_none() {
+        // @step When I call build_reasoning_params with None as thinking_config
+        let params = CodexProvider::build_reasoning_params(None);
+
+        // @step Then the params should contain default reasoning.effort "high"
+        assert_eq!(params["reasoning"]["effort"], "high");
+        // @step And the params should contain default reasoning.summary "auto"
+        assert_eq!(params["reasoning"]["summary"], "auto");
+        // @step And store and include should still be present
+        assert_eq!(params["store"], false);
+        assert_eq!(params["include"][0], "reasoning.encrypted_content");
+    }
+
+    #[test]
+    fn build_reasoning_params_defaults_to_high_when_empty_config() {
+        // Empty config (from ThinkingLevel::Off flowing through as Some({}))
+        // should still get default reasoning because Codex models always need it
+        let config = serde_json::json!({});
+        let params = CodexProvider::build_reasoning_params(Some(&config));
+
+        assert_eq!(params["reasoning"]["effort"], "high");
+        assert_eq!(params["reasoning"]["summary"], "auto");
+    }
+
+    #[test]
+    fn build_reasoning_params_does_not_include_max_output_tokens() {
+        // Codex backend API rejects max_output_tokens with 400
+        let params = CodexProvider::build_reasoning_params(None);
+
+        assert!(
+            params.get("max_output_tokens").is_none(),
+            "max_output_tokens must not be present — Codex backend API rejects it"
+        );
+    }
+
+    #[test]
+    fn build_reasoning_params_preserves_custom_effort_from_thinking_config() {
+        // Verify that user's thinking level preference is respected when provided
+        let config = serde_json::json!({"reasoning": {"effort": "low", "summary": "auto"}});
+        let params = CodexProvider::build_reasoning_params(Some(&config));
+
+        // Should use the provided effort, NOT the default "high"
+        assert_eq!(
+            params["reasoning"]["effort"], "low",
+            "User's effort level should be preserved, not overridden with default"
+        );
     }
 }
 
@@ -435,9 +582,10 @@ impl LlmProvider for CodexProvider {
         let builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
             .tools(rig_tools)
             .preamble(effective_preamble)
-            // Codex backend API REQUIRES `store: false`; omitting it returns 400:
-            //   {"detail":"Store must be set to false"}
-            .additional_params(serde_json::json!({"store": false}));
+            // PROV-037: Include reasoning config in complete_with_tools, not just create_rig_agent.
+            // Without reasoning, GPT-5.x Codex models produce ~33 tokens of commentary
+            // with 0 reasoning tokens and no function_call output items.
+            .additional_params(Self::build_reasoning_params(None));
 
         // Send request and get response
         let response = builder

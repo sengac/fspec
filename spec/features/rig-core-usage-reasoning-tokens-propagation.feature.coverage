@@ -1,0 +1,763 @@
+{
+  "scenarios": [
+    {
+      "name": "rig-core Usage struct includes reasoning_tokens field",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "16-31",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usage Add impl correctly sums reasoning_tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "34-53",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "34-53",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usage AddAssign impl correctly accumulates reasoning_tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "56-73",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "56-73",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usage Add handles None reasoning_tokens gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "76-95",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "76-95",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Usage Add handles both None reasoning_tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "98-117",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "98-117",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/completion/request.rs",
+              "lines": [
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Responses API non-streaming propagates reasoning tokens into Usage",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "170-183",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/mod.rs",
+              "lines": [
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Responses API non-streaming propagates cache_read_input_tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "186-199",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/mod.rs",
+              "lines": [
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Responses API streaming propagates reasoning tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "202-217",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Responses API streaming propagates cache_read_input_tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "220-235",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Completions API Usage struct includes completion_tokens_details",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "242-258",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892,
+                893,
+                894,
+                895
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Completions API streaming propagates reasoning tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "294-324",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "308-335",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Completions API non-streaming propagates reasoning tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "261-291",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                803,
+                804,
+                805,
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "261-306",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                803,
+                804,
+                805,
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI Completions API GetTokenUsage propagates reasoning tokens",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "327-348",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/rig_011_token_tracking.rs",
+          "lines": "337-359",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952,
+                953
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/patches/rig-core/tests/rig_011_token_tracking.rs"
+    ],
+    "implFiles": [
+      "codelet/patches/rig-core/src/completion/request.rs",
+      "codelet/patches/rig-core/src/providers/openai/responses_api/mod.rs",
+      "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+      "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+      "codelet/patches/rig-core/src/providers/openai/completion/streaming.rs"
+    ],
+    "totalLinesCovered": 888
+  }
+}

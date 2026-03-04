@@ -305,6 +305,9 @@ pub struct Usage {
     /// Cache creation tokens (Anthropic-specific, for prompt caching)
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cache_creation_input_tokens: Option<u64>,
+    /// Reasoning/thinking tokens (OpenAI o-series, Codex)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reasoning_tokens: Option<u64>,
 }
 
 impl Usage {
@@ -316,6 +319,7 @@ impl Usage {
             total_tokens: 0,
             cache_read_input_tokens: None,
             cache_creation_input_tokens: None,
+            reasoning_tokens: None,
         }
     }
 }
@@ -326,20 +330,20 @@ impl Default for Usage {
     }
 }
 
+/// Helper to add two `Option<u64>` values, preserving `None` only when both are `None`.
+fn add_opt(a: Option<u64>, b: Option<u64>) -> Option<u64> {
+    match (a, b) {
+        (Some(x), Some(y)) => Some(x + y),
+        (Some(x), None) => Some(x),
+        (None, Some(y)) => Some(y),
+        (None, None) => None,
+    }
+}
+
 impl Add for Usage {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
-        // Helper to add Option<u64> values
-        fn add_opt(a: Option<u64>, b: Option<u64>) -> Option<u64> {
-            match (a, b) {
-                (Some(x), Some(y)) => Some(x + y),
-                (Some(x), None) => Some(x),
-                (None, Some(y)) => Some(y),
-                (None, None) => None,
-            }
-        }
-
         Self {
             input_tokens: self.input_tokens + other.input_tokens,
             output_tokens: self.output_tokens + other.output_tokens,
@@ -352,6 +356,7 @@ impl Add for Usage {
                 self.cache_creation_input_tokens,
                 other.cache_creation_input_tokens,
             ),
+            reasoning_tokens: add_opt(self.reasoning_tokens, other.reasoning_tokens),
         }
     }
 }
@@ -361,20 +366,9 @@ impl AddAssign for Usage {
         self.input_tokens += other.input_tokens;
         self.output_tokens += other.output_tokens;
         self.total_tokens += other.total_tokens;
-
-        // Add cache tokens
-        self.cache_read_input_tokens = match (self.cache_read_input_tokens, other.cache_read_input_tokens) {
-            (Some(x), Some(y)) => Some(x + y),
-            (Some(x), None) => Some(x),
-            (None, Some(y)) => Some(y),
-            (None, None) => None,
-        };
-        self.cache_creation_input_tokens = match (self.cache_creation_input_tokens, other.cache_creation_input_tokens) {
-            (Some(x), Some(y)) => Some(x + y),
-            (Some(x), None) => Some(x),
-            (None, Some(y)) => Some(y),
-            (None, None) => None,
-        };
+        self.cache_read_input_tokens = add_opt(self.cache_read_input_tokens, other.cache_read_input_tokens);
+        self.cache_creation_input_tokens = add_opt(self.cache_creation_input_tokens, other.cache_creation_input_tokens);
+        self.reasoning_tokens = add_opt(self.reasoning_tokens, other.reasoning_tokens);
     }
 }
 

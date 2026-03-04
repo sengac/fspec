@@ -43,7 +43,7 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                     if let Ok(mut manager) = manager_arc.lock() {
                         manager.set_session_metadata(SessionMetadata {
                             provider: Some(session.current_provider_name().to_string()),
-                            model: Some(session.current_provider_name().to_string()),
+                            model: session.current_model_id().or_else(|| Some(session.current_provider_name().to_string())),
                             context_window: Some(session.provider_manager().context_window()),
                             max_output_tokens: None,
                         });

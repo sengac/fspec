@@ -803,11 +803,20 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
         let usage = response
             .usage
             .as_ref()
-            .map(|usage| completion::Usage {
-                input_tokens: usage.prompt_tokens as u64,
-                output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
-                total_tokens: usage.total_tokens as u64,
-                ..Default::default()
+            .map(|usage| {
+                let mut u = completion::Usage {
+                    input_tokens: usage.prompt_tokens as u64,
+                    output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                    total_tokens: usage.total_tokens as u64,
+                    ..Default::default()
+                };
+                if let Some(details) = &usage.prompt_tokens_details {
+                    u.cache_read_input_tokens = Some(details.cached_tokens as u64);
+                }
+                if let Some(details) = &usage.completion_tokens_details {
+                    u.reasoning_tokens = Some(details.reasoning_tokens as u64);
+                }
+                u
             })
             .unwrap_or_default();
 
@@ -867,6 +876,13 @@ pub struct PromptTokensDetails {
     pub cached_tokens: usize,
 }
 
+/// Details about completion tokens, including reasoning tokens
+#[derive(Clone, Debug, Deserialize, Serialize, Default)]
+pub struct CompletionTokensDetails {
+    #[serde(default)]
+    pub reasoning_tokens: usize,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Usage {
     pub prompt_tokens: usize,
@@ -877,6 +893,9 @@ pub struct Usage {
     /// Details about prompt tokens (Z.AI/OpenAI caching)
     #[serde(default)]
     pub prompt_tokens_details: Option<PromptTokensDetails>,
+    /// Details about completion tokens (reasoning tokens)
+    #[serde(default)]
+    pub completion_tokens_details: Option<CompletionTokensDetails>,
 }
 
 impl Usage {
@@ -886,6 +905,7 @@ impl Usage {
             completion_tokens: None,
             total_tokens: 0,
             prompt_tokens_details: None,
+            completion_tokens_details: None,
         }
     }
 
@@ -923,6 +943,10 @@ impl GetTokenUsage for Usage {
         // Z.AI/OpenAI cache tokens
         if let Some(details) = &self.prompt_tokens_details {
             usage.cache_read_input_tokens = Some(details.cached_tokens as u64);
+        }
+        // Reasoning tokens
+        if let Some(details) = &self.completion_tokens_details {
+            usage.reasoning_tokens = Some(details.reasoning_tokens as u64);
         }
         Some(usage)
     }

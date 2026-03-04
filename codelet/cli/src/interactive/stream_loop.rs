@@ -379,7 +379,7 @@ where
                     "api.request",
                     serde_json::json!({
                         "provider": session.current_provider_name(),
-                        "model": session.current_provider_name(),
+                        "model": session.current_model_id().unwrap_or_else(|| session.current_provider_name().to_string()),
                         "prompt": prompt,
                         "promptLength": prompt.len(),
                         "messageCount": session.messages.len(),
@@ -655,7 +655,7 @@ where
                                 update.cache_read_tokens,
                                 update.cache_creation_tokens,
                                 usage.output_tokens, // Current segment output for fill calculation
-                            );
+                            ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
                             emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
                         }
                     }
@@ -693,7 +693,7 @@ where
                         final_update.cache_read_tokens,
                         final_update.cache_creation_tokens,
                         usage.output_tokens,
-                    );
+                    ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
                     emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
 
                     // CLI-022: Capture api.response.end event
@@ -712,6 +712,7 @@ where
                                             "outputTokens": usage.output_tokens,
                                             "cacheReadInputTokens": usage.cache_read_input_tokens,
                                             "cacheCreationInputTokens": usage.cache_creation_input_tokens,
+                                            "reasoningTokens": usage.reasoning_tokens,
                                             "totalInputTokens": usage.input_tokens
                                                 + usage.cache_read_input_tokens.unwrap_or(0)
                                                 + usage.cache_creation_input_tokens.unwrap_or(0),
@@ -722,6 +723,7 @@ where
                                             "outputTokens": final_update.output_tokens,
                                             "cacheReadInputTokens": final_update.cache_read_tokens,
                                             "cacheCreationInputTokens": final_update.cache_creation_tokens,
+                                            "reasoningTokens": usage.reasoning_tokens,
                                             "totalInputTokens": final_update.total_input(),
                                         },
                                         "responseLength": assistant_text.len(),
@@ -740,6 +742,7 @@ where
                                         "outputTokens": final_update.output_tokens,
                                         "cacheReadInputTokens": final_update.cache_read_tokens,
                                         "cacheCreationInputTokens": final_update.cache_creation_tokens,
+                                        "reasoningTokens": usage.reasoning_tokens,
                                         "totalInputTokens": final_update.total_input(),
                                         "totalOutputTokens": final_update.output_tokens,
                                     }),
@@ -1488,7 +1491,7 @@ where
                                     update.cache_read_tokens,
                                     update.cache_creation_tokens,
                                     usage.output_tokens,
-                                );
+                                ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
                                 emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
                             }
                         }
@@ -1514,7 +1517,7 @@ where
                                 retry_final.cache_read_tokens,
                                 retry_final.cache_creation_tokens,
                                 usage.output_tokens,
-                            );
+                            ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
                             emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
 
                             // TUI-031: Update session state after retry completes

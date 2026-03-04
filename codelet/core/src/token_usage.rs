@@ -26,6 +26,8 @@ pub struct ApiTokenUsage {
     pub cache_creation_input_tokens: u64,
     /// Output tokens from API
     pub output_tokens: u64,
+    /// Reasoning/thinking tokens (OpenAI o-series, Codex)
+    pub reasoning_tokens: u64,
 }
 
 impl ApiTokenUsage {
@@ -41,7 +43,16 @@ impl ApiTokenUsage {
             cache_read_input_tokens: cache_read,
             cache_creation_input_tokens: cache_creation,
             output_tokens,
+            reasoning_tokens: 0,
         }
+    }
+
+    /// Builder-style setter for reasoning tokens.
+    /// Call after `new()` to propagate reasoning token data into context calculations.
+    #[inline]
+    pub fn with_reasoning_tokens(mut self, reasoning_tokens: u64) -> Self {
+        self.reasoning_tokens = reasoning_tokens;
+        self
     }
 
     /// Total input tokens = input + cache_read + cache_creation (PROV-001)
@@ -54,10 +65,10 @@ impl ApiTokenUsage {
         self.input_tokens + self.cache_read_input_tokens + self.cache_creation_input_tokens
     }
 
-    /// Total context = total_input + output (for threshold checks)
+    /// Total context = total_input + output + reasoning (for threshold checks)
     #[inline]
     pub fn total_context(&self) -> u64 {
-        self.total_input() + self.output_tokens
+        self.total_input() + self.output_tokens + self.reasoning_tokens
     }
 
     /// Update from rig Usage struct
@@ -66,6 +77,7 @@ impl ApiTokenUsage {
         self.output_tokens = usage.output_tokens;
         self.cache_read_input_tokens = usage.cache_read_input_tokens.unwrap_or(0);
         self.cache_creation_input_tokens = usage.cache_creation_input_tokens.unwrap_or(0);
+        self.reasoning_tokens = usage.reasoning_tokens.unwrap_or(0);
     }
 
     /// Update cache tokens, keeping existing if new values are None
@@ -110,5 +122,20 @@ mod tests {
         let usage = ApiTokenUsage::default();
         assert_eq!(usage.total_input(), 0);
         assert_eq!(usage.total_context(), 0);
+    }
+
+    #[test]
+    fn test_with_reasoning_tokens_builder() {
+        let usage = ApiTokenUsage::new(10_000, 0, 0, 500).with_reasoning_tokens(2000);
+        assert_eq!(usage.reasoning_tokens, 2000);
+        // total_context = 10k input + 500 output + 2k reasoning = 12500
+        assert_eq!(usage.total_context(), 12_500);
+    }
+
+    #[test]
+    fn test_with_reasoning_tokens_zero_is_noop() {
+        let usage = ApiTokenUsage::new(10_000, 0, 0, 500).with_reasoning_tokens(0);
+        assert_eq!(usage.reasoning_tokens, 0);
+        assert_eq!(usage.total_context(), 10_500);
     }
 }

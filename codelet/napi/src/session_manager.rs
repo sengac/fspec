@@ -7159,7 +7159,7 @@ pub async fn session_update_debug_metadata(session_id: String) -> Result<()> {
             if manager.is_enabled() {
                 manager.set_session_metadata(SessionMetadata {
                     provider: Some(inner.current_provider_name().to_string()),
-                    model: Some(inner.current_provider_name().to_string()),
+                    model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
                     context_window: Some(inner.provider_manager().context_window()),
                     max_output_tokens: None,
                 });
@@ -7197,7 +7197,7 @@ pub async fn session_toggle_debug(
             if let Ok(mut manager) = manager_arc.lock() {
                 manager.set_session_metadata(SessionMetadata {
                     provider: Some(inner.current_provider_name().to_string()),
-                    model: Some(inner.current_provider_name().to_string()),
+                    model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
                     context_window: Some(inner.provider_manager().context_window()),
                     max_output_tokens: None,
                 });
