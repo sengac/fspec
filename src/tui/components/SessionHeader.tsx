@@ -129,7 +129,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   const workUnitId = useCurrentWorkUnitId();
   const workUnitStatus = useCurrentWorkUnitStatus();
 
-  const { inputTokens, outputTokens } = getMaxTokens(tokenUsage, rustTokens);
+  const { inputTokens, outputTokens, reasoningTokens } = getMaxTokens(tokenUsage, rustTokens);
 
   // Format percentage with 2 decimal places, removing trailing zeros
   const formatPercentage = (num: number): string => {
@@ -207,7 +207,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
             <Text color="magenta">{tokensPerSecond.toFixed(1)} tok/s  </Text>
           )}
           {/* Token counts - dimmed */}
-          <Text dimColor>tokens: {inputTokens}↓ {outputTokens}↑  </Text>
+          <Text dimColor>tokens: {inputTokens}↓ {outputTokens}↑{reasoningTokens > 0 ? ` ${reasoningTokens}🧠` : ''}  </Text>
           {/* Context fill percentage - color varies by fill level */}
           <Text color={getContextFillColor(contextFillPercentage)}>
             {percentText}

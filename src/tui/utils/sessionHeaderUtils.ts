@@ -41,6 +41,7 @@ export interface TokenTracker {
   outputTokens: number;
   cacheReadInputTokens?: number;
   cacheCreationInputTokens?: number;
+  reasoningTokens?: number;
 }
 
 /**
@@ -50,9 +51,13 @@ export interface TokenTracker {
 export const getMaxTokens = (
   tracker1: TokenTracker,
   tracker2: TokenTracker
-): { inputTokens: number; outputTokens: number } => {
+): { inputTokens: number; outputTokens: number; reasoningTokens: number } => {
   return {
     inputTokens: Math.max(tracker1.inputTokens, tracker2.inputTokens),
     outputTokens: Math.max(tracker1.outputTokens, tracker2.outputTokens),
+    reasoningTokens: Math.max(
+      tracker1.reasoningTokens ?? 0,
+      tracker2.reasoningTokens ?? 0
+    ),
   };
 };

@@ -91,6 +91,7 @@ fn test_token_counters_reset_after_clear() {
         cache_creation_input_tokens: Some(50),
         cumulative_billed_input: 5000,
         cumulative_billed_output: 2000,
+        reasoning_tokens: 0,
     };
     assert_eq!(token_tracker.input_tokens, 5000);
 

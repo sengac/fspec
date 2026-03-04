@@ -85,7 +85,7 @@ async fn test_compaction_trigger_at_90_percent_context_window() -> Result<()> {
         output_tokens: 5_000,
         cache_read_input_tokens: Some(cache_read_tokens),
         cache_creation_input_tokens: Some(0),
-        cumulative_billed_input: 0,
+        reasoning_tokens: 0,        cumulative_billed_input: 0,
         cumulative_billed_output: 0,
     };
 

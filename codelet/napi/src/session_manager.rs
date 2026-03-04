@@ -834,6 +834,8 @@ pub struct SessionTokens {
     pub input_tokens: u32,
     /// Output tokens
     pub output_tokens: u32,
+    /// Reasoning/thinking tokens
+    pub reasoning_tokens: Option<u32>,
 }
 
 /// PAUSE-001: Pause state returned to TypeScript via NAPI
@@ -912,6 +914,7 @@ pub struct BackgroundSession {
     /// Cached token counts for quick sync access (updated on each TokenUpdate event)
     cached_input_tokens: AtomicU32,
     cached_output_tokens: AtomicU32,
+    cached_reasoning_tokens: AtomicU32,
 
     /// Inner codelet session (protected by async mutex for agent operations)
     pub inner: Arc<Mutex<codelet_cli::session::Session>>,
@@ -1030,6 +1033,7 @@ impl BackgroundSession {
             model_id: RwLock::new(model_id),
             cached_input_tokens: AtomicU32::new(0),
             cached_output_tokens: AtomicU32::new(0),
+            cached_reasoning_tokens: AtomicU32::new(0),
             inner: Arc::new(Mutex::new(inner)),
             status: AtomicU8::new(SessionStatus::Idle as u8),
             input_tx,
@@ -1215,11 +1219,18 @@ impl BackgroundSession {
         self.cached_output_tokens.store(output_tokens, Ordering::Release);
     }
 
+    /// Update cached reasoning token count
+    pub fn update_reasoning_tokens(&self, reasoning_tokens: u32) {
+        self.cached_reasoning_tokens.store(reasoning_tokens, Ordering::Release);
+    }
+
     /// Get cached token counts
-    pub fn get_tokens(&self) -> (u32, u32) {
+    pub fn get_tokens(&self) -> (u32, u32, Option<u32>) {
+        let reasoning = self.cached_reasoning_tokens.load(Ordering::Acquire);
         (
             self.cached_input_tokens.load(Ordering::Acquire),
             self.cached_output_tokens.load(Ordering::Acquire),
+            if reasoning > 0 { Some(reasoning) } else { None },
         )
     }
 
@@ -5778,6 +5789,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             StreamEvent::Tokens(info) => {
                 // Update cached tokens for sync access
                 self.session.update_tokens(info.input_tokens as u32, info.output_tokens as u32);
+                if let Some(r) = info.reasoning_tokens {
+                    self.session.update_reasoning_tokens(r as u32);
+                }
                 StreamChunk::token_update(TokenTracker {
                     input_tokens: info.input_tokens as u32,
                     output_tokens: info.output_tokens as u32,
@@ -5786,6 +5800,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     tokens_per_second: info.tokens_per_second,
                     cumulative_billed_input: None,
                     cumulative_billed_output: None,
+                    reasoning_tokens: info.reasoning_tokens.map(|v| v as u32),
                 })
             }
             StreamEvent::ContextFill(info) => StreamChunk::context_fill_update(ContextFillInfo {
@@ -5809,7 +5824,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 self.persist_assistant_message();
                 
                 // REFAC-007 Rule [31]: Persist token state on Done chunk
-                let (input_tokens, output_tokens) = self.session.get_tokens();
+                let (input_tokens, output_tokens, _reasoning_tokens) = self.session.get_tokens();
                 if let Err(e) = persist_token_state(&self.session.id, input_tokens, output_tokens) {
                     tracing::error!("REFAC-007: Failed to persist token state: {}", e);
                 }
@@ -6567,10 +6582,11 @@ pub async fn session_get_internal_provider(session_id: String) -> Result<Session
 #[napi]
 pub fn session_get_tokens(session_id: String) -> Result<SessionTokens> {
     let session = SessionManager::instance().get_session(&session_id)?;
-    let (input_tokens, output_tokens) = session.get_tokens();
+    let (input_tokens, output_tokens, reasoning_tokens) = session.get_tokens();
     Ok(SessionTokens {
         input_tokens,
         output_tokens,
+        reasoning_tokens,
     })
 }
 

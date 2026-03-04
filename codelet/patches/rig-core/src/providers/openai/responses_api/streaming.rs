@@ -351,7 +351,20 @@ where
                                 span.record("gen_ai.response.id", response.id);
                                 span.record("gen_ai.response.model", response.model);
                                 if let Some(usage) = response.usage {
-                                    final_usage = usage;
+                                    final_usage = usage.clone();
+                                    // Emit Usage event so stream_loop gets real-time token data
+                                    // (mirrors what Chat Completions API already does)
+                                    let crate_usage = crate::completion::Usage {
+                                        input_tokens: usage.input_tokens,
+                                        output_tokens: usage.output_tokens,
+                                        total_tokens: usage.total_tokens,
+                                        cache_read_input_tokens: usage.input_tokens_details
+                                            .as_ref()
+                                            .map(|d| d.cached_tokens),
+                                        reasoning_tokens: Some(usage.output_tokens_details.reasoning_tokens),
+                                        cache_creation_input_tokens: None, // Responses API doesn't report cache creation
+                                    };
+                                    yield Ok(RawStreamingChoice::Usage(crate_usage));
                                 }
                             } else {
                                 continue;

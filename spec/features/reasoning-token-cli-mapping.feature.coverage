@@ -1,0 +1,81 @@
+{
+  "scenarios": [
+    {
+      "name": "TokenInfo maps reasoning tokens from TokenDisplayUpdate",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_012_token_info_reasoning_test.rs",
+          "lines": "17-35",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/output.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TokenInfo from_usage maps reasoning tokens from ApiTokenUsage",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/rig_012_token_info_reasoning_test.rs",
+          "lines": "52-63",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/output.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/rig_012_token_info_reasoning_test.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/output.rs"
+    ],
+    "totalLinesCovered": 64
+  }
+}

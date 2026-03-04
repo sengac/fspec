@@ -25,6 +25,8 @@ pub struct TokenInfo {
     pub cache_creation_input_tokens: Option<u64>,
     /// Tokens per second (smoothed with EMA for stable display)
     pub tokens_per_second: Option<f64>,
+    /// Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking)
+    pub reasoning_tokens: Option<u64>,
 }
 
 impl TokenInfo {
@@ -32,24 +34,36 @@ impl TokenInfo {
     ///
     /// PROV-001: This automatically calculates total_input for display.
     pub fn from_usage(usage: codelet_core::ApiTokenUsage, tokens_per_second: Option<f64>) -> Self {
+        let reasoning = if usage.reasoning_tokens > 0 {
+            Some(usage.reasoning_tokens)
+        } else {
+            None
+        };
         Self {
             input_tokens: usage.total_input(), // Display total, not raw
             output_tokens: usage.output_tokens,
             cache_read_input_tokens: Some(usage.cache_read_input_tokens),
             cache_creation_input_tokens: Some(usage.cache_creation_input_tokens),
             tokens_per_second,
+            reasoning_tokens: reasoning,
         }
     }
 }
 
 impl From<codelet_core::TokenDisplayUpdate> for TokenInfo {
     fn from(update: codelet_core::TokenDisplayUpdate) -> Self {
+        let reasoning = if update.reasoning_tokens > 0 {
+            Some(update.reasoning_tokens)
+        } else {
+            None
+        };
         Self {
             input_tokens: update.total_input(), // Display total, not raw (PROV-001)
             output_tokens: update.output_tokens,
             cache_read_input_tokens: Some(update.cache_read_tokens),
             cache_creation_input_tokens: Some(update.cache_creation_tokens),
             tokens_per_second: update.tokens_per_second,
+            reasoning_tokens: reasoning,
         }
     }
 }

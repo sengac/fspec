@@ -2358,6 +2358,8 @@ export interface SessionTokens {
   inputTokens: number;
   /** Output tokens */
   outputTokens: number;
+  /** Reasoning/thinking tokens */
+  reasoningTokens?: number;
 }
 
 /**
@@ -2530,6 +2532,8 @@ export interface TokenTracker {
   cumulativeBilledInput?: number;
   /** Cumulative billed output tokens (sum of all API calls) */
   cumulativeBilledOutput?: number;
+  /** Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking) */
+  reasoningTokens?: number;
 }
 
 /** Tool call information */

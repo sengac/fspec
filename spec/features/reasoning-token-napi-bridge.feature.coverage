@@ -1,0 +1,131 @@
+{
+  "scenarios": [
+    {
+      "name": "NAPI TokenTracker includes reasoning_tokens field",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/rig_012_napi_reasoning_token_test.rs",
+          "lines": "15-38",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/types.rs",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StreamEvent::Tokens conversion maps reasoning tokens to NAPI TokenTracker",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/rig_012_napi_reasoning_token_test.rs",
+          "lines": "55-79",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5789,
+                5790,
+                5791,
+                5792,
+                5793,
+                5794,
+                5795,
+                5796,
+                5797,
+                5798,
+                5799,
+                5800,
+                5801,
+                5802,
+                5803,
+                5804
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Background session caches reasoning tokens for sync access",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/rig_012_napi_reasoning_token_test.rs",
+          "lines": "84-107",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222,
+                1223,
+                1224,
+                1225,
+                1226,
+                1227,
+                1228,
+                1229,
+                1230,
+                1231,
+                1232,
+                1233,
+                1234,
+                1235,
+                1236,
+                1237,
+                1238,
+                1239
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/rig_012_napi_reasoning_token_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/types.rs",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 139
+  }
+}

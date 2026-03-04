@@ -19,6 +19,8 @@ pub struct TokenDisplayUpdate {
     pub cache_creation_tokens: u64,
     /// Tokens per second rate (if available)
     pub tokens_per_second: Option<f64>,
+    /// Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking)
+    pub reasoning_tokens: u64,
 }
 
 impl TokenDisplayUpdate {
@@ -36,6 +38,7 @@ impl TokenDisplayUpdate {
             cache_read_tokens,
             cache_creation_tokens,
             tokens_per_second,
+            reasoning_tokens: 0,
         }
     }
 
@@ -44,9 +47,9 @@ impl TokenDisplayUpdate {
         self.input_tokens + self.cache_read_tokens + self.cache_creation_tokens
     }
 
-    /// Calculate total context (total_input + output).
+    /// Calculate total context (total_input + output + reasoning).
     pub fn total_context(&self) -> u64 {
-        self.total_input() + self.output_tokens
+        self.total_input() + self.output_tokens + self.reasoning_tokens
     }
 }
 
@@ -97,6 +100,8 @@ pub struct StreamingTokenDisplay {
     cache_creation_tokens: u64,
     /// Previous input tokens (for OpenAI-compatible fallback)
     prev_input_tokens: u64,
+    /// Reasoning/thinking tokens (last known value)
+    reasoning_tokens: u64,
     /// Rate calculation
     rate: TokPerSecCalculator,
     /// Display throttling
@@ -123,6 +128,7 @@ impl StreamingTokenDisplay {
             cache_read_tokens: prev_cache_read,
             cache_creation_tokens: prev_cache_creation,
             prev_input_tokens: prev_input,
+            reasoning_tokens: 0,
             rate: TokPerSecCalculator::new(),
             throttle: DisplayThrottle::with_default_interval(),
         }
@@ -177,6 +183,8 @@ impl StreamingTokenDisplay {
         if let Some(cc) = usage.cache_creation_input_tokens {
             self.cache_creation_tokens = cc;
         }
+        // Update reasoning tokens from Usage
+        self.reasoning_tokens = usage.reasoning_tokens.unwrap_or(0);
 
         // Always emit on Usage events (authoritative data)
         Some(self.current_display(self.rate.current_rate()))
@@ -225,6 +233,8 @@ impl StreamingTokenDisplay {
         if let Some(cc) = usage.cache_creation_input_tokens {
             self.cache_creation_tokens = cc;
         }
+        // Update reasoning tokens from final response
+        self.reasoning_tokens = usage.reasoning_tokens.unwrap_or(0);
 
         self.current_display(self.rate.current_rate())
     }
@@ -237,6 +247,7 @@ impl StreamingTokenDisplay {
             cache_read_tokens: self.cache_read_tokens,
             cache_creation_tokens: self.cache_creation_tokens,
             tokens_per_second: rate,
+            reasoning_tokens: self.reasoning_tokens,
         }
     }
 

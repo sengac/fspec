@@ -56,7 +56,7 @@ fn test_effective_tokens_applies_90_percent_cache_discount() {
         output_tokens: 0,
         cache_read_input_tokens: Some(5000),
         cache_creation_input_tokens: None,
-        cumulative_billed_input: 0,
+        reasoning_tokens: 0,        cumulative_billed_input: 0,
         cumulative_billed_output: 0,
     };
 
@@ -80,7 +80,7 @@ fn test_token_tracker_accumulates_cache_tokens() {
         output_tokens: 500,
         cache_read_input_tokens: Some(3000),
         cache_creation_input_tokens: Some(1000),
-        cumulative_billed_input: 0,
+        reasoning_tokens: 0,        cumulative_billed_input: 0,
         cumulative_billed_output: 0,
     };
 
@@ -118,7 +118,7 @@ fn test_effective_tokens_handles_missing_cache_values() {
         output_tokens: 500,
         cache_read_input_tokens: None,
         cache_creation_input_tokens: None,
-        cumulative_billed_input: 0,
+        reasoning_tokens: 0,        cumulative_billed_input: 0,
         cumulative_billed_output: 0,
     };
 
@@ -142,7 +142,7 @@ fn test_total_tokens_includes_input_and_output() {
         output_tokens: 500,
         cache_read_input_tokens: Some(3000),
         cache_creation_input_tokens: None,
-        cumulative_billed_input: 0,
+        reasoning_tokens: 0,        cumulative_billed_input: 0,
         cumulative_billed_output: 0,
     };
 

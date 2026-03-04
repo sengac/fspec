@@ -151,6 +151,7 @@ fn test_reset_after_compaction_clears_output_and_cache() {
         cumulative_billed_output: 50_000,
         cache_read_input_tokens: Some(50_000),
         cache_creation_input_tokens: Some(5_000),
+        reasoning_tokens: 0,
     };
     
     // @step When I call reset_after_compaction

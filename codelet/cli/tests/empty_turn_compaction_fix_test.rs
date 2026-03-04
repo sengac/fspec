@@ -29,7 +29,7 @@ async fn test_compaction_not_triggered_when_turns_empty() -> Result<()> {
         output_tokens: 10_000,
         cache_read_input_tokens: Some(0),
         cache_creation_input_tokens: Some(0),
-        cumulative_billed_input: 0,
+        reasoning_tokens: 0,        cumulative_billed_input: 0,
         cumulative_billed_output: 0,
     };
 
@@ -82,7 +82,7 @@ async fn test_compaction_triggers_when_turns_exist() -> Result<()> {
         output_tokens: 10_000,
         cache_read_input_tokens: Some(0),
         cache_creation_input_tokens: Some(0),
-        cumulative_billed_input: 0,
+        reasoning_tokens: 0,        cumulative_billed_input: 0,
         cumulative_billed_output: 0,
     };
 

@@ -71,6 +71,9 @@ pub struct TokenTracker {
     pub cache_read_input_tokens: Option<u64>,
     /// Cache creation tokens (from Anthropic API)
     pub cache_creation_input_tokens: Option<u64>,
+    /// Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking)
+    #[serde(default)]
+    pub reasoning_tokens: u64,
 }
 
 impl TokenTracker {
@@ -90,9 +93,9 @@ impl TokenTracker {
         self.input_tokens.saturating_sub(cache_discount)
     }
 
-    /// Get total tokens (input + output)
+    /// Get total tokens (input + output + reasoning)
     pub fn total_tokens(&self) -> u64 {
-        self.input_tokens + self.output_tokens
+        self.input_tokens + self.output_tokens + self.reasoning_tokens
     }
 
     /// Update token tracker with API response (CTX-003)
@@ -157,6 +160,8 @@ impl TokenTracker {
         // Cache tokens are per-request, not cumulative (use latest values)
         self.cache_read_input_tokens = Some(usage.cache_read_input_tokens);
         self.cache_creation_input_tokens = Some(usage.cache_creation_input_tokens);
+        // Reasoning tokens from the latest request
+        self.reasoning_tokens = usage.reasoning_tokens;
     }
 
     /// Update token tracker for display only, without billing accumulation (CMPCT-001)
@@ -178,6 +183,8 @@ impl TokenTracker {
         // Cache tokens are per-request values
         self.cache_read_input_tokens = Some(usage.cache_read_input_tokens);
         self.cache_creation_input_tokens = Some(usage.cache_creation_input_tokens);
+        // Reasoning tokens from the latest request
+        self.reasoning_tokens = usage.reasoning_tokens;
     }
 
     /// Reset token tracker after compaction (CMPCT-001)
@@ -186,6 +193,7 @@ impl TokenTracker {
     /// preserving cumulative billing (which tracks total spend across session).
     pub fn reset_after_compaction(&mut self) {
         self.output_tokens = 0;
+        self.reasoning_tokens = 0;
         self.cache_read_input_tokens = None;
         self.cache_creation_input_tokens = None;
         // Note: cumulative_billed_* is NOT reset - it tracks total session spend

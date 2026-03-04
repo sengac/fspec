@@ -1,0 +1,244 @@
+{
+  "scenarios": [
+    {
+      "name": "Streaming with usage in response.completed emits Usage event",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
+          "lines": "56-81",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
+          "lines": "126-152",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Streaming without usage in response.completed skips Usage event",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
+          "lines": "87-116",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
+          "lines": "158-228",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Streaming with usage but no input_tokens_details handles missing optional fields",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
+          "lines": "122-141",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/patches/rig-core/tests/prov_038_responses_api_usage_events.rs",
+          "lines": "234-253",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs",
+              "lines": [
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/patches/rig-core/tests/prov_038_responses_api_usage_events.rs"
+    ],
+    "implFiles": [
+      "codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs"
+    ],
+    "totalLinesCovered": 341
+  }
+}
