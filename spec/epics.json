@@ -328,7 +328,8 @@
         "BRIDGE-015",
         "BRIDGE-016",
         "BRIDGE-017",
-        "BRIDGE-018"
+        "BRIDGE-018",
+        "MCP-001"
       ]
     },
     "gitoxide-integration": {
