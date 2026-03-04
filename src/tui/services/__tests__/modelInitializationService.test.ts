@@ -31,6 +31,8 @@ import { useModelStore } from '../../store/modelStore';
 const napiMocks = vi.hoisted(() => ({
   modelsListAll: vi.fn(),
   modelsListLocalOpenai: vi.fn(),
+  codexOauthGetTokens: vi.fn(),
+  claudeOauthGetTokens: vi.fn(),
 }));
 
 vi.mock('@sengac/codelet-napi', async importOriginal => {
@@ -41,6 +43,8 @@ vi.mock('@sengac/codelet-napi', async importOriginal => {
     modelsListAll: () => napiMocks.modelsListAll(),
     modelsListLocalOpenai: (baseUrl: string) =>
       napiMocks.modelsListLocalOpenai(baseUrl),
+    codexOauthGetTokens: () => napiMocks.codexOauthGetTokens(),
+    claudeOauthGetTokens: () => napiMocks.claudeOauthGetTokens(),
   };
 });
 
@@ -141,7 +145,7 @@ describe('Feature: Model Initialization Service', () => {
   const credentialEnvVars = [
     'ANTHROPIC_API_KEY',
     'CLAUDE_CODE_OAUTH_TOKEN',
-    'OPENAI_API_KEY',
+    'CODEX_API_KEY',
     'GOOGLE_API_KEY',
     'GEMINI_API_KEY',
   ];
@@ -153,6 +157,12 @@ describe('Feature: Model Initialization Service', () => {
     // Reset mocks
     napiMocks.modelsListAll.mockReset();
     napiMocks.modelsListLocalOpenai.mockReset();
+    napiMocks.codexOauthGetTokens.mockReset();
+    napiMocks.claudeOauthGetTokens.mockReset();
+
+    // Default: no OAuth tokens
+    napiMocks.codexOauthGetTokens.mockReturnValue(null);
+    napiMocks.claudeOauthGetTokens.mockResolvedValue(null);
 
     // Save and clear credential env vars for clean testing
     originalEnvVars = {};
@@ -176,6 +186,18 @@ describe('Feature: Model Initialization Service', () => {
     await mkdir(join(setup.testDir, '.fspec', 'credentials'), {
       recursive: true,
     });
+
+    // Write a codex-models.json allowlist that includes the test fixture model IDs.
+    // This ensures the Codex allowlist filter passes for test models.
+    const testAllowlist = {
+      version: 1,
+      description: 'Test allowlist for model initialization service tests',
+      models: [{ slug: 'gpt-4o', visibility: 'list', priority: 0 }],
+    };
+    await writeFile(
+      join(setup.testDir, '.fspec', 'codex-models.json'),
+      JSON.stringify(testAllowlist, null, 2)
+    );
   });
 
   afterEach(async () => {
@@ -289,12 +311,12 @@ describe('Feature: Model Initialization Service', () => {
 
   describe('Scenario: Fall back to default when persisted model is unavailable', () => {
     it('should select first available when persisted model has no credentials', async () => {
-      // @step Given I have credentials for openai but NOT anthropic
+      // @step Given I have Codex credentials but NOT anthropic
       const credentialsContent = {
         version: 1,
         providers: {
-          openai: {
-            apiKey: 'sk-openai-test-key',
+          codex: {
+            apiKey: 'sk-codex-test-key',
             lastUpdated: new Date().toISOString(),
           },
         },
@@ -325,12 +347,13 @@ describe('Feature: Model Initialization Service', () => {
       // @step When I call initializeModels
       const result = await initializeModels();
 
-      // @step Then only openai should be in sections (anthropic has no credentials)
+      // @step Then only codex should be in sections (anthropic has no credentials,
+      // OpenAI cloud models are routed through Codex when CODEX_API_KEY exists)
       expect(result.sections.length).toBe(1);
-      expect(result.sections[0].providerId).toBe('openai');
+      expect(result.sections[0].providerId).toBe('codex');
 
-      // @step And openai should be selected (only provider with credentials)
-      expect(result.currentModel?.providerId).toBe('openai');
+      // @step And codex should be selected (only provider with credentials)
+      expect(result.currentModel?.providerId).toBe('codex');
       expect(result.currentModel?.modelId).toBe('gpt-4o');
 
       // @step And persistedModelRestored should be false
@@ -340,7 +363,7 @@ describe('Feature: Model Initialization Service', () => {
 
   describe('Scenario: Multiple providers with credentials', () => {
     it('should include all providers with credentials in sections', async () => {
-      // @step Given I have credentials for anthropic, openai, and gemini
+      // @step Given I have credentials for anthropic, codex (for OpenAI cloud), and gemini
       const credentialsContent = {
         version: 1,
         providers: {
@@ -348,8 +371,8 @@ describe('Feature: Model Initialization Service', () => {
             apiKey: 'sk-ant-test-key',
             lastUpdated: new Date().toISOString(),
           },
-          openai: {
-            apiKey: 'sk-openai-test-key',
+          codex: {
+            apiKey: 'sk-codex-test-key',
             lastUpdated: new Date().toISOString(),
           },
           gemini: {
@@ -375,15 +398,16 @@ describe('Feature: Model Initialization Service', () => {
       const result = await initializeModels();
 
       // @step Then all three providers should be in sections
+      // (OpenAI cloud models are routed through Codex when CODEX_API_KEY exists)
       expect(result.sections.length).toBe(3);
       const providerIds = result.sections.map(s => s.providerId);
       expect(providerIds).toContain('anthropic');
-      expect(providerIds).toContain('openai');
+      expect(providerIds).toContain('codex');
       expect(providerIds).toContain('google');
 
       // @step And availableProviders should have internal names
       expect(result.availableProviders).toContain('claude');
-      expect(result.availableProviders).toContain('openai');
+      expect(result.availableProviders).toContain('codex');
       expect(result.availableProviders).toContain('gemini');
     });
   });

@@ -155,7 +155,7 @@ describe('Feature: Model Screen — PROV-031 bug fixes', () => {
   const credentialEnvVars = [
     'ANTHROPIC_API_KEY',
     'CLAUDE_CODE_OAUTH_TOKEN',
-    'OPENAI_API_KEY',
+    'CODEX_API_KEY',
     'GOOGLE_API_KEY',
     'GEMINI_API_KEY',
   ];
@@ -237,11 +237,12 @@ describe('Feature: Model Screen — PROV-031 bug fixes', () => {
 
       // @step When loadProfileSections() runs in modelInitializationService.ts
       napiMocks.modelsListAll.mockResolvedValue([makeOpenAICloudProvider()]);
+      // Codex credentials so the cloud OpenAI section appears (as Codex)
       const credentialsContent = {
         version: 1,
         providers: {
-          openai: {
-            apiKey: 'sk-openai-test',
+          codex: {
+            apiKey: 'sk-codex-test',
             lastUpdated: new Date().toISOString(),
           },
         },

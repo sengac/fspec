@@ -78,6 +78,9 @@ vi.mock('@sengac/codelet-napi', async () => {
         return undefined;
       }
     ),
+    // Default: no OAuth tokens (tests use CODEX_API_KEY via fixture credentials)
+    codexOauthGetTokens: vi.fn(() => null),
+    claudeOauthGetTokens: vi.fn(async () => null),
     sessionSetModelProfile: vi.fn(
       async (sessionId: string, providerId: string, modelId: string) => {
         if (activeFixture) {
@@ -121,7 +124,8 @@ describe('Feature: Integrate screen components into AgentView', () => {
 
     // Set up credentials so models load
     await fixture.createCredential('anthropic', 'test-api-key-12345');
-    await fixture.createCredential('openai', 'test-api-key-67890');
+    // Codex credential enables OpenAI cloud models as "Codex (ChatGPT)" section
+    await fixture.createCredential('codex', 'test-codex-key-67890');
   });
 
   afterEach(async () => {
@@ -173,7 +177,7 @@ describe('Feature: Integrate screen components into AgentView', () => {
       // @step Then the ModelSelectorScreen should be displayed
       const frame = lastFrame();
       expect(frame).toContain('Anthropic');
-      expect(frame).toContain('OpenAI');
+      expect(frame).toContain('Codex');
 
       // @step And the current model should be highlighted
       // The Anthropic section should be expanded since it contains the current model
@@ -210,7 +214,7 @@ describe('Feature: Integrate screen components into AgentView', () => {
 
       // @step And the provider list should be visible
       expect(frame).toContain('Anthropic');
-      expect(frame).toContain('OpenAI');
+      expect(frame).toContain('Codex');
     });
   });
 
@@ -674,7 +678,7 @@ describe('Feature: Integrate screen components into AgentView', () => {
       // @step And the ModelSelectorScreen should display the loaded models
       const frame = lastFrame();
       expect(frame).toContain('Anthropic');
-      expect(frame).toContain('OpenAI');
+      expect(frame).toContain('Codex');
     });
   });
 

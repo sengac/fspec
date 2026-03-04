@@ -65,6 +65,9 @@ vi.mock('@sengac/codelet-napi', async () => {
       }
       return undefined;
     }),
+    // Default: no OAuth tokens (tests use CODEX_API_KEY via fixture credentials)
+    codexOauthGetTokens: vi.fn(() => null),
+    claudeOauthGetTokens: vi.fn(async () => null),
   };
 });
 
@@ -89,7 +92,8 @@ describe('Feature: Create ModelSelectorScreen component', () => {
 
     // Set up credentials so models load
     await fixture.createCredential('anthropic', 'test-api-key-12345');
-    await fixture.createCredential('openai', 'test-api-key-67890');
+    // Codex credential enables OpenAI cloud models as "Codex (ChatGPT)" section
+    await fixture.createCredential('codex', 'test-codex-key-67890');
   });
 
   afterEach(async () => {
@@ -145,8 +149,8 @@ describe('Feature: Create ModelSelectorScreen component', () => {
       // @step Then the hook's navigateDown function should be called
       // @step And the selection should move to the next item in the list
       const frame2 = lastFrame();
-      // Selection should now be on OpenAI (second section)
-      expect(frame2).toMatch(/>\s*[▶▼]\s*OpenAI/);
+      // Selection should now be on Codex (ChatGPT) (second section — OpenAI cloud models)
+      expect(frame2).toMatch(/>\s*[▶▼]\s*Codex/);
       // Anthropic should no longer have the selection indicator at start
       expect(frame2).not.toMatch(/>\s*[▶▼]\s*Anthropic/);
     });
@@ -169,13 +173,13 @@ describe('Feature: Create ModelSelectorScreen component', () => {
       await waitFor(100);
 
       // @step And the selection is not on the first item
-      // Move down to OpenAI section first
+      // Move down to Codex (ChatGPT) section first
       pressKey(stdin, { name: 'down' });
       await waitFor(50);
 
-      // Verify we're on OpenAI
+      // Verify we're on Codex
       const afterDown = lastFrame();
-      expect(afterDown).toMatch(/>\s*[▶▼]\s*OpenAI/);
+      expect(afterDown).toMatch(/>\s*[▶▼]\s*Codex/);
 
       // @step When the user presses the Up arrow key
       pressKey(stdin, { name: 'up' });
@@ -186,7 +190,7 @@ describe('Feature: Create ModelSelectorScreen component', () => {
       const frame = lastFrame();
       // Selection should be back on Anthropic
       expect(frame).toMatch(/>\s*[▶▼]\s*Anthropic/);
-      expect(frame).not.toMatch(/>\s*[▶▼]\s*OpenAI/);
+      expect(frame).not.toMatch(/>\s*[▶▼]\s*Codex/);
     });
   });
 
@@ -337,7 +341,7 @@ describe('Feature: Create ModelSelectorScreen component', () => {
       expect(clearedFrame).not.toContain('cla');
       // Both providers should be visible again
       expect(clearedFrame).toContain('Anthropic');
-      expect(clearedFrame).toContain('OpenAI');
+      expect(clearedFrame).toContain('Codex');
 
       // @step And the onClose callback should NOT be invoked
       expect(fixture.callbacks.onClose.calls).toBe(0);
@@ -635,7 +639,7 @@ describe('Feature: Create ModelSelectorScreen component', () => {
       expect(frame).not.toContain('clau');
       // Both providers should be visible again (not filtered)
       expect(frame).toContain('Anthropic');
-      expect(frame).toContain('OpenAI');
+      expect(frame).toContain('Codex');
 
       // Should NOT close the screen (filter was active)
       expect(fixture.callbacks.onClose.calls).toBe(0);

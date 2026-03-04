@@ -503,7 +503,7 @@ describe('Feature: Provider Configuration Persistence and TUI Display', () => {
         '../../tui/utils/model-selection'
       );
 
-      // @step And I have OPENAI_API_KEY configured for cloud provider
+      // @step And I have a cloud OpenAI section (via Codex credentials)
       const cloudSection = { providerId: 'openai' };
       const profileSection = { providerId: 'openai', profileName: 'work-vllm' };
       const sections = [profileSection, cloudSection];
@@ -577,7 +577,7 @@ describe('Feature: Provider Configuration Persistence and TUI Display', () => {
         '../../tui/utils/model-selection'
       );
 
-      // @step Given I have OPENAI_API_KEY configured for cloud provider
+      // @step Given I have a cloud OpenAI section (via Codex credentials)
       const cloudSection = { providerId: 'openai' };
 
       // @step And I have a profile "work-vllm" configured for "openai" provider
@@ -638,7 +638,7 @@ describe('Feature: Provider Configuration Persistence and TUI Display', () => {
       // @step Then OPENAI_BASE_URL environment variable should be set to "http://work:8888"
       expect(profile?.baseUrl).toBe('http://work:8888');
 
-      // @step And OPENAI_API_KEY environment variable should be set from profile config
+      // @step And the profile apiKey should be set from the saved config
       expect(profile?.apiKey).toBe('my-api-key');
 
       // @step And the session should use the local server not the cloud provider registry

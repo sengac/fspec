@@ -96,12 +96,23 @@ async function loadCloudModels(): Promise<NapiProviderModels[]> {
 
 /**
  * Build provider sections from cloud models with credentials check
+ *
+ * IMPORTANT: OpenAI cloud models (from models.dev) are ONLY accessible via
+ * Codex credentials (OAuth tokens or CODEX_API_KEY). The 'openai' registry
+ * entry has requiresApiKey: false because it's designed for local profiles
+ * (vLLM, Ollama), but cloud models need explicit Codex credentials.
+ * When Codex credentials exist, all OpenAI cloud models are shown under
+ * "Codex (ChatGPT)" — never as a bare "OpenAI" section.
  */
 async function buildCloudSections(
   allModels: NapiProviderModels[]
 ): Promise<ProviderSection[]> {
   // PROV-018: Check for Codex OAuth tokens once, reuse across all providers
   const hasCodexOAuth = checkCodexOAuthTokens();
+  // Check for Codex API key (CODEX_API_KEY env var or credentials file)
+  const codexConfig = await getProviderConfig('codex');
+  const hasCodexApiKey = !!codexConfig.apiKey;
+  const hasCodexCredentials = hasCodexOAuth || hasCodexApiKey;
   // PROV-026: Check for Claude OAuth tokens (async — claude_auth.json uses tokio::fs)
   const hasClaudeOAuth = await checkClaudeOAuthTokens();
 
@@ -114,6 +125,13 @@ async function buildCloudSections(
       let hasCredentials =
         registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
       const toolCallModels = pm.models.filter(m => m.toolCall);
+
+      // OpenAI cloud models require Codex credentials (OAuth or CODEX_API_KEY).
+      // The 'openai' registry has requiresApiKey: false (for local profiles),
+      // but cloud models must never appear without explicit Codex credentials.
+      if (pm.providerId === 'openai') {
+        hasCredentials = hasCodexCredentials;
+      }
 
       // PROV-026: Override hasCredentials for anthropic when Claude OAuth tokens exist
       if (pm.providerId === 'anthropic' && hasClaudeOAuth) {
@@ -136,9 +154,10 @@ async function buildCloudSections(
 
   const credentialSections = sectionsWithCreds.filter(s => s.hasCredentials);
 
-  // PROV-018: Extract codex models from OpenAI section when OAuth tokens exist
-  // PROV-034: Load allowlist for filtering to Codex-supported models only
-  if (hasCodexOAuth) {
+  // PROV-018/PROV-033: Extract OpenAI models into synthetic "Codex (ChatGPT)"
+  // section when ANY Codex credentials exist (OAuth tokens OR CODEX_API_KEY).
+  // PROV-034: Load allowlist for filtering to Codex-supported models only.
+  if (hasCodexCredentials) {
     const codexAllowlist = await loadCodexAllowlist();
     return extractCodexSection(
       credentialSections,

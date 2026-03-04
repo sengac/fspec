@@ -134,7 +134,6 @@ describe('Feature: Anthropic Provider Routing with Subscription Auth', () => {
   const credentialEnvVars = [
     'ANTHROPIC_API_KEY',
     'CLAUDE_CODE_OAUTH_TOKEN',
-    'OPENAI_API_KEY',
     'CODEX_API_KEY',
     'GOOGLE_GENERATIVE_AI_API_KEY',
     'GEMINI_API_KEY',
@@ -350,7 +349,7 @@ describe('Feature: Anthropic Provider Routing with Subscription Auth', () => {
   });
 
   describe('Scenario: Non-OAuth providers unaffected by Claude OAuth changes', () => {
-    it('should show OpenAI section as always-available since it requires no API key', async () => {
+    it('should not show OpenAI cloud section without Codex credentials', async () => {
       // @step Given I have authenticated with Claude via OAuth
       napiMocks.claudeOauthGetTokens.mockResolvedValue({
         accessToken: 'sk-ant-oat-test-access-token',
@@ -358,8 +357,8 @@ describe('Feature: Anthropic Provider Routing with Subscription Auth', () => {
         expires: Date.now() + 3600000,
       });
 
-      // @step And I have no OpenAI API key configured
-      // (env vars cleared in beforeEach)
+      // @step And I have no Codex credentials (no OAuth tokens, no CODEX_API_KEY)
+      // (env vars cleared in beforeEach, no codex credential in credentials file)
 
       // @step When models are loaded for the model selector
       napiMocks.modelsListAll.mockResolvedValue([
@@ -368,18 +367,17 @@ describe('Feature: Anthropic Provider Routing with Subscription Auth', () => {
       ]);
       const result = await initializeModels();
 
-      // PROV-029: OpenAI API now has requiresApiKey=false (profile-only local model provider)
-      // so it always has hasCredentials=true and appears in the model list
-      // @step Then the OpenAI section should be present (requiresApiKey=false)
+      // OpenAI cloud models require Codex credentials (OAuth or CODEX_API_KEY).
+      // Without either, no OpenAI/Codex cloud section appears.
+      // @step Then no OpenAI cloud section should be present (no Codex credentials)
       const openaiSection = result.sections.find(
         s => s.providerId === 'openai'
       );
-      expect(openaiSection).toBeDefined();
-      expect(openaiSection!.hasCredentials).toBe(true);
+      expect(openaiSection).toBeUndefined();
 
-      // @step And Codex OAuth behavior should be unchanged
+      // @step And no Codex section either
       const codexSection = result.sections.find(s => s.providerId === 'codex');
-      expect(codexSection).toBeUndefined(); // no Codex OAuth tokens
+      expect(codexSection).toBeUndefined();
 
       // Anthropic section should be present from Claude OAuth
       const anthropicSection = result.sections.find(

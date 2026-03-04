@@ -234,6 +234,9 @@ vi.mock('@sengac/codelet-napi', () => ({
   // TUI-075: Session store uses these for Rust session tracking
   sessionClearActive: vi.fn(),
   sessionSetActive: vi.fn(),
+  // OAuth token checks (default: no tokens)
+  codexOauthGetTokens: vi.fn(() => null),
+  claudeOauthGetTokens: vi.fn(async () => null),
 }));
 
 // Mock Dialog
@@ -264,7 +267,7 @@ vi.mock('../../utils/credentials', () => ({
   getProviderConfig: vi.fn((registryId: string) => {
     const registryToAvailable: Record<string, string> = {
       anthropic: 'claude',
-      openai: 'openai',
+      codex: 'codex',
       gemini: 'gemini',
       google: 'gemini',
     };
@@ -741,7 +744,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Only show providers with valid credentials', () => {
     it('should only show providers that have valid credentials', async () => {
       // @step Given ANTHROPIC_API_KEY is set
-      // @step And OPENAI_API_KEY is NOT set
+      // @step And CODEX_API_KEY is NOT set
       resetMockSession({
         availableProviders: ['claude'], // Only claude has credentials
       });
@@ -762,10 +765,11 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step Then I should see the "anthropic" provider section
       expect(lastFrame()).toContain('Anthropic');
 
-      // PROV-029: OpenAI API now has requiresApiKey=false (profile-only local model provider),
-      // so it always has hasCredentials=true and appears in the model list.
-      // @step And I should see "OpenAI" since it is a profile-only provider (no API key required)
-      expect(lastFrame()).toContain('OpenAI');
+      // OpenAI cloud models require Codex credentials (OAuth or CODEX_API_KEY).
+      // Without Codex credentials, no OpenAI/Codex cloud section appears.
+      // @step And I should NOT see "OpenAI" or "Codex" since CODEX_API_KEY is NOT set
+      expect(lastFrame()).not.toContain('OpenAI');
+      expect(lastFrame()).not.toContain('Codex');
 
       // @step And I should NOT see "Google" since GOOGLE_API_KEY is NOT set
       expect(lastFrame()).not.toContain('Google');

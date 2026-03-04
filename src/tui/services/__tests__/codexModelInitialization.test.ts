@@ -228,7 +228,6 @@ describe('Feature: Codex Model Selector Integration', () => {
 
   const credentialEnvVars = [
     'ANTHROPIC_API_KEY',
-    'OPENAI_API_KEY',
     'CODEX_API_KEY',
     'GOOGLE_API_KEY',
     'GEMINI_API_KEY',
@@ -347,11 +346,11 @@ describe('Feature: Codex Model Selector Integration', () => {
   // ===========================================================================
 
   describe('Scenario: No Codex section when OAuth tokens absent', () => {
-    it('should not create a Codex section when no OAuth tokens exist', async () => {
+    it('should not create a Codex or OpenAI cloud section when no Codex credentials exist', async () => {
       // @step Given I have not authenticated with Codex via OAuth
       napiMocks.codexOauthGetTokens.mockReturnValue(null);
 
-      // @step And I have no OpenAI API key configured
+      // @step And I have no CODEX_API_KEY configured
       // (no credentials set up — env vars cleared in beforeEach)
 
       // @step When models are loaded for the model selector
@@ -360,13 +359,17 @@ describe('Feature: Codex Model Selector Integration', () => {
       ]);
       const result = await initializeModels();
 
-      // @step Then I should not see any Codex or OpenAI section in the model selector
+      // @step Then I should not see any Codex section in the model selector
       const codexSection = result.sections.find(s => s.providerId === 'codex');
       expect(codexSection).toBeUndefined();
 
-      // Note: OpenAI cloud section appears because requiresApiKey=false in provider registry
-      // (PROV-029: OpenAI is a profile-only local model provider, always passes credentials check)
-      // The key assertion is that NO Codex section exists without OAuth tokens
+      // @step And I should not see any OpenAI cloud section either
+      // OpenAI cloud models require Codex credentials (OAuth or CODEX_API_KEY).
+      // Without either, no cloud OpenAI section appears.
+      const openaiSection = result.sections.find(
+        s => s.providerId === 'openai' && !s.profileName
+      );
+      expect(openaiSection).toBeUndefined();
     });
   });
 
@@ -374,7 +377,7 @@ describe('Feature: Codex Model Selector Integration', () => {
   // Scenario: Codex OAuth active with OpenAI API key shows only Codex section for cloud models
   // ===========================================================================
 
-  describe('Scenario: Codex OAuth active with OpenAI API key shows only Codex section for cloud models', () => {
+  describe('Scenario: Codex OAuth active with CODEX_API_KEY shows only Codex section for cloud models', () => {
     it('should show only Codex section with ALL cloud models, no OpenAI cloud section', async () => {
       // @step Given I have authenticated with Codex via OAuth
       napiMocks.codexOauthGetTokens.mockReturnValue({
@@ -383,12 +386,12 @@ describe('Feature: Codex Model Selector Integration', () => {
         expiresAt: Date.now() + 3600000,
       });
 
-      // @step And I have an OpenAI API key configured
+      // @step And I have a CODEX_API_KEY configured
       const credentialsContent = {
         version: 1,
         providers: {
-          openai: {
-            apiKey: 'sk-openai-test-key',
+          codex: {
+            apiKey: 'sk-codex-test-key',
             lastUpdated: new Date().toISOString(),
           },
         },
@@ -503,20 +506,20 @@ describe('Feature: Codex Model Selector Integration', () => {
   });
 
   // ===========================================================================
-  // Scenario: OpenAI API key without Codex OAuth shows OpenAI section
+  // Scenario: CODEX_API_KEY without Codex OAuth shows Codex (ChatGPT) section
   // ===========================================================================
 
-  describe('Scenario: OpenAI API key without Codex OAuth shows OpenAI section', () => {
-    it('should show OpenAI section with all cloud models and no Codex section', async () => {
+  describe('Scenario: CODEX_API_KEY without Codex OAuth shows Codex (ChatGPT) section', () => {
+    it('should show Codex (ChatGPT) section with all cloud models when CODEX_API_KEY is set', async () => {
       // @step Given I have not authenticated with Codex via OAuth
       napiMocks.codexOauthGetTokens.mockReturnValue(null);
 
-      // @step And I have an OpenAI API key configured
+      // @step And I have a CODEX_API_KEY configured
       const credentialsContent = {
         version: 1,
         providers: {
-          openai: {
-            apiKey: 'sk-openai-test-key',
+          codex: {
+            apiKey: 'sk-codex-test-key',
             lastUpdated: new Date().toISOString(),
           },
         },
@@ -533,16 +536,17 @@ describe('Feature: Codex Model Selector Integration', () => {
       // @step When models are loaded for the model selector
       const result = await initializeModels();
 
-      // @step Then I should see an OpenAI section with all cloud models
-      const openaiSection = result.sections.find(
-        s => s.providerId === 'openai'
-      );
-      expect(openaiSection).toBeDefined();
-      expect(openaiSection!.models.length).toBe(4);
-
-      // @step And no Codex section should exist
+      // @step Then I should see a Codex (ChatGPT) section with all cloud models
       const codexSection = result.sections.find(s => s.providerId === 'codex');
-      expect(codexSection).toBeUndefined();
+      expect(codexSection).toBeDefined();
+      expect(codexSection!.providerName).toBe('Codex (ChatGPT)');
+      expect(codexSection!.models.length).toBe(4);
+
+      // @step And no bare OpenAI cloud section should exist
+      const openaiSection = result.sections.find(
+        s => s.providerId === 'openai' && !s.profileName
+      );
+      expect(openaiSection).toBeUndefined();
     });
   });
 });

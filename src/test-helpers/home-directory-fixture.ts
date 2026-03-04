@@ -418,13 +418,15 @@ export async function createHomeDirectoryFixture(
 // =============================================================================
 
 /**
- * Sets up standard cloud provider credentials for testing
+ * Sets up standard cloud provider credentials for testing.
+ * Uses 'codex' instead of 'openai' because OpenAI cloud models
+ * require Codex credentials (OAuth or CODEX_API_KEY).
  */
 export async function setupStandardCredentials(
   fixture: HomeDirectoryFixture
 ): Promise<void> {
   await fixture.createCredential('anthropic', 'sk-ant-test-key-12345');
-  await fixture.createCredential('openai', 'sk-test-key-67890');
+  await fixture.createCredential('codex', 'sk-codex-test-key-67890');
 }
 
 /**

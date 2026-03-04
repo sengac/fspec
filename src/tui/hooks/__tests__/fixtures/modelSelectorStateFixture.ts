@@ -13,6 +13,8 @@
  */
 
 import { vi } from 'vitest';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
 
 import {
   createHomeDirectoryFixture,
@@ -188,6 +190,21 @@ export async function createModelSelectorStateFixture(
     dirPrefix: 'fspec-model-selector',
   });
 
+  // Create codex-models.json allowlist including test fixture model IDs.
+  // Needed on initial creation (before any reset() call).
+  const testAllowlist = {
+    version: 1,
+    description: 'Test allowlist for useModelSelectorState tests',
+    models: [
+      { slug: 'gpt-4.1', visibility: 'list', priority: 0 },
+      { slug: 'gpt-4.1-mini', visibility: 'list', priority: 1 },
+    ],
+  };
+  await writeFile(
+    join(homeFixture.env.fspecDir, 'codex-models.json'),
+    JSON.stringify(testAllowlist, null, 2)
+  );
+
   // ========================================
   // NAPI Mock Configuration
   // ========================================
@@ -256,6 +273,23 @@ export async function createModelSelectorStateFixture(
     // Reset HOME directory fixture
     await homeFixture.reset();
 
+    // Create Codex credentials so OpenAI cloud models appear as "Codex (ChatGPT)"
+    await homeFixture.createCredential('codex', 'sk-codex-test-key');
+
+    // Create codex-models.json allowlist including test fixture model IDs
+    const testAllowlist = {
+      version: 1,
+      description: 'Test allowlist for useModelSelectorState tests',
+      models: [
+        { slug: 'gpt-4.1', visibility: 'list', priority: 0 },
+        { slug: 'gpt-4.1-mini', visibility: 'list', priority: 1 },
+      ],
+    };
+    await writeFile(
+      join(homeFixture.env.fspecDir, 'codex-models.json'),
+      JSON.stringify(testAllowlist, null, 2)
+    );
+
     // Reset NAPI config
     napiConfig.cloudProviders = createDefaultCloudProviders();
     napiConfig.localServerModels.clear();
@@ -303,7 +337,8 @@ export async function setupWithCloudCredentials(
 ): Promise<void> {
   // Create credentials for cloud providers
   await fixture.createCredential('anthropic', 'sk-ant-test-key-12345');
-  await fixture.createCredential('openai', 'sk-test-key-67890');
+  // Codex credential enables OpenAI cloud models as "Codex (ChatGPT)" section
+  await fixture.createCredential('codex', 'sk-codex-test-key-67890');
 
   // Configure NAPI to return cloud providers
   fixture.configureNapi({

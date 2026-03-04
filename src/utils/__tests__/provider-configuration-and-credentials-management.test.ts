@@ -41,20 +41,20 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
   let originalHome: string | undefined;
   let originalAnthropicKey: string | undefined;
   let originalClaudeOAuthToken: string | undefined;
-  let originalOpenaiKey: string | undefined;
+  let originalCodexKey: string | undefined;
 
   beforeEach(async () => {
     setup = await setupTestDirectory('provider-configuration');
     originalHome = process.env.HOME;
     originalAnthropicKey = process.env.ANTHROPIC_API_KEY;
     originalClaudeOAuthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN;
-    originalOpenaiKey = process.env.OPENAI_API_KEY;
+    originalCodexKey = process.env.CODEX_API_KEY;
     process.env.HOME = setup.testDir;
 
     // Clear env vars to test credential resolution
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
-    delete process.env.OPENAI_API_KEY;
+    delete process.env.CODEX_API_KEY;
 
     // Create .fspec directory
     await mkdir(join(setup.testDir, '.fspec'), { recursive: true });
@@ -68,8 +68,8 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     if (originalClaudeOAuthToken) {
       process.env.CLAUDE_CODE_OAUTH_TOKEN = originalClaudeOAuthToken;
     }
-    if (originalOpenaiKey) {
-      process.env.OPENAI_API_KEY = originalOpenaiKey;
+    if (originalCodexKey) {
+      process.env.CODEX_API_KEY = originalCodexKey;
     }
     vi.clearAllMocks();
     await setup.cleanup();
@@ -184,20 +184,23 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
 
   describe('Scenario: Environment variables continue to work', () => {
     it('should use environment variable when no credentials file exists', async () => {
-      // @step Given I have OPENAI_API_KEY set in the environment
-      process.env.OPENAI_API_KEY = 'env-openai-key-12345';
+      // @step Given I have CODEX_API_KEY set in the environment
+      process.env.CODEX_API_KEY = 'env-codex-key-12345';
 
       // @step And I do not have credentials configured in the credentials file
       // (no saveCredential call)
 
       // @step When the system detects available providers
-      const config = await getProviderConfig('openai');
+      const config = await getProviderConfig('codex');
 
-      // @step Then "openai" should be marked as available
-      expect(config.apiKey).toBe('env-openai-key-12345');
+      // @step Then "codex" should be marked as available
+      expect(config.apiKey).toBe('env-codex-key-12345');
 
       // @step And sessions should be creatable using the environment variable
       expect(config.apiKey).toBeDefined();
+
+      // Cleanup
+      delete process.env.CODEX_API_KEY;
     });
   });
 

@@ -103,11 +103,12 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     id: 'openai',
     name: 'OpenAI API',
     baseUrl: 'https://api.openai.com/v1',
-    envVar: 'OPENAI_API_KEY',
+    envVar: '',
     authMethod: 'bearer',
     authType: 'api-key',
     requiresApiKey: false,
-    description: 'OpenAI-compatible API for local models (vLLM, Ollama, etc.)',
+    description:
+      'OpenAI-compatible API for local models (vLLM, Ollama, etc.). Cloud OpenAI models use Codex credentials.',
   },
   {
     id: 'anthropic',

@@ -247,6 +247,8 @@ const napiMock = vi.hoisted(() => ({
   modelsListAll: vi.fn(),
   modelsListLocalOpenai: vi.fn(),
   modelsRefreshCache: vi.fn(),
+  codexOauthGetTokens: vi.fn(),
+  claudeOauthGetTokens: vi.fn(),
 }));
 
 vi.mock('@sengac/codelet-napi', async (importOriginal) => {
@@ -256,6 +258,8 @@ vi.mock('@sengac/codelet-napi', async (importOriginal) => {
     modelsListAll: () => napiMock.modelsListAll(),
     modelsListLocalOpenai: (baseUrl: string) => napiMock.modelsListLocalOpenai(baseUrl),
     modelsRefreshCache: () => napiMock.modelsRefreshCache(),
+    codexOauthGetTokens: () => napiMock.codexOauthGetTokens(),
+    claudeOauthGetTokens: () => napiMock.claudeOauthGetTokens(),
   };
 });
 
@@ -530,7 +534,7 @@ describe('Feature: useModelSelectorState Hook', () => {
       });
 
       hookState!.toggleSectionExpansion('anthropic');
-      hookState!.toggleSectionExpansion('openai');
+      hookState!.toggleSectionExpansion('codex');
       hookState!.navigateDown();
       hookState!.navigateDown();
 
@@ -538,7 +542,7 @@ describe('Feature: useModelSelectorState Hook', () => {
         expect(hookState!.getCurrentFlatIndex()).toBeGreaterThan(0);
       });
 
-      hookState!.setFilter('openai');
+      hookState!.setFilter('codex');
 
       await vi.waitFor(() => {
         expect(hookState!.scrollOffset).toBe(0);

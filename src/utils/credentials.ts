@@ -64,7 +64,7 @@ export interface ProviderConfigResult {
  */
 const PROVIDER_ENV_VARS: Record<string, string[]> = {
   anthropic: ['ANTHROPIC_API_KEY', 'CLAUDE_CODE_OAUTH_TOKEN'],
-  openai: ['OPENAI_API_KEY'],
+  openai: [],
   cohere: ['COHERE_API_KEY'],
   gemini: ['GOOGLE_GENERATIVE_AI_API_KEY', 'GEMINI_API_KEY'],
   mistral: ['MISTRAL_API_KEY'],

@@ -14,6 +14,8 @@
  */
 
 import { vi } from 'vitest';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
 
 import {
   createHomeDirectoryFixture,
@@ -257,6 +259,21 @@ export async function createModelSelectorScreenFixture(
   // TUI-073: Reset model store to ensure clean state for each test
   useModelStore.getState().reset();
 
+  // Create codex-models.json allowlist including test fixture model IDs.
+  // This is needed on initial creation (before any reset() call).
+  const testAllowlist = {
+    version: 1,
+    description: 'Test allowlist for ModelSelectorScreen integration tests',
+    models: [
+      { slug: 'gpt-4.1', visibility: 'list', priority: 0 },
+      { slug: 'gpt-4.1-mini', visibility: 'list', priority: 1 },
+    ],
+  };
+  await writeFile(
+    join(homeFixture.env.fspecDir, 'codex-models.json'),
+    JSON.stringify(testAllowlist, null, 2)
+  );
+
   // ========================================
   // NAPI Mock Configuration
   // ========================================
@@ -337,6 +354,23 @@ export async function createModelSelectorScreenFixture(
 
     // TUI-073: Reset model store to clear any state from previous tests
     useModelStore.getState().reset();
+
+    // Create Codex credentials so OpenAI cloud models appear as "Codex (ChatGPT)"
+    await homeFixture.createCredential('codex', 'sk-codex-test-key');
+
+    // Create codex-models.json allowlist including test fixture model IDs
+    const testAllowlist = {
+      version: 1,
+      description: 'Test allowlist for ModelSelectorScreen integration tests',
+      models: [
+        { slug: 'gpt-4.1', visibility: 'list', priority: 0 },
+        { slug: 'gpt-4.1-mini', visibility: 'list', priority: 1 },
+      ],
+    };
+    await writeFile(
+      join(homeFixture.env.fspecDir, 'codex-models.json'),
+      JSON.stringify(testAllowlist, null, 2)
+    );
 
     // Reset NAPI config
     napiConfig.cloudProviders = createDefaultCloudProviders();

@@ -147,7 +147,6 @@ describe('Feature: Codex Subscription Model Filtering', () => {
 
   const credentialEnvVars = [
     'ANTHROPIC_API_KEY',
-    'OPENAI_API_KEY',
     'CODEX_API_KEY',
     'GOOGLE_API_KEY',
     'GEMINI_API_KEY',
@@ -268,49 +267,29 @@ describe('Feature: Codex Subscription Model Filtering', () => {
   // Scenario: No Codex OAuth shows full unfiltered models.dev catalog
   // ===========================================================================
 
-  describe('Scenario: No Codex OAuth shows full unfiltered models.dev catalog', () => {
-    it('should show all models unfiltered when no Codex OAuth exists', async () => {
+  describe('Scenario: No Codex credentials shows no OpenAI cloud section', () => {
+    it('should not show any OpenAI or Codex section when no Codex credentials exist', async () => {
       // @step Given I have not authenticated with Codex via OAuth
       napiMocks.codexOauthGetTokens.mockReturnValue(null);
 
-      // @step And I have an OpenAI API key configured
-      const credentialsContent = {
-        version: 1,
-        providers: {
-          openai: {
-            apiKey: 'sk-openai-test-key',
-            lastUpdated: new Date().toISOString(),
-          },
-        },
-      };
-      await writeFile(
-        join(setup.testDir, '.fspec', 'credentials', 'credentials.json'),
-        JSON.stringify(credentialsContent, null, 2),
-        { mode: 0o600 }
-      );
+      // @step And I have no CODEX_API_KEY configured
+      // (env vars cleared in beforeEach, no codex credential in credentials file)
 
-      // @step And models.dev returns 19 OpenAI models including o3-pro, gpt-4.1, gpt-5-mini, and gpt-5.2
+      // @step And models.dev returns 19 OpenAI models
       napiMocks.modelsListAll.mockResolvedValue([
         createFullModelsDevOpenAIProvider(),
       ]);
 
-      // Also write the allowlist — it should NOT be applied without OAuth
-      await writeFile(
-        join(setup.testDir, '.fspec', 'codex-models.json'),
-        JSON.stringify(createCodexAllowlistConfig(), null, 2)
-      );
-
       // @step When models are loaded for the model selector
       const result = await initializeModels();
 
-      // @step Then I should see an OpenAI section with all 19 models unfiltered
+      // @step Then no OpenAI cloud section should appear (Codex credentials required)
       const openaiSection = result.sections.find(
         s => s.providerId === 'openai'
       );
-      expect(openaiSection).toBeDefined();
-      expect(openaiSection!.models.length).toBe(19);
+      expect(openaiSection).toBeUndefined();
 
-      // @step And no Codex allowlist filtering should be applied
+      // @step And no Codex section should appear either
       const codexSection = result.sections.find(s => s.providerId === 'codex');
       expect(codexSection).toBeUndefined();
     });

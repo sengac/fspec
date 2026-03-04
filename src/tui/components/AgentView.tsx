@@ -5598,7 +5598,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               <Text dimColor>No AI provider credentials configured.</Text>
               <Text dimColor>Set one of these environment variables:</Text>
               <Text color="cyan"> ANTHROPIC_API_KEY</Text>
-              <Text color="cyan"> OPENAI_API_KEY</Text>
+              <Text color="cyan"> CODEX_API_KEY</Text>
               <Text color="cyan"> GOOGLE_GENERATIVE_AI_API_KEY</Text>
             </Box>
             <Box>
