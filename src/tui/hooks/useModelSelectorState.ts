@@ -12,14 +12,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { modelsRefreshCache } from '@sengac/codelet-napi';
-import type { NapiModelInfo, NapiProviderModels } from '@sengac/codelet-napi';
-import {
-  loadProviderProfiles,
-  getProviderRegistryEntry,
-  SUPPORTED_PROVIDERS,
-} from '../../utils/provider-config';
-import { getProviderConfig } from '../../utils/credentials';
-import { logger } from '../../utils/logger';
+import type { NapiModelInfo } from '@sengac/codelet-napi';
 import type { ModelSelectorItem } from '../types/provider';
 import {
   useModelStore,
@@ -31,7 +24,10 @@ import {
   type ProviderSection,
   type ModelSelection,
 } from '../store/modelStore';
-import { initializeModels } from '../services/modelInitializationService';
+import {
+  initializeModels,
+  extractModelIdForRegistry,
+} from '../services/modelInitializationService';
 
 // PROV-008: Import provider mapping from shared utility (DRY)
 import {
@@ -46,6 +42,9 @@ export {
   mapInternalToProviderId,
   mapModelsDevToRegistryId,
 };
+
+// Re-export from service — DRY: single authoritative implementation (FIX-3)
+export { extractModelIdForRegistry } from '../services/modelInitializationService';
 
 // =============================================================================
 // HELPER FUNCTIONS (Pure functions for flat list operations)
@@ -115,14 +114,6 @@ export const sectionModelToFlatIndex = (
     }
   }
   return 0;
-};
-
-/**
- * Extract model ID for registry (strips version suffix)
- */
-export const extractModelIdForRegistry = (modelId: string): string => {
-  // Remove date-based version suffix (e.g., -20250514)
-  return modelId.replace(/-\d{8}$/, '');
 };
 
 // =============================================================================

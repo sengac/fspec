@@ -392,7 +392,7 @@ describe('Feature: useModelSelectorState Hook', () => {
   });
 
   describe('Scenario: Hook handles unreachable local servers gracefully', () => {
-    it('should mark profile as unreachable when server is down', async () => {
+    it('should filter out unreachable profile sections that have zero models', async () => {
       await setupWithCloudCredentials(fixture);
       await setupWithUnreachableServer(fixture, 'dead-server', 'http://unreachable:8888');
 
@@ -402,12 +402,11 @@ describe('Feature: useModelSelectorState Hook', () => {
         expect(hookState!.modelsInitialized).toBe(true);
       });
 
+      // PROV-031 Fix 2: Unreachable + 0 models sections must be silently filtered out
       const unreachableSection = hookState!.providerSections.find(
         s => s.profileName === 'dead-server'
       );
-      expect(unreachableSection).toBeDefined();
-      expect(unreachableSection!.isUnreachable).toBe(true);
-      expect(unreachableSection!.models.length).toBe(0);
+      expect(unreachableSection).toBeUndefined();
     });
   });
 

@@ -156,9 +156,7 @@ import { NotificationDialog } from '../../components/NotificationDialog';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { ThinkingLevelDialog } from './ThinkingLevelDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
-import {
-  handleMergeWorktree,
-} from '../handlers/mergeWorktreeHandler';
+import { handleMergeWorktree } from '../handlers/mergeWorktreeHandler';
 import type { ActionPrompt } from '../types/actionPrompt';
 import {
   parseWatcherPrefix,
@@ -534,16 +532,21 @@ const processChunksToConversation = (
 };
 
 /**
- * Extract model ID from API model ID for registry matching.
- * IMPORTANT: Do NOT use model.family - it may be a generic family name (e.g., "gemini-pro")
- * that doesn't match registry keys. Instead, extract from the full API ID by stripping suffixes.
+ * Normalize model ID for local section matching within AgentView.
  *
- * Examples:
- *   "claude-sonnet-4-20250514" -> "claude-sonnet-4" (strip date suffix)
+ * INTENTIONALLY DIFFERENT from `extractModelIdForRegistry` in modelInitializationService:
+ * - The service strips date suffixes (e.g., "claude-opus-4-5-20251101" → "claude-opus-4-5")
+ *   for registry-based lookups where aliases are acceptable.
+ * - THIS function preserves the full versioned Anthropic ID because AgentView passes
+ *   the exact API model ID to the Anthropic API, and Anthropic requires the dated form.
+ *   Stripping suffixes here would break Anthropic API requests.
+ *
+ * Examples (this function):
+ *   "claude-sonnet-4-20250514" -> "claude-sonnet-4-20250514" (preserved — Anthropic needs exact ID)
  *   "gemini-2.5-pro-preview-06-05" -> "gemini-2.5-pro" (strip preview suffix)
  *   "gpt-4o" -> "gpt-4o" (no change)
  */
-const extractModelIdForRegistry = (apiModelId: string): string => {
+const normalizeModelIdForMatch = (apiModelId: string): string => {
   // For Anthropic models, we MUST preserve the full versioned ID (e.g., "claude-opus-4-5-20251101")
   // because Anthropic API requires the exact dated version, NOT aliases like "claude-opus-4-5"
   if (apiModelId.startsWith('claude-')) {
@@ -1183,7 +1186,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     (providerId: string, modelId: string) => {
       const section = providerSections.find(s => s.providerId === providerId);
       return section?.models.find(
-        m => extractModelIdForRegistry(m.id) === modelId
+        m => normalizeModelIdForMatch(m.id) === modelId
       );
     },
     [providerSections]
@@ -3712,7 +3715,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               result.provider
             );
             const model = section?.models.find(
-              m => extractModelIdForRegistry(m.id) === modelId
+              m => normalizeModelIdForMatch(m.id) === modelId
             );
             if (model && section) {
               setCurrentModel({
@@ -4717,7 +4720,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
             result.provider
           );
           const model = section?.models.find(
-            m => extractModelIdForRegistry(m.id) === modelId
+            m => normalizeModelIdForMatch(m.id) === modelId
           );
           if (model && section) {
             setCurrentModel({
@@ -4781,7 +4784,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
             s => s.providerId === providerId
           );
           const model = section?.models.find(
-            m => extractModelIdForRegistry(m.id) === modelId
+            m => normalizeModelIdForMatch(m.id) === modelId
           );
           if (model) {
             const fillPercentage = calculateContextFillPercentage(

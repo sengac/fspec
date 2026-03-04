@@ -1,42 +1,61 @@
-@PROV-018
-Feature: Codex Models Not Showing in Model Selector - OAuth Models Hidden Under OpenAI Provider
+@PROV-018 @PROV-033
+Feature: Codex Model Selector Integration — All OpenAI Cloud Models in Codex Section When OAuth Active
 
   """
-  buildCloudSections() in modelInitializationService.ts must extract codex models from the OpenAI provider when OAuth tokens exist. The Rust CodexProvider already handles OAuth token refresh and URL rewriting. Session creation modelPath format: 'codex/model-id'.
+  PROV-033 FIX: When Codex OAuth tokens exist, extractCodexSection() must move ALL models
+  from the OpenAI cloud provider into the synthetic 'Codex (ChatGPT)' section. The previous
+  isCodexModel() filter (which matched only models with 'codex' in the ID) was fundamentally
+  wrong — real models.dev OpenAI models are gpt-5.2, o3-pro, gpt-4.1, etc., none of which
+  contain 'codex'. The isCodexModel() function must be removed entirely.
+
+  The Rust CodexProvider handles OAuth token refresh and URL rewriting.
+  Session creation modelPath format: 'codex/model-id'.
   """
 
   # ========================================
-  # EXAMPLE MAPPING CONTEXT
+  # EXAMPLE MAPPING CONTEXT (PROV-033)
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. When Codex OAuth tokens exist, codex-specific models (ID contains 'codex') must be extracted from the OpenAI provider's model list into a separate 'Codex (ChatGPT)' section
-  #   2. The synthetic Codex section must use providerId='codex' so that session creation routes to the Rust CodexProvider (not 'openai')
-  #   3. Non-codex OpenAI models remain in the OpenAI section (only shown when OpenAI API key exists)
-  #   4. When no Codex OAuth tokens exist, no Codex section appears (behavior unchanged)
-  #   5. Codex models are identified by model ID containing 'codex' (case-insensitive)
-  #   6. provider-mapping.ts must map 'codex' providerId to 'codex' internalName (identity mapping, already default)
+  #   0. When Codex OAuth tokens exist, extractCodexSection() must move ALL models from the
+  #      OpenAI cloud provider into the Codex (ChatGPT) section — not just models with 'codex'
+  #      in the ID. The isCodexModel() filter must be removed from the extraction logic.
+  #   1. When Codex OAuth is active, the 'OpenAI' cloud provider section must NOT appear in
+  #      the model selector. There should be zero 'OpenAI' cloud section — only the synthetic
+  #      'Codex (ChatGPT)' section with ALL the models.
+  #   2. The isCodexModel() function must be removed. It must NOT filter by model ID string
+  #      matching. When Codex OAuth is active, ALL models from the openai provider are Codex
+  #      models by definition.
+  #   3. Test fixtures must use realistic model IDs from models.dev (gpt-5.2, gpt-5, o3-pro,
+  #      o4-mini, gpt-4.1, etc.) — not fake IDs like 'gpt-5.3-codex'.
+  #   4. Local model profiles (openai: profilename with folder icon) must remain unaffected.
+  #      Profile sections from loadProfileSections() are separate from cloud sections.
   #
   # EXAMPLES:
-  #   1. User has Codex OAuth tokens and models.dev returns OpenAI provider with 8 codex models + 1 non-codex model → model selector shows 'Codex (ChatGPT)' section with 8 codex models
-  #   2. User has NO Codex OAuth tokens, no OpenAI API key → no OpenAI section, no Codex section (unchanged behavior)
-  #   3. User has BOTH OpenAI API key AND Codex OAuth tokens → model selector shows OpenAI section (non-codex models) AND Codex section (codex models)
-  #   4. User selects gpt-5.3-codex from Codex section → session created with modelPath 'codex/gpt-5.3-codex' (not 'openai/gpt-5.3-codex')
-  #   5. User has persisted model 'codex/gpt-5.3-codex' and has OAuth tokens → model restored correctly on startup
+  #   0. User has Codex OAuth active, models.dev returns OpenAI provider with gpt-5.2, gpt-5,
+  #      o3-pro, o4-mini, gpt-4.1, o1 — model screen shows 'Codex (ChatGPT)' section with ALL
+  #      these models. No 'OpenAI' cloud section exists.
+  #   1. User has Codex OAuth active AND an OpenAI API key — model screen shows 'Codex (ChatGPT)'
+  #      with ALL cloud models. No duplicate 'OpenAI' cloud section. Local profiles still separate.
+  #   2. User has NO Codex OAuth but HAS an OpenAI API key — model screen shows 'OpenAI' section
+  #      with cloud models. No 'Codex (ChatGPT)' section appears.
+  #   3. User selects gpt-5.2 from the Codex (ChatGPT) section — session creates with
+  #      providerId 'codex' and routes through Codex OAuth.
   #
   # ========================================
 
   Background: User Story
     As a user with a ChatGPT Pro/Plus subscription
-    I want to see and select Codex models in the model selector
-    So that I can use my Codex subscription through fspec
+    I want ALL OpenAI cloud models to appear in the Codex (ChatGPT) section when I have OAuth tokens
+    So that I can use my Codex subscription to access any OpenAI model through fspec
 
-  Scenario: Codex models appear in model selector when OAuth tokens exist
+  Scenario: All OpenAI cloud models appear in Codex section when OAuth tokens exist
     Given I have authenticated with Codex via OAuth
-    And models.dev returns OpenAI provider with codex models
+    And models.dev returns OpenAI provider with models gpt-5.2, gpt-5, o3-pro, o4-mini, gpt-4.1, and o1
     When models are loaded for the model selector
-    Then I should see a Codex (ChatGPT) section with codex models
+    Then I should see a Codex (ChatGPT) section containing ALL OpenAI cloud models
     And the Codex section should use providerId codex
+    And no OpenAI cloud section should exist
 
   Scenario: No Codex section when OAuth tokens absent
     Given I have not authenticated with Codex via OAuth
@@ -44,24 +63,33 @@ Feature: Codex Models Not Showing in Model Selector - OAuth Models Hidden Under 
     When models are loaded for the model selector
     Then I should not see any Codex or OpenAI section in the model selector
 
-  Scenario: Both OpenAI API key and Codex OAuth show separate sections
+  Scenario: Codex OAuth active with OpenAI API key shows only Codex section for cloud models
     Given I have authenticated with Codex via OAuth
     And I have an OpenAI API key configured
-    And models.dev returns OpenAI provider with codex and non-codex models
+    And models.dev returns OpenAI provider with models gpt-5.2, gpt-5, o3-pro, and gpt-4.1
     When models are loaded for the model selector
-    Then I should see an OpenAI section with non-codex models
-    And I should see a separate Codex (ChatGPT) section with codex models
+    Then I should see a Codex (ChatGPT) section with ALL cloud models
+    And no OpenAI cloud section should exist
+    And local profile sections should remain unaffected
 
-  Scenario: Selecting a Codex model creates session with codex provider
+  Scenario: Selecting a model from Codex section creates session with codex provider
     Given I have authenticated with Codex via OAuth
-    And models.dev returns OpenAI provider with codex models
-    When I select a codex model from the Codex section
-    Then the model path should use codex as the provider prefix
+    And models.dev returns OpenAI provider with models gpt-5.2, gpt-5, o3-pro, o4-mini, gpt-4.1, and o1
+    When I select gpt-5.2 from the Codex section
+    Then the model path should be codex/gpt-5.2
 
   Scenario: Persisted Codex model restored on startup
     Given I have authenticated with Codex via OAuth
-    And my last used model was codex/gpt-5.3-codex
-    And models.dev returns OpenAI provider with codex models
+    And my last used model was codex/gpt-5.2
+    And models.dev returns OpenAI provider with models gpt-5.2, gpt-5, o3-pro, o4-mini, gpt-4.1, and o1
     When models are loaded for the model selector
     Then the persisted codex model should be restored as the current model
     And the model providerId should be codex
+
+  Scenario: OpenAI API key without Codex OAuth shows OpenAI section
+    Given I have not authenticated with Codex via OAuth
+    And I have an OpenAI API key configured
+    And models.dev returns OpenAI provider with models gpt-5.2, gpt-5, o3-pro, and gpt-4.1
+    When models are loaded for the model selector
+    Then I should see an OpenAI section with all cloud models
+    And no Codex section should exist

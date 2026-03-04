@@ -799,8 +799,8 @@ describe('Feature: Create ModelSelectorScreen component', () => {
   });
 
   describe('Integration: Unreachable local server', () => {
-    it('should show unreachable status for servers that cannot be reached', async () => {
-      // Set up a profile pointing to unreachable server
+    it('should not show unreachable sections with zero models (PROV-031 Fix 2)', async () => {
+      // @step Given the user config has an openai profile 'qwen3-coder-next' pointing to an offline server
       await fixture.createProfile('openai', 'dead-server', {
         baseUrl: 'http://unreachable:9999',
         apiKey: 'key',
@@ -812,6 +812,7 @@ describe('Feature: Create ModelSelectorScreen component', () => {
         new Error('Connection refused')
       );
 
+      // @step When the model screen initializes
       const { lastFrame } = render(
         <ModelSelectorScreen
           width={80}
@@ -826,8 +827,10 @@ describe('Feature: Create ModelSelectorScreen component', () => {
       await waitFor(150);
 
       const frame = lastFrame();
-      // Should show unreachable indicator
-      expect(frame).toContain('unreachable');
+      // PROV-031 Fix 2: Unreachable + 0 models sections are silently filtered out
+      // @step Then the profile section for 'qwen3-coder-next' does not appear in the model list
+      // @step And no '(unreachable) (0 models)' entry is shown
+      expect(frame).not.toContain('dead-server');
     });
   });
 });

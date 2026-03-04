@@ -23,7 +23,6 @@ import type { NapiModelInfo, NapiProviderModels } from '@sengac/codelet-napi';
 import {
   loadProviderProfiles,
   getProviderRegistryEntry,
-  SUPPORTED_PROVIDERS,
 } from '../../utils/provider-config';
 import { getProviderConfig } from '../../utils/credentials';
 import { loadConfig } from '../../utils/config';
@@ -41,6 +40,11 @@ import {
   parseModelString,
   findSectionForPersistedModel,
 } from '../utils/model-selection';
+import {
+  loadCodexAllowlist,
+  filterByCodexAllowlist,
+} from './codexAllowlistService';
+import type { CodexModelEntry } from './codexAllowlistService';
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -57,14 +61,6 @@ export const extractModelIdForRegistry = (modelId: string): string => {
     return match[1];
   }
   return modelId;
-};
-
-/**
- * PROV-018: Check if a model ID belongs to the Codex family.
- * Codex models are identified by their ID containing 'codex' (case-insensitive).
- */
-export const isCodexModel = (modelId: string): boolean => {
-  return modelId.toLowerCase().includes('codex');
 };
 
 // =============================================================================
@@ -141,8 +137,14 @@ async function buildCloudSections(
   const credentialSections = sectionsWithCreds.filter(s => s.hasCredentials);
 
   // PROV-018: Extract codex models from OpenAI section when OAuth tokens exist
+  // PROV-034: Load allowlist for filtering to Codex-supported models only
   if (hasCodexOAuth) {
-    return extractCodexSection(credentialSections, sectionsWithCreds);
+    const codexAllowlist = await loadCodexAllowlist();
+    return extractCodexSection(
+      credentialSections,
+      sectionsWithCreds,
+      codexAllowlist
+    );
   }
 
   return credentialSections;
@@ -176,34 +178,41 @@ async function checkClaudeOAuthTokens(): Promise<boolean> {
 }
 
 /**
- * PROV-018: Extract codex models from the OpenAI provider section
- * into a synthetic "Codex (ChatGPT)" section.
+ * PROV-018/PROV-033/PROV-034: Extract models from the OpenAI provider section
+ * into a synthetic "Codex (ChatGPT)" section, filtered by the Codex allowlist.
  *
- * When Codex OAuth tokens exist:
- * 1. Find the OpenAI section (from all sections, even those without API keys)
- * 2. Split its models into codex vs non-codex
- * 3. Create a synthetic Codex section with providerId='codex'
- * 4. If OpenAI also has credentials, keep non-codex models in OpenAI section
+ * When Codex OAuth tokens exist, OpenAI cloud models are accessed via
+ * Codex OAuth. PROV-033 removed the broken isCodexModel() filter.
+ * PROV-034 adds allowlist-based filtering so only Codex-supported models
+ * (from codex-models.json) appear — unsupported models like o3-pro,
+ * gpt-4.1, etc. are hidden.
  *
  * @param credentialSections - Sections that already passed credentials check
  * @param allSections - All sections (including those without credentials)
- * @returns Updated sections array with synthetic Codex section appended
+ * @param codexAllowlist - Array of CodexModelEntry objects with slug, visibility, priority
+ * @returns Updated sections array with synthetic Codex section, OpenAI section removed
  */
 function extractCodexSection(
   credentialSections: ProviderSection[],
-  allSections: ProviderSection[]
+  allSections: ProviderSection[],
+  codexAllowlist: CodexModelEntry[]
 ): ProviderSection[] {
   // Find the OpenAI section — may or may not have credentials
   const openaiSection = allSections.find(s => s.providerId === 'openai');
 
-  if (!openaiSection) {
+  if (!openaiSection || openaiSection.models.length === 0) {
     return credentialSections;
   }
 
-  const codexModels = openaiSection.models.filter(m => isCodexModel(m.id));
+  // PROV-034: Filter OpenAI models against the Codex allowlist using prefix matching
+  const codexModels = filterByCodexAllowlist(
+    openaiSection.models,
+    codexAllowlist
+  );
 
   if (codexModels.length === 0) {
-    return credentialSections;
+    // No models match the allowlist — don't create an empty section
+    return credentialSections.filter(s => s.providerId !== 'openai');
   }
 
   // Build the synthetic Codex section
@@ -215,24 +224,13 @@ function extractCodexSection(
     hasCredentials: true,
   };
 
-  // If OpenAI section exists in credentialSections, strip codex models from it
-  const updatedSections = credentialSections.map(s => {
-    if (s.providerId === 'openai') {
-      return {
-        ...s,
-        models: s.models.filter(m => !isCodexModel(m.id)),
-      };
-    }
-    return s;
-  });
-
-  // Remove empty OpenAI section (if all models were codex)
-  const filteredSections = updatedSections.filter(
-    s => s.providerId !== 'openai' || s.models.length > 0
+  // PROV-033: Remove the OpenAI cloud section entirely — all models moved to Codex
+  const filteredSections = credentialSections.filter(
+    s => s.providerId !== 'openai'
   );
 
   logger.debug(
-    `PROV-018: Extracted ${codexModels.length} codex models into synthetic Codex section`
+    `PROV-034: Extracted ${codexModels.length} models into synthetic Codex section (filtered from ${openaiSection.models.length} total)`
   );
 
   return [...filteredSections, codexSection];
@@ -244,7 +242,7 @@ function extractCodexSection(
 async function loadProfileSections(): Promise<ProviderSection[]> {
   const profileSections: ProviderSection[] = [];
 
-  for (const providerId of SUPPORTED_PROVIDERS) {
+  for (const providerId of ['openai'] as const) {
     try {
       const profiles = await loadProviderProfiles(providerId);
       const profileNames = Object.keys(profiles);
@@ -311,31 +309,6 @@ async function loadPersistedModelString(): Promise<string | null> {
     logger.error('Failed to load config for persisted model', { error: err });
     return null;
   }
-}
-
-/**
- * Find a model in sections by provider ID and model ID
- */
-function findModelInSections(
-  sections: ProviderSection[],
-  providerId: string,
-  modelId: string
-): { section: ProviderSection; model: NapiModelInfo } | null {
-  const section = sections.find(s => s.providerId === providerId);
-  if (!section || !section.hasCredentials) {
-    return null;
-  }
-
-  // Compare both sides using extractModelIdForRegistry to handle date suffixes
-  const normalizedModelId = extractModelIdForRegistry(modelId);
-  const model = section.models.find(
-    m => extractModelIdForRegistry(m.id) === normalizedModelId
-  );
-  if (!model) {
-    return null;
-  }
-
-  return { section, model };
 }
 
 /**
@@ -412,8 +385,11 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
     // Load profile sections
     const profileSections = await loadProfileSections();
 
-    // Combine: profiles first, then cloud
-    const sections: ProviderSection[] = [...profileSections, ...cloudSections];
+    // Combine: profiles first, then cloud; filter out unreachable + 0-model sections
+    const sections: ProviderSection[] = [
+      ...profileSections,
+      ...cloudSections,
+    ].filter(s => !s.isUnreachable || s.models.length > 0);
 
     // Load persisted model string
     const persistedModelString = await loadPersistedModelString();

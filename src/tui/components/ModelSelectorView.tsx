@@ -14,10 +14,7 @@
 
 import React from 'react';
 import { Box, Text } from 'ink';
-import type {
-  ProviderSection,
-  ModelSelectorItem,
-} from '../types/provider';
+import type { ModelSelectorItem } from '../types/provider';
 
 /**
  * Props for ModelSelectorView (presentational - receives all state from parent)
@@ -27,8 +24,6 @@ export interface ModelSelectorViewProps {
   width: number;
   /** Terminal height */
   height: number;
-  /** Provider sections (for stats display) */
-  sections: ProviderSection[];
   /** Flattened list of items to render */
   flatItems: ModelSelectorItem[];
   /** Currently selected section index */
@@ -139,7 +134,7 @@ export function ModelSelectorView({
           {isRefreshing && <Text color="yellow"> (refreshing...)</Text>}
           <Text dimColor>
             {' '}
-            ({flatItems.length} items)
+            ({flatItems.filter(i => i.type === 'model').length} models)
           </Text>
         </Box>
 
@@ -220,10 +215,7 @@ export function ModelSelectorView({
                         </Text>
                       )}
                       {item.model.hasVision && (
-                        <Text color={isSelected ? 'black' : 'blue'}>
-                          {' '}
-                          [V]
-                        </Text>
+                        <Text color={isSelected ? 'black' : 'blue'}> [V]</Text>
                       )}
                       <Text color={isSelected ? 'black' : 'gray'}>
                         {' '}
@@ -247,9 +239,7 @@ export function ModelSelectorView({
               {Array.from({ length: visibleHeight }).map((_, i) => {
                 const thumbHeight = Math.max(
                   1,
-                  Math.floor(
-                    (visibleHeight / flatItems.length) * visibleHeight
-                  )
+                  Math.floor((visibleHeight / flatItems.length) * visibleHeight)
                 );
                 const thumbPos = Math.floor(
                   (scrollOffset / flatItems.length) * visibleHeight
@@ -268,8 +258,9 @@ export function ModelSelectorView({
         {/* Footer */}
         <Box marginTop={1}>
           <Text dimColor>
-            Enter: select | ←→: collapse/expand | r: refresh | Tab: settings | /
-            filter | Esc: close
+            {
+              'Enter: select | ←→: collapse/expand | r: refresh | Tab: Switch to providers | / filter | Esc: close'
+            }
           </Text>
         </Box>
 

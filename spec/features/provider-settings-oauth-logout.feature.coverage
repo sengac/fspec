@@ -1,0 +1,159 @@
+{
+  "scenarios": [
+    {
+      "name": "Expanding Anthropic with OAuth shows logout line",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-logout.test.ts",
+          "lines": "134-157",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expanding Codex with OAuth shows logout line",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-logout.test.ts",
+          "lines": "160-184",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on logout line triggers disconnect confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-logout.test.ts",
+          "lines": "188-221",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'd' on logout line triggers disconnect confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-logout.test.ts",
+          "lines": "225-256",
+          "implMappings": [
+            {
+              "file": "src/tui/inputHandlers/listModeHandler.ts",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer shows Enter logout hint when logout line is selected",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-logout.test.ts",
+          "lines": "260-276",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/providerSettingsHelpers.ts",
+              "lines": [
+                20,
+                21
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-OAuth provider has no logout line when expanded",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-logout.test.ts",
+          "lines": "280-301",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuth provider without tokens has no logout line",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-oauth-logout.test.ts",
+          "lines": "303-329",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/provider-settings-oauth-logout.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/hooks/useProviderSettingsState.ts",
+      "src/tui/inputHandlers/listModeHandler.ts",
+      "src/tui/utils/providerSettingsHelpers.ts"
+    ],
+    "totalLinesCovered": 210
+  }
+}

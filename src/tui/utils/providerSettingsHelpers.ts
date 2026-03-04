@@ -18,7 +18,7 @@ export function getFooterHints(itemType: string): string {
     case 'provider':
       return `Enter: expand · ${FOOTER_COMMON}`;
     case 'oauth-status':
-      return `d: disconnect · ${FOOTER_COMMON}`;
+      return `Enter: logout · ${FOOTER_COMMON}`;
     case 'oauth-login':
       return `Enter: start login · ${FOOTER_COMMON}`;
     case 'api-key':

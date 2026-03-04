@@ -1,0 +1,79 @@
+{
+  "scenarios": [
+    {
+      "name": "Expansion state preserved after OAuth disconnect confirmation",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-expansion-state.test.tsx",
+          "lines": "198-244",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                253,
+                254,
+                255,
+                256,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel disconnect keeps cursor on logout row",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-expansion-state.test.tsx",
+          "lines": "248-305",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                253,
+                254,
+                255,
+                256,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expansion state preserved after API key deletion",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/provider-settings-expansion-state.test.tsx",
+          "lines": "309-365",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useProviderSettingsState.ts",
+              "lines": [
+                253,
+                254,
+                255,
+                256,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/provider-settings-expansion-state.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/hooks/useProviderSettingsState.ts"
+    ],
+    "totalLinesCovered": 177
+  }
+}

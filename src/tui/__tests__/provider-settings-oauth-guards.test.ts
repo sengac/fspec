@@ -697,11 +697,11 @@ describe('Feature: Provider Settings TUI — OAuth profile guards, dead code cle
 
   describe("Scenario: Pressing 'd' on an OAuth status item shows disconnect confirmation", () => {
     it('should show disconnect-oauth confirmation dialog', () => {
-      // @step Given I have the cursor on "✓ OAuth [Claude]"
+      // @step Given I have the cursor on "Logout from OAuth [Claude]"
       const item: SettingsNavItem = {
         type: 'oauth-status',
         providerId: 'anthropic',
-        label: '✓ OAuth [Claude]',
+        label: 'Logout from OAuth [Claude]',
       };
 
       // @step When I press "d"
@@ -852,7 +852,7 @@ describe('Feature: Provider Settings TUI — OAuth profile guards, dead code cle
         'Enter: expand · / filter · Tab: Switch to models · Esc: close'
       );
       expect(getFooterHints('oauth-status')).toBe(
-        'd: disconnect · / filter · Tab: Switch to models · Esc: close'
+        'Enter: logout · / filter · Tab: Switch to models · Esc: close'
       );
       expect(getFooterHints('oauth-login')).toBe(
         'Enter: start login · / filter · Tab: Switch to models · Esc: close'

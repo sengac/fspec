@@ -86,7 +86,7 @@ describe('Feature: OAuth TUI broken flows', () => {
       );
       expect(statusItems).toHaveLength(1);
       expect(statusItems[0].providerId).toBe('codex');
-      expect(statusItems[0].label).toContain('✓ OAuth [ChatGPT]');
+      expect(statusItems[0].label).toContain('Logout from OAuth [ChatGPT]');
 
       // @step And I should see a "Login with ChatGPT (browser)" re-login option
       const oauthItems = navItems.filter(

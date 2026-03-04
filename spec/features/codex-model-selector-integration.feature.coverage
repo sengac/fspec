@@ -1,19 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "Codex models appear in model selector when OAuth tokens exist",
+      "name": "All OpenAI cloud models appear in Codex section when OAuth tokens exist",
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
-          "lines": "193-218",
+          "lines": "254-305",
           "implMappings": [
             {
               "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [
-                65,
-                66,
-                67
-              ]
+              "lines": [44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
             }
           ]
         }
@@ -24,53 +20,41 @@
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
-          "lines": "228-253",
+          "lines": "311-331",
           "implMappings": [
             {
               "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [
-                65,
-                66,
-                67
-              ]
+              "lines": [130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140]
             }
           ]
         }
       ]
     },
     {
-      "name": "Both OpenAI API key and Codex OAuth show separate sections",
+      "name": "Codex OAuth active with OpenAI API key shows only Codex section for cloud models",
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
-          "lines": "255-316",
+          "lines": "337-403",
           "implMappings": [
             {
               "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [
-                65,
-                66,
-                67
-              ]
+              "lines": [169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
             }
           ]
         }
       ]
     },
     {
-      "name": "Selecting a Codex model creates session with codex provider",
+      "name": "Selecting a model from Codex section creates session with codex provider",
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
-          "lines": "318-348",
+          "lines": "409-447",
           "implMappings": [
             {
               "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [
-                65,
-                66,
-                67
-              ]
+              "lines": [169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
             }
           ]
         }
@@ -81,15 +65,26 @@
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
-          "lines": "350-385",
+          "lines": "453-486",
           "implMappings": [
             {
               "file": "src/tui/services/modelInitializationService.ts",
-              "lines": [
-                65,
-                66,
-                67
-              ]
+              "lines": [169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI API key without Codex OAuth shows OpenAI section",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/codexModelInitialization.test.ts",
+          "lines": "492-524",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelInitializationService.ts",
+              "lines": [130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140]
             }
           ]
         }
@@ -97,8 +92,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "src/tui/services/__tests__/codexModelInitialization.test.ts"
@@ -106,6 +101,6 @@
     "implFiles": [
       "src/tui/services/modelInitializationService.ts"
     ],
-    "totalLinesCovered": 196
+    "totalLinesCovered": 487
   }
 }

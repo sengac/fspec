@@ -139,6 +139,11 @@ function handleActions(
       );
     } else if (currentItem.type === 'add-profile') {
       initializeNewProfile(providerSettings, currentItem.providerId);
+    } else if (currentItem.type === 'oauth-status') {
+      providerSettings.setMode({
+        type: 'disconnect-oauth',
+        providerId: currentItem.providerId,
+      });
     }
     return;
   }

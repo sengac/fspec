@@ -156,7 +156,7 @@ export function buildNavItems(
         items.push({
           type: 'oauth-status',
           providerId: provider.id,
-          label: `✓ OAuth [${provider.status?.source || provider.name}]`,
+          label: `Logout from OAuth [${provider.status?.source || provider.name}]`,
         });
       }
 
@@ -250,6 +250,12 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
   // Generation counter to invalidate stale OAuth promises after cancel
   const oauthGeneration = useRef(0);
 
+  // PROV-036: Track expansion state in a ref so reload() can restore it
+  const expandedProviderIds = useRef<Set<string>>(new Set());
+
+  // PROV-036: After destructive operations, navigate to this provider's row
+  const navigateToProviderRef = useRef<string | null>(null);
+
   /**
    * Load all providers and their profiles
    */
@@ -327,7 +333,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
           name: registryEntry.name,
           status,
           profiles: profileInfos,
-          isExpanded: false,
+          isExpanded: expandedProviderIds.current.has(providerId),
           hasOAuthTokens,
         });
       }
@@ -353,14 +359,39 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
     [providers, filter]
   );
 
+  // PROV-036: After destructive operations, navigate to the parent provider row
+  useEffect(() => {
+    const target = navigateToProviderRef.current;
+    if (target) {
+      navigateToProviderRef.current = null;
+      const idx = navItems.findIndex(
+        item => item.type === 'provider' && item.providerId === target
+      );
+      if (idx >= 0) {
+        setSelectedIndex(idx);
+        setScrollOffset(Math.max(0, idx - 2));
+      }
+    }
+  }, [navItems]);
+
   /**
    * Toggle provider expansion
+   * PROV-036: Also updates the ref so reload() preserves expansion state
    */
   const toggleProviderExpansion = useCallback((providerId: string) => {
     setProviders(prev =>
-      prev.map(p =>
-        p.id === providerId ? { ...p, isExpanded: !p.isExpanded } : p
-      )
+      prev.map(p => {
+        if (p.id === providerId) {
+          const newExpanded = !p.isExpanded;
+          if (newExpanded) {
+            expandedProviderIds.current.add(providerId);
+          } else {
+            expandedProviderIds.current.delete(providerId);
+          }
+          return { ...p, isExpanded: newExpanded };
+        }
+        return p;
+      })
     );
   }, []);
 
@@ -377,10 +408,12 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
 
   /**
    * Remove API key
+   * PROV-036: Sets navigateToProviderRef so cursor moves to provider row after reload
    */
   const removeApiKey = useCallback(
     async (providerId: string): Promise<void> => {
       await deleteProviderCredential(providerId);
+      navigateToProviderRef.current = providerId;
       await reload();
     },
     [reload]
@@ -403,10 +436,12 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
 
   /**
    * Remove profile
+   * PROV-036: Sets navigateToProviderRef so cursor moves to provider row after reload
    */
   const removeProfile = useCallback(
     async (providerId: string, name: string): Promise<void> => {
       await deleteProfile(providerId, name);
+      navigateToProviderRef.current = providerId;
       await reload();
     },
     [reload]
@@ -644,6 +679,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
 
   /**
    * Disconnect OAuth (clear stored tokens)
+   * PROV-036: Sets navigateToProviderRef so cursor moves to provider row after reload
    */
   const disconnectOauth = useCallback(
     async (providerId: string): Promise<void> => {
@@ -655,6 +691,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
             codexOauthClearTokens();
           }
         }
+        navigateToProviderRef.current = providerId;
         await reload();
       } catch (err) {
         logger.error('Failed to disconnect OAuth:', err);

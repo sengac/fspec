@@ -93,7 +93,11 @@ export function ModelSelectorScreen({
     }
 
     // Find the section containing the current model
-    for (let sectionIdx = 0; sectionIdx < providerSections.length; sectionIdx++) {
+    for (
+      let sectionIdx = 0;
+      sectionIdx < providerSections.length;
+      sectionIdx++
+    ) {
       const section = providerSections[sectionIdx];
       const modelIdx = section.models.findIndex(m => m.id === currentModelId);
 
@@ -119,132 +123,140 @@ export function ModelSelectorScreen({
   ]);
 
   // Keyboard handling
-  useInput((input, key) => {
-    // ===========================================
-    // FILTER MODE
-    // ===========================================
-    if (isFilterMode) {
-      // Escape in filter mode: clear filter and exit mode
+  useInput(
+    (input, key) => {
+      // ===========================================
+      // FILTER MODE
+      // ===========================================
+      if (isFilterMode) {
+        // Escape in filter mode: clear filter and exit mode
+        if (key.escape) {
+          setIsFilterMode(false);
+          setFilter('');
+          return;
+        }
+        // Enter in filter mode: exit mode, keep filter
+        if (key.return) {
+          setIsFilterMode(false);
+          return;
+        }
+        // Backspace: remove last character
+        if (key.backspace || key.delete) {
+          setFilter(filter.slice(0, -1));
+          return;
+        }
+        // Accept printable characters (ASCII 32-126)
+        const clean = input
+          .split('')
+          .filter(ch => {
+            const code = ch.charCodeAt(0);
+            return code >= 32 && code <= 126;
+          })
+          .join('');
+        if (clean) {
+          setFilter(filter + clean);
+        }
+        return;
+      }
+
+      // ===========================================
+      // NORMAL MODE
+      // ===========================================
+
+      // Escape: clear filter if active, otherwise close
       if (key.escape) {
-        setIsFilterMode(false);
-        setFilter('');
-        return;
-      }
-      // Enter in filter mode: exit mode, keep filter
-      if (key.return) {
-        setIsFilterMode(false);
-        return;
-      }
-      // Backspace: remove last character
-      if (key.backspace || key.delete) {
-        setFilter(filter.slice(0, -1));
-        return;
-      }
-      // Accept printable characters (ASCII 32-126)
-      const clean = input
-        .split('')
-        .filter(ch => {
-          const code = ch.charCodeAt(0);
-          return code >= 32 && code <= 126;
-        })
-        .join('');
-      if (clean) {
-        setFilter(filter + clean);
-      }
-      return;
-    }
-
-    // ===========================================
-    // NORMAL MODE
-    // ===========================================
-
-    // Escape: clear filter if active, otherwise close
-    if (key.escape) {
-      if (filter) {
-        setFilter('');
-        return;
-      }
-      onClose();
-      return;
-    }
-
-    // Tab: switch to provider settings
-    if (key.tab) {
-      onSwitchToSettings();
-      return;
-    }
-
-    // Slash: enter filter mode
-    if (input === '/') {
-      setIsFilterMode(true);
-      return;
-    }
-
-    // Refresh models with 'r' or 'R'
-    if (input === 'r' || input === 'R') {
-      void refreshModels();
-      return;
-    }
-
-    // Navigation: Up arrow
-    if (key.upArrow) {
-      navigateUp();
-      return;
-    }
-
-    // Navigation: Down arrow
-    if (key.downArrow) {
-      navigateDown();
-      return;
-    }
-
-    // Left arrow: collapse section and move to section header
-    if (key.leftArrow) {
-      const currentSection = providerSections[selectedSectionIdx];
-      if (currentSection && expandedProviders.has(currentSection.providerId)) {
-        toggleSectionExpansion(currentSection.providerId);
-        setSelectedModelIdx(-1); // Move to section header
-      }
-      return;
-    }
-
-    // Right arrow: expand section
-    if (key.rightArrow) {
-      const currentSection = providerSections[selectedSectionIdx];
-      if (currentSection && !expandedProviders.has(currentSection.providerId)) {
-        toggleSectionExpansion(currentSection.providerId);
-      }
-      return;
-    }
-
-    // Enter: select model or toggle section expansion
-    if (key.return) {
-      const flatIdx = getCurrentFlatIndex();
-      const item = filteredFlatItems[flatIdx];
-
-      if (!item) {
-        return;
-      }
-
-      if (item.type === 'section') {
-        // Toggle section expansion
-        toggleSectionExpansion(item.section.providerId);
-      } else if (item.type === 'model') {
-        // Select model and close
-        const selection = selectModel(item.section, item.model);
-        onSelectModel(selection);
+        if (filter) {
+          setFilter('');
+          return;
+        }
         onClose();
+        return;
       }
-      return;
-    }
-  }, { isActive: true });
+
+      // Tab: switch to provider settings
+      if (key.tab) {
+        onSwitchToSettings();
+        return;
+      }
+
+      // Slash: enter filter mode
+      if (input === '/') {
+        setIsFilterMode(true);
+        return;
+      }
+
+      // Refresh models with 'r' or 'R'
+      if (input === 'r' || input === 'R') {
+        void refreshModels();
+        return;
+      }
+
+      // Navigation: Up arrow
+      if (key.upArrow) {
+        navigateUp();
+        return;
+      }
+
+      // Navigation: Down arrow
+      if (key.downArrow) {
+        navigateDown();
+        return;
+      }
+
+      // Left arrow: collapse section and move to section header
+      if (key.leftArrow) {
+        const currentSection = providerSections[selectedSectionIdx];
+        if (
+          currentSection &&
+          expandedProviders.has(currentSection.providerId)
+        ) {
+          toggleSectionExpansion(currentSection.providerId);
+          setSelectedModelIdx(-1); // Move to section header
+        }
+        return;
+      }
+
+      // Right arrow: expand section
+      if (key.rightArrow) {
+        const currentSection = providerSections[selectedSectionIdx];
+        if (
+          currentSection &&
+          !expandedProviders.has(currentSection.providerId)
+        ) {
+          toggleSectionExpansion(currentSection.providerId);
+        }
+        return;
+      }
+
+      // Enter: select model or toggle section expansion
+      if (key.return) {
+        const flatIdx = getCurrentFlatIndex();
+        const item = filteredFlatItems[flatIdx];
+
+        if (!item) {
+          return;
+        }
+
+        if (item.type === 'section') {
+          // Toggle section expansion
+          toggleSectionExpansion(item.section.providerId);
+        } else if (item.type === 'model') {
+          // Select model and close
+          const selection = selectModel(item.section, item.model);
+          onSelectModel(selection);
+          onClose();
+        }
+        return;
+      }
+    },
+    { isActive: true }
+  );
 
   // Render the presentation component
   return (
     <ModelSelectorView
       width={width}
       height={height}
-      sections={providerSections}
       flatItems={filteredFlatItems}
       selectedSectionIdx={selectedSectionIdx}
       selectedModelIdx={selectedModelIdx}

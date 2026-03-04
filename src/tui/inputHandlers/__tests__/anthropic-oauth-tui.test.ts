@@ -500,7 +500,7 @@ describe('Feature: TUI provider settings UX for Anthropic subscription connect a
       const currentItem: SettingsNavItem = {
         type: 'oauth-status',
         providerId: 'anthropic',
-        label: '✓ OAuth [Claude]',
+        label: 'Logout from OAuth [Claude]',
       };
 
       // @step When the user presses "d" on the OAuth status row
