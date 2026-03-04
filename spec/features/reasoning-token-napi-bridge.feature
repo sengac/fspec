@@ -1,3 +1,4 @@
+@done
 @RIG-012 @wip @napi-layer
 Feature: Reasoning token NAPI bridge
 

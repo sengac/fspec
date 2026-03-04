@@ -1,3 +1,4 @@
+@done
 @RIG-012 @wip @rust-layer
 Feature: Reasoning token mapping in CLI TokenInfo
 

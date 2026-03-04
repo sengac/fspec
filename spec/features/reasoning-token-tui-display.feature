@@ -1,3 +1,4 @@
+@done
 @RIG-012 @wip @typescript-layer
 Feature: Reasoning token TUI display and persistence
 
