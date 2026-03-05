@@ -75,6 +75,9 @@ napi-derive = "3.5.1"
 once_cell = "1.19"
 dirs.workspace = true
 
+# MCP Protocol (MCP-001)
+rmcp.workspace = true
+
 # Unix process management (for process group killing)
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

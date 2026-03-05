@@ -26,6 +26,7 @@ pub mod glob;
 pub mod grep;
 pub mod limits;
 pub mod ls;
+pub mod mcp;
 pub mod page_fetcher;
 pub mod pdf;
 pub mod read;
@@ -96,6 +97,15 @@ pub use fspec_handler::{
     FspecHandler, FspecRequest as FspecHandlerRequest, FspecResult as FspecHandlerResult,
 };
 pub use fspec_workflow_guidance::{get_fspec_workflow_guidance, FSPEC_WORKFLOW_GUIDANCE};
+pub use mcp::{
+    cleanup_mcp_session, connect_http, connect_stdio, disconnect_mcp,
+    gather_mcp_tool_registrations, gather_mcp_tool_wrappers, get_mcp_connections,
+    init_mcp_session, new_mcp_connection_map, parse_mcp_tool_name,
+    qualified_mcp_tool_name, route_mcp_tool_call, ConnectMcpTool, DynMcpHandler,
+    McpAction, McpConnectArgs, McpConnectResult, McpConnection, McpConnectionMap,
+    McpConnectionSummary, McpInjection, McpInjectionTx, McpServerInfo, McpToolDef,
+    McpToolRegistration, McpToolWrapper, McpTransport,
+};
 pub use tool_progress::{emit_tool_progress, set_tool_progress_callback, ToolProgressCallback};
 pub use web_search::{install_browser_cleanup_handler, shutdown_browser, WebSearchTool};
 pub use write::WriteTool;

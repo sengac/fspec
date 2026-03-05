@@ -27,6 +27,7 @@ use codelet_git::{
     create_worktree, create_session_manifest,
 };
 use codelet_tools::{clear_bash_abort, request_bash_abort};
+use codelet_tools::McpInjection;
 use codelet_tools::tool_pause::{PauseKind, PauseRequest, PauseResponse, PauseState, set_pause_handler, PauseHandler};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
@@ -4215,10 +4216,14 @@ impl SessionManager {
             None, // GIT-019: base_commit (non-isolated by default)
         ));
         
+        // MCP-001: Initialize MCP session state (injection channel + connection map).
+        // The injection_rx is consumed by agent_loop to process server-initiated messages.
+        let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);
+        
         // Spawn agent loop task
         let session_clone = session.clone();
         tokio::spawn(async move {
-            agent_loop(session_clone, input_rx).await;
+            agent_loop(session_clone, input_rx, mcp_injection_rx).await;
         });
         
         // Store session
@@ -4393,10 +4398,14 @@ impl SessionManager {
             Some(base_commit.clone()),    // GIT-028: Base commit for isolation
         ));
         
+        // MCP-001: Initialize MCP session state for isolated sessions too.
+        // The injection_rx is consumed by agent_loop to process server-initiated messages.
+        let (mcp_injection_rx, _mcp_connections) = codelet_tools::init_mcp_session(uuid);
+        
         // Spawn agent loop task
         let session_clone = session.clone();
         tokio::spawn(async move {
-            agent_loop(session_clone, input_rx).await;
+            agent_loop(session_clone, input_rx, mcp_injection_rx).await;
         });
         
         // Store session
@@ -4657,6 +4666,8 @@ impl SessionManager {
         if let Some(session) = session {
             // Interrupt to stop the agent loop
             session.interrupt();
+            // MCP-001: Clean up MCP session state (cancel connections, kill child processes)
+            codelet_tools::cleanup_mcp_session(uuid);
             // Drop the input sender to signal the loop to exit
             // (happens automatically when session is dropped)
             Ok(())
@@ -4962,10 +4973,30 @@ macro_rules! run_with_provider {
                     stringify!($getter)
                 );
                 
+                // MCP-001: Gather MCP tool wrappers for this turn.
+                // Connected MCP server tools appear as mcp__<server>__<tool>.
+                // Uses try_read (non-blocking) — if lock is held, tools appear next turn.
+                let mcp_wrappers = codelet_tools::gather_mcp_tool_wrappers($session.id);
+                
                 // TOOL-012: Pass session.id as first parameter so tools store it at construction
-                let agent = codelet_core::RigAgent::with_default_depth(
-                    provider.create_rig_agent($session.id, None, $thinking.clone())
-                );
+                let agent = provider.create_rig_agent($session.id, None, $thinking.clone());
+                
+                // MCP-001: Add dynamic MCP tools to the built agent.
+                // Uses ToolServerHandle.add_tool() to register wrappers post-build.
+                if !mcp_wrappers.is_empty() {
+                    tracing::info!(
+                        "[MCP] Adding {} MCP tool wrappers to agent for session {}",
+                        mcp_wrappers.len(),
+                        $session.id,
+                    );
+                    for wrapper in mcp_wrappers {
+                        if let Err(e) = agent.tool_server_handle.add_tool(wrapper).await {
+                            tracing::warn!("[MCP] Failed to add MCP tool: {}", e);
+                        }
+                    }
+                }
+                
+                let agent = codelet_core::RigAgent::with_default_depth(agent);
                 // BRIDGE-007: Use run_agent_stream_with_images for multimodal support
                 codelet_cli::interactive::run_agent_stream_with_images(
                     agent,
@@ -5000,13 +5031,18 @@ struct InputWithImages {
 /// WATCH-019: Modified to also process watcher injections via watcher_input_rx
 /// REFAC-007: Persists messages to Rust persistence layer
 /// BRIDGE-007: Now supports multimodal input with images from bridge
-async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receiver<PromptInput>) {
+/// MCP-001: Processes MCP server-initiated messages (notifications + sampling)
+async fn agent_loop(
+    session: Arc<BackgroundSession>,
+    mut input_rx: mpsc::Receiver<PromptInput>,
+    mut mcp_injection_rx: mpsc::Receiver<McpInjection>,
+) {
     loop {
         // WATCH-019: Use tokio::select! to wait on both user input and watcher input
         // Lock the watcher_input_rx to use in select
         let mut watcher_rx = session.watcher_input_rx.lock().await;
         
-        // Use biased to prefer user input over watcher input
+        // Use biased to prefer user input over watcher/MCP input
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
         let input_to_process: Option<InputWithImages> = tokio::select! {
             biased;
@@ -5057,6 +5093,52 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                     }
                     None => {
                         // Watcher channel closed, continue with user input only
+                        None
+                    }
+                }
+            }
+            
+            // MCP-001: Server-initiated MCP messages (notifications, sampling requests)
+            result = mcp_injection_rx.recv() => {
+                match result {
+                    Some(McpInjection::Notification(text)) => {
+                        tracing::info!("[MCP] agent_loop received notification: {}", text.chars().take(80).collect::<String>());
+                        // Emit as watcher input chunk so the UI shows it
+                        session.handle_output(StreamChunk::watcher_input(text.clone()));
+                        // Process as LLM input so the agent can react to the notification
+                        Some(InputWithImages {
+                            text,
+                            thinking_config: None,
+                            images: None,
+                        })
+                    }
+                    Some(McpInjection::SamplingRequest { params, response_tx }) => {
+                        tracing::info!(
+                            "[MCP] agent_loop received sampling/createMessage request ({} messages, maxTokens={})",
+                            params.messages.len(),
+                            params.max_tokens,
+                        );
+                        // Format sampling messages as a prompt for the LLM.
+                        // The agent processes the prompt normally, and we capture its
+                        // response text from the output handler to send back via response_tx.
+                        //
+                        // For V1: We cannot easily capture the full response text from
+                        // run_agent_stream because it streams through BackgroundOutput.
+                        // Instead, we return an error to the MCP server. The server will
+                        // receive a structured error and can retry or fall back.
+                        //
+                        // TODO(MCP-001 V2): To support sampling properly:
+                        //   1. Run a dedicated LLM call with the sampling messages
+                        //   2. Capture the full response text
+                        //   3. Send CreateMessageResult through response_tx
+                        let _ = response_tx.send(Err(
+                            "sampling/createMessage not yet supported — V2 feature".to_string(),
+                        ));
+                        tracing::warn!("[MCP] sampling/createMessage rejected (V2 feature)");
+                        None // Don't process as agent input
+                    }
+                    None => {
+                        // MCP injection channel closed — continue with user/watcher input
                         None
                     }
                 }

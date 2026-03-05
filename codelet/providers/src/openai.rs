@@ -311,7 +311,7 @@ impl OpenAIProvider {
         use codelet_tools::facade::{openai_bridge_tool, openai_fspec_tool};
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-            ReadTool, WebSearchTool, WriteTool,
+            ReadTool, WebSearchTool, WriteTool, ConnectMcpTool,
         };
         use rig::client::CompletionClient;
 
@@ -333,7 +333,8 @@ impl OpenAIProvider {
             .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(openai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(openai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(WebSearchTool::new(session_id)); // WEB-001, TOOL-014: WebSearchTool with session_id
+            .tool(WebSearchTool::new(session_id)) // WEB-001, TOOL-014: WebSearchTool with session_id
+            .tool(ConnectMcpTool::new(session_id)); // MCP-001: Dynamic MCP connections
 
         // Set preamble if provided
         if let Some(p) = preamble {

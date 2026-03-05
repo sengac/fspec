@@ -501,7 +501,7 @@ impl ClaudeProvider {
         };
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-            ReadTool, WriteTool,
+            ReadTool, WriteTool, ConnectMcpTool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -525,7 +525,8 @@ impl ClaudeProvider {
             .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(claude_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(claude_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade), session_id)); // TOOL-007, TOOL-014: Facade with session_id
+            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade), session_id)) // TOOL-007, TOOL-014: Facade with session_id
+            .tool(ConnectMcpTool::new(session_id)); // MCP-001: Dynamic MCP connections
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade
         let is_oauth = self.is_oauth_mode();
