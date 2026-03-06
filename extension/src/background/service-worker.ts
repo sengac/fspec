@@ -29,6 +29,7 @@ const browserTools = createBrowserTools({
   tabs: chrome.tabs,
   scripting: chrome.scripting,
   windows: chrome.windows,
+  userScripts: chrome.userScripts,
 });
 
 // Create native connection

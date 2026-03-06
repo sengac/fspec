@@ -72,7 +72,7 @@ Returns: Array of `{ "id": number, "url": string, "title": string, "active": boo
 **Use this first** to discover tab IDs for targeting other tools at specific tabs.
 
 ### `browser_execute_script`
-Execute arbitrary JavaScript in a tab's page context.
+Execute arbitrary JavaScript in a tab's page context using the USER_SCRIPT world.
 
 ```json
 { "code": "document.title" }
@@ -83,6 +83,8 @@ Execute arbitrary JavaScript in a tab's page context.
 - `tabId` (number, optional): Target tab. Defaults to active tab.
 
 Returns: The evaluated result as text.
+
+**Requires "Allow User Scripts"**: This tool uses `chrome.userScripts.execute()` to bypass Content Security Policy restrictions. The user must enable "Allow User Scripts" in the extension settings (`chrome://extensions` → fspec WebMCP Bridge → Details → Allow User Scripts). If the toggle is not enabled, the tool returns an error with instructions.
 
 **Powerful but use responsibly** — this runs arbitrary code in the page. Useful for extracting data, checking state, or manipulating the DOM when the specialized tools aren't sufficient.
 

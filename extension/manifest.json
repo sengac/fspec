@@ -9,7 +9,8 @@
     "scripting",
     "storage",
     "offscreen",
-    "nativeMessaging"
+    "nativeMessaging",
+    "userScripts"
   ],
   "host_permissions": ["<all_urls>"],
   "background": {
@@ -20,7 +21,7 @@
     {
       "matches": ["<all_urls>"],
       "js": ["dist/content-script.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   "action": {

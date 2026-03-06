@@ -18,6 +18,7 @@ export interface ChromeScriptingForInjector {
     target: { tabId: number };
     world: string;
     func: () => void;
+    injectImmediately?: boolean;
   }) => Promise<unknown>;
 }
 
@@ -70,6 +71,7 @@ export function createWebMCPInjector(
         target: { tabId },
         world: 'MAIN',
         func: webmcpDiscoveryFunction,
+        injectImmediately: true,
       });
       injectedTabs.add(tabId);
       return true;
