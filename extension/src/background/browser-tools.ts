@@ -1,16 +1,16 @@
 /**
  * fspec WebMCP Extension - Native Browser Control Tools
  *
- * Implements the 11 native browser control tool handlers:
+ * Implements the 12 native browser control tool handlers:
  * - browser_navigate, browser_screenshot, browser_list_tabs,
  *   browser_execute_script, browser_switch_tab, browser_close_tab,
  *   browser_get_page_content, browser_click_element, browser_fill_form,
- *   browser_go_back, browser_go_forward
+ *   browser_go_back, browser_go_forward, browser_create_tab
  *
  * Each handler is an async function that accepts tool arguments and returns
  * an MCP-formatted result (content array with text or image items).
  *
- * Implemented by: EXT-005
+ * Implemented by: EXT-005, EXT-011
  */
 
 /** Minimal chrome.tabs interface for dependency injection */
@@ -27,6 +27,14 @@ export interface ChromeTabsForTools {
   goBack: (tabId: number) => Promise<void>;
   goForward: (tabId: number) => Promise<void>;
   get: (tabId: number) => Promise<chrome.tabs.Tab>;
+  create: (createProperties: {
+    url?: string;
+    active?: boolean;
+    index?: number;
+    windowId?: number;
+    openerTabId?: number;
+    pinned?: boolean;
+  }) => Promise<chrome.tabs.Tab>;
   onUpdated: {
     addListener: (
       callback: (
@@ -447,6 +455,45 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
     const tabId = await resolveTabId(args.tabId as number | undefined);
     await tabs.goForward(tabId);
     return textResult({ navigated: true, direction: 'forward' });
+  });
+
+  // browser_create_tab
+  handlers.set('browser_create_tab', async args => {
+    const createProperties: Record<string, unknown> = {};
+    if (args.url !== undefined) {
+      createProperties.url = args.url as string;
+    }
+    if (args.active !== undefined) {
+      createProperties.active = args.active as boolean;
+    }
+    if (args.windowId !== undefined) {
+      createProperties.windowId = args.windowId as number;
+    }
+    if (args.pinned !== undefined) {
+      createProperties.pinned = args.pinned as boolean;
+    }
+
+    const tab = await tabs.create(createProperties);
+
+    // Wait for load if a URL was provided and the tab has an ID
+    if (args.url && tab.id !== undefined) {
+      const loadedTab = await waitForTabLoad(tab.id);
+      return textResult({
+        tabId: loadedTab.id,
+        url: loadedTab.url ?? args.url,
+        title: loadedTab.title ?? '',
+        active: loadedTab.active,
+        windowId: loadedTab.windowId,
+      });
+    }
+
+    return textResult({
+      tabId: tab.id,
+      url: tab.url ?? '',
+      title: tab.title ?? '',
+      active: tab.active,
+      windowId: tab.windowId,
+    });
   });
 
   return {

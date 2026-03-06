@@ -25,7 +25,7 @@ Reference this file with `@` in your prompt to load the skill:
 
 ## What You Get After Connecting
 
-Once connected, you have **11 native browser control tools** plus any **WebMCP tools** that websites have registered via `navigator.modelContext.registerTool()`.
+Once connected, you have **12 native browser control tools** plus any **WebMCP tools** that websites have registered via `navigator.modelContext.registerTool()`.
 
 You will also receive **real-time browser event notifications** via SSE — tab navigation, page loads, tab creation, and tab closure.
 
@@ -176,6 +176,26 @@ Navigate the tab forward in browser history.
 ```
 
 - `tabId` (number, optional): Target tab. Defaults to active tab.
+
+### `browser_create_tab`
+Create a new browser tab, optionally navigating to a URL. Waits for page load when a URL is provided.
+
+```json
+{}
+{ "url": "https://example.com" }
+{ "url": "https://example.com", "active": false }
+{ "url": "https://example.com", "pinned": true }
+{ "url": "https://example.com", "windowId": 1 }
+```
+
+- `url` (string, optional): URL to open. Defaults to New Tab page.
+- `active` (boolean, optional): Whether to make it the active tab. Defaults to true.
+- `windowId` (number, optional): Window to create the tab in. Defaults to current window.
+- `pinned` (boolean, optional): Whether to pin the tab. Defaults to false.
+
+Returns: `{ "tabId": 42, "url": "...", "title": "...", "active": true, "windowId": 1 }`
+
+**Use this instead of `browser_execute_script` with `window.open()`** — Chrome's popup blocker blocks `window.open()` without a user gesture, but `browser_create_tab` uses `chrome.tabs.create()` which always works.
 
 ---
 

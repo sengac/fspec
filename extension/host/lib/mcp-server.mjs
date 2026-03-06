@@ -140,6 +140,19 @@ const NATIVE_TOOLS = [
       },
     },
   },
+  {
+    name: 'browser_create_tab',
+    description: 'Create a new browser tab, optionally navigating to a URL',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: 'URL to open (defaults to New Tab page)' },
+        active: { type: 'boolean', description: 'Whether to make it the active tab (defaults to true)' },
+        windowId: { type: 'number', description: 'Window to create the tab in (defaults to current window)' },
+        pinned: { type: 'boolean', description: 'Whether to pin the tab (defaults to false)' },
+      },
+    },
+  },
 ];
 
 /**

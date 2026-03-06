@@ -1,0 +1,339 @@
+{
+  "scenarios": [
+    {
+      "name": "Create a new tab with a URL",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "93-148",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create a new tab without a URL",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "150-184",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create a background tab",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "186-245",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create a pinned tab",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "247-298",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tool is registered in the handler map",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "300-307",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                460,
+                461
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ChromeTabsForTools interface includes create method",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "309-325",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MCP server NATIVE_TOOLS includes browser_create_tab",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "327-354",
+          "implMappings": [
+            {
+              "file": "extension/host/lib/mcp-server.mjs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skill documentation includes browser_create_tab",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-create-tab.test.ts",
+          "lines": "355-378",
+          "implMappings": [
+            {
+              "file": "extension/webmcp-skill.md",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "extension/src/background/__tests__/browser-create-tab.test.ts"
+    ],
+    "implFiles": [
+      "extension/src/background/browser-tools.ts",
+      "extension/host/lib/mcp-server.mjs",
+      "extension/webmcp-skill.md"
+    ],
+    "totalLinesCovered": 473
+  }
+}
