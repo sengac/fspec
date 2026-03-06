@@ -18,7 +18,10 @@ const WEBMCP_PREFIX = 'FSPEC_WEBMCP_';
 
 /** Minimal interface for the window's postMessage + addEventListener */
 export interface WindowLike {
-  addEventListener: (type: string, handler: (event: MessageEvent) => void) => void;
+  addEventListener: (
+    type: string,
+    handler: (event: MessageEvent) => void
+  ) => void;
   postMessage: (message: unknown, targetOrigin: string) => void;
 }
 
@@ -55,7 +58,9 @@ export interface ContentRelayOptions {
   runtime: ContentRuntimeLike;
 }
 
-export function createContentRelay(options: ContentRelayOptions): ContentRelayAPI {
+export function createContentRelay(
+  options: ContentRelayOptions
+): ContentRelayAPI {
   const { win, runtime } = options;
 
   const relay: ContentRelayAPI = {

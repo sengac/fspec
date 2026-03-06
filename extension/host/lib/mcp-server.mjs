@@ -172,7 +172,8 @@ export function createMcpServer({ port = 19876, stdin = null, stdout = null } = 
       const pending = pendingCalls.get(message.correlationId);
       clearTimeout(pending.timer);
       pendingCalls.delete(message.correlationId);
-      pending.resolve(message.result || message.error || {});
+      // Preserve the full message so callers can distinguish result vs error
+      pending.resolve({ result: message.result, error: message.error });
       return;
     }
 
@@ -235,7 +236,7 @@ export function createMcpServer({ port = 19876, stdin = null, stdout = null } = 
         // No extension connected — resolve with an error
         clearTimeout(timer);
         pendingCalls.delete(correlationId);
-        resolve({ error: 'No extension connected' });
+        resolve({ error: { code: -1, message: 'No extension connected' } });
       }
     });
   }
@@ -326,13 +327,24 @@ export function createMcpServer({ port = 19876, stdin = null, stdout = null } = 
 
     if (method === 'tools/call') {
       try {
-        const result = await callExtension(params);
-        sendJson(res, 200, {
-          jsonrpc: '2.0',
-          id,
-          result: result.error ? undefined : result,
-          error: result.error ? { code: -1, message: result.error } : undefined,
-        });
+        const response = await callExtension(params);
+        if (response.error) {
+          // Error from extension — propagate as JSON-RPC error
+          const error = typeof response.error === 'object'
+            ? response.error
+            : { code: -1, message: String(response.error) };
+          sendJson(res, 200, {
+            jsonrpc: '2.0',
+            id,
+            error,
+          });
+        } else {
+          sendJson(res, 200, {
+            jsonrpc: '2.0',
+            id,
+            result: response.result || {},
+          });
+        }
       } catch (err) {
         sendJson(res, 200, {
           jsonrpc: '2.0',

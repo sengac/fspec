@@ -22,6 +22,7 @@
     "format": "prettier --write 'src/**/*.ts' 'codelet/**/*.ts'",
     "format:spec": "fspec format",
     "test": "npm run build && vitest run",
+    "test:extension": "vitest run --config vitest.config.ts extension/",
     "test:watch": "vitest --watch",
     "prepare": "husky",
     "prepublishOnly": "node scripts/check-publish-deps.js",

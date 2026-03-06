@@ -19,32 +19,42 @@ const HOST_DIR = resolve(PROJECT_ROOT, 'extension', 'host');
 const HOST_LIB_DIR = resolve(HOST_DIR, 'lib');
 
 // Lazily-cached dynamic imports for the .mjs host modules
-let _mcpServerModule: { createMcpServer: (opts?: Record<string, unknown>) => Record<string, unknown> } | null = null;
+let _mcpServerModule: {
+  createMcpServer: (opts?: Record<string, unknown>) => Record<string, unknown>;
+} | null = null;
 let _nativeMessagingModule: {
   encodeNativeMessage: (msg: Record<string, unknown>) => Buffer;
   decodeNativeMessage: (buf: Buffer) => Record<string, unknown>;
 } | null = null;
 let _registrationModule: {
-  registerNativeHost: (opts: Record<string, unknown>) => Promise<{ manifestPath: string; manifest: Record<string, unknown> }>;
+  registerNativeHost: (
+    opts: Record<string, unknown>
+  ) => Promise<{ manifestPath: string; manifest: Record<string, unknown> }>;
 } | null = null;
 
 async function getMcpServerModule() {
   if (!_mcpServerModule) {
-    _mcpServerModule = await import(/* @vite-ignore */ resolve(HOST_LIB_DIR, 'mcp-server.mjs'));
+    _mcpServerModule = await import(
+      /* @vite-ignore */ resolve(HOST_LIB_DIR, 'mcp-server.mjs')
+    );
   }
   return _mcpServerModule;
 }
 
 async function getNativeMessagingModule() {
   if (!_nativeMessagingModule) {
-    _nativeMessagingModule = await import(/* @vite-ignore */ resolve(HOST_LIB_DIR, 'native-messaging.mjs'));
+    _nativeMessagingModule = await import(
+      /* @vite-ignore */ resolve(HOST_LIB_DIR, 'native-messaging.mjs')
+    );
   }
   return _nativeMessagingModule;
 }
 
 async function getRegistrationModule() {
   if (!_registrationModule) {
-    _registrationModule = await import(/* @vite-ignore */ resolve(HOST_LIB_DIR, 'registration.mjs'));
+    _registrationModule = await import(
+      /* @vite-ignore */ resolve(HOST_LIB_DIR, 'registration.mjs')
+    );
   }
   return _registrationModule;
 }
@@ -74,7 +84,11 @@ function httpRequest(
               responseHeaders[key] = value;
             }
           }
-          resolvePromise({ status: res.statusCode ?? 0, headers: responseHeaders, body: data });
+          resolvePromise({
+            status: res.statusCode ?? 0,
+            headers: responseHeaders,
+            body: data,
+          });
         });
       }
     );
@@ -156,12 +170,17 @@ async function initializeSession(port: number): Promise<{
  * Helper: create an MCP server, start it, and return a cleanup handle.
  * Accepts optional stdin/stdout streams for native messaging tests.
  */
-async function startTestServer(options: { stdin?: PassThrough; stdout?: PassThrough } = {}): Promise<{
+async function startTestServer(
+  options: { stdin?: PassThrough; stdout?: PassThrough } = {}
+): Promise<{
   port: number;
   stop: () => Promise<void>;
 }> {
   const { createMcpServer } = await getMcpServerModule();
-  const server = createMcpServer({ port: 0, ...options }) as { start: () => Promise<number>; stop: () => Promise<void> };
+  const server = createMcpServer({ port: 0, ...options }) as {
+    start: () => Promise<number>;
+    stop: () => Promise<void>;
+  };
   const port = await server.start();
   return { port, stop: () => server.stop() };
 }
@@ -195,10 +214,17 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
           'POST',
           '/mcp',
           { 'Content-Type': 'application/json', 'Mcp-Session-Id': sessionId },
-          JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} })
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'tools/list',
+            params: {},
+          })
         );
         const toolsResult = JSON.parse(toolsResponse.body);
-        const toolNames = toolsResult.result.tools.map((t: { name: string }) => t.name);
+        const toolNames = toolsResult.result.tools.map(
+          (t: { name: string }) => t.name
+        );
         expect(toolNames).toContain('browser_navigate');
         expect(toolNames).toContain('browser_screenshot');
         expect(toolNames).toContain('browser_list_tabs');
@@ -225,17 +251,24 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
         // @step And a GET /mcp SSE stream is open for server-to-client notifications
         const sse = await openSSEStream(server.port, sessionId);
         expect(sse.response.statusCode).toBe(200);
-        expect(sse.response.headers['content-type']).toContain('text/event-stream');
+        expect(sse.response.headers['content-type']).toContain(
+          'text/event-stream'
+        );
 
         // @step When the agent disconnects via ConnectMCP
         // @step Then a DELETE /mcp request is sent to terminate the session
-        const deleteResponse = await httpRequest(server.port, 'DELETE', '/mcp', {
-          'Mcp-Session-Id': sessionId,
-        });
+        const deleteResponse = await httpRequest(
+          server.port,
+          'DELETE',
+          '/mcp',
+          {
+            'Mcp-Session-Id': sessionId,
+          }
+        );
         expect(deleteResponse.status).toBe(200);
 
         // @step And the SSE stream closes
-        await new Promise<void>((resolvePromise) => {
+        await new Promise<void>(resolvePromise => {
           sse.response.on('close', () => {
             resolvePromise();
           });
@@ -253,7 +286,12 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
           'POST',
           '/mcp',
           { 'Content-Type': 'application/json', 'Mcp-Session-Id': sessionId },
-          JSON.stringify({ jsonrpc: '2.0', id: 3, method: 'tools/list', params: {} })
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: 3,
+            method: 'tools/list',
+            params: {},
+          })
         );
         expect(postDeleteResponse.status).toBe(404);
       } finally {
@@ -265,15 +303,24 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
   describe('Scenario: Native messaging host reads and writes Chrome native messaging frames', () => {
     it('should encode and decode messages using 4-byte little-endian length prefix protocol', async () => {
       // @step Given the native messaging host process is running
-      const { encodeNativeMessage, decodeNativeMessage } = await getNativeMessagingModule();
+      const { encodeNativeMessage, decodeNativeMessage } =
+        await getNativeMessagingModule();
 
       // @step When the Chrome extension sends a JSON message via stdin with a 4-byte little-endian length prefix
-      const testMessage = { type: 'TOOLS_CHANGED', tools: [{ name: 'browser_navigate' }] };
-      const encoded = encodeNativeMessage(testMessage as unknown as Record<string, unknown>);
+      const testMessage = {
+        type: 'TOOLS_CHANGED',
+        tools: [{ name: 'browser_navigate' }],
+      };
+      const encoded = encodeNativeMessage(
+        testMessage as unknown as Record<string, unknown>
+      );
 
       // @step Then the host reads the length prefix and parses the JSON payload
       expect(encoded).toBeInstanceOf(Buffer);
-      const expectedJsonBytes = Buffer.from(JSON.stringify(testMessage), 'utf-8');
+      const expectedJsonBytes = Buffer.from(
+        JSON.stringify(testMessage),
+        'utf-8'
+      );
       const lengthPrefix = encoded.readUInt32LE(0);
       expect(lengthPrefix).toBe(expectedJsonBytes.length);
       const jsonBytes = encoded.subarray(4);
@@ -283,8 +330,14 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
       expect(decoded).toEqual(testMessage);
 
       // @step And the host can write responses to stdout using the same 4-byte length prefix format
-      const responseMessage = { type: 'TOOL_RESULT', correlationId: 'abc-123', result: { success: true } };
-      const encodedResponse = encodeNativeMessage(responseMessage as unknown as Record<string, unknown>);
+      const responseMessage = {
+        type: 'TOOL_RESULT',
+        correlationId: 'abc-123',
+        result: { success: true },
+      };
+      const encodedResponse = encodeNativeMessage(
+        responseMessage as unknown as Record<string, unknown>
+      );
       const decodedResponse = decodeNativeMessage(encodedResponse);
       expect(decodedResponse).toEqual(responseMessage);
     });
@@ -295,7 +348,10 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
       // @step Given the native messaging host is listening on port 19876
       const mockStdin = new PassThrough();
       const mockStdout = new PassThrough();
-      const server = await startTestServer({ stdin: mockStdin, stdout: mockStdout });
+      const server = await startTestServer({
+        stdin: mockStdin,
+        stdout: mockStdout,
+      });
 
       try {
         const { sessionId } = await initializeSession(server.port);
@@ -313,27 +369,35 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
             jsonrpc: '2.0',
             id: 2,
             method: 'tools/call',
-            params: { name: 'browser_navigate', arguments: { url: 'https://example.com' } },
+            params: {
+              name: 'browser_navigate',
+              arguments: { url: 'https://example.com' },
+            },
           })
         );
 
         // @step Then the host writes a native messaging frame to stdout with a correlation ID
-        const stdoutData = await new Promise<Buffer>((resolvePromise) => {
+        const stdoutData = await new Promise<Buffer>(resolvePromise => {
           mockStdout.once('data', (chunk: Buffer) => {
             resolvePromise(chunk);
           });
         });
-        const { decodeNativeMessage, encodeNativeMessage } = await getNativeMessagingModule();
+        const { decodeNativeMessage, encodeNativeMessage } =
+          await getNativeMessagingModule();
         const forwardedMessage = decodeNativeMessage(stdoutData);
         expect(forwardedMessage.type).toBe('TOOL_CALL');
         expect(forwardedMessage.correlationId).toBeDefined();
-        expect((forwardedMessage.params as Record<string, unknown>).name).toBe('browser_navigate');
+        expect((forwardedMessage.params as Record<string, unknown>).name).toBe(
+          'browser_navigate'
+        );
 
         // @step And the host holds the HTTP response open until the extension replies on stdin
         const extensionResponse = encodeNativeMessage({
           correlationId: forwardedMessage.correlationId as string,
           result: {
-            content: [{ type: 'text', text: 'Navigated to https://example.com' }],
+            content: [
+              { type: 'text', text: 'Navigated to https://example.com' },
+            ],
           },
         } as unknown as Record<string, unknown>);
         mockStdin.write(extensionResponse);
@@ -351,6 +415,71 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
         await server.stop();
       }
     });
+
+    it('should return JSON-RPC error when extension replies with an error via stdin', async () => {
+      // @step Given the native messaging host is listening on port 19876
+      const mockStdin = new PassThrough();
+      const mockStdout = new PassThrough();
+      const server = await startTestServer({
+        stdin: mockStdin,
+        stdout: mockStdout,
+      });
+
+      try {
+        const { sessionId } = await initializeSession(server.port);
+
+        // @step And a Chrome extension is connected via native messaging stdin/stdout
+
+        // @step When the agent sends a POST /mcp request with a tools/call JSON-RPC message
+        const toolCallPromise = httpRequest(
+          server.port,
+          'POST',
+          '/mcp',
+          { 'Content-Type': 'application/json', 'Mcp-Session-Id': sessionId },
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: 3,
+            method: 'tools/call',
+            params: {
+              name: 'browser_navigate',
+              arguments: { url: 'https://example.com' },
+            },
+          })
+        );
+
+        // @step Then the host writes a native messaging frame to stdout with a correlation ID
+        const stdoutData = await new Promise<Buffer>(resolvePromise => {
+          mockStdout.once('data', (chunk: Buffer) => {
+            resolvePromise(chunk);
+          });
+        });
+        const { decodeNativeMessage, encodeNativeMessage } =
+          await getNativeMessagingModule();
+        const forwardedMessage = decodeNativeMessage(stdoutData);
+        expect(forwardedMessage.correlationId).toBeDefined();
+
+        // @step And the extension replies with an error on stdin
+        const extensionErrorResponse = encodeNativeMessage({
+          correlationId: forwardedMessage.correlationId as string,
+          error: { code: -1, message: 'Network timeout' },
+        } as unknown as Record<string, unknown>);
+        mockStdin.write(extensionErrorResponse);
+
+        // @step And the host returns the extension's error as a JSON-RPC error to the agent
+        const toolCallResponse = await toolCallPromise;
+        expect(toolCallResponse.status).toBe(200);
+        const parsed = JSON.parse(toolCallResponse.body);
+        expect(parsed.jsonrpc).toBe('2.0');
+        expect(parsed.id).toBe(3);
+        expect(parsed.error).toBeDefined();
+        expect(parsed.error.code).toBe(-1);
+        expect(parsed.error.message).toBe('Network timeout');
+        // Must NOT have a result field
+        expect(parsed.result).toBeUndefined();
+      } finally {
+        await server.stop();
+      }
+    });
   });
 
   describe('Scenario: SSE notification stream delivers extension events to agent', () => {
@@ -358,7 +487,10 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
       // @step Given the agent has an active MCP session with a valid Mcp-Session-Id
       const mockStdin = new PassThrough();
       const mockStdout = new PassThrough();
-      const server = await startTestServer({ stdin: mockStdin, stdout: mockStdout });
+      const server = await startTestServer({
+        stdin: mockStdin,
+        stdout: mockStdout,
+      });
 
       try {
         const { sessionId } = await initializeSession(server.port);
@@ -368,7 +500,9 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
 
         // @step Then the server responds with status 200 and Content-Type "text/event-stream"
         expect(sse.response.statusCode).toBe(200);
-        expect(sse.response.headers['content-type']).toContain('text/event-stream');
+        expect(sse.response.headers['content-type']).toContain(
+          'text/event-stream'
+        );
 
         // @step And the SSE stream stays open for the duration of the session
         let streamEnded = false;
@@ -383,13 +517,17 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
           notification: {
             jsonrpc: '2.0',
             method: 'notifications/browser/navigation',
-            params: { tabId: 123, url: 'https://new-page.com', title: 'New Page' },
+            params: {
+              tabId: 123,
+              url: 'https://new-page.com',
+              title: 'New Page',
+            },
           },
         } as unknown as Record<string, unknown>);
         mockStdin.write(browserEvent);
 
         // Wait for the SSE event to arrive
-        await new Promise((r) => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 200));
 
         // Check that we received an SSE event
         const allEventData = sse.events.join('');
@@ -407,7 +545,10 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
       // @step Given the agent has an active MCP session with SSE stream open
       const mockStdin = new PassThrough();
       const mockStdout = new PassThrough();
-      const server = await startTestServer({ stdin: mockStdin, stdout: mockStdout });
+      const server = await startTestServer({
+        stdin: mockStdin,
+        stdout: mockStdout,
+      });
 
       try {
         const { sessionId } = await initializeSession(server.port);
@@ -430,7 +571,7 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
         mockStdin.write(toolsChangedMsg);
 
         // Wait for the SSE event to arrive
-        await new Promise((r) => setTimeout(r, 200));
+        await new Promise(r => setTimeout(r, 200));
 
         // @step Then the SSE stream receives a notifications/tools/list_changed event
         const allEventData = sse.events.join('');
@@ -502,7 +643,12 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
           'POST',
           '/mcp',
           { 'Content-Type': 'application/json' },
-          JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} })
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: 2,
+            method: 'tools/list',
+            params: {},
+          })
         );
 
         // @step Then the server responds with status 400 Bad Request
@@ -528,7 +674,12 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
             'Content-Type': 'application/json',
             'Mcp-Session-Id': 'nonexistent-session-id-12345',
           },
-          JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} })
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/list',
+            params: {},
+          })
         );
 
         // @step Then the server responds with status 404 Not Found

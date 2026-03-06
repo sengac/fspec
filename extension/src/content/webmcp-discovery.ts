@@ -28,7 +28,10 @@ export function webmcpDiscoveryFunction(): void {
   const pageOrigin = window.location.hostname;
 
   /** Map of registered tool names → tool execute functions */
-  const registeredTools = new Map<string, (args: Record<string, unknown>) => unknown>();
+  const registeredTools = new Map<
+    string,
+    (args: Record<string, unknown>) => unknown
+  >();
 
   /**
    * Intercept navigator.modelContext to detect tool registrations.
@@ -44,7 +47,9 @@ export function webmcpDiscoveryFunction(): void {
 
     // If navigator.modelContext already exists, intercept it
     if (nav.modelContext) {
-      interceptExistingModelContext(nav.modelContext as Record<string, unknown>);
+      interceptExistingModelContext(
+        nav.modelContext as Record<string, unknown>
+      );
       return;
     }
 
@@ -75,7 +80,9 @@ export function webmcpDiscoveryFunction(): void {
     mc.registerTool = function (toolDef: Record<string, unknown>): unknown {
       const name = toolDef.name as string;
       const description = (toolDef.description as string) || '';
-      const inputSchema = toolDef.inputSchema as Record<string, unknown> | undefined;
+      const inputSchema = toolDef.inputSchema as
+        | Record<string, unknown>
+        | undefined;
       const executeFn = toolDef.execute as
         | ((args: Record<string, unknown>) => unknown)
         | undefined;
@@ -133,7 +140,14 @@ export function webmcpDiscoveryFunction(): void {
         return;
       }
 
-      const data = event.data as { type?: string; correlationId?: string; toolName?: string; args?: Record<string, unknown> } | undefined;
+      const data = event.data as
+        | {
+            type?: string;
+            correlationId?: string;
+            toolName?: string;
+            args?: Record<string, unknown>;
+          }
+        | undefined;
       if (!data || data.type !== 'FSPEC_INVOKE_TOOL') {
         return;
       }
@@ -163,7 +177,7 @@ export function webmcpDiscoveryFunction(): void {
         // Handle Promise results
         if (result && typeof (result as Promise<unknown>).then === 'function') {
           (result as Promise<unknown>)
-            .then((resolved) => {
+            .then(resolved => {
               window.postMessage(
                 {
                   type: 'FSPEC_INVOKE_RESULT',

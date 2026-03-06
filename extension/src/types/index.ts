@@ -40,12 +40,22 @@ export interface ToolRegistryEntry {
   tabId?: number;
 }
 
+/** Tool summary sent from service worker to popup for grouped display */
+export interface PopupToolSummary {
+  name: string;
+  source: 'native' | 'webmcp';
+  origin?: string;
+  tabId?: number;
+}
+
 /** Status response from service worker to popup */
 export interface StatusResponse {
   connected: boolean;
   nativeConnected: boolean;
   toolCount: number;
   port: number;
+  clientCount: number;
+  tools: PopupToolSummary[];
 }
 
 /**

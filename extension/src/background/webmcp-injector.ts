@@ -51,7 +51,9 @@ export interface WebMCPInjectorAPI {
  * Create the WebMCP injector that listens for tab load events
  * and injects the discovery script into pages.
  */
-export function createWebMCPInjector(options: WebMCPInjectorOptions): WebMCPInjectorAPI {
+export function createWebMCPInjector(
+  options: WebMCPInjectorOptions
+): WebMCPInjectorAPI {
   const { scripting, tabs } = options;
 
   /** Set of tab IDs that already have the discovery script injected */

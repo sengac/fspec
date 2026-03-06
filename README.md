@@ -489,6 +489,145 @@ A dedicated mobile app for iOS and Android is in development at [github.com/seng
 
 ---
 
+## WebMCP Chrome Extension
+
+The fspec WebMCP Chrome Extension bridges your browser to AI agents via the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). It exposes browser control tools and discovers [WebMCP](https://developer.chrome.com/blog/webmcp-epp) tools registered by websites—all accessible through a standard MCP connection.
+
+### What It Does
+
+Once connected, your AI agent can:
+
+- **Control the browser** — Navigate tabs, take screenshots, click elements, fill forms, execute JavaScript
+- **Discover website tools** — Websites using Chrome's [WebMCP API](https://developer.chrome.com/blog/webmcp-epp) (`navigator.modelContext.registerTool()`) automatically appear as callable tools
+- **Receive browser events** — Tab navigation, page loads, tab creation/closure arrive as real-time MCP notifications via SSE
+
+### Architecture
+
+```
+AI Agent (fspec)
+  ↕ ConnectMCP (HTTP)
+Native Messaging Host (Node.js, port 19876)
+  ↕ stdin/stdout (Chrome native messaging protocol)
+Service Worker (Chrome extension)
+  ↕ chrome.runtime / chrome.tabs
+Content Script (isolated world relay)
+  ↕ window.postMessage
+Main-World Script (WebMCP tool discovery & invocation)
+```
+
+### Prerequisites
+
+- **Node.js** 18+ (for the native messaging host)
+- **Google Chrome** 120+ (for browser control tools)
+- **Google Chrome 146+** with WebMCP flag enabled (only needed for WebMCP website tool discovery)
+
+### Installation
+
+#### 1. Build the extension
+
+```bash
+cd extension
+npm install
+npm run build
+```
+
+This produces the loadable extension in the `extension/` directory (with built files in `extension/dist/`).
+
+#### 2. Load the extension in Chrome
+
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable **Developer mode** using the toggle in the top-right corner
+3. Click **Load unpacked**
+4. Select the `extension/` directory from the fspec repository
+5. Note the **extension ID** shown on the extension card (e.g., `abcdefghijklmnopqrstuvwxyz`)
+
+#### 3. Register the native messaging host
+
+The native messaging host is a Node.js process that Chrome launches automatically when the extension connects. You need to register it once so Chrome knows where to find it:
+
+```bash
+node extension/host/native-host.mjs --register --extension-id <your-extension-id>
+```
+
+Replace `<your-extension-id>` with the ID from step 2.
+
+This writes a `com.fspec.webmcp.json` manifest to Chrome's native messaging host directory:
+
+| Platform | Manifest Location |
+|----------|-------------------|
+| **macOS** | `~/Library/Application Support/Google/Chrome/NativeMessagingHosts/` |
+| **Linux** | `~/.config/google-chrome/NativeMessagingHosts/` |
+| **Windows** | `%LOCALAPPDATA%\Google\Chrome\User Data\NativeMessagingHosts\` |
+
+#### 4. Enable WebMCP (optional, for website tool discovery)
+
+If you want AI agents to discover tools registered by websites via `navigator.modelContext`:
+
+1. Navigate to `chrome://flags`
+2. Search for **WebMCP for testing**
+3. Set it to **Enabled**
+4. Relaunch Chrome
+
+This is only needed for WebMCP tool discovery. All native browser control tools work without this flag.
+
+### Connecting from fspec
+
+Once installed, tell your AI agent:
+
+```
+Connect to the Chrome extension at http://localhost:19876/mcp
+```
+
+Or the agent can call the ConnectMCP tool directly:
+
+```
+ConnectMCP(transport: "http", url: "http://localhost:19876/mcp")
+```
+
+The extension popup (click the extension icon) shows the current status: server status, port, connected clients, and available tools grouped by source.
+
+### Available Tools
+
+The extension provides 11 native browser control tools out of the box:
+
+| Tool | Description |
+|------|-------------|
+| `browser_navigate` | Navigate a tab to a URL |
+| `browser_screenshot` | Capture a screenshot of a tab |
+| `browser_list_tabs` | List all open tabs with IDs, URLs, and titles |
+| `browser_execute_script` | Execute JavaScript in a tab |
+| `browser_switch_tab` | Activate a tab and focus its window |
+| `browser_close_tab` | Close a tab |
+| `browser_get_page_content` | Get page content as text or HTML |
+| `browser_click_element` | Click an element by CSS selector |
+| `browser_fill_form` | Fill a form field by CSS selector |
+| `browser_go_back` | Navigate back in browser history |
+| `browser_go_forward` | Navigate forward in browser history |
+
+WebMCP tools from websites appear dynamically with the naming pattern `webmcp__<hostname>__<toolName>` (e.g., `webmcp__travel-demo.bandarra.me__searchFlights`).
+
+### Browser Event Notifications
+
+When connected via SSE, the agent receives real-time notifications:
+
+| Event | Method | Params |
+|-------|--------|--------|
+| Page navigation | `notifications/browser/navigation` | `tabId`, `url`, `title` |
+| Page loaded | `notifications/browser/load_complete` | `tabId`, `url`, `title` |
+| Tab created | `notifications/browser/tab_created` | `tabId`, `url` |
+| Tab closed | `notifications/browser/tab_closed` | `tabId` |
+| Tool list changed | `notifications/tools/list_changed` | *(none)* |
+
+### Custom Port
+
+The native host defaults to port 19876. To use a different port:
+
+```bash
+node extension/host/native-host.mjs --port 8080
+```
+
+---
+
 ## Watcher Sessions
 
 Watchers are supervisor agents that observe production in real-time and automatically interject with feedback. Think of them as quality inspectors on the factory floor.

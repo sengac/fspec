@@ -16,6 +16,7 @@ import type { NativeConnectionAPI } from './native-connection';
 import type { ToolRegistryAPI } from './tool-registry';
 import type { BrowserToolsAPI } from './browser-tools';
 import type { ToolRegistryEntry } from '../types';
+import type { NotificationEnvelope } from './browser-events';
 
 /** Minimal chrome.tabs interface for dependency injection */
 export interface ChromeTabsLike {
@@ -51,10 +52,12 @@ export interface MessageRouterAPI {
     message: Record<string, unknown>,
     sendResponse: (response: unknown) => void
   ) => boolean;
-  forwardNotification: (event: Record<string, unknown>) => void;
+  forwardNotification: (envelope: NotificationEnvelope) => void;
 }
 
-export function createMessageRouter(options: MessageRouterOptions): MessageRouterAPI {
+export function createMessageRouter(
+  options: MessageRouterOptions
+): MessageRouterAPI {
   const { tabs, connection, toolRegistry, browserTools } = options;
 
   function sendToNativeHost(message: Record<string, unknown>): void {
@@ -78,7 +81,9 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
 
       // Handle tool call from native host
       if (type === MESSAGE_TYPES.TOOL_CALL && correlationId) {
-        const params = message.params as { name?: string; arguments?: Record<string, unknown> } | undefined;
+        const params = message.params as
+          | { name?: string; arguments?: Record<string, unknown> }
+          | undefined;
         const toolName = params?.name;
 
         if (!toolName) {
@@ -115,7 +120,7 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
             const handler = browserTools.getHandler(toolName);
             if (handler) {
               handler(params?.arguments ?? {})
-                .then((result) => {
+                .then(result => {
                   sendToNativeHost({
                     correlationId,
                     result,
@@ -133,7 +138,10 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
           // No handler found
           sendToNativeHost({
             correlationId,
-            error: { code: -32601, message: `No handler registered for tool: ${toolName}` },
+            error: {
+              code: -32601,
+              message: `No handler registered for tool: ${toolName}`,
+            },
           });
         }
         return;
@@ -149,7 +157,13 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
 
       // Handle WebMCP tool registration
       if (type === MESSAGE_TYPES.TOOL_REGISTERED) {
-        const toolMeta = message.tool as { name: string; description: string; inputSchema?: Record<string, unknown> } | undefined;
+        const toolMeta = message.tool as
+          | {
+              name: string;
+              description: string;
+              inputSchema?: Record<string, unknown>;
+            }
+          | undefined;
         if (toolMeta) {
           const origin = (message.origin as string) ?? '';
           const namespacedName = buildWebmcpToolName(origin, toolMeta.name);
@@ -189,9 +203,10 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
               correlationId,
               error: {
                 code: -1,
-                message: typeof message.error === 'string'
-                  ? message.error
-                  : JSON.stringify(message.error),
+                message:
+                  typeof message.error === 'string'
+                    ? message.error
+                    : JSON.stringify(message.error),
               },
             });
           } else {
@@ -201,9 +216,10 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
                 content: [
                   {
                     type: 'text',
-                    text: typeof message.result === 'string'
-                      ? message.result
-                      : JSON.stringify(message.result),
+                    text:
+                      typeof message.result === 'string'
+                        ? message.result
+                        : JSON.stringify(message.result),
                   },
                 ],
               },
@@ -223,11 +239,19 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
       const type = message.type as string | undefined;
 
       if (type === MESSAGE_TYPES.GET_STATUS) {
+        const allTools = toolRegistry.getAll();
         sendResponse({
           connected: true,
           nativeConnected: connection.isConnected(),
-          toolCount: toolRegistry.size(),
+          toolCount: allTools.length,
           port: MCP_DEFAULT_PORT,
+          clientCount: 0,
+          tools: allTools.map(t => ({
+            name: t.name,
+            source: t.source,
+            origin: t.origin,
+            tabId: t.tabId,
+          })),
         });
         return true;
       }
@@ -235,10 +259,10 @@ export function createMessageRouter(options: MessageRouterOptions): MessageRoute
       return false;
     },
 
-    forwardNotification(event: Record<string, unknown>): void {
+    forwardNotification(envelope: NotificationEnvelope): void {
       sendToNativeHost({
         type: MESSAGE_TYPES.NOTIFICATION,
-        ...event,
+        ...envelope,
       });
     },
   };

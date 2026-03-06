@@ -36,7 +36,7 @@ export function createToolRegistry(): ToolRegistryAPI {
     },
 
     getByTab(tabId: number): ToolRegistryEntry[] {
-      return Array.from(tools.values()).filter((t) => t.tabId === tabId);
+      return Array.from(tools.values()).filter(t => t.tabId === tabId);
     },
 
     getByName(name: string): ToolRegistryEntry | undefined {

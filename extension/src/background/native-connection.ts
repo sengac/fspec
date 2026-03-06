@@ -22,7 +22,9 @@ export interface PortLike {
   postMessage: (message: Record<string, unknown>) => void;
   onMessage: {
     addListener: (callback: (message: Record<string, unknown>) => void) => void;
-    removeListener: (callback: (message: Record<string, unknown>) => void) => void;
+    removeListener: (
+      callback: (message: Record<string, unknown>) => void
+    ) => void;
   };
   onDisconnect: {
     addListener: (callback: () => void) => void;
@@ -47,7 +49,9 @@ export interface NativeConnectionAPI {
   disconnect: () => void;
 }
 
-export function createNativeConnection(options: NativeConnectionOptions): NativeConnectionAPI {
+export function createNativeConnection(
+  options: NativeConnectionOptions
+): NativeConnectionAPI {
   const {
     runtime,
     reconnectDelay = 2000,

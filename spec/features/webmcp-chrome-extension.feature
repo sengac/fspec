@@ -367,3 +367,48 @@ Feature: fspec WebMCP Chrome Extension
     And the manifest.json references the built files correctly
     And the manifest.json includes required permissions for activeTab, tabs, scripting, storage, offscreen, and nativeMessaging
 
+
+  @events
+  @EXT-007
+  Scenario: Receive tab created event when user opens a new tab
+    Given the agent has an active MCP connection to the extension
+    And a GET /mcp SSE stream is open for notifications
+    When the user opens a new browser tab
+    Then the extension fires an MCP notification with method "notifications/browser/tab_created"
+    And the notification params include the new tabId and url
+    And the agent receives the notification via the SSE stream
+
+
+  @events
+  @EXT-007
+  Scenario: Receive tab closed event when user closes a tab
+    Given the agent has an active MCP connection to the extension
+    And a GET /mcp SSE stream is open for notifications
+    When the user closes browser tab 123
+    Then the extension fires an MCP notification with method "notifications/browser/tab_closed"
+    And the notification params include tabId 123
+    And the agent receives the notification via the SSE stream
+
+
+  @events
+  @EXT-007
+  Scenario: Receive load complete event when page finishes loading
+    Given the agent has an active MCP connection to the extension
+    And a GET /mcp SSE stream is open for notifications
+    When tab 123 finishes loading the page at "https://example.com"
+    Then the extension fires an MCP notification with method "notifications/browser/load_complete"
+    And the notification params include tabId 123, url "https://example.com", and title
+    And the agent receives the notification via the SSE stream
+
+
+  @events
+  @EXT-007
+  Scenario: Closing tab with WebMCP tools triggers both tab closed and tools changed notifications
+    Given the agent has an active MCP connection to the extension
+    And a GET /mcp SSE stream is open for notifications
+    And tab 456 has WebMCP tools registered
+    When the user closes browser tab 456
+    Then the WebMCP tools from tab 456 are unregistered from the tool registry
+    And the agent receives a "notifications/browser/tab_closed" notification
+    And the agent receives a "notifications/tools/list_changed" notification
+

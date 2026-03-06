@@ -10,7 +10,7 @@
  * EXT-004: Message routing and tool registry (core implementation)
  * EXT-005: Browser control tool handlers (implemented)
  * EXT-006: WebMCP tool discovery forwarding (implemented)
- * EXT-007: Browser event notification handlers (future)
+ * EXT-007: Browser event notification handlers (implemented)
  */
 
 import { createNativeConnection } from './native-connection';
@@ -18,6 +18,7 @@ import { createMessageRouter } from './message-router';
 import { createToolRegistry } from './tool-registry';
 import { createBrowserTools } from './browser-tools';
 import { createWebMCPInjector } from './webmcp-injector';
+import { createBrowserEventListeners } from './browser-events';
 import { MESSAGE_TYPES } from '../types';
 
 // Create tool registry
@@ -33,7 +34,7 @@ const browserTools = createBrowserTools({
 // Create native connection
 const nativeConnection = createNativeConnection({
   runtime: chrome.runtime,
-  onMessage: (message) => {
+  onMessage: message => {
     messageRouter.handleNativeMessage(message);
   },
   onDisconnect: () => {
@@ -63,6 +64,26 @@ nativeConnection.connect();
 createWebMCPInjector({
   scripting: chrome.scripting,
   tabs: chrome.tabs,
+});
+
+// Register browser event listeners — captures chrome.tabs events and
+// forwards them as MCP notifications to the agent via SSE.
+// EXT-007: Bidirectional Browser Event Notifications
+createBrowserEventListeners({
+  tabs: chrome.tabs,
+  onNotify: envelope => {
+    messageRouter.forwardNotification(envelope);
+  },
+  toolRegistry,
+  onToolsChanged: () => {
+    const port = nativeConnection.getPort();
+    if (port) {
+      port.postMessage({
+        type: MESSAGE_TYPES.TOOLS_CHANGED,
+        tools: toolRegistry.getAll(),
+      });
+    }
+  },
 });
 
 // Listen for messages from content scripts and popup

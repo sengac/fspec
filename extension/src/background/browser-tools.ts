@@ -16,26 +16,48 @@
 /** Minimal chrome.tabs interface for dependency injection */
 export interface ChromeTabsForTools {
   query: (queryInfo: Record<string, unknown>) => Promise<chrome.tabs.Tab[]>;
-  update: (...args: [number, Record<string, unknown>]) => Promise<chrome.tabs.Tab | undefined>;
+  update: (
+    ...args: [number, Record<string, unknown>]
+  ) => Promise<chrome.tabs.Tab | undefined>;
   remove: (tabId: number) => Promise<void>;
-  captureVisibleTab: (windowId: number, options: Record<string, unknown>) => Promise<string>;
+  captureVisibleTab: (
+    windowId: number,
+    options: Record<string, unknown>
+  ) => Promise<string>;
   goBack: (tabId: number) => Promise<void>;
   goForward: (tabId: number) => Promise<void>;
   get: (tabId: number) => Promise<chrome.tabs.Tab>;
   onUpdated: {
-    addListener: (callback: (tabId: number, changeInfo: { status?: string }, tab: chrome.tabs.Tab) => void) => void;
-    removeListener: (callback: (tabId: number, changeInfo: { status?: string }, tab: chrome.tabs.Tab) => void) => void;
+    addListener: (
+      callback: (
+        tabId: number,
+        changeInfo: { status?: string },
+        tab: chrome.tabs.Tab
+      ) => void
+    ) => void;
+    removeListener: (
+      callback: (
+        tabId: number,
+        changeInfo: { status?: string },
+        tab: chrome.tabs.Tab
+      ) => void
+    ) => void;
   };
 }
 
 /** Minimal chrome.scripting interface for dependency injection */
 export interface ChromeScriptingForTools {
-  executeScript: <Args extends unknown[], Result>(injection: chrome.scripting.ScriptInjection<Args, Result>) => Promise<chrome.scripting.InjectionResult<Awaited<Result>>[]>;
+  executeScript: <Args extends unknown[], Result>(
+    injection: chrome.scripting.ScriptInjection<Args, Result>
+  ) => Promise<chrome.scripting.InjectionResult<Awaited<Result>>[]>;
 }
 
 /** Minimal chrome.windows interface for dependency injection */
 export interface ChromeWindowsForTools {
-  update: (windowId: number, updateInfo: Record<string, unknown>) => Promise<unknown>;
+  update: (
+    windowId: number,
+    updateInfo: Record<string, unknown>
+  ) => Promise<unknown>;
 }
 
 export interface BrowserToolsDeps {
@@ -74,7 +96,12 @@ export interface BrowserToolsAPI {
 
 function textResult(data: unknown): McpToolResult {
   return {
-    content: [{ type: 'text', text: typeof data === 'string' ? data : JSON.stringify(data) }],
+    content: [
+      {
+        type: 'text',
+        text: typeof data === 'string' ? data : JSON.stringify(data),
+      },
+    ],
   };
 }
 
@@ -102,15 +129,25 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   const handlers = new Map<string, ToolHandler>();
 
   /** Wait for a tab to finish loading after navigation */
-  function waitForTabLoad(targetTabId: number, timeoutMs = 30000): Promise<chrome.tabs.Tab> {
+  function waitForTabLoad(
+    targetTabId: number,
+    timeoutMs = 30000
+  ): Promise<chrome.tabs.Tab> {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         tabs.onUpdated.removeListener(listener);
         // On timeout, return whatever state the tab is in rather than failing
-        tabs.get(targetTabId).then(resolve).catch(() => reject(new Error('Navigation timed out')));
+        tabs
+          .get(targetTabId)
+          .then(resolve)
+          .catch(() => reject(new Error('Navigation timed out')));
       }, timeoutMs);
 
-      const listener = (tabId: number, changeInfo: { status?: string }, tab: chrome.tabs.Tab): void => {
+      const listener = (
+        tabId: number,
+        changeInfo: { status?: string },
+        tab: chrome.tabs.Tab
+      ): void => {
         if (tabId === targetTabId && changeInfo.status === 'complete') {
           clearTimeout(timer);
           tabs.onUpdated.removeListener(listener);
@@ -123,7 +160,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   }
 
   // browser_navigate
-  handlers.set('browser_navigate', async (args) => {
+  handlers.set('browser_navigate', async args => {
     const url = args.url as string;
     if (!url) {
       return errorResult('Missing required parameter: url');
@@ -131,11 +168,14 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
     const tabId = await resolveTabId(args.tabId as number | undefined);
     await tabs.update(tabId, { url });
     const completedTab = await waitForTabLoad(tabId);
-    return textResult({ url: completedTab.url ?? url, title: completedTab.title ?? '' });
+    return textResult({
+      url: completedTab.url ?? url,
+      title: completedTab.title ?? '',
+    });
   });
 
   // browser_screenshot
-  handlers.set('browser_screenshot', async (args) => {
+  handlers.set('browser_screenshot', async args => {
     const tabId = await resolveTabId(args.tabId as number | undefined);
     const tab = await tabs.get(tabId);
     const windowId = tab.windowId ?? 0;
@@ -143,14 +183,16 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
     // dataUrl is "data:image/png;base64,..." — extract the base64 portion
     const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
     return {
-      content: [{ type: 'image' as const, data: base64Data, mimeType: 'image/png' }],
+      content: [
+        { type: 'image' as const, data: base64Data, mimeType: 'image/png' },
+      ],
     };
   });
 
   // browser_list_tabs
   handlers.set('browser_list_tabs', async () => {
     const allTabs = await tabs.query({});
-    const tabList = allTabs.map((t) => ({
+    const tabList = allTabs.map(t => ({
       id: t.id,
       url: t.url,
       title: t.title,
@@ -160,7 +202,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   });
 
   // browser_execute_script
-  handlers.set('browser_execute_script', async (args) => {
+  handlers.set('browser_execute_script', async args => {
     const code = args.code as string;
     if (!code) {
       return errorResult('Missing required parameter: code');
@@ -170,16 +212,17 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
       target: { tabId },
       args: [code],
       func: (codeStr: string) => {
-        // eslint-disable-next-line no-eval
         return eval(codeStr);
       },
     });
     const value = results[0]?.result;
-    return textResult(typeof value === 'string' ? value : JSON.stringify(value));
+    return textResult(
+      typeof value === 'string' ? value : JSON.stringify(value)
+    );
   });
 
   // browser_switch_tab
-  handlers.set('browser_switch_tab', async (args) => {
+  handlers.set('browser_switch_tab', async args => {
     const tabId = args.tabId as number;
     if (tabId === undefined) {
       return errorResult('Missing required parameter: tabId');
@@ -198,7 +241,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   });
 
   // browser_close_tab
-  handlers.set('browser_close_tab', async (args) => {
+  handlers.set('browser_close_tab', async args => {
     const tabId = args.tabId as number;
     if (tabId === undefined) {
       return errorResult('Missing required parameter: tabId');
@@ -214,7 +257,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   });
 
   // browser_get_page_content
-  handlers.set('browser_get_page_content', async (args) => {
+  handlers.set('browser_get_page_content', async args => {
     const format = (args.format as string) ?? 'text';
     const tabId = await resolveTabId(args.tabId as number | undefined);
     const results = await scripting.executeScript({
@@ -224,7 +267,10 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
         return {
           title: document.title,
           url: document.URL,
-          content: fmt === 'html' ? document.documentElement.outerHTML : document.body.innerText,
+          content:
+            fmt === 'html'
+              ? document.documentElement.outerHTML
+              : document.body.innerText,
         };
       },
     });
@@ -233,7 +279,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   });
 
   // browser_click_element
-  handlers.set('browser_click_element', async (args) => {
+  handlers.set('browser_click_element', async args => {
     const selector = args.selector as string;
     if (!selector) {
       return errorResult('Missing required parameter: selector');
@@ -259,7 +305,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   });
 
   // browser_fill_form
-  handlers.set('browser_fill_form', async (args) => {
+  handlers.set('browser_fill_form', async args => {
     const selector = args.selector as string;
     const value = args.value as string;
     if (!selector) {
@@ -291,14 +337,14 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   });
 
   // browser_go_back
-  handlers.set('browser_go_back', async (args) => {
+  handlers.set('browser_go_back', async args => {
     const tabId = await resolveTabId(args.tabId as number | undefined);
     await tabs.goBack(tabId);
     return textResult({ navigated: true, direction: 'back' });
   });
 
   // browser_go_forward
-  handlers.set('browser_go_forward', async (args) => {
+  handlers.set('browser_go_forward', async args => {
     const tabId = await resolveTabId(args.tabId as number | undefined);
     await tabs.goForward(tabId);
     return textResult({ navigated: true, direction: 'forward' });
