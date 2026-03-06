@@ -5,8 +5,8 @@
  * Chrome NativeMessagingHosts directory.
  */
 
-import { writeFileSync, mkdirSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { writeFileSync, mkdirSync, chmodSync } from 'fs';
+import { resolve } from 'path';
 import { homedir, platform } from 'os';
 
 const HOST_NAME = 'com.fspec.webmcp';
@@ -15,19 +15,34 @@ const HOST_NAME = 'com.fspec.webmcp';
  * Get the platform-specific directory for Chrome native messaging host manifests.
  * @returns {string}
  */
-function getNativeMessagingHostsDir() {
+/**
+ * Get all platform-specific directories for Chrome native messaging host manifests.
+ * Returns an array — on macOS this includes Chrome, Chrome Beta, and Chrome Canary.
+ * @returns {string[]}
+ */
+function getAllNativeMessagingHostsDirs() {
   const home = homedir();
   const os = platform();
 
   switch (os) {
     case 'darwin':
-      return resolve(home, 'Library', 'Application Support', 'Google', 'Chrome', 'NativeMessagingHosts');
+      return [
+        resolve(home, 'Library', 'Application Support', 'Google', 'Chrome', 'NativeMessagingHosts'),
+        resolve(home, 'Library', 'Application Support', 'Google', 'Chrome Beta', 'NativeMessagingHosts'),
+        resolve(home, 'Library', 'Application Support', 'Google', 'Chrome Canary', 'NativeMessagingHosts'),
+      ];
     case 'linux':
-      return resolve(home, '.config', 'google-chrome', 'NativeMessagingHosts');
+      return [
+        resolve(home, '.config', 'google-chrome', 'NativeMessagingHosts'),
+        resolve(home, '.config', 'google-chrome-beta', 'NativeMessagingHosts'),
+        resolve(home, '.config', 'google-chrome-unstable', 'NativeMessagingHosts'),
+      ];
     case 'win32':
-      // On Windows, the manifest is referenced via registry, but we still write
-      // to a conventional location
-      return resolve(home, 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'NativeMessagingHosts');
+      return [
+        resolve(home, 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'NativeMessagingHosts'),
+        resolve(home, 'AppData', 'Local', 'Google', 'Chrome Beta', 'User Data', 'NativeMessagingHosts'),
+        resolve(home, 'AppData', 'Local', 'Google', 'Chrome SxS', 'User Data', 'NativeMessagingHosts'),
+      ];
     default:
       throw new Error(`Unsupported platform: ${os}`);
   }
@@ -42,7 +57,7 @@ function getNativeMessagingHostsDir() {
  * @param {string} [options.outputDir] - Override output directory (for testing)
  */
 export async function registerNativeHost({ extensionId, hostScriptPath, outputDir }) {
-  const targetDir = outputDir || getNativeMessagingHostsDir();
+  const targetDirs = outputDir ? [outputDir] : getAllNativeMessagingHostsDirs();
 
   const manifest = {
     name: HOST_NAME,
@@ -52,10 +67,24 @@ export async function registerNativeHost({ extensionId, hostScriptPath, outputDi
     allowed_origins: [`chrome-extension://${extensionId}/`],
   };
 
-  mkdirSync(targetDir, { recursive: true });
+  // Ensure the host script is executable (required by Chrome on macOS/Linux)
+  try {
+    chmodSync(hostScriptPath, 0o755);
+  } catch {
+    // Ignore — may fail if the file is on a read-only filesystem
+  }
 
-  const manifestPath = resolve(targetDir, `${HOST_NAME}.json`);
-  writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
+  const manifestPaths = [];
+  for (const targetDir of targetDirs) {
+    try {
+      mkdirSync(targetDir, { recursive: true });
+      const manifestPath = resolve(targetDir, `${HOST_NAME}.json`);
+      writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8');
+      manifestPaths.push(manifestPath);
+    } catch {
+      // Skip directories that can't be written (e.g. Chrome variant not installed)
+    }
+  }
 
-  return { manifestPath, manifest };
+  return { manifestPath: manifestPaths[0], manifestPaths, manifest };
 }
