@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Content Script Entry Point
+ * fspec Browser Agent - Content Script Entry Point
  *
  * Runs in every web page (isolated world). Acts as relay between:
  * - Main-world injected scripts (WebMCP tool discovery/invocation)

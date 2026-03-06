@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Tool Naming Utilities
+ * fspec Browser Agent - Tool Naming Utilities
  *
  * Shared utilities for constructing and parsing WebMCP-namespaced tool names.
  * Format: webmcp__<sanitized-origin>__<toolName>

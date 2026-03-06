@@ -433,7 +433,14 @@
         "EXT-009",
         "EXT-010",
         "EXT-011",
-        "EXT-012"
+        "EXT-012",
+        "LOCATE-002",
+        "LOCATE-003",
+        "LOCATE-004",
+        "LOCATE-005",
+        "LOCATE-006",
+        "LOCATE-007",
+        "LOCATE-008"
       ]
     }
   }

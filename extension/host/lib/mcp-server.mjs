@@ -14,7 +14,7 @@ import { randomUUID } from 'crypto';
 import { encodeNativeMessage, createNativeMessageReader } from './native-messaging.mjs';
 
 const MCP_PROTOCOL_VERSION = '2025-03-26';
-const SERVER_NAME = 'fspec-webmcp';
+const SERVER_NAME = 'fspec-browser-agent';
 const SERVER_VERSION = '0.1.0';
 
 /** Default native browser control tools */

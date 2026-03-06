@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - WebMCP Script Injector
+ * fspec Browser Agent - WebMCP Script Injector
  *
  * Handles injection of the main-world discovery script into web pages
  * using chrome.scripting.executeScript with world: 'MAIN'.

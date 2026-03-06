@@ -491,7 +491,7 @@ A dedicated mobile app for iOS and Android is in development at [github.com/seng
 
 ## WebMCP Chrome Extension
 
-The fspec WebMCP Chrome Extension bridges your browser to AI agents via the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). It exposes browser control tools and discovers [WebMCP](https://developer.chrome.com/blog/webmcp-epp) tools registered by websites—all accessible through a standard MCP connection.
+The fspec Browser Agent Chrome Extension bridges your browser to AI agents via the [Model Context Protocol (MCP)](https://modelcontextprotocol.io). It exposes browser control tools and discovers [WebMCP](https://developer.chrome.com/blog/webmcp-epp) tools registered by websites—all accessible through a standard MCP connection.
 
 ### What It Does
 
@@ -551,7 +551,7 @@ node extension/host/native-host.mjs --register --extension-id <your-extension-id
 
 Replace `<your-extension-id>` with the ID from step 2.
 
-This writes a `com.fspec.webmcp.json` manifest to Chrome's native messaging host directory:
+This writes a `com.fspec.browser.agent.json` manifest to Chrome's native messaging host directory:
 
 | Platform | Manifest Location |
 |----------|-------------------|

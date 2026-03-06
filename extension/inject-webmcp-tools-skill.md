@@ -1,13 +1,13 @@
 # Inject WebMCP Tools — Runtime Tool Registration Skill
 
-Inject custom JavaScript tools into any web page so they become callable MCP tools in this AI session. Tools are registered via Chrome's `navigator.modelContext.registerTool()` API and automatically discovered by the fspec WebMCP extension.
+Inject custom JavaScript tools into any web page so they become callable MCP tools in this AI session. Tools are registered via Chrome's `navigator.modelContext.registerTool()` API and automatically discovered by the fspec Browser Agent extension.
 
 ## Prerequisites
 
-- The fspec WebMCP Chrome Extension must be installed and active
+- The fspec Browser Agent Chrome Extension must be installed and active
 - This session must already be connected to WebMCP (reference `@extension/webmcp-skill.md` first, or call `ConnectMCP(transport: "http", url: "http://localhost:19876/mcp")`)
 - Chrome 146+ with the "WebMCP for testing" flag enabled (`chrome://flags`)
-- "Allow User Scripts" enabled for the extension (`chrome://extensions` → fspec WebMCP Bridge → Details)
+- "Allow User Scripts" enabled for the extension (`chrome://extensions` → fspec Browser Agent → Details)
 
 ## How to Use This Skill
 
@@ -22,7 +22,7 @@ Reference this file with `@` in your prompt to load the skill:
 
 ## How It Works
 
-The fspec WebMCP extension has a **layered discovery system** that watches for tool registrations in every page:
+The fspec Browser Agent extension has a **layered discovery system** that watches for tool registrations in every page:
 
 1. **Extension injects discovery script** into each page's MAIN world via `chrome.scripting.executeScript`
 2. The discovery script **intercepts `navigator.modelContext.registerTool()`** calls

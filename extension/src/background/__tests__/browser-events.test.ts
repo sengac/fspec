@@ -134,7 +134,7 @@ function setupListeners(
   return onNotify;
 }
 
-describe('Feature: WebMCP Chrome Extension - Browser Event Notifications', () => {
+describe('Feature: fspec Browser Agent - Browser Event Notifications', () => {
   describe('Scenario: Receive navigation event when user navigates to new URL', () => {
     it('should fire notifications/browser/navigation with tabId, url, and title', () => {
       // @step Given the agent has an active MCP connection to the extension

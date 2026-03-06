@@ -2,7 +2,7 @@
  * Feature: spec/features/browser-tab-creation.feature
  *
  * This test file validates the acceptance criteria for EXT-011:
- * Add browser_create_tab tool to WebMCP Chrome Extension.
+ * Add browser_create_tab tool to fspec Browser Agent Chrome Extension.
  *
  * Tests the browser_create_tab handler in browser-tools.ts,
  * the ChromeTabsForTools interface, and the MCP server NATIVE_TOOLS array.

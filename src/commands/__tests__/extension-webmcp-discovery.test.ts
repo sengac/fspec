@@ -36,9 +36,15 @@ function createMockConnection(port: ReturnType<typeof createMockNativePort>) {
 
 function createMockTabs() {
   return {
-    sendMessage: vi.fn((_tabId: number, _msg: Record<string, unknown>, callback: (response: unknown) => void) => {
-      callback(undefined);
-    }),
+    sendMessage: vi.fn(
+      (
+        _tabId: number,
+        _msg: Record<string, unknown>,
+        callback: (response: unknown) => void
+      ) => {
+        callback(undefined);
+      }
+    ),
   };
 }
 
@@ -49,7 +55,7 @@ function createMockRuntime() {
   };
 }
 
-describe('Feature: fspec WebMCP Chrome Extension - WebMCP Tool Discovery & Invocation', () => {
+describe('Feature: fspec Browser Agent Chrome Extension - WebMCP Tool Discovery & Invocation', () => {
   let toolRegistry: ToolRegistryAPI;
   let router: MessageRouterAPI;
   let nativePort: ReturnType<typeof createMockNativePort>;
@@ -85,12 +91,19 @@ describe('Feature: fspec WebMCP Chrome Extension - WebMCP Tool Discovery & Invoc
         tool: {
           name: 'searchFlights',
           description: 'Search for flights',
-          inputSchema: { type: 'object', properties: { from: { type: 'string' } } },
+          inputSchema: {
+            type: 'object',
+            properties: { from: { type: 'string' } },
+          },
         },
         origin: pageOrigin,
       };
       const sendResponse = vi.fn();
-      router.handleContentScriptMessage(registrationMessage, senderTabId, sendResponse);
+      router.handleContentScriptMessage(
+        registrationMessage,
+        senderTabId,
+        sendResponse
+      );
 
       // @step Then the main-world injected script detects the tool registration
       // (verified by the tool being in the registry)
@@ -124,7 +137,9 @@ describe('Feature: fspec WebMCP Chrome Extension - WebMCP Tool Discovery & Invoc
         origin: 'example.com',
       };
       router.handleContentScriptMessage(registerMsg, 10, vi.fn());
-      expect(toolRegistry.getByName('webmcp__example.com__oldTool')).toBeDefined();
+      expect(
+        toolRegistry.getByName('webmcp__example.com__oldTool')
+      ).toBeDefined();
       nativePort.postMessage.mockClear();
 
       // @step When the website calls navigator.modelContext.unregisterTool with name "oldTool"
@@ -139,7 +154,9 @@ describe('Feature: fspec WebMCP Chrome Extension - WebMCP Tool Discovery & Invoc
       // (verified by message processing)
 
       // @step And the extension removes "webmcp__example.com__oldTool" from the tool list
-      expect(toolRegistry.getByName('webmcp__example.com__oldTool')).toBeUndefined();
+      expect(
+        toolRegistry.getByName('webmcp__example.com__oldTool')
+      ).toBeUndefined();
 
       // @step And the agent receives a "notifications/tools/list_changed" notification via SSE
       expect(nativePort.postMessage).toHaveBeenCalledWith(
@@ -148,7 +165,9 @@ describe('Feature: fspec WebMCP Chrome Extension - WebMCP Tool Discovery & Invoc
 
       // @step And the agent's next tools/list call no longer includes "webmcp__example.com__oldTool"
       const allTools = toolRegistry.getAll();
-      const found = allTools.find((t) => t.name === 'webmcp__example.com__oldTool');
+      const found = allTools.find(
+        t => t.name === 'webmcp__example.com__oldTool'
+      );
       expect(found).toBeUndefined();
     });
   });
@@ -172,7 +191,9 @@ describe('Feature: fspec WebMCP Chrome Extension - WebMCP Tool Discovery & Invoc
         origin: 'example.com',
       };
       router.handleContentScriptMessage(registerMsg, tabId, vi.fn());
-      const registeredTool = toolRegistry.getByName('webmcp__example.com__submitForm');
+      const registeredTool = toolRegistry.getByName(
+        'webmcp__example.com__submitForm'
+      );
       expect(registeredTool).toBeDefined();
 
       // @step When the agent calls webmcp__example.com__submitForm with params name "John" and email "john@test.com"
@@ -279,8 +300,8 @@ describe('Feature: fspec WebMCP Chrome Extension - WebMCP Tool Discovery & Invoc
       // Verify it was NOT sent as a successful result with "undefined" text
       const calls = nativePort.postMessage.mock.calls;
       const errorCall = calls.find(
-        (c: [Record<string, unknown>]) => c[0].correlationId === 'err-corr-456'
-          && c[0].error !== undefined
+        (c: [Record<string, unknown>]) =>
+          c[0].correlationId === 'err-corr-456' && c[0].error !== undefined
       );
       expect(errorCall).toBeDefined();
     });

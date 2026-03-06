@@ -29,14 +29,18 @@ function dispatchInvokeMessage(data: Record<string, unknown>): void {
   const event = new MessageEvent('message', { data, source: window });
   window.dispatchEvent(event);
 }
-let capturedMessages: Array<{ data: Record<string, unknown>; origin: string }> = [];
+let capturedMessages: Array<{ data: Record<string, unknown>; origin: string }> =
+  [];
 
 /** Store original modelContext so we can clean up */
 let originalModelContext: unknown;
 let originalGuard: unknown;
 
 /** Track listeners so we can remove them between tests */
-let registeredListeners: Array<{ type: string; handler: EventListenerOrEventListenerObject }> = [];
+let registeredListeners: Array<{
+  type: string;
+  handler: EventListenerOrEventListenerObject;
+}> = [];
 const originalAddEventListener = window.addEventListener.bind(window);
 
 function setupWindowCapture(): void {
@@ -44,9 +48,14 @@ function setupWindowCapture(): void {
   registeredListeners = [];
 
   // Capture postMessages for assertion only — do NOT re-dispatch
-  vi.spyOn(window, 'postMessage').mockImplementation((msg: unknown, targetOrigin: string) => {
-    capturedMessages.push({ data: msg as Record<string, unknown>, origin: targetOrigin });
-  });
+  vi.spyOn(window, 'postMessage').mockImplementation(
+    (msg: unknown, targetOrigin: string) => {
+      capturedMessages.push({
+        data: msg as Record<string, unknown>,
+        origin: targetOrigin,
+      });
+    }
+  );
 
   // Track addEventListener calls so we can remove listeners in cleanup
   vi.spyOn(window, 'addEventListener').mockImplementation(
@@ -75,11 +84,12 @@ function cleanupWindow(): void {
   }
 }
 
-describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Function', () => {
+describe('Feature: fspec Browser Agent Chrome Extension — Main-World Discovery Function', () => {
   beforeEach(() => {
     const nav = navigator as Record<string, unknown>;
     originalModelContext = nav.modelContext;
-    originalGuard = (window as Record<string, unknown>).__fspec_webmcp_discovery_active;
+    originalGuard = (window as Record<string, unknown>)
+      .__fspec_webmcp_discovery_active;
     delete (window as Record<string, unknown>).__fspec_webmcp_discovery_active;
     delete nav.modelContext;
     setupWindowCapture();
@@ -100,7 +110,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       nav.modelContext = {};
 
       // @step When a site calls navigator.modelContext.registerTool
-      const mc = nav.modelContext as Record<string, (toolDef: Record<string, unknown>) => unknown>;
+      const mc = nav.modelContext as Record<
+        string,
+        (toolDef: Record<string, unknown>) => unknown
+      >;
       mc.registerTool({
         name: 'searchFlights',
         description: 'Search for flights',
@@ -109,7 +122,9 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       });
 
       // @step Then the discovery script posts FSPEC_WEBMCP_TOOL_REGISTERED
-      const regMsg = capturedMessages.find((m) => m.data.type === 'FSPEC_WEBMCP_TOOL_REGISTERED');
+      const regMsg = capturedMessages.find(
+        m => m.data.type === 'FSPEC_WEBMCP_TOOL_REGISTERED'
+      );
       expect(regMsg).toBeDefined();
       expect(regMsg?.data.tool).toEqual(
         expect.objectContaining({
@@ -126,7 +141,11 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       const nav = navigator as Record<string, unknown>;
       nav.modelContext = {};
       const mc = nav.modelContext as Record<string, (arg: unknown) => unknown>;
-      mc.registerTool({ name: 'myTool', description: 'test', execute: () => 'ok' });
+      mc.registerTool({
+        name: 'myTool',
+        description: 'test',
+        execute: () => 'ok',
+      });
 
       capturedMessages = [];
 
@@ -134,7 +153,9 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       mc.unregisterTool('myTool');
 
       // @step Then the discovery script posts FSPEC_WEBMCP_TOOL_UNREGISTERED
-      const unregMsg = capturedMessages.find((m) => m.data.type === 'FSPEC_WEBMCP_TOOL_UNREGISTERED');
+      const unregMsg = capturedMessages.find(
+        m => m.data.type === 'FSPEC_WEBMCP_TOOL_UNREGISTERED'
+      );
       expect(unregMsg).toBeDefined();
       expect(unregMsg?.data.toolName).toBe('myTool');
     });
@@ -146,13 +167,21 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
 
       // @step When the site sets navigator.modelContext after the fact
       nav.modelContext = {};
-      const mc = nav.modelContext as Record<string, (arg: Record<string, unknown>) => unknown>;
-      mc.registerTool({ name: 'lazyTool', description: 'lazy', execute: () => 'ok' });
+      const mc = nav.modelContext as Record<
+        string,
+        (arg: Record<string, unknown>) => unknown
+      >;
+      mc.registerTool({
+        name: 'lazyTool',
+        description: 'lazy',
+        execute: () => 'ok',
+      });
 
       // @step Then the registration is still captured
       const regMsg = capturedMessages.find(
-        (m) => m.data.type === 'FSPEC_WEBMCP_TOOL_REGISTERED'
-          && (m.data.tool as Record<string, unknown>)?.name === 'lazyTool'
+        m =>
+          m.data.type === 'FSPEC_WEBMCP_TOOL_REGISTERED' &&
+          (m.data.tool as Record<string, unknown>)?.name === 'lazyTool'
       );
       expect(regMsg).toBeDefined();
     });
@@ -161,11 +190,17 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       // @step Given navigator.modelContext already exists with a registerTool
       const originalRegister = vi.fn();
       const nav = navigator as Record<string, unknown>;
-      nav.modelContext = { registerTool: originalRegister, unregisterTool: vi.fn() };
+      nav.modelContext = {
+        registerTool: originalRegister,
+        unregisterTool: vi.fn(),
+      };
 
       // @step When the discovery function runs and a tool is registered
       webmcpDiscoveryFunction();
-      const mc = nav.modelContext as Record<string, (arg: Record<string, unknown>) => unknown>;
+      const mc = nav.modelContext as Record<
+        string,
+        (arg: Record<string, unknown>) => unknown
+      >;
       mc.registerTool({ name: 'wrappedTool', description: 'test' });
 
       // @step Then the original registerTool is also called
@@ -179,7 +214,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       webmcpDiscoveryFunction();
       const nav = navigator as Record<string, unknown>;
       nav.modelContext = {};
-      const mc = nav.modelContext as Record<string, (arg: Record<string, unknown>) => unknown>;
+      const mc = nav.modelContext as Record<
+        string,
+        (arg: Record<string, unknown>) => unknown
+      >;
       mc.registerTool({
         name: 'failTool',
         description: 'always fails',
@@ -200,7 +238,9 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
 
       // @step Then an FSPEC_INVOKE_RESULT with error is posted
       const errMsg = capturedMessages.find(
-        (m) => m.data.type === 'FSPEC_INVOKE_RESULT' && m.data.correlationId === 'err-123'
+        m =>
+          m.data.type === 'FSPEC_INVOKE_RESULT' &&
+          m.data.correlationId === 'err-123'
       );
       expect(errMsg).toBeDefined();
       expect(errMsg?.data.error).toBe('Network timeout');
@@ -212,7 +252,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       webmcpDiscoveryFunction();
       const nav = navigator as Record<string, unknown>;
       nav.modelContext = {};
-      const mc = nav.modelContext as Record<string, (arg: Record<string, unknown>) => unknown>;
+      const mc = nav.modelContext as Record<
+        string,
+        (arg: Record<string, unknown>) => unknown
+      >;
       mc.registerTool({
         name: 'asyncFailTool',
         description: 'async failure',
@@ -230,11 +273,13 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       });
 
       // Wait for the promise rejection to be caught
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 50));
 
       // @step Then an FSPEC_INVOKE_RESULT with error is posted
       const errMsg = capturedMessages.find(
-        (m) => m.data.type === 'FSPEC_INVOKE_RESULT' && m.data.correlationId === 'async-err-456'
+        m =>
+          m.data.type === 'FSPEC_INVOKE_RESULT' &&
+          m.data.correlationId === 'async-err-456'
       );
       expect(errMsg).toBeDefined();
       expect(errMsg?.data.error).toBe('Async timeout');
@@ -258,7 +303,9 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
 
       // @step Then an error result is posted
       const errMsg = capturedMessages.find(
-        (m) => m.data.type === 'FSPEC_INVOKE_RESULT' && m.data.correlationId === 'notfound-789'
+        m =>
+          m.data.type === 'FSPEC_INVOKE_RESULT' &&
+          m.data.correlationId === 'notfound-789'
       );
       expect(errMsg).toBeDefined();
       expect(errMsg?.data.error).toContain('not found');
@@ -271,7 +318,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       webmcpDiscoveryFunction();
       const nav = navigator as Record<string, unknown>;
       nav.modelContext = {};
-      const mc = nav.modelContext as Record<string, (arg: Record<string, unknown>) => unknown>;
+      const mc = nav.modelContext as Record<
+        string,
+        (arg: Record<string, unknown>) => unknown
+      >;
       mc.registerTool({
         name: 'syncTool',
         description: 'sync',
@@ -290,7 +340,9 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
 
       // @step Then the result is relayed back
       const resultMsg = capturedMessages.find(
-        (m) => m.data.type === 'FSPEC_INVOKE_RESULT' && m.data.correlationId === 'sync-001'
+        m =>
+          m.data.type === 'FSPEC_INVOKE_RESULT' &&
+          m.data.correlationId === 'sync-001'
       );
       expect(resultMsg).toBeDefined();
       expect(resultMsg?.data.result).toEqual({ echo: { hello: 'world' } });
@@ -302,7 +354,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
       webmcpDiscoveryFunction();
       const nav = navigator as Record<string, unknown>;
       nav.modelContext = {};
-      const mc = nav.modelContext as Record<string, (arg: Record<string, unknown>) => unknown>;
+      const mc = nav.modelContext as Record<
+        string,
+        (arg: Record<string, unknown>) => unknown
+      >;
       mc.registerTool({
         name: 'asyncTool',
         description: 'async',
@@ -319,11 +374,13 @@ describe('Feature: fspec WebMCP Chrome Extension — Main-World Discovery Functi
         args: {},
       });
 
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 50));
 
       // @step Then the resolved result is relayed back
       const resultMsg = capturedMessages.find(
-        (m) => m.data.type === 'FSPEC_INVOKE_RESULT' && m.data.correlationId === 'async-001'
+        m =>
+          m.data.type === 'FSPEC_INVOKE_RESULT' &&
+          m.data.correlationId === 'async-001'
       );
       expect(resultMsg).toBeDefined();
       expect(resultMsg?.data.result).toEqual({ flights: [{ id: 1 }] });

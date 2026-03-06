@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - MCP Server (Stub)
+ * fspec Browser Agent - MCP Server (Stub)
  *
  * Placeholder for the Streamable HTTP MCP server.
  * The actual server runs in the Native Messaging Host (Node.js process),
@@ -14,4 +14,4 @@
 
 export const MCP_DEFAULT_PORT = 19876;
 export const MCP_ENDPOINT = '/mcp';
-export const NATIVE_MESSAGING_HOST_NAME = 'com.fspec.webmcp';
+export const NATIVE_MESSAGING_HOST_NAME = 'com.fspec.browser.agent';

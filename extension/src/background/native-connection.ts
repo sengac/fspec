@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Native Messaging Connection Manager
+ * fspec Browser Agent - Native Messaging Connection Manager
  *
  * Manages the chrome.runtime.connectNative connection to the native
  * messaging host process. Handles connection, disconnection, and

@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Service Worker
+ * fspec Browser Agent - Service Worker
  *
  * Central event hub for the Chrome extension:
  * - Tool registry management

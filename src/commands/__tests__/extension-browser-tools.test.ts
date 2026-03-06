@@ -33,9 +33,15 @@ interface MockInjectionResult {
 function createMockChromeTabs() {
   return {
     query: vi.fn<(query: Record<string, unknown>) => Promise<MockTab[]>>(),
-    update: vi.fn<(tabId: number, props: Record<string, unknown>) => Promise<MockTab>>(),
+    update:
+      vi.fn<
+        (tabId: number, props: Record<string, unknown>) => Promise<MockTab>
+      >(),
     remove: vi.fn<(tabId: number) => Promise<void>>(),
-    captureVisibleTab: vi.fn<(windowId: number, opts: Record<string, unknown>) => Promise<string>>(),
+    captureVisibleTab:
+      vi.fn<
+        (windowId: number, opts: Record<string, unknown>) => Promise<string>
+      >(),
     goBack: vi.fn<(tabId: number) => Promise<void>>(),
     goForward: vi.fn<(tabId: number) => Promise<void>>(),
     get: vi.fn<(tabId: number) => Promise<MockTab>>(),
@@ -49,13 +55,19 @@ function createMockChromeTabs() {
 
 function createMockChromeScripting() {
   return {
-    executeScript: vi.fn<(injection: Record<string, unknown>) => Promise<MockInjectionResult[]>>(),
+    executeScript:
+      vi.fn<
+        (injection: Record<string, unknown>) => Promise<MockInjectionResult[]>
+      >(),
   };
 }
 
 function createMockChromeWindows() {
   return {
-    update: vi.fn<(windowId: number, props: Record<string, unknown>) => Promise<void>>(),
+    update:
+      vi.fn<
+        (windowId: number, props: Record<string, unknown>) => Promise<void>
+      >(),
   };
 }
 
@@ -100,7 +112,7 @@ const activeTab: MockTab = {
   windowId: 1,
 };
 
-describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Control Tools', () => {
+describe('Feature: fspec Browser Agent Chrome Extension — EXT-005 Native Browser Control Tools', () => {
   let mockTabs: ReturnType<typeof createMockChromeTabs>;
   let mockScripting: ReturnType<typeof createMockChromeScripting>;
   let mockWindows: ReturnType<typeof createMockChromeWindows>;
@@ -112,7 +124,7 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
     mockScripting = createMockChromeScripting();
     mockWindows = createMockChromeWindows();
     mockRuntime = createMockChromeRuntime();
-    mockPort = createMockPort('com.fspec.webmcp');
+    mockPort = createMockPort('com.fspec.browser.agent');
     mockRuntime.connectNative.mockReturnValue(mockPort);
 
     // Default: active tab query returns our activeTab
@@ -150,12 +162,20 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
 
       // Mock onUpdated: when addListener is called, immediately fire the callback
       // simulating the tab completing its load
-      mockTabs.onUpdated.addListener.mockImplementation((callback: (tabId: number, changeInfo: { status?: string }, tab: MockTab) => void) => {
-        // Simulate async load completion
-        setTimeout(() => {
-          callback(1, { status: 'complete' }, navigatedTab);
-        }, 5);
-      });
+      mockTabs.onUpdated.addListener.mockImplementation(
+        (
+          callback: (
+            tabId: number,
+            changeInfo: { status?: string },
+            tab: MockTab
+          ) => void
+        ) => {
+          // Simulate async load completion
+          setTimeout(() => {
+            callback(1, { status: 'complete' }, navigatedTab);
+          }, 5);
+        }
+      );
 
       const handler = browserTools.getHandler('browser_navigate');
       expect(handler).toBeDefined();
@@ -192,11 +212,19 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       });
 
       // @step And tab 123 is displaying a web page
-      const tab123: MockTab = { id: 123, url: 'https://page.com', title: 'Page', active: true, windowId: 1 };
+      const tab123: MockTab = {
+        id: 123,
+        url: 'https://page.com',
+        title: 'Page',
+        active: true,
+        windowId: 1,
+      };
       mockTabs.get.mockResolvedValue(tab123);
 
       // @step When the agent calls mcp__ext__browser_screenshot with tabId 123 and fullPage true
-      mockTabs.captureVisibleTab.mockResolvedValue('data:image/png;base64,iVBORFAKEDATA');
+      mockTabs.captureVisibleTab.mockResolvedValue(
+        'data:image/png;base64,iVBORFAKEDATA'
+      );
       const handler = browserTools.getHandler('browser_screenshot');
       expect(handler).toBeDefined();
       const result = await handler!({ tabId: 123, fullPage: true });
@@ -230,8 +258,20 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
 
       // @step And the browser has multiple tabs open
       const multipleTabs: MockTab[] = [
-        { id: 1, url: 'https://example.com', title: 'Example', active: true, windowId: 1 },
-        { id: 2, url: 'about:blank', title: 'New Tab', active: false, windowId: 1 },
+        {
+          id: 1,
+          url: 'https://example.com',
+          title: 'Example',
+          active: true,
+          windowId: 1,
+        },
+        {
+          id: 2,
+          url: 'about:blank',
+          title: 'New Tab',
+          active: false,
+          windowId: 1,
+        },
       ];
       mockTabs.query.mockResolvedValue(multipleTabs);
 
@@ -243,14 +283,32 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       // @step Then the tool returns a list of all open tabs with their IDs, URLs, and titles
       const parsed = JSON.parse(result.content[0].text);
       expect(parsed).toHaveLength(2);
-      expect(parsed[0]).toEqual(expect.objectContaining({ id: 1, url: 'https://example.com', title: 'Example', active: true }));
-      expect(parsed[1]).toEqual(expect.objectContaining({ id: 2, url: 'about:blank', title: 'New Tab', active: false }));
+      expect(parsed[0]).toEqual(
+        expect.objectContaining({
+          id: 1,
+          url: 'https://example.com',
+          title: 'Example',
+          active: true,
+        })
+      );
+      expect(parsed[1]).toEqual(
+        expect.objectContaining({
+          id: 2,
+          url: 'about:blank',
+          title: 'New Tab',
+          active: false,
+        })
+      );
     });
   });
 
   describe('Scenario: Execute JavaScript in a browser tab', () => {
     it('should execute the script and return the result', async () => {
       // @step Given the agent has an active MCP connection to the extension
+      const mockUserScripts = {
+        configureWorld: vi.fn().mockResolvedValue(undefined),
+        execute: vi.fn().mockResolvedValue([{ result: 'My Page Title' }]),
+      };
       const { createBrowserTools } = await import(
         /* @vite-ignore */ '../../../extension/src/background/browser-tools'
       );
@@ -258,18 +316,19 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
         tabs: mockTabs,
         scripting: mockScripting,
         windows: mockWindows,
+        userScripts: mockUserScripts,
       });
 
       // @step When the agent calls mcp__ext__browser_execute_script with code "document.title"
-      mockScripting.executeScript.mockResolvedValue([{ result: 'My Page Title' }]);
       const handler = browserTools.getHandler('browser_execute_script');
       expect(handler).toBeDefined();
       const result = await handler!({ code: 'document.title' });
 
-      // @step Then the extension executes the script in the active tab
-      expect(mockScripting.executeScript).toHaveBeenCalledWith(
+      // @step Then the extension executes the script in the active tab via userScripts API
+      expect(mockUserScripts.execute).toHaveBeenCalledWith(
         expect.objectContaining({
           target: expect.objectContaining({ tabId: expect.any(Number) }),
+          world: 'USER_SCRIPT',
         })
       );
 
@@ -291,7 +350,13 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       });
 
       // @step And tab 42 exists in the browser
-      const tab42: MockTab = { id: 42, url: 'https://tab42.com', title: 'Tab 42', active: false, windowId: 2 };
+      const tab42: MockTab = {
+        id: 42,
+        url: 'https://tab42.com',
+        title: 'Tab 42',
+        active: false,
+        windowId: 2,
+      };
       mockTabs.update.mockResolvedValue({ ...tab42, active: true });
       mockTabs.get.mockResolvedValue(tab42);
 
@@ -302,7 +367,9 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
 
       // @step Then the extension activates tab 42 and focuses its window
       expect(mockTabs.update).toHaveBeenCalledWith(42, { active: true });
-      expect(mockWindows.update).toHaveBeenCalledWith(tab42.windowId, { focused: true });
+      expect(mockWindows.update).toHaveBeenCalledWith(tab42.windowId, {
+        focused: true,
+      });
 
       // @step And the tool returns confirmation with the tab info
       const parsed = JSON.parse(result.content[0].text);
@@ -323,7 +390,13 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       });
 
       // @step And tab 42 is open with url "https://example.com"
-      const tab42: MockTab = { id: 42, url: 'https://example.com', title: 'Example', active: false, windowId: 1 };
+      const tab42: MockTab = {
+        id: 42,
+        url: 'https://example.com',
+        title: 'Example',
+        active: false,
+        windowId: 1,
+      };
       mockTabs.get.mockResolvedValue(tab42);
       mockTabs.remove.mockResolvedValue(undefined);
 
@@ -337,7 +410,13 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
 
       // @step And the tool returns confirmation with the closed tab's URL
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed).toEqual(expect.objectContaining({ closed: true, tabId: 42, url: 'https://example.com' }));
+      expect(parsed).toEqual(
+        expect.objectContaining({
+          closed: true,
+          tabId: 42,
+          url: 'https://example.com',
+        })
+      );
     });
   });
 
@@ -357,13 +436,15 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       // (default mock active tab is set up in beforeEach)
 
       // @step When the agent calls mcp__ext__browser_get_page_content with format "text"
-      mockScripting.executeScript.mockResolvedValue([{
-        result: {
-          title: 'Current Page',
-          url: 'https://current-page.com',
-          content: 'This is the page text content',
+      mockScripting.executeScript.mockResolvedValue([
+        {
+          result: {
+            title: 'Current Page',
+            url: 'https://current-page.com',
+            content: 'This is the page text content',
+          },
         },
-      }]);
+      ]);
       const handler = browserTools.getHandler('browser_get_page_content');
       expect(handler).toBeDefined();
       const result = await handler!({ format: 'text' });
@@ -392,13 +473,15 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       // (default mock active tab is set up in beforeEach)
 
       // @step When the agent calls mcp__ext__browser_get_page_content with format "html"
-      mockScripting.executeScript.mockResolvedValue([{
-        result: {
-          title: 'Current Page',
-          url: 'https://current-page.com',
-          content: '<html><body>Hello</body></html>',
+      mockScripting.executeScript.mockResolvedValue([
+        {
+          result: {
+            title: 'Current Page',
+            url: 'https://current-page.com',
+            content: '<html><body>Hello</body></html>',
+          },
         },
-      }]);
+      ]);
       const handler = browserTools.getHandler('browser_get_page_content');
       expect(handler).toBeDefined();
       const result = await handler!({ format: 'html' });
@@ -424,9 +507,11 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       });
 
       // @step And the active tab contains an element matching selector "#submit-btn"
-      mockScripting.executeScript.mockResolvedValue([{
-        result: { clicked: true, selector: '#submit-btn' },
-      }]);
+      mockScripting.executeScript.mockResolvedValue([
+        {
+          result: { clicked: true, selector: '#submit-btn' },
+        },
+      ]);
 
       // @step When the agent calls mcp__ext__browser_click_element with selector "#submit-btn"
       const handler = browserTools.getHandler('browser_click_element');
@@ -438,7 +523,9 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
 
       // @step And the tool returns confirmation that the element was clicked
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed).toEqual(expect.objectContaining({ clicked: true, selector: '#submit-btn' }));
+      expect(parsed).toEqual(
+        expect.objectContaining({ clicked: true, selector: '#submit-btn' })
+      );
     });
   });
 
@@ -455,9 +542,11 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       });
 
       // @step And the active tab does not contain an element matching selector "#nonexistent"
-      mockScripting.executeScript.mockResolvedValue([{
-        result: { error: 'Element not found: #nonexistent' },
-      }]);
+      mockScripting.executeScript.mockResolvedValue([
+        {
+          result: { error: 'Element not found: #nonexistent' },
+        },
+      ]);
 
       // @step When the agent calls mcp__ext__browser_click_element with selector "#nonexistent"
       const handler = browserTools.getHandler('browser_click_element');
@@ -484,25 +573,36 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       });
 
       // @step And the active tab contains an input element matching selector "#email"
-      mockScripting.executeScript.mockResolvedValue([{
-        result: { filled: true, selector: '#email', value: 'test@example.com' },
-      }]);
+      mockScripting.executeScript.mockResolvedValue([
+        {
+          result: {
+            filled: true,
+            selector: '#email',
+            value: 'test@example.com',
+          },
+        },
+      ]);
 
       // @step When the agent calls mcp__ext__browser_fill_form with selector "#email" and value "test@example.com"
       const handler = browserTools.getHandler('browser_fill_form');
       expect(handler).toBeDefined();
-      const result = await handler!({ selector: '#email', value: 'test@example.com' });
+      const result = await handler!({
+        selector: '#email',
+        value: 'test@example.com',
+      });
 
       // @step Then the extension sets the input value and dispatches input and change events
       expect(mockScripting.executeScript).toHaveBeenCalled();
 
       // @step And the tool returns confirmation with the selector and value
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed).toEqual(expect.objectContaining({
-        filled: true,
-        selector: '#email',
-        value: 'test@example.com',
-      }));
+      expect(parsed).toEqual(
+        expect.objectContaining({
+          filled: true,
+          selector: '#email',
+          value: 'test@example.com',
+        })
+      );
     });
   });
 
@@ -529,7 +629,9 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
 
       // @step And the tool returns confirmation of the navigation direction
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed).toEqual(expect.objectContaining({ navigated: true, direction: 'back' }));
+      expect(parsed).toEqual(
+        expect.objectContaining({ navigated: true, direction: 'back' })
+      );
     });
   });
 
@@ -556,7 +658,9 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
 
       // @step And the tool returns confirmation of the navigation direction
       const parsed = JSON.parse(result.content[0].text);
-      expect(parsed).toEqual(expect.objectContaining({ navigated: true, direction: 'forward' }));
+      expect(parsed).toEqual(
+        expect.objectContaining({ navigated: true, direction: 'forward' })
+      );
     });
   });
 
@@ -577,7 +681,7 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       // @step When the agent calls tools/list
       const allToolNames = browserTools.getToolNames();
 
-      // @step Then the response includes all 11 native browser control tools
+      // @step Then the response includes all 12 native browser control tools
       const expectedTools = [
         'browser_navigate',
         'browser_screenshot',
@@ -590,37 +694,54 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
         'browser_fill_form',
         'browser_go_back',
         'browser_go_forward',
+        'browser_create_tab',
       ];
       for (const toolName of expectedTools) {
         expect(allToolNames).toContain(toolName);
       }
-      expect(allToolNames).toHaveLength(11);
+      expect(allToolNames).toHaveLength(12);
 
       // @step And each tool has a name, description, and inputSchema
       // Validate the NATIVE_TOOLS array from mcp-server matches handlers
       const { readFileSync } = await import('fs');
       const { join } = await import('path');
-      const mcpServerPath = join(process.cwd(), 'extension/host/lib/mcp-server.mjs');
+      const mcpServerPath = join(
+        process.cwd(),
+        'extension/host/lib/mcp-server.mjs'
+      );
       const mcpSource = readFileSync(mcpServerPath, 'utf-8');
 
       // Verify every handler has a corresponding NATIVE_TOOLS entry
       for (const toolName of expectedTools) {
         const handler = browserTools.getHandler(toolName);
         expect(handler, `Handler missing for ${toolName}`).toBeDefined();
-        expect(mcpSource, `NATIVE_TOOLS missing entry for ${toolName}`).toContain(`name: '${toolName}'`);
+        expect(
+          mcpSource,
+          `NATIVE_TOOLS missing entry for ${toolName}`
+        ).toContain(`name: '${toolName}'`);
       }
 
       // Verify NATIVE_TOOLS entries have description and inputSchema
       for (const toolName of expectedTools) {
         // Find the tool block in the source (between its name and the next tool or closing bracket)
         const nameIndex = mcpSource.indexOf(`name: '${toolName}'`);
-        expect(nameIndex, `Could not find ${toolName} in NATIVE_TOOLS`).toBeGreaterThan(-1);
+        expect(
+          nameIndex,
+          `Could not find ${toolName} in NATIVE_TOOLS`
+        ).toBeGreaterThan(-1);
 
         // Look for 'description:' and 'inputSchema:' after the name
         const blockEnd = mcpSource.indexOf('},\n  {', nameIndex);
-        const toolBlock = mcpSource.substring(nameIndex, blockEnd > -1 ? blockEnd : nameIndex + 500);
-        expect(toolBlock, `${toolName} missing description`).toContain('description:');
-        expect(toolBlock, `${toolName} missing inputSchema`).toContain('inputSchema:');
+        const toolBlock = mcpSource.substring(
+          nameIndex,
+          blockEnd > -1 ? blockEnd : nameIndex + 500
+        );
+        expect(toolBlock, `${toolName} missing description`).toContain(
+          'description:'
+        );
+        expect(toolBlock, `${toolName} missing inputSchema`).toContain(
+          'inputSchema:'
+        );
       }
     });
   });
@@ -641,7 +762,9 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
         /* @vite-ignore */ '../../../extension/src/background/browser-tools'
       );
 
-      const connection: NativeConnectionAPI = createNativeConnection({ runtime: mockRuntime });
+      const connection: NativeConnectionAPI = createNativeConnection({
+        runtime: mockRuntime,
+      });
       const toolRegistry: ToolRegistryAPI = createToolRegistry();
       const browserTools = createBrowserTools({
         tabs: mockTabs,
@@ -667,7 +790,7 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-005 Native Browser Cont
       });
 
       // Wait for async handler
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise(resolve => setTimeout(resolve, 50));
 
       // Should NOT return error — should return the tool result
       expect(mockPort.postMessage).toHaveBeenCalledWith(

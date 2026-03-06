@@ -1,5 +1,5 @@
 @EXT-001
-Feature: fspec WebMCP Chrome Extension
+Feature: fspec Browser Agent Chrome Extension
 
   """
   Service worker runs a Streamable HTTP MCP server using offscreen document or chrome.sockets API for TCP listening. Alternatives: use chrome.offscreen to create a hidden page that runs the HTTP server, or use a tiny Node.js bridge process spawned alongside
@@ -46,7 +46,7 @@ Feature: fspec WebMCP Chrome Extension
 
   @connection @EXT-003
   Scenario: Connect to extension and discover available tools
-    Given the fspec WebMCP Chrome extension is installed and running
+    Given the fspec Browser Agent Chrome extension is installed and running
     And the native messaging host is listening on port 19876
     When the agent calls ConnectMCP with transport "http" and url "http://localhost:19876/mcp"
     Then the extension responds with a successful MCP initialize handshake
@@ -90,8 +90,8 @@ Feature: fspec WebMCP Chrome Extension
   Scenario: Register native messaging host with Chrome
     Given the native messaging host script exists at extension/host/native-host.js
     When the user runs the host with "--register" flag and "--extension-id" with a valid Chrome extension ID
-    Then the host writes a com.fspec.webmcp.json manifest to the platform-specific Chrome NativeMessagingHosts directory
-    And the manifest contains the correct host name "com.fspec.webmcp"
+    Then the host writes a com.fspec.browser.agent.json manifest to the platform-specific Chrome NativeMessagingHosts directory
+    And the manifest contains the correct host name "com.fspec.browser.agent"
     And the manifest contains the absolute path to the host script
     And the manifest contains the extension ID in allowed_origins
 
@@ -114,15 +114,15 @@ Feature: fspec WebMCP Chrome Extension
 
   @messaging @EXT-004
   Scenario: Service worker connects to native messaging host on startup
-    Given the fspec WebMCP Chrome extension is installed
+    Given the fspec Browser Agent Chrome extension is installed
     When the service worker activates
-    Then the service worker calls chrome.runtime.connectNative with host name "com.fspec.webmcp"
+    Then the service worker calls chrome.runtime.connectNative with host name "com.fspec.browser.agent"
     And a native messaging port is established for bidirectional communication
     And the service worker logs the connection status
 
   @messaging @EXT-004
   Scenario: Service worker relays tool calls between native host and content scripts
-    Given the fspec WebMCP Chrome extension is installed and running
+    Given the fspec Browser Agent Chrome extension is installed and running
     And the service worker has an active native messaging connection to the host
     When the native host sends a tool call message with a correlation ID
     Then the service worker routes the call to the appropriate handler
@@ -335,7 +335,7 @@ Feature: fspec WebMCP Chrome Extension
 
   @popup @EXT-008
   Scenario: Popup displays connection status and available tools
-    Given the fspec WebMCP Chrome extension is installed
+    Given the fspec Browser Agent Chrome extension is installed
     When the user opens the extension popup
     Then the popup shows the server status as "listening" or "stopped"
     And the popup shows the configured port number

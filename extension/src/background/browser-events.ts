@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Browser Event Listeners
+ * fspec Browser Agent - Browser Event Listeners
  *
  * Captures Chrome browser events (tab navigation, creation, removal,
  * load completion) and forwards them as MCP notifications via the

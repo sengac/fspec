@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * fspec WebMCP Native Messaging Host
+ * fspec Browser Agent - Native Messaging Host
  *
  * Entry point for the Chrome native messaging host.
- * Chrome launches this script via chrome.runtime.connectNative('com.fspec.webmcp').
+ * Chrome launches this script via chrome.runtime.connectNative('com.fspec.browser.agent').
  *
  * Responsibilities:
  * - Run a Streamable HTTP MCP server on port 19876 (configurable)
@@ -51,7 +51,7 @@ async function main() {
       process.exit(1);
     }
 
-    const hostScriptPath = resolve(__dirname, 'native-host.mjs');
+    const hostScriptPath = resolve(__dirname, 'native-host-wrapper.sh');
     const { manifestPath } = await registerNativeHost({
       extensionId: args.extensionId,
       hostScriptPath,
@@ -69,7 +69,7 @@ async function main() {
   });
 
   const actualPort = await server.start();
-  process.stderr.write(`fspec WebMCP native host listening on port ${actualPort}\n`);
+  process.stderr.write(`fspec Browser Agent native host listening on port ${actualPort}\n`);
 
   // Handle graceful shutdown
   process.on('SIGINT', async () => {

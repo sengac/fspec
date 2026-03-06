@@ -1,7 +1,7 @@
 {
-  "name": "fspec-webmcp-extension",
+  "name": "fspec-browser-agent",
   "version": "0.1.0",
-  "description": "fspec WebMCP Chrome Extension - Bridge WebMCP tools to MCP for AI agent interaction",
+  "description": "fspec Browser Agent - Chrome extension for AI agent browser control and WebMCP tool discovery",
   "private": true,
   "type": "module",
   "scripts": {

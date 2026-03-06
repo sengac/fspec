@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Native Browser Control Tools
+ * fspec Browser Agent - Native Browser Control Tools
  *
  * Implements the 12 native browser control tool handlers:
  * - browser_navigate, browser_screenshot, browser_list_tabs,
@@ -294,7 +294,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
       return errorResult(
         'browser_execute_script requires the chrome.userScripts API. ' +
           'Please enable "Allow User Scripts" in the extension settings ' +
-          '(chrome://extensions → fspec WebMCP Bridge → Details → Allow User Scripts).'
+          '(chrome://extensions → fspec Browser Agent → Details → Allow User Scripts).'
       );
     }
     const tabId = await resolveTabId(args.tabId as number | undefined);

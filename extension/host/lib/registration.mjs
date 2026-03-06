@@ -1,7 +1,7 @@
 /**
  * Registration utility for Chrome Native Messaging Host
  *
- * Writes the com.fspec.webmcp.json manifest to the platform-specific
+ * Writes the com.fspec.browser.agent.json manifest to the platform-specific
  * Chrome NativeMessagingHosts directory.
  */
 
@@ -9,7 +9,7 @@ import { writeFileSync, mkdirSync, chmodSync } from 'fs';
 import { resolve } from 'path';
 import { homedir, platform } from 'os';
 
-const HOST_NAME = 'com.fspec.webmcp';
+const HOST_NAME = 'com.fspec.browser.agent';
 
 /**
  * Get the platform-specific directory for Chrome native messaging host manifests.
@@ -61,7 +61,7 @@ export async function registerNativeHost({ extensionId, hostScriptPath, outputDi
 
   const manifest = {
     name: HOST_NAME,
-    description: 'fspec WebMCP native messaging host - bridges Chrome extension to MCP',
+    description: 'fspec Browser Agent native messaging host - bridges Chrome extension to MCP',
     path: hostScriptPath,
     type: 'stdio',
     allowed_origins: [`chrome-extension://${extensionId}/`],

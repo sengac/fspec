@@ -6,13 +6,14 @@
  * Scenarios map directly to Gherkin scenarios tagged @EXT-002.
  */
 
+import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
 const PROJECT_ROOT = resolve(import.meta.dirname, '..', '..', '..');
 const EXTENSION_DIR = resolve(PROJECT_ROOT, 'extension');
 
-describe('Feature: fspec WebMCP Chrome Extension', () => {
+describe('Feature: fspec Browser Agent Chrome Extension', () => {
   describe('Scenario: Extension source code lives in extension directory', () => {
     it('should have a properly structured extension directory with manifest and build system', () => {
       // @step Given the fspec repository is cloned
@@ -83,7 +84,9 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
         readFileSync(resolve(EXTENSION_DIR, 'manifest.json'), 'utf-8')
       );
       expect(manifest.background.service_worker).toBe('dist/service-worker.js');
-      expect(manifest.content_scripts[0].js).toContain('dist/content-script.js');
+      expect(manifest.content_scripts[0].js).toContain(
+        'dist/content-script.js'
+      );
 
       // @step And the manifest.json includes required permissions for activeTab, tabs, scripting, storage, offscreen, and nativeMessaging
       const requiredPermissions = [

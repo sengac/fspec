@@ -11,16 +11,24 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { ContentRelayAPI, WindowLike, ContentRuntimeLike } from '../../../extension/src/content/relay';
+import type {
+  ContentRelayAPI,
+  WindowLike,
+  ContentRuntimeLike,
+} from '../../../extension/src/content/relay';
 
-function createMockWindow(): WindowLike & { simulateMessage: (data: unknown) => void } {
+function createMockWindow(): WindowLike & {
+  simulateMessage: (data: unknown) => void;
+} {
   let messageHandler: ((event: MessageEvent) => void) | null = null;
   const win: WindowLike & { simulateMessage: (data: unknown) => void } = {
-    addEventListener: vi.fn((type: string, handler: (event: MessageEvent) => void) => {
-      if (type === 'message') {
-        messageHandler = handler;
+    addEventListener: vi.fn(
+      (type: string, handler: (event: MessageEvent) => void) => {
+        if (type === 'message') {
+          messageHandler = handler;
+        }
       }
-    }),
+    ),
     postMessage: vi.fn(),
     simulateMessage(data: unknown): void {
       if (messageHandler) {
@@ -32,7 +40,9 @@ function createMockWindow(): WindowLike & { simulateMessage: (data: unknown) => 
   return win;
 }
 
-function createMockRuntime(): ContentRuntimeLike & { simulateMessage: (message: { type?: string }) => void } {
+function createMockRuntime(): ContentRuntimeLike & {
+  simulateMessage: (message: { type?: string }) => void;
+} {
   let runtimeHandler:
     | ((
         message: { type?: string },
@@ -63,7 +73,7 @@ function createMockRuntime(): ContentRuntimeLike & { simulateMessage: (message: 
   };
 }
 
-describe('Feature: fspec WebMCP Chrome Extension — Content Script Relay', () => {
+describe('Feature: fspec Browser Agent Chrome Extension — Content Script Relay', () => {
   let mockWindow: ReturnType<typeof createMockWindow>;
   let mockRuntime: ReturnType<typeof createMockRuntime>;
   let relay: ContentRelayAPI;
@@ -91,7 +101,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Content Script Relay', () =
         type: 'FSPEC_WEBMCP_TOOL_REGISTERED',
         tool: { name: 'searchFlights', description: 'Search flights' },
       };
-      const forwarded = relay.handleWindowMessage({ source: mockWindow, data: toolMessage });
+      const forwarded = relay.handleWindowMessage({
+        source: mockWindow,
+        data: toolMessage,
+      });
 
       // @step Then the content script forwards the message to the service worker via chrome.runtime.sendMessage
       expect(forwarded).toBe(true);
@@ -112,7 +125,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Content Script Relay', () =
         type: 'FSPEC_WEBMCP_TOOL_UNREGISTERED',
         toolName: 'searchFlights',
       };
-      const forwarded = relay.handleWindowMessage({ source: mockWindow, data: unregMessage });
+      const forwarded = relay.handleWindowMessage({
+        source: mockWindow,
+        data: unregMessage,
+      });
 
       expect(forwarded).toBe(true);
       expect(mockRuntime.sendMessage).toHaveBeenCalledWith(unregMessage);
@@ -123,14 +139,20 @@ describe('Feature: fspec WebMCP Chrome Extension — Content Script Relay', () =
         type: 'FSPEC_WEBMCP_TOOL_REGISTERED',
         tool: { name: 'hack', description: 'Injected' },
       };
-      const forwarded = relay.handleWindowMessage({ source: {}, data: toolMessage });
+      const forwarded = relay.handleWindowMessage({
+        source: {},
+        data: toolMessage,
+      });
 
       expect(forwarded).toBe(false);
       expect(mockRuntime.sendMessage).not.toHaveBeenCalled();
     });
 
     it('should ignore messages without a type', () => {
-      const forwarded = relay.handleWindowMessage({ source: mockWindow, data: { foo: 'bar' } });
+      const forwarded = relay.handleWindowMessage({
+        source: mockWindow,
+        data: { foo: 'bar' },
+      });
 
       expect(forwarded).toBe(false);
       expect(mockRuntime.sendMessage).not.toHaveBeenCalled();
@@ -158,7 +180,10 @@ describe('Feature: fspec WebMCP Chrome Extension — Content Script Relay', () =
         correlationId: 'xyz-789',
         result: { flights: [{ airline: 'BA', price: 150 }] },
       };
-      const forwarded = relay.handleWindowMessage({ source: mockWindow, data: resultMessage });
+      const forwarded = relay.handleWindowMessage({
+        source: mockWindow,
+        data: resultMessage,
+      });
 
       expect(forwarded).toBe(true);
       expect(mockRuntime.sendMessage).toHaveBeenCalledWith(resultMessage);
@@ -209,11 +234,16 @@ describe('Feature: fspec WebMCP Chrome Extension — Content Script Relay', () =
 
   describe('Content script wires up event listeners on creation', () => {
     it('should register a window message listener', () => {
-      expect(mockWindow.addEventListener).toHaveBeenCalledWith('message', expect.any(Function));
+      expect(mockWindow.addEventListener).toHaveBeenCalledWith(
+        'message',
+        expect.any(Function)
+      );
     });
 
     it('should register a chrome.runtime.onMessage listener', () => {
-      expect(mockRuntime.onMessage.addListener).toHaveBeenCalledWith(expect.any(Function));
+      expect(mockRuntime.onMessage.addListener).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
     });
 
     it('should relay messages received via the wired-up window listener', () => {

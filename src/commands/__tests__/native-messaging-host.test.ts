@@ -185,7 +185,7 @@ async function startTestServer(
   return { port, stop: () => server.stop() };
 }
 
-describe('Feature: fspec WebMCP Chrome Extension', () => {
+describe('Feature: fspec Browser Agent Chrome Extension', () => {
   describe('Scenario: Connect to extension and discover available tools', () => {
     it('should respond to MCP initialize with server info, capabilities, and session ID', async () => {
       // @step Given the fspec WebMCP Chrome extension is installed and running
@@ -604,13 +604,13 @@ describe('Feature: fspec WebMCP Chrome Extension', () => {
           outputDir: testDir, // Override for testing
         });
 
-        // @step Then the host writes a com.fspec.webmcp.json manifest to the platform-specific Chrome NativeMessagingHosts directory
-        const manifestPath = resolve(testDir, 'com.fspec.webmcp.json');
+        // @step Then the host writes a com.fspec.browser.agent.json manifest to the platform-specific Chrome NativeMessagingHosts directory
+        const manifestPath = resolve(testDir, 'com.fspec.browser.agent.json');
         expect(existsSync(manifestPath)).toBe(true);
         const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
 
-        // @step And the manifest contains the correct host name "com.fspec.webmcp"
-        expect(manifest.name).toBe('com.fspec.webmcp');
+        // @step And the manifest contains the correct host name "com.fspec.browser.agent"
+        expect(manifest.name).toBe('com.fspec.browser.agent');
 
         // @step And the manifest contains the absolute path to the host script
         expect(manifest.path).toBeDefined();

@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Content Script Relay
+ * fspec Browser Agent - Content Script Relay
  *
  * Extracts the bidirectional relay logic into a testable factory.
  * The relay bridges:

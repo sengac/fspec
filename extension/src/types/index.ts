@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Shared Type Definitions
+ * fspec Browser Agent - Shared Type Definitions
  *
  * Types shared across all extension components:
  * - Service worker

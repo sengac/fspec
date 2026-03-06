@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Popup Script
+ * fspec Browser Agent - Popup Script
  *
  * Controls the extension popup UI showing:
  * - Server status (listening/stopped)

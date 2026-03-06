@@ -48,6 +48,21 @@ export default [
     },
   },
   {
+    files: ['src/commands/__tests__/extension-*.test.ts', 'src/__tests__/extension-*.test.ts'],
+    languageOptions: {
+      globals: {
+        window: 'readonly',
+        navigator: 'readonly',
+        document: 'readonly',
+        MessageEvent: 'readonly',
+        EventListenerOrEventListenerObject: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        Event: 'readonly',
+      },
+    },
+  },
+  {
     files: ['extension/**/*.ts'],
     languageOptions: {
       parser: typescriptParser,

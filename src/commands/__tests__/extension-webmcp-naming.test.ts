@@ -6,7 +6,10 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { buildWebmcpToolName, parseWebmcpToolName } from '../../../extension/src/background/webmcp-naming';
+import {
+  buildWebmcpToolName,
+  parseWebmcpToolName,
+} from '../../../extension/src/background/webmcp-naming';
 
 describe('WebMCP Tool Naming Utilities', () => {
   describe('buildWebmcpToolName', () => {
@@ -17,9 +20,9 @@ describe('WebMCP Tool Naming Utilities', () => {
     });
 
     it('should handle origins with subdomains', () => {
-      expect(buildWebmcpToolName('travel-demo.bandarra.me', 'searchFlights')).toBe(
-        'webmcp__travel-demo.bandarra.me__searchFlights'
-      );
+      expect(
+        buildWebmcpToolName('travel-demo.bandarra.me', 'searchFlights')
+      ).toBe('webmcp__travel-demo.bandarra.me__searchFlights');
     });
 
     it('should handle tool names with underscores', () => {
@@ -36,8 +39,13 @@ describe('WebMCP Tool Naming Utilities', () => {
     });
 
     it('should parse names with subdomain origins', () => {
-      const result = parseWebmcpToolName('webmcp__travel-demo.bandarra.me__searchFlights');
-      expect(result).toEqual({ origin: 'travel-demo.bandarra.me', toolName: 'searchFlights' });
+      const result = parseWebmcpToolName(
+        'webmcp__travel-demo.bandarra.me__searchFlights'
+      );
+      expect(result).toEqual({
+        origin: 'travel-demo.bandarra.me',
+        toolName: 'searchFlights',
+      });
     });
 
     it('should handle tool names containing double underscores', () => {

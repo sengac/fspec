@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Popup Rendering Utilities
+ * fspec Browser Agent - Popup Rendering Utilities
  *
  * Pure functions for popup state rendering, extracted for testability.
  * Used by popup.ts and tested directly in popup.test.ts.

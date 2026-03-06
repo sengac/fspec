@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Message Router
+ * fspec Browser Agent - Message Router
  *
  * Routes messages between:
  * - Native host (via native messaging port)

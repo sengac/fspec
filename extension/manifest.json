@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "fspec WebMCP Bridge",
+  "name": "fspec Browser Agent",
   "version": "0.1.0",
-  "description": "Bridge WebMCP tools to MCP for AI agent interaction",
+  "description": "AI agent browser control and WebMCP tool discovery via MCP",
   "permissions": [
     "activeTab",
     "tabs",

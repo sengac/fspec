@@ -53,7 +53,7 @@ function renderPopupState(
   }
 }
 
-describe('Feature: WebMCP Chrome Extension - Popup UI', () => {
+describe('Feature: fspec Browser Agent - Popup UI', () => {
   let statusEl: HTMLElement;
   let statusIndicatorEl: HTMLElement;
   let portEl: HTMLElement;
@@ -73,7 +73,7 @@ describe('Feature: WebMCP Chrome Extension - Popup UI', () => {
 
   describe('Scenario: Popup displays connection status and available tools', () => {
     it('should show server status, port, clients, and tools grouped by source when connected', () => {
-      // @step Given the fspec WebMCP Chrome extension is installed
+      // @step Given the fspec Browser Agent Chrome extension is installed
       const mockResponse: StatusResponse = {
         connected: true,
         nativeConnected: true,
@@ -138,7 +138,7 @@ describe('Feature: WebMCP Chrome Extension - Popup UI', () => {
     });
 
     it('should show stopped status when native host is disconnected', () => {
-      // @step Given the fspec WebMCP Chrome extension is installed
+      // @step Given the fspec Browser Agent Chrome extension is installed
       const mockResponse: StatusResponse = {
         connected: false,
         nativeConnected: false,
@@ -175,7 +175,7 @@ describe('Feature: WebMCP Chrome Extension - Popup UI', () => {
     });
 
     it('should show only browser tools section when no WebMCP tools exist', () => {
-      // @step Given the fspec WebMCP Chrome extension is installed
+      // @step Given the fspec Browser Agent Chrome extension is installed
       const mockResponse: StatusResponse = {
         connected: true,
         nativeConnected: true,

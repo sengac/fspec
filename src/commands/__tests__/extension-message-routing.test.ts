@@ -13,7 +13,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { NativeConnectionAPI } from '../../../extension/src/background/native-connection';
 import type { ToolRegistryAPI } from '../../../extension/src/background/tool-registry';
 import type { MessageRouterAPI } from '../../../extension/src/background/message-router';
-import type { ToolRegistryEntry, StatusResponse } from '../../../extension/src/types';
+import type {
+  ToolRegistryEntry,
+  StatusResponse,
+} from '../../../extension/src/types';
 
 /**
  * Mock Chrome types for testing.
@@ -86,7 +89,7 @@ function createMockChromeTabs(): MockChromeTabs {
  * live in the extension/ subtree with its own tsconfig.
  */
 
-describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', () => {
+describe('Feature: fspec Browser Agent Chrome Extension — EXT-004 Message Routing', () => {
   let mockRuntime: MockChromeRuntime;
   let mockTabs: MockChromeTabs;
   let mockPort: MockPort;
@@ -94,7 +97,7 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
   beforeEach(() => {
     mockRuntime = createMockChromeRuntime();
     mockTabs = createMockChromeTabs();
-    mockPort = createMockPort('com.fspec.webmcp');
+    mockPort = createMockPort('com.fspec.browser.agent');
     mockRuntime.connectNative.mockReturnValue(mockPort);
     vi.clearAllMocks();
   });
@@ -111,11 +114,13 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
       );
       const connection: NativeConnectionAPI = createNativeConnection({
         runtime: mockRuntime,
-      })
+      });
       connection.connect();
 
-      // @step Then the service worker calls chrome.runtime.connectNative with host name "com.fspec.webmcp"
-      expect(mockRuntime.connectNative).toHaveBeenCalledWith('com.fspec.webmcp');
+      // @step Then the service worker calls chrome.runtime.connectNative with host name "com.fspec.browser.agent"
+      expect(mockRuntime.connectNative).toHaveBeenCalledWith(
+        'com.fspec.browser.agent'
+      );
 
       // @step And a native messaging port is established for bidirectional communication
       expect(connection.isConnected()).toBe(true);
@@ -143,14 +148,14 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
 
       const connection: NativeConnectionAPI = createNativeConnection({
         runtime: mockRuntime,
-      })
-      const toolRegistry: ToolRegistryAPI = createToolRegistry()
+      });
+      const toolRegistry: ToolRegistryAPI = createToolRegistry();
       const router: MessageRouterAPI = createMessageRouter({
         runtime: mockRuntime,
         tabs: mockTabs,
         connection,
         toolRegistry,
-      })
+      });
 
       // @step And the service worker has an active native messaging connection to the host
       connection.connect();
@@ -202,14 +207,14 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
 
       const connection: NativeConnectionAPI = createNativeConnection({
         runtime: mockRuntime,
-      })
-      const toolRegistry: ToolRegistryAPI = createToolRegistry()
+      });
+      const toolRegistry: ToolRegistryAPI = createToolRegistry();
       const router: MessageRouterAPI = createMessageRouter({
         runtime: mockRuntime,
         tabs: mockTabs,
         connection,
         toolRegistry,
-      })
+      });
       connection.connect();
 
       // @step When the main-world script posts a message with type "FSPEC_WEBMCP_TOOL_REGISTERED" and tool metadata
@@ -218,7 +223,10 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
         tool: {
           name: 'searchFlights',
           description: 'Search for flights',
-          inputSchema: { type: 'object', properties: { from: { type: 'string' } } },
+          inputSchema: {
+            type: 'object',
+            properties: { from: { type: 'string' } },
+          },
         },
         origin: 'travel-demo.bandarra.me',
       };
@@ -228,11 +236,17 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
       const sendResponse = vi.fn();
 
       // @step And the service worker receives the message with the sender tab ID 42
-      const result = router.handleContentScriptMessage(toolRegMessage, 42, sendResponse);
+      const result = router.handleContentScriptMessage(
+        toolRegMessage,
+        42,
+        sendResponse
+      );
       expect(result).toBe(true);
 
       // @step And the service worker updates its internal tool registry
-      const registeredTool = toolRegistry.getByName('webmcp__travel-demo.bandarra.me__searchFlights');
+      const registeredTool = toolRegistry.getByName(
+        'webmcp__travel-demo-bandarra-me__searchFlights'
+      );
       expect(registeredTool).toBeDefined();
       expect(registeredTool?.source).toBe('webmcp');
       expect(registeredTool?.tabId).toBe(42);
@@ -242,7 +256,9 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
         expect.objectContaining({
           type: 'TOOLS_CHANGED',
           tools: expect.arrayContaining([
-            expect.objectContaining({ name: 'webmcp__travel-demo.bandarra.me__searchFlights' }),
+            expect.objectContaining({
+              name: 'webmcp__travel-demo-bandarra-me__searchFlights',
+            }),
           ]),
         })
       );
@@ -264,14 +280,14 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
 
       const connection: NativeConnectionAPI = createNativeConnection({
         runtime: mockRuntime,
-      })
-      const toolRegistry: ToolRegistryAPI = createToolRegistry()
+      });
+      const toolRegistry: ToolRegistryAPI = createToolRegistry();
       const router: MessageRouterAPI = createMessageRouter({
         runtime: mockRuntime,
         tabs: mockTabs,
         connection,
         toolRegistry,
-      })
+      });
       connection.connect();
 
       // Register a WebMCP tool from tab 42
@@ -346,13 +362,14 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
       const connection: NativeConnectionAPI = createNativeConnection({
         runtime: mockRuntime,
         reconnectDelay: 50, // Short delay for testing
-      })
+      });
       connection.connect();
       expect(connection.isConnected()).toBe(true);
 
       // @step When the native messaging port disconnects
       // Get the onDisconnect handler and call it
-      const disconnectHandler = mockPort.onDisconnect.addListener.mock.calls[0][0] as () => void;
+      const disconnectHandler = mockPort.onDisconnect.addListener.mock
+        .calls[0][0] as () => void;
       disconnectHandler();
 
       // @step Then the service worker detects the disconnection via port.onDisconnect
@@ -361,14 +378,16 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
       // @step And the service worker waits before attempting reconnection
       // Reset the mock to track reconnection
       mockRuntime.connectNative.mockClear();
-      const newPort = createMockPort('com.fspec.webmcp');
+      const newPort = createMockPort('com.fspec.browser.agent');
       mockRuntime.connectNative.mockReturnValue(newPort);
 
       // Wait for reconnection delay (50ms * 2^0 = 50ms, allow margin)
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       // @step And the service worker establishes a new native messaging connection
-      expect(mockRuntime.connectNative).toHaveBeenCalledWith('com.fspec.webmcp');
+      expect(mockRuntime.connectNative).toHaveBeenCalledWith(
+        'com.fspec.browser.agent'
+      );
       expect(connection.isConnected()).toBe(true);
 
       // Clean up
@@ -385,7 +404,7 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
         runtime: mockRuntime,
         reconnectDelay: 10, // Very short for testing
         maxReconnectAttempts: 5,
-      })
+      });
       connection.connect();
       expect(connection.isConnected()).toBe(true);
 
@@ -396,16 +415,17 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
         if (reconnectCallCount <= 2) {
           throw new Error('Host not found');
         }
-        return createMockPort('com.fspec.webmcp');
+        return createMockPort('com.fspec.browser.agent');
       });
 
       // Simulate disconnect
-      const handler = mockPort.onDisconnect.addListener.mock.calls[0][0] as () => void;
+      const handler = mockPort.onDisconnect.addListener.mock
+        .calls[0][0] as () => void;
       handler();
       expect(connection.isConnected()).toBe(false);
 
       // Wait for retries (10ms, 20ms, 40ms — should succeed on 3rd)
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       expect(connection.isConnected()).toBe(true);
       expect(reconnectCallCount).toBe(3);
@@ -420,7 +440,7 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
 
       const connection: NativeConnectionAPI = createNativeConnection({
         runtime: mockRuntime,
-      })
+      });
       connection.connect();
       connection.connect(); // second call should be a no-op
 
@@ -445,14 +465,14 @@ describe('Feature: fspec WebMCP Chrome Extension — EXT-004 Message Routing', (
 
       const connection: NativeConnectionAPI = createNativeConnection({
         runtime: mockRuntime,
-      })
-      const toolRegistry: ToolRegistryAPI = createToolRegistry()
+      });
+      const toolRegistry: ToolRegistryAPI = createToolRegistry();
       const router: MessageRouterAPI = createMessageRouter({
         runtime: mockRuntime,
         tabs: mockTabs,
         connection,
         toolRegistry,
-      })
+      });
       connection.connect();
 
       // @step And the tool registry contains 5 tools

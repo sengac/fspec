@@ -1,6 +1,6 @@
-# WebMCP Chrome Extension — Browser Control Skill
+# Browser Agent — Browser Control Skill
 
-Connect this AI session to the fspec WebMCP Chrome Extension, giving you direct control over the user's Chrome browser and access to any WebMCP tools registered by websites.
+Connect this AI session to the fspec Browser Agent Chrome Extension, giving you direct control over the user's Chrome browser and access to any WebMCP tools registered by websites.
 
 ## Action Required
 
@@ -88,7 +88,7 @@ Execute arbitrary JavaScript in a tab's page context using the USER_SCRIPT world
 
 Returns: The evaluated result as text.
 
-**Requires "Allow User Scripts"**: This tool uses `chrome.userScripts.execute()` to bypass Content Security Policy restrictions. The user must enable "Allow User Scripts" in the extension settings (`chrome://extensions` → fspec WebMCP Bridge → Details → Allow User Scripts). If the toggle is not enabled, the tool returns an error with instructions.
+**Requires "Allow User Scripts"**: This tool uses `chrome.userScripts.execute()` to bypass Content Security Policy restrictions. The user must enable "Allow User Scripts" in the extension settings (`chrome://extensions` → fspec Browser Agent → Details → Allow User Scripts). If the toggle is not enabled, the tool returns an error with instructions.
 
 **Powerful but use responsibly** — this runs arbitrary code in the page. Useful for extracting data, checking state, or manipulating the DOM when the specialized tools aren't sufficient.
 
@@ -285,4 +285,4 @@ Use these notifications to stay aware of what the user is doing in the browser a
 
 ## Execute Now
 
-Connect to the WebMCP Chrome Extension at `http://localhost:19876/mcp`:
+Connect to the fspec Browser Agent Chrome Extension at `http://localhost:19876/mcp`:

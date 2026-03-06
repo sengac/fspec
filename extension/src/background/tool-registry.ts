@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Tool Registry
+ * fspec Browser Agent - Tool Registry
  *
  * Manages the registry of available tools (both native browser control
  * tools and WebMCP tools discovered from web pages).

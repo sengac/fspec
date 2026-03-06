@@ -31,7 +31,9 @@ function createMockScripting(): ChromeScriptingForInjector {
   };
 }
 
-function createMockTabs(): ChromeTabsForInjector & { triggerUpdate: TabUpdateCallback } {
+function createMockTabs(): ChromeTabsForInjector & {
+  triggerUpdate: TabUpdateCallback;
+} {
   let callback: TabUpdateCallback | null = null;
   return {
     onUpdated: {
@@ -47,7 +49,7 @@ function createMockTabs(): ChromeTabsForInjector & { triggerUpdate: TabUpdateCal
   };
 }
 
-describe('Feature: fspec WebMCP Chrome Extension — WebMCP Script Injector', () => {
+describe('Feature: fspec Browser Agent Chrome Extension — WebMCP Script Injector', () => {
   let scripting: ReturnType<typeof createMockScripting>;
   let tabs: ReturnType<typeof createMockTabs>;
   let injector: WebMCPInjectorAPI;
@@ -88,15 +90,21 @@ describe('Feature: fspec WebMCP Chrome Extension — WebMCP Script Injector', ()
       // (done in beforeEach)
 
       // @step Then it registers a listener on chrome.tabs.onUpdated
-      expect(tabs.onUpdated.addListener).toHaveBeenCalledWith(expect.any(Function));
+      expect(tabs.onUpdated.addListener).toHaveBeenCalledWith(
+        expect.any(Function)
+      );
     });
 
     it('should inject when tab status changes to complete', async () => {
       // @step Given a tab navigates and reaches status complete
-      tabs.triggerUpdate(55, { status: 'complete' }, { id: 55, url: 'https://example.com' });
+      tabs.triggerUpdate(
+        55,
+        { status: 'complete' },
+        { id: 55, url: 'https://example.com' }
+      );
 
       // Wait for the async injection
-      await new Promise((r) => setTimeout(r, 10));
+      await new Promise(r => setTimeout(r, 10));
 
       // @step Then the discovery script is injected into that tab
       expect(scripting.executeScript).toHaveBeenCalledWith(
@@ -111,7 +119,7 @@ describe('Feature: fspec WebMCP Chrome Extension — WebMCP Script Injector', ()
       // @step Given a tab status changes to loading (not complete)
       tabs.triggerUpdate(55, { status: 'loading' }, { id: 55 });
 
-      await new Promise((r) => setTimeout(r, 10));
+      await new Promise(r => setTimeout(r, 10));
 
       // @step Then the discovery script is NOT injected
       expect(scripting.executeScript).not.toHaveBeenCalled();
@@ -138,9 +146,13 @@ describe('Feature: fspec WebMCP Chrome Extension — WebMCP Script Injector', ()
       expect(scripting.executeScript).toHaveBeenCalledTimes(1);
 
       // @step When the tab navigates (status: complete fires again)
-      tabs.triggerUpdate(42, { status: 'complete' }, { id: 42, url: 'https://new-page.com' });
+      tabs.triggerUpdate(
+        42,
+        { status: 'complete' },
+        { id: 42, url: 'https://new-page.com' }
+      );
 
-      await new Promise((r) => setTimeout(r, 10));
+      await new Promise(r => setTimeout(r, 10));
 
       // @step Then the script is re-injected (navigation cleared old state)
       expect(scripting.executeScript).toHaveBeenCalledTimes(2);
@@ -150,9 +162,9 @@ describe('Feature: fspec WebMCP Chrome Extension — WebMCP Script Injector', ()
   describe('Graceful failure for restricted pages', () => {
     it('should return false when injection fails (e.g., chrome:// URLs)', async () => {
       // @step Given a tab showing a chrome:// URL that rejects script injection
-      (scripting.executeScript as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error('Cannot access a chrome:// URL')
-      );
+      (
+        scripting.executeScript as ReturnType<typeof vi.fn>
+      ).mockRejectedValueOnce(new Error('Cannot access a chrome:// URL'));
 
       // @step When we attempt to inject
       const result = await injector.injectIntoTab(99);
@@ -163,16 +175,22 @@ describe('Feature: fspec WebMCP Chrome Extension — WebMCP Script Injector', ()
 
     it('should allow retrying injection after a failure', async () => {
       // @step Given injection failed on the first attempt
-      (scripting.executeScript as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-        new Error('Cannot access a chrome:// URL')
-      );
+      (
+        scripting.executeScript as ReturnType<typeof vi.fn>
+      ).mockRejectedValueOnce(new Error('Cannot access a chrome:// URL'));
       await injector.injectIntoTab(99);
 
       // @step When the tab navigates to a normal page and triggers complete
-      (scripting.executeScript as ReturnType<typeof vi.fn>).mockResolvedValueOnce([{ result: undefined }]);
-      tabs.triggerUpdate(99, { status: 'complete' }, { id: 99, url: 'https://example.com' });
+      (
+        scripting.executeScript as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce([{ result: undefined }]);
+      tabs.triggerUpdate(
+        99,
+        { status: 'complete' },
+        { id: 99, url: 'https://example.com' }
+      );
 
-      await new Promise((r) => setTimeout(r, 10));
+      await new Promise(r => setTimeout(r, 10));
 
       // @step Then injection is attempted again
       expect(scripting.executeScript).toHaveBeenCalledTimes(2);

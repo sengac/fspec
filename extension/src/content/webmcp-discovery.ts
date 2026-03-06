@@ -1,5 +1,5 @@
 /**
- * fspec WebMCP Extension - Main-World Discovery Script
+ * fspec Browser Agent - Main-World Discovery Script
  *
  * This function runs in the page's MAIN world JavaScript context
  * (injected via chrome.scripting.executeScript with world: 'MAIN').
