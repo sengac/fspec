@@ -158,6 +158,9 @@ export function createMcpServer({ port = 19876, stdin = null, stdout = null } = 
   /** @type {Map<string, { resolve: (value: object) => void, timer: ReturnType<typeof setTimeout> }>} */
   const pendingCalls = new Map();
 
+  /** Latest WebMCP tools from the extension — used to seed new sessions */
+  let latestWebmcpTools = [];
+
   // Set up native messaging reader if stdin provided
   let nativeReader = null;
   if (stdin) {
@@ -191,6 +194,7 @@ export function createMcpServer({ port = 19876, stdin = null, stdout = null } = 
 
     // Handle tool registry updates — update internal state AND notify agents via SSE
     if (message.type === 'TOOLS_CHANGED' && message.tools) {
+      latestWebmcpTools = message.tools;
       for (const [, session] of sessions) {
         session.tools = message.tools;
         // Broadcast notifications/tools/list_changed to all SSE streams
@@ -282,7 +286,7 @@ export function createMcpServer({ port = 19876, stdin = null, stdout = null } = 
       const sessionId = randomUUID();
       sessions.set(sessionId, {
         sseResponses: new Set(),
-        tools: [],
+        tools: [...latestWebmcpTools],
       });
 
       sendJson(res, 200, {

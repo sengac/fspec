@@ -87,19 +87,19 @@ describe('Feature: WebMCP Chrome Extension - Popup UI', () => {
           { name: 'browser_execute_script', source: 'native' },
           { name: 'browser_switch_tab', source: 'native' },
           {
-            name: 'webmcp__example.com__searchFlights',
+            name: 'webmcp__example-com__searchFlights',
             source: 'webmcp',
             origin: 'example.com',
             tabId: 1,
           },
           {
-            name: 'webmcp__example.com__bookFlight',
+            name: 'webmcp__example-com__bookFlight',
             source: 'webmcp',
             origin: 'example.com',
             tabId: 1,
           },
           {
-            name: 'webmcp__app.test.io__submitForm',
+            name: 'webmcp__app-test-io__submitForm',
             source: 'webmcp',
             origin: 'app.test.io',
             tabId: 2,
@@ -239,19 +239,19 @@ describe('Feature: WebMCP Chrome Extension - Popup UI', () => {
     it('should group WebMCP tools by origin', () => {
       const tools: PopupToolSummary[] = [
         {
-          name: 'webmcp__a.com__tool1',
+          name: 'webmcp__a-com__tool1',
           source: 'webmcp',
           origin: 'a.com',
           tabId: 1,
         },
         {
-          name: 'webmcp__a.com__tool2',
+          name: 'webmcp__a-com__tool2',
           source: 'webmcp',
           origin: 'a.com',
           tabId: 1,
         },
         {
-          name: 'webmcp__b.com__tool3',
+          name: 'webmcp__b-com__tool3',
           source: 'webmcp',
           origin: 'b.com',
           tabId: 2,
@@ -263,14 +263,14 @@ describe('Feature: WebMCP Chrome Extension - Popup UI', () => {
           label: 'a.com',
           count: 2,
           tools: [
-            { name: 'webmcp__a.com__tool1' },
-            { name: 'webmcp__a.com__tool2' },
+            { name: 'webmcp__a-com__tool1' },
+            { name: 'webmcp__a-com__tool2' },
           ],
         },
         {
           label: 'b.com',
           count: 1,
-          tools: [{ name: 'webmcp__b.com__tool3' }],
+          tools: [{ name: 'webmcp__b-com__tool3' }],
         },
       ]);
     });

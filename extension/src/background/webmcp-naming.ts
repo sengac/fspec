@@ -2,7 +2,11 @@
  * fspec WebMCP Extension - Tool Naming Utilities
  *
  * Shared utilities for constructing and parsing WebMCP-namespaced tool names.
- * Format: webmcp__<origin>__<toolName>
+ * Format: webmcp__<sanitized-origin>__<toolName>
+ *
+ * Origins (hostnames) are sanitized to comply with the Anthropic API tool name
+ * pattern: ^[a-zA-Z0-9_-]{1,128}$. Dots and other disallowed characters in
+ * hostnames are replaced with hyphens.
  *
  * Used by message-router.ts for registration, unregistration, and invocation.
  *
@@ -16,18 +20,37 @@ const WEBMCP_PREFIX = 'webmcp';
 const SEPARATOR = '__';
 
 /**
- * Build a namespaced WebMCP tool name from origin and tool name.
+ * Sanitize an origin (hostname) for use in tool names.
  *
- * Always produces the 3-segment format: webmcp__<origin>__<toolName>
- * Origin is required — the WebMCP discovery script always provides it.
+ * Replaces any character not in [a-zA-Z0-9_-] with a hyphen.
+ * This ensures the resulting tool name complies with the Anthropic API
+ * pattern: ^[a-zA-Z0-9_-]{1,128}$
+ *
+ * Examples:
+ *   "app.example.com" → "app-example-com"
+ *   "localhost:3000"     → "localhost-3000"
+ *   "example.com"        → "example-com"
  */
-export function buildWebmcpToolName(origin: string, toolName: string): string {
-  return `${WEBMCP_PREFIX}${SEPARATOR}${origin}${SEPARATOR}${toolName}`;
+export function sanitizeOrigin(origin: string): string {
+  return origin.replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
 /**
- * Parse a namespaced WebMCP tool name into its origin and original tool name.
+ * Build a namespaced WebMCP tool name from origin and tool name.
  *
+ * Always produces the 3-segment format: webmcp__<sanitized-origin>__<toolName>
+ * Origin is required — the WebMCP discovery script always provides it.
+ * The origin is sanitized to replace dots and other special characters with hyphens.
+ */
+export function buildWebmcpToolName(origin: string, toolName: string): string {
+  const sanitized = sanitizeOrigin(origin);
+  return `${WEBMCP_PREFIX}${SEPARATOR}${sanitized}${SEPARATOR}${toolName}`;
+}
+
+/**
+ * Parse a namespaced WebMCP tool name into its (sanitized) origin and original tool name.
+ *
+ * Note: the returned origin will be the sanitized form (hyphens instead of dots).
  * Returns undefined if the name doesn't match the expected format.
  */
 export function parseWebmcpToolName(

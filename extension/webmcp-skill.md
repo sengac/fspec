@@ -180,13 +180,13 @@ Navigate the tab forward in browser history.
 Websites using Chrome's WebMCP API (`navigator.modelContext.registerTool()`) expose additional tools dynamically. These appear with the naming pattern:
 
 ```
-mcp__webmcp__<hostname>__<toolName>
+mcp__webmcp__<sanitized-hostname>__<toolName>
 ```
 
 For example, a travel site at `travel-demo.bandarra.me` registering a `searchFlights` tool would appear as:
 
 ```
-mcp__webmcp__travel-demo.bandarra.me__searchFlights
+mcp__webmcp__travel-demo-bandarra-me__searchFlights
 ```
 
 - WebMCP tools appear and disappear as you navigate between pages
@@ -245,7 +245,7 @@ Use these notifications to stay aware of what the user is doing in the browser a
 ```
 1. browser_navigate → URL of site with WebMCP tools
 2. Wait for notifications/tools/list_changed notification
-3. Call the discovered tool (e.g., mcp__webmcp__example.com__searchFlights)
+3. Call the discovered tool (e.g., mcp__webmcp__example-com__searchFlights)
 ```
 
 ---

@@ -339,18 +339,18 @@ describe('Feature: WebMCP Chrome Extension - Browser Event Notifications', () =>
       });
 
       // @step Given tab 456 has WebMCP tools registered
-      mockToolRegistry._addTool('webmcp__example.com__searchFlights', 456);
-      mockToolRegistry._addTool('webmcp__example.com__bookFlight', 456);
+      mockToolRegistry._addTool('webmcp__example-com__searchFlights', 456);
+      mockToolRegistry._addTool('webmcp__example-com__bookFlight', 456);
 
       // @step When the user closes browser tab 456
       mockTabs._fireRemoved(456, { windowId: 1, isWindowClosing: false });
 
       // @step Then the WebMCP tools from tab 456 are unregistered from the tool registry
       expect(mockToolRegistry.unregister).toHaveBeenCalledWith(
-        'webmcp__example.com__searchFlights'
+        'webmcp__example-com__searchFlights'
       );
       expect(mockToolRegistry.unregister).toHaveBeenCalledWith(
-        'webmcp__example.com__bookFlight'
+        'webmcp__example-com__bookFlight'
       );
 
       // @step Then the agent receives a "notifications/browser/tab_closed" notification

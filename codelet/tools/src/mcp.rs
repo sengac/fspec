@@ -1331,6 +1331,10 @@ impl rig::tool::Tool for ConnectMcpTool {
                     if let Some(name) = args.name.clone() {
                         tokio::spawn(async move {
                             let tool = ConnectMcpTool::new(session_id);
+                            // Remove old tools first — handles reconnect to same server name.
+                            // Without this, reconnecting adds duplicate tools to the handle
+                            // (old tools linger + new tools added = "Tool names must be unique" error).
+                            tool.remove_tools_from_handle(&name).await;
                             tool.register_new_tools_with_handle(&name).await;
                         });
                     }
@@ -2103,6 +2107,40 @@ mod tests {
         };
         assert!(result.success);
         assert_eq!(result.tools.as_ref().unwrap().len(), 3);
+
+        // @step And old tools are removed from the ToolServerHandle before new ones are added
+        // This verifies the fix: the Connect action now calls remove_tools_from_handle
+        // before register_new_tools_with_handle. We simulate the full reconnect sequence
+        // using a real ToolServerHandle.
+        let session_id = uuid::Uuid::new_v4();
+        let server = rig::tool::server::ToolServer::new();
+        let handle = server.run();
+
+        // Register old tools
+        let old_wrappers: Vec<McpToolWrapper> = original
+            .tools
+            .iter()
+            .map(|td| McpToolWrapper::from_tool_def("github", td, session_id))
+            .collect();
+        add_wrappers_to_handle(&handle, old_wrappers, "github", session_id).await;
+        let defs_before = handle.get_tool_defs(None).await.unwrap();
+        assert_eq!(defs_before.len(), 1, "should have 1 old tool");
+
+        // Reconnect: remove old, add new (mirrors the fixed production code)
+        remove_server_tools_from_handle(&handle, "github", session_id).await;
+        let new_wrappers: Vec<McpToolWrapper> = replacement
+            .tools
+            .iter()
+            .map(|td| McpToolWrapper::from_tool_def("github", td, session_id))
+            .collect();
+        add_wrappers_to_handle(&handle, new_wrappers, "github", session_id).await;
+
+        let defs_after = handle.get_tool_defs(None).await.unwrap();
+        assert_eq!(
+            defs_after.len(),
+            3,
+            "should have exactly 3 new tools — no duplicates from reconnect"
+        );
     }
 
     // ===================================================================
@@ -2974,6 +3012,191 @@ mod tests {
             let defs_after = handle.get_tool_defs(None).await.unwrap();
             assert_eq!(defs_after.len(), 1, "only serverB tool should remain");
             assert_eq!(defs_after[0].name, "mcp__serverB__tool1");
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Reconnect to same server removes old tools before adding new ones
+        // -----------------------------------------------------------
+        // Verifies fix: ConnectMCP Connect action now calls remove_tools_from_handle
+        // before register_new_tools_with_handle. Without this fix, reconnecting to
+        // the same server name would add duplicate tools to the ToolServerHandle,
+        // triggering "Tool names must be unique" errors from the LLM API.
+        #[tokio::test]
+        async fn test_reconnect_same_server_removes_old_tools_first() {
+            // @step Given an MCP session is initialized with a ToolServerHandle
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // @step And server "webmcp" was previously connected with tools registered
+            let original_defs = make_tool_defs(&["browser_navigate", "browser_screenshot", "browser_list_tabs"]);
+            let original_wrappers: Vec<McpToolWrapper> = original_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, original_wrappers, "webmcp", session_id).await;
+
+            // Verify original tools are registered
+            let defs_before = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_before.len(), 3, "should have 3 original tools");
+
+            // @step When the agent reconnects to "webmcp" (remove old, then add new)
+            // This mirrors the fixed production code path in ConnectMcpTool::call():
+            //   tool.remove_tools_from_handle(&name).await;
+            //   tool.register_new_tools_with_handle(&name).await;
+            remove_server_tools_from_handle(&handle, "webmcp", session_id).await;
+
+            // Verify old tools are gone
+            let defs_mid = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_mid.len(), 0, "old tools should be removed before re-add");
+
+            // Now register the new tools (server may expose different tools after reconnect)
+            let new_defs = make_tool_defs(&["browser_navigate", "browser_screenshot", "browser_list_tabs", "getApiRequests"]);
+            let new_wrappers: Vec<McpToolWrapper> = new_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, new_wrappers, "webmcp", session_id).await;
+
+            // @step Then the ToolServerHandle contains only the new tools (no duplicates)
+            let defs_after = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_after.len(), 4, "should have 4 new tools (3 original + 1 new)");
+
+            // @step And no duplicate tool names exist
+            let mut names: Vec<String> = defs_after.iter().map(|d| d.name.clone()).collect();
+            names.sort();
+            names.dedup();
+            assert_eq!(
+                names.len(),
+                4,
+                "all tool names must be unique — no duplicates from reconnect"
+            );
+
+            // @step And the new tool (getApiRequests) is present
+            let has_new_tool = defs_after
+                .iter()
+                .any(|d| d.name == "mcp__webmcp__getApiRequests");
+            assert!(has_new_tool, "new tool from reconnect should be registered");
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Reconnect with identical tools produces no duplicates
+        // -----------------------------------------------------------
+        // Edge case: reconnecting to the same server with the exact same tool set.
+        // Without the remove-first fix, each reconnect would double the tool count.
+        #[tokio::test]
+        async fn test_reconnect_identical_tools_no_duplicates() {
+            // @step Given an MCP session is initialized with a ToolServerHandle
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // @step And server "webmcp" is connected with 11 native browser tools
+            let tool_names: Vec<&str> = vec![
+                "browser_navigate", "browser_screenshot", "browser_list_tabs",
+                "browser_execute_script", "browser_switch_tab", "browser_close_tab",
+                "browser_get_page_content", "browser_click_element", "browser_fill_form",
+                "browser_go_back", "browser_go_forward",
+            ];
+            let original_defs = make_tool_defs(&tool_names);
+            let original_wrappers: Vec<McpToolWrapper> = original_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, original_wrappers, "webmcp", session_id).await;
+
+            let defs_before = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_before.len(), 11, "should start with 11 tools");
+
+            // @step When the agent reconnects to "webmcp" 3 times in a row
+            for reconnect_num in 1..=3 {
+                // Remove old tools first (the fix)
+                remove_server_tools_from_handle(&handle, "webmcp", session_id).await;
+                // Re-add same tools
+                let reconnect_defs = make_tool_defs(&tool_names);
+                let reconnect_wrappers: Vec<McpToolWrapper> = reconnect_defs
+                    .iter()
+                    .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
+                    .collect();
+                add_wrappers_to_handle(&handle, reconnect_wrappers, "webmcp", session_id).await;
+
+                // @step Then the tool count stays at 11 after each reconnect
+                let defs = handle.get_tool_defs(None).await.unwrap();
+                assert_eq!(
+                    defs.len(),
+                    11,
+                    "after reconnect #{reconnect_num}, should still have exactly 11 tools"
+                );
+            }
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Reconnect to one server does not affect another server's tools
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_reconnect_does_not_affect_other_servers() {
+            // @step Given an MCP session with two connected servers
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // Server A: webmcp with browser tools
+            let webmcp_defs = make_tool_defs(&["browser_navigate", "browser_screenshot"]);
+            let webmcp_wrappers: Vec<McpToolWrapper> = webmcp_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, webmcp_wrappers, "webmcp", session_id).await;
+
+            // Server B: github with repo tools
+            let github_defs = make_tool_defs(&["create_issue", "list_repos"]);
+            let github_wrappers: Vec<McpToolWrapper> = github_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("github", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, github_wrappers, "github", session_id).await;
+
+            let defs_before = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_before.len(), 4, "should have 4 total tools");
+
+            // @step When the agent reconnects to "webmcp" with an additional tool
+            remove_server_tools_from_handle(&handle, "webmcp", session_id).await;
+            let new_webmcp_defs = make_tool_defs(&["browser_navigate", "browser_screenshot", "getApiRequests"]);
+            let new_webmcp_wrappers: Vec<McpToolWrapper> = new_webmcp_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("webmcp", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, new_webmcp_wrappers, "webmcp", session_id).await;
+
+            // @step Then github tools are unaffected
+            let defs_after = handle.get_tool_defs(None).await.unwrap();
+            let github_tools: Vec<_> = defs_after
+                .iter()
+                .filter(|d| d.name.starts_with("mcp__github__"))
+                .collect();
+            assert_eq!(github_tools.len(), 2, "github tools should be untouched");
+
+            // @step And webmcp has the updated tool set
+            let webmcp_tools: Vec<_> = defs_after
+                .iter()
+                .filter(|d| d.name.starts_with("mcp__webmcp__"))
+                .collect();
+            assert_eq!(webmcp_tools.len(), 3, "webmcp should have 3 tools after reconnect");
+
+            // @step And total tool count is correct (no duplicates)
+            assert_eq!(defs_after.len(), 5, "total should be 5 (2 github + 3 webmcp)");
+
+            cleanup_mcp_session(session_id);
         }
     }
 }
