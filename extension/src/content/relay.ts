@@ -77,13 +77,23 @@ export function createContentRelay(
 
       // Forward WebMCP tool registration/unregistration to service worker
       if (data.type.startsWith(WEBMCP_PREFIX)) {
-        runtime.sendMessage(data);
+        try {
+          runtime.sendMessage(data);
+        } catch {
+          // Extension context invalidated (extension reloaded/updated)
+          return false;
+        }
         return true;
       }
 
       // Forward tool invocation results to service worker
       if (data.type === MESSAGE_TYPES.INVOKE_RESULT) {
-        runtime.sendMessage(data);
+        try {
+          runtime.sendMessage(data);
+        } catch {
+          // Extension context invalidated (extension reloaded/updated)
+          return false;
+        }
         return true;
       }
 

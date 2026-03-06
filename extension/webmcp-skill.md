@@ -4,7 +4,7 @@ Connect this AI session to the fspec WebMCP Chrome Extension, giving you direct 
 
 ## Action Required
 
-When this skill is invoked, immediately connect to the WebMCP extension:
+When this skill is referenced, immediately connect to the WebMCP extension:
 
 ```
 ConnectMCP(transport: "http", url: "http://localhost:19876/mcp")
@@ -12,11 +12,13 @@ ConnectMCP(transport: "http", url: "http://localhost:19876/mcp")
 
 If a custom URL is provided as a parameter, use that instead of the default.
 
-## Example Invocations
+## How to Use This Skill
+
+Reference this file with `@` in your prompt to load the skill:
 
 ```
-/skill webmcp                                    # Connect to http://localhost:19876/mcp
-/skill webmcp http://localhost:8080/mcp           # Connect to custom URL
+@extension/webmcp-skill.md                                         # Connect to http://localhost:19876/mcp
+@extension/webmcp-skill.md please connect to http://localhost:8080/mcp  # Connect to custom URL
 ```
 
 ---
@@ -47,14 +49,16 @@ Navigate a tab to a URL. Waits for page load to complete before returning.
 Returns: `{ "url": "...", "title": "..." }`
 
 ### `browser_screenshot`
-Capture a PNG screenshot of a tab's visible viewport.
+Capture a PNG screenshot of a tab.
 
 ```json
 {}
 { "tabId": 123 }
+{ "tabId": 123, "fullPage": true }
 ```
 
 - `tabId` (number, optional): Tab to capture. Defaults to active tab.
+- `fullPage` (boolean, optional): If true, captures the full scrollable page instead of just the visible viewport.
 
 Returns: An image content block (base64 PNG). You will see the screenshot directly.
 

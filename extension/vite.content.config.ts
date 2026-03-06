@@ -8,8 +8,8 @@ import { resolve } from 'path';
  * so we must build as IIFE. This produces a single self-contained
  * dist/content-script.js with no import statements.
  *
- * Run after the main build (vite.config.ts) with emptyOutDir: false
- * so it doesn't wipe the service-worker and popup outputs.
+ * Run after previous builds with emptyOutDir: false so it doesn't
+ * wipe the service-worker and popup outputs.
  */
 export default defineConfig({
   build: {

@@ -2,14 +2,17 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 /**
- * Chrome extension build configuration.
+ * Chrome extension build configuration — Service Worker.
  *
- * Builds service-worker and popup as ES modules (service worker declares
- * "type": "module" in manifest.json; popup is loaded via <script type="module">).
+ * Each extension entry point is built as a separate IIFE to produce
+ * a single self-contained file with zero import statements. This is
+ * critical for Chrome extensions: code splitting creates shared chunks
+ * with relative ES imports that Chrome's extension runtime cannot resolve.
  *
- * Content script is built separately (see vite.content.config.ts) as IIFE
- * because Chrome loads content scripts as classic scripts — ES module
- * imports are not supported.
+ * Build order (see package.json "build" script):
+ *   1. vite.config.ts          — service-worker (emptyOutDir: true)
+ *   2. vite.popup.config.ts    — popup          (emptyOutDir: false)
+ *   3. vite.content.config.ts  — content-script (emptyOutDir: false)
  */
 export default defineConfig({
   build: {
@@ -19,12 +22,11 @@ export default defineConfig({
           __dirname,
           'src/background/service-worker.ts'
         ),
-        popup: resolve(__dirname, 'src/popup/popup.ts'),
       },
       output: {
         dir: resolve(__dirname, 'dist'),
         entryFileNames: '[name].js',
-        format: 'es',
+        format: 'iife',
       },
     },
     outDir: 'dist',

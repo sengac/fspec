@@ -126,6 +126,7 @@ export default [
       '*.config.js',
       'extension/vite.config.ts',
       'extension/vite.content.config.ts',
+      'extension/vite.popup.config.ts',
     ],
   },
 ];

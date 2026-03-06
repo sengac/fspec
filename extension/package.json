@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build && vite build -c vite.content.config.ts",
+    "build": "vite build && vite build -c vite.popup.config.ts && vite build -c vite.content.config.ts",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit"
   },

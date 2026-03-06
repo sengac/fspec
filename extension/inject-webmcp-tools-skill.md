@@ -5,14 +5,17 @@ Inject custom JavaScript tools into any web page so they become callable MCP too
 ## Prerequisites
 
 - The fspec WebMCP Chrome Extension must be installed and active
-- This session must already be connected to WebMCP (run the `webmcp` skill first, or call `ConnectMCP(transport: "http", url: "http://localhost:19876/mcp")`)
+- This session must already be connected to WebMCP (reference `@extension/webmcp-skill.md` first, or call `ConnectMCP(transport: "http", url: "http://localhost:19876/mcp")`)
 - Chrome 146+ with the "WebMCP for testing" flag enabled (`chrome://flags`)
 - "Allow User Scripts" enabled for the extension (`chrome://extensions` → fspec WebMCP Bridge → Details)
 
-## Example Invocations
+## How to Use This Skill
+
+Reference this file with `@` in your prompt to load the skill:
 
 ```
-/skill inject-webmcp-tools    # Show this guide and inject tools interactively
+@extension/inject-webmcp-tools-skill.md                      # Show this guide and inject tools interactively
+@extension/inject-webmcp-tools-skill.md inject getApiRequests # Inject a specific tool
 ```
 
 ---

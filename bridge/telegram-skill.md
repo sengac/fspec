@@ -8,15 +8,17 @@ Connect this AI session to a Telegram bridge endpoint for remote monitoring and 
 
 ## Action Required
 
-When this skill is invoked, immediately connect to the Telegram bridge using the Bridge tool.
+When this skill is referenced, immediately connect to the Telegram bridge using the Bridge tool.
 
 If a custom URL is provided as a parameter, use that instead of the default.
 
-## Example Invocations
+## How to Use This Skill
+
+Reference this file with `@` in your prompt to load the skill:
 
 ```
-/skill telegram-bridge              # Connect to ws://localhost:8080
-/skill telegram-bridge ws://myserver:9000  # Connect to custom URL
+@bridge/telegram-skill.md                          # Connect to ws://localhost:8080
+@bridge/telegram-skill.md ws://myserver:9000       # Connect to custom URL
 ```
 
 ---
