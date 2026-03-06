@@ -369,6 +369,11 @@
       "prefix": "EXT",
       "description": "Chrome extension development and WebMCP integration",
       "createdAt": "2026-03-05T05:00:05.504Z"
+    },
+    "LOCATE": {
+      "prefix": "LOCATE",
+      "description": "Browser element location and AI page understanding",
+      "createdAt": "2026-03-06T06:46:42.350Z"
     }
   }
 }
