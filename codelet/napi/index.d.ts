@@ -6,7 +6,7 @@
  * @param repoPath - Path to the main git repository
  * @param sessionId - Session identifier
  */
-export declare function abortSession(repoPath: string, sessionId: string): void;
+export declare function abortSession(repoPath: string, sessionId: string): void
 
 /**
  * Apply session changes by copying files from session worktree to main worktree
@@ -18,10 +18,7 @@ export declare function abortSession(repoPath: string, sessionId: string): void;
  * @param sessionId - Session identifier
  * @throws Error if conflicts detected or worktree not found
  */
-export declare function applySessionChanges(
-  repoPath: string,
-  sessionId: string
-): void;
+export declare function applySessionChanges(repoPath: string, sessionId: string): void
 
 /** Case conversion types for transforms */
 export declare const enum AstGrepCaseType {
@@ -31,39 +28,39 @@ export declare const enum AstGrepCaseType {
   CamelCase = 'CamelCase',
   SnakeCase = 'SnakeCase',
   KebabCase = 'KebabCase',
-  PascalCase = 'PascalCase',
+  PascalCase = 'PascalCase'
 }
 
 /** Convert transform configuration */
 export interface AstGrepConvertTransform {
   /** Source variable (e.g., "$NAME") */
-  source: string;
+  source: string
   /** Target case type */
-  toCase: AstGrepCaseType;
+  toCase: AstGrepCaseType
   /** Optional separators for word splitting */
-  separatedBy?: Array<AstGrepSeparator>;
+  separatedBy?: Array<AstGrepSeparator>
 }
 
 /** Match information for replace operations */
 export interface AstGrepMatchInfo {
   /** Location in format "file:line:column" */
-  location: string;
+  location: string
   /** Original matched code */
-  original: string;
+  original: string
   /** Replacement code */
-  replacement: string;
+  replacement: string
 }
 
 /** Result of an AST-grep search match */
 export interface AstGrepMatchResult {
   /** File path where match was found */
-  file: string;
+  file: string
   /** Line number (1-based) */
-  line: number;
+  line: number
   /** Column number (1-based) */
-  column: number;
+  column: number
   /** Matched text */
-  text: string;
+  text: string
 }
 
 /**
@@ -78,23 +75,18 @@ export interface AstGrepMatchResult {
  * # Returns
  * Result containing the moved code, or error if pattern doesn't match exactly 1 node
  */
-export declare function astGrepRefactor(
-  pattern: string,
-  language: string,
-  sourceFile: string,
-  targetFile: string
-): Promise<AstGrepRefactorResult>;
+export declare function astGrepRefactor(pattern: string, language: string, sourceFile: string, targetFile: string): Promise<AstGrepRefactorResult>
 
 /** Result of an AST-grep refactor operation (extract mode) */
 export interface AstGrepRefactorResult {
   /** Whether the refactor was successful */
-  success: boolean;
+  success: boolean
   /** The code that was moved */
-  movedCode: string;
+  movedCode: string
   /** Source file path */
-  sourceFile: string;
+  sourceFile: string
   /** Target file path */
-  targetFile: string;
+  targetFile: string
 }
 
 /**
@@ -112,40 +104,32 @@ export interface AstGrepRefactorResult {
  * # Returns
  * Result containing match details and replacement info
  */
-export declare function astGrepReplace(
-  pattern: string,
-  language: string,
-  sourceFile: string,
-  replacement: string,
-  transforms?: Array<AstGrepTransform> | undefined | null,
-  batch?: boolean | undefined | null,
-  preview?: boolean | undefined | null
-): Promise<AstGrepReplaceResult>;
+export declare function astGrepReplace(pattern: string, language: string, sourceFile: string, replacement: string, transforms?: Array<AstGrepTransform> | undefined | null, batch?: boolean | undefined | null, preview?: boolean | undefined | null): Promise<AstGrepReplaceResult>
 
 /** Result of an AST-grep replace operation (replace mode) */
 export interface AstGrepReplaceResult {
   /** Whether the operation was successful */
-  success: boolean;
+  success: boolean
   /** Mode: "replace" or "extract" */
-  mode: string;
+  mode: string
   /** Source file path */
-  sourceFile: string;
+  sourceFile: string
   /** Number of matches replaced (batch mode) */
-  matchesCount: number;
+  matchesCount: number
   /** Whether this was a preview (dry-run) */
-  preview: boolean;
+  preview: boolean
   /** Match details (location, original, replacement) */
-  matches: Array<AstGrepMatchInfo>;
+  matches: Array<AstGrepMatchInfo>
 }
 
 /** Replace transform configuration */
 export interface AstGrepReplaceTransform {
   /** Source variable (e.g., "$NAME") */
-  source: string;
+  source: string
   /** Regex pattern to find */
-  replace: string;
+  replace: string
   /** Replacement string */
-  by: string;
+  by: string
 }
 
 /**
@@ -159,11 +143,7 @@ export interface AstGrepReplaceTransform {
  * # Returns
  * Array of match results with file, line, column, and matched text
  */
-export declare function astGrepSearch(
-  pattern: string,
-  language: string,
-  paths: Array<string>
-): Promise<Array<AstGrepMatchResult>>;
+export declare function astGrepSearch(pattern: string, language: string, paths: Array<string>): Promise<Array<AstGrepMatchResult>>
 
 /** Separator options for word splitting */
 export declare const enum AstGrepSeparator {
@@ -172,39 +152,39 @@ export declare const enum AstGrepSeparator {
   Dash = 'Dash',
   Dot = 'Dot',
   Slash = 'Slash',
-  Space = 'Space',
+  Space = 'Space'
 }
 
 /** Substring transform configuration */
 export interface AstGrepSubstringTransform {
   /** Source variable (e.g., "$NAME") */
-  source: string;
+  source: string
   /** Start character index (0-based, negative counts from end) */
-  startChar?: number;
+  startChar?: number
   /** End character index (negative counts from end) */
-  endChar?: number;
+  endChar?: number
 }
 
 /** Transform definition - one of substring, replace, or convert */
 export interface AstGrepTransform {
   /** Transform name (the variable it creates, e.g., "NEW") */
-  name: string;
+  name: string
   /** Substring transform (mutually exclusive with replace/convert) */
-  substring?: AstGrepSubstringTransform;
+  substring?: AstGrepSubstringTransform
   /** Replace transform (mutually exclusive with substring/convert) */
-  replaceTransform?: AstGrepReplaceTransform;
+  replaceTransform?: AstGrepReplaceTransform
   /** Convert transform (mutually exclusive with substring/replace) */
-  convert?: AstGrepConvertTransform;
+  convert?: AstGrepConvertTransform
 }
 
 /** Result of bash command execution for E2E testing. */
 export interface BashExecutionResult {
   /** Whether the command succeeded (exit code 0) */
-  success: boolean;
+  success: boolean
   /** Command output (stdout) */
-  output?: string;
+  output?: string
   /** Error message or stderr content */
-  error?: string;
+  error?: string
 }
 
 /**
@@ -214,7 +194,7 @@ export interface BashExecutionResult {
  *
  * @param pattern - The pattern to allow for the session
  */
-export declare function blocklistAllowSession(pattern: string): void;
+export declare function blocklistAllowSession(pattern: string): void
 
 /**
  * Check a command against the blocklist.
@@ -223,13 +203,13 @@ export declare function blocklistAllowSession(pattern: string): void;
  * @param command - The bash command to check
  * @returns Check result
  */
-export declare function blocklistCheck(command: string): JsCheckResult;
+export declare function blocklistCheck(command: string): JsCheckResult
 
 /**
  * Clear all session allowances.
  * Called on TUI restart to reset session memory.
  */
-export declare function blocklistClearSessionAllowances(): void;
+export declare function blocklistClearSessionAllowances(): void
 
 /**
  * Initialize the blocklist system with the project root.
@@ -237,9 +217,7 @@ export declare function blocklistClearSessionAllowances(): void;
  *
  * @param projectRoot - Path to the project root (optional, for project-specific rules)
  */
-export declare function blocklistInit(
-  projectRoot?: string | undefined | null
-): void;
+export declare function blocklistInit(projectRoot?: string | undefined | null): void
 
 /**
  * Check if a pattern is already allowed for the current session.
@@ -248,7 +226,7 @@ export declare function blocklistInit(
  * @param pattern - The pattern to check
  * @returns true if the pattern is allowed, false otherwise
  */
-export declare function blocklistIsSessionAllowed(pattern: string): boolean;
+export declare function blocklistIsSessionAllowed(pattern: string): boolean
 
 /**
  * Load blocklist configuration from system and project paths.
@@ -257,9 +235,7 @@ export declare function blocklistIsSessionAllowed(pattern: string): boolean;
  * @param projectRoot - Path to the project root (optional)
  * @returns Merged blocklist configuration
  */
-export declare function blocklistLoad(
-  projectRoot?: string | undefined | null
-): JsBlocklistConfig;
+export declare function blocklistLoad(projectRoot?: string | undefined | null): JsBlocklistConfig
 
 /**
  * Get the project blocklist config path (.fspec/blocklist.json)
@@ -267,7 +243,7 @@ export declare function blocklistLoad(
  * @param projectRoot - Path to the project root
  * @returns Path to project config
  */
-export declare function blocklistProjectPath(projectRoot: string): string;
+export declare function blocklistProjectPath(projectRoot: string): string
 
 /**
  * Save blocklist configuration to the project config file.
@@ -275,17 +251,14 @@ export declare function blocklistProjectPath(projectRoot: string): string;
  * @param projectRoot - Path to the project root
  * @param config - Blocklist configuration to save
  */
-export declare function blocklistSave(
-  projectRoot: string,
-  config: JsBlocklistConfig
-): void;
+export declare function blocklistSave(projectRoot: string, config: JsBlocklistConfig): void
 
 /**
  * Get the system blocklist config path (~/.fspec/blocklist.json)
  *
  * @returns Path to system config, or null if home directory cannot be determined
  */
-export declare function blocklistSystemPath(): string | null;
+export declare function blocklistSystemPath(): string | null
 
 /**
  * Call fspec command via JS-controlled invocation pattern
@@ -324,12 +297,7 @@ export declare function blocklistSystemPath(): string | null;
  * For multiple callback arguments, we use `FnArgs<(...)>` wrapper and call with `.into()`
  * to properly destructure the tuple into separate JavaScript function parameters.
  */
-export declare function callFspecCommand(
-  command: string,
-  argsJson: string,
-  projectRoot: string,
-  callback: (arg0: string, arg1: string, arg2: string) => string
-): string;
+export declare function callFspecCommand(command: string, argsJson: string, projectRoot: string, callback: (arg0: string, arg1: string, arg2: string) => string): string
 
 /**
  * Start the Claude browser OAuth login flow.
@@ -346,7 +314,7 @@ export declare function callFspecCommand(
  * Rule [0]: claude_oauth_browser_login() is an async NAPI function that spawns
  * a tokio task to run claude_browser_oauth_login().
  */
-export declare function claudeOauthBrowserLogin(): Promise<NapiClaudeTokens>;
+export declare function claudeOauthBrowserLogin(): Promise<NapiClaudeTokens>
 
 /**
  * Clear stored OAuth tokens by deleting claude_auth.json.
@@ -356,7 +324,7 @@ export declare function claudeOauthBrowserLogin(): Promise<NapiClaudeTokens>;
  *
  * Rule [4]: Async NAPI function that deletes claude_auth.json for disconnect.
  */
-export declare function claudeOauthClearTokens(): Promise<void>;
+export declare function claudeOauthClearTokens(): Promise<void>
 
 /**
  * Read stored tokens from claude_auth.json.
@@ -368,7 +336,7 @@ export declare function claudeOauthClearTokens(): Promise<void>;
  * Rule [3]: Async NAPI function that reads claude_auth.json via
  * read_claude_auth() and returns NapiClaudeTokens or null.
  */
-export declare function claudeOauthGetTokens(): Promise<NapiClaudeTokens | null>;
+export declare function claudeOauthGetTokens(): Promise<NapiClaudeTokens | null>
 
 /**
  * Phase 2: Complete headless login — validate state, exchange code, persist tokens.
@@ -381,10 +349,7 @@ export declare function claudeOauthGetTokens(): Promise<NapiClaudeTokens | null>
  * Rule [1]: claude_oauth_headless_complete(code_with_state, pkce_verifier)
  * validates state, exchanges code, and returns NapiClaudeTokens.
  */
-export declare function claudeOauthHeadlessComplete(
-  codeWithState: string,
-  pkceVerifier: string
-): Promise<NapiClaudeTokens>;
+export declare function claudeOauthHeadlessComplete(codeWithState: string, pkceVerifier: string): Promise<NapiClaudeTokens>
 
 /**
  * Phase 1: Start headless login flow — generate PKCE and build authorize URL.
@@ -398,7 +363,7 @@ export declare function claudeOauthHeadlessComplete(
  * Rule [1]: Two-phase design keeps the NAPI boundary clean — no
  * CodeEntryFn callback needed.
  */
-export declare function claudeOauthHeadlessStart(): NapiClaudeHeadlessStartResult;
+export declare function claudeOauthHeadlessStart(): NapiClaudeHeadlessStartResult
 
 /**
  * Refresh an access token using a refresh_token.
@@ -409,9 +374,7 @@ export declare function claudeOauthHeadlessStart(): NapiClaudeHeadlessStartResul
  * Rule [2]: Async NAPI function that calls refresh_access_token_at() and
  * returns NapiClaudeTokens with refreshed tokens persisted.
  */
-export declare function claudeOauthRefreshToken(
-  refreshToken: string
-): Promise<NapiClaudeTokens>;
+export declare function claudeOauthRefreshToken(refreshToken: string): Promise<NapiClaudeTokens>
 
 /**
  * Start the browser OAuth login flow.
@@ -428,7 +391,7 @@ export declare function claudeOauthRefreshToken(
  * Rule [0]: codex_oauth_browser_login() is an async NAPI function that spawns
  * a tokio task to run browser_oauth_login().
  */
-export declare function codexOauthBrowserLogin(): Promise<NapiCodexTokens>;
+export declare function codexOauthBrowserLogin(): Promise<NapiCodexTokens>
 
 /**
  * Clear stored OAuth tokens from auth.json (disconnect Codex OAuth).
@@ -437,7 +400,7 @@ export declare function codexOauthBrowserLogin(): Promise<NapiCodexTokens>;
  * OPENAI_API_KEY. Used by the TUI when the user presses 'd' on the
  * Codex provider to disconnect their ChatGPT OAuth session.
  */
-export declare function codexOauthClearTokens(): void;
+export declare function codexOauthClearTokens(): void
 
 /**
  * Phase 2: Poll for device auth completion.
@@ -450,10 +413,7 @@ export declare function codexOauthClearTokens(): void;
  *
  * Rule [1]: Returns a Promise<NapiCodexTokens> that resolves when polling completes.
  */
-export declare function codexOauthDeviceLoginPoll(
-  deviceAuthId: string,
-  interval: number
-): Promise<NapiCodexTokens>;
+export declare function codexOauthDeviceLoginPoll(deviceAuthId: string, interval: number): Promise<NapiCodexTokens>
 
 /**
  * Phase 1: Start device auth flow — request a device code.
@@ -465,7 +425,7 @@ export declare function codexOauthDeviceLoginPoll(
  * Rule [6]: Two-phase design — first returns user_code and verification_url
  * synchronously, then a separate async function handles the polling.
  */
-export declare function codexOauthDeviceLoginStart(): Promise<NapiDeviceAuthStartResult>;
+export declare function codexOauthDeviceLoginStart(): Promise<NapiDeviceAuthStartResult>
 
 /**
  * Read stored tokens from auth.json.
@@ -476,7 +436,7 @@ export declare function codexOauthDeviceLoginStart(): Promise<NapiDeviceAuthStar
  * Rule [3]: Synchronous NAPI function that reads auth.json via
  * read_codex_auth() and returns NapiCodexTokens or null.
  */
-export declare function codexOauthGetTokens(): NapiCodexTokens | null;
+export declare function codexOauthGetTokens(): NapiCodexTokens | null
 
 /**
  * Refresh an access token using a refresh_token.
@@ -487,18 +447,16 @@ export declare function codexOauthGetTokens(): NapiCodexTokens | null;
  * Rule [2]: Async NAPI function that calls refresh_access_token() and
  * returns refreshed NapiCodexTokens.
  */
-export declare function codexOauthRefreshToken(
-  refreshToken: string
-): Promise<NapiCodexTokens>;
+export declare function codexOauthRefreshToken(refreshToken: string): Promise<NapiCodexTokens>
 
 /** PERF-002: Progress information for compaction process */
 export interface CompactionProgress {
   /** Current compaction phase (e.g., "Analyzing anchors", "Generating summary") */
-  phase: string;
+  phase: string
   /** Current progress count (e.g., current turn being processed) */
-  current: number;
+  current: number
   /** Total items to process (e.g., total turns to analyze) */
-  total: number;
+  total: number
 }
 
 /**
@@ -507,15 +465,15 @@ export interface CompactionProgress {
  */
 export interface CompactionResult {
   /** Original token count before compaction */
-  originalTokens: number;
+  originalTokens: number
   /** Token count after compaction */
-  compactedTokens: number;
+  compactedTokens: number
   /** Compression ratio as percentage (0-100) */
-  compressionRatio: number;
+  compressionRatio: number
   /** Number of turns summarized */
-  turnsSummarized: number;
+  turnsSummarized: number
   /** Number of turns kept */
-  turnsKept: number;
+  turnsKept: number
 }
 
 /**
@@ -524,13 +482,13 @@ export interface CompactionResult {
  */
 export interface ContextFillInfo {
   /** Fill percentage (0-100+, can exceed 100 near compaction) */
-  fillPercentage: number;
+  fillPercentage: number
   /** Effective tokens (after cache discount) - using f64 for NAPI compatibility */
-  effectiveTokens: number;
+  effectiveTokens: number
   /** Compaction threshold (usable context after output reservation) - using f64 for NAPI compatibility */
-  threshold: number;
+  threshold: number
   /** Provider's context window size - using f64 for NAPI compatibility */
-  contextWindow: number;
+  contextWindow: number
 }
 
 /**
@@ -545,11 +503,7 @@ export interface ContextFillInfo {
  * @param checkpointName - Name for the checkpoint
  * @returns GhostCheckpoint with SHA, parent SHA, and captured files
  */
-export declare function createGhostCheckpoint(
-  dir: string,
-  workUnitId: string,
-  checkpointName: string
-): GhostCheckpointJs;
+export declare function createGhostCheckpoint(dir: string, workUnitId: string, checkpointName: string): GhostCheckpointJs
 
 /**
  * Create a worktree for a session at HEAD
@@ -558,10 +512,7 @@ export declare function createGhostCheckpoint(
  * @param sessionId - Unique session identifier
  * @returns WorktreeCreateResult with worktree info and metadata
  */
-export declare function createWorktree(
-  repoPath: string,
-  sessionId: string
-): WorktreeCreateResultJs;
+export declare function createWorktree(repoPath: string, sessionId: string): WorktreeCreateResultJs
 
 /**
  * Create a worktree for a session at a specific commit ref
@@ -571,11 +522,7 @@ export declare function createWorktree(
  * @param commitRef - Optional commit reference (defaults to HEAD)
  * @returns WorktreeCreateResult with worktree info and metadata
  */
-export declare function createWorktreeAtRef(
-  repoPath: string,
-  sessionId: string,
-  commitRef?: string | undefined | null
-): WorktreeCreateResultJs;
+export declare function createWorktreeAtRef(repoPath: string, sessionId: string, commitRef?: string | undefined | null): WorktreeCreateResultJs
 
 /**
  * Force reload credentials from disk
@@ -585,7 +532,7 @@ export declare function createWorktreeAtRef(
  *
  * SECURITY: This function does NOT return credentials - it only triggers a reload.
  */
-export declare function credentialsReload(): boolean;
+export declare function credentialsReload(): boolean
 
 /**
  * Debug command result (AGENT-021)
@@ -593,11 +540,11 @@ export declare function credentialsReload(): boolean;
  */
 export interface DebugCommandResult {
   /** Whether debug capture is now enabled */
-  enabled: boolean;
+  enabled: boolean
   /** Path to the debug session file (if available) */
-  sessionFile?: string;
+  sessionFile?: string
   /** Human-readable message about the result */
-  message: string;
+  message: string
 }
 
 /**
@@ -607,18 +554,14 @@ export interface DebugCommandResult {
  * @param workUnitId - Work unit identifier
  * @param checkpointName - Name of the checkpoint to delete
  */
-export declare function deleteGhostCheckpoint(
-  dir: string,
-  workUnitId: string,
-  checkpointName: string
-): void;
+export declare function deleteGhostCheckpoint(dir: string, workUnitId: string, checkpointName: string): void
 
 /** Result of discarding a session */
 export interface DiscardResultJs {
   /** Session ID that was discarded */
-  sessionId: string;
+  sessionId: string
   /** Number of files that were in the session (not applied) */
-  filesDiscarded: number;
+  filesDiscarded: number
 }
 
 /**
@@ -631,10 +574,7 @@ export interface DiscardResultJs {
  * @param sessionId - Session identifier
  * @returns DiscardResult with session ID and files discarded count
  */
-export declare function discardSession(
-  repoPath: string,
-  sessionId: string
-): DiscardResultJs;
+export declare function discardSession(repoPath: string, sessionId: string): DiscardResultJs
 
 /**
  * Extract thinking text from a response part.
@@ -646,10 +586,7 @@ export declare function discardSession(
  * # Returns
  * The thinking text if present, null otherwise.
  */
-export declare function extractThinkingText(
-  provider: string,
-  partJson: string
-): string | null;
+export declare function extractThinkingText(provider: string, partJson: string): string | null
 
 /**
  * CODE-009: Fspec command request data
@@ -657,13 +594,13 @@ export declare function extractThinkingText(
  */
 export interface FspecRequest {
   /** The fspec command (e.g., "create-story", "show-work-unit") */
-  command: string;
+  command: string
   /** Command arguments as JSON string */
-  argsJson: string;
+  argsJson: string
   /** Project root directory */
-  projectRoot: string;
+  projectRoot: string
   /** Tool call ID for correlation with response */
-  toolCallId: string;
+  toolCallId: string
 }
 
 /**
@@ -672,18 +609,18 @@ export interface FspecRequest {
  */
 export interface FspecResult {
   /** Whether the command succeeded */
-  success: boolean;
+  success: boolean
   /** Command output (structured data as JSON or human-readable text) */
-  data: string;
+  data: string
   /** Error message if failed */
-  error?: string;
+  error?: string
   /** System reminder for workflow orchestration (to be injected into LLM context) */
-  systemReminder?: string;
+  systemReminder?: string
   /** Tool call ID for correlation */
-  toolCallId: string;
+  toolCallId: string
 }
 
-export declare function getAllWorkUnits(): Array<WorkUnitInfo>;
+export declare function getAllWorkUnits(): Array<WorkUnitInfo>
 
 /**
  * Get files that changed between checkpoint and current working tree
@@ -693,11 +630,7 @@ export declare function getAllWorkUnits(): Array<WorkUnitInfo>;
  * @param checkpointName - Name of the checkpoint
  * @returns Array of file paths that differ
  */
-export declare function getCheckpointDiffFiles(
-  dir: string,
-  workUnitId: string,
-  checkpointName: string
-): Array<string>;
+export declare function getCheckpointDiffFiles(dir: string, workUnitId: string, checkpointName: string): Array<string>
 
 /**
  * Get current branch name
@@ -705,13 +638,13 @@ export declare function getCheckpointDiffFiles(
  * @param dir - Path to the repository root
  * @returns Branch name, or undefined if in detached HEAD state
  */
-export declare function getCurrentBranch(dir: string): string | null;
+export declare function getCurrentBranch(dir: string): string | null
 
 /**
  * Read an environment variable from Rust
  * Used to verify if Node.js process.env changes are visible to Rust
  */
-export declare function getEnvVar(name: string): string | null;
+export declare function getEnvVar(name: string): string | null
 
 /**
  * Get unified diff for a file comparing working directory to HEAD
@@ -720,10 +653,7 @@ export declare function getEnvVar(name: string): string | null;
  * @param filepath - Path to the file (relative to repository root)
  * @returns Unified diff string, or null if no changes
  */
-export declare function getFileDiff(
-  dir: string,
-  filepath: string
-): string | null;
+export declare function getFileDiff(dir: string, filepath: string): string | null
 
 /**
  * Get session diff comparing base commit to current worktree state
@@ -736,10 +666,7 @@ export declare function getFileDiff(
  * @param sessionId - Session identifier
  * @returns SessionResult with unified diff and file lists
  */
-export declare function getSessionDiff(
-  repoPath: string,
-  sessionId: string
-): SessionResultJs;
+export declare function getSessionDiff(repoPath: string, sessionId: string): SessionResultJs
 
 /**
  * Get list of staged files (files added to the index via git add)
@@ -747,7 +674,7 @@ export declare function getSessionDiff(
  * @param dir - Path to the repository root
  * @returns Array of file paths (relative to repository root) that are staged
  */
-export declare function getStagedFiles(dir: string): Array<string>;
+export declare function getStagedFiles(dir: string): Array<string>
 
 /**
  * Get thinking configuration JSON for a provider at a specific level.
@@ -782,10 +709,7 @@ export declare function getStagedFiles(dir: string): Array<string>;
  * // { thinking: { type: "enabled", budget_tokens: 32000 } }
  * ```
  */
-export declare function getThinkingConfig(
-  provider: string,
-  level: JsThinkingLevel
-): string;
+export declare function getThinkingConfig(provider: string, level: JsThinkingLevel): string
 
 /**
  * Get list of unstaged files (modified files not yet staged)
@@ -793,7 +717,7 @@ export declare function getThinkingConfig(
  * @param dir - Path to the repository root
  * @returns Array of file paths that have unstaged modifications
  */
-export declare function getUnstagedFiles(dir: string): Array<string>;
+export declare function getUnstagedFiles(dir: string): Array<string>
 
 /**
  * Get list of untracked files (files not tracked by git)
@@ -801,36 +725,36 @@ export declare function getUnstagedFiles(dir: string): Array<string>;
  * @param dir - Path to the repository root
  * @returns Array of file paths that are not tracked by git
  */
-export declare function getUntrackedFiles(dir: string): Array<string>;
+export declare function getUntrackedFiles(dir: string): Array<string>
 
-export declare function getWorkUnit(workUnitId: string): WorkUnitInfo | null;
+export declare function getWorkUnit(workUnitId: string): WorkUnitInfo | null
 
-export declare function getWorkUnitStatus(workUnitId: string): string | null;
+export declare function getWorkUnitStatus(workUnitId: string): string | null
 
 /** Result of creating a ghost commit checkpoint */
 export interface GhostCheckpointJs {
   /** SHA of the ghost commit */
-  sha: string;
+  sha: string
   /** SHA of the parent commit (HEAD at creation time) */
-  parentSha: string;
+  parentSha: string
   /** List of files captured in the checkpoint */
-  files: Array<string>;
+  files: Array<string>
 }
 
 /** BRIDGE-012: Arguments passed to the global chunk callback */
 export interface GlobalChunkCallbackArgs {
-  sessionId: string;
-  chunk: StreamChunk;
+  sessionId: string
+  chunk: StreamChunk
 }
 
 /** Result of a Glob tool search */
 export interface GlobResult {
   /** Whether the search was successful */
-  success: boolean;
+  success: boolean
   /** Matching file paths (one per line) */
-  data?: string;
+  data?: string
   /** Error message if search failed */
-  error?: string;
+  error?: string
 }
 
 /**
@@ -846,11 +770,7 @@ export interface GlobResult {
  * # Returns
  * GlobResult with matching file paths or error message
  */
-export declare function globSearch(
-  pattern: string,
-  path?: string | undefined | null,
-  caseInsensitive?: boolean | undefined | null
-): Promise<GlobResult>;
+export declare function globSearch(pattern: string, path?: string | undefined | null, caseInsensitive?: boolean | undefined | null): Promise<GlobResult>
 
 /**
  * Inspect session diff before merging
@@ -861,19 +781,16 @@ export declare function globSearch(
  * @param sessionId - Session identifier
  * @returns SessionResult with unified diff and file lists
  */
-export declare function inspectSession(
-  repoPath: string,
-  sessionId: string
-): SessionResultJs;
+export declare function inspectSession(repoPath: string, sessionId: string): SessionResultJs
 
 /** GIT-028: Result of creating an isolated session */
 export interface IsolatedSessionResult {
   /** Session ID */
-  sessionId: string;
+  sessionId: string
   /** Path to the worktree directory */
-  worktreePath: string;
+  worktreePath: string
   /** Base commit SHA the worktree was created from */
-  baseCommit: string;
+  baseCommit: string
 }
 
 /**
@@ -895,47 +812,44 @@ export interface IsolatedSessionResult {
  * // true
  * ```
  */
-export declare function isThinkingContent(
-  provider: string,
-  partJson: string
-): boolean;
+export declare function isThinkingContent(provider: string, partJson: string): boolean
 
-export declare function isWorkUnitsWatcherActive(): boolean;
+export declare function isWorkUnitsWatcherActive(): boolean
 
 /** JavaScript-friendly blocklist config structure */
 export interface JsBlocklistConfig {
   /** Version of the config schema */
-  version: string;
+  version: string
   /** List of blocklist rules */
-  rules: Array<JsBlocklistRule>;
+  rules: Array<JsBlocklistRule>
 }
 
 /** JavaScript-friendly blocklist rule structure */
 export interface JsBlocklistRule {
   /** Unique identifier for the rule */
-  id: string;
+  id: string
   /** Regex pattern to match against commands */
-  pattern: string;
+  pattern: string
   /** Action: "block", "allow", or "prompt" */
-  action: string;
+  action: string
   /** Reason for blocking (shown to AI) */
-  reason: string;
+  reason: string
   /** Guidance on what to do instead (educational) */
-  guidance?: string;
+  guidance?: string
 }
 
 /** JavaScript-friendly check result structure */
 export interface JsCheckResult {
   /** Whether the command is allowed to execute */
-  allowed: boolean;
+  allowed: boolean
   /** Whether the command is blocked */
-  blocked: boolean;
+  blocked: boolean
   /** Reason for blocking (if blocked) */
-  reason?: string;
+  reason?: string
   /** Guidance on what to do instead (if blocked) */
-  guidance?: string;
+  guidance?: string
   /** ID of the matching rule (if any) */
-  matchedRuleId?: string;
+  matchedRuleId?: string
 }
 
 /** TypeScript-friendly thinking level enum */
@@ -947,14 +861,14 @@ export declare const enum JsThinkingLevel {
   /** Balanced thinking (default for most tasks) */
   Medium = 2,
   /** Maximum thinking (complex reasoning tasks) */
-  High = 3,
+  High = 3
 }
 
 /** TUI-059: Work unit context information returned to TypeScript */
 export interface JsWorkUnitContext {
-  id: string;
-  title: string;
-  status: string;
+  id: string
+  title: string
+  status: string
 }
 
 /**
@@ -964,10 +878,7 @@ export interface JsWorkUnitContext {
  * @param workUnitId - Work unit identifier
  * @returns Array of checkpoint names
  */
-export declare function listGhostCheckpoints(
-  dir: string,
-  workUnitId: string
-): Array<string>;
+export declare function listGhostCheckpoints(dir: string, workUnitId: string): Array<string>
 
 /**
  * List all session worktrees with status information
@@ -979,11 +890,7 @@ export declare function listGhostCheckpoints(
  * @param filter - Optional filter: "all", "active", "pending_merge", "clean", "orphaned"
  * @returns Array of SessionInfo objects
  */
-export declare function listSessions(
-  repoPath: string,
-  activeSessions: Array<string>,
-  filter?: string | undefined | null
-): Array<SessionInfoJs>;
+export declare function listSessions(repoPath: string, activeSessions: Array<string>, filter?: string | undefined | null): Array<SessionInfoJs>
 
 /**
  * List all session worktrees in a repository
@@ -991,18 +898,18 @@ export declare function listSessions(
  * @param repoPath - Path to the git repository
  * @returns Array of WorktreeInfo for each worktree found
  */
-export declare function listWorktrees(repoPath: string): Array<WorktreeInfoJs>;
+export declare function listWorktrees(repoPath: string): Array<WorktreeInfoJs>
 
 /** Result of merging a session */
 export interface MergeResultJs {
   /** Session ID that was merged */
-  sessionId: string;
+  sessionId: string
   /** Files that were modified in main */
-  filesModified: Array<string>;
+  filesModified: Array<string>
   /** Files that were added to main */
-  filesAdded: Array<string>;
+  filesAdded: Array<string>
   /** Files that were deleted from main */
-  filesDeleted: Array<string>;
+  filesDeleted: Array<string>
 }
 
 /**
@@ -1016,22 +923,19 @@ export interface MergeResultJs {
  * @returns MergeResult with file lists on success
  * @throws Error with "Conflict" and file list if main has conflicting changes
  */
-export declare function mergeSession(
-  repoPath: string,
-  sessionId: string
-): MergeResultJs;
+export declare function mergeSession(repoPath: string, sessionId: string): MergeResultJs
 
 /** A conversation message (simplified for JS) */
 export interface Message {
-  role: string;
-  content: string;
+  role: string
+  content: string
 }
 
 /** Message role enum */
 export declare const enum MessageRole {
   System = 'System',
   User = 'User',
-  Assistant = 'Assistant',
+  Assistant = 'Assistant'
 }
 
 /**
@@ -1039,7 +943,7 @@ export declare const enum MessageRole {
  *
  * Returns {data_dir}/cache where data_dir is set via persistenceSetDataDirectory().
  */
-export declare function modelsGetCacheDirectory(): string;
+export declare function modelsGetCacheDirectory(): string
 
 /**
  * Get information for a specific model (async)
@@ -1048,10 +952,7 @@ export declare function modelsGetCacheDirectory(): string;
  * * `provider_id` - Provider ID (e.g., "anthropic")
  * * `model_id` - Model ID (e.g., "claude-sonnet-4")
  */
-export declare function modelsGetInfo(
-  providerId: string,
-  modelId: string
-): Promise<NapiModelInfo>;
+export declare function modelsGetInfo(providerId: string, modelId: string): Promise<NapiModelInfo>
 
 /**
  * List all available models from models.dev (async)
@@ -1065,7 +966,7 @@ export declare function modelsGetInfo(
  *
  * Sorts models by release date (newest first).
  */
-export declare function modelsListAll(): Promise<Array<NapiProviderModels>>;
+export declare function modelsListAll(): Promise<Array<NapiProviderModels>>
 
 /**
  * List models for a specific provider (async)
@@ -1073,9 +974,7 @@ export declare function modelsListAll(): Promise<Array<NapiProviderModels>>;
  * # Arguments
  * * `provider_id` - Provider ID (e.g., "anthropic", "openai", "google")
  */
-export declare function modelsListForProvider(
-  providerId: string
-): Promise<Array<NapiModelInfo>>;
+export declare function modelsListForProvider(providerId: string): Promise<Array<NapiModelInfo>>
 
 /**
  * List models from a local OpenAI-compatible server (async)
@@ -1095,9 +994,7 @@ export declare function modelsListForProvider(
  * // Returns: ["Qwen/Qwen3-80B", "mistral-7b"]
  * ```
  */
-export declare function modelsListLocalOpenai(
-  baseUrl: string
-): Promise<Array<string>>;
+export declare function modelsListLocalOpenai(baseUrl: string): Promise<Array<string>>
 
 /**
  * Refresh the model cache from models.dev API (async)
@@ -1108,42 +1005,42 @@ export declare function modelsListLocalOpenai(
  *
  * Returns the number of providers loaded.
  */
-export declare function modelsRefreshCache(): Promise<number>;
+export declare function modelsRefreshCache(): Promise<number>
 
 /** TUI-056: Anchor point for NAPI */
 export interface NapiAnchorPoint {
   /** Index of turn in conversation history */
-  turnIndex: number;
+  turnIndex: number
   /** Type of anchor */
-  anchorType: NapiAnchorType;
+  anchorType: NapiAnchorType
   /** Weight for preservation (0.7-0.9) */
-  weight: number;
+  weight: number
   /** Detection confidence (0.0-1.0) */
-  confidence: number;
+  confidence: number
   /** Human-readable description */
-  description: string;
+  description: string
   /** Timestamp when anchor was created (Unix timestamp in milliseconds) */
-  timestamp: number;
+  timestamp: number
   /**
    * User message content at this turn (captured at anchor creation time)
    * None for old anchors that don't have this data
    */
-  userMessage?: string;
+  userMessage?: string
   /**
    * Assistant response content at this turn (captured at anchor creation time)
    * None for old anchors that don't have this data
    */
-  assistantResponse?: string;
+  assistantResponse?: string
   /** Tool calls made in this turn (captured at anchor creation time) */
-  toolCalls: Array<NapiAnchorToolCall>;
+  toolCalls: Array<NapiAnchorToolCall>
 }
 
 /** TUI-057: Tool call info stored with anchor point */
 export interface NapiAnchorToolCall {
   /** Tool name (e.g., "Edit", "Write", "Bash") */
-  tool: string;
+  tool: string
   /** Whether the tool call succeeded */
-  success: boolean;
+  success: boolean
 }
 
 /** TUI-056: Anchor point types for NAPI */
@@ -1151,17 +1048,17 @@ export declare const enum NapiAnchorType {
   ErrorResolution = 'ErrorResolution',
   TaskCompletion = 'TaskCompletion',
   UserCheckpoint = 'UserCheckpoint',
-  FeatureMilestone = 'FeatureMilestone',
+  FeatureMilestone = 'FeatureMilestone'
 }
 
 export interface NapiAppendResult {
-  messageId: string;
-  session: NapiSessionManifest;
+  messageId: string
+  session: NapiSessionManifest
 }
 
 export interface NapiCherryPickResult {
-  session: NapiSessionManifest;
-  importedIndices: Array<number>;
+  session: NapiSessionManifest
+  importedIndices: Array<number>
 }
 
 /**
@@ -1172,8 +1069,8 @@ export interface NapiCherryPickResult {
  * returned to TypeScript so it can be passed back to headless_complete().
  */
 export interface NapiClaudeHeadlessStartResult {
-  authorizeUrl: string;
-  pkceVerifier: string;
+  authorizeUrl: string
+  pkceVerifier: string
 }
 
 /**
@@ -1185,10 +1082,10 @@ export interface NapiClaudeHeadlessStartResult {
  * Unlike Codex, there is no id_token or account_id.
  */
 export interface NapiClaudeTokens {
-  accessToken: string;
-  refreshToken: string;
+  accessToken: string
+  refreshToken: string
   /** Expiry timestamp in milliseconds since Unix epoch (f64 for JS Number) */
-  expires: number;
+  expires: number
 }
 
 /**
@@ -1198,24 +1095,20 @@ export interface NapiClaudeTokens {
  * All fields are strings.
  */
 export interface NapiCodexTokens {
-  idToken: string;
-  accessToken: string;
-  refreshToken: string;
-  accountId: string;
+  idToken: string
+  accessToken: string
+  refreshToken: string
+  accountId: string
 }
 
 export interface NapiCompactionState {
-  summary: string;
-  compactedBeforeIndex: number;
-  compactedAt: string;
+  summary: string
+  compactedBeforeIndex: number
+  compactedAt: string
 }
 
 /** Compute effective level - NAPI export for TypeScript. */
-export declare function napiComputeEffectiveThinkingLevel(
-  baseLevel: number,
-  detectedLevel: number,
-  forceOff: boolean
-): number;
+export declare function napiComputeEffectiveThinkingLevel(baseLevel: number, detectedLevel: number, forceOff: boolean): number
 
 /**
  * Detect thinking level from prompt - NAPI export for TypeScript.
@@ -1223,7 +1116,7 @@ export declare function napiComputeEffectiveThinkingLevel(
  * This allows TypeScript to show the thinking level indicator in the UI
  * while Rust remains the single source of truth for detection logic.
  */
-export declare function napiDetectThinkingLevel(prompt: string): number;
+export declare function napiDetectThinkingLevel(prompt: string): number
 
 /**
  * Result from device auth login start — returned synchronously so the TUI
@@ -1233,80 +1126,80 @@ export declare function napiDetectThinkingLevel(prompt: string): number;
  * both a sync result and a promise from a single function.
  */
 export interface NapiDeviceAuthStartResult {
-  userCode: string;
-  verificationUrl: string;
-  deviceAuthId: string;
-  interval: number;
+  userCode: string
+  verificationUrl: string
+  deviceAuthId: string
+  interval: number
 }
 
 /** TUI-056: File modification info for turn details */
 export interface NapiFileModification {
   /** File path */
-  path: string;
+  path: string
   /** Type of operation */
-  operation: string;
+  operation: string
   /** Summary of what was changed */
-  summary: string;
+  summary: string
 }
 
 export interface NapiForkPoint {
-  sourceSessionId: string;
-  forkAfterIndex: number;
-  forkedAt: string;
+  sourceSessionId: string
+  forkAfterIndex: number
+  forkedAt: string
 }
 
 /** Check for disable keywords - NAPI export for TypeScript. */
-export declare function napiHasDisableKeywords(prompt: string): boolean;
+export declare function napiHasDisableKeywords(prompt: string): boolean
 
 export interface NapiHistoryEntry {
-  display: string;
-  timestamp: string;
-  project: string;
-  sessionId: string;
-  hasPastedContent: boolean;
+  display: string
+  timestamp: string
+  project: string
+  sessionId: string
+  hasPastedContent: boolean
 }
 
 export interface NapiMergeRecord {
-  sourceSessionId: string;
-  sourceIndices: Array<number>;
-  insertedAt?: number;
-  mergedAt: string;
+  sourceSessionId: string
+  sourceIndices: Array<number>
+  insertedAt?: number
+  mergedAt: string
 }
 
 /** Model information from models.dev */
 export interface NapiModelInfo {
   /** The API model ID (e.g., "claude-sonnet-4-20250514") */
-  id: string;
+  id: string
   /** Display name (e.g., "Claude Sonnet 4") */
-  name: string;
+  name: string
   /** Model family (e.g., "claude-sonnet") */
-  family?: string;
+  family?: string
   /** Whether model supports reasoning/thinking */
-  reasoning: boolean;
+  reasoning: boolean
   /** Whether model supports tool calls */
-  toolCall: boolean;
+  toolCall: boolean
   /** Whether model supports file/image attachments */
-  attachment: boolean;
+  attachment: boolean
   /** Whether model supports temperature parameter */
-  temperature: boolean;
+  temperature: boolean
   /** Context window size in tokens */
-  contextWindow: number;
+  contextWindow: number
   /** Maximum output tokens */
-  maxOutput: number;
+  maxOutput: number
   /** Whether model has vision capability (image input) */
-  hasVision: boolean;
+  hasVision: boolean
 }
 
 /** PAUSE-001: Pause state returned to TypeScript via NAPI */
 export interface NapiPauseState {
   /** "continue" or "confirm" */
-  kind: string;
+  kind: string
   /** Tool name that initiated the pause (e.g., "WebSearch") */
-  toolName: string;
+  toolName: string
   /** Human-readable message (e.g., "Page loaded at https://...") */
-  message: string;
+  message: string
   /** Optional additional details (e.g., command text for confirm) */
-  details?: string;
+  details?: string
 }
 
 /**
@@ -1317,51 +1210,51 @@ export interface NapiPauseState {
  */
 export interface NapiProviderConfig {
   /** Provider ID (e.g., "anthropic", "openai", "gemini") */
-  providerId: string;
+  providerId: string
   /** API key for the provider */
-  apiKey?: string;
+  apiKey?: string
   /** Custom base URL (optional) */
-  baseUrl?: string;
+  baseUrl?: string
   /** Whether the provider is enabled */
-  enabled: boolean;
+  enabled: boolean
   /** Default model (optional) */
-  defaultModel?: string;
+  defaultModel?: string
 }
 
 /** Provider with its available models */
 export interface NapiProviderModels {
   /** Provider ID (e.g., "anthropic", "openai", "google") */
-  providerId: string;
+  providerId: string
   /** Provider display name (e.g., "Anthropic", "OpenAI", "Google") */
-  providerName: string;
+  providerName: string
   /** List of models available from this provider */
-  models: Array<NapiModelInfo>;
+  models: Array<NapiModelInfo>
 }
 
 export interface NapiSessionManifest {
-  id: string;
-  name: string;
-  project: string;
-  provider: string;
-  createdAt: string;
-  updatedAt: string;
-  messageCount: number;
-  forkedFrom?: NapiForkPoint;
-  mergedFrom: Array<NapiMergeRecord>;
-  compaction?: NapiCompactionState;
-  tokenUsage: NapiTokenUsage;
+  id: string
+  name: string
+  project: string
+  provider: string
+  createdAt: string
+  updatedAt: string
+  messageCount: number
+  forkedFrom?: NapiForkPoint
+  mergedFrom: Array<NapiMergeRecord>
+  compaction?: NapiCompactionState
+  tokenUsage: NapiTokenUsage
 }
 
 export interface NapiStoredMessage {
-  id: string;
-  contentHash: string;
-  createdAt: string;
-  role: string;
-  content: string;
-  tokenCount?: number;
-  blobRefs: Array<string>;
+  id: string
+  contentHash: string
+  createdAt: string
+  role: string
+  content: string
+  tokenCount?: number
+  blobRefs: Array<string>
   /** Metadata as a JSON string */
-  metadataJson: string;
+  metadataJson: string
 }
 
 /**
@@ -1376,188 +1269,140 @@ export interface NapiTokenUsage {
    * Current context size (latest input_tokens from API - overwritten, not accumulated)
    * CTX-003: This is what should be displayed to users and used for threshold checks
    */
-  currentContextTokens: number;
+  currentContextTokens: number
   /**
    * Cumulative billed input tokens (sum of all API calls - for billing analytics)
    * CTX-003: This is the total billed by Anthropic across all API calls
    */
-  cumulativeBilledInput: number;
+  cumulativeBilledInput: number
   /** Cumulative billed output tokens (sum of all API calls) */
-  cumulativeBilledOutput: number;
+  cumulativeBilledOutput: number
   /** Cache read tokens from current API call */
-  cacheReadTokens: number;
+  cacheReadTokens: number
   /** Cache creation tokens from current API call */
-  cacheCreationTokens: number;
+  cacheCreationTokens: number
 }
 
 /** TUI-056: Tool call info for turn details */
 export interface NapiToolCall {
   /** Tool name */
-  tool: string;
+  tool: string
   /** Tool parameters as JSON string */
-  parameters: string;
+  parameters: string
   /** Whether tool call was successful */
-  success: boolean;
+  success: boolean
 }
 
 /** TUI-056: Turn details for NAPI */
 export interface NapiTurnDetails {
   /** Turn index for reference */
-  turnIndex: number;
+  turnIndex: number
   /** User message for this turn */
-  userMessage: string;
+  userMessage: string
   /** Assistant response for this turn */
-  assistantResponse: string;
+  assistantResponse: string
   /** Tool calls made during this turn */
-  toolCalls: Array<NapiToolCall>;
+  toolCalls: Array<NapiToolCall>
   /** File modifications made during this turn */
-  fileModifications: Array<NapiFileModification>;
+  fileModifications: Array<NapiFileModification>
   /** Overall success/failure status of turn */
-  status: string;
+  status: string
   /** Brief context about what happened */
-  context: string;
+  context: string
 }
 
 /** NAPI-010: User notification severity levels */
 export declare const enum NotificationSeverity {
   Info = 'Info',
   Warning = 'Warning',
-  Error = 'Error',
+  Error = 'Error'
 }
 
 /** Result of path validation for isolated sessions. */
 export interface PathValidationResult {
   /** Whether the path is allowed for this session */
-  allowed: boolean;
+  allowed: boolean
   /** The resolved path (within worktree if isolated session) */
-  resolvedPath?: string;
+  resolvedPath?: string
   /** Error message if path is not allowed */
-  error?: string;
+  error?: string
 }
 
 /** Add a history entry */
-export declare function persistenceAddHistory(
-  display: string,
-  project: string,
-  sessionId: string
-): void;
+export declare function persistenceAddHistory(display: string, project: string, sessionId: string): void
 
 /** Append a message to a session */
-export declare function persistenceAppendMessage(
-  sessionId: string,
-  role: string,
-  content: string
-): NapiAppendResult;
+export declare function persistenceAppendMessage(sessionId: string, role: string, content: string): NapiAppendResult
 
 /**
  * Append a message with metadata to a session
  *
  * metadata_json should be a JSON object string, e.g. '{"model": "claude-3", "stop_reason": "end_turn"}'
  */
-export declare function persistenceAppendMessageWithMetadata(
-  sessionId: string,
-  role: string,
-  content: string,
-  metadataJson: string
-): NapiAppendResult;
+export declare function persistenceAppendMessageWithMetadata(sessionId: string, role: string, content: string, metadataJson: string): NapiAppendResult
 
 /** Check if a blob exists */
-export declare function persistenceBlobExists(hash: string): boolean;
+export declare function persistenceBlobExists(hash: string): boolean
 
 /** Cherry-pick messages with context */
-export declare function persistenceCherryPick(
-  targetId: string,
-  sourceId: string,
-  index: number,
-  context: number
-): NapiCherryPickResult;
+export declare function persistenceCherryPick(targetId: string, sourceId: string, index: number, context: number): NapiCherryPickResult
 
 /** Cleanup orphaned messages */
-export declare function persistenceCleanupOrphanedMessages(): number;
+export declare function persistenceCleanupOrphanedMessages(): number
 
 /** Clear compaction state for a session */
-export declare function persistenceClearCompactionState(
-  sessionId: string
-): NapiSessionManifest;
+export declare function persistenceClearCompactionState(sessionId: string): NapiSessionManifest
 
 /** Create a new session */
-export declare function persistenceCreateSession(
-  name: string,
-  project: string
-): NapiSessionManifest;
+export declare function persistenceCreateSession(name: string, project: string): NapiSessionManifest
 
 /** Create a new session with a specific provider */
-export declare function persistenceCreateSessionWithProvider(
-  name: string,
-  project: string,
-  provider: string
-): NapiSessionManifest;
+export declare function persistenceCreateSessionWithProvider(name: string, project: string, provider: string): NapiSessionManifest
 
 /** Delete a session */
-export declare function persistenceDeleteSession(id: string): void;
+export declare function persistenceDeleteSession(id: string): void
 
 /** Fork a session at a specific message index */
-export declare function persistenceForkSession(
-  sessionId: string,
-  atIndex: number,
-  name: string
-): NapiSessionManifest;
+export declare function persistenceForkSession(sessionId: string, atIndex: number, name: string): NapiSessionManifest
 
 /** Get content from blob storage */
-export declare function persistenceGetBlob(hash: string): Buffer;
+export declare function persistenceGetBlob(hash: string): Buffer
 
 /** Get the current data directory */
-export declare function persistenceGetDataDirectory(): string;
+export declare function persistenceGetDataDirectory(): string
 
 /** Get history entries */
-export declare function persistenceGetHistory(
-  project?: string | undefined | null,
-  limit?: number | undefined | null
-): Array<NapiHistoryEntry>;
+export declare function persistenceGetHistory(project?: string | undefined | null, limit?: number | undefined | null): Array<NapiHistoryEntry>
 
 /** Get a message by ID */
-export declare function persistenceGetMessage(
-  id: string
-): NapiStoredMessage | null;
+export declare function persistenceGetMessage(id: string): NapiStoredMessage | null
 
 /** Get a message as a full envelope JSON with blob content rehydrated */
-export declare function persistenceGetMessageEnvelope(
-  id: string
-): string | null;
+export declare function persistenceGetMessageEnvelope(id: string): string | null
 
 /**
  * Get a message envelope WITHOUT blob rehydration (returns blob references as-is)
  * Use this when you want to inspect the raw stored format with blob:sha256: references.
  */
-export declare function persistenceGetMessageEnvelopeRaw(
-  id: string
-): string | null;
+export declare function persistenceGetMessageEnvelopeRaw(id: string): string | null
 
 /**
  * Get all messages for a session as envelope JSON array with blob content rehydrated
  * (respects compaction - use for LLM context)
  */
-export declare function persistenceGetSessionMessageEnvelopes(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopes(sessionId: string): Array<string>
 
 /** Get all messages for a session as envelope JSON array - FULL history (ignores compaction) */
-export declare function persistenceGetSessionMessageEnvelopesFull(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopesFull(sessionId: string): Array<string>
 
 /**
  * Get all messages for a session WITHOUT blob rehydration (returns blob references as-is)
  * (respects compaction)
  */
-export declare function persistenceGetSessionMessageEnvelopesRaw(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopesRaw(sessionId: string): Array<string>
 
 /** Get all messages for a session WITHOUT blob rehydration - FULL history (ignores compaction) */
-export declare function persistenceGetSessionMessageEnvelopesRawFull(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopesRawFull(sessionId: string): Array<string>
 
 /**
  * Get all messages for a session (respects compaction - use for LLM context)
@@ -1568,9 +1413,7 @@ export declare function persistenceGetSessionMessageEnvelopesRawFull(
  *
  * For the full uncompacted history, use `persistence_get_session_messages_full`.
  */
-export declare function persistenceGetSessionMessages(
-  sessionId: string
-): Array<NapiStoredMessage>;
+export declare function persistenceGetSessionMessages(sessionId: string): Array<NapiStoredMessage>
 
 /**
  * Get ALL messages for a session (ignores compaction - use for debugging/export)
@@ -1578,69 +1421,41 @@ export declare function persistenceGetSessionMessages(
  * This returns the complete message history regardless of compaction state.
  * For LLM context, use `persistence_get_session_messages` which respects compaction.
  */
-export declare function persistenceGetSessionMessagesFull(
-  sessionId: string
-): Array<NapiStoredMessage>;
+export declare function persistenceGetSessionMessagesFull(sessionId: string): Array<NapiStoredMessage>
 
 /** List all sessions for a project */
-export declare function persistenceListSessions(
-  project: string
-): Array<NapiSessionManifest>;
+export declare function persistenceListSessions(project: string): Array<NapiSessionManifest>
 
 /** Load a session by ID */
-export declare function persistenceLoadSession(id: string): NapiSessionManifest;
+export declare function persistenceLoadSession(id: string): NapiSessionManifest
 
 /** Merge messages from another session */
-export declare function persistenceMergeMessages(
-  targetId: string,
-  sourceId: string,
-  indices: Array<number>
-): NapiSessionManifest;
+export declare function persistenceMergeMessages(targetId: string, sourceId: string, indices: Array<number>): NapiSessionManifest
 
 /** Rename a session */
-export declare function persistenceRenameSession(
-  id: string,
-  newName: string
-): void;
+export declare function persistenceRenameSession(id: string, newName: string): void
 
 /** Resume the last session for a project */
-export declare function persistenceResumeLastSession(
-  project: string
-): NapiSessionManifest;
+export declare function persistenceResumeLastSession(project: string): NapiSessionManifest
 
 /** Search history entries */
-export declare function persistenceSearchHistory(
-  query: string,
-  project?: string | undefined | null
-): Array<NapiHistoryEntry>;
+export declare function persistenceSearchHistory(query: string, project?: string | undefined | null): Array<NapiHistoryEntry>
 
 /** Set compaction state for a session (after manual or automatic compaction) */
-export declare function persistenceSetCompactionState(
-  sessionId: string,
-  summary: string,
-  compactedBeforeIndex: number
-): NapiSessionManifest;
+export declare function persistenceSetCompactionState(sessionId: string, summary: string, compactedBeforeIndex: number): NapiSessionManifest
 
 /**
  * Set the data directory for persistence (e.g., ~/.fspec)
  *
  * This must be called at startup before any other persistence operations.
  */
-export declare function persistenceSetDataDirectory(dir: string): void;
+export declare function persistenceSetDataDirectory(dir: string): void
 
 /** Set session token usage (REPLACES existing - use for cumulative totals) */
-export declare function persistenceSetSessionTokens(
-  sessionId: string,
-  input: number,
-  output: number,
-  cacheRead: number,
-  cacheCreate: number,
-  cumulativeInput: number,
-  cumulativeOutput: number
-): NapiSessionManifest;
+export declare function persistenceSetSessionTokens(sessionId: string, input: number, output: number, cacheRead: number, cacheCreate: number, cumulativeInput: number, cumulativeOutput: number): NapiSessionManifest
 
 /** Store content in blob storage */
-export declare function persistenceStoreBlob(content: Buffer): string;
+export declare function persistenceStoreBlob(content: Buffer): string
 
 /**
  * Store a message envelope as JSON
@@ -1648,19 +1463,10 @@ export declare function persistenceStoreBlob(content: Buffer): string;
  * This is the primary function for storing Claude Code format messages.
  * It handles blob storage for large content automatically.
  */
-export declare function persistenceStoreMessageEnvelope(
-  sessionId: string,
-  envelopeJson: string
-): NapiAppendResult;
+export declare function persistenceStoreMessageEnvelope(sessionId: string, envelopeJson: string): NapiAppendResult
 
 /** Update session token usage (ADDS to existing) */
-export declare function persistenceUpdateSessionTokens(
-  sessionId: string,
-  input: number,
-  output: number,
-  cacheRead: number,
-  cacheCreate: number
-): NapiSessionManifest;
+export declare function persistenceUpdateSessionTokens(sessionId: string, input: number, output: number, cacheRead: number, cacheCreate: number): NapiSessionManifest
 
 /**
  * Prune all orphaned session worktrees
@@ -1672,17 +1478,14 @@ export declare function persistenceUpdateSessionTokens(
  * @param activeSessions - Array of currently active session IDs
  * @returns PruneResult with count and list of pruned session IDs
  */
-export declare function pruneOrphaned(
-  repoPath: string,
-  activeSessions: Array<string>
-): PruneResultJs;
+export declare function pruneOrphaned(repoPath: string, activeSessions: Array<string>): PruneResultJs
 
 /** Result of pruning orphaned sessions */
 export interface PruneResultJs {
   /** Number of orphaned worktrees that were pruned */
-  count: number;
+  count: number
   /** List of session IDs that were pruned */
-  pruned: Array<string>;
+  pruned: Array<string>
 }
 
 /**
@@ -1691,10 +1494,7 @@ export interface PruneResultJs {
  * @param repoPath - Path to the git repository
  * @param sessionId - Session identifier of the worktree to remove
  */
-export declare function removeWorktree(
-  repoPath: string,
-  sessionId: string
-): void;
+export declare function removeWorktree(repoPath: string, sessionId: string): void
 
 /**
  * Restore working tree from ghost commit checkpoint
@@ -1709,28 +1509,23 @@ export declare function removeWorktree(
  * @param force - If true, overwrite without conflict detection
  * @returns RestoreResult with success status and affected files
  */
-export declare function restoreGhostCheckpoint(
-  dir: string,
-  workUnitId: string,
-  checkpointName: string,
-  force?: boolean | undefined | null
-): RestoreResultJs;
+export declare function restoreGhostCheckpoint(dir: string, workUnitId: string, checkpointName: string, force?: boolean | undefined | null): RestoreResultJs
 
 /** Result of restoring a ghost commit checkpoint */
 export interface RestoreResultJs {
   /** Whether restore was successful */
-  success: boolean;
+  success: boolean
   /** Files that were restored */
-  restoredFiles: Array<string>;
+  restoredFiles: Array<string>
   /** Files that were deleted (existed after checkpoint but not in it) */
-  deletedFiles: Array<string>;
+  deletedFiles: Array<string>
 }
 
 /**
  * Clear the active session tracking (VIEWNV-001)
  * Call this when returning to BoardView to ensure navigation works correctly
  */
-export declare function sessionClearActive(): void;
+export declare function sessionClearActive(): void
 
 /**
  * TUI-065: Clear session history and reinject context reminders
@@ -1742,7 +1537,7 @@ export declare function sessionClearActive(): void;
  * DRY: This is the single source of truth for clear functionality.
  * Both TUI /clear command and Telegram bridge /clear should use this.
  */
-export declare function sessionClearHistory(sessionId: string): void;
+export declare function sessionClearHistory(sessionId: string): void
 
 /**
  * Clear pending observed correlation IDs for a session (WATCH-011)
@@ -1750,16 +1545,14 @@ export declare function sessionClearHistory(sessionId: string): void;
  * Call this after the watcher finishes processing an observation response.
  * Subsequent output chunks will no longer have observed_correlation_ids set.
  */
-export declare function sessionClearObservedCorrelationIds(
-  sessionId: string
-): void;
+export declare function sessionClearObservedCorrelationIds(sessionId: string): void
 
 /**
  * Clear the role for a session (WATCH-004)
  *
  * Returns the session to a regular (non-watcher) state.
  */
-export declare function sessionClearRole(sessionId: string): void;
+export declare function sessionClearRole(sessionId: string): void
 
 /**
  * Manually trigger context compaction for a background session (NAPI-009 + NAPI-005)
@@ -1770,9 +1563,7 @@ export declare function sessionClearRole(sessionId: string): void;
  * Returns CompactionResult with metrics about the compaction operation.
  * Returns error if session is empty (nothing to compact).
  */
-export declare function sessionCompact(
-  sessionId: string
-): Promise<CompactionResult>;
+export declare function sessionCompact(sessionId: string): Promise<CompactionResult>
 
 /**
  * Create a watcher session for a parent session (WATCH-007)
@@ -1782,12 +1573,7 @@ export declare function sessionCompact(
  * the parent's output stream via broadcast subscription.
  * WATCH-019: Now spawns watcher_agent_loop instead of regular agent_loop.
  */
-export declare function sessionCreateWatcher(
-  parentId: string,
-  model: string,
-  project: string,
-  name: string
-): Promise<string>;
+export declare function sessionCreateWatcher(parentId: string, model: string, project: string, name: string): Promise<string>
 
 /**
  * GIT-020: Execute a bash command within a session's context.
@@ -1802,10 +1588,7 @@ export declare function sessionCreateWatcher(
  * @param command - The bash command to execute
  * @returns BashExecutionResult with output or error
  */
-export declare function sessionExecuteBash(
-  sessionId: string,
-  command: string
-): BashExecutionResult;
+export declare function sessionExecuteBash(sessionId: string, command: string): BashExecutionResult
 
 /**
  * TUI-059: Get the currently active session ID
@@ -1813,7 +1596,7 @@ export declare function sessionExecuteBash(
  * Returns the session ID of the currently active session (for navigation),
  * or null if no session is active.
  */
-export declare function sessionGetActive(): string | null;
+export declare function sessionGetActive(): string | null
 
 /**
  * Get anchor points for a session (TUI-056)
@@ -1824,9 +1607,7 @@ export declare function sessionGetActive(): string | null;
  * TUI-057: Now includes turn content (user message, assistant response, tool calls)
  * which is loaded from persistence to ensure content survives compaction.
  */
-export declare function sessionGetAnchorPoints(
-  sessionId: string
-): Array<NapiAnchorPoint>;
+export declare function sessionGetAnchorPoints(sessionId: string): Array<NapiAnchorPoint>
 
 /**
  * Get the base thinking level for a session (TUI-054)
@@ -1834,13 +1615,10 @@ export declare function sessionGetAnchorPoints(
  * Returns the base thinking level: 0=Off, 1=Low, 2=Medium, 3=High
  * This is the level set via /thinking command dialog.
  */
-export declare function sessionGetBaseThinkingLevel(sessionId: string): number;
+export declare function sessionGetBaseThinkingLevel(sessionId: string): number
 
 /** Get buffered output from a session */
-export declare function sessionGetBufferedOutput(
-  sessionId: string,
-  limit: number
-): Array<StreamChunk>;
+export declare function sessionGetBufferedOutput(sessionId: string, limit: number): Array<StreamChunk>
 
 /**
  * PERF-002: Get compaction progress for a session
@@ -1848,12 +1626,10 @@ export declare function sessionGetBufferedOutput(
  * Returns the current compaction progress if compaction is in progress, null otherwise.
  * Used by TypeScript to display progress indication: "Analyzing anchors... X/Y turns"
  */
-export declare function sessionGetCompactionProgress(
-  sessionId: string
-): CompactionProgress | null;
+export declare function sessionGetCompactionProgress(sessionId: string): CompactionProgress | null
 
 /** Get debug enabled state for a background session */
-export declare function sessionGetDebugEnabled(sessionId: string): boolean;
+export declare function sessionGetDebugEnabled(sessionId: string): boolean
 
 /**
  * GIT-020: Get the effective working directory for a session.
@@ -1866,49 +1642,43 @@ export declare function sessionGetDebugEnabled(sessionId: string): boolean;
  * @param session_id - UUID of the session
  * @returns The effective working directory path, or null if session not found
  */
-export declare function sessionGetEffectiveCwd(
-  sessionId: string
-): string | null;
+export declare function sessionGetEffectiveCwd(sessionId: string): string | null
 
 /**
  * Get the first session (VIEWNV-001)
  * Returns None if no sessions exist
  */
-export declare function sessionGetFirst(): string | null;
+export declare function sessionGetFirst(): string | null
 
 /**
  * Get the INTERNAL provider state from the provider_manager
  * This reads the actual provider that will be used for API calls, not just metadata.
  * BUG-097: Used to verify that sessionSetModelProfile actually updates the provider_manager.
  */
-export declare function sessionGetInternalProvider(
-  sessionId: string
-): Promise<SessionModel>;
+export declare function sessionGetInternalProvider(sessionId: string): Promise<SessionModel>
 
 /**
  * Get buffered output with consecutive Text/Thinking chunks merged.
  * This is more efficient for reattachment - JS can process fewer chunks.
  */
-export declare function sessionGetMergedOutput(
-  sessionId: string
-): Array<StreamChunk>;
+export declare function sessionGetMergedOutput(sessionId: string): Array<StreamChunk>
 
 /** Get the model info for a background session */
-export declare function sessionGetModel(sessionId: string): SessionModel;
+export declare function sessionGetModel(sessionId: string): SessionModel
 
 /**
  * Get the next session after the currently active one (VIEWNV-001)
  * Returns None if no sessions exist or at the last session
  * If no active session (BoardView), returns the first session
  */
-export declare function sessionGetNext(): string | null;
+export declare function sessionGetNext(): string | null
 
 /**
  * Get the parent session ID for a watcher (WATCH-007)
  *
  * Returns the parent session ID if the session is a watcher, None otherwise.
  */
-export declare function sessionGetParent(sessionId: string): string | null;
+export declare function sessionGetParent(sessionId: string): string | null
 
 /**
  * Get pause state for a session (PAUSE-001)
@@ -1916,9 +1686,7 @@ export declare function sessionGetParent(sessionId: string): string | null;
  * Returns the current pause state if the session is paused, null otherwise.
  * TypeScript uses this to display pause UI (tool name, message, kind).
  */
-export declare function sessionGetPauseState(
-  sessionId: string
-): NapiPauseState | null;
+export declare function sessionGetPauseState(sessionId: string): NapiPauseState | null
 
 /**
  * Get pending input text for a background session (TUI-049)
@@ -1926,30 +1694,26 @@ export declare function sessionGetPauseState(
  * Returns the input text that was being typed when the user switched away from this session.
  * Used to restore input field state when switching back to the session.
  */
-export declare function sessionGetPendingInput(
-  sessionId: string
-): string | null;
+export declare function sessionGetPendingInput(sessionId: string): string | null
 
 /**
  * Get the previous session before the currently active one (VIEWNV-001)
  * Returns None if no sessions exist or at the first session (should go to board)
  */
-export declare function sessionGetPrev(): string | null;
+export declare function sessionGetPrev(): string | null
 
 /**
  * Get the role for a session (WATCH-004)
  *
  * Returns None for regular sessions, role info for watcher sessions.
  */
-export declare function sessionGetRole(
-  sessionId: string
-): SessionRoleInfo | null;
+export declare function sessionGetRole(sessionId: string): SessionRoleInfo | null
 
 /** Get session status */
-export declare function sessionGetStatus(sessionId: string): string;
+export declare function sessionGetStatus(sessionId: string): string
 
 /** Get cached token counts for a background session */
-export declare function sessionGetTokens(sessionId: string): SessionTokens;
+export declare function sessionGetTokens(sessionId: string): SessionTokens
 
 /**
  * Get turn details for a session (TUI-056, TUI-057)
@@ -1959,62 +1723,57 @@ export declare function sessionGetTokens(sessionId: string): SessionTokens;
  *
  * The turn_index is 0-based and refers to the index in the session's turns vector.
  */
-export declare function sessionGetTurnDetails(
-  sessionId: string,
-  turnIndex: number
-): Promise<NapiTurnDetails | null>;
+export declare function sessionGetTurnDetails(sessionId: string, turnIndex: number): Promise<NapiTurnDetails | null>
 
 /**
  * Get all watcher session IDs for a parent session (WATCH-007)
  *
  * Returns a list of session IDs that are watching the specified parent.
  */
-export declare function sessionGetWatchers(sessionId: string): Array<string>;
+export declare function sessionGetWatchers(sessionId: string): Array<string>
 
 /**
  * TUI-059: Get work unit context for a session
  *
  * Returns the work unit context if set, or null if no context is set.
  */
-export declare function sessionGetWorkUnitContext(
-  sessionId: string
-): JsWorkUnitContext | null;
+export declare function sessionGetWorkUnitContext(sessionId: string): JsWorkUnitContext | null
 
 /** Session info returned to TypeScript */
 export interface SessionInfo {
-  id: string;
-  name: string;
-  status: string;
-  project: string;
-  messageCount: number;
+  id: string
+  name: string
+  status: string
+  project: string
+  messageCount: number
   /** Provider ID (e.g., "anthropic", "openai") */
-  providerId?: string;
+  providerId?: string
   /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
-  modelId?: string;
+  modelId?: string
   /** GIT-029: Whether this is an isolated session with a git worktree */
-  isIsolated: boolean;
+  isIsolated: boolean
   /** GIT-029: Path to the worktree (if isolated) */
-  worktreePath?: string;
+  worktreePath?: string
 }
 
 /** Session information with derived status for listing */
 export interface SessionInfoJs {
   /** Session ID */
-  sessionId: string;
+  sessionId: string
   /** Derived status: "active", "pending_merge", "clean", "orphaned" */
-  status: string;
+  status: string
   /** Base commit the worktree was created from */
-  baseCommit: string;
+  baseCommit: string
   /** Number of files changed (modified + added + deleted) */
-  filesChanged: number;
+  filesChanged: number
   /** When the session was created (ISO 8601 format) */
-  createdAt: string;
+  createdAt: string
   /** Path to the worktree */
-  worktreePath: string;
+  worktreePath: string
 }
 
 /** Interrupt a session */
-export declare function sessionInterrupt(sessionId: string): void;
+export declare function sessionInterrupt(sessionId: string): void
 
 /**
  * GIT-020: Check if a session is isolated (has a worktree).
@@ -2022,13 +1781,10 @@ export declare function sessionInterrupt(sessionId: string): void;
  * @param session_id - UUID of the session
  * @returns true if session is isolated, false if not, null if session not found
  */
-export declare function sessionIsIsolated(sessionId: string): boolean | null;
+export declare function sessionIsIsolated(sessionId: string): boolean | null
 
 /** Create a new background session (generates new UUID) */
-export declare function sessionManagerCreate(
-  model: string,
-  project: string
-): Promise<string>;
+export declare function sessionManagerCreate(model: string, project: string): Promise<string>
 
 /**
  * GIT-028: Create an isolated background session with a git worktree.
@@ -2046,12 +1802,7 @@ export declare function sessionManagerCreate(
  * @param name - Display name for the session
  * @returns IsolatedSessionResult with worktree path and base commit
  */
-export declare function sessionManagerCreateIsolated(
-  sessionId: string,
-  model: string,
-  project: string,
-  name: string
-): Promise<IsolatedSessionResult>;
+export declare function sessionManagerCreateIsolated(sessionId: string, model: string, project: string, name: string): Promise<IsolatedSessionResult>
 
 /**
  * Create a background session with a specific ID (for persistence integration).
@@ -2063,25 +1814,20 @@ export declare function sessionManagerCreateIsolated(
  * Note: This must be async because it uses tokio::spawn internally, which requires
  * a Tokio runtime context. NAPI-RS provides this context for async functions.
  */
-export declare function sessionManagerCreateWithId(
-  sessionId: string,
-  model: string,
-  project: string,
-  name: string
-): Promise<void>;
+export declare function sessionManagerCreateWithId(sessionId: string, model: string, project: string, name: string): Promise<void>
 
 /** Destroy a background session */
-export declare function sessionManagerDestroy(sessionId: string): void;
+export declare function sessionManagerDestroy(sessionId: string): void
 
 /** List all background sessions */
-export declare function sessionManagerList(): Array<SessionInfo>;
+export declare function sessionManagerList(): Array<SessionInfo>
 
 /** Model info returned by session_get_model */
 export interface SessionModel {
   /** Provider ID (e.g., "anthropic", "openai") */
-  providerId?: string;
+  providerId?: string
   /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
-  modelId?: string;
+  modelId?: string
 }
 
 /**
@@ -2090,10 +1836,7 @@ export interface SessionModel {
  * Called when user presses Y (approved=true) or N (approved=false) during a Confirm pause.
  * Sends Approved or Denied response to unblock the waiting tool.
  */
-export declare function sessionPauseConfirm(
-  sessionId: string,
-  approved: boolean
-): void;
+export declare function sessionPauseConfirm(sessionId: string, approved: boolean): void
 
 /**
  * Resume a paused session (PAUSE-001)
@@ -2101,7 +1844,7 @@ export declare function sessionPauseConfirm(
  * Called when user presses Enter during a Continue pause.
  * Sends Resumed response to unblock the waiting tool.
  */
-export declare function sessionPauseResume(sessionId: string): void;
+export declare function sessionPauseResume(sessionId: string): void
 
 /**
  * Handle triple pause response (Allow Once / Allow Session / Deny)
@@ -2109,10 +1852,7 @@ export declare function sessionPauseResume(sessionId: string): void;
  * Called when user makes a selection during a Triple pause (blocklist prompts).
  * Valid choices: "allow_once", "allow_session", "deny"
  */
-export declare function sessionPauseTriple(
-  sessionId: string,
-  choice: string
-): void;
+export declare function sessionPauseTriple(sessionId: string, choice: string): void
 
 /**
  * TUI-056: Restore anchor points to a background session from persisted manifest.
@@ -2121,7 +1861,7 @@ export declare function sessionPauseTriple(
  * from the session manifest on disk into the BackgroundSession's memory so that
  * /anchors command shows the correct anchor history.
  */
-export declare function sessionRestoreAnchorPoints(sessionId: string): number;
+export declare function sessionRestoreAnchorPoints(sessionId: string): number
 
 /**
  * Restore messages to a background session from persisted envelopes.
@@ -2133,10 +1873,7 @@ export declare function sessionRestoreAnchorPoints(sessionId: string): number;
  * sessionGetMergedOutput() returns the restored conversation. This enables
  * proper UI replay when detaching and re-attaching via kanban.
  */
-export declare function sessionRestoreMessages(
-  sessionId: string,
-  envelopes: Array<string>
-): Promise<void>;
+export declare function sessionRestoreMessages(sessionId: string, envelopes: Array<string>): Promise<void>
 
 /**
  * Restore token state to a background session from persisted values.
@@ -2144,40 +1881,32 @@ export declare function sessionRestoreMessages(
  * This is used when attaching to a session via /resume - it restores the
  * token tracking state so context fill percentage and token counts are accurate.
  */
-export declare function sessionRestoreTokenState(
-  sessionId: string,
-  inputTokens: number,
-  outputTokens: number,
-  cacheReadTokens: number,
-  cacheCreationTokens: number,
-  cumulativeBilledInput: number,
-  cumulativeBilledOutput: number
-): Promise<void>;
+export declare function sessionRestoreTokenState(sessionId: string, inputTokens: number, outputTokens: number, cacheReadTokens: number, cacheCreationTokens: number, cumulativeBilledInput: number, cumulativeBilledOutput: number): Promise<void>
 
 /** Result of getting a session diff */
 export interface SessionResultJs {
   /** Session ID this result belongs to */
-  sessionId: string;
+  sessionId: string
   /** Unified diff of all changes */
-  diff: string;
+  diff: string
   /** List of files that were modified */
-  filesChanged: Array<string>;
+  filesChanged: Array<string>
   /** List of files that were added */
-  filesAdded: Array<string>;
+  filesAdded: Array<string>
   /** List of files that were deleted */
-  filesDeleted: Array<string>;
+  filesDeleted: Array<string>
   /** The base commit the session was created from */
-  baseCommit: string;
+  baseCommit: string
 }
 
 /** Session role info returned to TypeScript (WATCH-004) */
 export interface SessionRoleInfo {
   /** Role name (e.g., "code-reviewer", "supervisor") */
-  name: string;
+  name: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Authority level ("peer" or "supervisor") */
-  authority: string;
+  authority: string
 }
 
 /**
@@ -2197,17 +1926,10 @@ export interface SessionRoleInfo {
  * });
  * ```
  */
-export declare function sessionSendFspecResult(
-  sessionId: string,
-  result: FspecResult
-): void;
+export declare function sessionSendFspecResult(sessionId: string, result: FspecResult): void
 
 /** Send input to a session with optional thinking config */
-export declare function sessionSendInput(
-  sessionId: string,
-  input: string,
-  thinkingConfig?: string | undefined | null
-): void;
+export declare function sessionSendInput(sessionId: string, input: string, thinkingConfig?: string | undefined | null): void
 
 /**
  * Explicitly set the active session for navigation.
@@ -2216,7 +1938,7 @@ export declare function sessionSendInput(
  *
  * VIEWNV-001: This allows TypeScript to explicitly control the navigation state.
  */
-export declare function sessionSetActive(sessionId: string): void;
+export declare function sessionSetActive(sessionId: string): void
 
 /**
  * Set the base thinking level for a session (TUI-054)
@@ -2225,16 +1947,10 @@ export declare function sessionSetActive(sessionId: string): void;
  * Values > 3 are clamped to 3.
  * This is called when user selects a level in the /thinking dialog.
  */
-export declare function sessionSetBaseThinkingLevel(
-  sessionId: string,
-  level: number
-): void;
+export declare function sessionSetBaseThinkingLevel(sessionId: string, level: number): void
 
 /** Set debug enabled state for a background session (without toggling global state) */
-export declare function sessionSetDebugEnabled(
-  sessionId: string,
-  enabled: boolean
-): void;
+export declare function sessionSetDebugEnabled(sessionId: string, enabled: boolean): void
 
 /**
  * Set the global chunk callback for all sessions.
@@ -2246,15 +1962,9 @@ export declare function sessionSetDebugEnabled(
  * This should be called ONCE at application startup by GlobalSessionStreamManager.
  * Calling it again will fail (callback can only be set once).
  */
-export declare function sessionSetGlobalChunkCallback(
-  callback: (err: Error | null, arg: GlobalChunkCallbackArgs) => any
-): void;
+export declare function sessionSetGlobalChunkCallback(callback: ((err: Error | null, arg: GlobalChunkCallbackArgs) => any)): void
 
-export declare function sessionSetModel(
-  sessionId: string,
-  providerId: string,
-  modelId: string
-): Promise<void>;
+export declare function sessionSetModel(sessionId: string, providerId: string, modelId: string): Promise<void>
 
 /**
  * PROV-007: Set model for profile-based models (vLLM, Ollama, etc.)
@@ -2263,11 +1973,7 @@ export declare function sessionSetModel(
  * Use this for profile-based models where OPENAI_BASE_URL points to a local server.
  * The caller must ensure OPENAI_BASE_URL and OPENAI_API_KEY are set before calling.
  */
-export declare function sessionSetModelProfile(
-  sessionId: string,
-  providerId: string,
-  modelId: string
-): Promise<void>;
+export declare function sessionSetModelProfile(sessionId: string, providerId: string, modelId: string): Promise<void>
 
 /**
  * Set pending observed correlation IDs for a watcher session (WATCH-011)
@@ -2279,10 +1985,7 @@ export declare function sessionSetModelProfile(
  * This enables cross-pane highlighting: when viewing a watcher session in split view,
  * selecting a watcher turn shows which parent turns it was responding to.
  */
-export declare function sessionSetObservedCorrelationIds(
-  sessionId: string,
-  correlationIds: Array<string>
-): void;
+export declare function sessionSetObservedCorrelationIds(sessionId: string, correlationIds: Array<string>): void
 
 /**
  * Set pending input text for a background session (TUI-049)
@@ -2290,10 +1993,7 @@ export declare function sessionSetObservedCorrelationIds(
  * Saves the current input field text before switching to another session.
  * Pass None to clear the pending input.
  */
-export declare function sessionSetPendingInput(
-  sessionId: string,
-  input?: string | undefined | null
-): void;
+export declare function sessionSetPendingInput(sessionId: string, input?: string | undefined | null): void
 
 /**
  * Set the role for a session (WATCH-004)
@@ -2301,13 +2001,7 @@ export declare function sessionSetPendingInput(
  * Used to mark a session as a watcher with a specific role and authority level.
  * Authority must be "peer" or "supervisor" (case-insensitive).
  */
-export declare function sessionSetRole(
-  sessionId: string,
-  roleName: string,
-  roleDescription: string | undefined | null,
-  authority: string,
-  autoInject?: boolean | undefined | null
-): void;
+export declare function sessionSetRole(sessionId: string, roleName: string, roleDescription: string | undefined | null, authority: string, autoInject?: boolean | undefined | null): void
 
 /**
  * TUI-059: Set work unit context for a session
@@ -2316,12 +2010,7 @@ export declare function sessionSetRole(
  * from BoardView with a selected work unit), call this to set the context.
  * Pass null for all parameters to clear the context.
  */
-export declare function sessionSetWorkUnitContext(
-  sessionId: string,
-  id?: string | undefined | null,
-  title?: string | undefined | null,
-  status?: string | undefined | null
-): void;
+export declare function sessionSetWorkUnitContext(sessionId: string, id?: string | undefined | null, title?: string | undefined | null, status?: string | undefined | null): void
 
 /**
  * NAPI-010: Session state for internal state machine tracking
@@ -2333,7 +2022,7 @@ export declare const enum SessionState {
   Paused = 'Paused',
   Compacting = 'Compacting',
   Interrupted = 'Interrupted',
-  Cleared = 'Cleared',
+  Cleared = 'Cleared'
 }
 
 /**
@@ -2347,19 +2036,16 @@ export declare const enum SessionState {
  * instead of the default directory. For fspec, pass `~/.fspec` to write to
  * `~/.fspec/debug/`.
  */
-export declare function sessionToggleDebug(
-  sessionId: string,
-  debugDir?: string | undefined | null
-): Promise<DebugCommandResult>;
+export declare function sessionToggleDebug(sessionId: string, debugDir?: string | undefined | null): Promise<DebugCommandResult>
 
 /** Token info returned by session_get_tokens */
 export interface SessionTokens {
   /** Input tokens (context size) */
-  inputTokens: number;
+  inputTokens: number
   /** Output tokens */
-  outputTokens: number;
+  outputTokens: number
   /** Reasoning/thinking tokens */
-  reasoningTokens?: number;
+  reasoningTokens?: number
 }
 
 /**
@@ -2367,9 +2053,7 @@ export interface SessionTokens {
  *
  * Call this after creating a session if debug was enabled before the session existed.
  */
-export declare function sessionUpdateDebugMetadata(
-  sessionId: string
-): Promise<void>;
+export declare function sessionUpdateDebugMetadata(sessionId: string): Promise<void>
 
 /**
  * GIT-020: Validate if a path is allowed for a session.
@@ -2392,11 +2076,7 @@ export declare function sessionUpdateDebugMetadata(
  * @param tool_name - Name of the tool (for error messages): "read", "write", "edit", "ls", "grep", "glob", "ast_grep", "ast_grep_refactor"
  * @returns PathValidationResult with allowed status and resolved path or error
  */
-export declare function sessionValidatePath(
-  sessionId: string,
-  path: string,
-  toolName: string
-): PathValidationResult;
+export declare function sessionValidatePath(sessionId: string, path: string, toolName: string): PathValidationResult
 
 /**
  * Set the logging callback from TypeScript and initialize the tracing subscriber.
@@ -2409,14 +2089,11 @@ export declare function sessionValidatePath(
  * unrefs the ThreadsafeFunction. This prevents keeping the Node.js event loop alive,
  * allowing CLI commands to exit normally after completion.
  */
-export declare function setRustLogCallback(callback: LogCallback): void;
+export declare function setRustLogCallback(callback: LogCallback): void
 
-export declare function startWorkUnitsWatcher(
-  projectRoot: string,
-  callback: (chunk: import('./index').StreamChunk) => void
-): void;
+export declare function startWorkUnitsWatcher(projectRoot: string, callback: (chunk: import('./index').StreamChunk) => void): void
 
-export declare function stopWorkUnitsWatcher(): void;
+export declare function stopWorkUnitsWatcher(): void
 
 /**
  * NAPI-010: Stream chunk - proper discriminated union
@@ -2429,72 +2106,34 @@ export declare function stopWorkUnitsWatcher(): void;
  * - UserNotification: User-facing messages, DISPLAY in conversation
  */
 export type StreamChunk =
-  | {
-      type: 'Text';
-      text: string /** Correlation ID for cross-pane selection highlighting (WATCH-011) */;
-      correlationId?: string /** IDs of observed parent chunks that triggered this watcher response (WATCH-011) */;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'Thinking';
-      thinking: string;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'ToolCall';
-      toolCall: ToolCallInfo;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'ToolResult';
-      toolResult: ToolResultInfo;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'ToolProgress';
-      toolProgress: ToolProgressInfo;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | { type: 'SessionStateChange'; state: SessionState }
-  | {
-      type: 'UserNotification';
-      message: string;
-      severity: NotificationSeverity;
-    }
-  | { type: 'Interrupted'; queuedInputs: Array<string> }
-  | { type: 'TokenUpdate'; tokens: TokenTracker }
-  | { type: 'ContextFillUpdate'; contextFill: ContextFillInfo }
-  | { type: 'Done' }
-  | { type: 'Error'; error: string }
-  | { type: 'UserInput'; text: string }
-  | {
-      type: 'WatcherInput';
-      text: string /** Optional images for multimodal input (BRIDGE-007) */;
-      images?: Array<WatcherInputImage>;
-    }
-  | {
-      type: 'WatcherPendingInjection';
-      watcherPendingInjection: WatcherPendingInjectionInfo;
-    }
-  | { type: 'CompactionComplete'; compactionResult: CompactionResult }
-  | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
-  | { type: 'FspecCommandResult'; fspecResult: FspecResult }
-  | { type: 'WorkUnitsUpdate'; workUnits: Array<WorkUnitInfo> }
-  | {
-      type: 'IsolationStateChange' /** Whether the session is isolated (has a git worktree) */;
-      isIsolated: boolean /** Path to the worktree (if isolated) */;
-      worktreePath?: string;
-    };
+  | { type: 'Text', text: string, /** Correlation ID for cross-pane selection highlighting (WATCH-011) */
+  correlationId?: string, /** IDs of observed parent chunks that triggered this watcher response (WATCH-011) */
+observedCorrelationIds?: Array<string> }
+| { type: 'Thinking', thinking: string, correlationId?: string, observedCorrelationIds?: Array<string> }
+| { type: 'ToolCall', toolCall: ToolCallInfo, correlationId?: string, observedCorrelationIds?: Array<string> }
+| { type: 'ToolResult', toolResult: ToolResultInfo, correlationId?: string, observedCorrelationIds?: Array<string> }
+| { type: 'ToolProgress', toolProgress: ToolProgressInfo, correlationId?: string, observedCorrelationIds?: Array<string> }
+| { type: 'SessionStateChange', state: SessionState }
+| { type: 'UserNotification', message: string, severity: NotificationSeverity }
+| { type: 'Interrupted', queuedInputs: Array<string> }
+| { type: 'TokenUpdate', tokens: TokenTracker }
+| { type: 'ContextFillUpdate', contextFill: ContextFillInfo }
+| { type: 'Done' }
+| { type: 'Error', error: string }
+| { type: 'UserInput', text: string }
+| { type: 'WatcherInput', text: string, /** Optional images for multimodal input (BRIDGE-007) */
+images?: Array<WatcherInputImage> }
+| { type: 'WatcherPendingInjection', watcherPendingInjection: WatcherPendingInjectionInfo }
+| { type: 'CompactionComplete', compactionResult: CompactionResult }
+| { type: 'FspecCommandRequest', fspecRequest: FspecRequest }
+| { type: 'FspecCommandResult', fspecResult: FspecResult }
+| { type: 'WorkUnitsUpdate', workUnits: Array<WorkUnitInfo> }
+| { type: 'IsolationStateChange', /** Whether the session is isolated (has a git worktree) */
+isIsolated: boolean, /** Path to the worktree (if isolated) */
+worktreePath?: string }
 
 /** Simple test function to verify callback pattern works from TypeScript */
-export declare function testCallback(
-  input: string,
-  callback: (arg0: string) => string
-): string;
+export declare function testCallback(input: string, callback: (arg0: string) => string): string
 
 /**
  * CONFIG-004: Test provider connection by validating credentials
@@ -2504,7 +2143,7 @@ export declare function testCallback(
  *
  * Returns Ok(()) if credentials are valid, or an error message if not.
  */
-export declare function testProviderConnection(providerName: string): void;
+export declare function testProviderConnection(providerName: string): void
 
 /**
  * Toggle debug capture mode without requiring a session.
@@ -2516,31 +2155,29 @@ export declare function testProviderConnection(providerName: string): void;
  * instead of the default directory. For fspec, pass `~/.fspec` to write to
  * `~/.fspec/debug/`.
  */
-export declare function toggleDebug(
-  debugDir?: string | undefined | null
-): DebugCommandResult;
+export declare function toggleDebug(debugDir?: string | undefined | null): DebugCommandResult
 
 /** Token usage tracking information */
 export interface TokenTracker {
-  inputTokens: number;
-  outputTokens: number;
-  cacheReadInputTokens?: number;
-  cacheCreationInputTokens?: number;
+  inputTokens: number
+  outputTokens: number
+  cacheReadInputTokens?: number
+  cacheCreationInputTokens?: number
   /** Tokens per second (EMA-smoothed, calculated in Rust) */
-  tokensPerSecond?: number;
+  tokensPerSecond?: number
   /** Cumulative billed input tokens (sum of all API calls) */
-  cumulativeBilledInput?: number;
+  cumulativeBilledInput?: number
   /** Cumulative billed output tokens (sum of all API calls) */
-  cumulativeBilledOutput?: number;
+  cumulativeBilledOutput?: number
   /** Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking) */
-  reasoningTokens?: number;
+  reasoningTokens?: number
 }
 
 /** Tool call information */
 export interface ToolCallInfo {
-  id: string;
-  name: string;
-  input: string;
+  id: string
+  name: string
+  input: string
 }
 
 /**
@@ -2549,20 +2186,20 @@ export interface ToolCallInfo {
  */
 export interface ToolProgressInfo {
   /** Tool call ID this progress is for */
-  toolCallId: string;
+  toolCallId: string
   /** Tool name (e.g., "bash", "run_shell_command") */
-  toolName: string;
+  toolName: string
   /** Output chunk (new text since last progress event) */
-  outputChunk: string;
+  outputChunk: string
   /** Whether this output is from stderr (should be styled as error/red) */
-  isStderr: boolean;
+  isStderr: boolean
 }
 
 /** Tool result information */
 export interface ToolResultInfo {
-  toolCallId: string;
-  content: string;
-  isError: boolean;
+  toolCallId: string
+  content: string
+  isError: boolean
 }
 
 /**
@@ -2571,14 +2208,14 @@ export interface ToolResultInfo {
  * Formats the message with the watcher's role prefix and queues it
  * on the parent session via receive_watcher_input().
  */
-export declare function watcherInject(watcherId: string, message: string): void;
+export declare function watcherInject(watcherId: string, message: string): void
 
 /** BRIDGE-007: Image data for watcher input (from Telegram bridge) */
 export interface WatcherInputImage {
   /** Base64-encoded image data */
-  data: string;
+  data: string
   /** Media type (e.g., "image/jpeg", "image/png") */
-  mediaType: string;
+  mediaType: string
 }
 
 /**
@@ -2587,46 +2224,46 @@ export interface WatcherInputImage {
  */
 export interface WatcherPendingInjectionInfo {
   /** Whether this is an urgent injection */
-  urgent: boolean;
+  urgent: boolean
   /** The message content that would be injected */
-  content: string;
+  content: string
 }
 
 /** Result of creating a worktree */
 export interface WorktreeCreateResultJs {
   /** Session ID this worktree belongs to */
-  sessionId: string;
+  sessionId: string
   /** Absolute path to the worktree directory */
-  path: string;
+  path: string
   /** Commit SHA the worktree HEAD points to */
-  headCommit: string;
+  headCommit: string
   /** Whether the worktree is in detached HEAD mode */
-  isDetached: boolean;
+  isDetached: boolean
   /** The base commit the worktree was created from */
-  baseCommit: string;
+  baseCommit: string
   /** When the worktree was created (ISO 8601 format) */
-  createdAt: string;
+  createdAt: string
 }
 
 /** Information about a worktree */
 export interface WorktreeInfoJs {
   /** Session ID this worktree belongs to */
-  sessionId: string;
+  sessionId: string
   /** Absolute path to the worktree directory */
-  path: string;
+  path: string
   /** Commit SHA the worktree HEAD points to */
-  headCommit: string;
+  headCommit: string
   /** Whether the worktree is in detached HEAD mode */
-  isDetached: boolean;
+  isDetached: boolean
 }
 
 /** Work unit information for file watcher updates */
 export interface WorkUnitInfo {
-  id: string;
-  title: string;
-  workType: string;
-  status: string;
-  description?: string;
-  estimate?: number;
-  epic?: string;
+  id: string
+  title: string
+  workType: string
+  status: string
+  description?: string
+  estimate?: number
+  epic?: string
 }

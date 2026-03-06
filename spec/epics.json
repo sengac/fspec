@@ -415,6 +415,22 @@
         "RIG-009",
         "RIG-010"
       ]
+    },
+    "webmcp-extension": {
+      "id": "webmcp-extension",
+      "title": "EXT",
+      "createdAt": "2026-03-05T05:00:12.311Z",
+      "description": "Chrome extension acting as a WebMCP-powered MCP server for bidirectional browser-agent communication",
+      "workUnits": [
+        "EXT-001",
+        "EXT-002",
+        "EXT-003",
+        "EXT-004",
+        "EXT-005",
+        "EXT-006",
+        "EXT-007",
+        "EXT-008"
+      ]
     }
   }
 }

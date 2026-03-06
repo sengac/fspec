@@ -1,0 +1,17 @@
+{
+  "name": "fspec-webmcp-extension",
+  "version": "0.1.0",
+  "description": "fspec WebMCP Chrome Extension - Bridge WebMCP tools to MCP for AI agent interaction",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.37",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}

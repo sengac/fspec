@@ -18,6 +18,10 @@
           "description": "Browser automation and Chrome DevTools Protocol integration"
         },
         {
+          "name": "@browser-control",
+          "description": "Native browser control tool scenarios"
+        },
+        {
           "name": "@cli",
           "description": "Command-Line Interface"
         },
@@ -98,6 +102,10 @@
           "description": "Session persistence and storage functionality"
         },
         {
+          "name": "@popup",
+          "description": "Extension popup UI scenarios"
+        },
+        {
           "name": "@providers",
           "description": "Provider integration and LLM provider implementations"
         },
@@ -148,6 +156,10 @@
         {
           "name": "@virtuallist",
           "description": "Features related to VirtualList component"
+        },
+        {
+          "name": "@webmcp",
+          "description": "WebMCP tool discovery and invocation scenarios"
         }
       ],
       "rule": "Every feature file MUST have at least ONE component tag (may have multiple if cross-component)."
@@ -350,6 +362,10 @@
           "description": "WebSocket connection scenarios"
         },
         {
+          "name": "@connection",
+          "description": "Connection and lifecycle scenarios"
+        },
+        {
           "name": "@connection-test",
           "description": "Connection testing functionality"
         },
@@ -440,6 +456,10 @@
         {
           "name": "@event-storming",
           "description": "Event Storming discovery and domain modeling features"
+        },
+        {
+          "name": "@events",
+          "description": "Bidirectional browser event scenarios"
         },
         {
           "name": "@example-mapping",
@@ -2454,7 +2474,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-27T01:41:07.789Z",
+    "lastUpdated": "2026-03-05T05:56:06.428Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

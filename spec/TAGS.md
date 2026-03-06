@@ -15,6 +15,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@agent-registry` | Agent registry and configuration management |
 | `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |
 | `@browser` | Browser automation and Chrome DevTools Protocol integration |
+| `@browser-control` | Native browser control tool scenarios |
 | `@cli` | Command-Line Interface |
 | `@codelet` | Codelet AI agent integration |
 | `@demos` | Demo script functionality and video recording infrastructure |
@@ -35,6 +36,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@npm` | npm package management and dependency resolution |
 | `@parser` | Gherkin Parser Integration |
 | `@persistence` | Session persistence and storage functionality |
+| `@popup` | Extension popup UI scenarios |
 | `@providers` | Provider integration and LLM provider implementations |
 | `@session` | Session management and state tracking |
 | `@telegram` | Telegram bot and messaging platform integration |
@@ -48,6 +50,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@validator` | Validation Logic |
 | `@viewer` | Attachment viewer component (web-based mermaid/markdown renderer) |
 | `@virtuallist` | Features related to VirtualList component |
+| `@webmcp` | WebMCP tool discovery and invocation scenarios |
 
 **Rule**: Every feature file MUST have at least ONE component tag (may have multiple if cross-component).
 
@@ -105,6 +108,7 @@ Tags that categorize features by functional area.
 | `@config-management` | Configuration management and settings features |
 | `@configuration` | Configuration loading and validation |
 | `@connect` | WebSocket connection scenarios |
+| `@connection` | Connection and lifecycle scenarios |
 | `@connection-test` | Connection testing functionality |
 | `@context-management` | Context window and memory management features |
 | `@context-window` | Context window management and monitoring features |
@@ -128,6 +132,7 @@ Tags that categorize features by functional area.
 | `@estimation` | Estimation operations |
 | `@event-storm` | Event Storming functionality for domain modeling |
 | `@event-storming` | Event Storming discovery and domain modeling features |
+| `@events` | Bidirectional browser event scenarios |
 | `@example-mapping` | Example mapping for BDD discovery (rules, examples, questions, assumptions) |
 | `@export` | Export operations |
 | `@feature-management` | Feature File Operations |
@@ -855,7 +860,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-27T01:41:07.789Z_
+_Last updated: 2026-03-05T05:56:06.428Z_
 
 **Update Command**: `fspec tag-stats`
 

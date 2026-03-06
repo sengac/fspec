@@ -364,6 +364,11 @@
       "prefix": "RIG",
       "description": "Custom LLM abstraction layer replacing rig-core dependency",
       "createdAt": "2026-03-01T22:10:29.943Z"
+    },
+    "EXT": {
+      "prefix": "EXT",
+      "description": "Chrome extension development and WebMCP integration",
+      "createdAt": "2026-03-05T05:00:05.504Z"
     }
   }
 }

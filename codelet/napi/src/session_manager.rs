@@ -4996,6 +4996,13 @@ macro_rules! run_with_provider {
                     }
                 }
                 
+                // MCP-002: Store the ToolServerHandle in per-session MCP state so
+                // ConnectMcpTool can register newly discovered tools mid-turn.
+                codelet_tools::set_mcp_tool_server_handle(
+                    $session.id,
+                    agent.tool_server_handle.clone(),
+                );
+                
                 let agent = codelet_core::RigAgent::with_default_depth(agent);
                 // BRIDGE-007: Use run_agent_stream_with_images for multimodal support
                 codelet_cli::interactive::run_agent_stream_with_images(
@@ -5037,6 +5044,12 @@ async fn agent_loop(
     mut input_rx: mpsc::Receiver<PromptInput>,
     mut mcp_injection_rx: mpsc::Receiver<McpInjection>,
 ) {
+    // MCP-001-FIX: Track whether the MCP injection channel is still open.
+    // Once it returns None (sender dropped by cleanup_mcp_session), we must stop
+    // polling it. Without this guard, the closed channel returns None immediately
+    // every iteration, causing tokio::select! to resolve instantly → CPU busy-loop.
+    let mut mcp_channel_open = true;
+    
     loop {
         // WATCH-019: Use tokio::select! to wait on both user input and watcher input
         // Lock the watcher_input_rx to use in select
@@ -5099,7 +5112,8 @@ async fn agent_loop(
             }
             
             // MCP-001: Server-initiated MCP messages (notifications, sampling requests)
-            result = mcp_injection_rx.recv() => {
+            // MCP-001-FIX: Only poll when channel is open to prevent busy-loop spin
+            result = mcp_injection_rx.recv(), if mcp_channel_open => {
                 match result {
                     Some(McpInjection::Notification(text)) => {
                         tracing::info!("[MCP] agent_loop received notification: {}", text.chars().take(80).collect::<String>());
@@ -5138,7 +5152,12 @@ async fn agent_loop(
                         None // Don't process as agent input
                     }
                     None => {
-                        // MCP injection channel closed — continue with user/watcher input
+                        // MCP-001-FIX: Channel closed (sender dropped by cleanup_mcp_session).
+                        // Disable this select! branch to prevent busy-loop. The closed receiver
+                        // would return None immediately on every poll, causing the select! to
+                        // resolve instantly and spin the CPU.
+                        tracing::info!("[MCP] injection channel closed for session {}", session.id);
+                        mcp_channel_open = false;
                         None
                     }
                 }

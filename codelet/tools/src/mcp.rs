@@ -17,6 +17,7 @@ use rmcp::model::{
 };
 use rmcp::service::{NotificationContext, RequestContext, RoleClient, RunningService};
 use rmcp::ServiceExt;
+use rig::tool::server::ToolServerHandle;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -802,10 +803,13 @@ pub async fn connect_http(
 // Global Per-Session MCP State
 // =============================================================================
 
-/// Per-session MCP state: connection map + injection sender.
+/// Per-session MCP state: connection map + injection sender + optional tool server handle.
 struct McpSessionState {
     connections: McpConnectionMap,
     injection_tx: McpInjectionTx,
+    /// MCP-002: Handle to the running agent's tool server for mid-turn tool registration.
+    /// Set after agent build in run_with_provider! macro. None before agent starts.
+    tool_server_handle: Option<ToolServerHandle>,
 }
 
 /// Global registry of MCP state keyed by session UUID.
@@ -826,6 +830,7 @@ pub fn init_mcp_session(
     let state = McpSessionState {
         connections: connections.clone(),
         injection_tx,
+        tool_server_handle: None,
     };
     let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
     sessions.insert(session_id, state);
@@ -873,6 +878,25 @@ fn get_mcp_session_state(
     sessions
         .get(&session_id)
         .map(|s| (s.injection_tx.clone(), s.connections.clone()))
+}
+
+/// MCP-002: Store the running agent's ToolServerHandle in per-session MCP state.
+///
+/// Called by run_with_provider! after building the agent, so that ConnectMcpTool
+/// can register newly connected tools mid-turn via `handle.add_tool()`.
+pub fn set_mcp_tool_server_handle(session_id: uuid::Uuid, handle: ToolServerHandle) {
+    let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    if let Some(state) = sessions.get_mut(&session_id) {
+        state.tool_server_handle = Some(handle);
+    }
+}
+
+/// MCP-002: Retrieve the ToolServerHandle for a session (for mid-turn tool registration).
+fn get_mcp_tool_server_handle(session_id: uuid::Uuid) -> Option<ToolServerHandle> {
+    let sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    sessions
+        .get(&session_id)
+        .and_then(|s| s.tool_server_handle.clone())
 }
 
 // =============================================================================
@@ -943,6 +967,21 @@ pub struct McpToolWrapper {
     session_id: uuid::Uuid,
 }
 
+impl McpToolWrapper {
+    /// Build a wrapper from an MCP tool definition.
+    ///
+    /// Shared constructor used by both `gather_mcp_tool_wrappers` (turn start)
+    /// and `register_new_tools_with_handle` (mid-turn connect).
+    fn from_tool_def(server_name: &str, tool: &McpToolDef, session_id: uuid::Uuid) -> Self {
+        Self {
+            qualified_name: qualified_mcp_tool_name(server_name, &tool.name),
+            description: tool.description.clone().unwrap_or_default(),
+            input_schema: tool.input_schema.clone(),
+            session_id,
+        }
+    }
+}
+
 impl rig::tool::Tool for McpToolWrapper {
     // Dummy const — we override name() to return the dynamic qualified name
     const NAME: &'static str = "mcp_tool_wrapper";
@@ -1004,12 +1043,7 @@ pub fn gather_mcp_tool_wrappers(session_id: uuid::Uuid) -> Vec<McpToolWrapper> {
     let mut wrappers = Vec::new();
     for conn in map.values() {
         for tool in &conn.tools {
-            wrappers.push(McpToolWrapper {
-                qualified_name: qualified_mcp_tool_name(&conn.name, &tool.name),
-                description: tool.description.clone().unwrap_or_default(),
-                input_schema: tool.input_schema.clone(),
-                session_id,
-            });
+            wrappers.push(McpToolWrapper::from_tool_def(&conn.name, tool, session_id));
         }
     }
     wrappers
@@ -1033,6 +1067,122 @@ impl ConnectMcpTool {
     pub fn new(session_id: uuid::Uuid) -> Self {
         Self { session_id }
     }
+
+    /// MCP-002: Register newly connected server's tools with the running agent's ToolServerHandle.
+    ///
+    /// Called after a successful connect. Reads the connection map for the named server,
+    /// builds McpToolWrapper instances, and adds them to the handle so the LLM can call
+    /// them in the same turn.
+    ///
+    /// Graceful degradation: if no handle is set yet (e.g. agent not fully initialized),
+    /// tools simply appear on the next turn via gather_mcp_tool_wrappers().
+    async fn register_new_tools_with_handle(&self, server_name: &str) {
+        let handle = match get_mcp_tool_server_handle(self.session_id) {
+            Some(h) => h,
+            None => {
+                debug!(
+                    "[MCP-002] No ToolServerHandle for session {} — tools will appear next turn",
+                    self.session_id,
+                );
+                return;
+            }
+        };
+
+        let connections = match get_mcp_connections(self.session_id) {
+            Some(c) => c,
+            None => return,
+        };
+
+        // Read connection map to get the newly connected server's tools
+        let wrappers = {
+            let map = connections.read().await;
+            let conn = match map.get(server_name) {
+                Some(c) => c,
+                None => return,
+            };
+            conn.tools
+                .iter()
+                .map(|tool| McpToolWrapper::from_tool_def(&conn.name, tool, self.session_id))
+                .collect::<Vec<_>>()
+        };
+
+        add_wrappers_to_handle(&handle, wrappers, server_name, self.session_id).await;
+    }
+
+    /// MCP-002: Remove a disconnected server's tools from the running agent's ToolServerHandle.
+    ///
+    /// Called after a successful disconnect. The connection has already been removed
+    /// from the map by disconnect_mcp(), so we enumerate the handle's current tool
+    /// definitions and remove those matching the server name prefix.
+    async fn remove_tools_from_handle(&self, server_name: &str) {
+        let handle = match get_mcp_tool_server_handle(self.session_id) {
+            Some(h) => h,
+            None => return,
+        };
+
+        remove_server_tools_from_handle(&handle, server_name, self.session_id).await;
+    }
+}
+
+/// MCP-002: Add a batch of McpToolWrapper instances to a ToolServerHandle.
+///
+/// Extracted from `ConnectMcpTool::register_new_tools_with_handle` so the core
+/// registration logic is testable without requiring a live MCP server connection.
+async fn add_wrappers_to_handle(
+    handle: &ToolServerHandle,
+    wrappers: Vec<McpToolWrapper>,
+    server_name: &str,
+    session_id: uuid::Uuid,
+) {
+    let count = wrappers.len();
+    for wrapper in wrappers {
+        if let Err(e) = handle.add_tool(wrapper).await {
+            tracing::warn!("[MCP-002] Failed to add tool mid-turn: {}", e);
+        }
+    }
+    tracing::info!(
+        "[MCP-002] Registered {} tools from '{}' mid-turn for session {}",
+        count,
+        server_name,
+        session_id,
+    );
+}
+
+/// MCP-002: Remove all tools from a server by name prefix from a ToolServerHandle.
+///
+/// Extracted from `ConnectMcpTool::remove_tools_from_handle` so the core
+/// removal logic is testable without requiring a live MCP server connection.
+async fn remove_server_tools_from_handle(
+    handle: &ToolServerHandle,
+    server_name: &str,
+    session_id: uuid::Uuid,
+) {
+    let prefix = format!("mcp__{server_name}__");
+    let defs = match handle.get_tool_defs(None).await {
+        Ok(d) => d,
+        Err(_) => return,
+    };
+
+    let tools_to_remove: Vec<String> = defs
+        .iter()
+        .filter(|d| d.name.starts_with(&prefix))
+        .map(|d| d.name.clone())
+        .collect();
+
+    for name in &tools_to_remove {
+        if let Err(e) = handle.remove_tool(name).await {
+            tracing::warn!("[MCP-002] Failed to remove tool '{}': {}", name, e);
+        }
+    }
+
+    if !tools_to_remove.is_empty() {
+        tracing::info!(
+            "[MCP-002] Removed {} tools from '{}' mid-turn for session {}",
+            tools_to_remove.len(),
+            server_name,
+            session_id,
+        );
+    }
 }
 
 impl rig::tool::Tool for ConnectMcpTool {
@@ -1050,7 +1200,8 @@ impl rig::tool::Tool for ConnectMcpTool {
                 "Use action 'connect' (default) with transport 'stdio' + command, or transport 'http' + url. ",
                 "Use action 'disconnect' with name to tear down a connection. ",
                 "Use action 'list' to show all active MCP connections. ",
-                "Connected server tools become available as mcp__<server>__<tool> in subsequent turns."
+                "Connected server tools become available as mcp__<server>__<tool> in subsequent turns. ",
+                "Tools from a newly connected server are also available immediately in the same turn."
             )
             .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(McpConnectArgs))
@@ -1160,7 +1311,40 @@ impl rig::tool::Tool for ConnectMcpTool {
         };
 
         // Return the message as the tool output string
+        // MCP-002: After successful connect/disconnect, register or remove tools with
+        // the running agent's ToolServerHandle so they are callable in the same turn.
+        //
+        // IMPORTANT: We must `tokio::spawn` the registration work instead of awaiting
+        // it inline. The ToolServer processes messages sequentially via `handle_message`.
+        // We are currently INSIDE a `CallTool` message handler. If we call
+        // `handle.add_tool().await` here, it sends an `AddTool` message to the same
+        // channel and blocks waiting for a response — but the message loop can't
+        // dequeue it until THIS call returns. That's a re-entrancy deadlock.
+        //
+        // By spawning, ConnectMCP returns immediately, the `CallTool` handler finishes,
+        // and the spawned task's `AddTool` messages are processed on the next loop
+        // iterations.
         if result.success {
+            let session_id = self.session_id;
+            match &args.action {
+                McpAction::Connect => {
+                    if let Some(name) = args.name.clone() {
+                        tokio::spawn(async move {
+                            let tool = ConnectMcpTool::new(session_id);
+                            tool.register_new_tools_with_handle(&name).await;
+                        });
+                    }
+                }
+                McpAction::Disconnect => {
+                    if let Some(name) = args.name.clone() {
+                        tokio::spawn(async move {
+                            let tool = ConnectMcpTool::new(session_id);
+                            tool.remove_tools_from_handle(&name).await;
+                        });
+                    }
+                }
+                McpAction::List => {}
+            }
             Ok(result.message)
         } else {
             // Return error as tool output (not a Rust error) so LLM can reason about it
@@ -2469,6 +2653,327 @@ mod tests {
                 assert!(def.description.contains("MCP"));
                 assert!(def.parameters.is_object());
             });
+        }
+
+        // =================================================================
+        // MCP-002: Same-turn tool availability after ConnectMCP
+        // Feature: spec/features/mcp-same-turn-tool-availability.feature
+        // =================================================================
+
+        /// Helper: Insert synthetic tool definitions into the session's connection map.
+        ///
+        /// Cannot construct McpConnection (requires RunningService), but we can
+        /// bypass that by testing the extracted pure functions directly:
+        /// - `McpToolWrapper::from_tool_def`
+        /// - `add_wrappers_to_handle`
+        /// - `remove_server_tools_from_handle`
+        fn make_tool_defs(names: &[&str]) -> Vec<McpToolDef> {
+            names
+                .iter()
+                .map(|n| McpToolDef {
+                    name: n.to_string(),
+                    description: Some(format!("{n} tool")),
+                    input_schema: serde_json::json!({"type": "object"}),
+                })
+                .collect()
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: ToolServerHandle is stored after agent build
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_set_and_get_tool_server_handle() {
+            // @step Given an MCP session is initialized
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+
+            // @step When the run_with_provider macro builds an agent
+            // Simulate: create a ToolServer, run it, and store the handle
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+
+            // @step Then the agent's ToolServerHandle is stored in McpSessionState via set_mcp_tool_server_handle
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // @step And subsequent ConnectMcpTool calls can access it for mid-turn registration
+            let retrieved = get_mcp_tool_server_handle(session_id);
+            assert!(
+                retrieved.is_some(),
+                "ToolServerHandle should be retrievable after set"
+            );
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Graceful degradation when ToolServerHandle is not set
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_no_tool_server_handle_graceful_degradation() {
+            // @step Given an MCP session is initialized without a ToolServerHandle
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            // NOTE: We do NOT call set_mcp_tool_server_handle
+
+            // @step When ConnectMcpTool successfully connects to an MCP server "playwright"
+            // register_new_tools_with_handle reads handle from global state — should be None
+            let tool = ConnectMcpTool::new(session_id);
+            // This should return gracefully without error (debug log only)
+            tool.register_new_tools_with_handle("playwright").await;
+
+            // @step Then the connection succeeds and tools are stored in the connection map
+            // @step And no error occurs during the connect call
+            // @step But the tools are not registered with any ToolServerHandle
+            let handle = get_mcp_tool_server_handle(session_id);
+            assert!(
+                handle.is_none(),
+                "ToolServerHandle should be None when not set — graceful degradation"
+            );
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Same-turn tool invocation after connect
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_same_turn_tool_registration_after_connect() {
+            // @step Given an MCP session is initialized with a ToolServerHandle
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // @step When ConnectMcpTool successfully connects to an MCP server "playwright"
+            // Build wrappers from tool defs (exercises from_tool_def) and register
+            // via add_wrappers_to_handle (the actual production code path)
+            let tool_defs = make_tool_defs(&["browser_navigate", "browser_click"]);
+            let wrappers: Vec<McpToolWrapper> = tool_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("playwright", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, wrappers, "playwright", session_id).await;
+
+            // @step Then the newly discovered tools are registered with the running agent's ToolServerHandle
+            let defs = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs.len(), 2, "Should have 2 tools registered");
+
+            // @step And calling "mcp__playwright__browser_navigate" succeeds in the same turn
+            let has_navigate = defs
+                .iter()
+                .any(|d| d.name == "mcp__playwright__browser_navigate");
+            let has_click = defs
+                .iter()
+                .any(|d| d.name == "mcp__playwright__browser_click");
+            assert!(has_navigate, "browser_navigate should be in handle");
+            assert!(has_click, "browser_click should be in handle");
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Multiple servers connected in same turn
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_multiple_servers_same_turn_registration() {
+            // @step Given an MCP session is initialized with a ToolServerHandle
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // @step When ConnectMcpTool connects to server "serverA" with 2 tools
+            let server_a_defs = make_tool_defs(&["tool1", "tool2"]);
+            let wrappers_a: Vec<McpToolWrapper> = server_a_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("serverA", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, wrappers_a, "serverA", session_id).await;
+
+            // @step And ConnectMcpTool connects to server "serverB" with 3 tools
+            let server_b_defs = make_tool_defs(&["toolX", "toolY", "toolZ"]);
+            let wrappers_b: Vec<McpToolWrapper> = server_b_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("serverB", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, wrappers_b, "serverB", session_id).await;
+
+            // @step Then the ToolServerHandle contains tools from both "serverA" and "serverB"
+            let defs = handle.get_tool_defs(None).await.unwrap();
+            let server_a_tools: Vec<_> = defs
+                .iter()
+                .filter(|d| d.name.starts_with("mcp__serverA__"))
+                .collect();
+            let server_b_tools: Vec<_> = defs
+                .iter()
+                .filter(|d| d.name.starts_with("mcp__serverB__"))
+                .collect();
+            assert_eq!(server_a_tools.len(), 2, "serverA should have 2 tools");
+            assert_eq!(server_b_tools.len(), 3, "serverB should have 3 tools");
+
+            // @step And calling tools from either server succeeds
+            assert_eq!(defs.len(), 5, "total tools should be 5");
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Disconnect removes tools from running agent
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_disconnect_removes_tools_from_handle() {
+            // @step Given an MCP session is initialized with a ToolServerHandle
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // @step And ConnectMcpTool has connected to server "playwright" with tools registered
+            let tool_defs = make_tool_defs(&["browser_navigate", "browser_click"]);
+            let wrappers: Vec<McpToolWrapper> = tool_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("playwright", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, wrappers, "playwright", session_id).await;
+
+            // Verify tools are registered
+            let defs_before = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_before.len(), 2);
+
+            // @step When ConnectMcpTool disconnects from server "playwright"
+            // Uses the actual production code: remove_server_tools_from_handle
+            remove_server_tools_from_handle(&handle, "playwright", session_id).await;
+
+            // @step Then the tools from "playwright" are removed from the ToolServerHandle
+            let defs_after = handle.get_tool_defs(None).await.unwrap();
+            let playwright_tools: Vec<_> = defs_after
+                .iter()
+                .filter(|d| d.name.starts_with("mcp__playwright__"))
+                .collect();
+            assert!(
+                playwright_tools.is_empty(),
+                "playwright tools should be removed after disconnect"
+            );
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Scenario: Previous-turn tools coexist with same-turn tools
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_previous_turn_tools_coexist_with_same_turn_tools() {
+            // @step Given an MCP session is initialized with a ToolServerHandle
+            let session_id = uuid::Uuid::new_v4();
+            let (_injection_rx, _connections) = init_mcp_session(session_id);
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+            set_mcp_tool_server_handle(session_id, handle.clone());
+
+            // @step And server "existing_server" was connected in a previous turn with tools already registered
+            // Previous-turn tools are added via gather_mcp_tool_wrappers at turn start.
+            // Simulate by adding directly to the handle (as run_with_provider! does).
+            let existing_defs = make_tool_defs(&["old_tool"]);
+            let existing_wrappers: Vec<McpToolWrapper> = existing_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("existing_server", td, session_id))
+                .collect();
+            for w in existing_wrappers {
+                handle.add_tool(w).await.unwrap();
+            }
+
+            // @step When ConnectMcpTool connects to a new server "new_server"
+            // Mid-turn registration: uses add_wrappers_to_handle (production path)
+            let new_defs = make_tool_defs(&["new_tool"]);
+            let new_wrappers: Vec<McpToolWrapper> = new_defs
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("new_server", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, new_wrappers, "new_server", session_id).await;
+
+            // @step Then tools from both "existing_server" and "new_server" are available
+            let defs = handle.get_tool_defs(None).await.unwrap();
+            let has_existing = defs
+                .iter()
+                .any(|d| d.name == "mcp__existing_server__old_tool");
+            let has_new = defs
+                .iter()
+                .any(|d| d.name == "mcp__new_server__new_tool");
+            assert!(has_existing, "existing server tool should still be available");
+            assert!(has_new, "new server tool should be available");
+
+            // @step And only "new_server" tools were added mid-turn via add_tool
+            assert_eq!(defs.len(), 2, "both tools should coexist");
+
+            cleanup_mcp_session(session_id);
+        }
+
+        // -----------------------------------------------------------
+        // Additional: Verify from_tool_def produces correct qualified names
+        // -----------------------------------------------------------
+        #[test]
+        fn test_from_tool_def_qualified_name() {
+            let def = McpToolDef {
+                name: "browser_navigate".to_string(),
+                description: Some("Navigate to URL".to_string()),
+                input_schema: serde_json::json!({"type": "object", "properties": {"url": {"type": "string"}}}),
+            };
+            let session_id = uuid::Uuid::new_v4();
+            let wrapper = McpToolWrapper::from_tool_def("playwright", &def, session_id);
+
+            assert_eq!(wrapper.qualified_name, "mcp__playwright__browser_navigate");
+            assert_eq!(wrapper.description, "Navigate to URL");
+            assert_eq!(wrapper.session_id, session_id);
+        }
+
+        #[test]
+        fn test_from_tool_def_empty_description() {
+            let def = McpToolDef {
+                name: "do_thing".to_string(),
+                description: None,
+                input_schema: serde_json::json!({"type": "object"}),
+            };
+            let wrapper = McpToolWrapper::from_tool_def("srv", &def, uuid::Uuid::new_v4());
+
+            assert_eq!(wrapper.qualified_name, "mcp__srv__do_thing");
+            assert_eq!(wrapper.description, ""); // None → empty string
+        }
+
+        // -----------------------------------------------------------
+        // Additional: Verify remove_server_tools_from_handle is prefix-scoped
+        // -----------------------------------------------------------
+        #[tokio::test]
+        async fn test_remove_only_affects_matching_prefix() {
+            let session_id = uuid::Uuid::new_v4();
+            let server = rig::tool::server::ToolServer::new();
+            let handle = server.run();
+
+            // Add tools from two servers
+            let defs_a = make_tool_defs(&["tool1"]);
+            let defs_b = make_tool_defs(&["tool1"]);
+            let wrappers_a: Vec<McpToolWrapper> = defs_a
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("serverA", td, session_id))
+                .collect();
+            let wrappers_b: Vec<McpToolWrapper> = defs_b
+                .iter()
+                .map(|td| McpToolWrapper::from_tool_def("serverB", td, session_id))
+                .collect();
+            add_wrappers_to_handle(&handle, wrappers_a, "serverA", session_id).await;
+            add_wrappers_to_handle(&handle, wrappers_b, "serverB", session_id).await;
+
+            let defs_before = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_before.len(), 2);
+
+            // Remove only serverA
+            remove_server_tools_from_handle(&handle, "serverA", session_id).await;
+
+            let defs_after = handle.get_tool_defs(None).await.unwrap();
+            assert_eq!(defs_after.len(), 1, "only serverB tool should remain");
+            assert_eq!(defs_after[0].name, "mcp__serverB__tool1");
         }
     }
 }

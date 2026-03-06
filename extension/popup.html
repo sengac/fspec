@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>fspec WebMCP Bridge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      width: 320px;
+      padding: 16px;
+      background: #1a1a2e;
+      color: #e0e0e0;
+    }
+    h1 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #7c83ff;
+      margin-bottom: 12px;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #2a2a4a;
+    }
+    .status-row:last-child {
+      border-bottom: none;
+    }
+    .label {
+      font-size: 12px;
+      color: #888;
+    }
+    .value {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .status-indicator.stopped {
+      background: #ff4444;
+    }
+    .status-indicator.listening {
+      background: #44ff44;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔗 fspec WebMCP Bridge</h1>
+  <div class="status-row">
+    <span class="label">Server Status</span>
+    <span class="value">
+      <span class="status-indicator stopped"></span>
+      <span id="status">Not connected</span>
+    </span>
+  </div>
+  <div class="status-row">
+    <span class="label">Port</span>
+    <span class="value" id="port">19876</span>
+  </div>
+  <div class="status-row">
+    <span class="label">Connected Clients</span>
+    <span class="value" id="clients">0</span>
+  </div>
+  <div class="status-row">
+    <span class="label">Tools Available</span>
+    <span class="value" id="tools">0</span>
+  </div>
+  <script type="module" src="dist/popup.js"></script>
+</body>
+</html>

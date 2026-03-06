@@ -1,0 +1,183 @@
+{
+  "scenarios": [
+    {
+      "name": "Same-turn tool invocation after connect",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/mcp.rs",
+          "lines": "2722-2756",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple servers connected in same turn",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/mcp.rs",
+          "lines": "2761-2803",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Disconnect removes tools from running agent",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/mcp.rs",
+          "lines": "2808-2844",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Graceful degradation when ToolServerHandle is not set",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/mcp.rs",
+          "lines": "2694-2716",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098,
+                1099,
+                1100,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Previous-turn tools coexist with same-turn tools",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/mcp.rs",
+          "lines": "2850-2894",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ToolServerHandle is stored after agent build",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/mcp.rs",
+          "lines": "2667-2688",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                4999,
+                5000,
+                5001,
+                5002,
+                5003,
+                5004
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/mcp.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/mcp.rs",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 275
+  }
+}
