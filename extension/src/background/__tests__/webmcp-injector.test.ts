@@ -48,7 +48,7 @@ describe('Feature: WebMCP Dynamic Tool Discovery - Injector', () => {
   describe('Scenario: Injector uses early injection strategy', () => {
     it('should inject the discovery script into MAIN world on tab update', async () => {
       // @step Given the WebMCP injector is initialized with chrome.scripting and chrome.tabs
-      const injector = createWebMCPInjector({
+      createWebMCPInjector({
         scripting: mockScripting,
         tabs: mockTabs,
       });
@@ -83,7 +83,7 @@ describe('Feature: WebMCP Dynamic Tool Discovery - Injector', () => {
   describe('Scenario: Injector re-injects on navigation', () => {
     it('should clear injection state and re-inject when tab navigates', async () => {
       // Given the injector has already injected into tab 1
-      const injector = createWebMCPInjector({
+      createWebMCPInjector({
         scripting: mockScripting,
         tabs: mockTabs,
       });

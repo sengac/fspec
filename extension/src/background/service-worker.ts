@@ -29,7 +29,9 @@ const browserTools = createBrowserTools({
   tabs: chrome.tabs,
   scripting: chrome.scripting,
   windows: chrome.windows,
-  userScripts: chrome.userScripts,
+  userScripts:
+    chrome.userScripts as unknown as import('./browser-tools').ChromeUserScriptsForTools,
+  webNavigation: chrome.webNavigation,
 });
 
 // Create native connection
@@ -63,7 +65,8 @@ nativeConnection.connect();
 // when they finish loading (chrome.tabs.onUpdated status: 'complete').
 // EXT-006: WebMCP tool discovery & invocation
 createWebMCPInjector({
-  scripting: chrome.scripting,
+  scripting:
+    chrome.scripting as unknown as import('./webmcp-injector').ChromeScriptingForInjector,
   tabs: chrome.tabs,
 });
 
@@ -71,7 +74,7 @@ createWebMCPInjector({
 // forwards them as MCP notifications to the agent via SSE.
 // EXT-007: Bidirectional Browser Event Notifications
 createBrowserEventListeners({
-  tabs: chrome.tabs,
+  tabs: chrome.tabs as unknown as import('./browser-events').ChromeTabsEvents,
   onNotify: envelope => {
     messageRouter.forwardNotification(envelope);
   },

@@ -13,88 +13,16 @@ import { createBrowserEventListeners } from '../browser-events';
 import type {
   BrowserEventListenerOptions,
   NotificationEnvelope,
-  ChromeTabsEvents,
 } from '../browser-events';
 import { MESSAGE_TYPES } from '../../types';
-
-/** Mock chrome.tabs with fire helpers for test control */
-interface MockChromeTabs extends ChromeTabsEvents {
-  _fireUpdated: (
-    tabId: number,
-    changeInfo: Record<string, unknown>,
-    tab: Record<string, unknown>
-  ) => void;
-  _fireCreated: (tab: Record<string, unknown>) => void;
-  _fireRemoved: (tabId: number, removeInfo: Record<string, unknown>) => void;
-}
+import { createMockChromeTabs } from './helpers/mock-chrome-tabs';
+import type { MockChromeTabs } from './helpers/mock-chrome-tabs';
 
 /** Mock tool registry with test helpers */
 interface MockToolRegistry {
   getByTab: (tabId: number) => Array<{ name: string; tabId?: number }>;
   unregister: ReturnType<typeof vi.fn>;
   _addTool: (name: string, tabId: number) => void;
-}
-
-/**
- * Helper: creates a mock chrome.tabs-like object with event emitters.
- */
-function createMockChromeTabs(): MockChromeTabs {
-  const onUpdatedListeners: Array<
-    (
-      tabId: number,
-      changeInfo: Record<string, unknown>,
-      tab: Record<string, unknown>
-    ) => void
-  > = [];
-  const onCreatedListeners: Array<(tab: Record<string, unknown>) => void> = [];
-  const onRemovedListeners: Array<
-    (tabId: number, removeInfo: Record<string, unknown>) => void
-  > = [];
-
-  return {
-    onUpdated: {
-      addListener: (
-        cb: (
-          tabId: number,
-          changeInfo: Record<string, unknown>,
-          tab: Record<string, unknown>
-        ) => void
-      ) => {
-        onUpdatedListeners.push(cb);
-      },
-    },
-    onCreated: {
-      addListener: (cb: (tab: Record<string, unknown>) => void) => {
-        onCreatedListeners.push(cb);
-      },
-    },
-    onRemoved: {
-      addListener: (
-        cb: (tabId: number, removeInfo: Record<string, unknown>) => void
-      ) => {
-        onRemovedListeners.push(cb);
-      },
-    },
-    _fireUpdated: (
-      tabId: number,
-      changeInfo: Record<string, unknown>,
-      tab: Record<string, unknown>
-    ) => {
-      for (const listener of onUpdatedListeners) {
-        listener(tabId, changeInfo, tab);
-      }
-    },
-    _fireCreated: (tab: Record<string, unknown>) => {
-      for (const listener of onCreatedListeners) {
-        listener(tab);
-      }
-    },
-    _fireRemoved: (tabId: number, removeInfo: Record<string, unknown>) => {
-      for (const listener of onRemovedListeners) {
-        listener(tabId, removeInfo);
-      }
-    },
-  };
 }
 
 /**

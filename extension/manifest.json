@@ -10,7 +10,8 @@
     "storage",
     "offscreen",
     "nativeMessaging",
-    "userScripts"
+    "userScripts",
+    "webNavigation"
   ],
   "host_permissions": ["<all_urls>"],
   "background": {

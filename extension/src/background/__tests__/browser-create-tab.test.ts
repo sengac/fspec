@@ -284,7 +284,7 @@ describe('Feature: Add browser_create_tab tool', () => {
       expect(handler).toBeDefined();
 
       // @step When I call browser_create_tab with url "https://example.com" and pinned true
-      const result = await handler!({
+      await handler!({
         url: 'https://example.com',
         pinned: true,
       });
@@ -315,7 +315,7 @@ describe('Feature: Add browser_create_tab tool', () => {
       const sourcePath = join(
         import.meta.dirname ?? '.',
         '..',
-        'browser-tools.ts'
+        'browser-tools-types.ts'
       );
       const source = await readFile(sourcePath, 'utf-8');
 
@@ -378,7 +378,7 @@ describe('Feature: Add browser_create_tab tool', () => {
       expect(source).toContain('tabId');
 
       // @step And the tool count should be updated from 11 to 12
-      expect(source).toContain('12 native browser control tools');
+      expect(source).toContain('14 native browser control tools');
       expect(source).not.toContain('11 native browser control tools');
     });
   });

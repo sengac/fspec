@@ -25,7 +25,7 @@ Reference this file with `@` in your prompt to load the skill:
 
 ## What You Get After Connecting
 
-Once connected, you have **12 native browser control tools** plus any **WebMCP tools** that websites have registered via `navigator.modelContext.registerTool()`.
+Once connected, you have **14 native browser control tools** plus any **WebMCP tools** that websites have registered via `navigator.modelContext.registerTool()`.
 
 You will also receive **real-time browser event notifications** via SSE — tab navigation, page loads, tab creation, and tab closure.
 
@@ -131,31 +131,37 @@ Returns: `{ "title": "...", "url": "...", "content": "..." }`
 **Use `"text"` format** for reading page content (much smaller payload). Only use `"html"` when you need DOM structure.
 
 ### `browser_click_element`
-Click an element on the page by CSS selector.
+Click an element on the page by CSS selector or ref.
 
 ```json
 { "selector": "#submit-button" }
+{ "selector": "@e3" }
 { "selector": ".nav-link:first-child", "tabId": 123 }
 ```
 
-- `selector` (string, **required**): CSS selector of the element to click.
+- `selector` (string, **required**): CSS selector OR ref (e.g., `@e3` from `browser_scan_page`) of the element to click.
 - `tabId` (number, optional): Target tab. Defaults to active tab.
 
 Returns: `{ "clicked": true, "selector": "..." }` or an error if the element is not found.
+
+**Tip:** Use `browser_scan_page` to get refs like `@e1`, `@e2`, `@e3`, then pass them as the `selector` — no need to figure out CSS selectors manually.
 
 ### `browser_fill_form`
 Fill a form input field and dispatch `input` + `change` events (triggering React/Vue/Angular change handlers).
 
 ```json
 { "selector": "#email", "value": "user@example.com" }
+{ "selector": "@e1", "value": "user@example.com" }
 { "selector": "input[name='search']", "value": "query", "tabId": 123 }
 ```
 
-- `selector` (string, **required**): CSS selector of the input element.
+- `selector` (string, **required**): CSS selector OR ref (e.g., `@e1` from `browser_scan_page`) of the input element.
 - `value` (string, **required**): Value to set.
 - `tabId` (number, optional): Target tab. Defaults to active tab.
 
 Returns: `{ "filled": true, "selector": "...", "value": "..." }` or an error if not found.
+
+**Tip:** Use `browser_scan_page` to get refs like `@e1`, `@e2`, then pass them as the `selector` instead of writing CSS selectors.
 
 ### `browser_go_back`
 Navigate the tab back in browser history.
@@ -196,6 +202,58 @@ Create a new browser tab, optionally navigating to a URL. Waits for page load wh
 Returns: `{ "tabId": 42, "url": "...", "title": "...", "active": true, "windowId": 1 }`
 
 **Use this instead of `browser_execute_script` with `window.open()`** — Chrome's popup blocker blocks `window.open()` without a user gesture, but `browser_create_tab` uses `chrome.tabs.create()` which always works.
+
+### `browser_scan_page`
+Scan the active tab's DOM and build an accessibility-tree-like representation with interactive element refs. Use refs (e.g., `@e1`, `@e2`) with `browser_click_element` and `browser_fill_form` instead of writing CSS selectors.
+
+```json
+{}
+{ "interactive": true }
+{ "interactive": false, "tabId": 123 }
+{ "selector": "#main-content" }
+```
+
+- `tabId` (number, optional): Tab to scan. Defaults to active tab.
+- `interactive` (boolean, optional): Only include interactive elements like buttons, links, inputs. Defaults to `true`.
+- `selector` (string, optional): CSS selector to scope the scan to a subtree of the page.
+
+Returns: A text representation of the page's accessibility tree with ref labels:
+```
+[document] Page Title
+  [navigation]
+    [link] @e1 "Home"
+    [link] @e2 "About"
+  [main]
+    [heading] "Welcome"
+    [textbox] @e3 "Search..."
+    [button] @e4 "Submit"
+```
+
+Use the `@e1`, `@e2`, etc. refs in subsequent `browser_click_element` and `browser_fill_form` calls:
+- `browser_click_element({ selector: "@e2" })` — clicks the "About" link
+- `browser_fill_form({ selector: "@e3", value: "query" })` — fills the search box
+
+### `browser_diff_page`
+Show what changed on the page since the last `browser_scan_page` call. Returns a unified diff of the accessibility tree with change statistics.
+
+```json
+{}
+{ "tabId": 123 }
+```
+
+- `tabId` (number, optional): Tab to diff. Defaults to active tab.
+
+Returns: A unified diff showing additions (`+`) and removals (`-`) since the last scan, plus summary stats:
+```
+@@ changes @@
+- [button] @e4 "Submit"
++ [button] @e4 "Loading..."
++ [alert] "Form submitted successfully"
+
+Stats: 1 added, 1 removed, 0 unchanged
+```
+
+**Use this after actions** (clicking, filling forms, navigating) to verify what changed without re-scanning the entire page.
 
 ---
 
@@ -272,6 +330,27 @@ Use these notifications to stay aware of what the user is doing in the browser a
 3. Call the discovered tool (e.g., mcp__webmcp__example-com__searchFlights)
 ```
 
+### Interact with page elements using refs
+```
+1. browser_navigate → URL
+2. browser_scan_page → get tree with @e1, @e2, @e3 refs
+3. browser_fill_form → { selector: "@e1", value: "user@test.com" }
+4. browser_fill_form → { selector: "@e2", value: "password123" }
+5. browser_click_element → { selector: "@e3" }
+6. browser_diff_page → verify what changed
+7. browser_scan_page → re-scan after navigation
+```
+
+---
+
+## Ref Lifecycle
+
+- Refs (like `@e1`, `@e2`, `@e3`) are assigned when you call `browser_scan_page`
+- Refs are **ephemeral** — they're invalidated when the page navigates or undergoes significant DOM changes
+- Always re-scan with `browser_scan_page` after navigation or major page changes
+- If a ref is not found, you'll get an error — re-scan to get fresh refs
+- Each call to `browser_scan_page` replaces all previous refs with new ones
+
 ---
 
 ## Troubleshooting
@@ -279,6 +358,7 @@ Use these notifications to stay aware of what the user is doing in the browser a
 - **Connection refused**: The native messaging host isn't running. The user needs to have the Chrome extension installed and the native host registered (`node extension/host/native-host.mjs --register --extension-id <id>`).
 - **Tool call timeout (30s)**: The extension didn't respond. Chrome may be busy, the tab might be on a `chrome://` URL (restricted), or the extension service worker restarted.
 - **Element not found**: CSS selector didn't match any element. Try `browser_get_page_content` with `format: "html"` to inspect the DOM, or use `browser_execute_script` to query available elements.
+- **Ref not found**: The ref (e.g., `@e3`) is stale — the page has navigated or changed since the last `browser_scan_page`. Re-scan with `browser_scan_page` to get fresh refs.
 - **Cannot access tab**: Some pages (`chrome://`, `chrome-extension://`, Chrome Web Store) block extension access. Navigate to a regular web page instead.
 
 ---

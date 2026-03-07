@@ -11,6 +11,8 @@
  * Implemented by: EXT-007
  */
 
+import { clearTabScanState } from './ref-state';
+
 /** Minimal chrome.tabs event interface for dependency injection */
 export interface ChromeTabsEvents {
   onUpdated: {
@@ -93,6 +95,7 @@ export function createBrowserEventListeners(
     ) => {
       // Navigation: changeInfo contains a new url
       if (typeof changeInfo.url === 'string') {
+        clearTabScanState(tabId);
         onNotify(
           buildNotification('notifications/browser/navigation', {
             tabId,
@@ -128,6 +131,9 @@ export function createBrowserEventListeners(
 
   // --- chrome.tabs.onRemoved ---
   tabs.onRemoved.addListener((tabId: number) => {
+    // Clear ref state for closed tab
+    clearTabScanState(tabId);
+
     // Clean up any WebMCP tools registered from this tab
     if (toolRegistry) {
       const tabTools = toolRegistry.getByTab(tabId);

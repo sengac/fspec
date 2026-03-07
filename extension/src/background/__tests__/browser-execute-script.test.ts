@@ -41,6 +41,14 @@ function createMockTabs(
       addListener: vi.fn(),
       removeListener: vi.fn(),
     },
+    create: vi.fn().mockResolvedValue({
+      id: 42,
+      url: '',
+      title: '',
+      active: true,
+      windowId: 1,
+      index: 0,
+    }),
     ...overrides,
   };
 }

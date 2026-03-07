@@ -25,10 +25,15 @@
  */
 export function webmcpDiscoveryFunction(): void {
   // Guard against double-injection
-  if ((window as Record<string, unknown>).__fspec_webmcp_discovery_active) {
+  if (
+    (window as unknown as Record<string, unknown>)
+      .__fspec_webmcp_discovery_active
+  ) {
     return;
   }
-  (window as Record<string, unknown>).__fspec_webmcp_discovery_active = true;
+  (
+    window as unknown as Record<string, unknown>
+  ).__fspec_webmcp_discovery_active = true;
 
   const pageOrigin = window.location.hostname;
 
@@ -117,7 +122,7 @@ export function webmcpDiscoveryFunction(): void {
    * Covers: native Chrome WebMCP API, @mcp-b/global polyfill, W3C-compliant polyfills.
    */
   function setupModelContextInterceptor(): void {
-    const nav = navigator as Record<string, unknown>;
+    const nav = navigator as unknown as Record<string, unknown>;
 
     // If navigator.modelContext already exists, intercept it
     if (nav.modelContext) {
@@ -231,11 +236,11 @@ export function webmcpDiscoveryFunction(): void {
    * Handles both existing and late-assigned WebMCP classes.
    */
   function setupWebMCPClassInterceptor(): void {
-    const win = window as Record<string, unknown>;
+    const win = window as unknown as Record<string, unknown>;
 
     // If WebMCP class already exists, wrap it
     if (win.WebMCP && typeof win.WebMCP === 'function') {
-      wrapWebMCPClass(win.WebMCP as Record<string, unknown>);
+      wrapWebMCPClass(win.WebMCP as unknown as Record<string, unknown>);
     }
 
     // Trap future assignment of WebMCP on window
@@ -249,7 +254,7 @@ export function webmcpDiscoveryFunction(): void {
         set(NewClass: unknown) {
           currentWebMCP = NewClass;
           if (NewClass && typeof NewClass === 'function') {
-            wrapWebMCPClass(NewClass as Record<string, unknown>);
+            wrapWebMCPClass(NewClass as unknown as Record<string, unknown>);
           }
         },
       });
@@ -337,7 +342,7 @@ export function webmcpDiscoveryFunction(): void {
    * This catches tools registered before our script was injected.
    */
   function performPostLoadSnapshot(): void {
-    const win = window as Record<string, unknown>;
+    const win = window as unknown as Record<string, unknown>;
     const wellKnownGlobals = ['webMCP', 'mcp', 'webmcp'];
 
     for (const key of wellKnownGlobals) {

@@ -1,143 +1,52 @@
 /**
  * fspec Browser Agent - Native Browser Control Tools
  *
- * Implements the 12 native browser control tool handlers:
+ * Implements the native browser control tool handlers:
  * - browser_navigate, browser_screenshot, browser_list_tabs,
  *   browser_execute_script, browser_switch_tab, browser_close_tab,
  *   browser_get_page_content, browser_click_element, browser_fill_form,
- *   browser_go_back, browser_go_forward, browser_create_tab
+ *   browser_go_back, browser_go_forward, browser_create_tab,
+ *   browser_scan_page, browser_diff_page
  *
  * Each handler is an async function that accepts tool arguments and returns
  * an MCP-formatted result (content array with text or image items).
  *
- * Implemented by: EXT-005, EXT-011
+ * Implemented by: EXT-005, EXT-011, LOCATE-004, LOCATE-006
  */
 
-/** Minimal chrome.tabs interface for dependency injection */
-export interface ChromeTabsForTools {
-  query: (queryInfo: Record<string, unknown>) => Promise<chrome.tabs.Tab[]>;
-  update: (
-    ...args: [number, Record<string, unknown>]
-  ) => Promise<chrome.tabs.Tab | undefined>;
-  remove: (tabId: number) => Promise<void>;
-  captureVisibleTab: (
-    windowId: number,
-    options: Record<string, unknown>
-  ) => Promise<string>;
-  goBack: (tabId: number) => Promise<void>;
-  goForward: (tabId: number) => Promise<void>;
-  get: (tabId: number) => Promise<chrome.tabs.Tab>;
-  create: (createProperties: {
-    url?: string;
-    active?: boolean;
-    index?: number;
-    windowId?: number;
-    openerTabId?: number;
-    pinned?: boolean;
-  }) => Promise<chrome.tabs.Tab>;
-  onUpdated: {
-    addListener: (
-      callback: (
-        tabId: number,
-        changeInfo: { status?: string },
-        tab: chrome.tabs.Tab
-      ) => void
-    ) => void;
-    removeListener: (
-      callback: (
-        tabId: number,
-        changeInfo: { status?: string },
-        tab: chrome.tabs.Tab
-      ) => void
-    ) => void;
-  };
-}
+import { formatAccessibilityTree } from './dom-scanner';
+import { setTabScanState, getTabScanState, resolveRef } from './ref-state';
+import { myersDiff, formatDiffOutput } from './myers-diff';
+import type { RefEntry } from './ref-state';
+import { scanPageDOM } from './scan-page-dom';
+import { textResult, errorResult } from './browser-tools-types';
+import {
+  DEFAULT_MAX_FRAMES,
+  isScannableFrame,
+  prioritizeFrames,
+  injectFrameMarkers,
+  scanFrames,
+  mergeFrameResults,
+} from './iframe-scanner';
+import type { FrameScanResult } from './iframe-scanner';
+import type {
+  BrowserToolsDeps,
+  McpToolResult,
+  ToolHandler,
+  BrowserToolsAPI,
+  FrameInfo,
+} from './browser-tools-types';
 
-/** Minimal chrome.scripting interface for dependency injection */
-export interface ChromeScriptingForTools {
-  executeScript: <Args extends unknown[], Result>(
-    injection: chrome.scripting.ScriptInjection<Args, Result>
-  ) => Promise<chrome.scripting.InjectionResult<Awaited<Result>>[]>;
-}
-
-/** Minimal chrome.windows interface for dependency injection */
-export interface ChromeWindowsForTools {
-  update: (
-    windowId: number,
-    updateInfo: Record<string, unknown>
-  ) => Promise<unknown>;
-}
-
-/** Minimal chrome.userScripts interface for dependency injection.
- *
- * Models the Chrome 135+ userScripts.execute() API.
- * See: user_scripts.idl InjectionResult — `error` and `result` are
- * mutually exclusive. In current Chromium (OnScriptExecuted in
- * user_scripts_api.cc), `error` is never populated for script runtime
- * errors — the promise resolves with {result: null} instead.
- * Infrastructure errors (tab not found, permissions) reject the promise.
- */
-export interface ChromeUserScriptsForTools {
-  configureWorld: (config: { csp: string }) => Promise<void>;
-  execute: (injection: {
-    target: { tabId: number };
-    world: string;
-    js: Array<{ code: string }>;
-  }) => Promise<Array<{ result?: unknown; error?: string }>>;
-}
-
-export interface BrowserToolsDeps {
-  tabs: ChromeTabsForTools;
-  scripting: ChromeScriptingForTools;
-  windows: ChromeWindowsForTools;
-  userScripts?: ChromeUserScriptsForTools;
-}
-
-/** MCP content item */
-interface McpTextContent {
-  type: 'text';
-  text: string;
-}
-
-interface McpImageContent {
-  type: 'image';
-  data: string;
-  mimeType: string;
-}
-
-type McpContent = McpTextContent | McpImageContent;
-
-/** MCP tool result */
-interface McpToolResult {
-  content: McpContent[];
-  isError?: boolean;
-}
-
-/** Tool handler function type */
-type ToolHandler = (args: Record<string, unknown>) => Promise<McpToolResult>;
-
-export interface BrowserToolsAPI {
-  getHandler: (toolName: string) => ToolHandler | undefined;
-  getToolNames: () => string[];
-}
-
-function textResult(data: unknown): McpToolResult {
-  return {
-    content: [
-      {
-        type: 'text',
-        text: typeof data === 'string' ? data : JSON.stringify(data),
-      },
-    ],
-  };
-}
-
-function errorResult(message: string): McpToolResult {
-  return {
-    isError: true,
-    content: [{ type: 'text', text: message }],
-  };
-}
+export type {
+  ChromeTabsForTools,
+  ChromeScriptingForTools,
+  ChromeWindowsForTools,
+  ChromeUserScriptsForTools,
+  ChromeWebNavigationForTools,
+  FrameInfo,
+  BrowserToolsDeps,
+  BrowserToolsAPI,
+} from './browser-tools-types';
 
 /**
  * Sentinel value returned by the try-catch wrapper when user code throws.
@@ -177,7 +86,7 @@ function wrapCodeWithErrorHandling(code: string): string {
 }
 
 export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
-  const { tabs, scripting, windows, userScripts } = deps;
+  const { tabs, scripting, windows, userScripts, webNavigation } = deps;
 
   // Configure USER_SCRIPT world with permissive CSP on startup
   if (userScripts) {
@@ -228,6 +137,152 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
 
       tabs.onUpdated.addListener(listener);
     });
+  }
+
+  /** Result from executing a page scan, assigning refs, and storing state */
+  interface ScanAndStoreResult {
+    refs: Map<string, RefEntry>;
+    treeText: string;
+    metadata: FrameScanResult['metadata'];
+  }
+
+  /**
+   * Execute a page scan, assign refs, format tree, and store state.
+   * Shared by browser_scan_page and browser_diff_page (Rule [1]: reuse).
+   *
+   * When webNavigation is available, performs multi-frame scanning:
+   * 1. getAllFrames to discover all frames
+   * 2. Two-pass injection for frame-to-DOM correlation
+   * 3. Per-frame scanPageDOM via executeScript
+   * 4. Merge results into unified tree with frame-prefixed refs
+   *
+   * @returns Scan result with refs, tree text, and metadata, or null if scan returned no results.
+   */
+  async function executeScanAndStore(
+    tabId: number,
+    interactive: boolean,
+    scopeSelector?: string,
+    maxFrames?: number
+  ): Promise<ScanAndStoreResult | null> {
+    // Phase 1: Discover frames
+    let allFrames: FrameInfo[] | null = null;
+    if (webNavigation) {
+      try {
+        allFrames = await webNavigation.getAllFrames({ tabId });
+      } catch {
+        // Fall back to single-frame scan
+        allFrames = null;
+      }
+    }
+
+    // Single-frame path (no webNavigation or no frames)
+    if (!allFrames || allFrames.length <= 1) {
+      return executeSingleFrameScan(tabId, interactive, scopeSelector);
+    }
+
+    // Multi-frame path
+    const mainFrame = allFrames.find(
+      f => f.frameId === 0 || f.frameType === 'outermost_frame'
+    );
+    if (!mainFrame) {
+      return executeSingleFrameScan(tabId, interactive, scopeSelector);
+    }
+
+    const subframes = allFrames.filter(
+      f => f.frameId !== 0 && f.frameType !== 'outermost_frame'
+    );
+    const scannableSubframes = subframes.filter(
+      f => f.documentLifecycle === 'active' && isScannableFrame(f.url)
+    );
+
+    const limit = maxFrames ?? DEFAULT_MAX_FRAMES;
+    const { scanned: framesToScan, skipped: skippedFrames } = prioritizeFrames(
+      scannableSubframes,
+      mainFrame.url,
+      limit
+    );
+
+    // Non-scannable frames (chrome://, chrome-extension://)
+    const nonScannableFrames = subframes.filter(
+      f => !isScannableFrame(f.url) || f.documentLifecycle !== 'active'
+    );
+
+    // Phase 2: Two-pass injection — inject frameId markers into each subframe
+    await injectFrameMarkers(scripting, tabId, framesToScan);
+
+    // Phase 3: Scan main frame
+    const mainResults = await scripting.executeScript({
+      target: { tabId },
+      args: [interactive, scopeSelector ?? null] as [boolean, string | null],
+      func: scanPageDOM,
+    });
+    const mainScanResult = mainResults[0]?.result as FrameScanResult | null;
+    if (!mainScanResult) {
+      return null;
+    }
+
+    // Phase 4: Scan each iframe
+    const frameScanResults = await scanFrames(
+      scripting,
+      tabId,
+      framesToScan,
+      scanPageDOM,
+      interactive
+    );
+
+    // Phase 5: Merge results, assign refs, and build tree
+    const { mergedElements, refs } = mergeFrameResults(
+      mainScanResult.elements,
+      framesToScan,
+      frameScanResults,
+      skippedFrames,
+      nonScannableFrames,
+      allFrames
+    );
+
+    const treeText = formatAccessibilityTree(mergedElements);
+    setTabScanState(tabId, { refs, treeText, timestamp: Date.now() });
+
+    return { refs, treeText, metadata: mainScanResult.metadata };
+  }
+
+  /** Single-frame scan — legacy path for pages without iframes or without webNavigation */
+  async function executeSingleFrameScan(
+    tabId: number,
+    interactive: boolean,
+    scopeSelector?: string
+  ): Promise<ScanAndStoreResult | null> {
+    const results = await scripting.executeScript({
+      target: { tabId },
+      args: [interactive, scopeSelector ?? null] as [boolean, string | null],
+      func: scanPageDOM,
+    });
+
+    const scanResult = results[0]?.result as FrameScanResult | null;
+    if (!scanResult) {
+      return null;
+    }
+
+    // Assign refs to interactive elements (service worker side)
+    let refCounter = 1;
+    const refs = new Map<string, RefEntry>();
+    for (const element of scanResult.elements) {
+      if (element.interactive) {
+        const refKey = `e${refCounter++}`;
+        refs.set(refKey, {
+          selector: element.selector,
+          role: element.role,
+          name: element.name,
+          frameId: 0,
+        });
+        element.ref = refKey;
+      }
+    }
+
+    const treeText = formatAccessibilityTree(scanResult.elements);
+    setTabScanState(tabId, { refs, treeText, timestamp: Date.now() });
+
+    return { refs, treeText, metadata: scanResult.metadata };
   }
 
   // browser_navigate
@@ -385,15 +440,57 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
     return textResult(value);
   });
 
+  /**
+   * Resolve a @ref selector to its CSS selector and frame context.
+   * Raw CSS selectors (not starting with '@') pass through unchanged.
+   * Returns { selector, frameId } on success, or an error result if
+   * the ref is not found.
+   */
+  function resolveRefSelector(
+    selector: string,
+    tabId: number
+  ): { selector: string; frameId: number } | McpToolResult {
+    if (!selector.startsWith('@')) {
+      return { selector, frameId: 0 };
+    }
+    const refKey = selector.slice(1);
+    const entry = resolveRef(tabId, refKey);
+    if (!entry) {
+      return errorResult(
+        `Ref ${selector} not found. Run browser_scan_page first to scan the page.`
+      );
+    }
+    return { selector: entry.selector, frameId: entry.frameId };
+  }
+
+  /** Type guard: check if resolve result is an error */
+  function isResolveError(
+    result: { selector: string; frameId: number } | McpToolResult
+  ): result is McpToolResult {
+    return 'content' in result;
+  }
+
   // browser_click_element
   handlers.set('browser_click_element', async args => {
-    const selector = args.selector as string;
+    let selector = args.selector as string;
     if (!selector) {
       return errorResult('Missing required parameter: selector');
     }
     const tabId = await resolveTabId(args.tabId as number | undefined);
+
+    // Ref resolution: '@e3' or '@f5e4' → look up CSS selector + frameId from scan state
+    const resolved = resolveRefSelector(selector, tabId);
+    if (isResolveError(resolved)) {
+      return resolved;
+    }
+    selector = resolved.selector;
+    const frameId = resolved.frameId;
+
+    const target: chrome.scripting.InjectionTarget =
+      frameId > 0 ? { tabId, frameIds: [frameId] } : { tabId };
+
     const results = await scripting.executeScript({
-      target: { tabId },
+      target,
       args: [selector],
       func: (sel: string) => {
         const el = document.querySelector(sel);
@@ -413,7 +510,7 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
 
   // browser_fill_form
   handlers.set('browser_fill_form', async args => {
-    const selector = args.selector as string;
+    let selector = args.selector as string;
     const value = args.value as string;
     if (!selector) {
       return errorResult('Missing required parameter: selector');
@@ -422,8 +519,20 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
       return errorResult('Missing required parameter: value');
     }
     const tabId = await resolveTabId(args.tabId as number | undefined);
+
+    // Ref resolution: '@e3' or '@f5e1' → look up CSS selector + frameId from scan state
+    const resolved = resolveRefSelector(selector, tabId);
+    if (isResolveError(resolved)) {
+      return resolved;
+    }
+    selector = resolved.selector;
+    const frameId = resolved.frameId;
+
+    const target: chrome.scripting.InjectionTarget =
+      frameId > 0 ? { tabId, frameIds: [frameId] } : { tabId };
+
     const results = await scripting.executeScript({
-      target: { tabId },
+      target,
       args: [selector, value],
       func: (sel: string, val: string) => {
         const el = document.querySelector(sel) as HTMLInputElement | null;
@@ -494,6 +603,93 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
       active: tab.active,
       windowId: tab.windowId,
     });
+  });
+
+  // browser_scan_page
+  handlers.set('browser_scan_page', async args => {
+    const interactive = args.interactive !== false; // default true
+    const scopeSelector = args.selector as string | undefined;
+    const maxFrames = args.maxFrames as number | undefined;
+    let tabId: number;
+    try {
+      tabId = await resolveTabId(args.tabId as number | undefined);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return errorResult(`Tab not found: ${message}`);
+    }
+
+    try {
+      const scan = await executeScanAndStore(
+        tabId,
+        interactive,
+        scopeSelector,
+        maxFrames
+      );
+      if (!scan) {
+        return errorResult(
+          'Scan returned no results — page may be restricted (chrome://, edge://)'
+        );
+      }
+
+      const meta = scan.metadata;
+      const header = `Page: ${meta.url} — "${meta.title}"\nViewport: ${meta.viewportWidth}x${meta.viewportHeight} | Elements: ${meta.totalElements} | Interactive: ${scan.refs.size}`;
+      return textResult(
+        `${header}\n\n${scan.treeText}\n\n${scan.refs.size} interactive elements`
+      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return errorResult(`Scan failed: ${message}`);
+    }
+  });
+
+  // browser_diff_page
+  handlers.set('browser_diff_page', async args => {
+    let tabId: number;
+    try {
+      tabId = await resolveTabId(args.tabId as number | undefined);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return errorResult(`Tab not found: ${message}`);
+    }
+
+    try {
+      // 1. Get previous scan state
+      const previousState = getTabScanState(tabId);
+      const previousTreeText = previousState?.treeText ?? '';
+
+      // 2. Run fresh scan (reuses executeScanAndStore — Rule [1])
+      const scan = await executeScanAndStore(tabId, true);
+      if (!scan) {
+        return errorResult(
+          'Scan returned no results — page may be restricted (chrome://, edge://)'
+        );
+      }
+
+      // 3. Compute diff
+      const oldLines = previousTreeText
+        ? previousTreeText.split('\n').filter(l => l.length > 0)
+        : [];
+      const newLines = scan.treeText
+        ? scan.treeText.split('\n').filter(l => l.length > 0)
+        : [];
+      const diff = myersDiff(oldLines, newLines);
+
+      // 4. Format output
+      let output: string;
+      if (!previousState) {
+        // First scan — show all as additions with note
+        const allAdditions = newLines.map(l => `+ ${l}`).join('\n');
+        const summary = `${newLines.length} addition${newLines.length !== 1 ? 's' : ''}, 0 removals, 0 unchanged`;
+        output = `No previous scan to compare against. Showing current state.\n\n${allAdditions}\n\nChanges: ${summary}`;
+      } else {
+        output = formatDiffOutput(diff);
+      }
+
+      return textResult(output);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return errorResult(`Diff failed: ${message}`);
+    }
   });
 
   return {

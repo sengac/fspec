@@ -21,9 +21,6 @@ import {
 } from '../../background/webmcp-injector';
 
 describe('Feature: WebMCP Dynamic Tool Discovery', () => {
-  let originalWindow: typeof globalThis.window;
-  let originalNavigator: typeof globalThis.navigator;
-
   /**
    * Track message event listeners added by webmcpDiscoveryFunction()
    * so they can be removed between tests for proper isolation.
@@ -34,10 +31,6 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
   let originalAddEventListener: typeof window.addEventListener;
 
   beforeEach(() => {
-    // Store originals
-    originalWindow = globalThis.window;
-    originalNavigator = globalThis.navigator;
-
     // Intercept addEventListener to track message listeners for cleanup
     originalAddEventListener = window.addEventListener.bind(window);
     const origAdd = window.addEventListener.bind(window);
@@ -55,9 +48,10 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
     // Clean up any discovery flag from previous tests
     if (
       typeof window !== 'undefined' &&
-      (window as Record<string, unknown>).__fspec_webmcp_discovery_active
+      (window as unknown as Record<string, unknown>)
+        .__fspec_webmcp_discovery_active
     ) {
-      delete (window as Record<string, unknown>)
+      delete (window as unknown as Record<string, unknown>)
         .__fspec_webmcp_discovery_active;
     }
   });
@@ -78,16 +72,17 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
     // Clean up discovery flag
     if (
       typeof window !== 'undefined' &&
-      (window as Record<string, unknown>).__fspec_webmcp_discovery_active
+      (window as unknown as Record<string, unknown>)
+        .__fspec_webmcp_discovery_active
     ) {
-      delete (window as Record<string, unknown>)
+      delete (window as unknown as Record<string, unknown>)
         .__fspec_webmcp_discovery_active;
     }
     // Clean up any WebMCP globals
     if (typeof window !== 'undefined') {
-      delete (window as Record<string, unknown>).WebMCP;
-      delete (window as Record<string, unknown>).webMCP;
-      delete (window as Record<string, unknown>).mcp;
+      delete (window as unknown as Record<string, unknown>).WebMCP;
+      delete (window as unknown as Record<string, unknown>).webMCP;
+      delete (window as unknown as Record<string, unknown>).mcp;
     }
   });
 
@@ -124,13 +119,13 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
           }));
         }
       }
-      (window as Record<string, unknown>).WebMCP = MockWebMCP;
+      (window as unknown as Record<string, unknown>).WebMCP = MockWebMCP;
 
       // Run the discovery script
       webmcpDiscoveryFunction();
 
       // @step And the page creates a WebMCP instance and calls registerTool with name "calculator"
-      const WebMCPClass = (window as Record<string, unknown>)
+      const WebMCPClass = (window as unknown as Record<string, unknown>)
         .WebMCP as typeof MockWebMCP;
       const instance = new WebMCPClass();
       const executeFn = vi.fn(() => '42');
@@ -183,10 +178,8 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
       webmcpDiscoveryFunction();
 
       // @step When the page calls navigator.modelContext.registerTool with name "weather"
-      const mc = (navigator as Record<string, unknown>).modelContext as Record<
-        string,
-        unknown
-      >;
+      const mc = (navigator as unknown as Record<string, unknown>)
+        .modelContext as Record<string, unknown>;
       const registerTool = mc.registerTool as (
         toolDef: Record<string, unknown>
       ) => unknown;
@@ -214,7 +207,7 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
 
       postMessageSpy.mockRestore();
       // Cleanup
-      delete (navigator as Record<string, unknown>).modelContext;
+      delete (navigator as unknown as Record<string, unknown>).modelContext;
     });
   });
 
@@ -241,10 +234,8 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
       webmcpDiscoveryFunction();
 
       // @step When the page registers a tool during its initial script execution
-      const mc = (navigator as Record<string, unknown>).modelContext as Record<
-        string,
-        unknown
-      >;
+      const mc = (navigator as unknown as Record<string, unknown>)
+        .modelContext as Record<string, unknown>;
       const registerTool = mc.registerTool as (
         toolDef: Record<string, unknown>
       ) => unknown;
@@ -268,7 +259,7 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
       expect(tool.name).toBe('early-tool');
 
       postMessageSpy.mockRestore();
-      delete (navigator as Record<string, unknown>).modelContext;
+      delete (navigator as unknown as Record<string, unknown>).modelContext;
     });
   });
 
@@ -278,7 +269,9 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
       const postMessageSpy = vi.spyOn(window, 'postMessage');
 
       // @step And window.WebMCP does not yet exist
-      expect((window as Record<string, unknown>).WebMCP).toBeUndefined();
+      expect(
+        (window as unknown as Record<string, unknown>).WebMCP
+      ).toBeUndefined();
 
       // Run the discovery script
       webmcpDiscoveryFunction();
@@ -298,11 +291,11 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
           return this.tools;
         }
       }
-      (window as Record<string, unknown>).WebMCP = LateWebMCP;
+      (window as unknown as Record<string, unknown>).WebMCP = LateWebMCP;
 
       // @step Then the Object.defineProperty trap intercepts the assignment
       // @step And the new class's prototype.registerTool is wrapped with the interceptor
-      const instance = new ((window as Record<string, unknown>)
+      const instance = new ((window as unknown as Record<string, unknown>)
         .WebMCP as typeof LateWebMCP)();
       instance.registerTool('late-tool', 'A late tool', {}, () => 'result');
 
@@ -338,7 +331,7 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
         ],
         executeTool: executeMock,
       };
-      (window as Record<string, unknown>).webMCP = existingInstance;
+      (window as unknown as Record<string, unknown>).webMCP = existingInstance;
 
       // Run the discovery script
       webmcpDiscoveryFunction();
@@ -405,13 +398,13 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
           // intentionally blank — will be wrapped
         }
       }
-      (window as Record<string, unknown>).WebMCP = MockWebMCP;
+      (window as unknown as Record<string, unknown>).WebMCP = MockWebMCP;
 
       webmcpDiscoveryFunction();
 
       // @step And the execute callback was captured by the discovery script
       const executeFn = vi.fn(() => '42');
-      const WebMCPClass = (window as Record<string, unknown>)
+      const WebMCPClass = (window as unknown as Record<string, unknown>)
         .WebMCP as typeof MockWebMCP;
       const instance = new WebMCPClass();
       instance.registerTool('calculator', 'A calc', {}, executeFn);
@@ -457,7 +450,8 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
 
       // @step And the __fspec_webmcp_discovery_active flag is set on window
       expect(
-        (window as Record<string, unknown>).__fspec_webmcp_discovery_active
+        (window as unknown as Record<string, unknown>)
+          .__fspec_webmcp_discovery_active
       ).toBe(true);
 
       const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
@@ -557,7 +551,7 @@ describe('Feature: WebMCP Dynamic Tool Discovery', () => {
       });
 
       postMessageSpy.mockRestore();
-      delete (navigator as Record<string, unknown>).modelContext;
+      delete (navigator as unknown as Record<string, unknown>).modelContext;
     });
   });
 

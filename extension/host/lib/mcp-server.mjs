@@ -97,11 +97,11 @@ const NATIVE_TOOLS = [
   },
   {
     name: 'browser_click_element',
-    description: 'Click an element on the page by CSS selector',
+    description: 'Click an element on the page by CSS selector or @ref from browser_scan_page. Supports iframe refs (e.g. @f5e4 clicks element 4 inside frame 5).',
     inputSchema: {
       type: 'object',
       properties: {
-        selector: { type: 'string', description: 'CSS selector of the element to click' },
+        selector: { type: 'string', description: 'CSS selector or @ref (e.g. @e3 for main frame, @f5e4 for iframe frame 5 element 4) from browser_scan_page' },
         tabId: { type: 'number', description: 'Optional tab ID (defaults to active tab)' },
       },
       required: ['selector'],
@@ -109,11 +109,11 @@ const NATIVE_TOOLS = [
   },
   {
     name: 'browser_fill_form',
-    description: 'Fill a form field on the page by CSS selector',
+    description: 'Fill a form field on the page by CSS selector or @ref from browser_scan_page. Supports iframe refs (e.g. @f5e1 fills element 1 inside frame 5).',
     inputSchema: {
       type: 'object',
       properties: {
-        selector: { type: 'string', description: 'CSS selector of the input element' },
+        selector: { type: 'string', description: 'CSS selector or @ref (e.g. @e1 for main frame, @f5e1 for iframe frame 5 element 1) from browser_scan_page' },
         value: { type: 'string', description: 'Value to set on the input element' },
         tabId: { type: 'number', description: 'Optional tab ID (defaults to active tab)' },
       },
@@ -150,6 +150,29 @@ const NATIVE_TOOLS = [
         active: { type: 'boolean', description: 'Whether to make it the active tab (defaults to true)' },
         windowId: { type: 'number', description: 'Window to create the tab in (defaults to current window)' },
         pinned: { type: 'boolean', description: 'Whether to pin the tab (defaults to false)' },
+      },
+    },
+  },
+  {
+    name: 'browser_scan_page',
+    description: 'Scan the page DOM and build an accessibility-tree-like representation with interactive element refs. Discovers iframes via chrome.webNavigation.getAllFrames and scans their content too. Main frame refs use simple format (e.g. @e1), iframe refs use frame-prefixed format (e.g. @f5e1 for frame 5, element 1). Use refs in browser_click_element and browser_fill_form selectors.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tabId: { type: 'number', description: 'Optional tab ID (defaults to active tab)' },
+        interactive: { type: 'boolean', description: 'Include only interactive elements (defaults to true)' },
+        selector: { type: 'string', description: 'Optional CSS selector to scope the scan root' },
+        maxFrames: { type: 'number', description: 'Maximum number of iframes to scan (defaults to 10). Same-origin and larger iframes are prioritized.' },
+      },
+    },
+  },
+  {
+    name: 'browser_diff_page',
+    description: 'Show what changed on the page since the last browser_scan_page call. Returns a unified diff of the accessibility tree with change stats.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tabId: { type: 'number', description: 'Optional tab ID (defaults to active tab)' },
       },
     },
   },

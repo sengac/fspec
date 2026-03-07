@@ -1,0 +1,213 @@
+{
+  "scenarios": [
+    {
+      "name": "Store and retrieve scan state for a tab",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "51-77",
+          "implMappings": [
+            {
+              "file": "extension/src/background/ref-state.ts",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolve a known ref to its entry",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "79-96",
+          "implMappings": [
+            {
+              "file": "extension/src/background/ref-state.ts",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolve an unknown ref returns undefined",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "98-113",
+          "implMappings": [
+            {
+              "file": "extension/src/background/ref-state.ts",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolve ref for unknown tab returns undefined",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "115-129",
+          "implMappings": [
+            {
+              "file": "extension/src/background/ref-state.ts",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear scan state for one tab without affecting others",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "131-151",
+          "implMappings": [
+            {
+              "file": "extension/src/background/ref-state.ts",
+              "lines": [
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get scan state for never-scanned tab returns undefined",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "153-165",
+          "implMappings": [
+            {
+              "file": "extension/src/background/ref-state.ts",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigation event invalidates scan state",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "169-199",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-events.ts",
+              "lines": [
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab close event cleans up scan state",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/ref-state.test.ts",
+          "lines": "201-227",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-events.ts",
+              "lines": [
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "extension/src/background/__tests__/ref-state.test.ts"
+    ],
+    "implFiles": [
+      "extension/src/background/ref-state.ts",
+      "extension/src/background/browser-events.ts"
+    ],
+    "totalLinesCovered": 236
+  }
+}
