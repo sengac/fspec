@@ -4,25 +4,25 @@
  * This test file validates the acceptance criteria for MCP Tool Definitions
  * & Skill Documentation. It verifies that documentation files contain
  * accurate and complete information about the scan, diff, and ref tools.
+ *
+ * Note: webmcp-skill.md and inject-webmcp-tools-skill.md were consolidated
+ * into extension-skill.md in commit 9eaef69a.
  */
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
 const EXTENSION_ROOT = join(__dirname, '..', '..', '..');
-const SKILL_FILE = join(EXTENSION_ROOT, 'webmcp-skill.md');
+const SKILL_FILE = join(EXTENSION_ROOT, 'extension-skill.md');
 const MCP_SERVER_FILE = join(EXTENSION_ROOT, 'host', 'lib', 'mcp-server.mjs');
-const INJECT_SKILL_FILE = join(EXTENSION_ROOT, 'inject-webmcp-tools-skill.md');
 
 describe('Feature: MCP Tool Definitions & Skill Documentation', () => {
   let skillContent: string;
   let mcpServerContent: string;
-  let injectSkillContent: string;
 
   beforeAll(() => {
     skillContent = readFileSync(SKILL_FILE, 'utf-8');
     mcpServerContent = readFileSync(MCP_SERVER_FILE, 'utf-8');
-    injectSkillContent = readFileSync(INJECT_SKILL_FILE, 'utf-8');
   });
 
   describe('Scenario: Skill documentation lists all 14 native tools', () => {
@@ -55,10 +55,10 @@ describe('Feature: MCP Tool Definitions & Skill Documentation', () => {
 
       // @step When I read the browser_click_element and browser_fill_form documentation
       const clickSection =
-        skillContent.split('### `browser_click_element`')[1]?.split('###')[0] ??
+        skillContent.split('`browser_click_element`')[1]?.split('####')[0] ??
         '';
       const fillSection =
-        skillContent.split('### `browser_fill_form`')[1]?.split('###')[0] ?? '';
+        skillContent.split('`browser_fill_form`')[1]?.split('####')[0] ?? '';
 
       // @step Then the selector parameter should mention accepting @ref syntax from browser_scan_page
       expect(clickSection).toMatch(/@ref|@e\d|ref.*browser_scan_page/i);
@@ -163,9 +163,9 @@ describe('Feature: MCP Tool Definitions & Skill Documentation', () => {
     });
   });
 
-  describe('Scenario: Inject skill file has no stale references', () => {
+  describe('Scenario: Skill file has no stale references', () => {
     it('should not contain old extension name references', () => {
-      // @step Given the inject-webmcp-tools-skill.md file exists
+      // @step Given the extension-skill.md file exists
       // (validated by beforeAll — readFileSync throws if missing)
 
       // @step When I search for old extension name references
@@ -173,10 +173,10 @@ describe('Feature: MCP Tool Definitions & Skill Documentation', () => {
 
       // @step Then no references to old tool names or old extension names should be found
       for (const staleName of staleNames) {
-        expect(injectSkillContent).not.toContain(staleName);
+        expect(skillContent).not.toContain(staleName);
       }
       // Should use current naming
-      expect(injectSkillContent).toContain('fspec Browser Agent');
+      expect(skillContent).toContain('fspec Browser Agent');
     });
   });
 });

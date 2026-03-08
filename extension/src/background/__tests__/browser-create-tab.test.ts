@@ -356,8 +356,8 @@ describe('Feature: Add browser_create_tab tool', () => {
   });
 
   describe('Scenario: Skill documentation includes browser_create_tab', () => {
-    it('should document browser_create_tab in webmcp-skill.md', async () => {
-      // @step Given the webmcp-skill.md documentation file
+    it('should document browser_create_tab in extension-skill.md', async () => {
+      // @step Given the extension-skill.md documentation file
       const { readFile } = await import('fs/promises');
       const { join } = await import('path');
       const skillPath = join(
@@ -365,7 +365,7 @@ describe('Feature: Add browser_create_tab tool', () => {
         '..',
         '..',
         '..',
-        'webmcp-skill.md'
+        'extension-skill.md'
       );
       const source = await readFile(skillPath, 'utf-8');
 
@@ -376,10 +376,6 @@ describe('Feature: Add browser_create_tab tool', () => {
       expect(source).toContain('pinned');
       expect(source).toContain('windowId');
       expect(source).toContain('tabId');
-
-      // @step And the tool count should be updated from 11 to 12
-      expect(source).toContain('14 native browser control tools');
-      expect(source).not.toContain('11 native browser control tools');
     });
   });
 });

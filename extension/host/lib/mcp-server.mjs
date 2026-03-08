@@ -33,12 +33,12 @@ const NATIVE_TOOLS = [
   },
   {
     name: 'browser_screenshot',
-    description: 'Capture a screenshot of a browser tab',
+    description: 'Capture a screenshot of a browser tab. When selector is provided, scrolls the element into view and crops the screenshot to just that element.',
     inputSchema: {
       type: 'object',
       properties: {
         tabId: { type: 'number', description: 'Tab ID to capture' },
-        fullPage: { type: 'boolean', description: 'Capture full scrollable page' },
+        selector: { type: 'string', description: 'CSS selector or @ref (e.g. "@e5" from browser_scan_page) to capture a specific element instead of the full viewport' },
       },
     },
   },

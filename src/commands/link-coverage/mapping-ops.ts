@@ -1,7 +1,22 @@
 import chalk from 'chalk';
 
+interface ImplMapping {
+  file: string;
+  lines: number[];
+}
+
+interface TestMapping {
+  file: string;
+  lines: string;
+  implMappings: ImplMapping[];
+}
+
+interface ScenarioEntry {
+  testMappings: TestMapping[];
+}
+
 export function addTestMapping(
-  scenarioEntry: { testMappings: any[] },
+  scenarioEntry: ScenarioEntry,
   testFile: string,
   testLines: string
 ): string {
@@ -24,7 +39,7 @@ export function addTestMapping(
 }
 
 export function addImplMapping(
-  scenarioEntry: { testMappings: any[] },
+  scenarioEntry: ScenarioEntry,
   testFile: string,
   implFile: string,
   implLines: string
@@ -46,7 +61,7 @@ export function addImplMapping(
 
   // Check if impl file already exists (smart append)
   const existingImplIndex = testMapping.implMappings.findIndex(
-    (im: any) => im.file === implFile
+    im => im.file === implFile
   );
 
   if (existingImplIndex >= 0) {
@@ -64,7 +79,7 @@ export function addImplMapping(
 }
 
 export function addBothMappings(
-  scenarioEntry: { testMappings: any[] },
+  scenarioEntry: ScenarioEntry,
   testFile: string,
   testLines: string,
   implFile: string,
@@ -89,19 +104,24 @@ export function addBothMappings(
 }
 
 function parseImplLines(implLines: string): number[] {
-  // Support both comma-separated and ranges
-  if (implLines.includes('-')) {
-    // Range format: "10-15" → [10, 11, 12, 13, 14, 15]
-    const [start, end] = implLines.split('-').map(n => parseInt(n.trim(), 10));
-    const result: number[] = [];
-    for (let i = start; i <= end; i++) {
-      result.push(i);
+  // Support comma-separated individual lines, ranges, and mixed formats
+  // Examples: "10-15" → [10..15], "10,11,12" → [10,11,12], "89-99,316-405" → [89..99, 316..405]
+  const result: number[] = [];
+  const segments = implLines.split(',').map(s => s.trim());
+  for (const segment of segments) {
+    if (segment.includes('-')) {
+      const [start, end] = segment.split('-').map(n => parseInt(n.trim(), 10));
+      for (let i = start; i <= end; i++) {
+        result.push(i);
+      }
+    } else {
+      const num = parseInt(segment, 10);
+      if (!isNaN(num)) {
+        result.push(num);
+      }
     }
-    return result;
-  } else {
-    // Comma-separated: "10,11,12" → [10, 11, 12]
-    return implLines.split(',').map(n => parseInt(n.trim(), 10));
   }
+  return result;
 }
 
 export function getRemovalHint(

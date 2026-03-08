@@ -1,0 +1,248 @@
+{
+  "scenarios": [
+    {
+      "name": "Small screenshot returns a single JPEG image",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-screenshot.test.ts",
+          "lines": "249-280",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Large screenshot is resized to fit within 1568px on long edge",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-screenshot.test.ts",
+          "lines": "300-341",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Very tall screenshot is sliced into multiple tiles",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-screenshot.test.ts",
+          "lines": "364-400",
+          "implMappings": [
+            {
+              "file": "extension/src/background/browser-tools.ts",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Native message reader accepts messages up to 64 MiB",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-screenshot.test.ts",
+          "lines": "19-58",
+          "implMappings": [
+            {
+              "file": "extension/host/lib/native-messaging.mjs",
+              "lines": [
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Native message reader skips oversized messages without corruption",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-screenshot.test.ts",
+          "lines": "61-101",
+          "implMappings": [
+            {
+              "file": "extension/host/lib/native-messaging.mjs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Native message encoder preserves 1MB outgoing limit",
+      "testMappings": [
+        {
+          "file": "extension/src/background/__tests__/browser-screenshot.test.ts",
+          "lines": "104-118",
+          "implMappings": [
+            {
+              "file": "extension/host/lib/native-messaging.mjs",
+              "lines": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "extension/src/background/__tests__/browser-screenshot.test.ts"
+    ],
+    "implFiles": [
+      "extension/src/background/browser-tools.ts",
+      "extension/host/lib/native-messaging.mjs"
+    ],
+    "totalLinesCovered": 342
+  }
+}

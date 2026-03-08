@@ -26,7 +26,7 @@ Feature: fspec Browser Agent Chrome Extension
   # EXAMPLES:
   #   1. Agent calls ConnectMCP(transport: 'http', url: 'http://localhost:19876/mcp') → extension responds with MCP initialize → tools/list returns browser_navigate, browser_screenshot, list_tabs, plus any WebMCP tools from open tabs
   #   2. Agent calls mcp__ext__browser_navigate({url: 'https://example.com'}) → extension navigates active tab → returns page title and final URL after redirects
-  #   3. Agent calls mcp__ext__browser_screenshot({tabId: 123, fullPage: true}) → extension captures full-page screenshot using chrome.tabs.captureVisibleTab → returns base64 PNG image
+  #   3. Agent calls mcp__ext__browser_screenshot({tabId: 123, fullPage: true}) → extension captures screenshot using chrome.tabs.captureVisibleTab → resizes to 1568px max long edge, converts PNG→JPEG at 80% quality, returns base64 JPEG image (tiled if >800KB)
   #   4. User clicks a link that navigates to new URL → extension fires MCP notification {method: 'notifications/browser/navigation', params: {tabId: 123, url: 'https://new-page.com', title: 'New Page'}} → agent receives via SSE and can react
   #   5. Extension popup shows: server status (listening/stopped), port number, connected clients count, list of available tools grouped by source (native vs WebMCP per tab)
   #   6. User navigates to a WebMCP-enabled travel site → site calls navigator.modelContext.registerTool({name: 'searchFlights', ...}) → main-world injected script detects registration → extension adds webmcp__travel-demo.bandarra.me__searchFlights to MCP tool list → sends notifications/tools/list_changed to agent via GET SSE stream
@@ -180,7 +180,7 @@ Feature: fspec Browser Agent Chrome Extension
     And tab 123 is displaying a web page
     When the agent calls mcp__ext__browser_screenshot with tabId 123 and fullPage true
     Then the extension captures a screenshot using chrome.tabs.captureVisibleTab
-    And the tool returns a base64-encoded PNG image
+    And the tool returns a base64-encoded JPEG image
 
   @browser-control @EXT-005
   Scenario: List all open browser tabs

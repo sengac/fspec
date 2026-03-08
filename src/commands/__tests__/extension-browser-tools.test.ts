@@ -200,8 +200,33 @@ describe('Feature: fspec Browser Agent Chrome Extension — EXT-005 Native Brows
   });
 
   describe('Scenario: Capture full-page screenshot', () => {
-    it('should capture a screenshot and return base64-encoded PNG', async () => {
+    it('should capture a screenshot and return base64-encoded JPEG image', async () => {
       // @step Given the agent has an active MCP connection to the extension
+      // Set up OffscreenCanvas and createImageBitmap mocks for service worker image processing
+      const mockBitmap = { width: 640, height: 480, close: vi.fn() };
+      (globalThis as Record<string, unknown>).createImageBitmap = vi
+        .fn()
+        .mockResolvedValue(mockBitmap);
+      class MockOffscreenCanvas {
+        width: number;
+        height: number;
+        constructor(w: number, h: number) {
+          this.width = w;
+          this.height = h;
+        }
+        getContext(): { drawImage: ReturnType<typeof vi.fn> } {
+          return { drawImage: vi.fn() };
+        }
+        convertToBlob(): Promise<{ arrayBuffer: () => Promise<ArrayBuffer> }> {
+          const data = new Uint8Array(100);
+          return Promise.resolve({
+            arrayBuffer: () => Promise.resolve(data.buffer),
+          });
+        }
+      }
+      (globalThis as Record<string, unknown>).OffscreenCanvas =
+        MockOffscreenCanvas;
+
       const { createBrowserTools } = await import(
         /* @vite-ignore */ '../../../extension/src/background/browser-tools'
       );
@@ -223,7 +248,7 @@ describe('Feature: fspec Browser Agent Chrome Extension — EXT-005 Native Brows
 
       // @step When the agent calls mcp__ext__browser_screenshot with tabId 123 and fullPage true
       mockTabs.captureVisibleTab.mockResolvedValue(
-        'data:image/png;base64,iVBORFAKEDATA'
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
       );
       const handler = browserTools.getHandler('browser_screenshot');
       expect(handler).toBeDefined();
@@ -232,15 +257,19 @@ describe('Feature: fspec Browser Agent Chrome Extension — EXT-005 Native Brows
       // @step Then the extension captures a screenshot using chrome.tabs.captureVisibleTab
       expect(mockTabs.captureVisibleTab).toHaveBeenCalled();
 
-      // @step And the tool returns a base64-encoded PNG image
+      // @step And the tool returns a base64-encoded JPEG image (resized and compressed)
       expect(result.content).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             type: 'image',
-            mimeType: 'image/png',
+            mimeType: 'image/jpeg',
           }),
         ])
       );
+
+      // Clean up mocks
+      delete (globalThis as Record<string, unknown>).createImageBitmap;
+      delete (globalThis as Record<string, unknown>).OffscreenCanvas;
     });
   });
 
@@ -681,7 +710,7 @@ describe('Feature: fspec Browser Agent Chrome Extension — EXT-005 Native Brows
       // @step When the agent calls tools/list
       const allToolNames = browserTools.getToolNames();
 
-      // @step Then the response includes all 12 native browser control tools
+      // @step Then the response includes all 14 native browser control tools
       const expectedTools = [
         'browser_navigate',
         'browser_screenshot',
@@ -695,11 +724,13 @@ describe('Feature: fspec Browser Agent Chrome Extension — EXT-005 Native Brows
         'browser_go_back',
         'browser_go_forward',
         'browser_create_tab',
+        'browser_scan_page',
+        'browser_diff_page',
       ];
       for (const toolName of expectedTools) {
         expect(allToolNames).toContain(toolName);
       }
-      expect(allToolNames).toHaveLength(12);
+      expect(allToolNames).toHaveLength(14);
 
       // @step And each tool has a name, description, and inputSchema
       // Validate the NATIVE_TOOLS array from mcp-server matches handlers

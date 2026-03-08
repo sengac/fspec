@@ -95,6 +95,14 @@ export default [
         CheckVisibilityOptions: 'readonly',
         // Chrome extension globals
         chrome: 'readonly',
+        // Service worker globals
+        btoa: 'readonly',
+        atob: 'readonly',
+        fetch: 'readonly',
+        createImageBitmap: 'readonly',
+        OffscreenCanvas: 'readonly',
+        ImageBitmap: 'readonly',
+        Uint8Array: 'readonly',
       },
     },
     plugins: {
@@ -151,6 +159,16 @@ export default [
         CheckVisibilityOptions: 'readonly',
         // Chrome extension globals
         chrome: 'readonly',
+        // Node.js Buffer (used in native messaging tests)
+        Buffer: 'readonly',
+        // Service worker globals (mocked in tests)
+        btoa: 'readonly',
+        atob: 'readonly',
+        fetch: 'readonly',
+        createImageBitmap: 'readonly',
+        OffscreenCanvas: 'readonly',
+        ImageBitmap: 'readonly',
+        Uint8Array: 'readonly',
         // Vitest globals
         describe: 'readonly',
         it: 'readonly',

@@ -135,16 +135,30 @@ Get the text content or full HTML of a page.
 **Use `"text"` format** for reading page content (much smaller payload). Only use `"html"` when you need DOM structure.
 
 #### `browser_screenshot`
-Capture a PNG screenshot of a tab's visible viewport.
+Capture a screenshot of a tab's visible viewport, or crop to a specific element by CSS selector or `@ref` from `browser_scan_page`.
 
 ```json
 {}
 { "tabId": 123 }
+{ "selector": "@e5" }
+{ "selector": "#hero-image" }
+{ "selector": "@f2e1" }
 ```
 
 - `tabId` (number, optional): Tab to capture. Defaults to active tab.
+- `selector` (string, optional): CSS selector or `@ref` (e.g., `@e5`, `@f2e1`) to screenshot a specific element instead of the full viewport. The element is scrolled into view before capture. Supports iframe refs.
 
-Returns: An image content block (base64 PNG). You will see the screenshot directly.
+**Without `selector`:** Captures the full visible viewport (backward compatible).
+
+**With `selector`:** Scrolls the element into view, captures the viewport, then crops to the element's bounding rect. Handles DPR scaling automatically (Retina displays produce correctly cropped images).
+
+Returns: One or more JPEG image content blocks (resized to ≤1568px long edge, 80% quality, tiled if >800KB). You will see the screenshot directly.
+
+**Errors:**
+- Ref not found in scan state → `"Ref @e3 not found. Run browser_scan_page first to scan the page."`
+- Ref resolved but element gone from DOM → `"Element for @e5 (resolved to \"#hero\") not found in DOM. The page may have changed since the last scan."`
+- Element has zero dimensions (e.g., `display:none`) → `"Element has no visible dimensions"`
+- CSS selector matches nothing → `"Element not found: {selector}"`
 
 #### `browser_execute_script`
 Execute arbitrary JavaScript in a tab's page context using the USER_SCRIPT world.
@@ -332,6 +346,18 @@ Use these notifications to stay aware of what the user is doing in the browser a
 ```
 1. browser_navigate → URL
 2. browser_execute_script → JavaScript that queries DOM and returns JSON
+```
+
+### Screenshot a specific element
+```
+1. browser_navigate → URL
+2. browser_scan_page → get tree with @e1, @e2, @e3 refs
+3. browser_screenshot → { selector: "@e3" }   # Crops to just that element
+```
+
+Or with a CSS selector (no scan needed):
+```
+1. browser_screenshot → { selector: "#hero-image" }
 ```
 
 ### Work with a specific tab

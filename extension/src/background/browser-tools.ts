@@ -20,6 +20,7 @@ import { myersDiff, formatDiffOutput } from './myers-diff';
 import type { RefEntry } from './ref-state';
 import { scanPageDOM } from './scan-page-dom';
 import { textResult, errorResult } from './browser-tools-types';
+import type { McpContent } from './browser-tools-types';
 import {
   DEFAULT_MAX_FRAMES,
   isScannableFrame,
@@ -104,6 +105,35 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
       throw new Error('No active tab found');
     }
     return activeTabs[0].id;
+  }
+
+  /**
+   * Convert a Uint8Array to a base64 string.
+   * Works in service worker context (no btoa string length issues for <1MB tiles).
+   */
+  function uint8ArrayToBase64(bytes: Uint8Array): string {
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  /**
+   * Convert an OffscreenCanvas to a JPEG base64 string at the given quality.
+   * Returns the base64-encoded data (no data-URL prefix).
+   */
+  async function canvasToJpegBase64(
+    canvas: OffscreenCanvas,
+    quality: number
+  ): Promise<string> {
+    const blob = await canvas.convertToBlob({
+      type: 'image/jpeg',
+      quality,
+    });
+    const arrayBuffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    return uint8ArrayToBase64(bytes);
   }
 
   const handlers = new Map<string, ToolHandler>();
@@ -301,18 +331,207 @@ export function createBrowserTools(deps: BrowserToolsDeps): BrowserToolsAPI {
   });
 
   // browser_screenshot
+  //
+  // Captures a screenshot, resizes to fit within 1568px on the long edge
+  // (Claude's optimal processing size), converts PNG→JPEG at 80% quality,
+  // and slices into vertical tiles if any single tile would exceed 800KB
+  // of base64 data. This prevents the native messaging 1MB limit from
+  // being hit and optimizes for LLM vision consumption.
+  //
+  // When an optional `selector` parameter is provided (CSS selector or
+  // @ref from browser_scan_page), the element is scrolled into view,
+  // the viewport is captured, and the image is cropped to the element's
+  // bounding rect before processing through the resize/tile pipeline.
   handlers.set('browser_screenshot', async args => {
     const tabId = await resolveTabId(args.tabId as number | undefined);
+    const selector = args.selector as string | undefined;
+
+    // Element-targeted screenshot: resolve selector and get bounding rect
+    let elementRect:
+      | { x: number; y: number; width: number; height: number; dpr: number }
+      | undefined;
+    let elementFrameId = 0;
+
+    if (selector) {
+      // Resolve @ref to CSS selector + frameId, or pass CSS selector through
+      const resolved = resolveRefSelector(selector, tabId);
+      if (isResolveError(resolved)) {
+        return resolved;
+      }
+      const cssSelector = resolved.selector;
+      elementFrameId = resolved.frameId;
+
+      // Execute script to scroll element into view and get bounding rect
+      const target: chrome.scripting.InjectionTarget =
+        elementFrameId > 0 ? { tabId, frameIds: [elementFrameId] } : { tabId };
+
+      const results = await scripting.executeScript({
+        target,
+        func: (sel: string) => {
+          const el = document.querySelector(sel);
+          if (!el) {
+            return null;
+          }
+          el.scrollIntoView({ block: 'center', behavior: 'instant' });
+          const rect = el.getBoundingClientRect();
+          return {
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+            dpr: window.devicePixelRatio,
+          };
+        },
+        args: [cssSelector],
+      });
+
+      const rectResult = results[0]?.result as typeof elementRect | null;
+      if (!rectResult) {
+        // Distinguish ref-resolved-but-element-gone from CSS-selector-not-found
+        if (selector.startsWith('@')) {
+          return errorResult(
+            `Element for ${selector} (resolved to "${cssSelector}") not found in DOM. The page may have changed since the last scan.`
+          );
+        }
+        return errorResult(`Element not found: ${selector}`);
+      }
+      if (rectResult.width <= 0 || rectResult.height <= 0) {
+        return errorResult('Element has no visible dimensions');
+      }
+      elementRect = rectResult;
+    }
+
     const tab = await tabs.get(tabId);
     const windowId = tab.windowId ?? 0;
+
+    // Small delay after scroll to allow rendering to settle
+    if (elementRect) {
+      await new Promise(resolve => setTimeout(resolve, 150));
+    }
+
     const dataUrl = await tabs.captureVisibleTab(windowId, { format: 'png' });
-    // dataUrl is "data:image/png;base64,..." — extract the base64 portion
-    const base64Data = dataUrl.replace(/^data:image\/png;base64,/, '');
-    return {
-      content: [
-        { type: 'image' as const, data: base64Data, mimeType: 'image/png' },
-      ],
-    };
+
+    // Constants for LLM-optimized screenshots
+    const MAX_LONG_EDGE = 1568; // Claude's optimal processing size
+    const JPEG_QUALITY = 0.8;
+    const MAX_TILE_BASE64_BYTES = 800 * 1024; // 800KB per tile
+    const MIN_QUALITY = 0.5; // Floor for quality reduction fallback
+
+    // Decode the PNG into an ImageBitmap for processing
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const bitmap = await createImageBitmap(blob);
+
+    // Determine the source image for the resize/tile pipeline
+    let sourceW = bitmap.width;
+    let sourceH = bitmap.height;
+    let sourceBitmap: ImageBitmap | OffscreenCanvas = bitmap;
+
+    // If element-targeted, crop the bitmap to the element bounding rect
+    if (elementRect) {
+      const dpr = elementRect.dpr;
+      const cropX = Math.round(elementRect.x * dpr);
+      const cropY = Math.round(elementRect.y * dpr);
+      const cropW = Math.round(elementRect.width * dpr);
+      const cropH = Math.round(elementRect.height * dpr);
+
+      // Clamp crop to bitmap boundaries
+      const clampedW = Math.min(cropW, bitmap.width - cropX);
+      const clampedH = Math.min(cropH, bitmap.height - cropY);
+
+      const cropCanvas = new OffscreenCanvas(clampedW, clampedH);
+      const cropCtx = cropCanvas.getContext('2d');
+      if (!cropCtx) {
+        throw new Error('Failed to get 2d context for element crop');
+      }
+      cropCtx.drawImage(
+        bitmap,
+        cropX,
+        cropY,
+        clampedW,
+        clampedH,
+        0,
+        0,
+        clampedW,
+        clampedH
+      );
+
+      sourceBitmap = cropCanvas;
+      sourceW = clampedW;
+      sourceH = clampedH;
+    }
+
+    // Calculate resize dimensions (fit within MAX_LONG_EDGE, preserve aspect ratio)
+    const longEdge = Math.max(sourceW, sourceH);
+    const scale = longEdge > MAX_LONG_EDGE ? MAX_LONG_EDGE / longEdge : 1;
+    const targetW = Math.round(sourceW * scale);
+    const targetH = Math.round(sourceH * scale);
+
+    // Render the resized image to a single OffscreenCanvas
+    const fullCanvas = new OffscreenCanvas(targetW, targetH);
+    const fullCtx = fullCanvas.getContext('2d');
+    if (!fullCtx) {
+      throw new Error('Failed to get 2d context from OffscreenCanvas');
+    }
+    fullCtx.drawImage(sourceBitmap, 0, 0, targetW, targetH);
+
+    // Convert to JPEG and check if tiling is needed
+    const fullBase64 = await canvasToJpegBase64(fullCanvas, JPEG_QUALITY);
+
+    if (fullBase64.length <= MAX_TILE_BASE64_BYTES) {
+      // Single image fits under the limit — return as-is
+      return {
+        content: [
+          {
+            type: 'image' as const,
+            data: fullBase64,
+            mimeType: 'image/jpeg',
+          },
+        ],
+      };
+    }
+
+    // Image is too large — slice into vertical tiles
+    // Estimate tile height based on the ratio of actual size to target size
+    const ratio = MAX_TILE_BASE64_BYTES / fullBase64.length;
+    const tileHeight = Math.max(64, Math.floor(targetH * ratio * 0.9)); // 0.9 safety margin
+
+    const tiles: McpContent[] = [];
+    for (let y = 0; y < targetH; y += tileHeight) {
+      const h = Math.min(tileHeight, targetH - y);
+      const tileCanvas = new OffscreenCanvas(targetW, h);
+      const tileCtx = tileCanvas.getContext('2d');
+      if (!tileCtx) {
+        // Canvas context failed — report a gap so the agent knows
+        tiles.push({
+          type: 'text' as const,
+          text: `[tile error: failed to get 2d context for tile at y=${y}, height=${h}]`,
+        });
+        continue;
+      }
+      // Draw the relevant vertical slice from the full canvas
+      tileCtx.drawImage(fullCanvas, 0, y, targetW, h, 0, 0, targetW, h);
+
+      // Encode tile and enforce size limit with quality reduction fallback
+      let quality = JPEG_QUALITY;
+      let tileBase64 = await canvasToJpegBase64(tileCanvas, quality);
+
+      while (
+        tileBase64.length > MAX_TILE_BASE64_BYTES &&
+        quality > MIN_QUALITY
+      ) {
+        quality -= 0.1;
+        tileBase64 = await canvasToJpegBase64(tileCanvas, quality);
+      }
+
+      tiles.push({
+        type: 'image' as const,
+        data: tileBase64,
+        mimeType: 'image/jpeg',
+      });
+    }
+
+    return { content: tiles };
   });
 
   // browser_list_tabs
