@@ -327,7 +327,8 @@ fn handle_show(
         // Truncate if needed
         let truncated = content.len() > MESSAGE_TRUNCATION_LIMIT;
         if truncated {
-            content = format!("{}...", &content[..MESSAGE_TRUNCATION_LIMIT]);
+            let boundary = floor_char_boundary(&content, MESSAGE_TRUNCATION_LIMIT);
+            content = format!("{}...", &content[..boundary]);
         }
 
         result_messages.push(SessionMessage {
@@ -397,6 +398,8 @@ fn extract_work_unit_id(
     session: &crate::persistence::SessionManifest,
 ) -> Option<String> {
     // Work unit IDs follow the pattern: PREFIX-NNN (e.g., AMGR-001, AUTH-003)
+    // Ripgrep returns byte offsets — safe here since [A-Z]+-\d+ only matches ASCII,
+    // so start/end are always valid char boundaries.
     let matcher = RegexMatcherBuilder::new()
         .build(r"[A-Z]+-\d+")
         .ok()?;
@@ -438,23 +441,52 @@ fn non_empty_provider(provider: &str) -> Option<String> {
     }
 }
 
-/// Truncate content to a max length, adding "..." if truncated
+/// Find the nearest char boundary at or before `target` byte index.
+/// Returns 0 if no valid boundary is found before `target`.
+fn floor_char_boundary(s: &str, target: usize) -> usize {
+    if target >= s.len() {
+        return s.len();
+    }
+    let mut pos = target;
+    while pos > 0 && !s.is_char_boundary(pos) {
+        pos -= 1;
+    }
+    pos
+}
+
+/// Find the nearest char boundary at or after `target` byte index.
+/// Returns s.len() if no valid boundary is found after `target`.
+fn ceil_char_boundary(s: &str, target: usize) -> usize {
+    if target >= s.len() {
+        return s.len();
+    }
+    let mut pos = target;
+    while pos < s.len() && !s.is_char_boundary(pos) {
+        pos += 1;
+    }
+    pos
+}
+
+/// Truncate content to a max length, adding "..." if truncated.
+/// Safe with multi-byte UTF-8 characters.
 fn truncate_preview(content: &str, max_len: usize) -> String {
     if content.len() <= max_len {
         content.to_string()
     } else {
-        format!("{}...", &content[..max_len])
+        let boundary = floor_char_boundary(content, max_len);
+        format!("{}...", &content[..boundary])
     }
 }
 
-/// Extract a preview around the first ripgrep match
+/// Extract a preview around the first ripgrep match.
+/// Safe with multi-byte UTF-8 — all byte offsets are snapped to char boundaries.
 fn extract_match_preview_ripgrep(content: &str, matcher: &grep_regex::RegexMatcher) -> String {
     const PREVIEW_CONTEXT: usize = 100;
     const MAX_PREVIEW: usize = 300;
 
     if let Ok(Some(m)) = matcher.find(content.as_bytes()) {
-        let start = m.start().saturating_sub(PREVIEW_CONTEXT);
-        let end = (m.end() + PREVIEW_CONTEXT).min(content.len());
+        let start = floor_char_boundary(content, m.start().saturating_sub(PREVIEW_CONTEXT));
+        let end = ceil_char_boundary(content, (m.end() + PREVIEW_CONTEXT).min(content.len()));
 
         let mut preview = String::new();
         if start > 0 {
@@ -466,7 +498,8 @@ fn extract_match_preview_ripgrep(content: &str, matcher: &grep_regex::RegexMatch
         }
 
         if preview.len() > MAX_PREVIEW {
-            format!("{}...", &preview[..MAX_PREVIEW])
+            let boundary = floor_char_boundary(&preview, MAX_PREVIEW);
+            format!("{}...", &preview[..boundary])
         } else {
             preview
         }
@@ -641,5 +674,71 @@ mod tests {
         assert_eq!(&"Session AUTH-003 fix"[start..end], "AUTH-003");
 
         assert!(ripgrep_find(&matcher, "no work unit here").is_none());
+    }
+
+    #[test]
+    fn test_floor_char_boundary_ascii() {
+        let s = "hello world";
+        assert_eq!(floor_char_boundary(s, 5), 5);
+        assert_eq!(floor_char_boundary(s, 0), 0);
+        assert_eq!(floor_char_boundary(s, 100), s.len());
+    }
+
+    #[test]
+    fn test_floor_char_boundary_multibyte() {
+        // ✅ is 3 bytes (E2 9C 85), 🔴 is 4 bytes (F0 9F 94 B4)
+        let s = "a✅b🔴c";
+        // a=0, ✅=1..4, b=4, 🔴=5..9, c=9
+        assert_eq!(floor_char_boundary(s, 0), 0); // 'a'
+        assert_eq!(floor_char_boundary(s, 1), 1); // start of ✅
+        assert_eq!(floor_char_boundary(s, 2), 1); // inside ✅ → back to 1
+        assert_eq!(floor_char_boundary(s, 3), 1); // inside ✅ → back to 1
+        assert_eq!(floor_char_boundary(s, 4), 4); // 'b'
+        assert_eq!(floor_char_boundary(s, 5), 5); // start of 🔴
+        assert_eq!(floor_char_boundary(s, 6), 5); // inside 🔴 → back to 5
+        assert_eq!(floor_char_boundary(s, 7), 5); // inside 🔴
+        assert_eq!(floor_char_boundary(s, 8), 5); // inside 🔴
+        assert_eq!(floor_char_boundary(s, 9), 9); // 'c'
+    }
+
+    #[test]
+    fn test_ceil_char_boundary_multibyte() {
+        let s = "a✅b🔴c";
+        assert_eq!(ceil_char_boundary(s, 0), 0);
+        assert_eq!(ceil_char_boundary(s, 1), 1); // start of ✅ — already valid
+        assert_eq!(ceil_char_boundary(s, 2), 4); // inside ✅ → forward to 'b'
+        assert_eq!(ceil_char_boundary(s, 3), 4);
+        assert_eq!(ceil_char_boundary(s, 6), 9); // inside 🔴 → forward to 'c'
+        assert_eq!(ceil_char_boundary(s, 100), s.len());
+    }
+
+    #[test]
+    fn test_truncate_preview_multibyte_safe() {
+        // 🔴 is 4 bytes. Create string where max_len lands inside an emoji.
+        let s = "abc🔴def";
+        // a=0, b=1, c=2, 🔴=3..7, d=7, e=8, f=9
+        let result = truncate_preview(s, 5); // byte 5 is inside 🔴
+        assert!(result.ends_with("..."));
+        // Should truncate to "abc" (boundary at 3) not panic
+        assert!(result.starts_with("abc"));
+    }
+
+    #[test]
+    fn test_extract_match_preview_multibyte() {
+        // Content with emojis around the match
+        let matcher = build_ripgrep_matcher("target").unwrap();
+        let content = format!("{}target{}", "🔴".repeat(30), "✅".repeat(30));
+        let preview = extract_match_preview_ripgrep(&content, &matcher);
+        // Should not panic and should contain the match
+        assert!(preview.contains("target"));
+    }
+
+    #[test]
+    fn test_truncate_preview_all_multibyte() {
+        // String of only 4-byte emojis
+        let s = "🔴🔴🔴🔴🔴"; // 20 bytes
+        let result = truncate_preview(s, 6); // lands inside 2nd emoji
+        assert!(result.ends_with("..."));
+        assert!(result.starts_with("🔴")); // got at least the first emoji
     }
 }

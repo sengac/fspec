@@ -102,7 +102,10 @@ fn tokenize_line(line: &str) -> Vec<Token> {
         }
 
         // No special token — advance to next potential bracket or end
-        let next_bracket = line[pos + 1..].find('[').map(|p| p + pos + 1);
+        // Advance past the current character safely (handles multi-byte UTF-8)
+        let char_len = line[pos..].chars().next().map_or(1, |c| c.len_utf8());
+        let next_pos = pos + char_len;
+        let next_bracket = line.get(next_pos..).and_then(|s| s.find('[')).map(|p| p + next_pos);
         match next_bracket {
             Some(bp) => {
                 let text = &line[pos..bp];
@@ -200,7 +203,12 @@ pub fn format_sections_plain(sections: &[Section]) -> String {
         match section {
             Section::Thinking(content) => {
                 let display = if content.len() > 500 {
-                    format!("{}...", &content[..500])
+                    // Find a safe char boundary at or before byte 500
+                    let mut truncate_at = 500;
+                    while truncate_at > 0 && !content.is_char_boundary(truncate_at) {
+                        truncate_at -= 1;
+                    }
+                    format!("{}...", &content[..truncate_at])
                 } else {
                     content.clone()
                 };
@@ -382,5 +390,41 @@ mod tests {
     fn test_whitespace_only() {
         let sections = reassemble_content("   \n   \n   ");
         assert!(sections.is_empty());
+    }
+
+    #[test]
+    fn test_multibyte_emoji_text() {
+        // Regression: line starting with multi-byte char (✅ is 3 bytes)
+        // previously panicked at line[pos + 1..] when pos=0
+        let raw = "✅ What";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Text(content) => {
+                assert!(content.contains('✅'));
+                assert!(content.contains("What"));
+            }
+            _ => panic!("Expected Text section"),
+        }
+    }
+
+    #[test]
+    fn test_multibyte_emoji_before_bracket() {
+        let raw = "✅ [Tool: Read]";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 2);
+        assert!(matches!(&sections[0], Section::Text(_)));
+        assert!(matches!(&sections[1], Section::Tool(_)));
+    }
+
+    #[test]
+    fn test_multibyte_in_thinking_truncation() {
+        // Build a string with multi-byte chars near the 500-byte boundary
+        let prefix = "x".repeat(498);
+        let content = format!("{prefix}✅✅ extra");
+        let sections = vec![Section::Thinking(content)];
+        let output = format_sections_plain(&sections);
+        // Should not panic and should contain truncation marker
+        assert!(output.contains("..."));
     }
 }
