@@ -524,6 +524,7 @@ dependencies = [
  "anyhow",
  "assert_cmd",
  "async-stream",
+ "base64 0.22.1",
  "chrono",
  "clap",
  "clap_complete",
@@ -559,6 +560,7 @@ name = "codelet-common"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64 0.22.1",
  "chrono",
  "dirs 6.0.0",
  "futures",
@@ -4222,6 +4224,7 @@ dependencies = [
  "async-stream",
  "base64 0.22.1",
  "bytes",
+ "codelet-common",
  "dirs 5.0.1",
  "eventsource-stream",
  "fastrand",

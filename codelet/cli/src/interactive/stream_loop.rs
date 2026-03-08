@@ -27,6 +27,8 @@ use crossterm::event::KeyCode;
 use futures::StreamExt;
 use rig::agent::MultiTurnStreamItem;
 use rig::completion::{CompletionModel, GetTokenUsage};
+use rig::message::{Message, ToolResultContent, UserContent};
+use rig::one_or_many::OneOrMany;
 use rig::streaming::{StreamedAssistantContent, StreamedUserContent};
 use rig::wasm_compat::WasmCompatSend;
 use std::error::Error as StdError;
@@ -62,6 +64,133 @@ pub fn is_prompt_too_long_error(error_str: &str) -> bool {
         || error_lower.contains("exceeds the model")
         || (error_lower.contains("invalid_request_error")
             && (error_lower.contains("token") || error_lower.contains("maximum")))
+}
+
+/// EXT-016: Check if an error indicates image content was rejected by the API.
+///
+/// Detects 400 errors related to image dimensions, image size, or image processing.
+/// This is used to trigger image content sanitization in the error recovery path.
+///
+/// This function is public for testing.
+pub fn is_image_content_error(error_str: &str) -> bool {
+    let error_lower = error_str.to_lowercase();
+
+    // Must mention "image" in conjunction with dimension/size-related terms
+    if error_lower.contains("image") {
+        return error_lower.contains("dimension")
+            || error_lower.contains("exceed")
+            || error_lower.contains("too large")
+            || error_lower.contains("max allowed size")
+            || error_lower.contains("size");
+    }
+
+    false
+}
+
+/// EXT-016: Sanitize image content from conversation history.
+///
+/// Walks messages and replaces any Image content (UserContent::Image,
+/// ToolResultContent::Image within UserContent::ToolResult) with text placeholders.
+///
+/// Returns `true` if any image content was replaced.
+///
+/// This function is public for testing.
+pub fn sanitize_image_content(messages: &mut [Message]) -> bool {
+    let mut replaced = false;
+
+    for msg in messages.iter_mut().rev() {
+        if let Message::User { content } = msg {
+            let mut has_image = false;
+            for item in content.iter() {
+                match item {
+                    UserContent::Image { .. } => {
+                        has_image = true;
+                        break;
+                    }
+                    UserContent::ToolResult(tool_result) => {
+                        for tr_item in tool_result.content.iter() {
+                            if matches!(tr_item, ToolResultContent::Image { .. }) {
+                                has_image = true;
+                                break;
+                            }
+                        }
+                        if has_image {
+                            break;
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if has_image {
+                let mut new_parts: Vec<UserContent> = Vec::new();
+                for item in content.iter() {
+                    match item {
+                        UserContent::Image { .. } => {
+                            new_parts.push(UserContent::text(
+                                "[Image removed: exceeded provider pixel dimension limit]",
+                            ));
+                            replaced = true;
+                        }
+                        UserContent::ToolResult(tool_result) => {
+                            // Check if tool result contains images
+                            let has_tr_image = tool_result
+                                .content
+                                .iter()
+                                .any(|i| matches!(i, ToolResultContent::Image { .. }));
+
+                            if has_tr_image {
+                                // Replace image content within tool result
+                                let mut new_tr_parts: Vec<ToolResultContent> = Vec::new();
+                                for tr_item in tool_result.content.iter() {
+                                    match tr_item {
+                                        ToolResultContent::Image { .. } => {
+                                            new_tr_parts.push(ToolResultContent::text(
+                                                "[Image removed: exceeded provider pixel dimension limit]",
+                                            ));
+                                            replaced = true;
+                                        }
+                                        other => {
+                                            new_tr_parts.push(other.clone());
+                                        }
+                                    }
+                                }
+                                if let Ok(new_tr_content) =
+                                    OneOrMany::many(new_tr_parts)
+                                {
+                                    // Preserve call_id if present (OpenAI provider path)
+                                    if let Some(call_id) = &tool_result.call_id {
+                                        new_parts.push(UserContent::tool_result_with_call_id(
+                                            &tool_result.id,
+                                            call_id.clone(),
+                                            new_tr_content,
+                                        ));
+                                    } else {
+                                        new_parts.push(UserContent::tool_result(
+                                            &tool_result.id,
+                                            new_tr_content,
+                                        ));
+                                    }
+                                } else {
+                                    new_parts.push(item.clone());
+                                }
+                            } else {
+                                new_parts.push(item.clone());
+                            }
+                        }
+                        other => {
+                            new_parts.push(other.clone());
+                        }
+                    }
+                }
+                if let Ok(new_content) = OneOrMany::many(new_parts) {
+                    *content = new_content;
+                }
+            }
+        }
+    }
+
+    replaced
 }
 
 /// CMPCT-002: Check if an error indicates compaction was cancelled by the hook
@@ -190,6 +319,61 @@ pub struct BridgeImage {
     pub media_type: String,
 }
 
+/// EXT-016: Build user message content from prompt text and optional bridge images.
+///
+/// Validates pixel dimensions on each image before including it. Oversized images
+/// are replaced with a text error message (Layer 3 defense-in-depth).
+///
+/// This function is public for testing.
+pub fn build_user_content_with_images(
+    prompt: &str,
+    images: Option<Vec<BridgeImage>>,
+) -> OneOrMany<UserContent> {
+    use rig::message::ImageMediaType;
+
+    match images {
+        Some(bridge_images) => {
+            let mut content_parts: Vec<UserContent> = Vec::new();
+            if !prompt.is_empty() {
+                content_parts.push(UserContent::text(prompt));
+            }
+            for img in bridge_images {
+                let media_type = match img.media_type.as_str() {
+                    "image/jpeg" | "image/jpg" => Some(ImageMediaType::JPEG),
+                    "image/png" => Some(ImageMediaType::PNG),
+                    "image/gif" => Some(ImageMediaType::GIF),
+                    "image/webp" => Some(ImageMediaType::WEBP),
+                    _ => Some(ImageMediaType::JPEG),
+                };
+
+                // EXT-016: Validate pixel dimensions before adding user-pasted images
+                // This is Layer 3 defense-in-depth — prevents oversized bridge images
+                // from entering conversation history
+                if let Some((width, height)) =
+                    codelet_tools::image_dimensions::extract_dimensions_from_base64(&img.data)
+                {
+                    if codelet_tools::image_dimensions::exceeds_pixel_limit(width, height) {
+                        let error_msg =
+                            codelet_tools::image_dimensions::format_dimension_error(None, width, height);
+                        warn!(
+                            "Rejecting user-pasted image: {}x{} exceeds limit",
+                            width, height
+                        );
+                        // Add error as text instead of the image
+                        content_parts.push(UserContent::text(error_msg));
+                        continue;
+                    }
+                }
+
+                content_parts.push(UserContent::image_base64(img.data, media_type, None));
+            }
+            OneOrMany::many(content_parts)
+                .unwrap_or_else(|_| OneOrMany::one(UserContent::text(prompt)))
+        }
+        None => OneOrMany::one(UserContent::text(prompt)),
+    }
+}
+
 /// Internal generic stream loop
 ///
 /// Core streaming logic shared between CLI and NAPI modes.
@@ -215,7 +399,7 @@ where
     O: StreamOutput,
     E: futures::Stream<Item = TuiEvent> + Unpin + Send + ?Sized,
 {
-    use rig::message::{Message, UserContent, ImageMediaType};
+    use rig::message::{Message, UserContent};
     use rig::OneOrMany;
     use std::time::Instant;
     use uuid::Uuid;
@@ -421,28 +605,7 @@ where
     // Previously this was done BEFORE the call above, causing duplication because
     // rig's build() concatenates chat_history + prompt, and the prompt was already in history.
     session.messages.push(Message::User {
-        content: match images {
-            Some(bridge_images) => {
-                let mut content_parts: Vec<UserContent> = Vec::new();
-                if !prompt.is_empty() {
-                    content_parts.push(UserContent::text(prompt));
-                }
-                for img in bridge_images {
-                    let media_type = match img.media_type.as_str() {
-                        "image/jpeg" | "image/jpg" => Some(ImageMediaType::JPEG),
-                        "image/png" => Some(ImageMediaType::PNG),
-                        "image/gif" => Some(ImageMediaType::GIF),
-                        "image/webp" => Some(ImageMediaType::WEBP),
-                        _ => Some(ImageMediaType::JPEG),
-                    };
-                    content_parts.push(UserContent::image_base64(img.data, media_type, None));
-                }
-                OneOrMany::many(content_parts).unwrap_or_else(|_| {
-                    OneOrMany::one(UserContent::text(prompt))
-                })
-            }
-            None => OneOrMany::one(UserContent::text(prompt)),
-        },
+        content: build_user_content_with_images(prompt, images),
     });
 
     // CLI-022: Capture api.response.start event
@@ -1209,6 +1372,33 @@ where
                         signal_compaction_needed(&token_state);
 
                         break;
+                    }
+
+                    // EXT-016: Check if this is an image content error (dimensions, size, etc.)
+                    // Try to recover by sanitizing image content from conversation history
+                    if is_image_content_error(&error_str) {
+                        warn!("Received image content error from API, attempting to sanitize conversation history");
+
+                        // Pop the last user message first (same pattern as prompt-too-long)
+                        if let Some(last_msg) = session.messages.last() {
+                            if matches!(last_msg, rig::message::Message::User { .. }) {
+                                session.messages.pop();
+                                info!("Popped last user message before image sanitization");
+                            }
+                        }
+
+                        // Sanitize image content from remaining history
+                        let sanitized = sanitize_image_content(&mut session.messages);
+
+                        if sanitized {
+                            info!("Sanitized image content from conversation history — session can continue");
+                            output.emit_error(&format!(
+                                "{error_str}\n\n[Images removed from conversation history to recover session]"
+                            ));
+                            // Don't return Err — session remains usable, user can send next message
+                            break;
+                        }
+                        // If no images found to sanitize, fall through to normal error handling
                     }
 
                     // NAPI-008: Log error with full details (include in message for TypeScript layer)

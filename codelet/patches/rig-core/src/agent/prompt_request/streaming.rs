@@ -24,6 +24,12 @@ use crate::{
 /// Parse tool result string and convert to appropriate ToolResultContent(s).
 /// Detects image responses from Read tool and converts to ToolResultContent::Image.
 /// Returns a Vec to support multiple images (e.g., PDF visual mode pages).
+
+/// EXT-016: Check base64 image data for oversized pixel dimensions.
+/// Delegates to codelet_common::image_dimensions — single source of truth.
+fn check_image_dimensions(base64_data: &str) -> Option<String> {
+    codelet_common::image_dimensions::check_image_dimensions(base64_data, None)
+}
 fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
     // Try to parse as JSON to detect structured tool output
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(result) {
@@ -61,8 +67,14 @@ fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
                     if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
                         if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
                             let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
-                            tracing::info!("parse_tool_result_content: PDF page {} as Image, media_type={:?}", page_num, media_type);
-                            contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
+                            // EXT-016: Validate PDF page dimensions before creating Image content
+                            if let Some(error_msg) = check_image_dimensions(data) {
+                                tracing::warn!("parse_tool_result_content: rejecting oversized PDF page {}", page_num);
+                                contents.push(ToolResultContent::text(error_msg));
+                            } else {
+                                tracing::info!("parse_tool_result_content: PDF page {} as Image, media_type={:?}", page_num, media_type);
+                                contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
+                            }
                         }
                     }
                 }
@@ -80,6 +92,13 @@ fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
             let media_type_str = json.get("media_type").and_then(|m| m.as_str());
 
             if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
+                // EXT-016: Safety net — validate pixel dimensions before creating Image content
+                // This catches oversized images from ANY tool (Read, MCP, future tools)
+                if let Some(error_msg) = check_image_dimensions(data) {
+                    tracing::warn!("parse_tool_result_content: rejecting oversized image");
+                    return vec![ToolResultContent::text(error_msg)];
+                }
+
                 // Parse the media type string to ImageMediaType
                 if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
                     tracing::info!("parse_tool_result_content: returning Image, media_type={:?}", media_type);
@@ -104,8 +123,14 @@ fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
                                 if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
                                     if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
                                         let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
-                                        tracing::info!("parse_tool_result_content: nested PDF page {} as Image, media_type={:?}", page_num, media_type);
-                                        contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
+                                        // EXT-016: Validate nested PDF page dimensions before creating Image content
+                                        if let Some(error_msg) = check_image_dimensions(data) {
+                                            tracing::warn!("parse_tool_result_content: rejecting oversized nested PDF page {}", page_num);
+                                            contents.push(ToolResultContent::text(error_msg));
+                                        } else {
+                                            tracing::info!("parse_tool_result_content: nested PDF page {} as Image, media_type={:?}", page_num, media_type);
+                                            contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
+                                        }
                                     }
                                 }
                             }
@@ -851,4 +876,10 @@ mod tests {
              This indicates that span.enter() is being used inside async_stream instead of .instrument()"
         );
     }
+
+    // EXT-016: Tests for parse_tool_result_content dimension validation are in
+    // codelet-common::image_dimensions::tests (the single source of truth for
+    // check_image_dimensions). rig-core is not a workspace member so tests here
+    // cannot be executed by `cargo test`. The Layer 2 safety net logic is fully
+    // covered by codelet-common's test suite.
 }

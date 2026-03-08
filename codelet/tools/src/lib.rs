@@ -24,6 +24,7 @@ pub mod fspec_workflow_guidance;
 
 pub mod glob;
 pub mod grep;
+pub mod image_dimensions;
 pub mod limits;
 pub mod ls;
 pub mod mcp;

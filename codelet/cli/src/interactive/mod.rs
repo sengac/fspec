@@ -15,7 +15,8 @@ pub use output::{
     ToolResultEvent,
 };
 pub use stream_loop::{
-    is_prompt_too_long_error, run_agent_stream, run_agent_stream_with_images, BridgeImage,
+    build_user_content_with_images, is_image_content_error, is_prompt_too_long_error,
+    run_agent_stream, run_agent_stream_with_images, sanitize_image_content, BridgeImage,
 };
 
 use crate::session::Session;

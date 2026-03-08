@@ -26,6 +26,22 @@ use std::path::Path;
 use tokio::fs;
 use uuid::Uuid;
 
+use super::file_type::ImageMediaType;
+use crate::image_dimensions::{
+    exceeds_pixel_limit, extract_jpeg_dimensions, extract_png_dimensions, format_dimension_error,
+};
+
+/// Maximum base64 size (in bytes) for images sent to LLM providers.
+///
+/// 5MB is the strictest limit across all supported providers:
+///   - Claude (Anthropic): 5MB base64 per image
+///   - Z.AI (GLM-4V): 5MB per image
+///   - OpenAI (GPT-4o): ~20MB base64 per image
+///   - Gemini (Google): 20MB inline request
+///
+/// We use the strictest limit as a universal safe default.
+const MAX_IMAGE_BASE64_BYTES: usize = 5 * 1024 * 1024; // 5MB
+
 /// Structured output for the Read tool supporting multimodal content
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
@@ -96,6 +112,57 @@ impl ReadTool {
 
         output
     }
+
+    /// Process binary content as text with line numbers and token limit validation.
+    ///
+    /// Used by both SVG (text-based XML) and plain text file branches to avoid
+    /// duplicating the token limit checking and line formatting logic.
+    fn process_as_text(
+        binary_content: Vec<u8>,
+        file_path_str: &str,
+        offset: Option<usize>,
+        limit: Option<usize>,
+    ) -> Result<ReadOutput, ToolError> {
+        let text_content =
+            String::from_utf8(binary_content).map_err(|e| ToolError::File {
+                tool: "read",
+                message: format!("Error reading file as text: {e}"),
+            })?;
+
+        let has_custom_range = offset.is_some() || limit.is_some();
+
+        // Check token limit on full content before applying line limits.
+        // This ensures large files are rejected even if they would be truncated.
+        if !has_custom_range {
+            if let Some((estimated_tokens, max_tokens)) = check_token_limit(&text_content) {
+                return Err(ToolError::TokenLimit {
+                    tool: "read",
+                    file_path: file_path_str.to_string(),
+                    estimated_tokens,
+                    max_tokens,
+                });
+            }
+        }
+
+        let effective_offset = offset.unwrap_or(1);
+        let effective_limit = limit.unwrap_or(OutputLimits::MAX_LINES);
+        let formatted =
+            Self::format_text_with_line_numbers(&text_content, effective_offset, effective_limit);
+
+        // For partial reads, check the extracted portion
+        if has_custom_range {
+            if let Some((estimated_tokens, max_tokens)) = check_token_limit(&formatted) {
+                return Err(ToolError::TokenLimit {
+                    tool: "read",
+                    file_path: file_path_str.to_string(),
+                    estimated_tokens,
+                    max_tokens,
+                });
+            }
+        }
+
+        Ok(ReadOutput::Text { content: formatted })
+    }
 }
 
 // rig::tool::Tool implementation
@@ -134,7 +201,8 @@ impl rig::tool::Tool for ReadTool {
                 - Any lines longer than 2000 characters will be truncated\n\
                 - Results are returned using cat -n format, with line numbers starting at 1\n\
                 - Text files exceeding 25,000 tokens will return an error - use offset/limit for large files\n\
-                - This tool can read images (PNG, JPG, GIF, WEBP, SVG). When reading an image file the contents are presented visually as base64-encoded data with media type.\n\
+                - This tool can read images (PNG, JPG, GIF, WEBP). When reading an image file the contents are presented visually as base64-encoded data with media type.\n\
+                - SVG files are always read as text (line-numbered XML source), not as image data.\n\
                 - PDFs support three modes via the pdf_mode parameter:\n\
                   * 'visual' (default): Renders each page as a PNG image for full visual understanding of diagrams, charts, and layouts\n\
                   * 'text': Extracts text content page by page with page numbers (use for searchable text from text-heavy documents)\n\
@@ -181,8 +249,47 @@ impl rig::tool::Tool for ReadTool {
         let file_type = detect_file_type(path, &binary_content);
 
         let output = match file_type {
+            FileType::Image(media_type) if media_type == ImageMediaType::Svg => {
+                // SVG files are text-based XML — treat as text, not binary image (EXT-014 rule [4])
+                Self::process_as_text(binary_content, &file_path_str, args.offset, args.limit)?
+            }
             FileType::Image(media_type) => {
-                // For images, base64 encode and return structured output
+                // For binary images, validate size before returning (EXT-014)
+                // Calculate exact base64 output size without encoding: ceil(n/3) * 4
+                let raw_size = binary_content.len();
+                let base64_size = (raw_size + 2) / 3 * 4;
+
+                if base64_size > MAX_IMAGE_BASE64_BYTES {
+                    let actual_mb = base64_size as f64 / (1024.0 * 1024.0);
+                    let limit_mb = MAX_IMAGE_BASE64_BYTES as f64 / (1024.0 * 1024.0);
+                    return Err(ToolError::Validation {
+                        tool: "read",
+                        message: format!(
+                            "Image file is too large for LLM processing: {file_path_str}\n\
+                             Base64 size: {actual_mb:.1} MB (limit: {limit_mb:.1} MB)\n\
+                             Suggestions:\n\
+                             - Resize the image to reduce file size (e.g., use `convert` or `sips` in Bash)\n\
+                             - Use offset/limit parameters to read the file as text instead"
+                        ),
+                    });
+                }
+
+                // EXT-016: Validate pixel dimensions before returning image data
+                // Extract dimensions from raw bytes (PNG IHDR or JPEG SOF marker)
+                let dimensions = extract_png_dimensions(&binary_content)
+                    .or_else(|| extract_jpeg_dimensions(&binary_content));
+
+                if let Some((width, height)) = dimensions {
+                    if exceeds_pixel_limit(width, height) {
+                        return Err(ToolError::Validation {
+                            tool: "read",
+                            message: format_dimension_error(Some(&file_path_str), width, height),
+                        });
+                    }
+                }
+                // If dimensions can't be extracted (corrupt header, unsupported format),
+                // allow the image through — don't block valid images due to parsing failure
+
                 let base64_data = BASE64.encode(&binary_content);
                 ReadOutput::Image {
                     data: base64_data,
@@ -264,47 +371,8 @@ impl rig::tool::Tool for ReadTool {
                 }
             }
             FileType::Text => {
-                // For text files, use existing line-numbered format
-                let text_content =
-                    String::from_utf8(binary_content).map_err(|e| ToolError::File {
-                        tool: "read",
-                        message: format!("Error reading file: {e}"),
-                    })?;
-
-                // Check token limit on the raw content BEFORE applying line limits
-                // This ensures large files are rejected even if they would be truncated
-                // If user provides offset/limit, check only the requested portion
-                let has_custom_range = args.offset.is_some() || args.limit.is_some();
-
-                if !has_custom_range {
-                    // No custom range - check full file first
-                    if let Some((estimated_tokens, max_tokens)) = check_token_limit(&text_content) {
-                        return Err(ToolError::TokenLimit {
-                            tool: "read",
-                            file_path: file_path_str.clone(),
-                            estimated_tokens,
-                            max_tokens,
-                        });
-                    }
-                }
-
-                let offset = args.offset.unwrap_or(1);
-                let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);
-                let formatted = Self::format_text_with_line_numbers(&text_content, offset, limit);
-
-                // For partial reads, check the extracted portion
-                if has_custom_range {
-                    if let Some((estimated_tokens, max_tokens)) = check_token_limit(&formatted) {
-                        return Err(ToolError::TokenLimit {
-                            tool: "read",
-                            file_path: file_path_str.clone(),
-                            estimated_tokens,
-                            max_tokens,
-                        });
-                    }
-                }
-
-                ReadOutput::Text { content: formatted }
+                // For text files, use existing line-numbered format with token limits
+                Self::process_as_text(binary_content, &file_path_str, args.offset, args.limit)?
             }
         };
 

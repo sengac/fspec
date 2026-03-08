@@ -9,6 +9,7 @@
 
 pub mod data_dir;
 pub mod debug_capture;
+pub mod image_dimensions;
 pub mod logging;
 pub mod token_estimator;
 pub mod types;

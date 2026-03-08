@@ -1,0 +1,215 @@
+{
+  "scenarios": [
+    {
+      "name": "Small image within size limit is returned normally",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "lines": "34-58",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Oversized image returns a validation error instead of image data",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "lines": "60-104",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Image at exactly the size limit is accepted",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "lines": "106-130",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SVG files are treated as text and bypass image size validation",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "lines": "132-183",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent loop continues after oversized image error",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_image_size_validation_test.rs",
+          "lines": "185-232",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/read_image_size_validation_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/read.rs"
+    ],
+    "totalLinesCovered": 314
+  }
+}

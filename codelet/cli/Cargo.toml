@@ -62,6 +62,7 @@ predicates.workspace = true
 tokio-test.workspace = true
 serial_test.workspace = true
 lopdf.workspace = true
+base64 = "0.22"
 
 [lints]
 workspace = true
