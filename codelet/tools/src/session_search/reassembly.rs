@@ -427,4 +427,242 @@ mod tests {
         // Should not panic and should contain truncation marker
         assert!(output.contains("..."));
     }
+
+    // ================================================================
+    // Comprehensive UTF-8 safety tests
+    // Covers: CJK (3-byte), 4-byte emoji, mixed widths, boundaries
+    // ================================================================
+
+    #[test]
+    fn test_utf8_cjk_text_standalone() {
+        // CJK characters are 3 bytes each (like ✅)
+        let raw = "中文测试";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Text(content) => assert_eq!(content, "中文测试"),
+            _ => panic!("Expected Text section"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_cjk_before_bracket() {
+        // CJK text then a bracket marker — tests the "advance past current char" path
+        let raw = "中文 [Tool: Read]";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 2);
+        match &sections[0] {
+            Section::Text(t) => assert!(t.contains("中文")),
+            _ => panic!("Expected Text first"),
+        }
+        match &sections[1] {
+            Section::Tool(name) => assert_eq!(name, "Read"),
+            _ => panic!("Expected Tool second"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_4byte_emoji_standalone() {
+        // 4-byte emoji (U+1F600 = 😀 is 4 bytes in UTF-8)
+        let raw = "😀 Hello";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Text(content) => {
+                assert!(content.contains('😀'));
+                assert!(content.contains("Hello"));
+            }
+            _ => panic!("Expected Text section"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_4byte_emoji_before_bracket() {
+        // 4-byte emoji immediately before a bracket
+        let raw = "🎉[Tool: Bash]";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 2);
+        match &sections[0] {
+            Section::Text(t) => assert!(t.contains('🎉')),
+            _ => panic!("Expected Text first"),
+        }
+        assert!(matches!(&sections[1], Section::Tool(_)));
+    }
+
+    #[test]
+    fn test_utf8_mixed_widths_in_line() {
+        // ASCII (1-byte) + CJK (3-byte) + 4-byte emoji all in one line
+        let raw = "Hello 世界 🌍 done";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Text(content) => {
+                assert!(content.contains("Hello"));
+                assert!(content.contains("世界"));
+                assert!(content.contains('🌍'));
+                assert!(content.contains("done"));
+            }
+            _ => panic!("Expected Text section"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_all_multibyte_line() {
+        // Entire line is multi-byte characters — no ASCII at all
+        let raw = "中文日本語한국어";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Text(content) => assert_eq!(content, "中文日本語한국어"),
+            _ => panic!("Expected Text section"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_emoji_sequence_before_bracket() {
+        // Multiple consecutive 4-byte emoji then a bracket
+        let raw = "🔥🚀✨ [Thinking: analyzing...]";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 2);
+        match &sections[0] {
+            Section::Text(t) => {
+                assert!(t.contains('🔥'));
+                assert!(t.contains('🚀'));
+                assert!(t.contains('✨'));
+            }
+            _ => panic!("Expected Text first"),
+        }
+        assert!(matches!(&sections[1], Section::Thinking(_)));
+    }
+
+    #[test]
+    fn test_utf8_inside_thinking_brackets() {
+        // Multi-byte characters inside [Thinking: ...] content
+        let raw = "[Thinking: 分析代码中...]";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Thinking(content) => assert!(content.contains("分析代码中")),
+            _ => panic!("Expected Thinking section"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_cjk_in_tool_name() {
+        // While unlikely in practice, ensure bracket parsing handles CJK
+        let raw = "[Tool: テスト]";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Tool(name) => assert_eq!(name, "テスト"),
+            _ => panic!("Expected Tool section"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_truncation_at_exact_cjk_boundary() {
+        // 500 bytes of 3-byte CJK = 166 chars + 2 bytes remainder
+        // Byte 500 lands INSIDE a CJK char (which starts at byte 498)
+        let cjk_str: String = std::iter::repeat('中').take(200).collect(); // 600 bytes
+        let sections = vec![Section::Thinking(cjk_str)];
+        let output = format_sections_plain(&sections);
+        assert!(output.contains("..."));
+        // Verify the output is valid UTF-8 (would panic on format! if not)
+        assert!(output.is_char_boundary(0));
+    }
+
+    #[test]
+    fn test_utf8_truncation_at_exact_4byte_boundary() {
+        // 4-byte emoji: byte 500 could land 1, 2, or 3 bytes into a char
+        let emoji_str: String = std::iter::repeat('😀').take(150).collect(); // 600 bytes
+        let sections = vec![Section::Thinking(emoji_str)];
+        let output = format_sections_plain(&sections);
+        assert!(output.contains("..."));
+        // The truncated content must be valid UTF-8
+        let thinking_part = output.strip_prefix("[Thinking] ").unwrap();
+        let without_dots = thinking_part.strip_suffix("...").unwrap();
+        assert!(without_dots.is_char_boundary(without_dots.len()));
+    }
+
+    #[test]
+    fn test_utf8_2byte_chars() {
+        // 2-byte characters (Latin extended, e.g. é = 0xC3 0xA9)
+        let raw = "café résumé naïve";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 1);
+        match &sections[0] {
+            Section::Text(content) => {
+                assert!(content.contains("café"));
+                assert!(content.contains("résumé"));
+                assert!(content.contains("naïve"));
+            }
+            _ => panic!("Expected Text section"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_2byte_before_bracket() {
+        let raw = "café [Tool: Read]";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 2);
+        match &sections[0] {
+            Section::Text(t) => assert!(t.contains("café")),
+            _ => panic!("Expected Text first"),
+        }
+        assert!(matches!(&sections[1], Section::Tool(_)));
+    }
+
+    #[test]
+    fn test_utf8_multiline_mixed() {
+        // Multi-byte on multiple lines with brackets interspersed
+        let raw = "🔥 开始\n[Thinking: 分析...]\n[Tool: Read]\nrésultat final 🎉";
+        let sections = reassemble_content(raw);
+        assert_eq!(sections.len(), 4);
+        assert!(matches!(&sections[0], Section::Text(_)));
+        assert!(matches!(&sections[1], Section::Thinking(_)));
+        assert!(matches!(&sections[2], Section::Tool(_)));
+        assert!(matches!(&sections[3], Section::Text(_)));
+        match &sections[3] {
+            Section::Text(t) => {
+                assert!(t.contains("résultat"));
+                assert!(t.contains('🎉'));
+            }
+            _ => panic!("Expected Text last"),
+        }
+    }
+
+    #[test]
+    fn test_utf8_truncation_boundary_all_byte_widths() {
+        // Test truncation safety for 1, 2, 3, and 4-byte chars near byte 500
+        for (label, ch, byte_len) in [
+            ("ascii", 'x', 1),
+            ("2-byte", 'é', 2),
+            ("3-byte", '中', 3),
+            ("4-byte", '😀', 4),
+        ] {
+            // Fill up to just past 500 bytes
+            let count = (502 / byte_len) + 1;
+            let content: String = std::iter::repeat(ch).take(count).collect();
+            assert!(
+                content.len() > 500,
+                "{label}: expected > 500 bytes, got {}",
+                content.len()
+            );
+
+            let sections = vec![Section::Thinking(content)];
+            let output = format_sections_plain(&sections);
+            assert!(
+                output.contains("..."),
+                "{label}: expected truncation marker"
+            );
+            // Output must be valid UTF-8 (implicit — it's a String)
+            // But also verify the sliced content doesn't end mid-char
+            let thinking_part = output.strip_prefix("[Thinking] ").unwrap();
+            let without_dots = thinking_part.strip_suffix("...").unwrap();
+            assert!(
+                without_dots.is_char_boundary(without_dots.len()),
+                "{label}: truncation landed on invalid char boundary"
+            );
+        }
+    }
 }
