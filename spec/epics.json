@@ -447,6 +447,14 @@
         "EXT-015",
         "EXT-016"
       ]
+    },
+    "agent-manager": {
+      "id": "agent-manager",
+      "title": "Agent Manager — Unified tool for session search, agent orchestration, cross-agent communication, and role management",
+      "createdAt": "2026-03-08T07:47:41.616Z",
+      "workUnits": [
+        "AMGR-001"
+      ]
     }
   }
 }

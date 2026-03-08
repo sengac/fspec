@@ -249,7 +249,7 @@ impl rig::tool::Tool for ReadTool {
         let file_type = detect_file_type(path, &binary_content);
 
         let output = match file_type {
-            FileType::Image(media_type) if media_type == ImageMediaType::Svg => {
+            FileType::Image(ImageMediaType::Svg) => {
                 // SVG files are text-based XML — treat as text, not binary image (EXT-014 rule [4])
                 Self::process_as_text(binary_content, &file_path_str, args.offset, args.limit)?
             }
@@ -257,7 +257,7 @@ impl rig::tool::Tool for ReadTool {
                 // For binary images, validate size before returning (EXT-014)
                 // Calculate exact base64 output size without encoding: ceil(n/3) * 4
                 let raw_size = binary_content.len();
-                let base64_size = (raw_size + 2) / 3 * 4;
+                let base64_size = raw_size.div_ceil(3) * 4;
 
                 if base64_size > MAX_IMAGE_BASE64_BYTES {
                     let actual_mb = base64_size as f64 / (1024.0 * 1024.0);

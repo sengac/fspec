@@ -5360,6 +5360,13 @@ async fn agent_loop(
             // when multiple sessions run concurrently.
             codelet_tools::set_fspec_handler_for_session(session.id, Some(fspec_handler));
 
+            // AMGR-001: Register SessionSearch handler for this session
+            // The handler accesses the persistence layer directly (MessageStore, SessionStore, BlobStore)
+            let session_search_handler = crate::session_search_handler::create_handler(
+                std::path::PathBuf::from(&session.project),
+            );
+            codelet_tools::set_session_search_handler(session.id, Some(session_search_handler));
+
             // BRIDGE-001: Set up bridge handler and session context for WebSocket relay
             // The bridge handler needs to call async handle_bridge_action, so we use
             // the tokio runtime handle to block_on the async function from the sync handler.
@@ -5566,6 +5573,7 @@ async fn agent_loop(
             set_pause_handler(None);
             // Clean up per-session handlers
             codelet_tools::set_fspec_handler_for_session(session.id, None);
+            codelet_tools::set_session_search_handler(session.id, None); // AMGR-001: Clean up SessionSearch handler
             codelet_tools::set_bridge_handler(None);
             codelet_tools::remove_bridge_session_context(session.id);
 

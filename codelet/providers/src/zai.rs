@@ -200,7 +200,7 @@ impl ZAIProvider {
             SearchToolFacadeWrapper, zai_bridge_tool, zai_fspec_tool, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
             ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
         };
-        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool};
+        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool};
         use std::sync::Arc;
 
         // Create Z.AI/GLM-specific tool facades (PROV-004)
@@ -243,7 +243,8 @@ impl ZAIProvider {
             .tool(zai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(zai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
             .tool(WebSearchTool::new(session_id)) // WEB-001, TOOL-014: WebSearchTool with session_id
-            .tool(ConnectMcpTool::new(session_id)); // MCP-001: Dynamic MCP connections
+            .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
+            .tool(SessionSearchTool::new(session_id)); // AMGR-001: SessionSearch tool
 
         // Set preamble if provided
         if let Some(preamble_text) = preamble {

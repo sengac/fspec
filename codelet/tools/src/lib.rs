@@ -37,6 +37,7 @@ pub mod tool_progress;
 pub mod truncation;
 pub mod validation;
 pub mod web_search;
+pub mod session_search;
 pub mod write;
 
 // Test fixtures for integration tests
@@ -111,6 +112,11 @@ pub use mcp::{
 pub use tool_progress::{emit_tool_progress, set_tool_progress_callback, ToolProgressCallback};
 pub use web_search::{install_browser_cleanup_handler, shutdown_browser, WebSearchTool};
 pub use write::WriteTool;
+pub use session_search::{
+    SessionSearchTool, SessionSearchHandler,
+    set_session_search_handler, has_session_search_handler,
+    clear_all_session_search_handlers,
+};
 
 /// Tool definition for API requests
 #[derive(Debug, Clone, Serialize, Deserialize)]

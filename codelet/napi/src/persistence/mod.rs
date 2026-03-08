@@ -737,3 +737,33 @@ pub struct SessionLineage {
     pub forked_from: Option<ForkPoint>,
     pub merged_from: Vec<MergeRecord>,
 }
+
+/// List all sessions for a specific project
+///
+/// AMGR-001: Used by SessionSearch handler for recent/search actions
+pub fn list_sessions_for_project(project: &Path) -> Result<Vec<SessionManifest>, String> {
+    init_stores()?;
+    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    Ok(store
+        .as_ref()
+        .ok_or("Session store not initialized")?
+        .list_for_project(project)
+        .into_iter()
+        .cloned()
+        .collect())
+}
+
+/// List all sessions across all projects
+///
+/// AMGR-001: Used by SessionSearch handler for cross-project search
+pub fn list_all_sessions() -> Result<Vec<SessionManifest>, String> {
+    init_stores()?;
+    let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    Ok(store
+        .as_ref()
+        .ok_or("Session store not initialized")?
+        .list_all()
+        .into_iter()
+        .cloned()
+        .collect())
+}

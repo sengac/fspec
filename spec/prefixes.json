@@ -374,6 +374,11 @@
       "prefix": "LOCATE",
       "description": "Browser element location and AI page understanding",
       "createdAt": "2026-03-06T06:46:42.350Z"
+    },
+    "AMGR": {
+      "prefix": "AMGR",
+      "description": "Agent Manager tool — session search, agent orchestration, cross-agent communication",
+      "createdAt": "2026-03-08T07:47:29.270Z"
     }
   }
 }

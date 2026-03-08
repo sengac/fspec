@@ -645,6 +645,8 @@ dependencies = [
  "dirs 6.0.0",
  "dotenvy",
  "futures",
+ "grep-matcher",
+ "grep-regex",
  "hex",
  "ignore",
  "indexmap",

@@ -305,7 +305,7 @@ impl CodexProvider {
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, EditTool, GlobTool, WebSearchTool, WriteTool,
-            ConnectMcpTool,
+            ConnectMcpTool, SessionSearchTool,
         };
         use codelet_tools::facade::{
             BashToolFacadeWrapper, CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
@@ -360,7 +360,8 @@ impl CodexProvider {
             // Fspec/Bridge tools reusing OpenAI facades (TOOL-012)
             .tool(codex_fspec_tool(session_id))
             .tool(codex_bridge_tool(session_id))
-            .tool(ConnectMcpTool::new(session_id)); // MCP-001: Dynamic MCP connections
+            .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
+            .tool(SessionSearchTool::new(session_id)); // AMGR-001: SessionSearch tool
 
         // The Codex backend API REQUIRES non-empty `instructions` in every
         // Responses API request.  The rig layer maps preamble → instructions,

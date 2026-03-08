@@ -41,6 +41,10 @@ mod simple_test;
 #[cfg(not(feature = "noop"))]
 mod work_units_watcher;
 
+// AMGR-001: SessionSearch handler bridges tools layer to persistence
+#[cfg(not(feature = "noop"))]
+pub mod session_search_handler;
+
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
 pub mod persistence;
 

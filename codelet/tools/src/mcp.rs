@@ -832,7 +832,7 @@ pub fn init_mcp_session(
         injection_tx,
         tool_server_handle: None,
     };
-    let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions.insert(session_id, state);
     (injection_rx, connections)
 }
@@ -846,7 +846,7 @@ pub fn init_mcp_session(
 /// to drop.
 pub fn cleanup_mcp_session(session_id: uuid::Uuid) {
     let state = {
-        let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+        let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         sessions.remove(&session_id)
     };
     // Cancel each connection's service synchronously via the cancellation token.
@@ -866,7 +866,7 @@ pub fn cleanup_mcp_session(session_id: uuid::Uuid) {
 
 /// Get the McpConnectionMap for a session (for gathering tools at agent build time).
 pub fn get_mcp_connections(session_id: uuid::Uuid) -> Option<McpConnectionMap> {
-    let sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    let sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions.get(&session_id).map(|s| s.connections.clone())
 }
 
@@ -874,7 +874,7 @@ pub fn get_mcp_connections(session_id: uuid::Uuid) -> Option<McpConnectionMap> {
 fn get_mcp_session_state(
     session_id: uuid::Uuid,
 ) -> Option<(McpInjectionTx, McpConnectionMap)> {
-    let sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    let sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions
         .get(&session_id)
         .map(|s| (s.injection_tx.clone(), s.connections.clone()))
@@ -885,7 +885,7 @@ fn get_mcp_session_state(
 /// Called by run_with_provider! after building the agent, so that ConnectMcpTool
 /// can register newly connected tools mid-turn via `handle.add_tool()`.
 pub fn set_mcp_tool_server_handle(session_id: uuid::Uuid, handle: ToolServerHandle) {
-    let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    let mut sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     if let Some(state) = sessions.get_mut(&session_id) {
         state.tool_server_handle = Some(handle);
     }
@@ -893,7 +893,7 @@ pub fn set_mcp_tool_server_handle(session_id: uuid::Uuid, handle: ToolServerHand
 
 /// MCP-002: Retrieve the ToolServerHandle for a session (for mid-turn tool registration).
 fn get_mcp_tool_server_handle(session_id: uuid::Uuid) -> Option<ToolServerHandle> {
-    let sessions = MCP_SESSIONS.lock().unwrap_or_else(|e| e.into_inner());
+    let sessions = MCP_SESSIONS.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     sessions
         .get(&session_id)
         .and_then(|s| s.tool_server_handle.clone())

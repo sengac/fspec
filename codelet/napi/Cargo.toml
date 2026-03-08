@@ -45,6 +45,10 @@ anyhow = "1"
 # Regex for replace transforms
 regex = "1"
 
+# Ripgrep Core — same engine as the Grep tool (AMGR-001 Rule [6])
+grep-regex.workspace = true
+grep-matcher.workspace = true
+
 # Serialization (for converting types)
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
