@@ -455,6 +455,23 @@
       "workUnits": [
         "AMGR-001"
       ]
+    },
+    "hierarchical-compaction": {
+      "id": "hierarchical-compaction",
+      "title": "CMPCT",
+      "createdAt": "2026-03-09T02:25:17.933Z",
+      "description": "Hierarchical Lossless Context Compaction — Replace expensive batch LLM compaction with zero-marginal-cost agent-driven DAG construction using /clear + SessionSearch + inject_summary. Three-layer architecture: Layer 0 (structurally lossless trimming), Layer 1 (in-view DAG construction), Layer 2 (emergency threshold safety net). Research foundation: CMV, LCM, Focus, ACON, HiAgent, SimpleMem, H-MEM.",
+      "workUnits": [
+        "CMPCT-005",
+        "CMPCT-006",
+        "CMPCT-007",
+        "CMPCT-008",
+        "CMPCT-009",
+        "CMPCT-010",
+        "CMPCT-011",
+        "CMPCT-012",
+        "CMPCT-013"
+      ]
     }
   }
 }
