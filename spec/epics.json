@@ -472,7 +472,8 @@
         "CMPCT-012",
         "CMPCT-013",
         "CMPCT-014",
-        "CMPCT-015"
+        "CMPCT-015",
+        "BUG-101"
       ]
     }
   }

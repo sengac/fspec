@@ -1,0 +1,221 @@
+{
+  "scenarios": [
+    {
+      "name": "SessionStateChange(Idle) via persistent handler transitions isLoading to false",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/persistent-handler-state-refresh.test.tsx",
+          "lines": "48-80",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/persistentSessionStateHandler.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1031,
+                1032,
+                1033,
+                1034,
+                1035,
+                1036,
+                1037,
+                1038,
+                1039,
+                1040,
+                1041,
+                1042,
+                1043,
+                1044,
+                1045,
+                1046,
+                1047,
+                1048,
+                1049,
+                1050
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionStateChange(Running) via persistent handler keeps isLoading true",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/persistent-handler-state-refresh.test.tsx",
+          "lines": "82-118",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/persistentSessionStateHandler.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1031,
+                1032,
+                1033,
+                1034,
+                1035,
+                1036,
+                1037,
+                1038,
+                1039,
+                1040,
+                1041,
+                1042,
+                1043,
+                1044,
+                1045,
+                1046,
+                1047,
+                1048,
+                1049,
+                1050
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "endCompaction guard preserved for non-CompactionComplete state changes",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/persistent-handler-state-refresh.test.tsx",
+          "lines": "120-167",
+          "implMappings": [
+            {
+              "file": "src/tui/handlers/persistentSessionStateHandler.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1031,
+                1032,
+                1033,
+                1034,
+                1035,
+                1036,
+                1037,
+                1038,
+                1039,
+                1040,
+                1041,
+                1042,
+                1043,
+                1044,
+                1045,
+                1046,
+                1047,
+                1048,
+                1049,
+                1050
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/persistent-handler-state-refresh.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/handlers/persistentSessionStateHandler.ts",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 259
+  }
+}

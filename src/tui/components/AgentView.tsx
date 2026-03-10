@@ -154,6 +154,7 @@ import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { ThinkingLevelDialog } from './ThinkingLevelDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { handleMergeWorktree } from '../handlers/mergeWorktreeHandler';
+import { handlePersistentSessionStateChange } from '../handlers/persistentSessionStateHandler';
 import type { ActionPrompt } from '../types/actionPrompt';
 import {
   parseWatcherPrefix,
@@ -1026,29 +1027,25 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Also handle Compacting state for manual /compact command flow.
       // When /compact returns early without setting up a streaming handler, chunks from
       // the agent_loop (which processes the compaction instruction) arrive here.
+      // BUG-101: Extracted to handlePersistentSessionStateChange for testability.
       if (chunk.type === 'SessionStateChange') {
-        if (chunk.state === 'Cleared') {
-          setConversation([]);
-          setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-          // Use ref to avoid TDZ - setContextFillPercentage is defined later
-          if (setContextFillPercentageRef.current) {
-            setContextFillPercentageRef.current(0);
-          }
-        } else if (chunk.state === 'Compacting') {
-          // Start compaction tracking for hook-triggered compaction
-          // that arrives when no handleSubmit is active.
-          const sessionId = currentSessionIdRef.current;
-          if (sessionId) {
-            const progress = sessionGetCompactionProgress(sessionId);
-            compactionRef.current.startCompaction(
-              'hook-triggered',
-              sessionId,
-              progress ?? undefined
-            );
-          }
-        }
-        // Do NOT call endCompaction() for Running or Idle states here.
-        // Only CompactionComplete should end the compaction indicator.
+        handlePersistentSessionStateChange(chunk.state, {
+          resetConversation: () => {
+            setConversation([]);
+            setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+            if (setContextFillPercentageRef.current) {
+              setContextFillPercentageRef.current(0);
+            }
+          },
+          startCompaction: (trigger, sessionId, progress) => {
+            compactionRef.current.startCompaction(trigger, sessionId, progress);
+          },
+          getCompactionProgress: (sessionId) =>
+            sessionGetCompactionProgress(sessionId),
+          refreshRustState: (sessionId) =>
+            refreshRustStateRef.current(sessionId),
+          getCurrentSessionId: () => currentSessionIdRef.current,
+        });
         return;
       }
 

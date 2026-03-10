@@ -1,3 +1,4 @@
+@done
 @CMPCT-015
 Feature: After inject_summary ends compaction, isLoading not set while agent loop continues running
 
