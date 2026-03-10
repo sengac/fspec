@@ -1,32 +1,37 @@
 /**
  * Utility functions for formatting compaction-related text
  * Centralizes formatting logic to maintain consistency across components
+ *
+ * Compaction is a brief in-memory setup (~5ms) followed by agent-driven
+ * DAG construction. The "phase" field describes what Rust is doing during
+ * setup. The agent work (SessionSearch, inject_summary) shows as normal
+ * "Thinking..." via isLoading=true.
  */
 
 import type { CompactionProgress } from '../tui/hooks/useRustSessionState';
 
 /**
  * Formats compaction progress for display in input placeholders
- * Used by MultiLineInput component
+ * Used by MultiLineInput component during the brief Compacting state
  *
  * @param progress - Compaction progress information
- * @returns Formatted text like "Compacting: analyzing anchors... 15/32 turns"
+ * @returns Formatted text like "Compacting context..."
  */
 export function formatCompactionPlaceholder(
   progress: CompactionProgress
 ): string {
-  return `Compacting: ${progress.phase}... ${progress.current}/${progress.total} turns`;
+  return `Compacting: ${progress.phase}...`;
 }
 
 /**
  * Formats compaction progress for display in thinking indicators
- * Used by InputTransition component
+ * Used by InputTransition component during the brief Compacting state
  *
  * @param progress - Compaction progress information
- * @returns Formatted text like "analyzing anchors... 15/32 turns"
+ * @returns Formatted text like "Analyzing context..."
  */
 export function formatCompactionThinking(progress: CompactionProgress): string {
-  return `${progress.phase}... ${progress.current}/${progress.total} turns`;
+  return `${progress.phase}...`;
 }
 
 /**
@@ -42,15 +47,13 @@ export function formatCompactionProgress(
   options: {
     prefix?: string;
     suffix?: string;
-    showTurns?: boolean;
   } = {}
 ): string {
-  const { prefix = '', suffix = '', showTurns = true } = options;
+  const { prefix = '', suffix = '' } = options;
 
-  const baseText = `${progress.phase}... ${progress.current}/${progress.total}`;
-  const turnsText = showTurns ? ' turns' : '';
+  const baseText = `${progress.phase}...`;
 
-  return `${prefix}${baseText}${turnsText}${suffix}`.trim();
+  return `${prefix}${baseText}${suffix}`.trim();
 }
 
 /**

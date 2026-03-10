@@ -27,6 +27,14 @@ export default defineConfig({
       'bridge/**/*.test.ts',
       'extension/**/*.test.ts',
     ],
+    exclude: [
+      'node_modules/**',
+      'dist/**',
+      // E2E tests require real API credentials and make live LLM calls.
+      // Run separately with: npx vitest run --config vitest.e2e.config.ts
+      '**/*e2e*',
+      '**/*E2E*',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

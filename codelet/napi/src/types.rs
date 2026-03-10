@@ -8,58 +8,12 @@ use serde::{Deserialize, Serialize};
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CompactionProgress {
-    /// Current compaction phase (e.g., "Analyzing anchors", "Generating summary")
+    /// Current compaction phase (e.g., "Preparing compaction", "Analyzing context")
     pub phase: String,
     /// Current progress count (e.g., current turn being processed)
     pub current: u32,
     /// Total items to process (e.g., total turns to analyze)
     pub total: u32,
-}
-
-/// TUI-056: Anchor point types for NAPI
-#[napi(string_enum)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum NapiAnchorType {
-    ErrorResolution,
-    TaskCompletion,
-    UserCheckpoint,
-    FeatureMilestone,
-}
-
-/// TUI-056: Anchor point for NAPI
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NapiAnchorPoint {
-    /// Index of turn in conversation history
-    pub turn_index: u32,
-    /// Type of anchor
-    pub anchor_type: NapiAnchorType,
-    /// Weight for preservation (0.7-0.9)
-    pub weight: f64,
-    /// Detection confidence (0.0-1.0)
-    pub confidence: f64,
-    /// Human-readable description
-    pub description: String,
-    /// Timestamp when anchor was created (Unix timestamp in milliseconds)
-    pub timestamp: f64,
-    /// User message content at this turn (captured at anchor creation time)
-    /// None for old anchors that don't have this data
-    pub user_message: Option<String>,
-    /// Assistant response content at this turn (captured at anchor creation time)
-    /// None for old anchors that don't have this data
-    pub assistant_response: Option<String>,
-    /// Tool calls made in this turn (captured at anchor creation time)
-    pub tool_calls: Vec<NapiAnchorToolCall>,
-}
-
-/// TUI-057: Tool call info stored with anchor point
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NapiAnchorToolCall {
-    /// Tool name (e.g., "Edit", "Write", "Bash")
-    pub tool: String,
-    /// Whether the tool call succeeded
-    pub success: bool,
 }
 
 /// TUI-056: Tool call info for turn details

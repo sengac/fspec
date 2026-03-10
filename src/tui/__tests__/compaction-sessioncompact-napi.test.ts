@@ -85,8 +85,8 @@ describe('Feature: sessionCompact NAPI function', () => {
     }
   });
 
-  describe('Scenario: Compaction with empty session fails gracefully', () => {
-    it('should return error when trying to compact empty session', async () => {
+  describe('Scenario: Compaction with empty session succeeds (in-view DAG flow)', () => {
+    it('should return result with zero original tokens when compacting empty session', async () => {
       // @step Given I create a background session with no messages
       await sessionManagerCreateWithId(
         sessionId,
@@ -95,11 +95,14 @@ describe('Feature: sessionCompact NAPI function', () => {
         'Empty Session'
       );
 
-      // @step When I try to compact
-      // @step Then it should fail with "Cannot compact empty turn history" error
-      await expect(sessionCompact(sessionId)).rejects.toThrow(
-        /cannot compact empty turn history/i
-      );
+      // @step When I compact the empty session
+      // In-view DAG flow always succeeds — it clears context and injects
+      // the compaction system instruction. The agent then builds the DAG via SessionSearch.
+      const result = await sessionCompact(sessionId);
+
+      // @step Then it should return a result with zero original tokens
+      expect(result).toBeDefined();
+      expect(result.originalTokens).toBe(0);
     });
   });
 

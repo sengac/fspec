@@ -15,7 +15,8 @@
   ],
   "host_permissions": ["<all_urls>"],
   "background": {
-    "service_worker": "dist/service-worker.js"
+    "service_worker": "dist/service-worker.js",
+    "type": "module"
   },
   "content_scripts": [
     {

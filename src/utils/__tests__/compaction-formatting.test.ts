@@ -1,6 +1,8 @@
 /**
  * Unit tests for compaction formatting utilities
- * Tests core business logic in isolation
+ *
+ * Compaction is a brief in-memory setup (~5ms) followed by agent-driven
+ * DAG construction. Formatting no longer shows "X/Y turns".
  */
 
 import { describe, it, expect } from 'vitest';
@@ -20,7 +22,6 @@ import type { CompactionProgress } from '../../tui/hooks/useRustSessionState';
 describe('Compaction Formatting Utilities', () => {
   describe('formatCompactionPlaceholder', () => {
     it('should format all fixture scenarios correctly', () => {
-      // Test each fixture against expected output
       Object.entries(compactionProgressFixtures).forEach(([key, progress]) => {
         const result = formatCompactionPlaceholder(progress);
         const expected =
@@ -29,22 +30,22 @@ describe('Compaction Formatting Utilities', () => {
       });
     });
 
-    it('should handle single digit numbers correctly', () => {
+    it('should format as "Compacting: phase..."', () => {
       const progress: CompactionProgress = {
         phase: 'test phase',
         current: 1,
         total: 5,
       };
       expect(formatCompactionPlaceholder(progress)).toBe(
-        'Compacting: test phase... 1/5 turns'
+        'Compacting: test phase...'
       );
     });
 
-    it('should handle large numbers correctly', () => {
-      const progress = compactionProgressFixtures.largeNumbers;
-      expect(formatCompactionPlaceholder(progress)).toBe(
-        'Compacting: processing chunks... 157/892 turns'
-      );
+    it('should not include turn counts', () => {
+      const progress = compactionProgressFixtures.analyzingContext;
+      const result = formatCompactionPlaceholder(progress);
+      expect(result).not.toContain('turns');
+      expect(result).not.toMatch(/\d+\/\d+/);
     });
 
     it('should handle phases with special characters', () => {
@@ -54,59 +55,54 @@ describe('Compaction Formatting Utilities', () => {
         total: 10,
       };
       expect(formatCompactionPlaceholder(progress)).toBe(
-        'Compacting: analyzing "quoted" content... 3/10 turns'
+        'Compacting: analyzing "quoted" content...'
       );
     });
   });
 
   describe('formatCompactionThinking', () => {
     it('should format thinking text without "Compacting:" prefix', () => {
-      const progress = compactionProgressFixtures.analyzingAnchors;
+      const progress = compactionProgressFixtures.analyzingContext;
       const result = formatCompactionThinking(progress);
-      expect(result).toBe('analyzing anchors... 15/32 turns');
+      expect(result).toBe('Analyzing context...');
     });
 
     it('should handle all fixture scenarios', () => {
       Object.values(compactionProgressFixtures).forEach(progress => {
         const result = formatCompactionThinking(progress);
-        expect(result).toMatch(/^.+\.\.\. \d+\/\d+ turns$/);
+        expect(result).toMatch(/^.+\.\.\.$/);
         expect(result).not.toContain('Compacting:');
+        expect(result).not.toContain('turns');
       });
     });
 
     it('should format generatingSummary correctly', () => {
       const progress = compactionProgressFixtures.generatingSummary;
       expect(formatCompactionThinking(progress)).toBe(
-        'generating summary... 1/1 turns'
+        'Preparing compaction...'
       );
     });
   });
 
   describe('formatCompactionProgress', () => {
     it('should use default formatting when no options provided', () => {
-      const progress = compactionProgressFixtures.analyzingAnchors;
+      const progress = compactionProgressFixtures.analyzingContext;
       const result = formatCompactionProgress(progress);
-      expect(result).toBe('analyzing anchors... 15/32 turns');
+      expect(result).toBe('Analyzing context...');
     });
 
     it('should add custom prefix', () => {
-      const progress = compactionProgressFixtures.analyzingAnchors;
+      const progress = compactionProgressFixtures.analyzingContext;
       const result = formatCompactionProgress(progress, { prefix: 'Status: ' });
-      expect(result).toBe('Status: analyzing anchors... 15/32 turns');
+      expect(result).toBe('Status: Analyzing context...');
     });
 
     it('should add custom suffix', () => {
-      const progress = compactionProgressFixtures.analyzingAnchors;
+      const progress = compactionProgressFixtures.analyzingContext;
       const result = formatCompactionProgress(progress, {
         suffix: ' [ACTIVE]',
       });
-      expect(result).toBe('analyzing anchors... 15/32 turns [ACTIVE]');
-    });
-
-    it('should hide "turns" when showTurns is false', () => {
-      const progress = compactionProgressFixtures.analyzingAnchors;
-      const result = formatCompactionProgress(progress, { showTurns: false });
-      expect(result).toBe('analyzing anchors... 15/32');
+      expect(result).toBe('Analyzing context... [ACTIVE]');
     });
 
     it('should combine all options', () => {
@@ -114,19 +110,18 @@ describe('Compaction Formatting Utilities', () => {
       const result = formatCompactionProgress(progress, {
         prefix: '[COMP] ',
         suffix: ' - FINAL',
-        showTurns: false,
       });
-      expect(result).toBe('[COMP] generating summary... 1/1 - FINAL');
+      expect(result).toBe('[COMP] Preparing compaction... - FINAL');
     });
 
     it('should trim whitespace correctly', () => {
-      const progress = compactionProgressFixtures.analyzingAnchors;
+      const progress = compactionProgressFixtures.analyzingContext;
       const result = formatCompactionProgress(progress, {
         prefix: '',
         suffix: '',
       });
-      expect(result).toBe('analyzing anchors... 15/32 turns');
-      expect(result).not.toMatch(/^\s|\s$/); // No leading/trailing whitespace
+      expect(result).toBe('Analyzing context...');
+      expect(result).not.toMatch(/^\s|\s$/);
     });
   });
 
@@ -153,11 +148,11 @@ describe('Compaction Formatting Utilities', () => {
 
     it('should return false for invalid numbers', () => {
       const scenarios = [
-        { phase: 'test', current: -1, total: 5 }, // Negative current
-        { phase: 'test', current: 1, total: 0 }, // Zero total
-        { phase: 'test', current: 6, total: 5 }, // Current > total
-        { phase: 'test', current: 1.5, total: 5 }, // Non-integer current
-        { phase: 'test', current: 1, total: 5.5 }, // Non-integer total
+        { phase: 'test', current: -1, total: 5 },
+        { phase: 'test', current: 1, total: 0 },
+        { phase: 'test', current: 6, total: 5 },
+        { phase: 'test', current: 1.5, total: 5 },
+        { phase: 'test', current: 1, total: 5.5 },
       ];
 
       scenarios.forEach(scenario => {
@@ -187,18 +182,11 @@ describe('Compaction Formatting Utilities', () => {
   });
 
   describe('calculateCompactionPercentage', () => {
-    it('should calculate correct percentages for fixtures', () => {
+    it('should calculate correct percentages', () => {
       const scenarios = [
-        { progress: compactionProgressFixtures.analyzingAnchors, expected: 47 }, // 15/32 = ~46.875 rounds to 47
-        {
-          progress: compactionProgressFixtures.generatingSummary,
-          expected: 100,
-        }, // 1/1 = 100
-        {
-          progress: compactionProgressFixtures.analyzingAnchorsStart,
-          expected: 3,
-        }, // 1/32 = ~3.125 rounds to 3
-        { progress: compactionProgressFixtures.singleItem, expected: 100 }, // 1/1 = 100
+        { progress: { phase: 'test', current: 1, total: 1 }, expected: 100 },
+        { progress: { phase: 'test', current: 0, total: 1 }, expected: 0 },
+        { progress: { phase: 'test', current: 1, total: 2 }, expected: 50 },
       ];
 
       scenarios.forEach(({ progress, expected }) => {
@@ -228,14 +216,6 @@ describe('Compaction Formatting Utilities', () => {
       expect(calculateCompactionPercentage(zeroTotal)).toBe(0);
     });
 
-    it('should handle large numbers correctly', () => {
-      const progress = compactionProgressFixtures.largeNumbers;
-      const result = calculateCompactionPercentage(progress);
-      expect(result).toBe(18); // 157/892 = ~17.6% rounds to 18
-      expect(result).toBeGreaterThanOrEqual(0);
-      expect(result).toBeLessThanOrEqual(100);
-    });
-
     it('should always return integers', () => {
       Object.values(compactionProgressFixtures).forEach(progress => {
         const result = calculateCompactionPercentage(progress);
@@ -245,15 +225,10 @@ describe('Compaction Formatting Utilities', () => {
   });
 
   describe('Consistency between formatters', () => {
-    it('should maintain consistent phase/current/total formatting', () => {
+    it('should maintain consistent phase formatting', () => {
       Object.values(compactionProgressFixtures).forEach(progress => {
         const placeholder = formatCompactionPlaceholder(progress);
         const thinking = formatCompactionThinking(progress);
-
-        // Both should contain the same progress numbers
-        const progressText = `${progress.current}/${progress.total} turns`;
-        expect(placeholder).toContain(progressText);
-        expect(thinking).toContain(progressText);
 
         // Both should contain the same phase
         expect(placeholder).toContain(progress.phase);
@@ -262,6 +237,10 @@ describe('Compaction Formatting Utilities', () => {
         // Placeholder should have "Compacting:" prefix, thinking should not
         expect(placeholder).toContain('Compacting:');
         expect(thinking).not.toContain('Compacting:');
+
+        // Neither should contain turn counts
+        expect(placeholder).not.toContain('turns');
+        expect(thinking).not.toContain('turns');
       });
     });
   });

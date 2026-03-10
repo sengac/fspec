@@ -1,0 +1,214 @@
+{
+  "scenarios": [
+    {
+      "name": "on_injected emits SessionStateChange Running before CompactionComplete",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_post_inject_loading_test.rs",
+          "lines": "28-117",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5424,
+                5425,
+                5426,
+                5427,
+                5428,
+                5429,
+                5430,
+                5431,
+                5432,
+                5433,
+                5434,
+                5435,
+                5436,
+                5437,
+                5438,
+                5439,
+                5440,
+                5441,
+                5442,
+                5443,
+                5444,
+                5445,
+                5446,
+                5447,
+                5448,
+                5449
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done handler keeps status Running when pending DAG has not been applied",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_post_inject_loading_test.rs",
+          "lines": "199-277",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                6090,
+                6091,
+                6092,
+                6093,
+                6094,
+                6095,
+                6096,
+                6097,
+                6098,
+                6099,
+                6100,
+                6101,
+                6102,
+                6103,
+                6104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent fails to call inject_summary and cleanup prevents permanent compaction flag",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_post_inject_loading_test.rs",
+          "lines": "283-319",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/inject_summary_handler.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5702,
+                5703,
+                5704,
+                5705,
+                5706,
+                5707,
+                5708,
+                5709,
+                5710,
+                5711,
+                5712,
+                5713,
+                5714,
+                5715,
+                5716,
+                5717,
+                5718,
+                5719
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/compaction_post_inject_loading_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs",
+      "codelet/napi/src/inject_summary_handler.rs"
+    ],
+    "totalLinesCovered": 345
+  }
+}

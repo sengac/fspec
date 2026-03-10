@@ -1,0 +1,624 @@
+{
+  "scenarios": [
+    {
+      "name": "Trim Read tool result to compact file reference",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "178-220",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trim Write tool parameters to persistence reference",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "227-263",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Condense Edit tool parameters to change summary",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "270-308",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Truncate long Bash output with head and tail",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "315-369",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Short Bash output passes through unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "376-403",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Strip base64 image data to metadata placeholder",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "410-461",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer_base64.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Truncate Search/Grep output to first matches",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "468-502",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User messages pass through unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "509-526",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Assistant reasoning text passes through unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "533-551",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Messages without tool metadata pass through unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "558-572",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trimming is deterministic",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "579-608",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trimmed output is measurably smaller than input",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/trimmer.test.rs",
+          "lines": "615-642",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/trimmer.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/core/src/compaction/__tests__/trimmer.test.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/compaction/trimmer.rs",
+      "codelet/core/src/compaction/trimmer_base64.rs"
+    ],
+    "totalLinesCovered": 814
+  }
+}

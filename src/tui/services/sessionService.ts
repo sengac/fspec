@@ -12,7 +12,6 @@ import {
   sessionManagerDestroy,
   sessionRestoreMessages,
   sessionRestoreTokenState,
-  sessionRestoreAnchorPoints,
   persistenceCreateSessionWithProvider,
   persistenceLoadSession,
   persistenceGetSessionMessageEnvelopes,
@@ -265,15 +264,6 @@ export async function restoreSession(
 
   const envelopes: string[] = persistenceGetSessionMessageEnvelopes(sessionId);
   await sessionRestoreMessages(sessionId, envelopes);
-
-  try {
-    sessionRestoreAnchorPoints(sessionId);
-  } catch (err) {
-    logger.error(
-      `[SessionService] Failed to restore anchor points for ${sessionId}:`,
-      err
-    );
-  }
 
   if (sessionManifest?.tokenUsage) {
     await sessionRestoreTokenState(

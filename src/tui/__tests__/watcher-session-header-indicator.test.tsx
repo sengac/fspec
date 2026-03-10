@@ -186,7 +186,7 @@ describe('Watcher Session Header Indicator', () => {
 
         const result = getMaxTokens(tracker1, tracker2);
 
-        expect(result).toEqual({ inputTokens: 100, outputTokens: 60 });
+        expect(result).toEqual({ inputTokens: 100, outputTokens: 60, reasoningTokens: 0 });
       });
 
       it('should handle zero values', () => {
@@ -195,7 +195,7 @@ describe('Watcher Session Header Indicator', () => {
 
         const result = getMaxTokens(tracker1, tracker2);
 
-        expect(result).toEqual({ inputTokens: 1234, outputTokens: 567 });
+        expect(result).toEqual({ inputTokens: 1234, outputTokens: 567, reasoningTokens: 0 });
       });
     });
   });

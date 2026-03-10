@@ -3,8 +3,8 @@
 //! Shared fixtures for persistence tests. Compiled only for tests.
 
 use crate::persistence::{
-    add_anchor_point, append_message_with_metadata, create_session, set_compaction_state,
-    PersistedAnchorPoint, PersistedAnchorToolCall, SessionManifest,
+    append_message_with_metadata, create_session, set_compaction_state,
+    SessionManifest,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -275,118 +275,6 @@ pub fn add_simple_alternating_messages(session: &mut SessionManifest, count: usi
         append_message(session, role, &format!("Message {i}")).expect("append should succeed");
     }
     count
-}
-
-pub fn create_error_resolution_anchor(turn_index: usize) -> PersistedAnchorPoint {
-    PersistedAnchorPoint {
-        turn_index,
-        anchor_type: "ErrorResolution".to_string(),
-        weight: 0.9,
-        confidence: 0.95,
-        description: format!("Build error fixed at turn {}", turn_index),
-        timestamp_ms: chrono::Utc::now().timestamp_millis(),
-        user_message: Some(format!("Fix the build error at turn {}", turn_index)),
-        assistant_response: Some(format!("I fixed the build error at turn {}", turn_index)),
-        tool_calls: vec![PersistedAnchorToolCall {
-            tool: "Edit".to_string(),
-            success: true,
-        }],
-    }
-}
-
-pub fn create_task_completion_anchor(turn_index: usize) -> PersistedAnchorPoint {
-    PersistedAnchorPoint {
-        turn_index,
-        anchor_type: "TaskCompletion".to_string(),
-        weight: 0.8,
-        confidence: 0.92,
-        description: format!("Task completed at turn {}", turn_index),
-        timestamp_ms: chrono::Utc::now().timestamp_millis(),
-        user_message: Some(format!("Complete the task at turn {}", turn_index)),
-        assistant_response: Some(format!("I completed the task at turn {}", turn_index)),
-        tool_calls: vec![PersistedAnchorToolCall {
-            tool: "Write".to_string(),
-            success: true,
-        }],
-    }
-}
-
-pub fn create_user_checkpoint_anchor(turn_index: usize) -> PersistedAnchorPoint {
-    PersistedAnchorPoint {
-        turn_index,
-        anchor_type: "UserCheckpoint".to_string(),
-        weight: 0.7,
-        confidence: 0.88,
-        description: format!("User checkpoint at turn {}", turn_index),
-        timestamp_ms: chrono::Utc::now().timestamp_millis(),
-        user_message: Some(format!("Create checkpoint at turn {}", turn_index)),
-        assistant_response: Some(format!("Checkpoint created at turn {}", turn_index)),
-        tool_calls: vec![],
-    }
-}
-
-pub fn create_feature_milestone_anchor(turn_index: usize) -> PersistedAnchorPoint {
-    PersistedAnchorPoint {
-        turn_index,
-        anchor_type: "FeatureMilestone".to_string(),
-        weight: 0.75,
-        confidence: 0.9,
-        description: format!("Feature milestone at turn {}", turn_index),
-        timestamp_ms: chrono::Utc::now().timestamp_millis(),
-        user_message: Some(format!("Reach milestone at turn {}", turn_index)),
-        assistant_response: Some(format!("Milestone reached at turn {}", turn_index)),
-        tool_calls: vec![],
-    }
-}
-
-pub fn create_synthetic_anchor(turn_index: usize, reason: &str) -> PersistedAnchorPoint {
-    PersistedAnchorPoint {
-        turn_index,
-        anchor_type: "UserCheckpoint".to_string(),
-        weight: 1.0,
-        confidence: 1.0,
-        description: format!("Synthetic anchor - {}", reason),
-        timestamp_ms: chrono::Utc::now().timestamp_millis(),
-        user_message: None,
-        assistant_response: None,
-        tool_calls: vec![],
-    }
-}
-
-pub fn create_anchor_with_timestamp(
-    turn_index: usize,
-    anchor_type: &str,
-    timestamp_ms: i64,
-) -> PersistedAnchorPoint {
-    PersistedAnchorPoint {
-        turn_index,
-        anchor_type: anchor_type.to_string(),
-        weight: 0.8,
-        confidence: 0.9,
-        description: format!("{} at turn {}", anchor_type, turn_index),
-        timestamp_ms,
-        user_message: Some(format!(
-            "User message for {} at turn {}",
-            anchor_type, turn_index
-        )),
-        assistant_response: Some(format!("Response for {} at turn {}", anchor_type, turn_index)),
-        tool_calls: vec![],
-    }
-}
-
-pub fn create_session_with_anchors(
-    name: &str,
-    num_turns: usize,
-    anchor_indices: &[usize],
-) -> SessionManifest {
-    let mut session = create_session_with_turns(name, num_turns);
-
-    for &idx in anchor_indices {
-        let anchor = create_task_completion_anchor(idx);
-        add_anchor_point(&mut session, anchor).expect("add anchor");
-    }
-
-    session
 }
 
 pub fn assert_content_block_type(

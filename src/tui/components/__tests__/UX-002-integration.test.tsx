@@ -19,7 +19,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
     it('should work for manual /compact command (was working before)', () => {
       // @step Given I have a conversation with multiple turns
       // @step When I type "/compact" and press Enter
-      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      // @step Then the input placeholder should show "Compacting: Analyzing context..."
       // @step And the conversation history should NOT contain "[Compacting context...]" messages
       // @step And the input area should remain visible and responsive
 
@@ -33,15 +33,15 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
             placeholder="Type a message..."
             isCompacting={true}  // compaction.state.isActive = true
             compactionProgress={{
-              phase: 'analyzing anchors',
-              current: 15,
-              total: 32
+              phase: 'Analyzing context',
+              current: 0,
+              total: 1
             }}
           />
         </InputManager>
       );
 
-      expect(lastFrame()).toContain('Compacting: analyzing anchors... 15/32 turns');
+      expect(lastFrame()).toContain('Compacting: Analyzing context...');
       expect(lastFrame()).not.toContain('Type a message...');
     });
   });
@@ -50,7 +50,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
     it('should work for hook-triggered compaction (THE BUG FIX)', () => {
       // @step Given I have a conversation that approaches the token threshold
       // @step When the compaction hook automatically triggers compaction
-      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      // @step Then the input placeholder should show "Compacting: Analyzing context..."
       // @step And the conversation history should NOT contain "[Compacting context...]" messages
       // @step And the input area should remain visible but disabled for typing
 
@@ -64,16 +64,16 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
             placeholder="Type a message..."
             isCompacting={true}  // compaction.state.isActive = true
             compactionProgress={{
-              phase: 'analyzing anchors',
-              current: 10,
-              total: 25
+              phase: 'Analyzing context',
+              current: 0,
+              total: 1
             }}
           />
         </InputManager>
       );
 
       // This should now work correctly (was broken before)
-      expect(lastFrame()).toContain('Compacting: analyzing anchors... 10/25 turns');
+      expect(lastFrame()).toContain('Compacting: Analyzing context...');
       expect(lastFrame()).not.toContain('Type a message...');
     });
   });
@@ -83,7 +83,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
       // @step Given I submit a very large prompt that exceeds API limits
       // @step When the API rejects with "prompt too long" error
       // @step And emergency compaction is triggered
-      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      // @step Then the input placeholder should show "Compacting: Analyzing context..."
       // @step And the conversation should NOT show "[Context exceeded limit, triggering emergency compaction...]" messages
       // @step And the input area should show compaction progress instead of error messages
 
@@ -97,16 +97,16 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
             placeholder="Type a message..."
             isCompacting={true}  // compaction.state.isActive = true
             compactionProgress={{
-              phase: 'emergency compacting',
-              current: 5,
-              total: 20
+              phase: 'Emergency compaction',
+              current: 0,
+              total: 1
             }}
           />
         </InputManager>
       );
 
       // Emergency compaction should also work now
-      expect(lastFrame()).toContain('Compacting: emergency compacting... 5/20 turns');
+      expect(lastFrame()).toContain('Compacting: Emergency compaction...');
       expect(lastFrame()).not.toContain('Type a message...');
     });
   });
@@ -165,8 +165,8 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
               isCompacting={testCase.isCompacting}
               compactionProgress={testCase.isCompacting ? {
                 phase: `${testCase.name} compaction`,
-                current: 1,
-                total: 5
+                current: 0,
+                total: 1
               } : null}
             />
           </InputManager>

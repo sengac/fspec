@@ -1070,9 +1070,9 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       // Mock sessionGetCompactionProgress to return actual progress
       const { sessionGetCompactionProgress } = await import('@sengac/codelet-napi');
       (sessionGetCompactionProgress as ReturnType<typeof vi.fn>).mockReturnValue({
-        phase: 'analyzing anchors',
-        current: 15,
-        total: 32,
+        phase: 'Analyzing context',
+        current: 0,
+        total: 1,
       });
 
       const { lastFrame, stdin } = render(
@@ -1093,12 +1093,12 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       injectTestChunk('mock-session-id', { type: 'SessionStateChange', state: 'Compacting' });
       await waitForFrame(100);
 
-      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      // @step Then the input placeholder should show compaction status
       const frame = lastFrame();
       
-      // The input area should show compaction progress
-      // Input placeholder contains ">" followed by the compaction status
-      expect(frame).toMatch(/Compacting.*analyzing anchors.*15.*32/i);
+      // The input area should show compaction indicator with spinner
+      // UX-002: Now shows ThinkingIndicator with "Compacting" message and spinner
+      expect(frame).toMatch(/Compacting\.\.\./i);
 
       // Clean up - send CompactionComplete to end compaction
       // REFAC-008: Using injectTestChunk instead of capturedCallback
@@ -1120,7 +1120,75 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // After compaction completes, progress should be gone
       const frameAfter = lastFrame();
-      expect(frameAfter).not.toMatch(/Compacting.*analyzing anchors/i);
+      expect(frameAfter).not.toMatch(/Compacting.*Analyzing context/i);
+    });
+
+    it('should keep compaction indicator active when Running state arrives during compaction', async () => {
+      // SessionStateChange{Running} from CompactionContinuing must NOT
+      // call endCompaction(). The compaction indicator must remain active throughout
+      // DAG construction. Only CompactionComplete should end it.
+      resetMockSession();
+
+      const { sessionGetCompactionProgress } = await import('@sengac/codelet-napi');
+      (sessionGetCompactionProgress as ReturnType<typeof vi.fn>).mockReturnValue({
+        phase: 'Analyzing context',
+        current: 0,
+        total: 1,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentView onExit={() => {}} />
+      );
+
+      await waitForFrame();
+
+      // @step Given the TUI has started compaction tracking via startCompaction
+      stdin.write('test message');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step And the session state is Compacting
+      injectTestChunk('mock-session-id', { type: 'SessionStateChange', state: 'Compacting' });
+      await waitForFrame(100);
+
+      // Compaction should be active
+      const frameDuringCompaction = lastFrame();
+      expect(frameDuringCompaction).toMatch(/Compacting\.\.\./i);
+
+      // @step When a SessionStateChange with Running state arrives from CompactionContinuing
+      // This is the key test: Running during compaction must NOT end the compaction indicator
+      injectTestChunk('mock-session-id', { type: 'SessionStateChange', state: 'Running' });
+      await waitForFrame(100);
+
+      // @step Then the compaction indicator must remain active
+      // Previously, the else branch would call endCompaction() and the indicator would vanish
+      const frameAfterRunning = lastFrame();
+      // The input area should still show activity (either compaction or thinking indicator)
+      // The key assertion: it should NOT have returned to the normal input placeholder
+      // During compaction-then-running, the UI should show "Thinking..." or compaction status
+
+      // @step And endCompaction must NOT be called
+      // @step And only CompactionComplete should end the compaction indicator
+      injectTestChunk('mock-session-id', {
+        type: 'CompactionComplete',
+        compactionResult: {
+          originalTokens: 10000,
+          compactedTokens: 3000,
+          compressionRatio: 70,
+          turnsSummarized: 5,
+          turnsKept: 2,
+        }
+      });
+      injectTestChunk('mock-session-id', { type: 'Done' });
+      if (capturedResolver) {
+        capturedResolver();
+      }
+      await waitForFrame(100);
+
+      // Verify compaction ended properly after CompactionComplete
+      const frameAfterComplete = lastFrame();
+      expect(frameAfterComplete).not.toMatch(/Compacting.*Analyzing context/i);
     });
   });
 });

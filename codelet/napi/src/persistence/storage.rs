@@ -114,6 +114,23 @@ impl MessageStore {
         self.cache.get(&id)
     }
 
+    /// Update metadata on an existing stored message.
+    ///
+    /// Merges the provided entries into the message's metadata map and
+    /// rewrites the messages file to persist the change.
+    pub fn update_metadata(
+        &mut self,
+        id: Uuid,
+        entries: HashMap<String, serde_json::Value>,
+    ) -> Result<(), String> {
+        let msg = self
+            .cache
+            .get_mut(&id)
+            .ok_or_else(|| format!("Message {} not found", id))?;
+        msg.metadata.extend(entries);
+        self.rewrite_messages_file()
+    }
+
     /// Get all message IDs referenced by any session
     pub fn get_referenced_ids(
         &self,

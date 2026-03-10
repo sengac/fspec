@@ -42,9 +42,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   // Thinking level (TUI-054)
   { name: 'thinking', description: 'Set base thinking level' },
 
-  // TUI-056: Anchor point viewer
-  { name: 'anchors', description: 'View conversation anchor points' },
-
   // Session operations
   { name: 'resume', description: 'Resume a previous session' },
   { name: 'detach', description: 'Detach session from work unit' },

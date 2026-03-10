@@ -103,7 +103,7 @@ fn tokenize_line(line: &str) -> Vec<Token> {
 
         // No special token — advance to next potential bracket or end
         // Advance past the current character safely (handles multi-byte UTF-8)
-        let char_len = line[pos..].chars().next().map_or(1, |c| c.len_utf8());
+        let char_len = line[pos..].chars().next().map_or(1, char::len_utf8);
         let next_pos = pos + char_len;
         let next_bracket = line.get(next_pos..).and_then(|s| s.find('[')).map(|p| p + next_pos);
         match next_bracket {

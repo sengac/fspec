@@ -1,0 +1,185 @@
+{
+  "scenarios": [
+    {
+      "name": "Post-loop compaction keeps status active through DAG construction",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "lines": "121-174",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5630,
+                5631,
+                5632,
+                5633,
+                5634,
+                5635,
+                5636,
+                5637,
+                5638,
+                5639,
+                5640,
+                5641,
+                5642,
+                5643,
+                5644,
+                5645,
+                5646,
+                5647,
+                5648,
+                5649,
+                5650,
+                5651,
+                5652,
+                5653,
+                5654,
+                5655,
+                5656
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pre-prompt compaction keeps status active through DAG construction",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "lines": "206-250",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Normal response without compaction does not emit CompactionComplete from agent_loop",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "lines": "178-203",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5630,
+                5631,
+                5632,
+                5633,
+                5634,
+                5635,
+                5636,
+                5637,
+                5638,
+                5639,
+                5640,
+                5641,
+                5642,
+                5643,
+                5644,
+                5645,
+                5646,
+                5647,
+                5648,
+                5649,
+                5650,
+                5651,
+                5652,
+                5653,
+                5654,
+                5655,
+                5656
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CompactionContinuing sets status to Running instead of being a no-op",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "lines": "91-115",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                6074,
+                6075,
+                6076,
+                6077,
+                6078,
+                6079,
+                6080,
+                6081
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CompactionComplete is not emitted prematurely from stream_loop",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/compaction_status_lifecycle_test.rs",
+          "lines": "62-83",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/compaction_status_lifecycle_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs",
+      "codelet/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 260
+  }
+}

@@ -420,21 +420,14 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   }
   
   if (animationPhase === 'loading') {
-    // UX-002: During compaction, always render MultiLineInput to show status in placeholder
+    // UX-002: During compaction, show ThinkingIndicator with "Compacting" message
+    // and same spinner animation as normal loading state.
     if (isCompacting) {
       return (
-        <MultiLineInput
-          value={value}
-          onChange={onChange}
-          onSubmit={onSubmit}
-          placeholder={placeholder}
-          onHistoryPrev={onHistoryPrev}
-          onHistoryNext={onHistoryNext}
-          maxVisibleLines={maxVisibleLines}
-          isActive={isActive}
-          suppressEnter={suppressEnter}
-          isCompacting={isCompacting}
-          compactionProgress={compactionProgress}
+        <ThinkingIndicator
+          message="Compacting"
+          hint="(Esc to stop)"
+          type="dots"
         />
       );
     }
@@ -444,9 +437,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       <ThinkingIndicator
         message={thinkingMessage}
         hint={thinkingHint}
-        variant="dots"
-        isPaused={isPaused}
-        pauseInfo={pauseInfo}
+        type="dots"
       />
     );
   }

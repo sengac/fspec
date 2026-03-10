@@ -211,21 +211,19 @@ export function useCompaction(): CompactionHookReturn {
       try {
         // Start compaction IMMEDIATELY (synchronous state update)
         startCompaction('manual', sessionId, {
-          phase: 'Analyzing anchors',
+          phase: 'Preparing compaction',
           current: 0,
           total: 1,
         });
 
-        // Execute the actual compaction
+        // Execute the actual compaction (Rust in-memory setup).
+        // NOTE: Do NOT call endCompaction() here — the DAG construction phase
+        // (SessionSearch + inject_summary) runs asynchronously via the agent loop.
+        // CompactionComplete chunk will end compaction when the DAG is fully applied.
         const result = await sessionCompact(sessionId);
 
         // Clear any previous retry state on success
         clearRetryState();
-
-        // Brief delay to show completion, then end
-        setTimeout(() => {
-          endCompaction();
-        }, 1000);
 
         return result;
       } catch (error) {

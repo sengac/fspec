@@ -4,11 +4,13 @@ use crate::session::Session;
 use anyhow::Result;
 use codelet_common::token_estimator::count_tokens;
 use codelet_core::compaction::{
-    CompactionMetrics, ContextCompactor, ConversationTurn, ToolCall as CoreToolCall,
+    ConversationTurn, ToolCall as CoreToolCall,
     ToolResult as CoreToolResult,
 };
 use rig::message::{Message, UserContent};
 use rig::OneOrMany;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::SystemTime;
 use tracing::warn;
 
@@ -132,7 +134,7 @@ fn extract_tool_result_text(tr: &rig::message::ToolResult) -> String {
 /// Rust equivalent:
 ///   - Single text item → extract just the text (like TS string content)
 ///   - Multiple items OR non-text items → serialize as JSON (like TS JSON.stringify)
-fn extract_message_text(message: &Message) -> String {
+pub fn extract_message_text(message: &Message) -> String {
     match message {
         Message::User { content } => {
             // Check if single text item (equivalent to TypeScript string content)
@@ -161,126 +163,36 @@ fn extract_message_text(message: &Message) -> String {
 }
 
 /// Helper to collect all items from OneOrMany
-fn collect_items<T: Clone>(content: &OneOrMany<T>) -> Vec<T> {
+pub fn collect_items<T: Clone>(content: &OneOrMany<T>) -> Vec<T> {
     let mut items = vec![content.first()];
     items.extend(content.rest());
     items
 }
 
-/// Execute compaction and reconstruct messages
-pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetrics, Option<codelet_core::compaction::AnchorPoint>)> {
-    use crate::session::system_reminders::partition_for_compaction;
-    
-    // PROV-005-DEBUG: Log entry to execute_compaction
-    warn!(
-        "[execute_compaction] ENTERED - messages_len={}",
-        session.messages.len()
-    );
-    
-    // Step 1: Extract system reminders BEFORE any compaction
-    // CRITICAL: System reminders (environment, CLAUDE.md, fspec guidance) must persist through compaction
-    let (system_reminders, _compactable) = partition_for_compaction(&session.messages);
-    
-    // PROV-005-DEBUG: Log partition results
-    warn!(
-        "[execute_compaction] partition: system_reminders={}, compactable={}",
-        system_reminders.len(),
-        _compactable.len()
-    );
-    
-    // Step 2: Create LLM prompt function that uses the provider
-    let provider_manager = session.provider_manager();
-    let provider_name = provider_manager.current_provider_name().to_string();
-    let model_id = provider_manager.selected_model_id();
-
-    // Create a closure that prompts the LLM
-    // PROV-006: Pass None for preamble - compaction uses separate summarization prompt
-    // MODEL-001: Pass model_id to ensure the provider is created with the correct model
-    let llm_prompt = move |prompt: String| {
-        let provider_name = provider_name.clone();
-        let model_id = model_id.clone();
-        async move {
-            let manager = codelet_providers::ProviderManager::with_provider_and_model(
-                &provider_name,
-                model_id.as_deref(),
-            )?;
-            prompt_provider(&manager, &prompt).await
-        }
-    };
-
-    // Step 3: Calculate summarization budget
-    // CLI-020: Matches TypeScript implementation in compaction.ts:calculateSummarizationBudget()
-    use crate::compaction_threshold::calculate_summarization_budget;
-    let context_window = provider_manager.context_window() as u64;
-    let budget = calculate_summarization_budget(context_window);
-
-    // Step 4: Convert messages to turns using lazy approach (CTX-002)
-    // This follows the TypeScript implementation - create turns during compaction, not after each interaction
-    let turns = convert_messages_to_turns(&session.messages);
-
-    // PROV-005-DEBUG: Log turns conversion result
-    warn!(
-        "[execute_compaction] convert_messages_to_turns: turns_count={}, budget={}",
-        turns.len(),
-        budget
-    );
-
-    // Step 5: Create compactor and run compaction
-    let compactor = ContextCompactor::new();
-    
-    // PROV-005-DEBUG: Log before compactor.compact call
-    warn!(
-        "[execute_compaction] CALLING compactor.compact with {} turns",
-        turns.len()
-    );
-    
-    let result = compactor.compact(&turns, budget, llm_prompt).await?;
-
-    // Step 6: Reconstruct messages array
-    // Order: [system-reminders] + [kept turns] + [summary] + [continuation]
-    // CRITICAL: System reminders FIRST to maintain stable prefix for prompt caching
-    session.messages.clear();
-
-    // Add system reminders FIRST (maintains stable prefix for prompt caching)
-    // This preserves: environment info, CLAUDE.md content, fspec workflow guidance
-    session.messages.extend(system_reminders);
-
-    // Add kept turn messages (after system reminders)
-    for turn in &result.kept_turns {
-        // Add user message
-        session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(&turn.user_message)),
-        });
-
-        // Add assistant message
-        let assistant_text = rig::message::AssistantContent::Text(rig::message::Text {
-            text: turn.assistant_response.clone(),
-        });
-        session.messages.push(Message::Assistant {
-            id: None,
-            content: OneOrMany::one(assistant_text),
-        });
+/// Calculate compression ratio from pre/post compaction token counts.
+///
+/// Returns a value between 0.0 and 1.0 representing the fraction of
+/// tokens removed. E.g. 0.7 means 70% of tokens were eliminated.
+///
+/// Used by stream_loop (pre-prompt and post-loop compaction),
+/// repl_loop (/compact command), and NAPI session_compact.
+pub fn compression_ratio(original_tokens: u64, compacted_tokens: u64) -> f64 {
+    if original_tokens > 0 {
+        1.0 - (compacted_tokens as f64 / original_tokens as f64)
+    } else {
+        0.0
     }
+}
 
-    // Add summary as user message (after kept turns)
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(&result.summary)),
-    });
-
-    // Add continuation message (last)
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(
-            "This session is being continued from a previous conversation that ran out of context.",
-        )),
-    });
-
-    // Step 7: Update session.turns to only contain kept turns
-    session.turns = result.kept_turns.clone();
-
-    // Step 8: Recalculate token tracker from ACTUAL messages (matches TypeScript)
-    // TypeScript: newTotalTokens = messages.reduce(calculateMessageTokens, 0)
-    // PROV-002: Use tiktoken-rs for accurate token counting
-    let new_total_tokens: u64 = session
+/// Recalculate token tracker from current session messages.
+///
+/// Iterates all messages, counts tokens via `count_tokens()`, and updates
+/// the session's `token_tracker` (`input_tokens` = sum, `output_tokens` = 0).
+///
+/// Used by both `execute_compaction()` and the `inject_summary` handler
+/// after clearing and reconstructing the message list.
+pub fn recalculate_token_tracker(session: &mut Session) {
+    let total_tokens: u64 = session
         .messages
         .iter()
         .map(|msg| {
@@ -289,17 +201,128 @@ pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetr
         })
         .sum();
 
-    session.token_tracker.input_tokens = new_total_tokens;
+    session.token_tracker.input_tokens = total_tokens;
     session.token_tracker.output_tokens = 0;
-    // Keep cache metrics (TypeScript does ...tokenTracker spread which preserves them)
-    // But since cache was just cleared, they'll be updated on next API call anyway
+}
 
-    // Log warnings if any (matches TypeScript behavior - uses logger, not console)
-    for warning in &result.warnings {
-        warn!("{}", warning);
-    }
+/// Reset a session to only its system reminders, clearing all conversation.
+///
+/// This is the shared "partition → clear → restore → clear turns" pattern used
+/// by both `execute_compaction()` and the `inject_summary` handler.
+///
+/// Steps:
+/// 1. Partition messages into system reminders and compactable conversation
+/// 2. Clear all messages
+/// 3. Restore system reminders
+/// 4. Clear turns
+///
+/// Returns `(system_reminder_count, compactable_count)` for logging.
+///
+/// After calling this, the caller should:
+/// - Push their specific message (compaction instruction or DAG content)
+/// - Call `recalculate_token_tracker(session)`
+pub fn reset_session_to_reminders(session: &mut Session) -> (usize, usize) {
+    use crate::session::system_reminders::partition_for_compaction;
 
-    Ok((result.metrics, result.anchor))
+    let (system_reminders, compactable) = partition_for_compaction(&session.messages);
+    let counts = (system_reminders.len(), compactable.len());
+
+    session.messages.clear();
+    session.messages.extend(system_reminders);
+    session.turns.clear();
+
+    counts
+}
+
+/// Compaction system instruction injected after context clear.
+///
+/// This is the message that guides the agent through DAG construction.
+/// Must be concise (<500 tokens) since it consumes context during rebuild.
+///
+/// Research: ACON (Kang et al., KAIST/Microsoft, arXiv:2510.00615) —
+/// compression guidelines embedded in system instructions yield 26-54%
+/// peak token reduction while maintaining task performance.
+pub const COMPACTION_SYSTEM_INSTRUCTION: &str = "\
+Your context window was getting full. Your conversation history has been \
+preserved on disk and is fully searchable via SessionSearch. Build a \
+hierarchical summary DAG of your session:
+
+1. Search strategically (not linearly):
+   - SessionSearch(show, max_turns: 10) for recent context
+   - SessionSearch(search, query: \"error|failed|fix\") for error resolutions
+   - SessionSearch(search, query: \"decision|chose|architecture\") for decisions
+   - SessionSearch(search, query: \"TODO|blocker|question\") for open items
+
+2. Write a structured summary with depth levels:
+   - D2 (Durable): Architecture decisions, milestones still in effect
+   - D1 (Arc): What was attempted, outcomes, current work state
+   - D0 (Detailed): Exact files, decisions, errors from recent work
+   - Include [SessionSearch: turns X-Y] references for future drilldown
+
+3. Call inject_summary(content) with your complete DAG to pin it and \
+continue working.";
+
+/// Execute in-view DAG construction compaction.
+///
+/// Replaces the legacy batch LLM compaction. New flow:
+/// 1. Set compaction_in_progress flag to true
+/// 2. Partition messages — extract system reminders
+/// 3. Clear messages and restore system reminders
+/// 4. Inject compaction system instruction as user message
+/// 5. Reset turns and token tracker
+/// 6. Return Ok — agent loop resumes and agent builds DAG via SessionSearch
+///
+/// No LLM calls are made. Wall-clock time: <5 seconds (in-memory only).
+///
+/// When `last_user_message` is Some, the original prompt is appended
+/// to the compaction instruction so the agent knows what to resume after DAG
+/// construction. Pre-prompt and post-loop compaction pass Some(prompt);
+/// /compact (agent-initiated) passes None.
+pub async fn execute_compaction(
+    session: &mut Session,
+    compaction_in_progress: Arc<AtomicBool>,
+    last_user_message: Option<&str>,
+) -> Result<()> {
+    warn!(
+        "[execute_compaction] In-view DAG flow — messages_len={}",
+        session.messages.len()
+    );
+
+    // Step 1: Set compaction_in_progress flag BEFORE clearing
+    // This enables Layer 0 trimming in SessionSearch
+    compaction_in_progress.store(true, Ordering::SeqCst);
+
+    // Step 2-3: Partition, clear, restore system reminders, clear turns
+    let (reminder_count, compactable_count) = reset_session_to_reminders(session);
+
+    warn!(
+        "[execute_compaction] partition: system_reminders={}, compactable={}",
+        reminder_count,
+        compactable_count
+    );
+
+    // Step 4: Inject compaction system instruction as user message
+    // When last_user_message is present, append it so the agent knows what to resume
+    let instruction = match last_user_message {
+        Some(prompt) => format!(
+            "{COMPACTION_SYSTEM_INSTRUCTION}\n\nAfter building the DAG and calling inject_summary, resume working on:\n{prompt}"
+        ),
+        None => COMPACTION_SYSTEM_INSTRUCTION.to_string(),
+    };
+    session.messages.push(Message::User {
+        content: OneOrMany::one(UserContent::text(&instruction)),
+    });
+
+    // Step 5: Recalculate token tracker from post-clear messages
+    recalculate_token_tracker(session);
+
+    warn!(
+        "[execute_compaction] In-view DAG flow complete — messages_len={}, tokens={}",
+        session.messages.len(),
+        session.token_tracker.input_tokens
+    );
+
+    Ok(())
 }
 
 /// Prompt a provider with a simple text prompt (no preamble, no tools)

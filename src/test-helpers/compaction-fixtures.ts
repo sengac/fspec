@@ -1,72 +1,75 @@
 /**
  * Test fixtures for compaction-related testing
  * Provides reusable mock data for consistent testing across components
+ *
+ * Compaction is a brief in-memory setup (~5ms) followed by agent-driven
+ * DAG construction. Progress data describes the Rust setup phase.
  */
 
 import type { CompactionProgress } from '../tui/hooks/useRustSessionState';
 
 export const compactionProgressFixtures: Record<string, CompactionProgress> = {
-  analyzingAnchors: {
-    phase: 'analyzing anchors',
-    current: 15,
-    total: 32,
+  analyzingContext: {
+    phase: 'Analyzing context',
+    current: 0,
+    total: 1,
   },
 
-  analyzingAnchorsStart: {
-    phase: 'analyzing anchors',
+  analyzingContextStart: {
+    phase: 'Analyzing context',
+    current: 0,
+    total: 1,
+  },
+
+  analyzingContextEnd: {
+    phase: 'Analyzing context',
     current: 1,
-    total: 32,
-  },
-
-  analyzingAnchorsEnd: {
-    phase: 'analyzing anchors',
-    current: 32,
-    total: 32,
+    total: 1,
   },
 
   generatingSummary: {
-    phase: 'generating summary',
+    phase: 'Preparing compaction',
     current: 1,
     total: 1,
   },
 
   generatingSummaryProgress: {
-    phase: 'generating summary',
-    current: 3,
-    total: 5,
+    phase: 'Preparing compaction',
+    current: 0,
+    total: 1,
   },
 
   optimizingContext: {
-    phase: 'optimizing context',
-    current: 8,
-    total: 45,
+    phase: 'Optimizing context',
+    current: 0,
+    total: 1,
   },
 
   // Edge cases
   singleItem: {
-    phase: 'finalizing',
+    phase: 'Finalizing',
     current: 1,
     total: 1,
   },
 
   largeNumbers: {
-    phase: 'processing chunks',
-    current: 157,
-    total: 892,
+    phase: 'Processing',
+    current: 0,
+    total: 1,
   },
 
   // Realistic emergency scenarios
   emergencyLarge: {
-    phase: 'analyzing anchors',
-    current: 8,
-    total: 45,
+    phase: 'Emergency compaction',
+    current: 0,
+    total: 1,
   },
 
   // Hook-triggered scenarios
   hookTriggered: {
-    phase: 'analyzing anchors',
-    current: 10,
-    total: 25,
+    phase: 'Context limit reached',
+    current: 0,
+    total: 1,
   },
 };
 
@@ -77,7 +80,7 @@ export const compactionScenarios = {
   manual: {
     trigger: 'manual',
     description: 'User types /compact command',
-    progress: compactionProgressFixtures.analyzingAnchors,
+    progress: compactionProgressFixtures.analyzingContext,
   },
 
   hookTriggered: {
@@ -97,18 +100,20 @@ export const compactionScenarios = {
 /**
  * Expected formatted output for each fixture
  * Used to verify compaction text formatting consistency
+ *
+ * No more "X/Y turns" — compaction is brief setup, not turn processing
  */
 export const expectedCompactionTexts = {
-  analyzingAnchors: 'Compacting: analyzing anchors... 15/32 turns',
-  analyzingAnchorsStart: 'Compacting: analyzing anchors... 1/32 turns',
-  analyzingAnchorsEnd: 'Compacting: analyzing anchors... 32/32 turns',
-  generatingSummary: 'Compacting: generating summary... 1/1 turns',
-  generatingSummaryProgress: 'Compacting: generating summary... 3/5 turns',
-  optimizingContext: 'Compacting: optimizing context... 8/45 turns',
-  singleItem: 'Compacting: finalizing... 1/1 turns',
-  largeNumbers: 'Compacting: processing chunks... 157/892 turns',
-  emergencyLarge: 'Compacting: analyzing anchors... 8/45 turns',
-  hookTriggered: 'Compacting: analyzing anchors... 10/25 turns',
+  analyzingContext: 'Compacting: Analyzing context...',
+  analyzingContextStart: 'Compacting: Analyzing context...',
+  analyzingContextEnd: 'Compacting: Analyzing context...',
+  generatingSummary: 'Compacting: Preparing compaction...',
+  generatingSummaryProgress: 'Compacting: Preparing compaction...',
+  optimizingContext: 'Compacting: Optimizing context...',
+  singleItem: 'Compacting: Finalizing...',
+  largeNumbers: 'Compacting: Processing...',
+  emergencyLarge: 'Compacting: Emergency compaction...',
+  hookTriggered: 'Compacting: Context limit reached...',
 };
 
 /**

@@ -15,11 +15,12 @@ use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
 use crate::compaction_threshold::calculate_usable_context;
-use crate::interactive_helpers::{convert_messages_to_turns, execute_compaction};
+use crate::interactive_helpers::{compression_ratio, convert_messages_to_turns, execute_compaction};
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_common::token_estimator::count_tokens;
+use codelet_core::compaction::annotation_detector::{detect_annotations, ToolCallInfo, TurnContext};
 use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState, ensure_thought_signatures, GeminiTurnCompletionFacade, TurnCompletionFacade, ContinuationStrategy, StreamingTokenDisplay};
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
@@ -42,6 +43,32 @@ use std::time::Duration;
 use tokio::sync::Notify;
 use tokio::time::interval;
 use tracing::{error, info, trace, warn};
+
+/// Detect structural annotations from a completed turn's tool calls and store
+/// them in `session.annotations`. Rotates current into previous for next turn.
+fn process_turn_annotations(
+    session: &mut Session,
+    current: &mut Vec<ToolCallInfo>,
+    previous: &mut Vec<ToolCallInfo>,
+) {
+    if current.is_empty() {
+        return;
+    }
+    let ctx = TurnContext {
+        current_tool_calls: current,
+        previous_tool_calls: if previous.is_empty() {
+            None
+        } else {
+            Some(previous)
+        },
+    };
+    let annotations = detect_annotations(&ctx);
+    if !annotations.is_empty() {
+        let msg_idx = session.messages.len().saturating_sub(1);
+        session.annotations.insert(msg_idx, annotations);
+    }
+    *previous = std::mem::take(current);
+}
 
 /// Check if an error indicates the prompt/context is too long
 /// PROV-010: Exclude thinking budget configuration errors (budget_tokens)
@@ -216,6 +243,7 @@ fn signal_compaction_needed(token_state: &Arc<Mutex<TokenState>>) {
 ///
 /// This is the CLI-specific entry point that wraps the generic stream function
 /// with TUI event handling for Esc key detection.
+#[allow(clippy::too_many_arguments)]
 pub(super) async fn run_agent_stream_with_interruption<M, O>(
     agent: RigAgent<M>,
     prompt: &str,
@@ -223,6 +251,7 @@ pub(super) async fn run_agent_stream_with_interruption<M, O>(
     event_stream: &mut (dyn futures::Stream<Item = TuiEvent> + Unpin + Send),
     input_queue: &mut InputQueue,
     is_interrupted: Arc<AtomicBool>,
+    compaction_in_progress: Arc<AtomicBool>,
     output: &O,
 ) -> Result<()>
 where
@@ -238,6 +267,7 @@ where
         Some(event_stream),
         Some(input_queue),
         is_interrupted,
+        compaction_in_progress,
         None, // CLI mode doesn't use Notify - uses keyboard event stream
         output,
     )
@@ -251,11 +281,13 @@ where
 ///
 /// NAPI-004: The interrupt_notify parameter allows immediate wake-up of the
 /// stream loop when interrupt() is called, via tokio::select! with notified().
+#[allow(clippy::too_many_arguments)]
 pub async fn run_agent_stream<M, O>(
     agent: RigAgent<M>,
     prompt: &str,
     session: &mut Session,
     is_interrupted: Arc<AtomicBool>,
+    compaction_in_progress: Arc<AtomicBool>,
     interrupt_notify: Arc<Notify>,
     output: &O,
 ) -> Result<()>
@@ -272,6 +304,7 @@ where
         None,
         None,
         is_interrupted,
+        compaction_in_progress,
         Some(interrupt_notify),
         output,
     )
@@ -282,12 +315,14 @@ where
 ///
 /// Same as run_agent_stream but accepts optional images for multimodal input.
 /// Called from NAPI agent_loop when bridge input includes images.
+#[allow(clippy::too_many_arguments)]
 pub async fn run_agent_stream_with_images<M, O>(
     agent: RigAgent<M>,
     prompt: &str,
     images: Option<Vec<BridgeImage>>,
     session: &mut Session,
     is_interrupted: Arc<AtomicBool>,
+    compaction_in_progress: Arc<AtomicBool>,
     interrupt_notify: Arc<Notify>,
     output: &O,
 ) -> Result<()>
@@ -304,6 +339,7 @@ where
         None,
         None,
         is_interrupted,
+        compaction_in_progress,
         Some(interrupt_notify),
         output,
     )
@@ -390,6 +426,7 @@ async fn run_agent_stream_internal<M, O, E>(
     mut event_stream: Option<&mut E>,
     mut input_queue: Option<&mut InputQueue>,
     is_interrupted: Arc<AtomicBool>,
+    compaction_in_progress: Arc<AtomicBool>,
     interrupt_notify: Option<Arc<Notify>>,
     output: &O,
 ) -> Result<()>
@@ -399,8 +436,7 @@ where
     O: StreamOutput,
     E: futures::Stream<Item = TuiEvent> + Unpin + Send + ?Sized,
 {
-    use rig::message::{Message, UserContent};
-    use rig::OneOrMany;
+    use rig::message::Message;
     use std::time::Instant;
     use uuid::Uuid;
 
@@ -426,6 +462,8 @@ where
     );
 
     // CTX-005: PRE-PROMPT COMPACTION CHECK
+    let mut compaction_just_ran = false;
+
     // Before adding the new prompt, estimate if current context + new prompt would exceed threshold.
     // This prevents "prompt is too long" API errors when resuming a session at high context fill.
     // The hook only checks AFTER API responses, but we need to check BEFORE the first API call.
@@ -461,18 +499,11 @@ where
         let total_turns = session.messages.len() as u32 / 2; // Approximate turn count
         output.emit_compaction_progress("Analyzing context", 0, total_turns.max(1));
 
-        match execute_compaction(session).await {
-            Ok((metrics, _anchor)) => {
-                // UX-002: Use structured compaction complete event
-                output.emit_compaction_complete(
-                    metrics.original_tokens as u32,
-                    metrics.compacted_tokens as u32,
-                    metrics.compression_ratio,
-                );
+        match execute_compaction(session, compaction_in_progress.clone(), Some(prompt)).await {
+            Ok(()) => {
                 output.emit_compaction_continuing();
-
-                // CMPCT-001: Reset output and cache metrics after compaction
                 session.token_tracker.reset_after_compaction();
+                compaction_just_ran = true;
             }
             Err(e) => {
                 // Log but continue - the API might still work, or will fail with clear error
@@ -595,9 +626,17 @@ where
         })));
     }
 
+    // After compaction, the original prompt is embedded in the compaction instruction.
+    // Use a synthetic prompt so rig doesn't duplicate it.
+    let effective_prompt = if compaction_just_ran {
+        "Continue"
+    } else {
+        prompt
+    };
+
     // Start streaming with history and hook
     let mut stream = agent
-        .prompt_streaming_with_history_and_hook(prompt, &mut session.messages, hook)
+        .prompt_streaming_with_history_and_hook(effective_prompt, &mut session.messages, hook)
         .await;
 
     // FIXED: Add user message to history AFTER rig clones it (CLI-008, BRIDGE-007)
@@ -605,7 +644,7 @@ where
     // Previously this was done BEFORE the call above, causing duplication because
     // rig's build() concatenates chat_history + prompt, and the prompt was already in history.
     session.messages.push(Message::User {
-        content: build_user_content_with_images(prompt, images),
+        content: build_user_content_with_images(effective_prompt, images),
     });
 
     // CLI-022: Capture api.response.start event
@@ -641,6 +680,9 @@ where
     let mut assistant_text = String::new();
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
+
+    let mut turn_tool_infos: Vec<ToolCallInfo> = Vec::new();
+    let mut previous_turn_tool_infos: Vec<ToolCallInfo> = Vec::new();
 
     // Track previous session state for initial display
     let prev_input_tokens = session.token_tracker.input_tokens;
@@ -764,6 +806,13 @@ where
                         &mut last_tool_name,
                         output,
                     )?;
+
+                    turn_tool_infos.push(ToolCallInfo {
+                        tool_name: tool_call.function.name.clone(),
+                        input: tool_call.function.arguments.clone(),
+                        output: None,
+                        success: true, // Assume success until result arrives
+                    });
                 }
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                     StreamedAssistantContent::ReasoningDelta { reasoning, .. },
@@ -786,6 +835,24 @@ where
                         &last_tool_name,
                         output,
                     )?;
+
+                    // Update matching ToolCallInfo with result data for annotation detection
+                    if let Some(info) = turn_tool_infos.iter_mut().rev().find(|ti| {
+                        ti.output.is_none()
+                    }) {
+                        let result_text: String = tool_result
+                            .content
+                            .clone()
+                            .into_iter()
+                            .map(|c| match c {
+                                rig::message::ToolResultContent::Text(t) => t.text,
+                                rig::message::ToolResultContent::Image(_) => "[Image]".to_string(),
+                            })
+                            .collect::<Vec<_>>()
+                            .join("\n");
+                        info.success = !super::stream_handlers::detect_tool_error(&result_text);
+                        info.output = Some(result_text);
+                    }
 
                     // PROV-001: Don't emit token updates after tool results
                     // This is when a new API segment is about to start, and the next
@@ -1308,6 +1375,13 @@ where
 
                     // Normal case: add assistant text to history and finish
                     handle_final_response(&assistant_text, &mut session.messages)?;
+
+                    process_turn_annotations(
+                        session,
+                        &mut turn_tool_infos,
+                        &mut previous_turn_tool_infos,
+                    );
+
                     output.emit_done();
                     break;
                 }
@@ -1456,6 +1530,13 @@ where
                     if !assistant_text.is_empty() {
                         handle_final_response(&assistant_text, &mut session.messages)?;
                     }
+
+                    process_turn_annotations(
+                        session,
+                        &mut turn_tool_infos,
+                        &mut previous_turn_tool_infos,
+                    );
+
                     output.emit_done();
                     break;
                 }
@@ -1526,9 +1607,13 @@ where
             }
         }
 
-        // Execute compaction
-        match execute_compaction(session).await {
-            Ok((metrics, _anchor)) => {
+        let original_tokens = session.token_tracker.input_tokens;
+
+        match execute_compaction(session, compaction_in_progress.clone(), Some(prompt)).await {
+            Ok(()) => {
+                let compacted_tokens = session.token_tracker.input_tokens;
+                let ratio = compression_ratio(original_tokens, compacted_tokens);
+
                 // Capture context.update event after compaction
                 if let Ok(manager_arc) = get_debug_capture_manager() {
                     if let Ok(mut manager) = manager_arc.lock() {
@@ -1537,9 +1622,9 @@ where
                                 "context.update",
                                 serde_json::json!({
                                     "type": "compaction",
-                                    "originalTokens": metrics.original_tokens,
-                                    "compactedTokens": metrics.compacted_tokens,
-                                    "compressionRatio": metrics.compression_ratio,
+                                    "originalTokens": original_tokens,
+                                    "compactedTokens": compacted_tokens,
+                                    "compressionRatio": ratio,
                                 }),
                                 None,
                             );
@@ -1547,24 +1632,8 @@ where
                     }
                 }
 
-                // UX-002: Use structured compaction events
-                output.emit_compaction_complete(
-                    metrics.original_tokens as u32,
-                    metrics.compacted_tokens as u32,
-                    metrics.compression_ratio,
-                );
                 output.emit_compaction_continuing();
-
-                // CMPCT-001: Reset output and cache metrics after compaction
-                // NOTE: execute_compaction already sets session.token_tracker.input_tokens
-                // to the correct new_total_tokens calculated from compacted messages.
                 session.token_tracker.reset_after_compaction();
-
-                // Re-add the user's original prompt to session.messages so the agent
-                // can continue processing it with the compacted context
-                session.messages.push(Message::User {
-                    content: OneOrMany::one(UserContent::text(prompt)),
-                });
 
                 // Create fresh hook and token state for the retry
                 // PROV-001: After compaction, input_tokens is the new estimated total
@@ -1585,9 +1654,11 @@ where
                     session.current_provider_name(),
                     session.current_model_id().as_deref().unwrap_or("NONE")
                 );
+                // Use synthetic continuation prompt — the original prompt is already
+                // embedded in the compaction instruction in session.messages.
                 let mut retry_stream = agent
                     .prompt_streaming_with_history_and_hook(
-                        prompt,
+                        "Continue",
                         &mut session.messages,
                         retry_hook,
                     )
@@ -1722,7 +1793,8 @@ where
                             }
 
                             handle_final_response(&retry_assistant_text, &mut session.messages)?;
-                            // UX-002: CompactionComplete already signals state change
+                            // Done is emitted here; CompactionComplete comes from
+                            // agent_loop after apply_pending_dag succeeds.
                             output.emit_done();
                             break;
                         }
@@ -1734,7 +1806,8 @@ where
                             if !retry_assistant_text.is_empty() {
                                 handle_final_response(&retry_assistant_text, &mut session.messages)?;
                             }
-                            // UX-002: CompactionComplete already signals state change
+                            // Done is emitted here; CompactionComplete comes from
+                            // agent_loop after apply_pending_dag succeeds.
                             output.emit_done();
                             break;
                         }

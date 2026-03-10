@@ -27,7 +27,7 @@ export function createCompactionScenario(
   scenarioType: 'manual-compaction' | 'hook-triggered' | 'emergency-auto' | 'state-conflict' | 'no-compaction'
 ): CompactionStateSources {
   const mockProgressAnalyzing: CompactionProgress = {
-    phase: 'analyzing anchors',
+    phase: 'Analyzing context',
     current: 15,
     total: 32
   };
@@ -228,7 +228,7 @@ export function renderMultiLineInputIntegration(
     
     getProgressNumbers: () => {
       const frame = renderResult.lastFrame();
-      const match = frame.match(/(\d+)\/(\d+) turns/);
+      const match = null; // No more turn counts in compaction text
       return match ? { current: parseInt(match[1]), total: parseInt(match[2]) } : null;
     }
   };
@@ -331,7 +331,7 @@ export function renderConversationInputAreaIntegration(
     
     getProgressNumbers: () => {
       const frame = renderResult.lastFrame();
-      const match = frame.match(/(\d+)\/(\d+) turns/);
+      const match = null; // No more turn counts in compaction text
       return match ? { current: parseInt(match[1]), total: parseInt(match[2]) } : null;
     }
   };

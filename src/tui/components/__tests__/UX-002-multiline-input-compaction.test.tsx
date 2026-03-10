@@ -32,13 +32,13 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
 
   // Test data
   const mockProgressAnalyzing: CompactionProgress = {
-    phase: 'analyzing anchors',
-    current: 15,
-    total: 32
+    phase: 'Analyzing context',
+    current: 0,
+    total: 1
   };
 
   const mockProgressSummary: CompactionProgress = {
-    phase: 'generating summary',
+    phase: 'Preparing compaction',
     current: 1,
     total: 1
   };
@@ -67,7 +67,7 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
     it('should recognize compaction is active when ONLY Rust state is active (THE BUG FIX)', () => {
       // @step Given I have a conversation that approaches the token threshold
       // @step When the compaction hook automatically triggers compaction
-      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      // @step Then the input placeholder should show "Compacting: Analyzing context..."
 
       const sources: CompactionStateSources = {
         localProgressState: {
@@ -88,19 +88,19 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
       
       // Placeholder should show compaction status
       const placeholder = getPlaceholderText(sources, 'Type a message...', formatCompactionPlaceholder);
-      expect(placeholder).toBe('Compacting: analyzing anchors... 15/32 turns');
+      expect(placeholder).toBe('Compacting: Analyzing context...');
     });
 
     it('should handle emergency auto-compaction (Rust-only state)', () => {
       // @step Given I submit a very large prompt that exceeds API limits
       // @step When the API rejects with "prompt too long" error
       // @step And emergency compaction is triggered
-      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      // @step Then the input placeholder should show "Compacting: Analyzing context..."
 
       const emergencyProgress: CompactionProgress = {
-        phase: 'emergency compacting',
-        current: 3,
-        total: 15
+        phase: 'Emergency compaction',
+        current: 0,
+        total: 1
       };
 
       const sources: CompactionStateSources = {
@@ -121,7 +121,7 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
       expect(shouldBlockInput(sources)).toBe(true);
       
       const placeholder = getPlaceholderText(sources, 'Type a message...', formatCompactionPlaceholder);
-      expect(placeholder).toBe('Compacting: emergency compacting... 3/15 turns');
+      expect(placeholder).toBe('Compacting: Emergency compaction...');
     });
 
     it('should prioritize local state when both sources are active', () => {
@@ -171,7 +171,7 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
     it('should display compaction status when isCompacting=true with progress', () => {
       // @step Given I have started a compaction process
       // @step When the compaction progresses through phases
-      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      // @step Then the input placeholder should show "Compacting: Analyzing context..."
       // @step And no compaction status should appear in the conversation area
 
       const { lastFrame } = render(
@@ -190,7 +190,7 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
       const frame = lastFrame();
       
       // Should show compaction status, not regular placeholder
-      expect(frame).toContain('Compacting: analyzing anchors... 15/32 turns');
+      expect(frame).toContain('Compacting: Analyzing context...');
       expect(frame).not.toContain('Type a message...');
     });
 
@@ -239,15 +239,15 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
       const frame = lastFrame();
       
       // THIS IS THE BUG FIX - should show compaction status from Rust backend
-      expect(frame).toContain('Compacting: analyzing anchors... 15/32 turns');
+      expect(frame).toContain('Compacting: Analyzing context...');
       expect(frame).not.toContain('Type a message...');
     });
 
     it('should handle emergency compaction correctly', () => {
       const emergencyProgress: CompactionProgress = {
-        phase: 'emergency compacting',
-        current: 8,
-        total: 25
+        phase: 'Emergency compaction',
+        current: 0,
+        total: 1
       };
 
       const { lastFrame } = render(
@@ -265,7 +265,7 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
 
       const frame = lastFrame();
       
-      expect(frame).toContain('Compacting: emergency compacting... 8/25 turns');
+      expect(frame).toContain('Compacting: Emergency compaction...');
       expect(frame).not.toContain('Type a message...');
     });
   });
@@ -298,7 +298,7 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
       );
 
       // Verify initial state shows compaction
-      expect(lastFrame()).toContain('Compacting: analyzing anchors');
+      expect(lastFrame()).toContain('Compacting: Analyzing context');
 
       // Try typing - should be blocked
       stdin.write('h');
@@ -315,7 +315,7 @@ describe('UX-002: MultiLineInput Compaction - Core Logic & Real Behavior Tests',
       expect(currentValue).toBe('');
 
       // Should still show compaction status
-      expect(lastFrame()).toContain('Compacting: analyzing anchors');
+      expect(lastFrame()).toContain('Compacting: Analyzing context');
     });
 
     it('should allow input when not compacting', async () => {

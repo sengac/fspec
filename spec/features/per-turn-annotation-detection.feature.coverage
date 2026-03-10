@@ -1,0 +1,234 @@
+{
+  "scenarios": [
+    {
+      "name": "Detect FspecMilestone annotation from fspec tool call",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/annotation_detector.test.rs",
+          "lines": "14-53",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect ErrorResolution annotation from error-to-success transition",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/annotation_detector.test.rs",
+          "lines": "57-109",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect FileModification annotation from Write tool call",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/annotation_detector.test.rs",
+          "lines": "114-148",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Annotation detector produces no false positives for non-matching turns",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/annotation_detector.test.rs",
+          "lines": "152-189",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Annotations are zero-cost inline detection",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/annotation_detector.test.rs",
+          "lines": "193-228",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/annotation_detector.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/core/src/compaction/__tests__/annotation_detector.test.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/compaction/annotation_detector.rs"
+    ],
+    "totalLinesCovered": 542
+  }
+}

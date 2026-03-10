@@ -21,6 +21,10 @@ pub(super) async fn run_agent_with_interruption(
     // CLI output handler
     let output = CliOutput;
 
+    // CLI callers create a local compaction_in_progress flag
+    // (CLI doesn't have a BackgroundSession with a persistent flag)
+    let compaction_in_progress = Arc::new(AtomicBool::new(false));
+
     // TOOL-012: Generate session_id for tool handler lookup
     // In CLI interactive mode, tools like Fspec won't have handlers registered,
     // but we still need a session_id for API consistency. Tools will fail
@@ -44,6 +48,7 @@ pub(super) async fn run_agent_with_interruption(
                 event_stream,
                 input_queue,
                 is_interrupted,
+                compaction_in_progress.clone(),
                 &output,
             )
             .await

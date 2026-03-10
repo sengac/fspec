@@ -10,11 +10,11 @@
 //! The persistence module is integrated here to persist messages as they stream.
 
 use crate::persistence::{
-    load_session, append_message_with_metadata, update_session_tokens, set_compaction_state,
+    load_session, append_message_with_metadata, update_session_tokens,
     MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent,
 };
-use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiAnchorToolCall, NapiTurnDetails, NapiToolCall, NapiFileModification};
-use codelet_cli::interactive_helpers::execute_compaction;
+use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiTurnDetails, NapiToolCall, NapiFileModification};
+use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
 use codelet_cli::session::context_gathering::gather_environment_info;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
@@ -102,7 +102,7 @@ pub enum SessionStatus {
 /// PERF-002: Compaction progress information  
 #[derive(Debug, Clone, Default)]
 pub(crate) struct CompactionProgress {
-    /// Current compaction phase (e.g., "Analyzing anchors", "Generating summary")
+    /// Current compaction phase (e.g., "Preparing compaction", "Analyzing context")
     pub phase: String,
     /// Current progress count (e.g., current turn being processed)
     pub current: u32,
@@ -978,9 +978,6 @@ pub struct BackgroundSession {
     /// Effective level = max(base_thinking_level, detected_level_from_text)
     base_thinking_level: AtomicU8,
     
-    /// TUI-056: Anchor points detected during compaction (stored for retrieval)
-    anchor_points: std::sync::Mutex<Vec<codelet_core::compaction::AnchorPoint>>,
-    
     /// PERF-002: Current compaction progress information
     compaction_progress: RwLock<Option<CompactionProgress>>,
     
@@ -999,6 +996,17 @@ pub struct BackgroundSession {
     /// GIT-019: Base commit SHA for isolated sessions
     /// The commit the worktree was created from
     pub base_commit: Option<String>,
+
+    /// Flag controlling Layer 0 trimming in SessionSearch results.
+    pub compaction_in_progress: Arc<AtomicBool>,
+
+    /// Pending DAG content from inject_summary tool call.
+    /// Stored here because the handler cannot lock session.inner during streaming.
+    /// Applied by agent_loop after the stream completes.
+    pub pending_dag_content: Arc<std::sync::Mutex<Option<String>>>,
+
+    /// Pre-compaction token count for accurate CompactionComplete metrics.
+    pub pre_compaction_tokens: AtomicU32,
 }
 
 impl BackgroundSession {
@@ -1055,7 +1063,6 @@ impl BackgroundSession {
             fspec_response_tx,
             fspec_response_rx: std::sync::Mutex::new(fspec_response_rx),
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
-            anchor_points: std::sync::Mutex::new(Vec::new()), // TUI-056: Empty anchor points initially
             compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
             work_unit_context: RwLock::new(None), // TUI-059: No work unit context initially
             // TUI-059: Store base environment content for composing with work unit later
@@ -1063,6 +1070,9 @@ impl BackgroundSession {
             // GIT-019: Worktree path and base commit for isolated sessions
             worktree_path,
             base_commit,
+            compaction_in_progress: Arc::new(AtomicBool::new(false)),
+            pending_dag_content: Arc::new(std::sync::Mutex::new(None)),
+            pre_compaction_tokens: AtomicU32::new(0),
         }
     }
 
@@ -4876,83 +4886,87 @@ fn persist_token_state(
     Ok(())
 }
 
-/// REFAC-007 Rule [32]: Persist compaction state to session manifest
-fn persist_compaction_state(
+/// Persist structural annotations from the stream loop to message metadata.
+fn persist_pending_annotations(
     session_id: &uuid::Uuid,
-    summary: &str,
-    compacted_before_index: usize,
-) -> std::result::Result<(), String> {
-    // Load the session manifest
-    let mut session_manifest = load_session(*session_id)?;
-    
-    // Set compaction state
-    set_compaction_state(&mut session_manifest, summary.to_string(), compacted_before_index)?;
-    
-    tracing::debug!("REFAC-007: Persisted compaction state for session {} (boundary_index={})", 
-        session_id, compacted_before_index);
-    Ok(())
-}
+    session: &mut codelet_cli::session::Session,
+) {
+    if session.annotations.is_empty() {
+        return;
+    }
 
-/// TUI-056: Persist an anchor point to the session manifest
-/// 
-/// This ensures anchor points survive session resume - they're stored on disk,
-/// not just in the BackgroundSession's memory.
-fn persist_anchor_point(
-    session_id: &uuid::Uuid,
-    anchor: &codelet_core::compaction::AnchorPoint,
-    original_turns: &[codelet_core::compaction::ConversationTurn],
-) -> std::result::Result<(), String> {
-    use crate::persistence::{add_anchor_point, PersistedAnchorPoint, PersistedAnchorToolCall};
-    
-    // Load the session manifest
-    let mut session_manifest = load_session(*session_id)?;
-    
-    // Convert internal anchor type to persisted format
-    let anchor_type = match anchor.anchor_type {
-        codelet_core::compaction::AnchorType::ErrorResolution => "ErrorResolution",
-        codelet_core::compaction::AnchorType::TaskCompletion => "TaskCompletion",
-        codelet_core::compaction::AnchorType::UserCheckpoint => "UserCheckpoint",
-        codelet_core::compaction::AnchorType::FeatureMilestone => "FeatureMilestone",
+    use codelet_cli::session::system_reminders::is_system_reminder;
+
+    let system_reminder_count = session
+        .messages
+        .iter()
+        .filter(|m| is_system_reminder(m))
+        .count();
+
+    let session_manifest = match crate::persistence::load_session(*session_id) {
+        Ok(manifest) => manifest,
+        Err(e) => {
+            tracing::warn!(
+                "[persist_pending_annotations] Failed to load session manifest: {}",
+                e
+            );
+            session.annotations.clear();
+            return;
+        }
     };
-    
-    // Convert SystemTime to milliseconds for serialization
-    let timestamp_ms = anchor.timestamp
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as i64;
-    
-    // TUI-057: Capture turn content from original turns (before compaction modified indices)
-    let (user_message, assistant_response, tool_calls) = if anchor.turn_index < original_turns.len() {
-        let turn = &original_turns[anchor.turn_index];
-        let tools: Vec<PersistedAnchorToolCall> = turn.tool_calls.iter().map(|tc| {
-            PersistedAnchorToolCall {
-                tool: tc.tool.clone(),
-                success: turn.tool_results.iter().any(|tr| tr.success),
+    let persisted_messages = match crate::persistence::get_session_messages_full(&session_manifest) {
+        Ok(msgs) => msgs,
+        Err(e) => {
+            tracing::warn!(
+                "[persist_pending_annotations] Failed to load persisted messages: {}",
+                e
+            );
+            session.annotations.clear();
+            return;
+        }
+    };
+
+    for (msg_idx, annotations) in session.annotations.drain() {
+        let Some(persisted_idx) = msg_idx.checked_sub(system_reminder_count) else {
+            tracing::debug!(
+                "[persist_pending_annotations] msg_idx {} < system_reminder_count {}, skipping",
+                msg_idx,
+                system_reminder_count
+            );
+            continue;
+        };
+
+        let Some(stored_msg) = persisted_messages.get(persisted_idx) else {
+            tracing::debug!(
+                "[persist_pending_annotations] persisted_idx {} out of range (len={}), skipping",
+                persisted_idx,
+                persisted_messages.len()
+            );
+            continue;
+        };
+
+        let annotations_json = match serde_json::to_value(&annotations) {
+            Ok(v) => v,
+            Err(e) => {
+                tracing::warn!(
+                    "[persist_pending_annotations] Failed to serialize annotations: {}",
+                    e
+                );
+                continue;
             }
-        }).collect();
-        (Some(turn.user_message.clone()), Some(turn.assistant_response.clone()), tools)
-    } else {
-        tracing::error!("Anchor turn_index {} out of bounds (turns len {}), cannot capture content",
-            anchor.turn_index, original_turns.len());
-        (None, None, Vec::new())
-    };
-    
-    let persisted_anchor = PersistedAnchorPoint {
-        turn_index: anchor.turn_index,
-        anchor_type: anchor_type.to_string(),
-        weight: anchor.weight,
-        confidence: anchor.confidence,
-        description: anchor.description.clone(),
-        timestamp_ms,
-        user_message,
-        assistant_response,
-        tool_calls,
-    };
-    
-    // Add anchor point to manifest (this saves the manifest)
-    add_anchor_point(&mut session_manifest, persisted_anchor)?;
-    
-    Ok(())
+        };
+
+        let mut entries = std::collections::HashMap::new();
+        entries.insert("annotations".to_string(), annotations_json);
+
+        if let Err(e) = crate::persistence::update_message_metadata(stored_msg.id, entries) {
+            tracing::warn!(
+                "[persist_pending_annotations] Failed to update metadata for {}: {}",
+                stored_msg.id,
+                e
+            );
+        }
+    }
 }
 
 /// Macro to reduce duplication in provider handling.
@@ -5011,6 +5025,7 @@ macro_rules! run_with_provider {
                     $images,
                     $inner,
                     $session.is_interrupted.clone(),
+                    $session.compaction_in_progress.clone(),
                     $session.interrupt_notify.clone(),
                     $output,
                 )
@@ -5364,8 +5379,37 @@ async fn agent_loop(
             // The handler accesses the persistence layer directly (MessageStore, SessionStore, BlobStore)
             let session_search_handler = crate::session_search_handler::create_handler(
                 std::path::PathBuf::from(&session.project),
+                session.compaction_in_progress.clone(),
             );
             codelet_tools::set_session_search_handler(session.id, Some(session_search_handler));
+
+            // Register inject_summary handler — stores DAG in pending_dag_content
+            // and fires on_injected to emit CompactionComplete immediately.
+            {
+                let context_window = inner_session.provider_manager().context_window() as u64;
+                let session_for_inject = session.clone();
+                let on_injected: crate::inject_summary_handler::OnInjectedCallback = Arc::new(move |injected_tokens: u32| {
+                    let original_tokens = session_for_inject.pre_compaction_tokens.load(Ordering::Acquire);
+                    let ratio = compression_ratio(original_tokens as u64, injected_tokens as u64) * 100.0;
+                    session_for_inject.set_compaction_progress(None);
+                    // Emit Running BEFORE CompactionComplete so JS sees isLoading=true before isCompacting=false
+                    session_for_inject.handle_output(StreamChunk::session_state_change(SessionState::Running));
+                    session_for_inject.handle_output(StreamChunk::compaction_complete(crate::types::CompactionResult {
+                        original_tokens,
+                        compacted_tokens: injected_tokens,
+                        compression_ratio: ratio,
+                        turns_summarized: 0,
+                        turns_kept: 0,
+                    }));
+                });
+                let inject_handler = crate::inject_summary_handler::create_handler(
+                    session.pending_dag_content.clone(),
+                    context_window,
+                    session.compaction_in_progress.clone(),
+                    Some(on_injected),
+                );
+                codelet_tools::set_inject_summary_handler(session.id, Some(inject_handler));
+            }
 
             // BRIDGE-001: Set up bridge handler and session context for WebSocket relay
             // The bridge handler needs to call async handle_bridge_action, so we use
@@ -5570,10 +5614,50 @@ async fn agent_loop(
                 }
             };
             
+            persist_pending_annotations(&session.id, &mut inner_session);
+
+            // Apply pending DAG content from inject_summary (deferred because handler can't lock session.inner)
+            if crate::inject_summary_handler::apply_pending_dag(
+                &mut inner_session,
+                &session.pending_dag_content,
+            ) {
+                tracing::info!(
+                    "[AGENT-LOOP] Applied pending DAG for session {} — messages_len={}, tokens={}",
+                    session.id,
+                    inner_session.messages.len(),
+                    inner_session.token_tracker.input_tokens,
+                );
+
+                // Emit definitive CompactionComplete with accurate post-apply metrics
+                let original_tokens = session.pre_compaction_tokens.load(Ordering::Acquire);
+                let compacted_tokens = inner_session.token_tracker.input_tokens as u32;
+                let ratio = compression_ratio(original_tokens as u64, compacted_tokens as u64) * 100.0;
+                session.set_status(SessionStatus::Idle);
+                session.set_compaction_progress(None);
+                session.handle_output(StreamChunk::compaction_complete(crate::types::CompactionResult {
+                    original_tokens,
+                    compacted_tokens,
+                    compression_ratio: ratio,
+                    turns_summarized: 0,
+                    turns_kept: 0,
+                }));
+            }
+
+            // Unconditionally clear compaction_in_progress (safety net for agent failures)
+            let was_compacting = session.compaction_in_progress.swap(false, Ordering::SeqCst);
+            
+            if was_compacting {
+                session.set_compaction_progress(None);
+                if session.get_status() != SessionStatus::Idle {
+                    session.set_status(SessionStatus::Idle);
+                }
+            }
+
             set_pause_handler(None);
             // Clean up per-session handlers
             codelet_tools::set_fspec_handler_for_session(session.id, None);
-            codelet_tools::set_session_search_handler(session.id, None); // AMGR-001: Clean up SessionSearch handler
+            codelet_tools::set_session_search_handler(session.id, None);
+            codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_bridge_handler(None);
             codelet_tools::remove_bridge_session_context(session.id);
 
@@ -5938,17 +6022,25 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     tracing::error!("REFAC-007: Failed to persist token state: {}", e);
                 }
                 
-                // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
-                // This prevents a race condition where JavaScript receives the Done callback
-                // and calls sessionGetStatus() before Rust has set the status to Idle.
-                // The NonBlocking callback mode means JS could process Done at any time,
-                // so we must ensure status is Idle before the chunk is sent.
-                self.session.set_status(SessionStatus::Idle);
+                // Do NOT set Idle when compaction or pending DAG is active.
+                if crate::inject_summary_handler::should_idle_on_done(
+                    &self.session.compaction_in_progress,
+                    &self.session.pending_dag_content,
+                ) {
+                    // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
+                    // This prevents a race condition where JavaScript receives the Done callback
+                    // and calls sessionGetStatus() before Rust has set the status to Idle.
+                    // The NonBlocking callback mode means JS could process Done at any time,
+                    // so we must ensure status is Idle before the chunk is sent.
+                    self.session.set_status(SessionStatus::Idle);
+                }
                 StreamChunk::done()
             }
             // UX-002: Structured compaction events
             StreamEvent::CompactionStarted => {
                 self.session.set_status(SessionStatus::Compacting);
+                let current = self.session.cached_input_tokens.load(Ordering::Acquire);
+                self.session.pre_compaction_tokens.store(current, Ordering::Release);
                 StreamChunk::session_state_change(SessionState::Compacting)
             }
             StreamEvent::CompactionProgress(progress) => {
@@ -5961,6 +6053,8 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 return; // Progress is polled via sessionGetCompactionProgress, not streamed
             }
             StreamEvent::CompactionComplete(info) => {
+                // Fallback handler — in the DAG flow, CompactionComplete is emitted
+                // directly by agent_loop via handle_output, not through StreamOutput.
                 self.session.set_status(SessionStatus::Idle);
                 self.session.set_compaction_progress(None); // Clear progress on completion
                 // Emit state change first
@@ -5985,8 +6079,8 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 )
             }
             StreamEvent::CompactionContinuing => {
-                // Just informational for CLI - NAPI already transitioned to Idle
-                return; // Don't emit anything
+                self.session.set_status(SessionStatus::Running);
+                StreamChunk::session_state_change(SessionState::Running)
             }
         };
 
@@ -6322,7 +6416,7 @@ pub fn session_get_status(session_id: String) -> Result<String> {
 /// PERF-002: Get compaction progress for a session
 ///
 /// Returns the current compaction progress if compaction is in progress, null otherwise.
-/// Used by TypeScript to display progress indication: "Analyzing anchors... X/Y turns"
+/// Used by TypeScript to display progress indication: "Preparing compaction..."
 #[napi]
 pub fn session_get_compaction_progress(session_id: String) -> Result<Option<crate::types::CompactionProgress>> {
     let session = SessionManager::instance().get_session(&session_id)?;
@@ -6468,59 +6562,7 @@ pub fn session_clear_active() {
     SessionManager::instance().clear_active_session();
 }
 
-/// Get anchor points for a session (TUI-056)
-///
-/// Returns anchor points that were detected during compaction operations.
-/// Empty list if no compaction has been performed or no anchors were found.
-/// 
-/// TUI-057: Now includes turn content (user message, assistant response, tool calls)
-/// which is loaded from persistence to ensure content survives compaction.
-#[napi]
-pub fn session_get_anchor_points(session_id: String) -> Result<Vec<NapiAnchorPoint>> {
-    // Parse UUID from session_id
-    let uuid = uuid::Uuid::parse_str(&session_id)
-        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
-    
-    // Load from persistence to get turn content (TUI-057)
-    // This is necessary because in-memory AnchorPoint doesn't store turn content
-    let session_manifest = load_session(uuid)
-        .map_err(|e| Error::from_reason(format!("Failed to load session manifest: {}", e)))?;
-    
-    // Convert persisted anchor points to NAPI types
-    let napi_anchors: Vec<NapiAnchorPoint> = session_manifest.anchor_points.iter().map(|anchor| {
-        let napi_type = match anchor.anchor_type.as_str() {
-            "ErrorResolution" => NapiAnchorType::ErrorResolution,
-            "TaskCompletion" => NapiAnchorType::TaskCompletion,
-            "UserCheckpoint" => NapiAnchorType::UserCheckpoint,
-            "FeatureMilestone" => NapiAnchorType::FeatureMilestone,
-            _ => NapiAnchorType::UserCheckpoint, // Default fallback
-        };
-        
-        // TUI-057: Convert tool calls to NAPI format
-        let tool_calls: Vec<NapiAnchorToolCall> = anchor.tool_calls.iter().map(|tc| {
-            NapiAnchorToolCall {
-                tool: tc.tool.clone(),
-                success: tc.success,
-            }
-        }).collect();
-        
-        NapiAnchorPoint {
-            turn_index: anchor.turn_index as u32,
-            anchor_type: napi_type,
-            weight: anchor.weight,
-            confidence: anchor.confidence,
-            description: anchor.description.clone(),
-            timestamp: anchor.timestamp_ms as f64,
-            user_message: anchor.user_message.clone(),
-            assistant_response: anchor.assistant_response.clone(),
-            tool_calls,
-        }
-    }).collect();
-    
-    Ok(napi_anchors)
-}
-
-/// Get turn details for a session (TUI-056, TUI-057)
+/// Get turn details for a session (TUI-057)
 ///
 /// Returns detailed information about a specific conversation turn including
 /// user message, assistant response, tool calls, and file modifications.
@@ -7198,61 +7240,6 @@ pub async fn session_restore_token_state(
     Ok(())
 }
 
-/// TUI-056: Restore anchor points to a background session from persisted manifest.
-///
-/// This is used when attaching to a session via /resume - it loads anchor points
-/// from the session manifest on disk into the BackgroundSession's memory so that
-/// /anchors command shows the correct anchor history.
-#[napi]
-pub fn session_restore_anchor_points(session_id: String) -> Result<u32> {
-    let uuid = uuid::Uuid::parse_str(&session_id)
-        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
-    
-    // Load anchor points from the persisted session manifest
-    let session_manifest = load_session(uuid)
-        .map_err(|e| Error::from_reason(format!("Failed to load session manifest: {}", e)))?;
-    
-    // Get the BackgroundSession
-    let session = SessionManager::instance().get_session(&session_id)?;
-    
-    // Convert persisted anchors to internal format and store in BackgroundSession
-    let mut anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
-    
-    // Only restore if the memory anchors are empty (fresh session creation)
-    // Don't clear existing anchors if session was already active
-    if anchor_points.is_empty() {
-        let restored_count = session_manifest.anchor_points.len();
-        
-        for persisted in session_manifest.anchor_points {
-            let anchor_type = match persisted.anchor_type.as_str() {
-                "ErrorResolution" => codelet_core::compaction::AnchorType::ErrorResolution,
-                "TaskCompletion" => codelet_core::compaction::AnchorType::TaskCompletion,
-                "UserCheckpoint" => codelet_core::compaction::AnchorType::UserCheckpoint,
-                "FeatureMilestone" => codelet_core::compaction::AnchorType::FeatureMilestone,
-                _ => codelet_core::compaction::AnchorType::UserCheckpoint, // Default fallback
-            };
-            
-            // Convert milliseconds back to SystemTime
-            let timestamp = std::time::UNIX_EPOCH + std::time::Duration::from_millis(persisted.timestamp_ms as u64);
-            
-            anchor_points.push(codelet_core::compaction::AnchorPoint {
-                turn_index: persisted.turn_index,
-                anchor_type,
-                weight: persisted.weight,
-                confidence: persisted.confidence,
-                description: persisted.description,
-                timestamp,
-            });
-        }
-        
-        Ok(restored_count as u32)
-    } else {
-        // Anchors already present in memory - skip restore
-        let existing_count = anchor_points.len();
-        Ok(existing_count as u32)
-    }
-}
-
 /// Toggle debug capture mode without requiring a session.
 ///
 /// Can be called before a session exists. Session metadata will not be set.
@@ -7339,10 +7326,12 @@ pub async fn session_toggle_debug(
 
 /// Manually trigger context compaction for a background session (NAPI-009 + NAPI-005)
 ///
-/// Trigger manual context compaction for a background session.
-/// Calls execute_compaction from interactive_helpers to compress context.
+/// Uses in-view DAG construction flow. Sets compaction_in_progress
+/// flag, clears context, injects compaction system instruction, and returns
+/// control to the agent loop. The agent builds the DAG via SessionSearch
+/// and calls inject_summary to complete the cycle.
 ///
-/// Returns CompactionResult with metrics about the compaction operation.
+/// Returns CompactionResult with pre-compaction token counts.
 /// Returns error if session is empty (nothing to compact).
 #[napi]
 pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
@@ -7354,13 +7343,11 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         return Err(Error::from_reason("Nothing to compact - no messages yet"));
     }
 
-    // PERF-002: Set compacting status and initial progress
     session.set_status(SessionStatus::Compacting);
-    let total_messages = inner.messages.len() as u32;
-    session.update_compaction_progress("Analyzing anchors".to_string(), 0, total_messages);
 
-    // Get current token count for reporting
     let original_tokens = inner.token_tracker.input_tokens;
+    let total_messages = inner.messages.len() as u32;
+    session.pre_compaction_tokens.store(original_tokens as u32, Ordering::Release);
 
     // Capture compaction.manual.start event
     if let Ok(manager_arc) = get_debug_capture_manager() {
@@ -7371,7 +7358,7 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
                     serde_json::json!({
                         "command": "/compact",
                         "originalTokens": original_tokens,
-                        "messageCount": inner.messages.len(),
+                        "messageCount": total_messages,
                     }),
                     None,
                 );
@@ -7379,23 +7366,12 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         }
     }
 
-    // PERF-002: Update progress to generating summary phase
-    session.update_compaction_progress("Generating summary".to_string(), total_messages, total_messages);
-
-    // TUI-057: Clone current turns BEFORE compaction so we can capture anchor turn content
-    // After execute_compaction, the turns will be replaced with only kept turns, making
-    // the anchor's original turn_index invalid. We need the original turns to look up content.
-    let original_turns = inner.turns.clone();
-
-    // Execute compaction
-    let (metrics, anchor) = match execute_compaction(&mut inner).await {
-        Ok(result) => result,
+    match execute_compaction(&mut inner, session.compaction_in_progress.clone(), None).await {
+        Ok(()) => {}
         Err(e) => {
-            // PERF-002: Clear progress and reset status on error
             session.set_compaction_progress(None);
             session.set_status(SessionStatus::Idle);
-            
-            // Capture compaction.manual.failed event
+
             if let Ok(manager_arc) = get_debug_capture_manager() {
                 if let Ok(mut manager) = manager_arc.lock() {
                     if manager.is_enabled() {
@@ -7412,11 +7388,14 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
             }
             return Err(Error::from_reason(format!("Compaction failed: {e}")));
         }
-    };
+    }
 
-    // PERF-002: Clear progress and reset status after successful completion
+    let compacted_tokens = inner.token_tracker.input_tokens;
+
+    // Drop the inner lock BEFORE sending input — agent_loop needs it.
+    drop(inner);
+
     session.set_compaction_progress(None);
-    session.set_status(SessionStatus::Idle);
 
     // Capture compaction.manual.complete event
     if let Ok(manager_arc) = get_debug_capture_manager() {
@@ -7426,11 +7405,9 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
                     "compaction.manual.complete",
                     serde_json::json!({
                         "command": "/compact",
-                        "originalTokens": metrics.original_tokens,
-                        "compactedTokens": metrics.compacted_tokens,
-                        "compressionRatio": metrics.compression_ratio,
-                        "turnsSummarized": metrics.turns_summarized,
-                        "turnsKept": metrics.turns_kept,
+                        "type": "in-view-dag",
+                        "originalTokens": original_tokens,
+                        "compactedTokens": compacted_tokens,
                     }),
                     None,
                 );
@@ -7438,62 +7415,18 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         }
     }
 
-    // TUI-056: Store anchor point if one was created during compaction
-    if let Some(ref anchor_point) = anchor {
-        // Store in memory for immediate use
-        let mut anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
-        anchor_points.push(anchor_point.clone());
-        
-        // Persist to disk so it survives session resume
-        if let Err(e) = persist_anchor_point(&session.id, anchor_point, &original_turns) {
-            tracing::error!("Failed to persist anchor point: {}", e);
-            // Don't fail compaction if anchor persistence fails - it's not critical
-        }
-    } else {
-        tracing::error!("Compaction completed but no anchor point was created - this should not happen");
-    }
-
-    // REFAC-007 Rule [32]: Persist compaction state to session manifest
-    // After compaction, messages are structured as:
-    // [kept turns...] + [summary message] + [continuation message]
-    // The summary is the second-to-last message
-    let compaction_summary = if inner.messages.len() >= 2 {
-        // Extract text from the summary message (second-to-last)
-        let summary_idx = inner.messages.len() - 2;
-        match &inner.messages[summary_idx] {
-            rig::message::Message::User { content } => {
-                // Extract text from first content item using first_ref()
-                match content.first_ref() {
-                    rig::message::UserContent::Text(text) => text.text.clone(),
-                    _ => String::new(),
-                }
-            }
-            _ => String::new(),
-        }
-    } else {
-        String::new()
-    };
-    
-    // Calculate compaction boundary index (number of summarized turns * 2 for user+assistant pairs)
-    // This is the index of the first KEPT message in the original message array.
-    // The boundary tells persistence how many messages to SKIP (the summarized ones).
-    // FIX: Was incorrectly using turns_kept, which caused loading too many messages on resume.
-    let compaction_boundary_index = metrics.turns_summarized * 2;
-    
-    // REFAC-007 Rule [34]: If persistence fails, the operation MUST fail
-    if !compaction_summary.is_empty() {
-        if let Err(e) = persist_compaction_state(&session.id, &compaction_summary, compaction_boundary_index) {
-            tracing::error!("REFAC-007: Failed to persist compaction state: {}", e);
-            return Err(Error::from_reason(format!("Failed to persist compaction state: {}", e)));
-        }
+    // Send "Continue" to trigger agent_loop processing of the compaction instruction.
+    if let Err(e) = session.send_input("Continue".to_string(), None) {
+        tracing::warn!("[session_compact] Failed to send Continue to agent loop: {}", e);
+        session.set_status(SessionStatus::Idle);
     }
 
     Ok(CompactionResult {
-        original_tokens: metrics.original_tokens as u32,
-        compacted_tokens: metrics.compacted_tokens as u32,
-        compression_ratio: metrics.compression_ratio * 100.0, // Convert to percentage
-        turns_summarized: metrics.turns_summarized as u32,
-        turns_kept: metrics.turns_kept as u32,
+        original_tokens: original_tokens as u32,
+        compacted_tokens: compacted_tokens as u32,
+        compression_ratio: compression_ratio(original_tokens, compacted_tokens) * 100.0,
+        turns_summarized: 0,
+        turns_kept: 0,
     })
 }
 

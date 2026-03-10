@@ -1,5 +1,5 @@
 use super::agent_runner::run_agent_with_interruption;
-use crate::interactive_helpers::execute_compaction;
+use crate::interactive_helpers::{compression_ratio, execute_compaction};
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::{
@@ -85,35 +85,34 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
 
             println!("[Compacting context...]");
 
-            match execute_compaction(session).await {
-                Ok((metrics, _anchor)) => {
-                    // Calculate compression percentage
-                    let compression_pct = metrics.compression_ratio * 100.0;
+            // Use in-view DAG flow. /compact is agent-initiated, pass None for last_user_message.
+            let compaction_flag = Arc::new(AtomicBool::new(false));
+            match execute_compaction(session, compaction_flag, None).await {
+                Ok(()) => {
+                    let compacted_tokens = session.token_tracker.input_tokens;
+                    let ratio = compression_ratio(original_tokens, compacted_tokens);
+                    let compression_pct = ratio * 100.0;
 
                     // Capture compaction.manual.complete event
                     capture_event(
                         "compaction.manual.complete",
                         serde_json::json!({
                             "command": "/compact",
-                            "originalTokens": metrics.original_tokens,
-                            "compactedTokens": metrics.compacted_tokens,
-                            "compressionRatio": metrics.compression_ratio,
-                            "turnsSummarized": metrics.turns_summarized,
-                            "turnsKept": metrics.turns_kept,
+                            "type": "in-view-dag",
+                            "originalTokens": original_tokens,
+                            "compactedTokens": compacted_tokens,
+                            "compressionRatio": ratio,
                         }),
                     );
 
                     println!(
-                        "[Context compacted: {}→{} tokens, {:.0}% compression]",
-                        metrics.original_tokens, metrics.compacted_tokens, compression_pct
+                        "[Context compacted: {original_tokens}→{compacted_tokens} tokens, {compression_pct:.0}% compression]"
                     );
                     println!(
-                        "[Summarized {} turns, kept {} turns]\n",
-                        metrics.turns_summarized, metrics.turns_kept
+                        "[In-view DAG flow — agent will build summary via SessionSearch]\n"
                     );
                     info!(
-                        "/compact: {}→{} tokens ({:.0}% compression)",
-                        metrics.original_tokens, metrics.compacted_tokens, compression_pct
+                        "/compact: {original_tokens}→{compacted_tokens} tokens ({compression_pct:.0}% compression, in-view DAG flow)"
                     );
                 }
                 Err(e) => {

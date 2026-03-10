@@ -112,4 +112,71 @@ describe('InputTransition', () => {
       expect(output).toContain("Type a message... ('Shift+↑/↓' history | 'Tab' select turn)");
     });
   });
+
+  // Feature: spec/features/compaction-post-inject-loading-state.feature
+  describe('Scenario: UI transitions smoothly from Compacting to Thinking without idle flicker', () => {
+    it('should keep isThinking=true when transitioning from isCompacting=true to isLoading=true', () => {
+      // @step Given the compaction hook state isActive is true
+      // @step And the Rust session status is Running from CompactionContinuing
+      // Start with both isLoading=true AND isCompacting=true
+      // (this is the state during DAG construction after CompactionContinuing)
+      const { lastFrame, rerender } = render(
+        <InputTransition
+          {...defaultProps}
+          isLoading={true}
+          isCompacting={true}
+          compactionProgress={{ phase: 'Building DAG', current: 1, total: 3 }}
+        />
+      );
+
+      // During compaction, should show compaction status
+      const frameDuringCompaction = lastFrame();
+      expect(frameDuringCompaction).toMatch(/Compacting|Building DAG/i);
+
+      // @step When CompactionComplete arrives and endCompaction sets isActive to false
+      // isCompacting goes false, but isLoading stays true (Rust status still Running)
+      rerender(
+        <InputTransition
+          {...defaultProps}
+          isLoading={true}
+          isCompacting={false}
+        />
+      );
+
+      // @step Then isLoading must be true because Rust status is still Running
+      // @step And InputTransition isThinking must remain true throughout the transition
+      // @step And the display must change from Compacting text to Thinking text without showing idle
+      const frameAfterCompaction = lastFrame();
+      // Must show Thinking indicator (NOT the input placeholder)
+      expect(frameAfterCompaction).toContain('Thinking...');
+      // Must NOT show the idle input placeholder
+      expect(frameAfterCompaction).not.toContain("Type a message...");
+    });
+
+    it('should NOT show idle input when only isCompacting changes to false while isLoading is true', () => {
+      // Start with compacting active and loading active
+      const { lastFrame, rerender } = render(
+        <InputTransition
+          {...defaultProps}
+          isLoading={true}
+          isCompacting={true}
+          compactionProgress={{ phase: 'Analyzing context', current: 0, total: 1 }}
+        />
+      );
+
+      // Transition: isCompacting false, isLoading still true
+      rerender(
+        <InputTransition
+          {...defaultProps}
+          isLoading={true}
+          isCompacting={false}
+        />
+      );
+
+      // Must show Thinking indicator, not idle
+      const output = lastFrame();
+      expect(output).toContain('Thinking...');
+      expect(output).toContain("(Esc to stop");
+    });
+  });
 });

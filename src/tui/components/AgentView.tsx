@@ -31,7 +31,7 @@ import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
-import { AnchorView } from './AnchorView';
+
 import { FileSearchPopup } from './FileSearchPopup';
 import { ProviderSettingsScreen } from './ProviderSettingsScreen';
 import { ModelSelectorScreen } from './ModelSelectorScreen';
@@ -105,8 +105,6 @@ import {
   sessionPauseResume,
   sessionPauseConfirm,
   sessionPauseTriple,
-  // TUI-056: Anchor point retrieval
-  sessionGetAnchorPoints,
   // UX-002: Compaction progress polling for automatic compaction
   sessionGetCompactionProgress,
   // TUI-065: Clear session history
@@ -145,7 +143,6 @@ import { WatcherTemplateForm } from './WatcherTemplateForm';
 import { BlocklistListView, type BlocklistRule } from './BlocklistListView';
 import { SessionHeader } from './SessionHeader';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
-import type { AnchorPoint, AnchorType } from '../types/anchor';
 import { computeLineDiff, changesToDiffLines } from '../../git/diff-parser';
 import { useCompaction } from '../hooks/useCompaction';
 import { useWorkUnitContext } from '../hooks/useWorkUnitContext';
@@ -227,6 +224,17 @@ interface StreamChunk {
   // WATCH-011: Correlation IDs for cross-pane selection highlighting
   correlationId?: string;
   observedCorrelationIds?: string[];
+  // Compaction result for CompactionComplete chunks
+  compactionResult?: {
+    compressionRatio: number;
+    originalTokens: number;
+    compactedTokens: number;
+    turnsSummarized: number;
+    turnsKept: number;
+  };
+  // Session state for SessionStateChange chunks
+  state?: string;
+  message?: string;
 }
 
 // NAPI-006: History entry from persistence
@@ -973,6 +981,40 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // This is safe because React setters are stable and never change.
   const setContextFillPercentageRef =
     useRef<React.Dispatch<React.SetStateAction<number>>>(null);
+  // Same TDZ avoidance pattern for setCompactionReduction — needed by
+  // persistentChunkHandler to handle CompactionComplete chunks from /compact flow.
+  const setCompactionReductionRef =
+    useRef<React.Dispatch<React.SetStateAction<number | null>>>(null);
+  // TDZ avoidance ref for refreshRustState — needed by persistentChunkHandler
+  // to refresh isLoading after CompactionComplete so the UI shows "Thinking..." instead of idle.
+  const refreshRustStateRef = useRef<(targetSessionId?: string | null) => void>(
+    () => {}
+  );
+
+  // Shared helper for handling CompactionComplete chunks.
+  // Extracted to avoid duplicating the endCompaction + refreshRustState pattern
+  // across persistentChunkHandler, handleSubmit's inner handler, and handleStreamChunk.
+  const handleCompactionComplete = useCallback(
+    (
+      result: { compressionRatio: number } | undefined,
+      sessionId: string | null | undefined,
+    ) => {
+      // Defensive: compactionResult is always present for CompactionComplete chunks
+      // per NAPI type system, but the local StreamChunk interface marks it optional
+      // since it's a flat union. Guard to prevent runtime crash if undefined.
+      if (result) {
+        setCompactionReductionRef.current?.(Math.round(result.compressionRatio));
+      }
+      compactionRef.current.endCompaction();
+      // Refresh Rust state so isLoading reflects the current session status.
+      // After endCompaction() clears isCompacting, the UI needs isLoading=true if the
+      // agent loop is still running (status=Running from CompactionContinuing).
+      if (sessionId) {
+        refreshRustStateRef.current(sessionId);
+      }
+    },
+    []
+  );
 
   const persistentChunkHandler = useCallback(
     (chunk: StreamChunk) => {
@@ -981,8 +1023,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       }
 
       // TUI-066: Handle SessionStateChange with Cleared state (from bridge /clear or TUI /clear)
-      // This must be handled here since persistentChunkHandler receives chunks when no
-      // handleSubmit is active (which is the case for /clear commands)
+      // Also handle Compacting state for manual /compact command flow.
+      // When /compact returns early without setting up a streaming handler, chunks from
+      // the agent_loop (which processes the compaction instruction) arrive here.
       if (chunk.type === 'SessionStateChange') {
         if (chunk.state === 'Cleared') {
           setConversation([]);
@@ -991,9 +1034,33 @@ export const AgentView: React.FC<AgentViewProps> = ({
           if (setContextFillPercentageRef.current) {
             setContextFillPercentageRef.current(0);
           }
+        } else if (chunk.state === 'Compacting') {
+          // Start compaction tracking for hook-triggered compaction
+          // that arrives when no handleSubmit is active.
+          const sessionId = currentSessionIdRef.current;
+          if (sessionId) {
+            const progress = sessionGetCompactionProgress(sessionId);
+            compactionRef.current.startCompaction(
+              'hook-triggered',
+              sessionId,
+              progress ?? undefined
+            );
+          }
         }
-        // Other SessionStateChange states (Compacting, etc.) are handled by handleSubmit's handler
-        // when agent is running. If not running, we can safely ignore them here.
+        // Do NOT call endCompaction() for Running or Idle states here.
+        // Only CompactionComplete should end the compaction indicator.
+        return;
+      }
+
+      // Handle CompactionComplete when no streaming handler is active.
+      // This is the definitive end signal for compaction — it fires after apply_pending_dag
+      // succeeds in agent_loop. Critical for /compact command flow where handleSubmit
+      // returns early and chunks arrive via this persistent handler.
+      if (chunk.type === 'CompactionComplete') {
+        handleCompactionComplete(
+          chunk.compactionResult,
+          currentSessionIdRef.current,
+        );
         return;
       }
 
@@ -1103,9 +1170,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-054: Thinking level dialog state
   const [showThinkingLevelDialog, setShowThinkingLevelDialog] = useState(false);
 
-  // TUI-056: Anchor viewer dialog state
-  const [showAnchorViewer, setShowAnchorViewer] = useState(false);
-
   // GIT-037: Generic action prompt state for deferred user confirmation
   const [actionPrompt, setActionPrompt] = useState<ActionPrompt | null>(null);
 
@@ -1115,7 +1179,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const [disabledBlocklistRules, setDisabledBlocklistRules] = useState<
     Set<string>
   >(new Set());
-  const [anchorPoints, setAnchorPoints] = useState<AnchorPoint[]>([]);
 
   // TUI-050: Slash command palette with clean input handling
   // Hook is called here after all state that affects its `disabled` prop is defined
@@ -1123,7 +1186,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     inputValue,
     onInputChange: setInputValue,
     onExecuteCommand: cmd => executeSlashCommandRef.current?.(cmd),
-    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, TUI-056: add anchor viewer, BLOCK-004: add blocklist)
+    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, BLOCK-004: add blocklist)
     disabled:
       isResumeMode ||
       isWatcherMode ||
@@ -1131,8 +1194,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
       isBlocklistMode ||
       showModelSelector ||
       showSettingsTab ||
-      showThinkingLevelDialog ||
-      showAnchorViewer,
+      showThinkingLevelDialog,
   });
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
@@ -1316,6 +1378,20 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const [compactionReduction, setCompactionReduction] = useState<number | null>(
     null
   );
+
+  // Set ref for persistentChunkHandler to access setCompactionReduction
+  // Same TDZ avoidance pattern — persistentChunkHandler needs this for CompactionComplete
+  // Must be placed AFTER the useState declaration to avoid TDZ errors.
+  useEffect(() => {
+    setCompactionReductionRef.current = setCompactionReduction;
+  }, [setCompactionReduction]);
+
+  // Set ref for persistentChunkHandler to access refreshRustState
+  // After CompactionComplete, we need to refresh Rust state so isLoading reflects
+  // the current Running status (from CompactionContinuing).
+  useEffect(() => {
+    refreshRustStateRef.current = refreshRustState;
+  }, [refreshRustState]);
 
   // TOOL-010: Detected thinking level (for UI indicator)
   const [detectedThinkingLevel, setDetectedThinkingLevel] = useState<
@@ -2530,18 +2606,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
                   activeSessionId,
                   progress ?? undefined
                 );
-              } else {
-                // Non-compacting state - end compaction tracking
-                compactionRef.current.endCompaction();
               }
+              // Do NOT call endCompaction() for Running state.
+              // During active compaction, CompactionContinuing emits SessionStateChange(Running)
+              // but the DAG construction is still in progress. Only CompactionComplete
+              // should end the compaction indicator.
 
               refreshRustState(activeSessionId);
             } else if (chunk.type === 'CompactionComplete') {
-              // UX-002: Structured compaction result - extract percentage directly, no string parsing!
-              const result = chunk.compactionResult;
-              setCompactionReduction(Math.round(result.compressionRatio));
-              // End compaction via unified hook (use ref for callback safety)
-              compactionRef.current.endCompaction();
+              handleCompactionComplete(
+                chunk.compactionResult,
+                activeSessionId,
+              );
               // Don't add to conversation - compaction feedback is via input area indicator
             } else if (chunk.type === 'UserNotification') {
               // NAPI-010: User-facing notification - display in conversation
@@ -3036,71 +3112,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // TUI-056: Handle /anchors command - show anchor points viewer
-      if (userMessage === '/anchors') {
-        setInputValue('');
-
-        // Require an active session
-        if (!currentSessionId) {
-          setConversation(prev => [
-            ...prev,
-            {
-              type: 'status',
-              content: 'Start a session first to view anchor points.',
-            },
-          ]);
-          return;
-        }
-
-        // Load anchor points from current session using direct NAPI function
-        try {
-          const napiAnchors = sessionGetAnchorPoints(currentSessionId);
-
-          // Ensure we have a valid array before processing
-          if (!Array.isArray(napiAnchors)) {
-            console.warn(
-              'sessionGetAnchorPoints returned non-array:',
-              napiAnchors
-            );
-            setAnchorPoints([]);
-          } else {
-            // Convert NAPI types to TUI types
-            const convertedAnchors: AnchorPoint[] = napiAnchors.map(
-              napiAnchor => ({
-                turnIndex: napiAnchor.turnIndex,
-                anchorType: napiAnchor.anchorType as AnchorType,
-                weight: napiAnchor.weight,
-                confidence: napiAnchor.confidence,
-                description: napiAnchor.description,
-                timestamp: napiAnchor.timestamp,
-                userMessage: napiAnchor.userMessage ?? undefined,
-                assistantResponse: napiAnchor.assistantResponse ?? undefined,
-                toolCalls:
-                  napiAnchor.toolCalls?.map(tc => ({
-                    tool: tc.tool,
-                    success: tc.success,
-                  })) ?? [],
-              })
-            );
-
-            setAnchorPoints(convertedAnchors);
-          }
-        } catch (error) {
-          console.error('Failed to load anchor points:', error);
-          setConversation(prev => [
-            ...prev,
-            {
-              type: 'status',
-              content:
-                'Failed to load anchor points. This session may not have any compaction history.',
-            },
-          ]);
-          return;
-        }
-        setShowAnchorViewer(true);
-        return;
-      }
-
       // GIT-036, GIT-037, GIT-038: Handle /merge-worktree command - merge worktree changes and close session
       if (userMessage === '/merge-worktree') {
         await handleMergeWorktree({
@@ -3530,18 +3541,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
             progress ?? undefined
           );
         }
-      } else {
-        // Non-compacting state - end compaction tracking
-        compactionRef.current.endCompaction();
       }
+      // Do NOT call endCompaction() for Running state.
+      // During active compaction, CompactionContinuing emits SessionStateChange(Running)
+      // but the DAG construction is still in progress. Only CompactionComplete
+      // should end the compaction indicator.
 
       refreshRustState(currentSessionIdRef.current);
     } else if (chunk.type === 'CompactionComplete') {
-      // UX-002: Structured compaction result - extract percentage directly, no string parsing!
-      const result = chunk.compactionResult;
-      setCompactionReduction(Math.round(result.compressionRatio));
-      // End compaction via unified hook (use ref for callback safety)
-      compactionRef.current.endCompaction();
+      handleCompactionComplete(
+        chunk.compactionResult,
+        currentSessionIdRef.current,
+      );
       // Don't add to conversation - compaction feedback is via input area indicator
     } else if (chunk.type === 'UserNotification') {
       // NAPI-010: User-facing notification - display in conversation
@@ -6037,19 +6048,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
           />
         )}
       </>
-    );
-  }
-
-  // TUI-057: Anchor view (full-screen - early return pattern like other full-screen views)
-  if (showAnchorViewer) {
-    return (
-      <AnchorView
-        isVisible={showAnchorViewer}
-        anchorPoints={anchorPoints}
-        onClose={() => setShowAnchorViewer(false)}
-        _terminalWidth={terminalWidth}
-        _terminalHeight={terminalHeight}
-      />
     );
   }
 

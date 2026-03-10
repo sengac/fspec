@@ -21,6 +21,7 @@ pub mod file_type;
 pub mod fspec;
 pub mod fspec_handler;
 pub mod fspec_workflow_guidance;
+pub mod inject_summary;
 
 pub mod glob;
 pub mod grep;
@@ -116,6 +117,11 @@ pub use session_search::{
     SessionSearchTool, SessionSearchHandler,
     set_session_search_handler, has_session_search_handler,
     clear_all_session_search_handlers,
+};
+pub use inject_summary::{
+    InjectSummaryTool, InjectSummaryHandler, InjectSummaryResult,
+    set_inject_summary_handler, has_inject_summary_handler,
+    execute_inject_summary, clear_all_inject_summary_handlers,
 };
 
 /// Tool definition for API requests

@@ -18,6 +18,8 @@ use codelet_core::compaction::{ConversationTurn, TokenTracker};
 use codelet_providers::ProviderManager;
 use system_reminders::add_system_reminder;
 
+use codelet_core::compaction::StructuralAnnotation;
+
 /// Session manages persistent context across multi-turn conversations
 ///
 /// Matches codelet's REPL scope pattern where messages array lives in
@@ -35,13 +37,18 @@ pub struct Session {
     /// Uses rig::message::Message directly for rig integration (CLI-008)
     pub messages: Vec<rig::message::Message>,
 
-    /// Conversation turns for anchor point detection (CLI-009)
-    /// Grouped messages for compaction analysis
+    /// Conversation turns for compaction analysis (CLI-009)
+    /// Grouped messages representing user/assistant exchanges
     pub turns: Vec<ConversationTurn>,
 
     /// Token tracker for cache-aware compaction (CLI-009)
     /// Tracks cumulative token usage across conversation
     pub token_tracker: TokenTracker,
+
+    /// Per-turn structural annotations for SessionSearch navigation.
+    /// Maps message index (assistant message) → annotations detected for that turn.
+    /// Consumed by the persistence layer when writing StoredMessage metadata.
+    pub annotations: std::collections::HashMap<usize, Vec<StructuralAnnotation>>,
 }
 
 impl Session {
@@ -64,6 +71,7 @@ impl Session {
             messages: Vec::new(),
             turns: Vec::new(),
             token_tracker: TokenTracker::default(),
+            annotations: std::collections::HashMap::new(),
         })
     }
 
@@ -82,6 +90,7 @@ impl Session {
             messages: Vec::new(),
             turns: Vec::new(),
             token_tracker: TokenTracker::default(),
+            annotations: std::collections::HashMap::new(),
         }
     }
 
@@ -146,89 +155,6 @@ impl Session {
     pub fn add_system_reminder(&mut self, reminder_type: SystemReminderType, content: &str) {
         // Use existing add_system_reminder function which implements deduplication
         self.messages = add_system_reminder(&self.messages, reminder_type, content);
-    }
-
-    /// Compact messages while preserving system-reminders
-    ///
-    /// This method integrates system-reminder persistence with the compaction system:
-    /// 1. Partition messages into system-reminders and compactable messages
-    /// 2. Compact turns (operates on self.turns, not messages)
-    /// 3. Reconstruct messages: summary + system-reminders + kept turns as messages
-    ///
-    /// System-reminders persist through compaction while other messages are summarized.
-    ///
-    /// # Arguments
-    /// * `llm_prompt` - Async function that takes a prompt string and returns summary
-    ///
-    /// # Returns
-    /// * `Result<()>` - Success or error if compaction fails
-    ///
-    /// # Example
-    ///
-    /// ```text
-    /// session.compact_messages(|prompt| async move {
-    ///     llm_client.complete(&prompt).await
-    /// }).await?;
-    /// ```
-    pub async fn compact_messages<F, Fut>(&mut self, llm_prompt: F) -> Result<()>
-    where
-        F: Fn(String) -> Fut,
-        Fut: std::future::Future<Output = Result<String>>,
-    {
-        use codelet_core::compaction::ContextCompactor;
-        use rig::message::{AssistantContent, Message, UserContent};
-        use rig::OneOrMany;
-        use system_reminders::partition_for_compaction;
-
-        // Step 1: Extract system-reminders from messages Vec
-        let (system_reminders, _compactable) = partition_for_compaction(&self.messages);
-
-        // Step 2: Calculate summarization budget
-        use crate::compaction_threshold::calculate_summarization_budget;
-        let context_window = self.provider_manager.context_window() as u64;
-        let budget = calculate_summarization_budget(context_window);
-
-        // Step 3: Compact turns (operates on self.turns, not messages)
-        let compactor = ContextCompactor::new();
-
-        // If we have no turns, nothing to compact
-        if self.turns.is_empty() {
-            return Ok(());
-        }
-
-        let result = compactor.compact(&self.turns, budget, llm_prompt).await?;
-
-        // Step 4: Reconstruct messages Vec:
-        //    - System-reminders FIRST (maintains prefix stability for prompt caching)
-        //    - Compacted summary as user message
-        //    - Kept turns converted back to messages
-        self.messages.clear();
-
-        // Add system-reminders FIRST (maintains stable prefix for prompt caching)
-        // This is critical: reminders must be at the START of the messages array
-        // so that the LLM's prompt cache can match the prefix on subsequent calls.
-        self.messages.extend(system_reminders);
-
-        // Add summary after reminders
-        self.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(&result.summary)),
-        });
-
-        // Add kept turns as messages
-        for turn in result.kept_turns {
-            self.messages.push(Message::User {
-                content: OneOrMany::one(UserContent::text(&turn.user_message)),
-            });
-            self.messages.push(Message::Assistant {
-                id: Some(format!(
-                    "compacted-{}",
-                    turn.timestamp.elapsed().unwrap_or_default().as_secs()
-                )),
-                content: OneOrMany::one(AssistantContent::text(&turn.assistant_response)),
-            });
-        }
-
-        Ok(())
     }
 
     /// Inject context reminders at session start (CLI-016)

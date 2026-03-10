@@ -1,0 +1,405 @@
+{
+  "scenarios": [
+    {
+      "name": "Flag is false \u2014 SessionSearch show returns full untrimmed content",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "873-901",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flag is true \u2014 SessionSearch show returns trimmed Read tool results",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "903-935",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flag is true \u2014 SessionSearch search preserves user messages unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "937-957",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Flag is true \u2014 SessionSearch show preserves assistant reasoning text",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "959-979",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trimmer processes messages in order for tool_use_id correlation",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "981-1030",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trimming is applied after blob resolution",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1033-1072",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BackgroundSession defaults compaction_in_progress to false",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1075-1095",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1003,
+                1004,
+                1005,
+                1006,
+                1007,
+                1008,
+                1009,
+                1010,
+                1011,
+                1012,
+                1013,
+                1014,
+                1015,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020,
+                1021,
+                1022,
+                1023,
+                1024,
+                1025,
+                1026,
+                1027,
+                1028,
+                1029,
+                1030,
+                1031,
+                1032,
+                1033,
+                1034,
+                1035,
+                1036,
+                1037,
+                1038,
+                1039,
+                1040,
+                1041,
+                1042,
+                1043,
+                1044,
+                1045,
+                1046,
+                1047,
+                1048,
+                1049,
+                1050,
+                1051,
+                1052,
+                1053,
+                1054,
+                1055,
+                1056,
+                1057,
+                1058,
+                1059,
+                1060,
+                1061,
+                1062,
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068,
+                1069,
+                1070,
+                1071,
+                1072,
+                1073
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create_handler accepts compaction_in_progress parameter",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1098-1118",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handler is registered with compaction_in_progress from BackgroundSession",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1121-1135",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5371,
+                5372,
+                5373,
+                5374,
+                5375,
+                5376,
+                5377
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/session_search_handler.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_search_handler.rs",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 717
+  }
+}

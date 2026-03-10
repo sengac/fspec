@@ -113,7 +113,7 @@ pub struct ToolProgressEvent {
 /// UX-002: Compaction progress information for structured events
 #[derive(Debug, Clone)]
 pub struct CompactionProgressInfo {
-    /// Current phase (e.g., "Analyzing anchors", "Generating summary")
+    /// Current phase (e.g., "Preparing compaction", "Analyzing context")
     pub phase: String,
     /// Current progress count
     pub current: u32,

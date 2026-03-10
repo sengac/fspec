@@ -34,7 +34,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerList: vi.fn().mockReturnValue([]),
   sessionRestoreMessages: vi.fn(),
   sessionRestoreTokenState: vi.fn(),
-  sessionRestoreAnchorPoints: vi.fn(),
   persistenceCreateSessionWithProvider: mockPersistenceCreateSession,
   persistenceLoadSession: vi.fn(),
   persistenceGetSessionMessageEnvelopes: vi.fn().mockReturnValue([]),
@@ -608,7 +607,8 @@ describe('Feature: Refactor session-work unit state management', () => {
       };
 
       // @step And the payload contains workUnitId "AUTH-001" and sessionId "session-123"
-      const { fspecStore, sessionStore } = await createStoreFixture();
+      const { fspecStore, sessionStore: _sessionStore } =
+        await createStoreFixture();
 
       // @step When BoardView processes the IPC message
       const { attachToWorkUnit } = await import('../sessionService');

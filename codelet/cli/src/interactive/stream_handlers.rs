@@ -11,7 +11,7 @@ use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use tracing::debug;
 
-/// Detect if a tool result indicates an error.
+/// Detect if a tool result indicates an error (public for annotation detection).
 ///
 /// Error detection works in two ways:
 ///
@@ -27,7 +27,7 @@ use tracing::debug;
 ///    - Other error-indicating patterns
 ///
 /// This avoids false positives from file content containing "Error:" or "error:".
-fn detect_tool_error(raw_result: &str) -> bool {
+pub(super) fn detect_tool_error(raw_result: &str) -> bool {
     // 1. Try to parse as JSON to check for structured error indicators
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(raw_result) {
         // Check for {"success": false, ...} pattern used by tool facades

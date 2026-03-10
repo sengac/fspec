@@ -45,6 +45,10 @@ mod work_units_watcher;
 #[cfg(not(feature = "noop"))]
 pub mod session_search_handler;
 
+// inject_summary handler bridges tools layer to session manipulation
+#[cfg(not(feature = "noop"))]
+pub mod inject_summary_handler;
+
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
 pub mod persistence;
 

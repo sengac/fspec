@@ -111,7 +111,7 @@ impl GeminiProvider {
             GeminiRunShellCommandFacade, GeminiSearchFileContentFacade, GeminiWebFetchFacade,
             GeminiWriteFileFacade, LsToolFacadeWrapper, SearchToolFacadeWrapper,
         };
-        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, ConnectMcpTool, SessionSearchTool};
+        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool};
         use std::sync::Arc;
 
         // Create Gemini-specific web search facades (TOOL-001)
@@ -169,7 +169,8 @@ impl GeminiProvider {
             .tool(google_web_search) // TOOL-001: Gemini-native google_web_search
             .tool(web_fetch) // TOOL-001: Gemini-native web_fetch
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
-            .tool(SessionSearchTool::new(session_id)); // AMGR-001: SessionSearch tool
+            .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
+            .tool(InjectSummaryTool::new(session_id));
 
         // Build complete system prompt using model-aware builder
         // This combines:

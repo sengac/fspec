@@ -23,13 +23,13 @@ import { formatCompactionPlaceholder } from '../../utils/compaction-formatting';
 
 // Test fixtures for consistent testing
 const mockProgressAnalyzing: CompactionProgress = {
-  phase: 'analyzing anchors',
-  current: 15,
-  total: 32,
+  phase: 'Analyzing context',
+  current: 0,
+  total: 1,
 };
 
 const mockProgressSummary: CompactionProgress = {
-  phase: 'generating summary',
+  phase: 'Preparing compaction',
   current: 1,
   total: 1,
 };
@@ -123,7 +123,7 @@ describe('Core Logic: Compaction State Management', () => {
 
       const result = getCurrentCompactionProgress(sources);
       expect(result).toEqual(mockProgressAnalyzing);
-      expect(result?.phase).toBe('analyzing anchors');
+      expect(result?.phase).toBe('Analyzing context');
     });
 
     it('should use Rust progress when only Rust state is active', () => {
@@ -137,7 +137,7 @@ describe('Core Logic: Compaction State Management', () => {
 
       const result = getCurrentCompactionProgress(sources);
       expect(result).toEqual(mockProgressSummary);
-      expect(result?.phase).toBe('generating summary');
+      expect(result?.phase).toBe('Preparing compaction');
     });
 
     it('should return null when local is active but has no progress', () => {
@@ -285,13 +285,13 @@ describe('Core Logic: Compaction State Management', () => {
       const sources: CompactionStateSources = {
         localProgressState: {
           isActive: true,
-          progress: { phase: 'analyzing anchors', current: 10, total: 20 },
+          progress: { phase: 'Analyzing context', current: 0, total: 1 },
           trigger: manualTrigger,
         },
         rustBackendState: {
           isCompacting: true,
           compactionProgress: {
-            phase: 'generating summary',
+            phase: 'Preparing compaction',
             current: 1,
             total: 1,
           },
@@ -301,15 +301,15 @@ describe('Core Logic: Compaction State Management', () => {
       const result = validateCompactionStateConsistency(sources);
       expect(result.isValid).toBe(false);
       expect(result.warnings[0]).toContain('State conflict');
-      expect(result.warnings[0]).toContain('analyzing anchors');
-      expect(result.warnings[0]).toContain('generating summary');
+      expect(result.warnings[0]).toContain('Analyzing context');
+      expect(result.warnings[0]).toContain('Preparing compaction');
     });
 
     it('should pass validation when both states have matching phases', () => {
       const matchingProgress = {
-        phase: 'analyzing anchors',
-        current: 15,
-        total: 32,
+        phase: 'Analyzing context',
+        current: 0,
+        total: 1,
       };
       const sources: CompactionStateSources = {
         localProgressState: {
@@ -462,10 +462,10 @@ describe('Core Logic: Compaction State Management', () => {
         formatCompactionPlaceholder
       );
 
-      expect(result).toBe('Compacting: analyzing anchors... 15/32 turns');
+      expect(result).toBe('Compacting: Analyzing context...');
       expect(result).toContain('Compacting:');
-      expect(result).toContain('analyzing anchors');
-      expect(result).toContain('15/32');
+      expect(result).toContain('Analyzing context');
+      expect(result).toContain('Analyzing context');
     });
 
     it('should return formatted compaction text when Rust compaction is active', () => {
@@ -483,8 +483,8 @@ describe('Core Logic: Compaction State Management', () => {
         formatCompactionPlaceholder
       );
 
-      expect(result).toBe('Compacting: generating summary... 1/1 turns');
-      expect(result).toContain('generating summary');
+      expect(result).toBe('Compacting: Preparing compaction...');
+      expect(result).toContain('Preparing compaction');
     });
 
     it('should prioritize local progress for formatting', () => {
@@ -506,8 +506,8 @@ describe('Core Logic: Compaction State Management', () => {
         formatCompactionPlaceholder
       );
 
-      // Should use local progress (analyzing anchors), not Rust progress (summary)
-      expect(result).toContain('analyzing anchors');
+      // Should use local progress (Analyzing context), not Rust progress (summary)
+      expect(result).toContain('Analyzing context');
       expect(result).not.toContain('generating summary');
     });
 
@@ -525,7 +525,7 @@ describe('Core Logic: Compaction State Management', () => {
 
       const result = getPlaceholderText(sources, 'Default text', customFormat);
 
-      expect(result).toBe('[CUSTOM] analyzing anchors (15/32)');
+      expect(result).toBe('[CUSTOM] Analyzing context (0/1)');
     });
   });
 
@@ -576,9 +576,9 @@ describe('Core Logic: Compaction State Management', () => {
 
     it('should handle zero progress values correctly', () => {
       const zeroProgress: CompactionProgress = {
-        phase: 'starting',
+        phase: 'Starting',
         current: 0,
-        total: 100,
+        total: 1,
       };
 
       const sources: CompactionStateSources = {
@@ -597,7 +597,7 @@ describe('Core Logic: Compaction State Management', () => {
         'Default',
         formatCompactionPlaceholder
       );
-      expect(placeholder).toBe('Compacting: starting... 0/100 turns');
+      expect(placeholder).toBe('Compacting: Starting...');
     });
   });
 

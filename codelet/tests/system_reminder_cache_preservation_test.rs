@@ -161,7 +161,7 @@ fn test_partition_extracts_only_latest_reminder_per_type() {
 #[test]
 fn test_compaction_preserves_latest_reminder_at_start() {
     // @step Given a session with messages containing two tokenStatus reminders
-    // This test verifies the integration with Session.compact_messages()
+    // This test verifies the integration with partition_for_compaction()
     // We simulate the expected behavior of the compaction result
 
     let token_v1_content =
@@ -182,8 +182,8 @@ fn test_compaction_preserves_latest_reminder_at_start() {
     // @step And the session has conversation turns to compact
     // Simulated: the session would have turns that get compacted
 
-    // @step When I call compact_messages
-    // We test the partition logic that compact_messages uses
+    // @step When I call partition_for_compaction
+    // We test the partition logic used during compaction
     let (system_reminders, _compactable) = partition_for_compaction(&messages);
 
     // @step Then the result should start with [tokenStatus_v2, summary, ...]

@@ -37,8 +37,8 @@ vi.mock('@sengac/codelet-napi', () => ({
 // Test fixtures
 const fixtures = {
   progress: {
-    analyzingAnchors: {
-      phase: 'analyzing anchors',
+    analyzingContext: {
+      phase: 'Analyzing context',
       current: 15,
       total: 32,
     } as CompactionProgress,
@@ -171,12 +171,12 @@ describe('useCompaction Hook', () => {
       hookState!.startCompaction(
         'hook-triggered',
         fixtures.sessionIds.hookTriggered,
-        fixtures.progress.analyzingAnchors
+        fixtures.progress.analyzingContext
       );
 
       await new Promise(r => setTimeout(r, 10));
 
-      expect(hookState!.state.progress).toEqual(fixtures.progress.analyzingAnchors);
+      expect(hookState!.state.progress).toEqual(fixtures.progress.analyzingContext);
     });
 
     it('should use default progress when not provided', async () => {
@@ -197,7 +197,7 @@ describe('useCompaction Hook', () => {
       await new Promise(r => setTimeout(r, 10));
 
       // Start compaction first
-      hookState!.startCompaction('manual', fixtures.sessionIds.manual, fixtures.progress.analyzingAnchors);
+      hookState!.startCompaction('manual', fixtures.sessionIds.manual, fixtures.progress.analyzingContext);
       await new Promise(r => setTimeout(r, 10));
 
       expect(hookState!.state.isActive).toBe(true);
@@ -223,13 +223,13 @@ describe('useCompaction Hook', () => {
       await new Promise(r => setTimeout(r, 10));
 
       // Update progress
-      hookState!.updateProgress(fixtures.progress.analyzingAnchors);
+      hookState!.updateProgress(fixtures.progress.analyzingContext);
       await new Promise(r => setTimeout(r, 10));
 
       expect(hookState!.state.isActive).toBe(true);
       expect(hookState!.state.trigger).toBe('hook-triggered');
       expect(hookState!.state.sessionId).toBe(fixtures.sessionIds.hookTriggered);
-      expect(hookState!.state.progress).toEqual(fixtures.progress.analyzingAnchors);
+      expect(hookState!.state.progress).toEqual(fixtures.progress.analyzingContext);
     });
 
     it('should handle multiple progress updates', async () => {
@@ -240,9 +240,9 @@ describe('useCompaction Hook', () => {
       await new Promise(r => setTimeout(r, 10));
 
       // First update
-      hookState!.updateProgress(fixtures.progress.analyzingAnchors);
+      hookState!.updateProgress(fixtures.progress.analyzingContext);
       await new Promise(r => setTimeout(r, 10));
-      expect(hookState!.state.progress?.phase).toBe('analyzing anchors');
+      expect(hookState!.state.progress?.phase).toBe('Analyzing context');
 
       // Second update
       hookState!.updateProgress(fixtures.progress.generatingSummary);
@@ -259,14 +259,14 @@ describe('useCompaction Hook', () => {
         render(<TestComponent />);
         await new Promise(r => setTimeout(r, 10));
 
-        hookState!.startCompaction(trigger, `session-${trigger}`, fixtures.progress.analyzingAnchors);
+        hookState!.startCompaction(trigger, `session-${trigger}`, fixtures.progress.analyzingContext);
         await new Promise(r => setTimeout(r, 10));
 
         // All triggers should produce the same state structure
         expect(hookState!.state.isActive).toBe(true);
         expect(hookState!.state.trigger).toBe(trigger);
         expect(hookState!.state.sessionId).toBe(`session-${trigger}`);
-        expect(hookState!.state.progress).toEqual(fixtures.progress.analyzingAnchors);
+        expect(hookState!.state.progress).toEqual(fixtures.progress.analyzingContext);
 
         // Cleanup
         hookState!.endCompaction();
@@ -287,9 +287,9 @@ describe('useCompaction Hook', () => {
         expect(hookState!.state.isActive).toBe(true);
 
         // Update
-        hookState!.updateProgress(fixtures.progress.analyzingAnchors);
+        hookState!.updateProgress(fixtures.progress.analyzingContext);
         await new Promise(r => setTimeout(r, 10));
-        expect(hookState!.state.progress?.phase).toBe('analyzing anchors');
+        expect(hookState!.state.progress?.phase).toBe('Analyzing context');
 
         // Update again
         hookState!.updateProgress(fixtures.progress.generatingSummary);
@@ -390,6 +390,55 @@ describe('useCompaction Hook', () => {
       expect(hookState!.startCompaction).toBe(initialFunctions.startCompaction);
       expect(hookState!.endCompaction).toBe(initialFunctions.endCompaction);
       expect(hookState!.updateProgress).toBe(initialFunctions.updateProgress);
+    });
+  });
+
+  describe('Manual compaction initial phase text', () => {
+    // @step Given a user triggers manual compaction via /compact
+    // @step When performManualCompaction sets the initial progress phase
+    // @step Then the phase text must be "Preparing compaction"
+    // @step And the phase text must NOT contain "anchor" or "anchors"
+    it('should use "Preparing compaction" phase, not stale anchor text', async () => {
+      render(<TestComponent />);
+      await new Promise(r => setTimeout(r, 10));
+
+      // Trigger manual compaction — performManualCompaction calls startCompaction internally
+      // with the initial phase text. Since sessionCompact is mocked, it resolves immediately.
+      try {
+        await hookState!.performManualCompaction('session-1');
+      } catch {
+        // May throw if mocked sessionCompact rejects, but state is set synchronously
+      }
+      await new Promise(r => setTimeout(r, 10));
+
+      // The initial phase should NOT reference anchors
+      const phase = hookState!.state.progress?.phase ?? '';
+      expect(phase).not.toContain('anchor');
+      expect(phase).not.toContain('Anchor');
+    });
+  });
+
+  describe('Manual compaction does not end compaction prematurely', () => {
+    // @step Given a user triggers manual compaction via /compact
+    // @step When sessionCompact returns after the in-memory setup phase
+    // @step Then performManualCompaction must NOT call endCompaction via setTimeout
+    // @step And the compaction indicator must remain active until CompactionComplete arrives
+    it('should remain active after performManualCompaction resolves', async () => {
+      render(<TestComponent />);
+      await new Promise(r => setTimeout(r, 10));
+
+      // Perform manual compaction (mocked to succeed immediately)
+      await hookState!.performManualCompaction('session-1');
+      await new Promise(r => setTimeout(r, 10));
+
+      // Compaction should remain ACTIVE after sessionCompact returns.
+      // The CompactionComplete chunk (not performManualCompaction) is the definitive end signal.
+      // Previously, a setTimeout(endCompaction, 1000) would prematurely end it.
+      expect(hookState!.state.isActive).toBe(true);
+
+      // Advance timers to verify no delayed endCompaction fires
+      await new Promise(r => setTimeout(r, 1500));
+      expect(hookState!.state.isActive).toBe(true);
     });
   });
 });
