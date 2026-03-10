@@ -1053,9 +1053,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       }
 
       // Handle CompactionComplete when no streaming handler is active.
-      // This is the definitive end signal for compaction — it fires after apply_pending_dag
-      // succeeds in agent_loop. Critical for /compact command flow where handleSubmit
-      // returns early and chunks arrive via this persistent handler.
+      // Emitted once by emit_post_injection_events (in on_injected) during the stream.
+      // Critical for /compact command flow where handleSubmit returns early and
+      // chunks arrive via this persistent handler.
       if (chunk.type === 'CompactionComplete') {
         handleCompactionComplete(
           chunk.compactionResult,

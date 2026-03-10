@@ -99,6 +99,39 @@ pub fn wrap_dag_content(content: &str) -> String {
     )
 }
 
+/// Emit the post-injection events in the correct order:
+/// 1. `SessionStateChange(Running)` — so JS sees `isLoading=true`
+/// 2. `CompactionComplete` — so JS clears the compaction indicator
+///
+/// The ordering is critical: JS must pick up `isLoading=true` BEFORE
+/// `isCompacting=false` to avoid flickering to the idle input area.
+///
+/// Extracted from the on_injected closure in session_manager so the
+/// emission order is testable without BackgroundSession infrastructure.
+pub fn emit_post_injection_events(
+    emit: &dyn Fn(crate::types::StreamChunk),
+    original_tokens: u32,
+    injected_tokens: u32,
+) {
+    use codelet_cli::interactive_helpers::compression_ratio;
+
+    let ratio = compression_ratio(original_tokens as u64, injected_tokens as u64) * 100.0;
+    // Step 1: Emit Running BEFORE CompactionComplete
+    emit(crate::types::StreamChunk::session_state_change(
+        crate::types::SessionState::Running,
+    ));
+    // Step 2: Emit CompactionComplete
+    emit(crate::types::StreamChunk::compaction_complete(
+        crate::types::CompactionResult {
+            original_tokens,
+            compacted_tokens: injected_tokens,
+            compression_ratio: ratio,
+            turns_summarized: 0,
+            turns_kept: 0,
+        },
+    ));
+}
+
 /// Determine if the Done handler should set session status to Idle.
 ///
 /// The Done handler must NOT set Idle when either:

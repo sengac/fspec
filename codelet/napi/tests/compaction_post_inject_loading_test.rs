@@ -15,53 +15,50 @@ use std::sync::{Arc, Mutex};
 // Scenario 1: on_injected emits SessionStateChange Running before CompactionComplete
 // ============================================================================
 
-/// Captures the sequence of StreamChunk types emitted via handle_output,
-/// specifically SessionStateChange(Running) and CompactionComplete, to
-/// verify the on_injected callback's emission ORDER.
+/// Tests the REAL `emit_post_injection_events` function — the same function
+/// called by the on_injected closure in session_manager's agent_loop.
 ///
-/// We test this through the actual inject_summary_handler::create_handler
-/// with a real on_injected callback that records emission order — the same
-/// pattern used in the real agent_loop.
+/// Captures the StreamChunk emission order to verify that
+/// SessionStateChange(Running) is emitted BEFORE CompactionComplete.
 #[test]
 fn test_on_injected_callback_emits_running_before_compaction_complete() {
     // @step Given the agent loop is processing a compaction instruction
-    // Set up shared state exactly as agent_loop does.
     let compaction_flag = Arc::new(AtomicBool::new(true));
     let pending_dag: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
-    let pre_compaction_tokens = Arc::new(AtomicU32::new(50_000));
 
-    // Track the emission order from the on_injected callback.
-    // In the real system, handle_output sends these to JS via the chunk callback.
+    // Track the emission order by recording chunk type names.
     let emissions: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-    let emissions_clone = emissions.clone();
-    let pre_tokens = pre_compaction_tokens.clone();
+    let emissions_for_emit = emissions.clone();
 
     // @step And the Rust session status is Running from CompactionContinuing
-    // Build the on_injected callback — mirrors agent_loop registration exactly.
+    // Build a recording emit closure — same signature as handle_output.
+    let record_emit = move |chunk: codelet_napi::StreamChunk| {
+        let type_name = match &chunk {
+            codelet_napi::StreamChunk::SessionStateChange { state } => {
+                format!("SessionStateChange({:?})", state)
+            }
+            codelet_napi::StreamChunk::CompactionComplete { .. } => {
+                "CompactionComplete".to_string()
+            }
+            other => format!("{:?}", other),
+        };
+        emissions_for_emit.lock().unwrap().push(type_name);
+    };
+
+    // Build real inject_summary handler with on_injected that calls
+    // the REAL emit_post_injection_events (same as session_manager production code).
+    let pre_compaction_tokens = Arc::new(AtomicU32::new(50_000));
+    let pre_tokens = pre_compaction_tokens.clone();
     let on_injected: codelet_napi::inject_summary_handler::OnInjectedCallback =
         Arc::new(move |injected_tokens: u32| {
             let original_tokens = pre_tokens.load(Ordering::Acquire);
-            let _ratio = if original_tokens > 0 {
-                codelet_cli::interactive_helpers::compression_ratio(
-                    original_tokens as u64,
-                    injected_tokens as u64,
-                ) * 100.0
-            } else {
-                0.0
-            };
-            // Record emissions in the same order as the real on_injected callback.
-            // Real code: handle_output(SessionStateChange(Running)) then handle_output(CompactionComplete)
-            emissions_clone
-                .lock()
-                .unwrap()
-                .push("SessionStateChange(Running)".to_string());
-            emissions_clone
-                .lock()
-                .unwrap()
-                .push("CompactionComplete".to_string());
+            codelet_napi::inject_summary_handler::emit_post_injection_events(
+                &record_emit,
+                original_tokens,
+                injected_tokens,
+            );
         });
 
-    // Create the real inject_summary handler with our on_injected callback
     let handler = codelet_napi::inject_summary_handler::create_handler(
         pending_dag.clone(),
         200_000,
@@ -113,84 +110,50 @@ fn test_on_injected_callback_emits_running_before_compaction_complete() {
     );
 }
 
-/// Verify the ACTUAL on_injected callback code in session_manager registers
-/// the correct emission sequence. This test validates the contract by
-/// constructing the same closure structure and verifying ordering.
+/// Verify emit_post_injection_events produces correct CompactionComplete
+/// metrics including compression ratio.
 #[test]
-fn test_on_injected_integration_with_real_handler() {
+fn test_emit_post_injection_events_metrics() {
     // @step Given pre-compaction tokens are stored
-    let pre_compaction_tokens = Arc::new(AtomicU32::new(40_000));
-    let compaction_flag = Arc::new(AtomicBool::new(true));
-    let pending_dag: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
+    let chunks: Arc<Mutex<Vec<codelet_napi::StreamChunk>>> = Arc::new(Mutex::new(Vec::new()));
+    let chunks_clone = chunks.clone();
 
-    // Track what handle_output would receive
-    let chunks: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
-    let chunks_for_cb = chunks.clone();
-    let pre_tokens = pre_compaction_tokens.clone();
+    let record = move |chunk: codelet_napi::StreamChunk| {
+        chunks_clone.lock().unwrap().push(chunk);
+    };
 
-    // Build callback matching the real agent_loop on_injected closure
-    let on_injected: codelet_napi::inject_summary_handler::OnInjectedCallback =
-        Arc::new(move |injected_tokens: u32| {
-            let original_tokens = pre_tokens.load(Ordering::Acquire);
-            let ratio =
-                codelet_cli::interactive_helpers::compression_ratio(
-                    original_tokens as u64,
-                    injected_tokens as u64,
-                ) * 100.0;
-
-            // SessionStateChange(Running) BEFORE CompactionComplete
-            chunks_for_cb
-                .lock()
-                .unwrap()
-                .push("SessionStateChange(Running)".to_string());
-            chunks_for_cb.lock().unwrap().push(format!(
-                "CompactionComplete(original={}, compacted={}, ratio={:.1}%)",
-                original_tokens, injected_tokens, ratio
-            ));
-        });
-
-    let handler = codelet_napi::inject_summary_handler::create_handler(
-        pending_dag.clone(),
-        200_000,
-        compaction_flag.clone(),
-        Some(on_injected),
+    // @step When emit_post_injection_events is called with known token counts
+    codelet_napi::inject_summary_handler::emit_post_injection_events(
+        &record,
+        40_000, // original
+        10_000, // compacted
     );
 
-    // @step When inject_summary is called with DAG content
-    let result = handler(uuid::Uuid::new_v4(), "# D2: Durable\n- Auth decision".to_string());
-    assert!(result.is_ok());
-
-    // @step Then DAG is stored in pending_dag_content
-    assert!(
-        pending_dag.lock().unwrap().is_some(),
-        "DAG must be stored in pending_dag_content"
-    );
-
-    // @step And compaction_in_progress is cleared
-    assert!(
-        !compaction_flag.load(Ordering::Relaxed),
-        "compaction_in_progress must be cleared"
-    );
-
-    // @step And emissions are in correct order: Running then CompactionComplete
+    // @step Then exactly 2 chunks are emitted in order
     let emitted = chunks.lock().unwrap();
     assert_eq!(emitted.len(), 2);
-    assert!(
-        emitted[0].contains("SessionStateChange(Running)"),
-        "First emission must be Running, got: {}",
-        emitted[0]
-    );
-    assert!(
-        emitted[1].contains("CompactionComplete"),
-        "Second emission must be CompactionComplete, got: {}",
-        emitted[1]
-    );
 
-    // Verify compression ratio is reasonable
-    assert!(
-        emitted[1].contains("ratio="),
-        "CompactionComplete must include ratio"
-    );
+    // First must be SessionStateChange(Running)
+    match &emitted[0] {
+        codelet_napi::StreamChunk::SessionStateChange { state } => {
+            assert_eq!(*state, codelet_napi::SessionState::Running);
+        }
+        other => panic!("First emission must be SessionStateChange(Running), got: {:?}", other),
+    }
+
+    // Second must be CompactionComplete with correct token counts and ratio
+    match &emitted[1] {
+        codelet_napi::StreamChunk::CompactionComplete { compaction_result } => {
+            assert_eq!(compaction_result.original_tokens, 40_000);
+            assert_eq!(compaction_result.compacted_tokens, 10_000);
+            assert!(
+                compaction_result.compression_ratio > 0.0,
+                "Compression ratio should be positive, got: {}",
+                compaction_result.compression_ratio
+            );
+        }
+        other => panic!("Second emission must be CompactionComplete, got: {:?}", other),
+    }
 }
 
 // ============================================================================

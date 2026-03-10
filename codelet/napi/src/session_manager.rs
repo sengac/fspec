@@ -5390,17 +5390,14 @@ async fn agent_loop(
                 let session_for_inject = session.clone();
                 let on_injected: crate::inject_summary_handler::OnInjectedCallback = Arc::new(move |injected_tokens: u32| {
                     let original_tokens = session_for_inject.pre_compaction_tokens.load(Ordering::Acquire);
-                    let ratio = compression_ratio(original_tokens as u64, injected_tokens as u64) * 100.0;
                     session_for_inject.set_compaction_progress(None);
-                    // Emit Running BEFORE CompactionComplete so JS sees isLoading=true before isCompacting=false
-                    session_for_inject.handle_output(StreamChunk::session_state_change(SessionState::Running));
-                    session_for_inject.handle_output(StreamChunk::compaction_complete(crate::types::CompactionResult {
+                    // Emit Running BEFORE CompactionComplete via extracted helper
+                    // (ordering is tested in inject_summary_handler tests)
+                    crate::inject_summary_handler::emit_post_injection_events(
+                        &|chunk| session_for_inject.handle_output(chunk),
                         original_tokens,
-                        compacted_tokens: injected_tokens,
-                        compression_ratio: ratio,
-                        turns_summarized: 0,
-                        turns_kept: 0,
-                    }));
+                        injected_tokens,
+                    );
                 });
                 let inject_handler = crate::inject_summary_handler::create_handler(
                     session.pending_dag_content.clone(),
@@ -5628,19 +5625,11 @@ async fn agent_loop(
                     inner_session.token_tracker.input_tokens,
                 );
 
-                // Emit definitive CompactionComplete with accurate post-apply metrics
-                let original_tokens = session.pre_compaction_tokens.load(Ordering::Acquire);
-                let compacted_tokens = inner_session.token_tracker.input_tokens as u32;
-                let ratio = compression_ratio(original_tokens as u64, compacted_tokens as u64) * 100.0;
+                // CompactionComplete was already emitted by emit_post_injection_events
+                // during the stream (in on_injected). We only need to transition to Idle
+                // now that the DAG has been applied and the agent loop is finishing.
                 session.set_status(SessionStatus::Idle);
                 session.set_compaction_progress(None);
-                session.handle_output(StreamChunk::compaction_complete(crate::types::CompactionResult {
-                    original_tokens,
-                    compacted_tokens,
-                    compression_ratio: ratio,
-                    turns_summarized: 0,
-                    turns_kept: 0,
-                }));
             }
 
             // Unconditionally clear compaction_in_progress (safety net for agent failures)
