@@ -49,6 +49,10 @@ pub mod session_search_handler;
 #[cfg(not(feature = "noop"))]
 pub mod inject_summary_handler;
 
+// RLM-001: DeepSearch handler creates ephemeral sub-agents
+#[cfg(not(feature = "noop"))]
+pub mod deep_search_handler;
+
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
 pub mod persistence;
 

@@ -5383,6 +5383,30 @@ async fn agent_loop(
             );
             codelet_tools::set_session_search_handler(session.id, Some(session_search_handler));
 
+            // RLM-001: Register DeepSearch handler for this session
+            // BUG-102: Capture provider and model from parent session so the
+            // sub-agent inherits the same LLM configuration.
+            // Returns a Future (not sync) because the sub-agent makes async LLM API calls
+            let deep_search_project_path = std::path::PathBuf::from(&session.project);
+            let deep_search_provider = inner_session.current_provider_name().to_string();
+            let deep_search_model = inner_session.current_model_id().map(|s| s.to_string());
+            let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(move |query, scope, max_depth| {
+                let path = deep_search_project_path.clone();
+                let provider = deep_search_provider.clone();
+                let model = deep_search_model.clone();
+                Box::pin(async move {
+                    crate::deep_search_handler::execute_deep_search(
+                        &path,
+                        &query,
+                        scope.as_deref(),
+                        max_depth,
+                        &provider,
+                        model.as_deref(),
+                    ).await
+                })
+            });
+            codelet_tools::set_deep_search_handler(session.id, Some(deep_search_handler));
+
             // Register inject_summary handler — stores DAG in pending_dag_content
             // and fires on_injected to emit CompactionComplete immediately.
             {
@@ -5647,6 +5671,7 @@ async fn agent_loop(
             codelet_tools::set_fspec_handler_for_session(session.id, None);
             codelet_tools::set_session_search_handler(session.id, None);
             codelet_tools::set_inject_summary_handler(session.id, None);
+            codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
             codelet_tools::set_bridge_handler(None);
             codelet_tools::remove_bridge_session_context(session.id);
 

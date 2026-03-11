@@ -502,6 +502,7 @@ impl ClaudeProvider {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WriteTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool,
+            DeepSearchTool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -528,7 +529,8 @@ impl ClaudeProvider {
             .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade), session_id)) // TOOL-007, TOOL-014: Facade with session_id
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
-            .tool(InjectSummaryTool::new(session_id));
+            .tool(InjectSummaryTool::new(session_id))
+            .tool(DeepSearchTool::new(session_id)); // RLM-001: DeepSearch tool
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade
         let is_oauth = self.is_oauth_mode();

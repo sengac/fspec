@@ -14,6 +14,7 @@ pub mod stage_permissions;
 pub mod bridge_handler;
 pub mod bridge_relay;
 pub mod chrome_browser;
+pub mod deep_search;
 pub mod edit;
 pub mod error;
 pub mod facade;
@@ -122,6 +123,12 @@ pub use inject_summary::{
     InjectSummaryTool, InjectSummaryHandler, InjectSummaryResult,
     set_inject_summary_handler, has_inject_summary_handler,
     execute_inject_summary, clear_all_inject_summary_handlers,
+};
+pub use deep_search::{
+    DeepSearchTool, DeepSearchArgs, DeepSearchHandler,
+    DEFAULT_DEEP_SEARCH_MAX_DEPTH, SUB_AGENT_TOOL_NAMES, SUB_AGENT_TOOL_COUNT,
+    build_system_prompt, sub_agent_tool_names,
+    set_deep_search_handler, has_deep_search_handler, clear_all_deep_search_handlers,
 };
 
 /// Tool definition for API requests

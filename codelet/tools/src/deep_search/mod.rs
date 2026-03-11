@@ -1,0 +1,311 @@
+//! DeepSearch Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
+//!
+//! Feature: spec/features/deep-search.feature
+//!
+//! A rig Tool that spawns an ephemeral sub-agent to explore user-scoped corpora
+//! (code files, session histories) using read-only tools (Read, Grep, AstGrep,
+//! Glob, Ls, Bash, SessionSearch) and returns a text answer.
+//!
+//! Uses the handler pattern (like SessionSearchTool and InjectSummaryTool):
+//! - Tool definition and JSON schema live here in codelet-tools
+//! - A handler type alias is defined for the actual deep search execution
+//! - A global per-session handler registry stores handlers
+//! - The actual agent construction and execution lives in the NAPI handler
+//! - When call() is invoked, the tool dispatches to the registered handler
+//!
+//! Based on the RLM paper (MIT CSAIL, arXiv:2512.24601).
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
+mod tests;
+
+use std::collections::HashMap;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::sync::RwLock;
+
+use rig::tool::Tool;
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use uuid::Uuid;
+
+use crate::ToolError;
+
+/// Default maximum depth for the sub-agent's tool call rounds.
+/// Bounded at 50 to prevent runaway sub-agents (not usize::MAX).
+pub const DEFAULT_DEEP_SEARCH_MAX_DEPTH: usize = 50;
+
+/// Canonical list of tool names the sub-agent gets.
+///
+/// This constant is the single source of truth. The handler in
+/// `codelet/napi/src/deep_search_handler.rs::build_and_run_agent()` adds exactly
+/// these tools (and asserts `SUB_AGENT_TOOL_COUNT` at compile time).
+/// If tools are added or removed, update BOTH this array AND the handler.
+pub const SUB_AGENT_TOOL_NAMES: [&str; 7] = [
+    "Read",
+    "Grep",
+    "AstGrep",
+    "Glob",
+    "Ls",
+    "Bash",
+    "SessionSearch",
+];
+
+/// Number of tools the sub-agent gets. Used for compile-time assertions in the
+/// handler to catch tool list drift.
+pub const SUB_AGENT_TOOL_COUNT: usize = SUB_AGENT_TOOL_NAMES.len();
+
+/// Arguments for the DeepSearch tool
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct DeepSearchArgs {
+    /// The question to answer (required)
+    pub query: String,
+
+    /// Paths or glob patterns defining what code to search.
+    /// Optional — when omitted, the sub-agent uses only SessionSearch.
+    /// Examples: ["src/"], ["**/*.rs"], ["codelet/tools/src/read.rs"]
+    #[serde(default)]
+    pub scope: Option<Vec<String>>,
+
+    /// Maximum tool call depth before stopping (default: 50).
+    /// Prevents runaway sub-agents.
+    #[serde(default)]
+    pub max_depth: Option<usize>,
+}
+
+/// Handler function type for deep search execution.
+/// Takes query, optional scope, and max_depth. Returns a future resolving to the
+/// synthesized answer.
+///
+/// The handler is registered by session_manager before the agent run. It captures:
+/// - project_path: for creating the ephemeral SessionSearch handler
+/// - Provider access: for building the sub-agent with the right LLM
+///
+/// The handler is responsible for the full lifecycle:
+/// 1. Create ephemeral session_id (Uuid::new_v4())
+/// 2. Register SessionSearch handler for ephemeral session
+/// 3. Build system prompt with scope description
+/// 4. Build rig agent with read-only tools
+/// 5. Call RigAgent::prompt(query) (non-streaming, blocking)
+/// 6. Cleanup SessionSearch handler
+/// 7. Return final answer
+///
+/// NOTE: This handler returns a Future (not a sync Result) because the sub-agent
+/// executes async LLM API calls via RigAgent::prompt(). Unlike SessionSearchHandler
+/// and InjectSummaryHandler (which do sync persistence work), DeepSearch must be
+/// async to avoid creating a nested tokio runtime inside the parent agent's runtime.
+pub type DeepSearchHandler = Arc<
+    dyn Fn(
+            String,
+            Option<Vec<String>>,
+            usize,
+        ) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>>
+        + Send
+        + Sync,
+>;
+
+/// Per-session handler storage
+static DEEP_SEARCH_HANDLERS: once_cell::sync::Lazy<RwLock<HashMap<Uuid, DeepSearchHandler>>> =
+    once_cell::sync::Lazy::new(|| RwLock::new(HashMap::new()));
+
+/// Set the deep search handler for a specific session
+///
+/// Called by session manager before agent run to configure how deep search
+/// operations are executed for this session.
+pub fn set_deep_search_handler(session_id: Uuid, handler: Option<DeepSearchHandler>) {
+    if let Ok(mut guard) = DEEP_SEARCH_HANDLERS.write() {
+        match handler {
+            Some(h) => {
+                guard.insert(session_id, h);
+            }
+            None => {
+                guard.remove(&session_id);
+            }
+        }
+    }
+}
+
+/// Check if a deep search handler is configured for a specific session
+pub fn has_deep_search_handler(session_id: Uuid) -> bool {
+    DEEP_SEARCH_HANDLERS
+        .read()
+        .map(|guard| guard.contains_key(&session_id))
+        .unwrap_or(false)
+}
+
+/// Execute a deep search via the handler for a specific session
+///
+/// Called by DeepSearchTool when the LLM invokes the tool.
+/// Async because the handler returns a Future (LLM API calls are async).
+async fn execute_deep_search(
+    session_id: Uuid,
+    query: String,
+    scope: Option<Vec<String>>,
+    max_depth: usize,
+) -> Result<String, String> {
+    let handler = match DEEP_SEARCH_HANDLERS.read() {
+        Ok(guard) => guard.get(&session_id).cloned(),
+        Err(_) => {
+            return Err("Failed to acquire deep search handlers lock".to_string());
+        }
+    };
+
+    match handler {
+        Some(h) => h(query, scope, max_depth).await,
+        None => Err(format!(
+            "Deep search handler not configured for session {session_id} — \
+             DeepSearchTool requires session context"
+        )),
+    }
+}
+
+/// Clear all deep search handlers (for testing)
+pub fn clear_all_deep_search_handlers() {
+    if let Ok(mut guard) = DEEP_SEARCH_HANDLERS.write() {
+        guard.clear();
+    }
+}
+
+/// Build the system prompt for the ephemeral sub-agent.
+///
+/// Describes available tools, code scope (if any), and search strategy.
+pub fn build_system_prompt(scope: &[String]) -> String {
+    let scope_section = if scope.is_empty() {
+        "No code scope specified. Use SessionSearch to explore session history only.".to_string()
+    } else {
+        let paths = scope
+            .iter()
+            .map(|p| format!("  - {p}"))
+            .collect::<Vec<_>>()
+            .join("\n");
+        format!(
+            "YOUR CODE SCOPE:\n{paths}\n\n\
+             Files are accessible via Read, Grep, AstGrep, Glob, Ls, and Bash tools.\n\
+             Do NOT try to read all files — explore strategically."
+        )
+    };
+
+    format!(
+        "You are a research assistant tasked with answering a query by exploring a scoped \
+         corpus of files and session history. You have access to tools for reading files, \
+         searching with regex, structural code search, and session history exploration.\n\n\
+         {scope_section}\n\n\
+         AVAILABLE TOOLS:\n\
+         - Read: Read file contents (use offset/limit for large files)\n\
+         - Grep: Search file contents by regex pattern\n\
+         - AstGrep: AST-based structural code search (for code files)\n\
+         - Glob: Find files matching patterns\n\
+         - Ls: List directory contents\n\
+         - Bash: Execute shell commands for data processing\n\
+         - SessionSearch: Search and view session conversation history \
+           (use recent/search/show actions)\n\n\
+         STRATEGY:\n\
+         1. Start by understanding the scope — use Grep or Glob to find relevant files\n\
+         2. Read targeted sections, not entire files\n\
+         3. For code: use AstGrep to find structural patterns (functions, types, etc.)\n\
+         4. Use SessionSearch to find relevant past conversations\n\
+         5. Build up your answer incrementally\n\
+         6. When you have enough information, provide your final answer\n\n\
+         IMPORTANT:\n\
+         - Do NOT try to read all files at once — explore strategically\n\
+         - Use Grep/AstGrep to narrow down before reading\n\
+         - Your answer should directly address the original query\n\
+         - If the answer is not in scope, say so explicitly"
+    )
+}
+
+/// Returns the list of tool names the sub-agent gets.
+///
+/// Delegates to `SUB_AGENT_TOOL_NAMES` — the single source of truth.
+pub fn sub_agent_tool_names() -> Vec<&'static str> {
+    SUB_AGENT_TOOL_NAMES.to_vec()
+}
+
+/// DeepSearch Tool — Rig Tool implementation
+///
+/// Allows AI agents to spawn an ephemeral sub-agent for deep corpus exploration.
+/// The sub-agent uses read-only tools to explore code and session history,
+/// then returns a synthesized text answer.
+///
+/// Uses the handler pattern — the actual agent construction and execution
+/// is delegated to a registered handler (set via `set_deep_search_handler`).
+#[derive(Clone, Debug)]
+pub struct DeepSearchTool {
+    /// Parent session ID — used for handler lookup
+    pub session_id: Uuid,
+}
+
+impl DeepSearchTool {
+    /// Create a new DeepSearchTool instance
+    ///
+    /// # Arguments
+    /// * `session_id` - The parent session ID (for handler lookup)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
+    }
+}
+
+impl Tool for DeepSearchTool {
+    const NAME: &'static str = "DeepSearch";
+
+    type Error = ToolError;
+    type Args = DeepSearchArgs;
+    type Output = String;
+
+    async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
+        rig::completion::ToolDefinition {
+            name: "DeepSearch".to_string(),
+            description: concat!(
+                "Execute a deep search over a scoped corpus of code files and session history. ",
+                "Spawns an ephemeral sub-agent that explores the specified scope using read-only ",
+                "tools (Read, Grep, AstGrep, Glob, Ls, Bash, SessionSearch) and returns a ",
+                "synthesized text answer. Use for questions requiring exploration of many files ",
+                "or past conversations. Specify scope as paths/globs to limit code exploration; ",
+                "session history is always searchable via SessionSearch."
+            )
+            .to_string(),
+            parameters: json!({
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "The question to answer by exploring the scoped corpus"
+                    },
+                    "scope": {
+                        "type": ["array", "null"],
+                        "items": { "type": "string" },
+                        "description": "Paths or glob patterns defining what code to search. Optional — when omitted, the sub-agent uses only SessionSearch for session history exploration. Examples: [\"src/auth/\"], [\"**/*.rs\"], [\"codelet/tools/src/read.rs\"]"
+                    },
+                    "max_depth": {
+                        "type": ["integer", "null"],
+                        "description": "Maximum tool call depth before stopping (default: 50). Prevents runaway sub-agents.",
+                        "minimum": 1
+                    }
+                },
+                "required": ["query"]
+            }),
+        }
+    }
+
+    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Validate query is not empty
+        if args.query.trim().is_empty() {
+            return Err(ToolError::Execution {
+                tool: "DeepSearch",
+                message: "query is required and must not be empty".to_string(),
+            });
+        }
+
+        let max_depth = args.max_depth.unwrap_or(DEFAULT_DEEP_SEARCH_MAX_DEPTH);
+
+        // Dispatch to registered handler (async — sub-agent makes LLM API calls)
+        execute_deep_search(self.session_id, args.query, args.scope, max_depth)
+            .await
+            .map_err(|e| ToolError::Execution {
+                tool: "DeepSearch",
+                message: e,
+            })
+    }
+}
