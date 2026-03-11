@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { stripAnsi } from './utils/output';
 
 // Help functions (preserved from original)
 export function displayCustomHelpWithNote(version?: string): void {
@@ -1726,12 +1727,6 @@ export function handleHelpCommand(group?: string, version?: string): void {
  * Get help content as strings (for bootstrap command)
  * These functions return the same content as the display functions but as strings
  */
-
-// Helper function to strip ANSI escape codes (chalk formatting)
-function stripAnsi(str: string): string {
-  // eslint-disable-next-line no-control-regex
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
-}
 
 // Helper function to capture console.log output from a function
 function captureConsoleOutput(fn: () => void): string {

@@ -9,6 +9,7 @@ import {
   resetOutputContext,
   setFspecPositionalArgs,
   clearFspecPositionalArgs,
+  stripAnsi,
 } from './output';
 
 // Commands that are excluded from FspecTool (must use CLI directly)
@@ -578,46 +579,14 @@ export async function fspecCallback(
   let commanderOutput = '';
   let commanderError = '';
 
-  // Capture process.stdout.write directly for Commander help that bypasses configureOutput
-  let processStdoutCapture = '';
-  const originalStdoutWrite = process.stdout.write.bind(process.stdout);
-  process.stdout.write = ((
-    chunk: string | Uint8Array,
-    encodingOrCallback?: string | ((err?: Error) => void),
-    callback?: (err?: Error) => void
-  ): boolean => {
-    const str = typeof chunk === 'string' ? chunk : chunk.toString();
-    processStdoutCapture += str;
-    // Don't write to actual stdout - just capture
-    // Call the callback if provided
-    if (typeof encodingOrCallback === 'function') {
-      encodingOrCallback();
-    } else if (callback) {
-      callback();
-    }
-    return true;
-  }) as typeof process.stdout.write;
-
-  // Capture process.stderr.write directly for Commander errors that bypass configureOutput
-  // Commander.js writes "error: unknown option" directly to process.stderr
-  let processStderrCapture = '';
-  const originalStderrWrite = process.stderr.write.bind(process.stderr);
-  process.stderr.write = ((
-    chunk: string | Uint8Array,
-    encodingOrCallback?: string | ((err?: Error) => void),
-    callback?: (err?: Error) => void
-  ): boolean => {
-    const str = typeof chunk === 'string' ? chunk : chunk.toString();
-    processStderrCapture += str;
-    // Don't write to actual stderr - just capture
-    // Call the callback if provided
-    if (typeof encodingOrCallback === 'function') {
-      encodingOrCallback();
-    } else if (callback) {
-      callback();
-    }
-    return true;
-  }) as typeof process.stderr.write;
+  // NOTE: We intentionally do NOT override process.stdout.write / process.stderr.write.
+  // The TUI's Ink renderer writes to process.stdout concurrently during async command
+  // execution (ThinkingIndicator spinner, screen redraws), and a global override would
+  // capture those TUI frames into the tool result — contaminating it with spinner text,
+  // conversation content, and UI chrome. Instead, all command output is captured via:
+  //   - Layer 1: output.log/error/warn → createCaptureContext arrays (all commands use this)
+  //   - Layer 2: Commander.js configureOutput → commanderOutput/commanderError strings
+  // Layer 2 is propagated to all subcommands below to ensure complete capture.
 
   // Override process.exit to prevent Commander and command handlers from exiting
   // This is necessary because many commands call process.exit() directly
@@ -639,18 +608,27 @@ export async function fspecCallback(
     // Configure to not exit on error - throws CommanderError instead
     program.exitOverride();
 
-    // Configure output to capture Commander.js help output (which doesn't use our output abstraction)
-    program.configureOutput({
+    // Configure output to capture Commander.js help output and errors.
+    // IMPORTANT: configureOutput must be propagated to ALL subcommands because
+    // Commander's copyInheritedSettings (called during addCommand) copies the parent's
+    // _outputConfiguration by reference BEFORE we call configureOutput. When configureOutput
+    // creates a new object via spread, the shared reference is broken and subcommands
+    // retain the old config that writes to process.stdout/stderr directly.
+    const commanderOutputConfig = {
       writeOut: (str: string) => {
-        commanderOutput += str;
+        commanderOutput += stripAnsi(str);
       },
       writeErr: (str: string) => {
-        commanderError += str;
+        commanderError += stripAnsi(str);
       },
       outputError: (str: string) => {
-        commanderError += str;
+        commanderError += stripAnsi(str);
       },
-    });
+    };
+    program.configureOutput(commanderOutputConfig);
+    for (const cmd of program.commands) {
+      cmd.configureOutput(commanderOutputConfig);
+    }
 
     // Build argv array: ['node', 'fspec', command, ...options]
     // Always request JSON format when available for structured output
@@ -713,15 +691,11 @@ export async function fspecCallback(
     // Combine captured output from both sources:
     // - capturedStdout/capturedStderr: output from commands using output.log/error/warn
     // - commanderOutput/commanderError: output from Commander.js help/errors
-    // - processStdoutCapture/processStderrCapture: direct process.stdout/stderr.write
     const capturedOutput =
       capturedStdout.join('\n') +
-      (commanderOutput ? '\n' + commanderOutput : '') +
-      (processStdoutCapture ? '\n' + processStdoutCapture : '');
+      (commanderOutput ? '\n' + commanderOutput : '');
     const capturedError =
-      capturedStderr.join('\n') +
-      (commanderError ? '\n' + commanderError : '') +
-      (processStderrCapture ? '\n' + processStderrCapture : '');
+      capturedStderr.join('\n') + (commanderError ? '\n' + commanderError : '');
 
     // Parse system reminders from captured stderr
     const systemReminders = parseSystemReminders(capturedError);
@@ -771,12 +745,9 @@ export async function fspecCallback(
     // Combine captured output from all sources
     const capturedOutput =
       capturedStdout.join('\n') +
-      (commanderOutput ? '\n' + commanderOutput : '') +
-      (processStdoutCapture ? '\n' + processStdoutCapture : '');
+      (commanderOutput ? '\n' + commanderOutput : '');
     const capturedError =
-      capturedStderr.join('\n') +
-      (commanderError ? '\n' + commanderError : '') +
-      (processStderrCapture ? '\n' + processStderrCapture : '');
+      capturedStderr.join('\n') + (commanderError ? '\n' + commanderError : '');
 
     const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -794,15 +765,10 @@ export async function fspecCallback(
       );
 
       // Helper function to clean up __FSPEC_EXIT_OVERRIDE__ artifacts from output
+      // Note: ANSI codes are already stripped at capture time, so only plain text patterns needed
       const cleanExitOverrideArtifacts = (text: string): string => {
         return (
           text
-            // Handle colored "Error: __FSPEC_EXIT_OVERRIDE__:N" patterns
-            .replace(
-              // eslint-disable-next-line no-control-regex
-              /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
-              ''
-            )
             // Handle "Error: __FSPEC_EXIT_OVERRIDE__:N" patterns
             .replace(/Error:\s*__FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
             // Handle "✗ Error: __FSPEC_EXIT_OVERRIDE__:N" patterns (from command catch blocks)
@@ -919,10 +885,6 @@ export async function fspecCallback(
 
     // Restore process.exit
     process.exit = originalExit;
-
-    // Restore process.stdout.write and process.stderr.write
-    process.stdout.write = originalStdoutWrite;
-    process.stderr.write = originalStderrWrite;
 
     // Restore cwd
     process.chdir(originalCwd);

@@ -8,6 +8,7 @@
  */
 
 import { logger } from './logger';
+import { stripAnsi } from './output';
 
 // Store original console methods
 const originalConsole = {
@@ -18,17 +19,6 @@ const originalConsole = {
   debug: console.debug,
   trace: console.trace,
 };
-
-// ANSI escape code stripping regex
-// eslint-disable-next-line no-control-regex
-const ANSI_REGEX = /\x1b\[[0-9;]*m/g;
-
-/**
- * Strip ANSI escape codes (chalk formatting) from a string
- */
-function stripAnsi(str: string): string {
-  return str.replace(ANSI_REGEX, '');
-}
 
 /**
  * Format arguments for logging

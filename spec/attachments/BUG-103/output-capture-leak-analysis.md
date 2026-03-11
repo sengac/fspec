@@ -1,229 +1,160 @@
 # BUG-103: ANSI Escape Codes and TUI Content Leaking into Fspec Tool Call Results
 
-## Summary
-
-Commands executed via the NAPI FspecTool bridge return ANSI escape codes (chalk formatting), TUI escape sequences, and double-captured output in their results. The root cause is an incomplete migration to the `output.ts` abstraction layer combined with missing ANSI stripping in the capture pipeline.
+## Status: RESOLVED
 
 ---
 
-## Architecture: Three-Layer Output Capture System
+## Root Cause
 
-When the Rust agent calls an fspec command via NAPI, `src/utils/fspec-callback.ts` sets up three capture layers:
+**Layer 3 (`process.stdout.write` override) was the primary bug, not a missing ANSI strip.**
 
-### Layer 1: `output.log` / `output.error` / `output.warn` (the correct path)
+When `fspecCallback` monkey-patched `process.stdout.write`, it created a global interception that captured **everything written to stdout** — including Ink's TUI renderer which writes screen redraws concurrently via `process.stdout.write` during async command execution.
+
+The ThinkingIndicator spinner fires a `setInterval` every 80ms, triggering React state changes → Ink re-renders → `stream.write(buffer)` → `process.stdout.write` (now intercepted). Each render cycle dumped a full TUI frame (spinner characters, tool call output, conversation content, UI chrome) into `processStdoutCapture`.
+
+**Why some commands appeared clean:** Fast commands (e.g., `list-work-units`) completed within a single event loop tick before Ink's next render timer fired. Slow async commands (e.g., `link-coverage` with file validation, step consistency checks) gave the event loop time to service multiple Ink render timers, accumulating frames of TUI content in the capture.
+
+**Secondary issue:** ANSI stripping was also missing from all capture layers, so chalk-formatted text from `output.log()` calls and Commander output arrived with raw escape codes. But even with stripping, the **text content** of captured TUI frames remained — stripping `\x1b[33m` from `\x1b[33mThinking...\x1b[39m` still leaves `Thinking...` in the result.
+
+**Tertiary issue:** `configureOutput` on the root Commander program didn't propagate to subcommands. Commander's `copyInheritedSettings` copies the parent's `_outputConfiguration` by reference during `addCommand()`, but `configureOutput()` creates a **new object** via spread — breaking the shared reference. All subcommands retained the old config that wrote to `process.stdout.write`. This was why Layer 3 was originally added: Layer 2 only captured root-program output, not subcommand help/errors.
+
+---
+
+## Architecture Before Fix: Three-Layer Output Capture
+
+When the Rust agent called an fspec command via NAPI, `fspec-callback.ts` set up three capture layers:
+
+### Layer 1: `output.log` / `output.error` / `output.warn`
 
 - **File:** `src/utils/output.ts`
-- Commands are *supposed* to use the `output` abstraction instead of `console.log` directly.
-- `createCaptureContext()` (line 74-104) creates a capture context with two string arrays: `stdout[]` and `stderr[]`.
-- In capture mode, messages are pushed as plain strings — **no chalk coloring applied** in the capture context (unlike the default CLI context which wraps `error` in `chalk.red` and `warn` in `chalk.yellow`).
-- Activated via `setOutputContext(captureContext)` just before `program.parseAsync()`.
+- Commands use the `output` abstraction instead of `console.log`.
+- `createCaptureContext()` creates arrays: `stdout[]` and `stderr[]`.
+- Activated via `setOutputContext(captureContext)` before `program.parseAsync()`.
+- **Status:** Working correctly, but was missing ANSI stripping.
 
 ### Layer 2: Commander.js `configureOutput`
 
-- **File:** `src/utils/fspec-callback.ts`, lines 643-653
-- Captures Commander.js's own help text and error messages (e.g., `--help` output, unknown option errors).
-- These bypass the `output` abstraction entirely.
+- **File:** `src/utils/fspec-callback.ts`
+- Captures Commander.js help text and error messages.
+- **Bug:** Only applied to root program, not subcommands (due to `configureOutput` timing vs `copyInheritedSettings`).
 
-```typescript
-program.configureOutput({
-  writeOut: (str) => { commanderOutput += str; },
-  writeErr: (str) => { commanderError += str; },
-  outputError: (str) => { commanderError += str; },
-});
-```
+### Layer 3: Raw `process.stdout.write` monkey-patch (THE BUG)
 
-### Layer 3: Raw `process.stdout.write` / `process.stderr.write` monkey-patch
+- **File:** `src/utils/fspec-callback.ts`
+- Overrode `process.stdout.write` / `process.stderr.write` to capture everything.
+- **Intended purpose:** Catch subcommand help/errors that Layer 2 missed.
+- **Actual effect:** Also captured all concurrent Ink TUI renders, contaminating tool results with spinner text, conversation content, and UI chrome.
 
-- **File:** `src/utils/fspec-callback.ts`, lines 581-620
-- The **most aggressive** layer — catches absolutely everything.
-- `console.log()` → `process.stdout.write` (overridden) → captured into `processStdoutCapture`.
-- **All output is silently swallowed** — the original `write` is never called during capture.
-
-### Combined Output
-
-All three layers are merged into the final result:
+### Combined Output (Before Fix)
 
 ```typescript
 const capturedOutput =
   capturedStdout.join('\n') +                              // Layer 1
-  (commanderOutput ? '\n' + commanderOutput : '') +        // Layer 2
-  (processStdoutCapture ? '\n' + processStdoutCapture : '');  // Layer 3
+  (commanderOutput ? '\n' + commanderOutput : '') +        // Layer 2 (root only!)
+  (processStdoutCapture ? '\n' + processStdoutCapture : '');  // Layer 3 (TUI junk!)
 ```
 
 ---
 
-## Problem 1: Commands Using `chalk` Inside `output.log()` (~10+ commands)
-
-The `output.ts` capture context **does NOT strip ANSI codes**. When commands pass chalk-formatted strings through `output.log`, the ANSI escape codes are captured raw into the result returned to the LLM.
-
-### Affected Files
-
-| File | What leaks |
-|------|------------|
-| `src/commands/list-tags.ts:78` | `output.log(chalk.green(tag.tag) + ...)` — green-colored tag names |
-| `src/commands/show-work-unit.ts:413,432,435` | Yellow event names, bold feature files, gray scenario references |
-| `src/commands/list-scenario-tags.ts:166` | Cyan tags, gray categories |
-| `src/commands/link-coverage.ts:216` | Yellow warnings |
-| `src/commands/list-feature-tags.ts:143` | Cyan tags, gray categories |
-| `src/commands/query-orphans.ts:123` | Bold "Suggested actions" |
-| `src/commands/list-checkpoints.ts:45` | Bold checkpoint names |
-| `src/commands/audit-scenarios.ts:172` | Cyan total count |
-| `src/commands/discover-event-storm.ts:35` | `chalk.red(...)` passed to `output.error` |
-
----
-
-## Problem 2: `console.log` Used Directly (Bypasses Layer 1)
-
-### `help-formatter.ts:192`
-
-`displayHelpAndExit()` calls `console.log(formatCommandHelp(config))` with heavily chalk-formatted text, then `process.exit(0)`. This is caught by Layer 3 but arrives as raw chalk-colored help text in the result.
-
----
-
-## Problem 3: Double-Capture via `console-capture.ts` Interaction
-
-`initializeConsoleCapture()` (called at startup in `src/index.ts` line 18) wraps every `console.*` method to also log to winston. When Layer 3 is active simultaneously:
+## The Ink Render Race Condition (Detailed)
 
 ```
-console.log("hello")
-  → wrapped console.log (console-capture.ts)
-    → originalConsole.log("hello")
-      → Node.js internal console.log
-        → process.stdout.write (overridden by Layer 3!) → CAPTURED
-    → winston logger (stripped of ANSI) → log file transport
-      → if winston writes to stdout → POTENTIALLY CAPTURED AGAIN
+1. Rust agent emits FspecCommandRequest {command: "link-coverage", ...}
+2. GlobalSessionStreamManager.handleFspecCommandRequest() calls fspecCallback()
+3. fspecCallback():
+   a. Overrides process.stdout.write ← THE TRAP IS SET
+   b. Calls program.parseAsync(argv) ← STARTS ASYNC EXECUTION
+   c. During the await, event loop processes:
+      - ThinkingIndicator setInterval fires (every 80ms)
+      - React setState → Ink onRender() → throttledLog()
+      - stream.write(buffer) → process.stdout.write ← INTERCEPTED
+      - Full TUI frame captured into processStdoutCapture
+      - Repeats every ~80ms for duration of command
+   d. Command completes
+   e. processStdoutCapture now contains N TUI frames + actual command output
+   f. JSON extraction regex may or may not find actual output amid TUI noise
 ```
 
-This means some output could be **captured twice** — once through the normal path and once through winston's transport if it writes to stdout.
+**Ink's rendering pipeline:** Ink receives `stdout: process.stdout` at construction. Its `log-update` instance closes over this as `stream` and calls `stream.write(buffer.join(''))` on each render. Since `stream.write` resolves to `process.stdout.write` **at call time** (not at closure time), fspecCallback's override intercepts every render.
+
+**There is no Ink pause API.** The `Ink` class has no `pause()` or `suspend()` method — the only way to stop rendering is `unmount()`. The `patchConsole: false` config and `incrementalRendering: true` config don't help — the problem is that fspecCallback intercepts Ink's output, not the other way around.
 
 ---
 
-## Problem 4: `isInCaptureMode()` Exists but Is NEVER USED
+## Fix Applied
 
-There is a function `isInCaptureMode()` at line 65 of `output.ts` designed to let commands check if they're running in capture mode — but **no command ever calls it**. This was clearly intended to let commands conditionally skip chalk formatting when captured, but the conversion was never completed.
+### 1. Removed Layer 3 entirely
 
----
+Deleted the `process.stdout.write` and `process.stderr.write` overrides from `fspec-callback.ts`. The TUI's Ink renderer now writes to the terminal normally during async command execution, uncontaminated.
 
-## Problem 5: Exit Cascade Artifacts
-
-Many commands call `process.exit()` directly. The callback overrides `process.exit` (line 625-627) to throw `__FSPEC_EXIT_OVERRIDE__:N`. This causes cascading catches:
-
-1. Command succeeds → `process.exit(0)` → throws `__FSPEC_EXIT_OVERRIDE__:0`
-2. Command's own `catch` block catches this → treats as error → `process.exit(1)` → throws `__FSPEC_EXIT_OVERRIDE__:1`
-3. Callback detects this and tries to clean up with **fragile regex patterns** (lines 797-817) that match chalk-colored `Error:` and `✗ Error:` prefixes
-
-The cleanup regex depends on exact chalk formatting (e.g., `\x1b[31m`), which is inherently fragile.
-
----
-
-## Problem 6: TUI Escape Sequences
-
-TUI components write raw terminal escape sequences directly to `process.stdout.write`:
-
-| File | Escape sequence |
-|------|----------------|
-| `src/tui/components/BoardView.tsx:122` | `\x1b[?1000h` (mouse tracking enable) |
-| `src/tui/components/VirtualList.tsx:182` | `\x1b[?1000h` (mouse tracking enable) |
-| `src/tui/components/AgentView.tsx:1583` | `\x1b[?1000h` (mouse tracking enable) |
-
-These would be captured by Layer 3 if somehow active during fspec-callback execution. Currently mitigated by the `--format json` auto-injection in `fspec-callback.ts` (lines 680-686), but this is fragile — any command that doesn't respect `--format json` could trigger TUI rendering.
-
----
-
-## Problem 7: No ANSI Stripping in Capture Context
-
-The capture context in `output.ts` does **NOT** strip ANSI codes from pushed strings — unlike `console-capture.ts`'s winston path which does call `stripAnsi()`. This means any chalk that enters Layer 1 goes directly into the results.
-
----
-
-## Problem 8: JSON Extraction and Output Contamination
-
-At lines 736-743 of `fspec-callback.ts`, the callback tries to extract JSON from captured output:
+### 2. Fixed Layer 2: Propagated `configureOutput` to all subcommands
 
 ```typescript
-const jsonMatch = trimmedOutput.match(/(\{[\s\S]*\}|\[[\s\S]*\])$/);
-```
-
-This regex looks for the **last** JSON object/array in the output. If chalk ANSI codes appear **inside** JSON values (e.g., a command builds a JSON string using chalk), the JSON parse would fail and fall back to raw text output.
-
----
-
-## Recommended Fixes
-
-### Fix 1: Strip ANSI in Capture Context (Catch-All) — HIGH PRIORITY
-
-Add `stripAnsi()` in `createCaptureContext()` in `output.ts` so that the `stdout[]` and `stderr[]` arrays always receive clean text:
-
-```typescript
-// In createCaptureContext()
-const captureContext = {
-  log: (msg: string) => { stdout.push(stripAnsi(msg)); },
-  error: (msg: string) => { stderr.push(stripAnsi(msg)); },
-  warn: (msg: string) => { stderr.push(stripAnsi(msg)); },
-  // ...
+const commanderOutputConfig = {
+  writeOut: (str: string) => { commanderOutput += stripAnsi(str); },
+  writeErr: (str: string) => { commanderError += stripAnsi(str); },
+  outputError: (str: string) => { commanderError += stripAnsi(str); },
 };
+program.configureOutput(commanderOutputConfig);
+for (const cmd of program.commands) {
+  cmd.configureOutput(commanderOutputConfig);
+}
 ```
 
-### Fix 2: Strip ANSI in Layer 3 Capture — HIGH PRIORITY
+This ensures subcommand help output and error messages are captured by Layer 2 — the reason Layer 3 was originally added.
 
-Add `stripAnsi()` to the `processStdoutCapture` and `processStderrCapture` strings in `fspec-callback.ts`:
+### 3. Added ANSI stripping to Layer 1 (`createCaptureContext`)
 
-```typescript
-const overriddenStdoutWrite = (...args) => {
-  const str = typeof args[0] === 'string' ? args[0] : args[0]?.toString();
-  if (str) { processStdoutCapture += stripAnsi(str); }
-  return true;
-};
-```
+Added shared `stripAnsi()` to `output.ts` with a comprehensive regex handling CSI sequences (colors, cursor, erase, mouse tracking), OSC sequences, character set designations, and other escape sequences. Applied in `createCaptureContext()` so all `output.log/error/warn` calls are stripped at the capture boundary.
 
-### Fix 3: Convert Remaining `console.log` to `output.log` — MEDIUM PRIORITY
+### 4. DRY: Consolidated `stripAnsi` to single definition
 
-Audit and convert all commands that use `console.log` directly (especially `help-formatter.ts`) to use the `output` abstraction.
+Replaced duplicate weak `stripAnsi` implementations (SGR-only regex `/\x1b\[[0-9;]*m/g`) in `src/help.ts` and `src/utils/console-capture.ts` with imports from `src/utils/output.ts`. The shared implementation handles all ANSI sequence types.
 
-### Fix 4: Remove Chalk from `output.log()` Calls — MEDIUM PRIORITY
+### 5. Removed dead ANSI regex in `cleanExitOverrideArtifacts`
 
-In the ~10 affected commands, remove chalk wrapping when calling `output.log()`:
-
-```typescript
-// Before
-output.log(`  ${chalk.green(tag.tag)} - ${tag.description}`);
-
-// After
-output.log(`  ${tag.tag} - ${tag.description}`);
-```
-
-Or conditionally apply chalk only when not in capture mode:
-
-```typescript
-import { isInCaptureMode } from '../utils/output';
-const tagName = isInCaptureMode() ? tag.tag : chalk.green(tag.tag);
-output.log(`  ${tagName} - ${tag.description}`);
-```
-
-### Fix 5: Suppress Winston Stdout Transport During Capture — LOW PRIORITY
-
-If winston has a stdout transport active, temporarily disable it during fspec-callback capture to prevent double-capture.
+Since all capture layers now strip ANSI before storage, the colored `\x1b[31mError:\x1b[39m __FSPEC_EXIT_OVERRIDE__` regex pattern was dead code. Removed it and updated the comment.
 
 ---
 
-## Priority Matrix
+## Architecture After Fix: Two-Layer Output Capture
 
-| Fix | Severity | Effort | Impact |
-|-----|----------|--------|--------|
-| Strip ANSI in capture context (`output.ts`) | High | Low | Catches all Layer 1 chalk leaks |
-| Strip ANSI in Layer 3 (`fspec-callback.ts`) | High | Low | Catches all `console.log` + chalk bypasses |
-| Convert `console.log` → `output.log` in commands | Medium | Medium | Prevents Layer 1 bypass, improves architecture |
-| Remove chalk from `output.log()` calls | Medium | Medium | Clean separation of CLI vs capture output |
-| Use `isInCaptureMode()` in commands | Low | High | Most work, least immediate impact |
-| Suppress winston stdout during capture | Low | Low | Edge case prevention |
+```typescript
+const capturedOutput =
+  capturedStdout.join('\n') +                         // Layer 1: output.log (all commands)
+  (commanderOutput ? '\n' + commanderOutput : '');    // Layer 2: Commander help/errors (all subcommands)
+```
+
+| Layer | What it captures | ANSI stripped? |
+|-------|-----------------|----------------|
+| **Layer 1** | `output.log/error/warn` from commands | ✅ in `createCaptureContext()` |
+| **Layer 2** | Commander subcommand help/errors | ✅ in `configureOutput` callbacks |
+| ~~Layer 3~~ | ~~process.stdout.write~~ | **REMOVED** |
+
+**TUI Ink renders:** Pass through to terminal normally. No global stdout interception.
 
 ---
 
-## Files to Modify (Minimum Viable Fix)
+## Files Modified
 
-For the fastest resolution that eliminates most issues, only two files need changes:
+| File | Change |
+|------|--------|
+| `src/utils/fspec-callback.ts` | Removed Layer 3 (process.stdout/stderr.write overrides). Propagated `configureOutput` to all subcommands. Removed dead ANSI regex. |
+| `src/utils/output.ts` | Added exported `stripAnsi()` with comprehensive CSI/OSC/SGR regex. Applied in `createCaptureContext()`. |
+| `src/utils/console-capture.ts` | Replaced local weak `stripAnsi` with import from `output.ts`. |
+| `src/help.ts` | Replaced local weak `stripAnsi` with import from `output.ts`. |
 
-1. **`src/utils/output.ts`** — Add `stripAnsi()` to `createCaptureContext()` push calls
-2. **`src/utils/fspec-callback.ts`** — Add `stripAnsi()` to Layer 3 `process.stdout.write` / `process.stderr.write` overrides
+---
 
-This two-file fix would act as a catch-all safety net, stripping ANSI at the capture boundary regardless of what commands do upstream.
+## Original Problem Inventory (from pre-fix analysis)
+
+| Problem | Status | Resolution |
+|---------|--------|------------|
+| P1: Commands using chalk inside `output.log()` | ✅ Fixed | `stripAnsi()` in `createCaptureContext()` strips at boundary |
+| P2: `console.log` used directly in help-formatter | ✅ Mitigated | Layer 2 now captures subcommand help; no Layer 3 to contaminate |
+| P3: Double-capture via console-capture.ts | ✅ Fixed | Layer 3 removed — no global stdout interception to double-capture |
+| P4: `isInCaptureMode()` never used | ⚪ Not addressed | Low priority — stripping at boundary makes this unnecessary |
+| P5: Exit cascade artifacts with ANSI regexes | ✅ Fixed | Dead ANSI regex removed; remaining patterns are plain text |
+| P6: TUI escape sequences captured | ✅ Fixed | **Root cause** — Layer 3 removed entirely |
+| P7: No ANSI stripping in capture context | ✅ Fixed | `stripAnsi()` applied in all capture paths |
+| P8: JSON extraction contaminated by ANSI | ✅ Fixed | All captured text is now ANSI-free before JSON extraction |

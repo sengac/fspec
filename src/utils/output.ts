@@ -14,6 +14,20 @@
 
 import chalk from 'chalk';
 
+// Comprehensive ANSI escape sequence regex
+// Handles: CSI sequences (colors, cursor, erase, mouse tracking), OSC sequences, other escapes
+// prettier-ignore
+// eslint-disable-next-line no-control-regex
+const ANSI_REGEX = /\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[()#][0-9A-Za-z]|\x1b[^[\]()#]/g;
+
+/**
+ * Strip all ANSI escape sequences from a string.
+ * Handles SGR colors, CSI cursor/erase/mouse sequences, and OSC sequences.
+ */
+export function stripAnsi(str: string): string {
+  return str.replace(ANSI_REGEX, '');
+}
+
 export interface OutputContext {
   log: (...args: unknown[]) => void;
   error: (...args: unknown[]) => void;
@@ -84,19 +98,19 @@ export function createCaptureContext(): {
       const message = args
         .map(a => (typeof a === 'string' ? a : JSON.stringify(a)))
         .join(' ');
-      stdout.push(message);
+      stdout.push(stripAnsi(message));
     },
     error: (...args: unknown[]) => {
       const message = args
         .map(a => (typeof a === 'string' ? a : JSON.stringify(a)))
         .join(' ');
-      stderr.push(message);
+      stderr.push(stripAnsi(message));
     },
     warn: (...args: unknown[]) => {
       const message = args
         .map(a => (typeof a === 'string' ? a : JSON.stringify(a)))
         .join(' ');
-      stderr.push(message);
+      stderr.push(stripAnsi(message));
     },
   };
 
