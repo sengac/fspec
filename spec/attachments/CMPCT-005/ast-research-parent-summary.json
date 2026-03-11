@@ -1,0 +1,1 @@
+{"description":"Parent card - all work done in 8 children. AST research performed during child cards CMPCT-006 through CMPCT-013.","codebase_areas":["codelet/core/src/compaction/","codelet/napi/src/inject_summary_handler.rs","codelet/napi/src/session_search_handler.rs","codelet/cli/src/interactive_helpers.rs","src/tui/handlers/persistentSessionStateHandler.ts"]}

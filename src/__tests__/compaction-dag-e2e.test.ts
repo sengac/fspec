@@ -361,13 +361,34 @@ describe('Compaction DAG E2E — Full /compact Flow', () => {
     );
     expect(compactionCompleteChunks.length).toBe(1);
 
-    // CompactionComplete must come after the last ToolResult (inject_summary result)
-    const lastToolResultIdx = chunkTypes.lastIndexOf('ToolResult');
     const compactionCompleteIdx = chunkTypes.indexOf('CompactionComplete');
-    console.log(
-      `[E2E] Last ToolResult at index ${lastToolResultIdx}, CompactionComplete at ${compactionCompleteIdx}`
+
+    // CompactionComplete must come after the inject_summary ToolResult
+    // Note: The agent may make additional tool calls AFTER compaction completes
+    // (e.g., resuming original work), so we check against inject_summary's
+    // ToolResult specifically, not the last ToolResult overall.
+    const injectSummaryToolCallIdx = toolCallChunks.findIndex(tc => {
+      try {
+        const chunk = tc.chunk as Record<string, unknown>;
+        const toolCall = chunk.toolCall as Record<string, unknown> | undefined;
+        return (toolCall?.name as string) === 'inject_summary';
+      } catch {
+        return false;
+      }
+    });
+    expect(injectSummaryToolCallIdx).toBeGreaterThanOrEqual(0);
+
+    // Find the inject_summary ToolCall's position in the overall chunk sequence
+    const injectSummaryChunkIdx = postCompactChunks.indexOf(
+      toolCallChunks[injectSummaryToolCallIdx]
     );
-    expect(compactionCompleteIdx).toBeGreaterThan(lastToolResultIdx);
+    // CompactionComplete is emitted by the inject_summary handler as a side-effect
+    // DURING handler execution, so it arrives AFTER the inject_summary ToolCall
+    // but BEFORE the ToolResult (the handler emits CompactionComplete then returns).
+    console.log(
+      `[E2E] inject_summary ToolCall at index ${injectSummaryChunkIdx}, CompactionComplete at ${compactionCompleteIdx}`
+    );
+    expect(compactionCompleteIdx).toBeGreaterThan(injectSummaryChunkIdx);
 
     // Done chunk must exist (stream completed)
     expect(doneChunks.length).toBe(1);

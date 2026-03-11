@@ -1,0 +1,150 @@
+{
+  "scenarios": [
+    {
+      "name": "Esc interrupts compaction when only compaction is active",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/CMPCT-014-esc-interrupt-during-compaction.test.tsx",
+          "lines": "215-257",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5455,
+                5456,
+                5457,
+                5458,
+                5459,
+                5460,
+                5461,
+                5462,
+                5463,
+                5464,
+                5465,
+                5466
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc interrupts when both compaction and loading are active",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/CMPCT-014-esc-interrupt-during-compaction.test.tsx",
+          "lines": "260-294",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5455,
+                5456,
+                5457,
+                5458,
+                5459,
+                5460,
+                5461,
+                5462,
+                5463,
+                5464,
+                5465,
+                5466
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc closes modal before interrupting compaction",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/CMPCT-014-esc-interrupt-during-compaction.test.tsx",
+          "lines": "297-336",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5445,
+                5446,
+                5447,
+                5448,
+                5449,
+                5450,
+                5451,
+                5452,
+                5453,
+                5454,
+                5455,
+                5456,
+                5457,
+                5458,
+                5459,
+                5460,
+                5461,
+                5462,
+                5463,
+                5464,
+                5465,
+                5466
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc clears input when neither compaction nor loading is active",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/CMPCT-014-esc-interrupt-during-compaction.test.tsx",
+          "lines": "297-337",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5455,
+                5456,
+                5457,
+                5458,
+                5459,
+                5460,
+                5461,
+                5462,
+                5463,
+                5464,
+                5465,
+                5466,
+                5467,
+                5468,
+                5469,
+                5470,
+                5471,
+                5472,
+                5473,
+                5474,
+                5475,
+                5476,
+                5477,
+                5478
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/CMPCT-014-esc-interrupt-during-compaction.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 229
+  }
+}

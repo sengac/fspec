@@ -178,10 +178,26 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
 
     it('should handle CompactionComplete by extracting metrics, NOT adding to conversation', () => {
       // CompactionComplete should:
-      // 1. Extract compressionRatio from chunk.compactionResult
-      // 2. Call setCompactionReduction with the percentage
-      // 3. NOT call setConversation (compaction feedback is via input area indicator)
+      // 1. Delegate to shared handleCompactionComplete helper
+      // 2. The helper extracts compressionRatio from compactionResult
+      // 3. The helper calls setCompactionReduction with the percentage
+      // 4. NOT call setConversation (compaction feedback is via input area indicator)
 
+      // Verify the shared handleCompactionComplete helper exists and handles metrics
+      const handleCompactionCompleteFn = agentViewSource.match(
+        /const handleCompactionComplete\s*=\s*useCallback\s*\(\s*\n?\s*\([\s\S]*?\n\s*\],?\s*\)/
+      );
+      expect(handleCompactionCompleteFn).not.toBeNull();
+
+      const helperCode = handleCompactionCompleteFn![0];
+
+      // Verify the helper accesses compressionRatio from the result
+      expect(helperCode).toContain('compressionRatio');
+
+      // Verify the helper calls setCompactionReduction (for UI indicator)
+      expect(helperCode).toContain('setCompactionReduction');
+
+      // Verify the inline CompactionComplete block delegates to the shared helper
       const handleStreamChunkFn = agentViewSource.match(
         /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(chunk:\s*StreamChunk\)[\s\S]*?\n\s*\},\s*\[/
       );
@@ -197,12 +213,9 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
 
       const compactionCompleteHandler = compactionCompleteMatch![0];
 
-      // Verify it accesses chunk.compactionResult directly (structured data)
+      // Verify it delegates to handleCompactionComplete (shared helper pattern)
+      expect(compactionCompleteHandler).toContain('handleCompactionComplete');
       expect(compactionCompleteHandler).toContain('chunk.compactionResult');
-      expect(compactionCompleteHandler).toContain('compressionRatio');
-
-      // Verify it calls setCompactionReduction (for UI indicator)
-      expect(compactionCompleteHandler).toContain('setCompactionReduction');
 
       // Verify it does NOT call setConversation (no conversation pollution)
       expect(compactionCompleteHandler).not.toContain('setConversation');

@@ -5452,8 +5452,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
           setIsTurnSelectMode(false);
           return true;
         }
-        // Priority 5: Interrupt loading - use background session interrupt
-        if (displayIsLoading && currentSessionId) {
+        // Priority 5: Interrupt loading or compaction - use background session interrupt
+        // CMPCT-014: Also check rustSnapshot.isCompacting since isLoading is false during compaction
+        if ((displayIsLoading || rustSnapshot.isCompacting) && currentSessionId) {
           try {
             sessionInterrupt(currentSessionId);
             refreshRustState(currentSessionId);
