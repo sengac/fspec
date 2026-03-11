@@ -9,7 +9,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import fs from 'fs';
 import { restoreCheckpoint } from '../restore-checkpoint';
 import { checkpoint } from '../checkpoint';
@@ -75,13 +81,8 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
 
     // Create initial commit so HEAD exists
     await writeFile(join(setup.testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: setup.testDir, filepath: 'README.md' });
-    await git.commit({
-      fs,
-      dir: setup.testDir,
-      message: 'Initial commit',
-      author: { name: 'Test User', email: 'test@example.com' },
-    });
+    gitAdd(setup.testDir, 'README.md');
+    gitCommit(setup.testDir, 'Initial commit', 'Test User', 'test@example.com');
   });
 
   afterEach(async () => {
@@ -99,13 +100,13 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
     it('should show option 3 labeled as Overwrite files (discard changes)', async () => {
       // Given: I have a work unit AUTH-001 with a checkpoint named 'baseline'
       await writeFile(join(setup.testDir, 'test.txt'), 'initial content');
-      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Add test file',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'test.txt');
+      gitCommit(
+        setup.testDir,
+        'Add test file',
+        'Test User',
+        'test@example.com'
+      );
 
       // Create checkpoint
       await checkpoint({
@@ -153,13 +154,13 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
     it('should not contain any merge terminology in options', async () => {
       // Given: I have a work unit with uncommitted changes
       await writeFile(join(setup.testDir, 'test.txt'), 'initial content');
-      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Add test file',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'test.txt');
+      gitCommit(
+        setup.testDir,
+        'Add test file',
+        'Test User',
+        'test@example.com'
+      );
 
       // Create checkpoint
       await checkpoint({

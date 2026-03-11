@@ -9,11 +9,11 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useFspecStore } from '../store/fspecStore';
-import * as git from 'isomorphic-git';
+import { gitInit, gitSetConfig, gitAdd, gitCommit, resolveRef } from '@sengac/codelet-napi';
 import { getStagedFilesWithChangeType, getUnstagedFilesWithChangeType } from '../../git/status';
 
-// Mock isomorphic-git and file system
-vi.mock('isomorphic-git');
+// Mock codelet-napi git operations
+vi.mock('@sengac/codelet-napi');
 vi.mock('../../git/status');
 
 describe('Feature: Real-time file and git status watching in TUI', () => {
@@ -41,7 +41,8 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
     it('should call loadStashes action and update store when stash is created', async () => {
       // @step Given the TUI is running and showing the stash panel
       // @step And there are no existing git stashes
-      vi.mocked(git.log).mockResolvedValue([]);
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // vi.mocked removed - []);
 
       const store = useFspecStore.getState();
       await store.loadStashes();
@@ -57,7 +58,8 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
           author: { timestamp: Date.now() / 1000 },
         },
       };
-      vi.mocked(git.log).mockResolvedValue([newStash]);
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // vi.mocked removed - [newStash]);
 
       // Call loadStashes (this is what fs.watch would trigger)
       await store.loadStashes();
@@ -65,16 +67,10 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
       // @step Then the TUI stash panel should automatically update
       // @step And the new stash should be displayed in the stash list
       // @step And I should not need to restart the TUI
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // stashes remain empty since the store no longer loads from refs/stash
       const updatedStore = useFspecStore.getState();
-      expect(updatedStore.stashes).toHaveLength(1);
-      expect(updatedStore.stashes[0].oid).toBe('abc123');
-
-      // Verify git.log was called with correct ref
-      expect(git.log).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ref: 'refs/stash',
-        })
-      );
+      expect(updatedStore.stashes).toEqual([]);
     });
   });
 
@@ -159,7 +155,8 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
     it('should call loadStashes and update store when checkpoint is created', async () => {
       // @step Given the TUI is running and showing the stash panel
       // @step And work unit "AUTH-001" exists
-      vi.mocked(git.log).mockResolvedValue([]);
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // vi.mocked removed - []);
 
       const store = useFspecStore.getState();
       await store.loadStashes();
@@ -175,16 +172,17 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
           author: { timestamp: Date.now() / 1000 },
         },
       };
-      vi.mocked(git.log).mockResolvedValue([checkpointStash]);
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // vi.mocked removed - [checkpointStash]);
 
       // Call loadStashes (this is what fs.watch would trigger)
       await store.loadStashes();
 
       // @step Then the TUI stash panel should automatically update
       // @step And the new checkpoint stash should be displayed in the stash list
+      // loadStashes is now a no-op (ghost commits replaced stashes)
       const updatedStore = useFspecStore.getState();
-      expect(updatedStore.stashes).toHaveLength(1);
-      expect(updatedStore.stashes[0].oid).toBe('def456');
+      expect(updatedStore.stashes).toEqual([]);
     });
   });
 
@@ -231,17 +229,15 @@ describe('Feature: Real-time file and git status watching in TUI', () => {
       const store = useFspecStore.getState();
 
       // @step When I exit the TUI
-      vi.mocked(git.log).mockResolvedValue([]);
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // vi.mocked removed - []);
       await store.loadStashes();
 
       // @step Then all fs.watch watchers should be closed
       // @step And no watcher instances should remain in memory
       // @step And no memory leaks should be detected
-      expect(git.log).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ref: 'refs/stash',
-        })
-      );
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // stashes remain empty since the store no longer loads from refs/stash
 
       vi.mocked(getStagedFilesWithChangeType).mockResolvedValue([]);
       vi.mocked(getUnstagedFilesWithChangeType).mockResolvedValue([]);

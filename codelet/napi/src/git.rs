@@ -388,6 +388,70 @@ pub fn get_checkpoint_diff_files(
 }
 
 // =============================================================================
+// Repository Operations (GIT-039: resolve_ref, init, add, commit, setConfig)
+// =============================================================================
+
+/// Resolve a git ref to its target commit SHA
+///
+/// @param dir - Path to the repository root
+/// @param refName - Full ref path (e.g. "refs/fspec-checkpoints/GIT-039/baseline")
+/// @returns Hex string of the resolved commit SHA
+#[napi]
+pub fn resolve_ref(dir: String, ref_name: String) -> napi::Result<String> {
+    codelet_git::resolve_ref(&dir, &ref_name)
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
+}
+
+/// Initialize a new git repository
+///
+/// @param dir - Path to create the repository at
+/// @param defaultBranch - Name of the default branch (e.g. "main")
+#[napi]
+pub fn git_init(dir: String, default_branch: String) -> napi::Result<()> {
+    codelet_git::git_init(&dir, &default_branch)
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
+}
+
+/// Set a git config value
+///
+/// @param dir - Path to the repository root
+/// @param key - Config key (e.g. "user.name")
+/// @param value - Config value
+#[napi]
+pub fn git_set_config(dir: String, key: String, value: String) -> napi::Result<()> {
+    codelet_git::git_set_config(&dir, &key, &value)
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
+}
+
+/// Stage a file (equivalent to `git add <filepath>`)
+///
+/// @param dir - Path to the repository root
+/// @param filepath - Path to the file relative to repository root
+#[napi]
+pub fn git_add(dir: String, filepath: String) -> napi::Result<()> {
+    codelet_git::git_add(&dir, &filepath)
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
+}
+
+/// Create a commit from the current index
+///
+/// @param dir - Path to the repository root
+/// @param message - Commit message
+/// @param authorName - Author name
+/// @param authorEmail - Author email
+/// @returns Hex string of the new commit SHA
+#[napi]
+pub fn git_commit(
+    dir: String,
+    message: String,
+    author_name: String,
+    author_email: String,
+) -> napi::Result<String> {
+    codelet_git::git_commit(&dir, &message, &author_name, &author_email)
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
+}
+
+// =============================================================================
 // Session Worktree Operations (GIT-027)
 // =============================================================================
 

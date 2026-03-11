@@ -4,7 +4,7 @@
  * This test file validates the gitoxide-backed git operations via NAPI-RS bindings.
  * Tests map directly to Gherkin scenarios defined in the feature file.
  *
- * NOTE: Unlike isomorphic-git tests, these use real temporary directories
+ * NOTE: Unlike previous isomorphic-git tests, these use real temporary directories
  * because gitoxide is a native Rust library accessed via NAPI bindings.
  */
 
@@ -196,8 +196,8 @@ describe('Feature: Git Repository Operations', () => {
   });
 
   describe('Scenario: Maintain TypeScript API compatibility', () => {
-    it('should maintain same function signatures as isomorphic-git version', async () => {
-      // @step Given the existing isomorphic-git based TypeScript API
+    it('should maintain same function signatures as previous TypeScript API', async () => {
+      // @step Given the existing TypeScript API
       // The old API signatures:
       // - getStagedFiles(dir: string, options?: GitStatusOptions): Promise<string[]>
       // - getUnstagedFiles(dir: string, options?: GitStatusOptions): Promise<string[]>

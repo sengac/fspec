@@ -449,7 +449,7 @@ pub fn restore_ghost_commit(
     })
 }
 
-/// Resolve a ref to its target commit ID
+/// Resolve a ref to its target commit ID (internal helper)
 fn resolve_ref(repo: &gix::Repository, ref_name: &str) -> Result<gix::ObjectId> {
     let mut reference = repo
         .find_reference(ref_name)

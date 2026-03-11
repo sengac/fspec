@@ -8,7 +8,13 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { getFileDiff } from '../diff';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import fsNode from 'fs';
 import {
   setupGitTest,
@@ -77,13 +83,13 @@ describe('Feature: Handle binary files and large files in diff display', () => {
         (_, i) => `line ${i + 1}`
       ).join('\n');
       await fs.writeFile(testFilePath, initialContent);
-      await git.add({ fs: fsNode, dir: setup.testDir, filepath: 'large.log' });
-      await git.commit({
-        fs: fsNode,
-        dir: setup.testDir,
-        message: 'Initial commit',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'large.log');
+      gitCommit(
+        setup.testDir,
+        'Initial commit',
+        'Test User',
+        'test@example.com'
+      );
 
       // Create large file with 50,000 lines
       const largeContent = Array.from(
@@ -131,13 +137,13 @@ describe('Feature: Handle binary files and large files in diff display', () => {
         (_, i) => `const x${i} = ${i};`
       ).join('\n');
       await fs.writeFile(testFilePath, initialContent);
-      await git.add({ fs: fsNode, dir: setup.testDir, filepath: 'source.ts' });
-      await git.commit({
-        fs: fsNode,
-        dir: setup.testDir,
-        message: 'Initial commit',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'source.ts');
+      gitCommit(
+        setup.testDir,
+        'Initial commit',
+        'Test User',
+        'test@example.com'
+      );
 
       // Create modified file with 500 lines
       const modifiedContent = Array.from(

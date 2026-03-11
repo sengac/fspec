@@ -152,7 +152,7 @@ async function buildAIAnalysisReminder(
   );
   lines.push('  - File size limits (e.g., keep files under 300 lines)');
   lines.push(
-    '  - Architectural patterns (e.g., use isomorphic-git not child_process)'
+    '  - Architectural patterns (e.g., use gitoxide NAPI-RS bindings not child_process)'
   );
   lines.push('  - Coding standards (e.g., no any types, use ES6 imports)');
   lines.push('  - Project-specific conventions');

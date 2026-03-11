@@ -9,7 +9,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
-import git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import fs from 'fs';
 import { reportBugToGitHub } from '../report-bug-to-github';
 import {
@@ -19,6 +25,7 @@ import {
 
 describe('Feature: Report bug to GitHub with AI assistance', () => {
   let setup: TestDirectorySetup;
+  const originalCwd = process.cwd();
 
   beforeEach(async () => {
     setup = await setupTestDirectory('report-bug-to-github');
@@ -26,6 +33,7 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
   });
 
   afterEach(async () => {
+    process.chdir(originalCwd);
     await setup.cleanup();
   });
 
@@ -140,22 +148,18 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
   describe('Scenario: Include git context', () => {
     it('should include git context', async () => {
       // @step Given I have uncommitted changes in my working directory
-      // Initialize a proper git repository using isomorphic-git
-      await git.init({
-        fs,
-        dir: setup.testDir,
-        defaultBranch: 'feature-branch',
-      });
+      // Initialize a proper git repository using NAPI bindings
+      gitInit(setup.testDir, 'feature-branch');
 
       // Create and commit a file to establish the repository
       await writeFile(join(setup.testDir, 'initial.txt'), 'initial content');
-      await git.add({ fs, dir: setup.testDir, filepath: 'initial.txt' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Initial commit',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'initial.txt');
+      gitCommit(
+        setup.testDir,
+        'Initial commit',
+        'Test User',
+        'test@example.com'
+      );
 
       // Create an uncommitted file
       await writeFile(join(setup.testDir, 'test.txt'), 'uncommitted content');

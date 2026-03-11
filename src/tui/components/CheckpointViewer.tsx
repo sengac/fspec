@@ -15,9 +15,7 @@ import { Worker } from 'worker_threads';
 import { parseDiff, DiffLine } from '../../git/diff-parser';
 import { getWorkerPath } from '../../git/worker-path';
 import { useFspecStore } from '../store/fspecStore';
-import * as git from 'isomorphic-git';
-import fs from 'fs';
-import { join } from 'path';
+import { resolveRef } from '@sengac/codelet-napi';
 import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
 import {
   getCheckpointFilesChangedFromHead,
@@ -27,9 +25,7 @@ import {
   restoreCheckpoint,
 } from '../../utils/git-checkpoint';
 import {
-  checkpointIndexDirExists,
   listCheckpointIndexFiles,
-  getCheckpointIndexDir,
   readCheckpointIndexFile,
   isAutomaticCheckpoint,
   parseAutomaticCheckpointName,
@@ -45,7 +41,7 @@ export interface Checkpoint {
   timestamp: string;
   stashRef: string;
   isAutomatic: boolean;
-  files: string[];
+  files: string[] | null; // null = not yet loaded (lazy)
   fileCount: number;
 }
 
@@ -87,7 +83,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   const workerRef = useRef<Worker | null>(null);
   const pendingRequestId = useRef<string | null>(null);
 
-  // Load all checkpoints from all work units
+  // Track whether files are being loaded for the selected checkpoint
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+
+  // Load all checkpoint metadata (fast: reads index files + resolves refs only)
+  // Does NOT compute diff files — those are lazy-loaded when a checkpoint is selected
   useEffect(() => {
     const loadAllCheckpoints = async () => {
       setIsLoadingCheckpoints(true);
@@ -114,19 +114,25 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
             const ref = `refs/fspec-checkpoints/${workUnitId}/${cp.name}`;
 
             try {
-              // Resolve checkpoint ref to get OID
-              const checkpointOid = await git.resolveRef({ fs, dir: cwd, ref });
+              // Resolve checkpoint ref to verify it exists (fast sync NAPI call)
+              resolveRef(cwd, ref);
 
-              // Load files that differ from current HEAD
-              const files = await getCheckpointFilesChangedFromHead(cwd, checkpointOid);
-
-              // Parse checkpoint message to extract timestamp
-              const match = cp.message.match(
-                /^fspec-checkpoint:[^:]+:[^:]+:([^:]+)$/
-              );
-              const timestamp = match
-                ? new Date(parseInt(match[1])).toISOString()
-                : new Date().toISOString();
+              // Extract timestamp from either new format (timestamp field) or legacy format (message)
+              let timestamp: string;
+              if (cp.timestamp) {
+                // New format: timestamp is stored directly
+                timestamp = cp.timestamp;
+              } else if (cp.message) {
+                // Legacy format: parse from message "fspec-checkpoint:{id}:{name}:{epoch}"
+                const match = cp.message.match(
+                  /^fspec-checkpoint:[^:]+:[^:]+:([^:]+)$/
+                );
+                timestamp = match
+                  ? new Date(parseInt(match[1])).toISOString()
+                  : new Date().toISOString();
+              } else {
+                timestamp = new Date().toISOString();
+              }
 
               allCheckpoints.push({
                 name: cp.name,
@@ -134,11 +140,11 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 timestamp,
                 stashRef: ref,
                 isAutomatic: isAutomaticCheckpoint(cp.name),
-                files,
-                fileCount: files.length,
+                files: null, // Lazy: loaded on selection
+                fileCount: -1, // Unknown until files are loaded
               });
             } catch (error) {
-              // Skip checkpoints that can't be loaded
+              // Skip checkpoints whose refs can't be resolved
             }
           }
         }
@@ -163,10 +169,57 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     return sorted.slice(0, 200);
   }, [checkpoints]);
 
+  // Lazy-load diff files when a checkpoint is selected
+  useEffect(() => {
+    const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
+    if (!checkpoint) {
+      return;
+    }
+
+    // Already loaded
+    if (checkpoint.files !== null) {
+      return;
+    }
+
+    setIsLoadingFiles(true);
+
+    const loadFiles = async () => {
+      try {
+        const diffFiles = await getCheckpointFilesChangedFromHead(
+          cwd,
+          checkpoint.workUnitId,
+          checkpoint.name
+        );
+
+        // Update the checkpoint in the state with loaded files
+        setCheckpoints(prev =>
+          prev.map(cp =>
+            cp.name === checkpoint.name && cp.workUnitId === checkpoint.workUnitId
+              ? { ...cp, files: diffFiles, fileCount: diffFiles.length }
+              : cp
+          )
+        );
+      } catch (error) {
+        // Mark as loaded but empty on error
+        setCheckpoints(prev =>
+          prev.map(cp =>
+            cp.name === checkpoint.name && cp.workUnitId === checkpoint.workUnitId
+              ? { ...cp, files: [], fileCount: 0 }
+              : cp
+          )
+        );
+      } finally {
+        setIsLoadingFiles(false);
+      }
+    };
+
+    void loadFiles();
+  }, [selectedCheckpointIndex, sortedCheckpoints, cwd]);
+
   // Get current checkpoint and files
   const currentCheckpoint = sortedCheckpoints[selectedCheckpointIndex];
   const files: FileItem[] = useMemo(() => {
-    if (!currentCheckpoint) {
+    if (!currentCheckpoint || currentCheckpoint.files === null) {
       return [];
     }
     return currentCheckpoint.files.map(f => ({
@@ -387,16 +440,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         setStatusDialogError(undefined);
         setShowRestoreDialog(false);
 
-        // Resolve ref to OID
-        const checkpointOid = await git.resolveRef({
-          fs,
-          dir: cwd,
-          ref: checkpoint.stashRef,
-        });
-
         const result = await restoreCheckpointFile({
           cwd,
-          checkpointOid,
+          workUnitId: checkpoint.workUnitId,
+          checkpointName: checkpoint.name,
           filepath: file.path,
           force: true,
         });
@@ -417,49 +464,25 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         }
       }
     } else {
-      // Restore all files with progress tracking
+      // Restore all files at once using full checkpoint restore (single NAPI call)
       const checkpoint = sortedCheckpoints[selectedCheckpointIndex];
       if (checkpoint) {
         // Show StatusDialog
         setShowStatusDialog(true);
         setStatusDialogState('restoring');
-        setCurrentFileIndex(0);
+        setCurrentFile('all files');
+        setCurrentFileIndex(1);
         setStatusDialogError(undefined);
         setShowRestoreDialog(false);
 
-        // Resolve checkpoint OID
-        const checkpointOid = await git.resolveRef({
-          fs,
-          dir: cwd,
-          ref: checkpoint.stashRef,
+        const result = await restoreCheckpoint({
+          workUnitId: checkpoint.workUnitId,
+          checkpointName: checkpoint.name,
+          cwd,
+          force: true,
         });
 
-        // Restore files one by one
-        const filesToRestore = checkpoint.files;
-        let hasError = false;
-
-        for (let i = 0; i < filesToRestore.length; i++) {
-          const filepath = filesToRestore[i];
-          setCurrentFile(filepath);
-          setCurrentFileIndex(i + 1);
-
-          const result = await restoreCheckpointFile({
-            cwd,
-            checkpointOid,
-            filepath,
-            force: true,
-          });
-
-          if (!result.success) {
-            // Show error state
-            setStatusDialogState('error');
-            setStatusDialogError(`Failed to restore ${filepath}: ${result.systemReminder || 'Unknown error'}`);
-            hasError = true;
-            break;
-          }
-        }
-
-        if (!hasError) {
+        if (result.success) {
           // Send IPC notification
           await sendIPCMessage({ type: 'checkpoint-changed' });
 
@@ -468,6 +491,10 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
 
           // Show completion state
           setStatusDialogState('complete');
+        } else {
+          // Show error state
+          setStatusDialogState('error');
+          setStatusDialogError(result.systemReminder || 'Failed to restore checkpoint');
         }
       }
     }
@@ -902,28 +929,32 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                   Files{sortedCheckpoints[selectedCheckpointIndex]?.name ? `: ${sortedCheckpoints[selectedCheckpointIndex].name}` : ''}
                 </Text>
               </Box>
-              <VirtualList
-                items={files}
-                renderItem={(file, index, isSelected) => {
-                  const indicator = isSelected ? '>' : ' ';
-                  return (
-                    <Box flexGrow={1}>
-                      <Text
-                        color={isSelected ? 'cyan' : 'white'}
-                        wrap="truncate"
-                      >
-                        {indicator} {file.path}
-                      </Text>
-                    </Box>
-                  );
-                }}
-                showScrollbar={focusedPane === 'files'}
-                isFocused={focusedPane === 'files' && !showDeleteDialog}
-                heightAdjustment={-1}
-                onFocus={(file, index) => {
-                  setSelectedFileIndex(index);
-                }}
-              />
+              {isLoadingFiles ? (
+                <Text wrap="truncate">Loading files...</Text>
+              ) : (
+                <VirtualList
+                  items={files}
+                  renderItem={(file, index, isSelected) => {
+                    const indicator = isSelected ? '>' : ' ';
+                    return (
+                      <Box flexGrow={1}>
+                        <Text
+                          color={isSelected ? 'cyan' : 'white'}
+                          wrap="truncate"
+                        >
+                          {indicator} {file.path}
+                        </Text>
+                      </Box>
+                    );
+                  }}
+                  showScrollbar={focusedPane === 'files'}
+                  isFocused={focusedPane === 'files' && !showDeleteDialog}
+                  heightAdjustment={-1}
+                  onFocus={(file, index) => {
+                    setSelectedFileIndex(index);
+                  }}
+                />
+              )}
             </Box>
           </Box>
 
@@ -1006,7 +1037,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
         <StatusDialog
           currentItem={currentFile}
           currentIndex={currentFileIndex}
-          totalItems={restoreMode === 'single' ? 1 : (sortedCheckpoints[selectedCheckpointIndex]?.files.length || 0)}
+          totalItems={restoreMode === 'single' ? 1 : 1}
           status={statusDialogState}
           errorMessage={statusDialogError}
           onClose={handleStatusDialogClose}

@@ -12,7 +12,13 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import fs from 'fs';
 import { promises as fsPromises } from 'fs';
-import git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 
 import {
   getIPCPath,
@@ -38,17 +44,12 @@ async function createTestEnvironment(): Promise<{
   fs.mkdirSync(testDir, { recursive: true });
 
   // Initialize git repository
-  await git.init({ fs, dir: testDir, defaultBranch: 'main' });
+  gitInit(testDir, 'main');
 
   // Create initial commit
   await fsPromises.writeFile(join(testDir, 'README.md'), '# Test');
-  await git.add({ fs, dir: testDir, filepath: 'README.md' });
-  await git.commit({
-    fs,
-    dir: testDir,
-    message: 'Initial commit',
-    author: { name: 'Test', email: 'test@test.com' },
-  });
+  gitAdd(testDir, 'README.md');
+  gitCommit(testDir, 'Initial commit', 'Test', 'test@test.com');
 
   // Create work-units.json with multiple work units
   const specDir = join(testDir, 'spec');

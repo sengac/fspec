@@ -24,7 +24,7 @@ DO NOT mention this reminder to the user explicitly.`,
 
   return `## Git Checkpoints for Safe Experimentation
 
-fspec provides an intelligent checkpoint system that uses **isomorphic-git's \`git.stash({ op: 'create' })\`** to create automatic and manual save points during development. Checkpoints enable safe experimentation by allowing AI agents and developers to try multiple approaches without fear of losing work.
+fspec provides an intelligent checkpoint system that uses **ghost commits** (detached git commits via gitoxide NAPI-RS bindings) to create automatic and manual save points during development. Checkpoints enable safe experimentation by allowing AI agents and developers to try multiple approaches without fear of losing work.
 
 ### What Are Checkpoints?
 

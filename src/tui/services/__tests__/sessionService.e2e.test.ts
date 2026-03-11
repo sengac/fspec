@@ -21,7 +21,13 @@ import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import * as fs from 'fs';
 
 import { useFspecStore } from '../../store/fspecStore';
@@ -129,27 +135,12 @@ async function createE2EFixture(testName: string): Promise<E2EFixture> {
   resetStores();
 
   const initGitRepo = async (): Promise<void> => {
-    await git.init({ fs, dir: testDir, defaultBranch: 'main' });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    gitInit(testDir, 'main');
+    gitSetConfig(testDir, 'user.name', 'Test User');
+    gitSetConfig(testDir, 'user.email', 'test@example.com');
     await writeFile(join(testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: testDir, filepath: 'README.md' });
-    await git.commit({
-      fs,
-      dir: testDir,
-      message: 'Initial commit',
-      author: { name: 'Test User', email: 'test@example.com' },
-    });
+    gitAdd(testDir, 'README.md');
+    gitCommit(testDir, 'Initial commit', 'Test User', 'test@example.com');
   };
 
   const createSession = async (name = 'E2E Test Session'): Promise<string> => {

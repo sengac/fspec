@@ -13,7 +13,7 @@ import React from 'react';
 import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import * as git from 'isomorphic-git';
+import { gitInit, gitSetConfig, gitAdd, gitCommit, resolveRef } from '@sengac/codelet-napi';
 import { getStagedFiles, getUnstagedFiles } from '../../git/status';
 
 // Import components
@@ -21,7 +21,7 @@ import { BoardView } from '../components/BoardView';
 import { useFspecStore } from '../store/fspecStore';
 
 // Mock git utilities
-vi.mock('isomorphic-git');
+vi.mock('@sengac/codelet-napi');
 vi.mock('../../git/status');
 
 describe('Feature: Consolidate Git info and add work unit details panel', () => {
@@ -65,7 +65,8 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
         },
       ];
 
-      vi.mocked(git.log).mockResolvedValue(mockStashes as any);
+      // loadStashes is now a no-op (ghost commits replaced stashes)
+      // vi.mocked removed - mockStashes as any);
 
       // @step And there are 3 staged files and 1 unstaged file
       vi.mocked(getStagedFiles).mockResolvedValue([

@@ -12,7 +12,7 @@ import { CheckpointViewer } from '../CheckpointViewer';
 import * as gitCheckpoint from '../../../utils/git-checkpoint';
 import * as checkpointIndex from '../../../utils/checkpoint-index';
 import * as ipc from '../../../utils/ipc';
-import * as git from 'isomorphic-git';
+import { gitInit, gitSetConfig, gitAdd, gitCommit, resolveRef } from '@sengac/codelet-napi';
 import fs from 'fs';
 import { join } from 'path';
 
@@ -20,7 +20,7 @@ import { join } from 'path';
 vi.mock('../../../utils/git-checkpoint');
 vi.mock('../../../utils/checkpoint-index');
 vi.mock('../../../utils/ipc');
-vi.mock('isomorphic-git');
+vi.mock('@sengac/codelet-napi');
 vi.mock('fs');
 
 // Import store for proper mocking
@@ -106,7 +106,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue([
         'src/auth.ts',
         'src/login.ts',
@@ -150,7 +150,8 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       // @step Then the file "src/auth.ts" should be restored from the checkpoint
       expect(gitCheckpoint.restoreCheckpointFile).toHaveBeenCalledWith(
         expect.objectContaining({
-          checkpointOid: 'mock-checkpoint-oid-123',
+          workUnitId: 'AUTH-001',
+          checkpointName: 'AUTH-001-baseline',
           filepath: 'src/auth.ts',
           force: true,
         })
@@ -199,14 +200,16 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-456');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(mockFiles);
 
-      // Mock restoreCheckpointFile (now called for each file to show progress)
-      vi.mocked(gitCheckpoint.restoreCheckpointFile).mockResolvedValue({
+      // Mock restoreCheckpoint for the full checkpoint restore (Restore All uses restoreCheckpoint, not restoreCheckpointFile)
+      vi.mocked(gitCheckpoint.restoreCheckpoint).mockResolvedValue({
         success: true,
-        conflictDetected: false,
+        conflictsDetected: false,
+        conflictedFiles: [],
         systemReminder: '',
+        requiresTestValidation: false,
       });
 
       const { stdin, lastFrame } = render(
@@ -231,18 +234,15 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       stdin.write('y');
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // @step Then all 15 files should be restored from the checkpoint (one by one for progress)
-      expect(gitCheckpoint.restoreCheckpointFile).toHaveBeenCalledTimes(15);
-      // Verify each file was restored
-      mockFiles.forEach(filepath => {
-        expect(gitCheckpoint.restoreCheckpointFile).toHaveBeenCalledWith(
-          expect.objectContaining({
-            checkpointOid: 'mock-checkpoint-oid-456',
-            filepath,
-            force: true,
-          })
-        );
-      });
+      // @step Then the full checkpoint should be restored in a single operation (not file-by-file)
+      expect(gitCheckpoint.restoreCheckpoint).toHaveBeenCalledTimes(1);
+      expect(gitCheckpoint.restoreCheckpoint).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workUnitId: 'TUI-001',
+          checkpointName: 'TUI-001-auto-testing',
+          force: true,
+        })
+      );
 
       // @step And the diff pane should refresh showing new comparison
       // @step And a success message should be displayed
@@ -286,7 +286,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-789');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-789');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/deleted-file.ts']);
 
       // @step And the file "src/deleted-file.ts" exists in checkpoint but not in working directory
@@ -360,7 +360,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-999');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-999');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/config.ts']);
 
       // @step And the file "src/config.ts" has uncommitted changes in working directory
@@ -449,7 +449,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
       const { stdin, lastFrame } = render(
@@ -515,7 +515,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-456');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(mockFiles);
 
       const { stdin, lastFrame } = render(
@@ -576,7 +576,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
       const { stdin, lastFrame } = render(
@@ -631,7 +631,7 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-456');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/file.ts']);
 
       const { stdin, lastFrame } = render(

@@ -24,6 +24,9 @@ import {
   listGhostCheckpoints,
   deleteGhostCheckpoint,
   getCheckpointDiffFiles,
+  getStagedFiles,
+  getUnstagedFiles,
+  getUntrackedFiles,
 } from '@sengac/codelet-napi';
 
 export interface Checkpoint {
@@ -129,10 +132,6 @@ async function readCheckpointIndex(
  */
 export async function isWorkingDirectoryDirty(cwd: string): Promise<boolean> {
   try {
-    // Use Rust NAPI bindings to get file status
-    const { getStagedFiles, getUnstagedFiles, getUntrackedFiles } =
-      await import('@sengac/codelet-napi');
-
     const staged = getStagedFiles(cwd);
     const unstaged = getUnstagedFiles(cwd);
     const untracked = getUntrackedFiles(cwd);
@@ -619,11 +618,12 @@ export async function getCheckpointChangedFiles(
 }
 
 /**
- * Restore a single file from checkpoint
+ * Restore a single file from checkpoint using git show to extract content
  */
 export async function restoreCheckpointFile(options: {
   cwd: string;
-  checkpointOid: string;
+  workUnitId: string;
+  checkpointName: string;
   filepath: string;
   force?: boolean;
 }): Promise<{
@@ -631,29 +631,18 @@ export async function restoreCheckpointFile(options: {
   conflictDetected: boolean;
   systemReminder: string;
 }> {
-  const { cwd, checkpointOid, filepath, force = false } = options;
-
-  // Parse checkpoint ref to extract work unit ID and checkpoint name
-  const match = checkpointOid.match(/refs\/fspec-checkpoints\/([^/]+)\/(.+)/);
-  if (!match) {
-    return {
-      success: false,
-      conflictDetected: false,
-      systemReminder: `Invalid checkpoint ref format: ${checkpointOid}`,
-    };
-  }
-
-  const [, workUnitId, checkpointName] = match;
+  const { cwd, workUnitId, checkpointName, filepath, force = false } = options;
 
   try {
-    // Get diff files to check for conflicts
-    const diffFiles = getCheckpointDiffFiles(cwd, workUnitId, checkpointName);
+    // Only check for conflicts when not forced
+    if (!force) {
+      const diffFiles = getCheckpointDiffFiles(cwd, workUnitId, checkpointName);
 
-    if (!force && diffFiles.includes(filepath)) {
-      return {
-        success: false,
-        conflictDetected: true,
-        systemReminder: `<system-reminder>
+      if (diffFiles.includes(filepath)) {
+        return {
+          success: false,
+          conflictDetected: true,
+          systemReminder: `<system-reminder>
 CHECKPOINT FILE RESTORATION CONFLICT DETECTED
 
 File "${filepath}" has been modified since checkpoint was created.
@@ -665,21 +654,40 @@ RECOMMENDED: Create new checkpoint first to preserve work:
 
 DO NOT mention this reminder to the user explicitly.
 </system-reminder>`,
-      };
+        };
+      }
     }
 
-    // Restore the entire checkpoint (Rust handles individual files internally)
-    // For single file restore, we'd need to extend the Rust implementation
-    // For now, restore the full checkpoint
-    const result = restoreGhostCheckpoint(
-      cwd,
-      workUnitId,
-      checkpointName,
-      true
-    );
+    // Extract single file from checkpoint using git show (fast, targeted)
+    const ref = `refs/fspec-checkpoints/${workUnitId}/${checkpointName}`;
+    const targetPath = join(cwd, filepath);
+
+    try {
+      // Get file content from checkpoint tree
+      const { execSync } = await import('child_process');
+      const content = execSync(`git show "${ref}:${filepath}"`, {
+        cwd,
+        timeout: 10000,
+        maxBuffer: 50 * 1024 * 1024, // 50MB max for large files
+      });
+
+      // Ensure parent directory exists
+      const { dirname } = await import('path');
+      await fs.promises.mkdir(dirname(targetPath), { recursive: true });
+
+      // Write file content
+      await fs.promises.writeFile(targetPath, content);
+    } catch {
+      // File doesn't exist in checkpoint - delete it from working directory
+      try {
+        await fs.promises.unlink(targetPath);
+      } catch {
+        // File already doesn't exist in working dir, that's fine
+      }
+    }
 
     return {
-      success: result.success,
+      success: true,
       conflictDetected: false,
       systemReminder: '',
     };

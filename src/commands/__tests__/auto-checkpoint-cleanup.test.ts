@@ -8,7 +8,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import fs from 'fs';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { createCheckpoint } from '../../utils/git-checkpoint';
@@ -100,13 +106,8 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
 
       // Create test file for commit
       await writeFile(join(setup.testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Test commit',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'test.txt');
+      gitCommit(setup.testDir, 'Test commit', 'Test User', 'test@example.com');
 
       // And "AUTH-001" has automatic checkpoint "AUTH-001-auto-specifying"
       await writeFile(
@@ -142,13 +143,8 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       });
 
       // Commit everything so working directory is clean
-      await git.add({ fs, dir: setup.testDir, filepath: '.' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Clean state',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, '.');
+      gitCommit(setup.testDir, 'Clean state', 'Test User', 'test@example.com');
 
       // When I run "fspec update-work-unit-status AUTH-001 done"
       const result = await updateWorkUnitStatus({
@@ -268,13 +264,8 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
 
       // Create test file for commit
       await writeFile(join(setup.testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Test commit',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'test.txt');
+      gitCommit(setup.testDir, 'Test commit', 'Test User', 'test@example.com');
 
       // And "BUG-027" has manual checkpoint "before-fix"
       await writeFile(join(setup.testDir, 'before-fix.txt'), 'before fix');
@@ -295,13 +286,8 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       });
 
       // Commit everything
-      await git.add({ fs, dir: setup.testDir, filepath: '.' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Clean state',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, '.');
+      gitCommit(setup.testDir, 'Clean state', 'Test User', 'test@example.com');
 
       // When I run "fspec update-work-unit-status BUG-027 done"
       const result = await updateWorkUnitStatus({
@@ -408,13 +394,8 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
 
       // Create test file for commit
       await writeFile(join(setup.testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Test commit',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'test.txt');
+      gitCommit(setup.testDir, 'Test commit', 'Test User', 'test@example.com');
 
       // And "FEAT-010" has automatic checkpoint "FEAT-010-auto-backlog"
       await writeFile(join(setup.testDir, 'auto-backlog.txt'), 'auto backlog');
@@ -435,13 +416,8 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       });
 
       // Commit everything
-      await git.add({ fs, dir: setup.testDir, filepath: '.' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Clean state',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, '.');
+      gitCommit(setup.testDir, 'Clean state', 'Test User', 'test@example.com');
 
       // When I run "fspec update-work-unit-status FEAT-010 done"
       const result = await updateWorkUnitStatus({
@@ -538,13 +514,8 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
 
       // Create test file for commit (clean working directory)
       await writeFile(join(setup.testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: setup.testDir, filepath: '.' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Clean state',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, '.');
+      gitCommit(setup.testDir, 'Clean state', 'Test User', 'test@example.com');
 
       // And "TASK-001" has no checkpoints (no checkpoint creation)
 

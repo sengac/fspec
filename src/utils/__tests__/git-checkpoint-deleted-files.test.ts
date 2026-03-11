@@ -10,7 +10,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import fs from 'fs';
 import { createCheckpoint } from '../../utils/git-checkpoint';
 import {
@@ -25,21 +31,11 @@ describe('Feature: Checkpoint creation fails when deleted files exist', () => {
     setup = await setupTestDirectory('git-checkpoint-deleted');
 
     // Initialize git repository
-    await git.init({ fs, dir: setup.testDir, defaultBranch: 'main' });
+    gitInit(setup.testDir, 'main');
 
     // Configure git
-    await git.setConfig({
-      fs,
-      dir: setup.testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: setup.testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    gitSetConfig(setup.testDir, 'user.name', 'Test User');
+    gitSetConfig(setup.testDir, 'user.email', 'test@example.com');
 
     // Create initial directory structure
     await mkdir(join(setup.testDir, 'spec'), { recursive: true });
@@ -53,13 +49,13 @@ describe('Feature: Checkpoint creation fails when deleted files exist', () => {
       join(setup.testDir, 'spec', 'work-units.json'),
       '{"version":"1.0","workUnits":{}}'
     );
-    await git.add({ fs, dir: setup.testDir, filepath: 'spec/work-units.json' });
-    await git.commit({
-      fs,
-      dir: setup.testDir,
-      message: 'Initialize fspec',
-      author: { name: 'Test User', email: 'test@example.com' },
-    });
+    gitAdd(setup.testDir, 'spec/work-units.json');
+    gitCommit(
+      setup.testDir,
+      'Initialize fspec',
+      'Test User',
+      'test@example.com'
+    );
   });
 
   afterEach(async () => {
@@ -70,13 +66,8 @@ describe('Feature: Checkpoint creation fails when deleted files exist', () => {
     it('should create checkpoint successfully when a file is deleted', async () => {
       // @step Given I have a git repository with a committed file "README.md"
       await writeFile(join(setup.testDir, 'README.md'), '# Test Project\n');
-      await git.add({ fs, dir: setup.testDir, filepath: 'README.md' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Add README',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'README.md');
+      gitCommit(setup.testDir, 'Add README', 'Test User', 'test@example.com');
 
       // @step When I delete "README.md" from the working directory
       await rm(join(setup.testDir, 'README.md'));
@@ -105,14 +96,14 @@ describe('Feature: Checkpoint creation fails when deleted files exist', () => {
       // @step Given I have a git repository with committed files
       await writeFile(join(setup.testDir, 'src/app.ts'), 'const app = {};\n');
       await writeFile(join(setup.testDir, 'docs/old.md'), '# Old docs\n');
-      await git.add({ fs, dir: setup.testDir, filepath: 'src/app.ts' });
-      await git.add({ fs, dir: setup.testDir, filepath: 'docs/old.md' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Initial files',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'src/app.ts');
+      gitAdd(setup.testDir, 'docs/old.md');
+      gitCommit(
+        setup.testDir,
+        'Initial files',
+        'Test User',
+        'test@example.com'
+      );
 
       // @step When I modify "src/app.ts"
       await writeFile(
@@ -157,15 +148,10 @@ describe('Feature: Checkpoint creation fails when deleted files exist', () => {
       await writeFile(join(setup.testDir, 'docs/file1.md'), '# File 1\n');
       await writeFile(join(setup.testDir, 'docs/file2.md'), '# File 2\n');
       await writeFile(join(setup.testDir, 'docs/file3.md'), '# File 3\n');
-      await git.add({ fs, dir: setup.testDir, filepath: 'docs/file1.md' });
-      await git.add({ fs, dir: setup.testDir, filepath: 'docs/file2.md' });
-      await git.add({ fs, dir: setup.testDir, filepath: 'docs/file3.md' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Add docs',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'docs/file1.md');
+      gitAdd(setup.testDir, 'docs/file2.md');
+      gitAdd(setup.testDir, 'docs/file3.md');
+      gitCommit(setup.testDir, 'Add docs', 'Test User', 'test@example.com');
 
       // @step When I delete all files in "docs/" directory
       await rm(join(setup.testDir, 'docs'), { recursive: true, force: true });
@@ -199,13 +185,13 @@ describe('Feature: Checkpoint creation fails when deleted files exist', () => {
         join(setup.testDir, 'restore-test.md'),
         '# Restore Test\n'
       );
-      await git.add({ fs, dir: setup.testDir, filepath: 'restore-test.md' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Add test file',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'restore-test.md');
+      gitCommit(
+        setup.testDir,
+        'Add test file',
+        'Test User',
+        'test@example.com'
+      );
 
       // Create checkpoint before deletion
       const beforeDelete = await createCheckpoint({

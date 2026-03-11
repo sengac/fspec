@@ -17,6 +17,7 @@ mod diff;
 mod error;
 pub mod ghost_commit;
 mod isolated_session;
+mod repo_ops;
 mod session_result;
 mod session_status;
 mod status;
@@ -30,6 +31,7 @@ use std::path::Path;
 pub use diff::{get_file_diff, is_binary_file};
 pub use error::{GitError, Result};
 pub use isolated_session::IsolatedSessionInfo;
+pub use repo_ops::{git_add, git_commit, git_init, git_set_config, resolve_ref};
 pub use session_result::{abort_session, apply_session_changes, get_session_diff, SessionResult};
 pub use session_status::{
     complete_session, create_session_manifest, delete_manifest, derive_session_status,

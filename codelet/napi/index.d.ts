@@ -817,6 +817,51 @@ export interface GhostCheckpointJs {
   files: Array<string>;
 }
 
+/**
+ * Stage a file (equivalent to `git add <filepath>`)
+ *
+ * @param dir - Path to the repository root
+ * @param filepath - Path to the file relative to repository root
+ */
+export declare function gitAdd(dir: string, filepath: string): void;
+
+/**
+ * Create a commit from the current index
+ *
+ * @param dir - Path to the repository root
+ * @param message - Commit message
+ * @param authorName - Author name
+ * @param authorEmail - Author email
+ * @returns Hex string of the new commit SHA
+ */
+export declare function gitCommit(
+  dir: string,
+  message: string,
+  authorName: string,
+  authorEmail: string
+): string;
+
+/**
+ * Initialize a new git repository
+ *
+ * @param dir - Path to create the repository at
+ * @param defaultBranch - Name of the default branch (e.g. "main")
+ */
+export declare function gitInit(dir: string, defaultBranch: string): void;
+
+/**
+ * Set a git config value
+ *
+ * @param dir - Path to the repository root
+ * @param key - Config key (e.g. "user.name")
+ * @param value - Config value
+ */
+export declare function gitSetConfig(
+  dir: string,
+  key: string,
+  value: string
+): void;
+
 /** BRIDGE-012: Arguments passed to the global chunk callback */
 export interface GlobalChunkCallbackArgs {
   sessionId: string;
@@ -1651,6 +1696,15 @@ export declare function removeWorktree(
   repoPath: string,
   sessionId: string
 ): void;
+
+/**
+ * Resolve a git ref to its target commit SHA
+ *
+ * @param dir - Path to the repository root
+ * @param refName - Full ref path (e.g. "refs/fspec-checkpoints/GIT-039/baseline")
+ * @returns Hex string of the resolved commit SHA
+ */
+export declare function resolveRef(dir: string, refName: string): string;
 
 /**
  * Restore working tree from ghost commit checkpoint

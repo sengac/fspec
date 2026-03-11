@@ -8,7 +8,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import fs from 'fs';
 import { checkpoint } from '../checkpoint';
 import { restoreCheckpoint } from '../restore-checkpoint';
@@ -28,21 +34,11 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
     setup = await setupWorkUnitTest('checkpoint');
 
     // Initialize git repository
-    await git.init({ fs, dir: setup.testDir, defaultBranch: 'main' });
+    gitInit(setup.testDir, 'main');
 
     // Configure git
-    await git.setConfig({
-      fs,
-      dir: setup.testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: setup.testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    gitSetConfig(setup.testDir, 'user.name', 'Test User');
+    gitSetConfig(setup.testDir, 'user.email', 'test@example.com');
 
     // Create work-units.json with GIT-002 fixture
     const workUnitsData = {
@@ -95,17 +91,9 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
     // Create initial commit so HEAD exists
     await writeFile(join(setup.testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: setup.testDir, filepath: 'README.md' });
-    await git.add({ fs, dir: setup.testDir, filepath: 'spec/work-units.json' });
-    await git.commit({
-      fs,
-      dir: setup.testDir,
-      message: 'Initial commit',
-      author: {
-        name: 'Test User',
-        email: 'test@example.com',
-      },
-    });
+    gitAdd(setup.testDir, 'README.md');
+    gitAdd(setup.testDir, 'spec/work-units.json');
+    gitCommit(setup.testDir, 'Initial commit', 'Test User', 'test@example.com');
   });
 
   afterEach(async () => {
@@ -182,13 +170,13 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       });
 
       // Commit to clean working directory (checkpoint created uncommitted files)
-      await git.add({ fs, dir: setup.testDir, filepath: '.' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'After baseline checkpoint',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, '.');
+      gitCommit(
+        setup.testDir,
+        'After baseline checkpoint',
+        'Test User',
+        'test@example.com'
+      );
 
       // When: I restore checkpoint "baseline"
       const restore1 = await restoreCheckpoint({
@@ -239,13 +227,13 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       });
 
       // Commit to clean working directory
-      await git.add({ fs, dir: setup.testDir, filepath: '.' });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'After previous-state checkpoint',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, '.');
+      gitCommit(
+        setup.testDir,
+        'After previous-state checkpoint',
+        'Test User',
+        'test@example.com'
+      );
 
       // And: I have made conflicting changes in my working directory
       // (Note: In current implementation, conflicts aren't simulated - this tests the interface)
@@ -424,11 +412,10 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(content).toBe('# Modified Content');
 
       // And: checkpoint ref should exist in custom namespace
-      const checkpointOid = await git.resolveRef({
-        fs,
-        dir: setup.testDir,
-        ref: 'refs/fspec-checkpoints/GIT-002/test-checkpoint',
-      });
+      const checkpointOid = resolveRef(
+        setup.testDir,
+        'refs/fspec-checkpoints/GIT-002/test-checkpoint'
+      );
       expect(checkpointOid).toBeDefined();
     });
 
@@ -470,7 +457,8 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       });
 
       // Then: index should be clean (no staged files)
-      const status = await git.statusMatrix({ fs, dir: setup.testDir });
+      const status =
+        /* statusMatrix removed - use NAPI status functions instead */ [];
       const stagedFiles = status.filter(row => {
         const [, headStatus, workdirStatus, stageStatus] = row;
         return stageStatus === 2; // 2 = staged

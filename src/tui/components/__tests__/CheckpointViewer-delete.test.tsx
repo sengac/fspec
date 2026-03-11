@@ -12,7 +12,7 @@ import { CheckpointViewer } from '../CheckpointViewer';
 import * as gitCheckpoint from '../../../utils/git-checkpoint';
 import * as checkpointIndex from '../../../utils/checkpoint-index';
 import * as ipc from '../../../utils/ipc';
-import * as git from 'isomorphic-git';
+import { gitInit, gitSetConfig, gitAdd, gitCommit, resolveRef } from '@sengac/codelet-napi';
 import fs from 'fs';
 import { join } from 'path';
 
@@ -20,7 +20,7 @@ import { join } from 'path';
 vi.mock('../../../utils/git-checkpoint');
 vi.mock('../../../utils/checkpoint-index');
 vi.mock('../../../utils/ipc');
-vi.mock('isomorphic-git');
+vi.mock('@sengac/codelet-napi');
 vi.mock('fs', async (importOriginal) => {
   const actual = await importOriginal<typeof import('fs')>();
   return {
@@ -105,8 +105,8 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })),
       });
 
-      // Mock git.resolveRef to return OIDs for checkpoints
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      // Mock resolveRef NAPI binding to return OIDs for checkpoints
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
 
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
@@ -192,7 +192,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
       const { stdin, lastFrame } = render(
@@ -252,7 +252,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
       vi.mocked(gitCheckpoint.deleteAllCheckpoints).mockResolvedValue({
         success: true,
@@ -337,7 +337,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
       vi.mocked(gitCheckpoint.deleteCheckpoint).mockResolvedValue({
         success: true,
@@ -395,7 +395,7 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
         })),
       });
 
-      vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
+      vi.mocked(resolveRef).mockReturnValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/tui.ts']);
 
       const { stdin, lastFrame } = render(

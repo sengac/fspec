@@ -30,10 +30,19 @@ export interface CheckpointCounts {
 
 /**
  * Single checkpoint entry in an index file
+ *
+ * Two formats exist:
+ * - Legacy (pre-GIT-017): { name, message } where message = "fspec-checkpoint:{workUnitId}:{name}:{timestamp}"
+ * - Current (ghost commits): { name, sha, timestamp } from Rust NAPI bindings
  */
 export interface CheckpointIndexEntry {
   name: string;
-  message: string;
+  /** Legacy format: commit message containing encoded timestamp */
+  message?: string;
+  /** Current format: commit SHA */
+  sha?: string;
+  /** Current format: ISO timestamp */
+  timestamp?: string;
 }
 
 /**

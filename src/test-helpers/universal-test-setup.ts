@@ -189,40 +189,28 @@ export async function setupGitTest(testName: string): Promise<GitTestSetup> {
   const baseSetup = await setupTestDirectory(testName);
 
   const initGit = async () => {
-    const git = await import('isomorphic-git');
-    const fs = await import('fs');
+    const { gitInit, gitSetConfig, gitAdd, gitCommit } = await import(
+      '@sengac/codelet-napi'
+    );
 
     // Initialize git repository
-    await git.init({ fs, dir: baseSetup.testDir, defaultBranch: 'main' });
+    gitInit(baseSetup.testDir, 'main');
 
     // Configure git
-    await git.setConfig({
-      fs,
-      dir: baseSetup.testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: baseSetup.testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    gitSetConfig(baseSetup.testDir, 'user.name', 'Test User');
+    gitSetConfig(baseSetup.testDir, 'user.email', 'test@example.com');
 
     // Create initial commit so HEAD exists
     const { writeFile } = await import('fs/promises');
     const { join } = await import('path');
     await writeFile(join(baseSetup.testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: baseSetup.testDir, filepath: 'README.md' });
-    await git.commit({
-      fs,
-      dir: baseSetup.testDir,
-      message: 'Initial commit',
-      author: {
-        name: 'Test User',
-        email: 'test@example.com',
-      },
-    });
+    gitAdd(baseSetup.testDir, 'README.md');
+    gitCommit(
+      baseSetup.testDir,
+      'Initial commit',
+      'Test User',
+      'test@example.com'
+    );
   };
 
   return {

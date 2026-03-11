@@ -95,109 +95,6 @@
       ]
     },
     {
-      "name": "Layer 3 process stdout write capture strips ANSI",
-      "testMappings": [
-        {
-          "file": "src/utils/__tests__/ansi-stripping-in-capture.test.ts",
-          "lines": "101-118",
-          "implMappings": [
-            {
-              "file": "src/utils/fspec-callback.ts",
-              "lines": [
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621
-              ]
-            }
-          ]
-        },
-        {
-          "file": "src/utils/__tests__/ansi-stripping-in-capture.test.ts",
-          "lines": "101-143",
-          "implMappings": [
-            {
-              "file": "src/utils/fspec-callback.ts",
-              "lines": [
-                584,
-                585,
-                586,
-                587,
-                588,
-                589,
-                590,
-                591,
-                592,
-                593,
-                594,
-                595,
-                596,
-                597,
-                598,
-                599,
-                600,
-                601,
-                602,
-                603,
-                604,
-                605,
-                606,
-                607,
-                608,
-                609,
-                610,
-                611,
-                612,
-                613,
-                614,
-                615,
-                616,
-                617,
-                618,
-                619,
-                620,
-                621
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "End-to-end fspec callback returns clean output",
       "testMappings": [
         {
@@ -284,12 +181,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Commander configureOutput propagated to subcommands",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 5,
-    "coveredScenarios": 5,
-    "coveragePercent": 100,
+    "coveredScenarios": 4,
+    "coveragePercent": 80,
     "testFiles": [
       "src/utils/__tests__/ansi-stripping-in-capture.test.ts"
     ],

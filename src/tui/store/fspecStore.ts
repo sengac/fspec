@@ -19,8 +19,6 @@ enableMapSet();
 import { ensureWorkUnitsFile } from '../../utils/ensure-files';
 import { ensureEpicsFile } from '../../utils/ensure-files';
 import { fileManager } from '../../utils/file-manager';
-import git from 'isomorphic-git';
-import fs from 'fs';
 import path from 'path';
 import {
   getStagedFilesWithChangeType,
@@ -205,23 +203,10 @@ export const useFspecStore = create<FspecState>()(
     },
 
     loadStashes: async () => {
-      try {
-        const cwd = get().cwd;
-        const logs = await git.log({
-          fs,
-          dir: cwd,
-          ref: 'refs/stash',
-          depth: 10,
-        });
-        set(state => {
-          state.stashes = logs;
-        });
-      } catch {
-        // No stashes exist or error reading - set to empty array
-        set(state => {
-          state.stashes = [];
-        });
-      }
+      // Ghost commits replaced stashes (GIT-039) - stashes array kept for TUI compat
+      set(state => {
+        state.stashes = [];
+      });
     },
 
     loadFileStatus: async () => {

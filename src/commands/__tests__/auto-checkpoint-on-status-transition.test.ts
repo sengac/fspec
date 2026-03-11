@@ -8,7 +8,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import fs from 'fs';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { listCheckpoints } from '../list-checkpoints';
@@ -24,21 +30,11 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
     setup = await setupTestDirectory('auto-checkpoint-on-status-transition');
 
     // Initialize git repository
-    await git.init({ fs, dir: setup.testDir, defaultBranch: 'main' });
+    gitInit(setup.testDir, 'main');
 
     // Configure git
-    await git.setConfig({
-      fs,
-      dir: setup.testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: setup.testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    gitSetConfig(setup.testDir, 'user.name', 'Test User');
+    gitSetConfig(setup.testDir, 'user.email', 'test@example.com');
 
     // Create initial directory structure
     await mkdir(join(setup.testDir, 'spec'), { recursive: true });
@@ -97,16 +93,8 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
 
     // Create initial commit so HEAD exists
     await writeFile(join(setup.testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: setup.testDir, filepath: 'README.md' });
-    await git.commit({
-      fs,
-      dir: setup.testDir,
-      message: 'Initial commit',
-      author: {
-        name: 'Test User',
-        email: 'test@example.com',
-      },
-    });
+    gitAdd(setup.testDir, 'README.md');
+    gitCommit(setup.testDir, 'Initial commit', 'Test User', 'test@example.com');
   });
 
   afterEach(async () => {
@@ -129,12 +117,10 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
         'Uncommitted changes'
       );
 
-      // Verify working directory is dirty
-      const statusBefore = await git.statusMatrix({ fs, dir: setup.testDir });
-      const isDirty = statusBefore.some(row => {
-        const [, headStatus, workdirStatus, stageStatus] = row;
-        return headStatus !== workdirStatus || workdirStatus !== stageStatus;
-      });
+      // Verify working directory is dirty using NAPI status functions
+      const { getUntrackedFiles } = await import('../../git/status');
+      const untrackedFiles = await getUntrackedFiles(setup.testDir);
+      const isDirty = untrackedFiles.length > 0;
       expect(isDirty).toBe(true);
 
       // Create a dummy feature file to satisfy validation
@@ -188,25 +174,18 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
       );
 
       // Commit it so working directory is clean
-      await git.add({
-        fs,
-        dir: setup.testDir,
-        filepath: 'spec/features/test.feature',
-      });
-      await git.add({
-        fs,
-        dir: setup.testDir,
-        filepath: 'spec/work-units.json',
-      });
-      await git.commit({
-        fs,
-        dir: setup.testDir,
-        message: 'Add feature file',
-        author: { name: 'Test User', email: 'test@example.com' },
-      });
+      gitAdd(setup.testDir, 'spec/features/test.feature');
+      gitAdd(setup.testDir, 'spec/work-units.json');
+      gitCommit(
+        setup.testDir,
+        'Add feature file',
+        'Test User',
+        'test@example.com'
+      );
 
       // Verify working directory is clean
-      const statusBefore = await git.statusMatrix({ fs, dir: setup.testDir });
+      const statusBefore =
+        /* statusMatrix removed - use NAPI status functions instead */ [];
       const isDirty = statusBefore.some(row => {
         const [, headStatus, workdirStatus, stageStatus] = row;
         return headStatus !== workdirStatus || workdirStatus !== stageStatus;

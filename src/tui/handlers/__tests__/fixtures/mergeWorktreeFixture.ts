@@ -13,7 +13,13 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import * as git from 'isomorphic-git';
+import {
+  gitInit,
+  gitSetConfig,
+  gitAdd,
+  gitCommit,
+  resolveRef,
+} from '@sengac/codelet-napi';
 import * as fs from 'fs';
 
 import type { MergeWorktreeContext } from '../../mergeWorktreeHandler';
@@ -98,19 +104,9 @@ export async function createE2EFixture(
   };
 
   const initGitRepo = async (): Promise<void> => {
-    await git.init({ fs, dir: testDir, defaultBranch: 'main' });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    gitInit(testDir, 'main');
+    gitSetConfig(testDir, 'user.name', 'Test User');
+    gitSetConfig(testDir, 'user.email', 'test@example.com');
 
     // Create initial files
     for (const [relPath, content] of Object.entries(defaultFiles)) {
@@ -120,15 +116,10 @@ export async function createE2EFixture(
         await mkdir(dir, { recursive: true });
       }
       await writeFile(fullPath, content);
-      await git.add({ fs, dir: testDir, filepath: relPath });
+      gitAdd(testDir, relPath);
     }
 
-    await git.commit({
-      fs,
-      dir: testDir,
-      message: 'Initial commit',
-      author: { name: 'Test User', email: 'test@example.com' },
-    });
+    gitCommit(testDir, 'Initial commit', 'Test User', 'test@example.com');
   };
 
   const createIsolatedSession = async (

@@ -19,7 +19,7 @@ import path from 'path';
 import os from 'os';
 
 // Mock modules
-vi.mock('isomorphic-git');
+vi.mock('@sengac/codelet-napi');
 vi.mock('../../git/status');
 
 // Mock chokidar to track watch calls
