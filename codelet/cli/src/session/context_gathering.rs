@@ -129,17 +129,30 @@ pub fn discover_claude_md(start_path: Option<&Path>) -> Option<String> {
     let mut current = Some(start.as_path());
 
     while let Some(dir) = current {
-        // Check for each context file in priority order
-        for filename in &CONTEXT_FILES {
-            let file_path = dir.join(filename);
-            if file_path.exists() {
-                match std::fs::read_to_string(&file_path) {
-                    Ok(content) => {
-                        return Some(content);
-                    }
-                    Err(e) => {
-                        warn!("Failed to read {}: {}", file_path.display(), e);
-                        // Continue searching - maybe another file exists
+        // Skip directories named "spec" — CLAUDE.md and AGENTS.md placed there are
+        // fspec workflow docs intended for CLI-mode agents (e.g. spec/CLAUDE.md,
+        // spec/AGENTS.md).  Loading them into the codelet agent context conflicts
+        // with the Fspec tool integration which expects the tool-based workflow, not
+        // the CLI-command workflow.  All other directory names in the upward walk
+        // are unaffected.
+        let is_spec_dir = dir
+            .file_name()
+            .map(|name| name == "spec")
+            .unwrap_or(false);
+
+        if !is_spec_dir {
+            // Check for each context file in priority order
+            for filename in &CONTEXT_FILES {
+                let file_path = dir.join(filename);
+                if file_path.exists() {
+                    match std::fs::read_to_string(&file_path) {
+                        Ok(content) => {
+                            return Some(content);
+                        }
+                        Err(e) => {
+                            warn!("Failed to read {}: {}", file_path.display(), e);
+                            // Continue searching - maybe another file exists
+                        }
                     }
                 }
             }
@@ -647,5 +660,129 @@ mod tests {
             !content.contains("abcdef1234567890abcdef"),
             "Should NOT display full SHA"
         );
+    }
+
+    // INIT-017: spec/ directory exclusion tests
+    //
+    // spec/CLAUDE.md and spec/AGENTS.md contain instructions for using fspec as a
+    // CLI tool.  When the codelet agent is running, fspec is used via the Fspec tool
+    // (tool-based workflow), so those files must never be loaded into context — they
+    // would conflict with the tool-based instructions already in the system prompt.
+
+    /// INIT-017: discover_claude_md must skip a directory named "spec"
+    #[test]
+    fn test_discover_claude_md_skips_spec_directory() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        // Build:  <tmpdir>/spec/CLAUDE.md   ← must be ignored
+        //         <tmpdir>/AGENTS.md        ← must be returned
+        let tmp = TempDir::new().expect("create tempdir");
+        let spec_dir = tmp.path().join("spec");
+        fs::create_dir_all(&spec_dir).expect("create spec/");
+
+        fs::write(spec_dir.join("CLAUDE.md"), "# spec/CLAUDE.md content — CLI instructions").expect("write spec/CLAUDE.md");
+        fs::write(tmp.path().join("AGENTS.md"), "# AGENTS.md root content").expect("write AGENTS.md");
+
+        // Start search from within spec/ — simulates an agent launched there
+        let result = discover_claude_md(Some(&spec_dir));
+
+        assert!(
+            result.is_some(),
+            "Should find AGENTS.md in parent after skipping spec/"
+        );
+        let content = result.unwrap();
+        assert!(
+            content.contains("AGENTS.md root content"),
+            "Should return root AGENTS.md content, not spec/CLAUDE.md. Got:\n{content}"
+        );
+        assert!(
+            !content.contains("CLI instructions"),
+            "Should NOT return spec/CLAUDE.md content. Got:\n{content}"
+        );
+    }
+
+    /// INIT-017: spec/AGENTS.md must also be skipped
+    #[test]
+    fn test_discover_claude_md_skips_spec_agents_md() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        // Build:  <tmpdir>/spec/AGENTS.md   ← must be ignored
+        //         <tmpdir>/CLAUDE.md         ← must be returned
+        let tmp = TempDir::new().expect("create tempdir");
+        let spec_dir = tmp.path().join("spec");
+        fs::create_dir_all(&spec_dir).expect("create spec/");
+
+        fs::write(spec_dir.join("AGENTS.md"), "# spec/AGENTS.md — CLI instructions").expect("write spec/AGENTS.md");
+        fs::write(tmp.path().join("CLAUDE.md"), "# Root CLAUDE.md").expect("write root CLAUDE.md");
+
+        let result = discover_claude_md(Some(&spec_dir));
+
+        assert!(result.is_some(), "Should find root CLAUDE.md");
+        let content = result.unwrap();
+        assert!(
+            content.contains("Root CLAUDE.md"),
+            "Should return root CLAUDE.md, not spec/AGENTS.md. Got:\n{content}"
+        );
+        assert!(
+            !content.contains("CLI instructions"),
+            "Should NOT return spec/AGENTS.md content. Got:\n{content}"
+        );
+    }
+
+    /// INIT-017: when started from root (not inside spec/), root files still load
+    #[test]
+    fn test_discover_claude_md_still_loads_root_agents_md_from_root() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        let tmp = TempDir::new().expect("create tempdir");
+        fs::write(tmp.path().join("AGENTS.md"), "# Root AGENTS.md").expect("write AGENTS.md");
+
+        // Only a spec/ dir with its own CLAUDE.md — root search should still find root file
+        let spec_dir = tmp.path().join("spec");
+        fs::create_dir_all(&spec_dir).expect("create spec/");
+        fs::write(spec_dir.join("CLAUDE.md"), "# spec/CLAUDE.md").expect("write spec/CLAUDE.md");
+
+        // Start from project root (not spec/)
+        let result = discover_claude_md(Some(tmp.path()));
+
+        assert!(result.is_some(), "Should find root AGENTS.md");
+        let content = result.unwrap();
+        assert!(
+            content.contains("Root AGENTS.md"),
+            "Should return root AGENTS.md. Got:\n{content}"
+        );
+    }
+
+    /// INIT-017: when no root file exists either, returns None gracefully
+    #[test]
+    fn test_discover_claude_md_returns_none_when_only_spec_files_exist() {
+        use std::fs;
+        use tempfile::TempDir;
+
+        let tmp = TempDir::new().expect("create tempdir");
+        let spec_dir = tmp.path().join("spec");
+        fs::create_dir_all(&spec_dir).expect("create spec/");
+        fs::write(spec_dir.join("CLAUDE.md"), "# spec/CLAUDE.md").expect("write spec/CLAUDE.md");
+        fs::write(spec_dir.join("AGENTS.md"), "# spec/AGENTS.md").expect("write spec/AGENTS.md");
+
+        // No root-level file exists; filesystem root will be reached without finding anything
+        let result = discover_claude_md(Some(&spec_dir));
+
+        // We cannot assert None because parent dirs up to fs root may have one,
+        // but we CAN assert the spec/ files were not returned
+        if let Some(content) = result {
+            assert!(
+                !content.contains("spec/CLAUDE.md"),
+                "spec/CLAUDE.md content must never be returned"
+            );
+            assert!(
+                !content.contains("spec/AGENTS.md"),
+                "spec/AGENTS.md content must never be returned"
+            );
+        }
+        // None is also acceptable
     }
 }
