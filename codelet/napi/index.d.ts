@@ -1148,8 +1148,8 @@ export declare function modelsListLocalOpenai(
  * Refresh the model cache from models.dev API (async)
  *
  * Forces a fresh fetch from the API, ignoring cached data.
- * NOTE: This does NOT invalidate the in-memory registry cache.
- * For a full refresh, restart the process after calling this.
+ * Also invalidates the in-memory registry cache so subsequent
+ * calls to models_list_all() will pick up the new data.
  *
  * Returns the number of providers loaded.
  */

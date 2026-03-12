@@ -396,7 +396,9 @@
         "PROV-034",
         "PROV-035",
         "PROV-036",
-        "PROV-037"
+        "PROV-037",
+        "MODEL-002",
+        "MODEL-003"
       ]
     },
     "replace-rig-core": {

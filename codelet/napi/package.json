@@ -19,8 +19,9 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
+    "prebuild": "cargo clean --manifest-path ../Cargo.toml",
     "build": "napi build --platform --release --esm",
-    "build:debug": "napi build --platform --esm",
+    "build:debug": "cargo clean --manifest-path ../Cargo.toml && napi build --platform --esm",
     "build:all": "./scripts/build-all-platforms.sh",
     "build:macos": "./scripts/build-all-platforms.sh --macos-only",
     "build:docker": "./scripts/build-all-platforms.sh --docker-only",

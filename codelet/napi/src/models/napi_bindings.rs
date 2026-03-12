@@ -1,56 +1,11 @@
-//! NAPI bindings for model cache and selection functions
+//! NAPI bindings for model functions
 //!
-//! MODEL-001: Exposes models.dev model listing to TypeScript.
-//!
-//! This enables fspec to:
-//! - List available models from models.dev
-//! - Get model information for display
-//!
-//! NOTE: Cache directory is derived from the global data directory
-//! set via persistenceSetDataDirectory(). No separate cache directory
-//! configuration is needed.
+//! Exposes model listing, info, and refresh to TypeScript via NAPI-RS.
+//! Uses the shared REGISTRY_CACHE from the parent module.
 
-use chrono::Datelike;
-use codelet_providers::models::{get_cache_dir, ModelCache, ModelRegistry};
+use super::{get_registry, invalidate_registry_cache, is_current_model};
+use codelet_providers::models::ModelCache;
 use napi::bindgen_prelude::*;
-use std::sync::Arc;
-use tokio::sync::OnceCell;
-
-// ============================================================================
-// Cached Registry (DRY - avoid repeated JSON parsing)
-// ============================================================================
-
-/// Cached model registry - initialized once, reused across all NAPI calls
-static REGISTRY_CACHE: OnceCell<Arc<ModelRegistry>> = OnceCell::const_new();
-
-/// Get or initialize the cached model registry
-async fn get_registry() -> Result<Arc<ModelRegistry>> {
-    REGISTRY_CACHE
-        .get_or_try_init(|| async {
-            let cache = ModelCache::new()
-                .map_err(|e| Error::from_reason(format!("Failed to initialize model cache: {}", e)))?;
-            let registry = ModelRegistry::new(&cache)
-                .await
-                .map_err(|e| Error::from_reason(format!("Failed to load model registry: {}", e)))?;
-            Ok(Arc::new(registry))
-        })
-        .await
-        .cloned()
-}
-
-// ============================================================================
-// Cache Directory (Read-Only - derived from global data directory)
-// ============================================================================
-
-/// Get the current cache directory for model data
-///
-/// Returns {data_dir}/cache where data_dir is set via persistenceSetDataDirectory().
-#[napi]
-pub fn models_get_cache_directory() -> Result<String> {
-    get_cache_dir()
-        .map(|p| p.to_string_lossy().to_string())
-        .map_err(|e| Error::from_reason(format!("Failed to get cache directory: {}", e)))
-}
 
 // ============================================================================
 // Model Information Types
@@ -105,49 +60,6 @@ fn to_napi_model_info(model: &codelet_providers::models::ModelInfo) -> NapiModel
     }
 }
 
-/// Check if a model should be shown in the UI (filters out deprecated/old models)
-fn is_current_model(model: &codelet_providers::models::ModelInfo) -> bool {
-    use codelet_providers::models::ModelStatus;
-
-    // Filter out deprecated models
-    if model.status == Some(ModelStatus::Deprecated) {
-        return false;
-    }
-
-    // Filter out invalid aliases (models without dated versions)
-    // For Anthropic models, only show dated versions like "claude-opus-4-5-20251101"
-    // NOT aliases like "claude-opus-4-5" which are not valid API model IDs
-    // EXCEPTION: If the model has a release_date, it's a real model (e.g., claude-opus-4-6)
-    if model.id.starts_with("claude-") {
-        // Check if it ends with a date pattern (8 digits: YYYYMMDD)
-        let has_date_suffix = model.id.chars().rev().take(8).all(|c| c.is_ascii_digit())
-            && model.id.chars().rev().nth(8) == Some('-');
-
-        // Only filter out if no date suffix AND no release_date
-        // Models with release_date are real models, not just aliases
-        if !has_date_suffix && model.release_date.is_none() {
-            // This is an alias like "claude-opus-4-5" or "claude-sonnet-4-5"
-            // Skip it because it's not a valid Anthropic API model ID
-            return false;
-        }
-    }
-
-    // Filter out models older than 18 months
-    if let Some(ref release_date) = model.release_date {
-        // Parse release date (format: "YYYY-MM-DD")
-        if let Ok(date) = chrono::NaiveDate::parse_from_str(release_date, "%Y-%m-%d") {
-            let today = chrono::Utc::now().date_naive();
-            let age_months =
-                (today.year() - date.year()) * 12 + (today.month() as i32 - date.month() as i32);
-            if age_months > 18 {
-                return false;
-            }
-        }
-    }
-
-    true
-}
-
 /// Provider with its available models
 #[napi(object)]
 pub struct NapiProviderModels {
@@ -157,6 +69,20 @@ pub struct NapiProviderModels {
     pub provider_name: String,
     /// List of models available from this provider
     pub models: Vec<NapiModelInfo>,
+}
+
+// ============================================================================
+// Cache Directory (Read-Only - derived from global data directory)
+// ============================================================================
+
+/// Get the current cache directory for model data
+///
+/// Returns {data_dir}/cache where data_dir is set via persistenceSetDataDirectory().
+#[napi]
+pub fn models_get_cache_directory() -> Result<String> {
+    codelet_providers::models::get_cache_dir()
+        .map(|p| p.to_string_lossy().to_string())
+        .map_err(|e| Error::from_reason(format!("Failed to get cache directory: {}", e)))
 }
 
 // ============================================================================
@@ -175,7 +101,7 @@ pub struct NapiProviderModels {
 /// Sorts models by release date (newest first).
 #[napi]
 pub async fn models_list_all() -> Result<Vec<NapiProviderModels>> {
-    let registry = get_registry().await?;
+    let registry = get_registry().await.map_err(Error::from_reason)?;
 
     Ok(registry
         .list_providers()
@@ -210,7 +136,7 @@ pub async fn models_list_all() -> Result<Vec<NapiProviderModels>> {
 /// * `provider_id` - Provider ID (e.g., "anthropic", "openai", "google")
 #[napi]
 pub async fn models_list_for_provider(provider_id: String) -> Result<Vec<NapiModelInfo>> {
-    let registry = get_registry().await?;
+    let registry = get_registry().await.map_err(Error::from_reason)?;
 
     let models = registry.list_models(&provider_id).map_err(|e| {
         Error::from_reason(format!(
@@ -229,7 +155,7 @@ pub async fn models_list_for_provider(provider_id: String) -> Result<Vec<NapiMod
 /// * `model_id` - Model ID (e.g., "claude-sonnet-4")
 #[napi]
 pub async fn models_get_info(provider_id: String, model_id: String) -> Result<NapiModelInfo> {
-    let registry = get_registry().await?;
+    let registry = get_registry().await.map_err(Error::from_reason)?;
 
     let model = registry.get_model(&provider_id, &model_id).map_err(|e| {
         Error::from_reason(format!(
@@ -244,8 +170,8 @@ pub async fn models_get_info(provider_id: String, model_id: String) -> Result<Na
 /// Refresh the model cache from models.dev API (async)
 ///
 /// Forces a fresh fetch from the API, ignoring cached data.
-/// NOTE: This does NOT invalidate the in-memory registry cache.
-/// For a full refresh, restart the process after calling this.
+/// Also invalidates the in-memory registry cache so subsequent
+/// calls to models_list_all() will pick up the new data.
 ///
 /// Returns the number of providers loaded.
 #[napi]
@@ -258,6 +184,9 @@ pub async fn models_refresh_cache() -> Result<u32> {
             e
         ))
     })?;
+
+    // Invalidate in-memory registry so get_registry() rebuilds from fresh disk cache
+    invalidate_registry_cache().await;
 
     Ok(response.providers.len() as u32)
 }

@@ -374,35 +374,36 @@ fn test_provider_reports_streaming_support() {
     cleanup_test_env();
 }
 
-#[tokio::test]
-async fn test_create_rig_agent_with_all_tools_configured() {
+#[test]
+fn test_create_rig_agent_with_all_tools_configured() {
     // @step Given I have an initialized Codex provider
     cleanup_test_env(); // Clean state first
     let auth_content = r#"{
         "OPENAI_API_KEY": "sk-proj-test-key"
     }"#;
     setup_test_auth_json(auth_content);
+    set_env("CODEX_MODEL", "gpt-5.1-codex");
     let provider = CodexProvider::new().expect("Provider should initialize");
 
     // @step When I call create_rig_agent()
-    let _agent = provider.create_rig_agent(None, None);
+    let session_id = uuid::Uuid::new_v4();
+    let agent = provider.create_rig_agent(session_id, None, None);
 
     // @step Then a rig Agent should be created
-    // Agent is created successfully (compilation proves this)
+    // Agent is created successfully if we can inspect tool definitions
+    let runtime = tokio::runtime::Runtime::new().expect("Runtime should initialize");
+    let tool_defs = runtime
+        .block_on(agent.tool_server_handle.get_tool_defs(None))
+        .expect("Tool definitions should be available");
+    let tool_names: Vec<&str> = tool_defs.iter().map(|def| def.name.as_str()).collect();
 
-    // @step And the agent should have 7 tools configured
-    // Note: rig::agent::Agent doesn't expose tools count directly,
-    // but compilation proves all 7 tools were added via .tool() calls
-
-    // @step And the agent should use the provider's model name
-    // Model is configured in create_rig_agent() via .agent(&self.model_name)
-
-    // @step And the agent should have max_tokens set to 4096
-    // Max tokens configured in create_rig_agent() via .max_tokens(4096)
-
-    // These steps are validated by compilation and runtime behavior
-    // Agent creation without panic proves configuration is correct
-    // Test passes if we reach here without panic
+    // @step And the agent should expose Codex-native tool names including lowercase glob
+    assert!(tool_names.contains(&"shell_command"));
+    assert!(tool_names.contains(&"read_file"));
+    assert!(tool_names.contains(&"list_dir"));
+    assert!(tool_names.contains(&"grep_files"));
+    assert!(tool_names.contains(&"glob"));
+    assert!(!tool_names.contains(&"Glob"));
 
     // Cleanup
     cleanup_test_env();

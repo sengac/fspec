@@ -286,6 +286,58 @@ impl SearchToolFacade for CodexGrepFilesFacade {
     }
 }
 
+// ============================================================================
+// Glob Facade
+// ============================================================================
+
+/// Codex-specific facade for file pattern matching.
+///
+/// Exposes the glob tool under lowercase `glob`, which Codex expects.
+pub struct CodexGlobFacade;
+
+impl SearchToolFacade for CodexGlobFacade {
+    fn provider(&self) -> &'static str {
+        "codex"
+    }
+
+    fn tool_name(&self) -> &'static str {
+        "glob"
+    }
+
+    fn definition(&self) -> ToolDefinition {
+        ToolDefinition {
+            name: "glob".to_string(),
+            description: "Fast file pattern matching tool that works with any codebase size. Supports glob patterns like \"**/*.js\" or \"src/**/*.ts\". Returns matching file paths one per line.".to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {
+                    "pattern": {
+                        "type": "string",
+                        "description": "The glob pattern to match files"
+                    },
+                    "path": {
+                        "type": "string",
+                        "description": "Directory to search in (optional, defaults to current directory)"
+                    },
+                    "case_insensitive": {
+                        "type": "boolean",
+                        "description": "Whether to perform case-insensitive matching (optional, defaults to false)"
+                    }
+                },
+                "required": ["pattern"],
+                "additionalProperties": false
+            }),
+        }
+    }
+
+    fn map_params(&self, input: Value) -> Result<InternalSearchParams, ToolError> {
+        let pattern = extract_required_string(&input, "pattern", "glob")?;
+        let path = extract_optional_string(&input, "path");
+
+        Ok(InternalSearchParams::Glob { pattern, path })
+    }
+}
+
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
@@ -606,6 +658,59 @@ mod tests {
         }
     }
 
+    #[test]
+    fn test_codex_glob_facade() {
+        let facade = CodexGlobFacade;
+        let input = json!({
+            "pattern": "**/*.rs",
+            "path": "/src"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        assert_eq!(
+            result,
+            InternalSearchParams::Glob {
+                pattern: "**/*.rs".to_string(),
+                path: Some("/src".to_string())
+            }
+        );
+
+        assert_eq!(facade.tool_name(), "glob");
+        assert_eq!(facade.provider(), "codex");
+    }
+
+    #[test]
+    fn test_codex_glob_facade_no_path() {
+        let facade = CodexGlobFacade;
+        let input = json!({
+            "pattern": "**/*.rs"
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalSearchParams::Glob {
+                pattern: "**/*.rs".to_string(),
+                path: None
+            }
+        );
+    }
+
+    #[test]
+    fn test_codex_glob_facade_missing_pattern() {
+        let facade = CodexGlobFacade;
+        let input = json!({
+            "path": "/src"
+        });
+
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "glob");
+            assert!(message.contains("pattern"));
+        }
+    }
+
     // =========================================================================
     // Tool naming tests
     // =========================================================================
@@ -616,6 +721,7 @@ mod tests {
         assert_eq!(CodexReadFileFacade.tool_name(), "read_file");
         assert_eq!(CodexListDirFacade.tool_name(), "list_dir");
         assert_eq!(CodexGrepFilesFacade.tool_name(), "grep_files");
+        assert_eq!(CodexGlobFacade.tool_name(), "glob");
     }
 
     #[test]
@@ -624,6 +730,7 @@ mod tests {
         assert_eq!(CodexReadFileFacade.provider(), "codex");
         assert_eq!(CodexListDirFacade.provider(), "codex");
         assert_eq!(CodexGrepFilesFacade.provider(), "codex");
+        assert_eq!(CodexGlobFacade.provider(), "codex");
     }
 
     // =========================================================================
@@ -639,6 +746,7 @@ mod tests {
             ("read_file", CodexReadFileFacade.definition().parameters),
             ("list_dir", CodexListDirFacade.definition().parameters),
             ("grep_files", CodexGrepFilesFacade.definition().parameters),
+            ("glob", CodexGlobFacade.definition().parameters),
         ];
 
         // @step When their tool definitions are inspected
@@ -662,6 +770,9 @@ mod tests {
 
         let grep_params = &facades[3].1;
         assert_eq!(grep_params["required"], json!(["pattern"]));
+
+        let glob_params = &facades[4].1;
+        assert_eq!(glob_params["required"], json!(["pattern"]));
     }
 
     #[test]
@@ -681,6 +792,15 @@ mod tests {
 
         // Verify schema has `include` parameter (Codex-specific)
         assert!(def.parameters["properties"]["include"].is_object());
+    }
+
+    #[test]
+    fn test_codex_glob_schema_has_case_insensitive_param() {
+        let facade = CodexGlobFacade;
+        let def = facade.definition();
+
+        assert!(def.parameters["properties"]["case_insensitive"].is_object());
+        assert!(def.parameters["properties"]["pattern"].is_object());
     }
 
     #[test]

@@ -4,10 +4,10 @@ Feature: Codex-Native Tool Facades - Map Tools to Codex CLI Tool Schemas
 
   """
   Create codelet/tools/src/facade/codex.rs with CodexShellCommandFacade, CodexReadFileFacade,
-  CodexListDirFacade, CodexGrepFilesFacade. Follow existing pattern from zai.rs and file_ops.rs.
-  Update CodexProvider::create_rig_agent() to use FacadeToolWrapper for these 4 tools while
-  keeping Write, Edit, Glob, AstGrep, AstGrepRefactor as direct tool registrations. Reuse
-  existing OpenAIFspecFacade and OpenAIBridgeFacade for Codex.
+  CodexListDirFacade, CodexGrepFilesFacade, and CodexGlobFacade. Follow existing pattern from zai.rs and file_ops.rs.
+  Update CodexProvider::create_rig_agent() to use FacadeToolWrapper for these tools while
+  keeping Write, Edit, AstGrep, AstGrepRefactor as direct tool registrations, and expose glob
+  to Codex with a lowercase facade name. Reuse existing OpenAIFspecFacade and OpenAIBridgeFacade for Codex.
   """
 
   # ========================================
@@ -16,16 +16,18 @@ Feature: Codex-Native Tool Facades - Map Tools to Codex CLI Tool Schemas
   #
   # BUSINESS RULES:
   #   1. Codex tool facades MUST implement existing facade traits (BashToolFacade, FileToolFacade, LsToolFacade, SearchToolFacade) to map Codex-native params to internal params
-  #   2. Tool names MUST match Codex CLI exactly: shell_command, read_file, list_dir, grep_files (not shell, readFile, ls, etc.)
+  #   2. Tool names MUST match Codex CLI exactly: shell_command, read_file, list_dir, grep_files, glob (not shell, readFile, ls, Glob, etc.)
   #   3. Parameter schemas MUST match Codex CLI definitions from codex-rs/core/src/tools/spec.rs (e.g., read_file uses file_path not path, list_dir uses dir_path not path)
-  #   4. Tools without a Codex equivalent (Glob, AstGrep, AstGrepRefactor, Write, Edit) MUST be kept with current naming since Codex has no native equivalent
-  #   5. CodexProvider::create_rig_agent() MUST use FacadeToolWrapper for tools with Codex equivalents, replacing direct tool registration
+  #   4. Even though glob is not one of the four original Codex facade tools, the Codex provider MUST expose it as lowercase `glob` because Codex expects lowercase tool call names
+  #   5. Tools without a Codex equivalent beyond this naming adjustment (AstGrep, AstGrepRefactor, Write, Edit) MUST be kept with current naming
+  #   6. CodexProvider::create_rig_agent() MUST use FacadeToolWrapper for tools with Codex-equivalent schemas or Codex-specific naming, replacing direct tool registration
   #
   # EXAMPLES:
   #   1. Codex model calls shell_command with {command: 'ls -la', workdir: '/tmp'} → CodexShellCommandFacade maps to InternalBashParams::Execute{command: 'ls -la'} with cwd='/tmp' → BashTool executes
   #   2. Codex model calls read_file with {file_path: '/src/main.rs', offset: 10, limit: 50} → CodexReadFileFacade maps to InternalFileParams::Read{file_path: '/src/main.rs', offset: Some(10), limit: Some(50)} → ReadTool executes
   #   3. Codex model calls list_dir with {dir_path: '/src', depth: 2} → CodexListDirFacade maps to InternalLsParams::List{path: Some('/src')} → LsTool executes
   #   4. Codex model calls grep_files with {pattern: 'TODO', include: '*.rs', path: '/src'} → CodexGrepFilesFacade maps to InternalSearchParams::Grep{pattern: 'TODO', path: Some('/src')} → GrepTool executes
+  #   5. Codex model calls glob with {pattern: '**/*.rs', path: '/src'} → CodexGlobFacade maps to InternalSearchParams::Glob{pattern: '**/*.rs', path: Some('/src')} → GlobTool executes
   #
   # ========================================
 
@@ -60,6 +62,13 @@ Feature: Codex-Native Tool Facades - Map Tools to Codex CLI Tool Schemas
     When the Codex model calls grep_files with pattern "TODO" and path "/src"
     Then the facade maps to InternalSearchParams::Grep with pattern "TODO" and path "/src"
     And the facade tool name is "grep_files"
+    And the facade provider is "codex"
+
+  Scenario: CodexGlobFacade maps glob to InternalSearchParams::Glob
+    Given a CodexGlobFacade instance
+    When the Codex model calls glob with pattern "**/*.rs" and path "/src"
+    Then the facade maps to InternalSearchParams::Glob with pattern "**/*.rs" and path "/src"
+    And the facade tool name is "glob"
     And the facade provider is "codex"
 
   Scenario: Codex facades validate required parameters

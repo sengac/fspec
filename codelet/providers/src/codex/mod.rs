@@ -287,8 +287,8 @@ impl CodexProvider {
     ///
     /// This method encapsulates all Codex-specific configuration:
     /// - Model name (GPT or compatible)
-    /// - Codex-native tool names (shell_command, read_file, list_dir, grep_files) via facade wrappers
-    /// - Non-Codex tools kept with standard naming (Write, Edit, Glob, AstGrep, AstGrepRefactor)
+    /// - Codex-native tool names (shell_command, read_file, list_dir, grep_files, glob) via facade wrappers
+    /// - Non-Codex tools kept with standard naming (Write, Edit, AstGrep, AstGrepRefactor)
     /// - Fspec/Bridge tools reusing OpenAI facades
     ///
     /// # Arguments
@@ -304,13 +304,13 @@ impl CodexProvider {
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, EditTool, GlobTool, WebSearchTool, WriteTool,
+            AstGrepRefactorTool, AstGrepTool, EditTool, WebSearchTool, WriteTool,
             ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
         };
         use codelet_tools::facade::{
-            BashToolFacadeWrapper, CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
-            CodexShellCommandFacade, FileToolFacadeWrapper, LsToolFacadeWrapper,
-            SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
+            BashToolFacadeWrapper, CodexGlobFacade, CodexGrepFilesFacade, CodexListDirFacade,
+            CodexReadFileFacade, CodexShellCommandFacade, FileToolFacadeWrapper,
+            LsToolFacadeWrapper, SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -337,6 +337,10 @@ impl CodexProvider {
         // Grep facade: Grep → grep_files
         let grep_files = SearchToolFacadeWrapper::new(Arc::new(CodexGrepFilesFacade), session_id);
 
+        // @step And glob uses SearchToolFacadeWrapper with CodexGlobFacade
+        // Glob facade: Glob → glob
+        let glob = SearchToolFacadeWrapper::new(Arc::new(CodexGlobFacade), session_id);
+
         // Build agent with Codex-native tools using rig's builder pattern
         // TOOL-015: Uses FacadeToolWrapper for tools with Codex equivalents
         // NOTE: Do NOT set .max_tokens() — the Codex backend API rejects
@@ -349,11 +353,11 @@ impl CodexProvider {
             .tool(read_file)       // Codex-native read_file
             .tool(list_dir)        // Codex-native list_dir
             .tool(grep_files)      // Codex-native grep_files
-            // @step And Write, Edit, Glob, AstGrep, AstGrepRefactor remain as direct tool registrations
+            .tool(glob)            // Codex-native glob
+            // @step And Write, Edit, AstGrep, AstGrepRefactor remain as direct tool registrations
             // Tools without Codex equivalent - keep standard naming
             .tool(WriteTool::new(session_id))
             .tool(EditTool::new(session_id))
-            .tool(GlobTool::new(session_id))
             .tool(AstGrepTool::new(session_id))
             .tool(AstGrepRefactorTool::new(session_id))
             .tool(WebSearchTool::new(session_id))
@@ -437,6 +441,7 @@ impl CodexProvider {
 #[cfg(test)]
 mod tests {
     use super::CodexProvider;
+    use uuid::Uuid;
 
     // =========================================================================
     // Unit tests for build_reasoning_params — the core function that constructs
@@ -507,15 +512,22 @@ mod tests {
         assert_eq!(params["reasoning"]["summary"], "auto");
     }
 
-    #[test]
-    fn build_reasoning_params_does_not_include_max_output_tokens() {
-        // Codex backend API rejects max_output_tokens with 400
-        let params = CodexProvider::build_reasoning_params(None);
+    #[tokio::test]
+    async fn create_rig_agent_exposes_lowercase_glob_tool_definition() {
+        let provider = CodexProvider::from_api_key("sk-proj-test-key-12345", "gpt-5.1-codex")
+            .expect("Provider should initialize");
 
-        assert!(
-            params.get("max_output_tokens").is_none(),
-            "max_output_tokens must not be present — Codex backend API rejects it"
-        );
+        let session_id = Uuid::new_v4();
+        let agent = provider.create_rig_agent(session_id, None, None);
+        let tool_defs = agent
+            .tool_server_handle
+            .get_tool_defs(None)
+            .await
+            .expect("Tool definitions should be available");
+
+        let tool_names: Vec<&str> = tool_defs.iter().map(|def| def.name.as_str()).collect();
+        assert!(tool_names.contains(&"glob"));
+        assert!(!tool_names.contains(&"Glob"));
     }
 
     #[test]

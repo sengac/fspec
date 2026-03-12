@@ -24,8 +24,9 @@ mod fspec;
 mod git;
 #[cfg(not(feature = "noop"))]
 mod glob;
-#[cfg(not(feature = "noop"))]
-mod models;
+// Models module: core logic always compiled, NAPI bindings conditional
+// (no ThreadsafeFunction dependency - safe for noop)
+pub mod models;
 #[cfg(not(feature = "noop"))]
 pub mod navigation;
 #[cfg(not(feature = "noop"))]
