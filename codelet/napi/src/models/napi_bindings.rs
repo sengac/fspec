@@ -132,6 +132,10 @@ pub async fn models_list_all() -> Result<Vec<NapiProviderModels>> {
 
 /// List models for a specific provider (async)
 ///
+/// Applies the same is_current_model() filter and newest-first sort as
+/// models_list_all() so deprecated and stale models are excluded regardless
+/// of which listing API is called (MODEL-003 Rules [0] and [1]).
+///
 /// # Arguments
 /// * `provider_id` - Provider ID (e.g., "anthropic", "openai", "google")
 #[napi]
@@ -145,7 +149,17 @@ pub async fn models_list_for_provider(provider_id: String) -> Result<Vec<NapiMod
         ))
     })?;
 
-    Ok(models.iter().map(|m| to_napi_model_info(m)).collect())
+    // Apply the same current-model filter and newest-first sort as models_list_all()
+    let mut filtered: Vec<_> = models.into_iter().filter(|m| is_current_model(m)).collect();
+
+    // Sort by release date descending (newest first)
+    filtered.sort_by(|a, b| {
+        let date_a = a.release_date.as_deref().unwrap_or("1970-01-01");
+        let date_b = b.release_date.as_deref().unwrap_or("1970-01-01");
+        date_b.cmp(date_a)
+    });
+
+    Ok(filtered.iter().map(|m| to_napi_model_info(m)).collect())
 }
 
 /// Get information for a specific model (async)
@@ -185,10 +199,13 @@ pub async fn models_refresh_cache() -> Result<u32> {
         ))
     })?;
 
-    // Invalidate in-memory registry so get_registry() rebuilds from fresh disk cache
+    let provider_count = response.providers.len() as u32;
+
+    // Persist refreshed data to disk and invalidate the in-memory registry
+    // so get_registry() rebuilds from the fresh disk cache.
     invalidate_registry_cache().await;
 
-    Ok(response.providers.len() as u32)
+    Ok(provider_count)
 }
 
 // ============================================================================

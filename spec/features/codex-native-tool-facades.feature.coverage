@@ -483,12 +483,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "CodexGlobFacade maps glob to InternalSearchParams::Glob",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 7,
+    "totalScenarios": 8,
     "coveredScenarios": 7,
-    "coveragePercent": 100,
+    "coveragePercent": 88,
     "testFiles": [
       "codelet/tools/src/facade/codex.rs"
     ],

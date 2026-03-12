@@ -1115,6 +1115,10 @@ export declare function modelsListAll(): Promise<Array<NapiProviderModels>>;
 /**
  * List models for a specific provider (async)
  *
+ * Applies the same is_current_model() filter and newest-first sort as
+ * models_list_all() so deprecated and stale models are excluded regardless
+ * of which listing API is called (MODEL-003 Rules [0] and [1]).
+ *
  * # Arguments
  * * `provider_id` - Provider ID (e.g., "anthropic", "openai", "google")
  */

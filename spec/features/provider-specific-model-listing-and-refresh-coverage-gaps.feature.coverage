@@ -1,16 +1,216 @@
 {
   "scenarios": [
     {
-      "name": "[Scenario name]",
-      "testMappings": []
+      "name": "Provider listing filters deprecated and stale models \u2014 only current model returned",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "lines": "90-135",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/models/napi_bindings.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider listing preserves newest-first ordering",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "lines": "137-173",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/models/napi_bindings.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "After public refresh behaviour, next listing returns the new model",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "lines": "175-230",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/models/mod.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Two concurrent callers and an invalidation remain race-safe",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/model_provider_listing_test.rs",
+          "lines": "232-295",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/models/mod.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 1,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/model_provider_listing_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/models/napi_bindings.rs",
+      "codelet/napi/src/models/mod.rs"
+    ],
+    "totalLinesCovered": 495
   }
 }
