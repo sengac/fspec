@@ -113,6 +113,8 @@ impl FileToolFacade for ZAIReadFileFacade {
             file_path,
             offset,
             limit,
+            mode: None,
+            indentation: None,
         })
     }
 }
@@ -437,6 +439,8 @@ mod tests {
                 file_path: "/tmp/test.txt".to_string(),
                 offset: None,
                 limit: None,
+                mode: None,
+                indentation: None,
             }
         );
     }
@@ -457,6 +461,8 @@ mod tests {
                 file_path: "/tmp/test.txt".to_string(),
                 offset: Some(10),
                 limit: Some(100),
+                mode: None,
+                indentation: None,
             }
         );
     }

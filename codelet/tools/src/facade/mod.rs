@@ -96,10 +96,10 @@ pub use gemini_history::{
 };
 pub use traits::{
     BashToolFacade, BoxedBashToolFacade, BoxedFileToolFacade, BoxedLsToolFacade,
-    BoxedSearchToolFacade, BoxedToolFacade, BoxedFspecToolFacade, FileToolFacade, 
-    FspecToolFacade, InternalBashParams, InternalFileParams, InternalLsParams, 
-    InternalSearchParams, InternalWebSearchParams, LsToolFacade, SearchToolFacade, 
-    ToolDefinition, ToolFacade,
+    BoxedSearchToolFacade, BoxedToolFacade, BoxedFspecToolFacade, FileToolFacade,
+    FspecToolFacade, InternalBashParams, InternalFileParams, InternalIndentationParams,
+    InternalLsParams, InternalSearchParams, InternalWebSearchParams, LsToolFacade,
+    SearchToolFacade, ToolDefinition, ToolFacade,
 };
 pub use web_search::{
     ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,

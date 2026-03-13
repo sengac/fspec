@@ -282,6 +282,10 @@ impl Tool for FileToolFacadeWrapper {
                 file_path,
                 offset,
                 limit,
+                // mode and indentation are accepted for Codex model compatibility
+                // but not yet used by ReadTool — falls through to default slice behavior
+                mode: _,
+                indentation: _,
             } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
                 let resolved_path = match validate_and_resolve_path(self.session_id, &file_path, "read") {

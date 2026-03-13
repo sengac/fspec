@@ -52,6 +52,25 @@ pub enum InternalWebSearchParams {
     },
 }
 
+/// Parameters for Codex-style indentation-aware block reading.
+///
+/// When `mode` is `"indentation"`, these parameters control how the read_file
+/// tool expands around an anchor line using indentation structure.
+/// All fields are optional to match the Codex CLI spec defaults.
+#[derive(Debug, Clone, PartialEq)]
+pub struct InternalIndentationParams {
+    /// Anchor line to center the indentation lookup on (defaults to offset).
+    pub anchor_line: Option<usize>,
+    /// How many parent indentation levels (smaller indents) to include.
+    pub max_levels: Option<usize>,
+    /// When true, include additional blocks that share the anchor indentation.
+    pub include_siblings: Option<bool>,
+    /// Include doc comments or attributes directly above the selected block.
+    pub include_header: Option<bool>,
+    /// Hard cap on the number of lines returned when using indentation mode.
+    pub max_lines: Option<usize>,
+}
+
 /// Internal parameters for file operations.
 /// All provider-specific parameters are mapped to these internal types.
 #[derive(Debug, Clone, PartialEq)]
@@ -61,6 +80,11 @@ pub enum InternalFileParams {
         file_path: String,
         offset: Option<usize>,
         limit: Option<usize>,
+        /// Optional mode selector: "slice" for simple ranges (default) or "indentation"
+        /// to expand around an anchor line.
+        mode: Option<String>,
+        /// Optional indentation configuration used when mode is "indentation".
+        indentation: Option<InternalIndentationParams>,
     },
     /// Write content to file
     Write { file_path: String, content: String },

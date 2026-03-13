@@ -263,6 +263,8 @@ async fn test_map_gemini_read_file_parameters_to_internal_format() -> Result<()>
             file_path: "/tmp/file.txt".to_string(),
             offset: None,
             limit: None,
+            mode: None,
+            indentation: None,
         }
     );
 

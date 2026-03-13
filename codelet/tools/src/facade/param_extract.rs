@@ -36,6 +36,12 @@ pub fn extract_optional_uint(input: &Value, field: &str) -> Option<usize> {
     input.get(field).and_then(Value::as_u64).map(|n| n as usize)
 }
 
+/// Extract an optional boolean field from JSON input.
+/// Returns None if the field is missing, null, or not a boolean.
+pub fn extract_optional_bool(input: &Value, field: &str) -> Option<bool> {
+    input.get(field).and_then(Value::as_bool)
+}
+
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used)]
 mod tests {
