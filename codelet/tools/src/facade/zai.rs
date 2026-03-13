@@ -252,7 +252,7 @@ impl BashToolFacade for ZAIRunCommandFacade {
 
     fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {
         let command = extract_required_string(&input, "command", "run_command")?;
-        Ok(InternalBashParams::Execute { command })
+        Ok(InternalBashParams::Execute { command, cwd: None, timeout_ms: None })
     }
 }
 
@@ -569,7 +569,9 @@ mod tests {
         assert_eq!(
             result,
             InternalBashParams::Execute {
-                command: "ls -la".to_string()
+                command: "ls -la".to_string(),
+                cwd: None,
+                timeout_ms: None,
             }
         );
     }

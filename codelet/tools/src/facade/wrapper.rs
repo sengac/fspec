@@ -991,10 +991,10 @@ impl Tool for BashToolFacadeWrapper {
         // Execute the bash tool based on the operation type
         // TOOL-013: BashTool now handles effective_cwd lookup internally via session_id
         match internal_params {
-            InternalBashParams::Execute { command } => {
+            InternalBashParams::Execute { command, cwd, .. } => {
                 let bash_args = BashArgs { 
                     command: command.clone(),
-                    cwd: None, // BashTool handles cwd lookup via session_id
+                    cwd, // Pass facade-provided cwd; BashTool applies session isolation override
                 };
                 match self.bash_tool.call(bash_args).await {
                     Ok(output) => Ok(BashOperationResult {

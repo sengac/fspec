@@ -119,7 +119,15 @@ pub type BoxedFileToolFacade = Arc<dyn FileToolFacade>;
 #[derive(Debug, Clone, PartialEq)]
 pub enum InternalBashParams {
     /// Execute a shell command
-    Execute { command: String },
+    Execute {
+        command: String,
+        /// Optional working directory override from the facade.
+        /// Session isolation effective_cwd takes precedence over this value.
+        cwd: Option<String>,
+        /// Optional timeout in milliseconds.
+        /// Stored for future use — BashTool does not currently enforce per-command timeouts.
+        timeout_ms: Option<u64>,
+    },
 }
 
 /// Provider-specific tool facade trait for bash/shell operations.

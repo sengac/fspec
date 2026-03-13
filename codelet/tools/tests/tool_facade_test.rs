@@ -467,7 +467,9 @@ async fn test_map_gemini_run_shell_command_parameters_to_internal_format() -> Re
     assert_eq!(
         internal,
         InternalBashParams::Execute {
-            command: "ls -la".to_string()
+            command: "ls -la".to_string(),
+            cwd: None,
+            timeout_ms: None,
         }
     );
 
