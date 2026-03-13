@@ -148,12 +148,20 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Sub-agent inherits Codex provider and model from parent session",
+      "testMappings": []
+    },
+    {
+      "name": "Sub-agent inherits Z.AI provider and model from parent session",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 3,
+    "totalScenarios": 5,
     "coveredScenarios": 3,
-    "coveragePercent": 100,
+    "coveragePercent": 60,
     "testFiles": [
       "codelet/tools/src/deep_search/tests.rs"
     ],
