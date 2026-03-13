@@ -304,7 +304,6 @@ pub fn with_error<E>() -> PipelineBuilder<E> {
 mod tests {
     use super::*;
     use agent_ops::tests::{Foo, MockIndex, MockModel};
-    use parallel::parallel;
 
     #[tokio::test]
     async fn test_prompt_pipeline() {

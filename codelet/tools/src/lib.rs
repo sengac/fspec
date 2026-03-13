@@ -39,7 +39,6 @@ pub mod tool_pause;
 pub mod tool_progress;
 pub mod truncation;
 pub mod validation;
-pub mod view_image;
 pub mod web_search;
 pub mod session_search;
 pub mod write;
@@ -91,7 +90,6 @@ pub use grep::GrepTool;
 pub use ls::LsTool;
 pub use page_fetcher::{Heading, Link, PageContent, PageFetcher};
 pub use read::{ReadOutput, ReadTool};
-pub use view_image::ViewImageTool;
 pub use search_engine::{SearchEngine, SearchResult};
 pub use tool_pause::{
     has_pause_handler, pause_for_user, set_pause_handler,

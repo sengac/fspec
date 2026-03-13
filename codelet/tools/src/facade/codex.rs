@@ -278,6 +278,71 @@ impl LsToolFacade for CodexListDirFacade {
 }
 
 // ============================================================================
+// View Image Facade
+// ============================================================================
+
+/// Codex-specific facade for viewing image files.
+///
+/// Maps Codex's `view_image` tool to the internal ReadTool via `InternalFileParams::Read`.
+/// The Codex CLI defines `view_image` with:
+/// - `path` (required): Local filesystem path to an image file
+///
+/// This facade maps `view_image { path }` → `InternalFileParams::Read { file_path: path }`
+/// so it delegates to ReadTool, which already handles image files (PNG, JPEG, GIF, WEBP)
+/// by detecting file type and returning base64-encoded image data.
+///
+/// The `detail` parameter from the original Codex CLI is accepted in the schema
+/// for model compatibility but not used (our ReadTool always returns the full image).
+pub struct CodexViewImageFacade;
+
+impl FileToolFacade for CodexViewImageFacade {
+    fn provider(&self) -> &'static str {
+        "codex"
+    }
+
+    fn tool_name(&self) -> &'static str {
+        "view_image"
+    }
+
+    fn definition(&self) -> ToolDefinition {
+        ToolDefinition {
+            name: "view_image".to_string(),
+            description: "View a local image from the filesystem (only use if given a full filepath \
+                by the user, and the image isn't already attached to the thread context \
+                within <image ...> tags).".to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "Local filesystem path to an image file"
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "Optional detail override. The only supported value is `original`; omit this field for default resized behavior."
+                    }
+                },
+                "required": ["path"],
+                "additionalProperties": false
+            }),
+        }
+    }
+
+    fn map_params(&self, input: Value) -> Result<InternalFileParams, ToolError> {
+        let path = extract_required_string(&input, "path", "view_image")?;
+        // detail is accepted for model compatibility but not used —
+        // ReadTool always returns the full image as base64
+        Ok(InternalFileParams::Read {
+            file_path: path,
+            offset: None,
+            limit: None,
+            mode: None,
+            indentation: None,
+        })
+    }
+}
+
+// ============================================================================
 // Grep Files Facade
 // ============================================================================
 
@@ -1146,6 +1211,7 @@ mod tests {
             CodexReadFileFacade.tool_name(),
             CodexListDirFacade.tool_name(),
             CodexGrepFilesFacade.tool_name(),
+            CodexViewImageFacade.tool_name(),
         ];
 
         // @step When the agent tool definitions are inspected
@@ -1173,6 +1239,7 @@ mod tests {
         assert_eq!(CodexReadFileFacade.tool_name(), "read_file");
         assert_eq!(CodexListDirFacade.tool_name(), "list_dir");
         assert_eq!(CodexGrepFilesFacade.tool_name(), "grep_files");
+        assert_eq!(CodexViewImageFacade.tool_name(), "view_image");
     }
 
     #[test]
@@ -1181,6 +1248,7 @@ mod tests {
         assert_eq!(CodexReadFileFacade.provider(), "codex");
         assert_eq!(CodexListDirFacade.provider(), "codex");
         assert_eq!(CodexGrepFilesFacade.provider(), "codex");
+        assert_eq!(CodexViewImageFacade.provider(), "codex");
     }
 
     // =========================================================================
@@ -1196,6 +1264,7 @@ mod tests {
             ("read_file", CodexReadFileFacade.definition().parameters),
             ("list_dir", CodexListDirFacade.definition().parameters),
             ("grep_files", CodexGrepFilesFacade.definition().parameters),
+            ("view_image", CodexViewImageFacade.definition().parameters),
         ];
 
         // @step When their tool definitions are inspected
@@ -1625,5 +1694,108 @@ mod tests {
                 }),
             }
         );
+    }
+
+    // =========================================================================
+    // view_image facade tests
+    // Feature: spec/features/codex-view-image.feature
+    // =========================================================================
+
+    /// Scenario: CodexViewImageFacade maps view_image path to InternalFileParams::Read
+    #[test]
+    fn test_codex_view_image_facade_maps_path_to_read() {
+        // @step Given a CodexViewImageFacade instance
+        let facade = CodexViewImageFacade;
+
+        // @step When the Codex model calls view_image with path "/tmp/screenshot.png"
+        let input = json!({
+            "path": "/tmp/screenshot.png"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalFileParams::Read with file_path "/tmp/screenshot.png"
+        assert_eq!(
+            result,
+            InternalFileParams::Read {
+                file_path: "/tmp/screenshot.png".to_string(),
+                offset: None,
+                limit: None,
+                mode: None,
+                indentation: None,
+            }
+        );
+
+        // @step And the facade tool name is "view_image"
+        assert_eq!(facade.tool_name(), "view_image");
+
+        // @step And the facade provider is "codex"
+        assert_eq!(facade.provider(), "codex");
+    }
+
+    /// Scenario: CodexViewImageFacade accepts detail param for compatibility
+    #[test]
+    fn test_codex_view_image_facade_accepts_detail_param() {
+        let facade = CodexViewImageFacade;
+
+        // detail is accepted for model compatibility but mapped to a plain Read
+        let input = json!({
+            "path": "/tmp/image.jpg",
+            "detail": "original"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        assert_eq!(
+            result,
+            InternalFileParams::Read {
+                file_path: "/tmp/image.jpg".to_string(),
+                offset: None,
+                limit: None,
+                mode: None,
+                indentation: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexViewImageFacade rejects missing path
+    #[test]
+    fn test_codex_view_image_facade_missing_path() {
+        let facade = CodexViewImageFacade;
+        let input = json!({});
+
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "view_image");
+            assert!(message.contains("path"));
+        } else {
+            panic!("Expected ToolError::Validation");
+        }
+    }
+
+    /// Scenario: CodexViewImageFacade rejects empty path
+    #[test]
+    fn test_codex_view_image_facade_empty_path() {
+        let facade = CodexViewImageFacade;
+        let input = json!({
+            "path": ""
+        });
+
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    /// Scenario: CodexViewImageFacade schema matches Codex CLI spec
+    #[test]
+    fn test_codex_view_image_schema_matches_codex_spec() {
+        let facade = CodexViewImageFacade;
+        let def = facade.definition();
+
+        assert_eq!(def.name, "view_image");
+        assert!(def.description.contains("View a local image"));
+        assert_eq!(def.parameters["properties"]["path"]["type"], "string");
+        assert_eq!(def.parameters["required"], json!(["path"]));
+        assert_eq!(def.parameters["additionalProperties"], false);
+        // detail param present for model compatibility
+        assert!(def.parameters["properties"]["detail"].is_object());
     }
 }

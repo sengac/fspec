@@ -305,13 +305,14 @@ impl CodexProvider {
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, ViewImageTool, WebSearchTool,
+            AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, WebSearchTool,
             ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
         };
         use codelet_tools::facade::{
             BashToolFacadeWrapper, CodexGrepFilesFacade, CodexListDirFacade,
-            CodexReadFileFacade, CodexShellCommandFacade, FileToolFacadeWrapper,
-            LsToolFacadeWrapper, SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
+            CodexReadFileFacade, CodexShellCommandFacade, CodexViewImageFacade,
+            FileToolFacadeWrapper, LsToolFacadeWrapper, SearchToolFacadeWrapper,
+            codex_bridge_tool, codex_fspec_tool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -329,6 +330,10 @@ impl CodexProvider {
         // @step And read_file uses FileToolFacadeWrapper with CodexReadFileFacade
         // File read facade: Read → read_file
         let read_file = FileToolFacadeWrapper::new(Arc::new(CodexReadFileFacade), session_id);
+
+        // @step And view_image uses FileToolFacadeWrapper with CodexViewImageFacade
+        // View image facade: Read → view_image (maps Codex-native view_image to ReadTool)
+        let view_image = FileToolFacadeWrapper::new(Arc::new(CodexViewImageFacade), session_id);
 
         // @step And list_dir uses LsToolFacadeWrapper with CodexListDirFacade
         // Directory listing facade: Ls → list_dir
@@ -349,6 +354,7 @@ impl CodexProvider {
             // Codex-native facade tools
             .tool(shell_command)   // Codex-native shell_command
             .tool(read_file)       // Codex-native read_file
+            .tool(view_image)      // Codex-native view_image (BUG-112: facade, not standalone)
             .tool(list_dir)        // Codex-native list_dir
             .tool(grep_files)      // Codex-native grep_files
             // @step And AstGrep, AstGrepRefactor remain as direct tool registrations
@@ -356,7 +362,6 @@ impl CodexProvider {
             // Codex models are trained to use apply_patch for all file modifications.
             // Keeping Write/Edit would cause the model to choose between competing interfaces.
             .tool(ApplyPatchTool::new(session_id))  // Codex-native apply_patch
-            .tool(ViewImageTool::new(session_id))  // Codex-native view_image (BUG-112)
             .tool(AstGrepTool::new(session_id))
             .tool(AstGrepRefactorTool::new(session_id))
             .tool(WebSearchTool::new(session_id))

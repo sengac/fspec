@@ -244,7 +244,7 @@ impl Image {
                 };
 
                 Ok(format!(
-                    "data:image/{ty};base64,{data}",
+                    "data:{ty};base64,{data}",
                     ty = media_type.to_mime_type()
                 ))
             }

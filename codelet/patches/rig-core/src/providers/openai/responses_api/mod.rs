@@ -144,14 +144,77 @@ impl ReasoningSummary {
 }
 
 /// A tool result.
+///
+/// The OpenAI Responses API `function_call_output` supports two wire formats:
+/// - A plain string in `output` (text-only tool results)
+/// - An array of structured content items in `output` (when the tool returns images)
+///
+/// See: <https://platform.openai.com/docs/api-reference/responses/create>
+/// and the Codex CLI `FunctionCallOutputContentItem` for the structured variant.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ToolResult {
     /// The call ID of a tool (this should be linked to the call ID for a tool call, otherwise an error will be received)
     call_id: String,
-    /// The result of a tool call.
-    output: String,
+    /// The result of a tool call — either a plain string or structured content items.
+    output: ToolResultOutput,
     /// The status of a tool call (if used in a completion request, this should always be Completed)
     status: ToolStatus,
+}
+
+/// The output of a tool result: either a plain text string or structured content items.
+///
+/// When serialized, `Text` produces a JSON string and `ContentItems` produces a JSON array,
+/// matching the Responses API's `function_call_output.output` field which accepts either format.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ToolResultOutput {
+    /// Plain text output (the common case for most tools).
+    Text(String),
+    /// Structured content items containing text and/or images.
+    /// Used when a tool returns image data (e.g., `view_image`, `read_file` for images).
+    ContentItems(Vec<ToolResultContentItem>),
+}
+
+/// A structured content item within a tool result output.
+///
+/// Matches the OpenAI Responses API schema for `function_call_output` content items
+/// and mirrors Codex CLI's `FunctionCallOutputContentItem`.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum ToolResultContentItem {
+    /// A text content item.
+    InputText { text: String },
+    /// An image content item with a data URI or URL.
+    InputImage {
+        image_url: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        detail: Option<ImageDetail>,
+    },
+}
+
+impl Serialize for ToolResultOutput {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            ToolResultOutput::Text(text) => serializer.serialize_str(text),
+            ToolResultOutput::ContentItems(items) => items.serialize(serializer),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for ToolResultOutput {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        match value {
+            serde_json::Value::String(s) => Ok(ToolResultOutput::Text(s)),
+            serde_json::Value::Array(_) => {
+                let items: Vec<ToolResultContentItem> =
+                    serde_json::from_value(value).map_err(serde::de::Error::custom)?;
+                Ok(ToolResultOutput::ContentItems(items))
+            }
+            _ => Err(serde::de::Error::custom(
+                "tool result output must be a string or array of content items",
+            )),
+        }
+    }
 }
 
 impl From<Message> for InputItem {
@@ -221,27 +284,53 @@ impl TryFrom<crate::completion::Message> for Vec<InputItem> {
                                 ..
                             },
                         ) => {
+                            // Collect all content items from the tool result.
+                            // If any item is an image, we use structured content items
+                            // (matching the Codex CLI's FunctionCallOutputContentItem format).
+                            // Otherwise, we use a plain string.
+                            let mut has_image = false;
+                            let mut content_items: Vec<ToolResultContentItem> = Vec::new();
+                            let mut text_parts: Vec<String> = Vec::new();
+
                             for tool_result_content in tool_content {
-                                let crate::completion::message::ToolResultContent::Text(Text {
-                                    text,
-                                }) = tool_result_content
-                                else {
-                                    return Err(CompletionError::ProviderError(
-                                        "This thing only supports text!".to_string(),
-                                    ));
-                                };
-                                // let output = serde_json::from_str(&text)?;
-                                items.push(InputItem {
-                                    role: None,
-                                    input: InputContent::FunctionCallOutput(ToolResult {
-                                        call_id: call_id
-                                            .clone()
-                                            .expect("The call ID of this tool should exist!"),
-                                        output: text,
-                                        status: ToolStatus::Completed,
-                                    }),
-                                });
+                                match tool_result_content {
+                                    crate::completion::message::ToolResultContent::Text(Text {
+                                        text,
+                                    }) => {
+                                        text_parts.push(text.clone());
+                                        content_items.push(ToolResultContentItem::InputText { text });
+                                    }
+                                    crate::completion::message::ToolResultContent::Image(image) => {
+                                        has_image = true;
+                                        let url = image.try_into_url().map_err(|e| {
+                                            CompletionError::ProviderError(format!(
+                                                "Failed to convert tool result image to URL: {e}"
+                                            ))
+                                        })?;
+                                        content_items.push(ToolResultContentItem::InputImage {
+                                            image_url: url,
+                                            detail: None,
+                                        });
+                                    }
+                                }
                             }
+
+                            let output = if has_image {
+                                ToolResultOutput::ContentItems(content_items)
+                            } else {
+                                ToolResultOutput::Text(text_parts.join("\n"))
+                            };
+
+                            items.push(InputItem {
+                                role: None,
+                                input: InputContent::FunctionCallOutput(ToolResult {
+                                    call_id: call_id
+                                        .clone()
+                                        .expect("The call ID of this tool should exist!"),
+                                    output,
+                                    status: ToolStatus::Completed,
+                                }),
+                            });
                         }
                         crate::message::UserContent::Document(Document {
                             data,
@@ -611,8 +700,9 @@ impl TryFrom<(String, crate::completion::CompletionRequest)> for CompletionReque
             full_history.extend(
                 partial_history
                     .into_iter()
-                    .map(|x| <Vec<InputItem>>::try_from(x).unwrap())
-                    .collect::<Vec<Vec<InputItem>>>()
+                    .map(|x| <Vec<InputItem>>::try_from(x))
+                    .collect::<Result<Vec<Vec<InputItem>>, _>>()
+                    .map_err(|e| CompletionError::ProviderError(format!("Failed to convert message history: {e}")))?
                     .into_iter()
                     .flatten()
                     .collect::<Vec<InputItem>>(),
@@ -1185,7 +1275,7 @@ pub enum Message {
     #[serde(rename = "tool")]
     ToolResult {
         tool_call_id: String,
-        output: String,
+        output: ToolResultOutput,
     },
 }
 
@@ -1263,7 +1353,7 @@ pub enum UserContent {
     #[serde(rename = "tool")]
     ToolResult {
         tool_call_id: String,
-        output: String,
+        output: ToolResultOutput,
     },
 }
 
@@ -1287,18 +1377,45 @@ impl TryFrom<message::Message> for Vec<Message> {
                                 call_id,
                                 content,
                                 ..
-                            }) => Ok::<_, message::MessageError>(Message::ToolResult {
-                                tool_call_id: call_id.expect("The tool call ID should exist"),
-                                output: {
-                                    let res = content.first();
-                                    match res {
+                            }) => {
+                                let mut has_image = false;
+                                let mut content_items: Vec<ToolResultContentItem> = Vec::new();
+                                let mut text_parts: Vec<String> = Vec::new();
+
+                                for item in content {
+                                    match item {
                                         completion::message::ToolResultContent::Text(Text {
                                             text,
-                                        }) => text,
-                                        _ => return  Err(MessageError::ConversionError("This API only currently supports text tool results".into()))
+                                        }) => {
+                                            text_parts.push(text.clone());
+                                            content_items.push(ToolResultContentItem::InputText { text });
+                                        }
+                                        completion::message::ToolResultContent::Image(image) => {
+                                            has_image = true;
+                                            let url = image.try_into_url().map_err(|e| {
+                                                MessageError::ConversionError(format!(
+                                                    "Failed to convert tool result image to URL: {e}"
+                                                ))
+                                            })?;
+                                            content_items.push(ToolResultContentItem::InputImage {
+                                                image_url: url,
+                                                detail: None,
+                                            });
+                                        }
                                     }
-                                },
-                            }),
+                                }
+
+                                let output = if has_image {
+                                    ToolResultOutput::ContentItems(content_items)
+                                } else {
+                                    ToolResultOutput::Text(text_parts.join("\n"))
+                                };
+
+                                Ok::<_, message::MessageError>(Message::ToolResult {
+                                    tool_call_id: call_id.expect("The tool call ID should exist"),
+                                    output,
+                                })
+                            },
                             _ => unreachable!(),
                         })
                         .collect::<Result<Vec<_>, _>>()

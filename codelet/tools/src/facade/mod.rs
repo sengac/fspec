@@ -71,7 +71,7 @@ pub use zai::{
 };
 pub use codex::{
     CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
-    CodexShellCommandFacade,
+    CodexShellCommandFacade, CodexViewImageFacade,
 };
 pub use registry::ProviderToolRegistry;
 pub use search::{GeminiGlobFacade, GeminiSearchFileContentFacade};

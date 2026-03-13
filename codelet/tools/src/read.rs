@@ -54,7 +54,8 @@ pub enum ReadOutput {
 
 /// Validate binary image data (size + pixel dimensions) and encode to [`ReadOutput::Image`].
 ///
-/// Shared by `ReadTool` and `ViewImageTool` — single source of truth for the
+/// Shared by `ReadTool` and `CodexViewImageFacade` (via `FileToolFacadeWrapper`) —
+/// single source of truth for the
 /// base64 size limit, pixel dimension limit, and encoding step.
 pub fn validate_and_encode_image(
     binary_content: &[u8],
