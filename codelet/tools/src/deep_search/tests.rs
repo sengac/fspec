@@ -347,7 +347,7 @@ mod tests {
         set_session_search_handler(ephemeral_session_id, Some(mock_handler));
         assert!(has_session_search_handler(ephemeral_session_id));
 
-        // @step And after RigAgent::prompt() completes, the handler is cleaned up via set_session_search_handler(ephemeral_session_id, None)
+        // @step And after sub-agent execution completes, the handler is cleaned up via set_session_search_handler(ephemeral_session_id, None)
         set_session_search_handler(ephemeral_session_id, None);
         assert!(!has_session_search_handler(ephemeral_session_id));
 
@@ -356,7 +356,7 @@ mod tests {
 
     // ================================================================
     // Scenario: Handler dispatch — call() invokes registered handler
-    // Covers: code-search, narrow-scope, session-search, non-streaming,
+    // Covers: code-search, narrow-scope, session-search, provider-compat,
     //         credentials, ephemeral, provider-wiring scenarios
     // ================================================================
 
@@ -509,7 +509,7 @@ mod tests {
             max_depth: None,
         };
 
-        // @step Then the sub-agent calls RigAgent::prompt(query) not the streaming variant
+        // @step Then the sub-agent executes via provider-specific mode and call() remains async
         // @step And the call blocks until the sub-agent finishes all tool calls and produces a final answer
         // (no handler → error before prompt call, but verifies dispatch path is async)
         let result = tool.call(args).await;
@@ -888,6 +888,114 @@ mod tests {
         // (verified by deep_search_handler.rs using with_provider_and_model —
         //  provider-agnostic path, not hardcoded get_claude())
 
+        clear_all_deep_search_handlers();
+    }
+
+    // ================================================================
+    // Scenario: Sub-agent inherits Codex provider and model from parent session
+    // ================================================================
+
+    #[tokio::test]
+    #[serial]
+    async fn test_handler_captures_provider_and_model_codex() {
+        use rig::tool::Tool;
+        use std::sync::Arc;
+
+        clear_all_deep_search_handlers();
+
+        // @step Given a parent session with provider "codex" and model "gpt-5.1-codex"
+        let session_id = Uuid::new_v4();
+        let tool = DeepSearchTool::new(session_id);
+
+        let parent_provider = "codex".to_string();
+        let parent_model = Some("gpt-5.1-codex".to_string());
+
+        let captured_provider = Arc::new(std::sync::Mutex::new(String::new()));
+        let captured_model = Arc::new(std::sync::Mutex::new(None::<String>));
+        let cp = captured_provider.clone();
+        let cm = captured_model.clone();
+
+        // @step When the DeepSearch handler is registered for the session
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+            *cp.lock().unwrap() = parent_provider.clone();
+            *cm.lock().unwrap() = parent_model.clone();
+            Box::pin(async { Ok("codex answer".to_string()) })
+        });
+        set_deep_search_handler(session_id, Some(handler));
+
+        let args = DeepSearchArgs {
+            query: "test query".to_string(),
+            scope: None,
+            max_depth: None,
+        };
+
+        let result = tool.call(args).await;
+        assert!(result.is_ok());
+
+        // @step Then the handler closure captures the provider name "codex"
+        assert_eq!(*captured_provider.lock().unwrap(), "codex");
+
+        // @step And the handler closure captures the model id "gpt-5.1-codex"
+        assert_eq!(
+            *captured_model.lock().unwrap(),
+            Some("gpt-5.1-codex".to_string())
+        );
+
+        // @step And the sub-agent creates a ProviderManager with provider "codex" and model "gpt-5.1-codex"
+        clear_all_deep_search_handlers();
+    }
+
+    // ================================================================
+    // Scenario: Sub-agent inherits Z.AI provider and model from parent session
+    // ================================================================
+
+    #[tokio::test]
+    #[serial]
+    async fn test_handler_captures_provider_and_model_zai() {
+        use rig::tool::Tool;
+        use std::sync::Arc;
+
+        clear_all_deep_search_handlers();
+
+        // @step Given a parent session with provider "zai" and model "glm-4.7"
+        let session_id = Uuid::new_v4();
+        let tool = DeepSearchTool::new(session_id);
+
+        let parent_provider = "zai".to_string();
+        let parent_model = Some("glm-4.7".to_string());
+
+        let captured_provider = Arc::new(std::sync::Mutex::new(String::new()));
+        let captured_model = Arc::new(std::sync::Mutex::new(None::<String>));
+        let cp = captured_provider.clone();
+        let cm = captured_model.clone();
+
+        // @step When the DeepSearch handler is registered for the session
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+            *cp.lock().unwrap() = parent_provider.clone();
+            *cm.lock().unwrap() = parent_model.clone();
+            Box::pin(async { Ok("zai answer".to_string()) })
+        });
+        set_deep_search_handler(session_id, Some(handler));
+
+        let args = DeepSearchArgs {
+            query: "test query".to_string(),
+            scope: None,
+            max_depth: None,
+        };
+
+        let result = tool.call(args).await;
+        assert!(result.is_ok());
+
+        // @step Then the handler closure captures the provider name "zai"
+        assert_eq!(*captured_provider.lock().unwrap(), "zai");
+
+        // @step And the handler closure captures the model id "glm-4.7"
+        assert_eq!(
+            *captured_model.lock().unwrap(),
+            Some("glm-4.7".to_string())
+        );
+
+        // @step And the sub-agent creates a ProviderManager with provider "zai" and model "glm-4.7"
         clear_all_deep_search_handlers();
     }
 

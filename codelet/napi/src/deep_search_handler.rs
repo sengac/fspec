@@ -6,8 +6,8 @@
 //! 1. Creates an ephemeral session_id (Uuid::new_v4())
 //! 2. Registers a SessionSearch handler for the ephemeral session
 //! 3. Builds a system prompt describing the scope
-//! 4. Builds a rig agent with read-only tools (provider-agnostic)
-//! 5. Calls RigAgent::prompt(query) — non-streaming, blocking
+//! 4. Builds a rig agent with read-only tools and provider-aware request config
+//! 5. Executes query with provider-specific mode (Codex streams internally)
 //! 6. Cleans up the SessionSearch handler (guaranteed via drop guard)
 //! 7. Returns the final answer string
 //!
@@ -20,18 +20,18 @@ use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
+use crate::deep_search_provider_config::request_config_for_provider;
 use codelet_tools::{
     AstGrepTool, BashTool, GlobTool, GrepTool, LsTool, ReadTool,
     SessionSearchTool, SUB_AGENT_TOOL_COUNT, build_system_prompt,
     set_session_search_handler,
 };
 use codelet_core::RigAgent;
+use futures::Stream;
+use futures::StreamExt;
 use codelet_providers::LlmProvider;
 use rig::client::CompletionClient;
 use uuid::Uuid;
-
-/// Maximum output tokens for the ephemeral sub-agent's response.
-const SUB_AGENT_MAX_TOKENS: u64 = 8192;
 
 /// Drop guard that ensures the ephemeral SessionSearch handler is always
 /// cleaned up, even if `build_and_run_agent` panics.
@@ -97,12 +97,22 @@ pub async fn execute_deep_search(
 /// return them from a match arm. This macro avoids duplicating the tool
 /// chain + RigAgent wrapping for each provider.
 macro_rules! build_and_run {
-    ($provider:expr, $session_id:expr, $system_prompt:expr, $query:expr, $max_depth:expr) => {{
-        let agent = $provider
+    ($provider:expr, $request_config:expr, $session_id:expr, $query:expr, $max_depth:expr, $provider_name:expr) => {{
+        let request_config = $request_config;
+        let mut agent_builder = $provider
             .client()
             .agent($provider.model())
-            .max_tokens(SUB_AGENT_MAX_TOKENS)
-            .preamble($system_prompt)
+            .preamble(&request_config.preamble);
+
+        if let Some(max_tokens) = request_config.max_tokens {
+            agent_builder = agent_builder.max_tokens(max_tokens);
+        }
+
+        if let Some(additional_params) = request_config.additional_params.clone() {
+            agent_builder = agent_builder.additional_params(additional_params);
+        }
+
+        let agent = agent_builder
             .tool(ReadTool::new($session_id))
             .tool(GrepTool::new($session_id))
             .tool(AstGrepTool::new($session_id))
@@ -113,11 +123,46 @@ macro_rules! build_and_run {
             .build();
 
         let rig_agent = RigAgent::new(agent, $max_depth);
-        rig_agent
-            .prompt($query)
-            .await
-            .map_err(|e| format!("DeepSearch sub-agent failed: {e}"))
+        if provider_uses_streaming_execution($provider_name) {
+            collect_final_response_from_stream(rig_agent.prompt_streaming($query).await).await
+        } else {
+            rig_agent
+                .prompt($query)
+                .await
+                .map_err(|e| format!("DeepSearch sub-agent failed: {e}"))
+        }
     }};
+}
+
+fn provider_uses_streaming_execution(provider_name: &str) -> bool {
+    provider_name == "codex"
+}
+
+async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
+where
+    S: Stream<Item = Result<rig::agent::MultiTurnStreamItem<R>, anyhow::Error>>,
+    R: Clone + Unpin + rig::completion::GetTokenUsage,
+{
+    let mut last_final_response: Option<String> = None;
+    let stream = stream;
+    futures::pin_mut!(stream);
+
+    while let Some(item) = stream.next().await {
+        match item {
+            Ok(rig::agent::MultiTurnStreamItem::FinalResponse(final_response)) => {
+                last_final_response = Some(final_response.response().to_string());
+            }
+            Ok(_) => {}
+            Err(error) => {
+                return Err(format!("DeepSearch sub-agent failed: {error}"));
+            }
+        }
+    }
+
+    match last_final_response {
+        Some(response) => Ok(response),
+        None => Err("DeepSearch sub-agent failed: missing final response from streaming execution".to_string()),
+    }
 }
 
 /// Build a sub-agent with read-only tools and run it to completion.
@@ -156,23 +201,71 @@ async fn build_and_run_agent(
         "claude" => {
             let provider = manager.get_claude()
                 .map_err(|e| format!("Failed to get Claude provider: {e}"))?;
-            build_and_run!(provider, session_id, system_prompt, query, max_depth)
+            let request_config = request_config_for_provider(
+                provider_name,
+                provider.model(),
+                system_prompt,
+                provider.is_oauth_mode(),
+            )
+            .map_err(|e| format!("Failed to build Claude DeepSearch config: {e}"))?;
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
         }
         "openai" => {
             let provider = manager.get_openai()
                 .map_err(|e| format!("Failed to get OpenAI provider: {e}"))?;
-            build_and_run!(provider, session_id, system_prompt, query, max_depth)
+            let request_config = request_config_for_provider(
+                provider_name,
+                provider.model(),
+                system_prompt,
+                false,
+            )
+            .map_err(|e| format!("Failed to build OpenAI DeepSearch config: {e}"))?;
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
         }
         "gemini" => {
             let provider = manager.get_gemini()
                 .map_err(|e| format!("Failed to get Gemini provider: {e}"))?;
-            build_and_run!(provider, session_id, system_prompt, query, max_depth)
+            let request_config = request_config_for_provider(
+                provider_name,
+                provider.model(),
+                system_prompt,
+                false,
+            )
+            .map_err(|e| format!("Failed to build Gemini DeepSearch config: {e}"))?;
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
+        }
+        "codex" => {
+            let provider = manager.get_codex()
+                .map_err(|e| format!("Failed to get Codex provider: {e}"))?;
+            let request_config = request_config_for_provider(
+                provider_name,
+                provider.model(),
+                system_prompt,
+                false,
+            )
+            .map_err(|e| format!("Failed to build Codex DeepSearch config: {e}"))?;
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
+        }
+        "zai" => {
+            let provider = manager.get_zai()
+                .map_err(|e| format!("Failed to get Z.AI provider: {e}"))?;
+            let request_config = request_config_for_provider(
+                provider_name,
+                provider.model(),
+                system_prompt,
+                false,
+            )
+            .map_err(|e| format!("Failed to build Z.AI DeepSearch config: {e}"))?;
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
         }
         _ => {
             Err(format!(
                 "Unsupported provider for DeepSearch sub-agent: {provider_name}. \
-                 Supported: claude, openai, gemini"
+                 Supported: claude, openai, gemini, codex, zai"
             ))
         }
     }
 }
+
+#[cfg(test)]
+mod tests;

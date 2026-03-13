@@ -54,6 +54,9 @@ pub mod inject_summary_handler;
 #[cfg(not(feature = "noop"))]
 pub mod deep_search_handler;
 
+#[cfg(not(feature = "noop"))]
+pub(crate) mod deep_search_provider_config;
+
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
 pub mod persistence;
 

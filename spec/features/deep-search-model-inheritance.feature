@@ -25,6 +25,20 @@ Feature: DeepSearch tool fails with 'Model is required' configuration error
     And the handler closure captures the model id "gpt-4o"
     And the sub-agent creates a ProviderManager with provider "openai" and model "gpt-4o"
 
+  Scenario: Sub-agent inherits Codex provider and model from parent session
+    Given a parent session with provider "codex" and model "gpt-5.1-codex"
+    When the DeepSearch handler is registered for the session
+    Then the handler closure captures the provider name "codex"
+    And the handler closure captures the model id "gpt-5.1-codex"
+    And the sub-agent creates a ProviderManager with provider "codex" and model "gpt-5.1-codex"
+
+  Scenario: Sub-agent inherits Z.AI provider and model from parent session
+    Given a parent session with provider "zai" and model "glm-4.7"
+    When the DeepSearch handler is registered for the session
+    Then the handler closure captures the provider name "zai"
+    And the handler closure captures the model id "glm-4.7"
+    And the sub-agent creates a ProviderManager with provider "zai" and model "glm-4.7"
+
   Scenario: Sub-agent uses with_provider_and_model instead of with_model_support
     Given a parent session with provider "claude" and model "claude-sonnet-4-20250514"
     When the DeepSearch sub-agent builds a ProviderManager
