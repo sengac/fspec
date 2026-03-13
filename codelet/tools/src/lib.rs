@@ -7,6 +7,7 @@
 
 pub mod astgrep;
 pub mod astgrep_refactor;
+pub mod apply_patch;
 pub mod bash;
 pub mod blocklist;
 pub mod bridge;
@@ -57,6 +58,7 @@ use serde_json::Value;
 
 pub use astgrep::AstGrepTool;
 pub use astgrep_refactor::AstGrepRefactorTool;
+pub use apply_patch::ApplyPatchTool;
 pub use bash::BashTool;
 pub use bash::{clear_bash_abort, request_bash_abort};
 pub use blocklist::{

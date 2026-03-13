@@ -304,7 +304,7 @@ impl CodexProvider {
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, EditTool, WebSearchTool, WriteTool,
+            AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, WebSearchTool,
             ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
         };
         use codelet_tools::facade::{
@@ -354,10 +354,11 @@ impl CodexProvider {
             .tool(list_dir)        // Codex-native list_dir
             .tool(grep_files)      // Codex-native grep_files
             .tool(glob)            // Codex-native glob
-            // @step And Write, Edit, AstGrep, AstGrepRefactor remain as direct tool registrations
-            // Tools without Codex equivalent - keep standard naming
-            .tool(WriteTool::new(session_id))
-            .tool(EditTool::new(session_id))
+            // @step And AstGrep, AstGrepRefactor remain as direct tool registrations
+            // BUG-105: Replace WriteTool + EditTool with Codex-native apply_patch.
+            // Codex models are trained to use apply_patch for all file modifications.
+            // Keeping Write/Edit would cause the model to choose between competing interfaces.
+            .tool(ApplyPatchTool::new(session_id))  // Codex-native apply_patch
             .tool(AstGrepTool::new(session_id))
             .tool(AstGrepRefactorTool::new(session_id))
             .tool(WebSearchTool::new(session_id))
