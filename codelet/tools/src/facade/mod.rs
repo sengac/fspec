@@ -37,6 +37,7 @@ mod fspec_facade;
 mod fspec_registration;
 mod gemini_history;
 mod ls;
+pub(crate) mod param_extract;
 mod registry;
 mod search;
 mod system_prompt;

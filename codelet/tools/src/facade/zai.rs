@@ -13,41 +13,9 @@ use super::traits::{
     BashToolFacade, FileToolFacade, InternalBashParams, InternalFileParams, InternalLsParams,
     InternalSearchParams, LsToolFacade, SearchToolFacade, ToolDefinition,
 };
+use super::param_extract::{extract_optional_string, extract_optional_uint, extract_required_string};
 use crate::ToolError;
 use serde_json::{json, Value};
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/// Extract a required non-empty string field from JSON input.
-/// Returns an error if the field is missing, null, or empty.
-fn extract_required_string(input: &Value, field: &str, tool: &'static str) -> Result<String, ToolError> {
-    let value = input
-        .get(field)
-        .and_then(|v| v.as_str())
-        .filter(|s| !s.is_empty())
-        .ok_or_else(|| ToolError::Validation {
-            tool,
-            message: format!("Missing or empty required '{field}' field"),
-        })?;
-    Ok(value.to_string())
-}
-
-/// Extract an optional string field from JSON input.
-/// Returns None if the field is missing, null, or empty.
-fn extract_optional_string(input: &Value, field: &str) -> Option<String> {
-    input
-        .get(field)
-        .and_then(|v| v.as_str())
-        .filter(|s| !s.is_empty())
-        .map(String::from)
-}
-
-/// Extract an optional unsigned integer field from JSON input.
-fn extract_optional_uint(input: &Value, field: &str) -> Option<usize> {
-    input.get(field).and_then(Value::as_u64).map(|n| n as usize)
-}
 
 // ============================================================================
 // Directory Listing Facade
