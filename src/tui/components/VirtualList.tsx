@@ -176,14 +176,61 @@ export function VirtualList<T>({
   // Generate unique ID for this component instance
   const instanceId = useId();
 
+  // TUI-078: Timer ref for re-enabling mouse tracking after text selection
+  const reEnableMouseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // TUI-078: Track if we temporarily disabled mouse tracking for text selection
+  const mouseTrackingTemporarilyDisabledRef = useRef(false);
+  
+  // TUI-078: Clear any pending re-enable timer
+  const clearReEnableTimer = useCallback(() => {
+    if (reEnableMouseRef.current !== null) {
+      clearTimeout(reEnableMouseRef.current);
+      reEnableMouseRef.current = null;
+    }
+  }, []);
+  
+  // TUI-078: Re-enable mouse tracking after timeout
+  // Timeout is 5 seconds to give enough time for text selection
+  const scheduleMouseTrackingReEnable = useCallback(() => {
+    clearReEnableTimer();
+    reEnableMouseRef.current = setTimeout(() => {
+      if (mouseTrackingTemporarilyDisabledRef.current) {
+        process.stdout.write('\x1b[?1000h');
+        mouseTrackingTemporarilyDisabledRef.current = false;
+      }
+    }, 5000);
+  }, [clearReEnableTimer]);
+  
+  // TUI-078: Temporarily disable mouse tracking for native text selection
+  const temporarilyDisableMouseTracking = useCallback(() => {
+    // Clear any existing timer first
+    clearReEnableTimer();
+    // Disable mouse tracking so terminal handles text selection natively
+    process.stdout.write('\x1b[?1000l');
+    mouseTrackingTemporarilyDisabledRef.current = true;
+    // Schedule re-enable after timeout
+    scheduleMouseTrackingReEnable();
+  }, [clearReEnableTimer, scheduleMouseTrackingReEnable]);
+
   // Enable mouse tracking mode for button events only (not mouse movement)
   useEffect(() => {
-    if (!isFocused) return;
+    if (!isFocused) {
+      // TUI-078: Clear pending timer when focus is lost
+      clearReEnableTimer();
+      // Make sure mouse tracking is disabled when not focused
+      if (mouseTrackingTemporarilyDisabledRef.current) {
+        mouseTrackingTemporarilyDisabledRef.current = false;
+      }
+      return;
+    }
     process.stdout.write('\x1b[?1000h');
     return () => {
+      // TUI-078: Clear pending timer on unmount
+      clearReEnableTimer();
       process.stdout.write('\x1b[?1000l');
     };
-  }, [isFocused]);
+  }, [isFocused, clearReEnableTimer]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -483,19 +530,44 @@ export function VirtualList<T>({
     }
   }, [scrollOffset, selectedIndex, selectionMode, maxScrollOffset, navigateTo, navigateToGroup, scrollToEnd, groupBy]);
 
-  // Mouse scroll input handler with BACKGROUND priority
+  // Mouse scroll and text selection input handler with BACKGROUND priority
   useInputCompat({
     id: `virtual-list-scroll-${instanceId}`,
     priority: InputPriority.BACKGROUND,
-    description: 'Virtual list mouse scroll',
+    description: 'Virtual list mouse scroll and text selection',
     isActive: isFocused,
     handler: (input, key) => {
       if (totalItemCount === 0) return false;
+      
+      // TUI-078: Handle X10 mouse protocol escape sequences
+      // Format: ESC [ M <btn+32> <x+32> <y+32>
+      // Button bytes: 32=left, 33=middle, 34=right (clicks), 35=release, 96=scroll up, 97=scroll down
       if (input.startsWith('[M')) {
         const buttonByte = input.charCodeAt(2);
+        
+        // TUI-078: Scroll wheel events - handle normally, never disable mouse tracking
         if (buttonByte === 96) { handleScroll('up'); return true; }
         if (buttonByte === 97) { handleScroll('down'); return true; }
+        
+        // TUI-078: Button-down events (32, 33, 34) - temporarily disable mouse tracking
+        // for native terminal text selection. Each click restarts the debounce timer.
+        if (buttonByte === 32 || buttonByte === 33 || buttonByte === 34) {
+          temporarilyDisableMouseTracking();
+          return true; // Consume the event
+        }
+        
+        // TUI-078: Button-release event (35) - immediately re-enable mouse tracking
+        // This allows scroll wheel to work right after the user finishes selecting text
+        if (buttonByte === 35) {
+          if (mouseTrackingTemporarilyDisabledRef.current) {
+            clearReEnableTimer();
+            process.stdout.write('\x1b[?1000h');
+            mouseTrackingTemporarilyDisabledRef.current = false;
+          }
+          return true; // Consume the event
+        }
       }
+      
       if (key.mouse) {
         if (key.mouse.button === 'wheelDown') { handleScroll('down'); return true; }
         if (key.mouse.button === 'wheelUp') { handleScroll('up'); return true; }

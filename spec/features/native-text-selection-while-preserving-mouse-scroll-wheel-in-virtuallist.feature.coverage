@@ -1,0 +1,106 @@
+{
+  "scenarios": [
+    {
+      "name": "User scrolls with mouse wheel in conversation view",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx",
+          "lines": "60-123",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User clicks and drags to select text",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx",
+          "lines": "124-207",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll wheel works again after selection timeout (fallback)",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx",
+          "lines": "208-240",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [194, 195, 196, 197, 198, 199, 200, 201, 202, 203]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Button release immediately re-enables mouse tracking",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx",
+          "lines": "241-286",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [559, 560, 561, 562, 563, 564, 565, 566, 567, 568]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rapid clicks extend selection mode (debounce behavior)",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx",
+          "lines": "241-286",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [205, 206, 207, 208, 209, 210, 211, 212, 213, 214]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Timer cleaned up when navigating away",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx",
+          "lines": "287-371",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/VirtualList-native-text-selection.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/VirtualList.tsx"
+    ],
+    "totalLinesCovered": 312
+  }
+}
