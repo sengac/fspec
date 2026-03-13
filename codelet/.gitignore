@@ -58,8 +58,6 @@ yarn-error.log*
 .vercel/
 .netlify/
 
-# patches
-apply_patch/
 
 # coverage
 coverage/

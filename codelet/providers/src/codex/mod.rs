@@ -288,7 +288,8 @@ impl CodexProvider {
     /// This method encapsulates all Codex-specific configuration:
     /// - Model name (GPT or compatible)
     /// - Codex-native tool names (shell_command, read_file, list_dir, grep_files) via facade wrappers
-    /// - Non-Codex tools kept with standard naming (Write, Edit, AstGrep, AstGrepRefactor)
+    /// - Codex-native apply_patch for all file modifications (BUG-105: replaces Write/Edit)
+    /// - Non-Codex tools kept with standard naming (AstGrep, AstGrepRefactor)
     /// - Fspec/Bridge tools reusing OpenAI facades
     ///
     /// # Arguments
@@ -545,6 +546,11 @@ mod tests {
         assert!(tool_names.contains(&"grep_files"));
         // @step And the tool list contains "apply_patch"
         assert!(tool_names.contains(&"apply_patch"));
+
+        // @step And the agent does not have "Write" or "Edit" tools registered
+        // BUG-105 Rule [6]: WriteTool and EditTool removed to prevent competing edit interfaces
+        assert!(!tool_names.contains(&"Write"), "Codex agent should NOT expose 'Write' tool (BUG-105), but found: {tool_names:?}");
+        assert!(!tool_names.contains(&"Edit"), "Codex agent should NOT expose 'Edit' tool (BUG-105), but found: {tool_names:?}");
     }
 
     #[test]

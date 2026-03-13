@@ -4,46 +4,12 @@
       "name": "Add a new file via apply_patch",
       "testMappings": [
         {
-          "file": "codelet/tools/src/apply_patch.rs",
-          "lines": "486-525",
+          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "lines": "18-57",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch.rs",
+              "file": "codelet/tools/src/apply_patch/mod.rs",
               "lines": [
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Update an existing file via apply_patch",
-      "testMappings": [
-        {
-          "file": "codelet/tools/src/apply_patch.rs",
-          "lines": "529-565",
-          "implMappings": [
-            {
-              "file": "codelet/tools/src/apply_patch.rs",
-              "lines": [
-                109,
-                110,
                 111,
                 112,
                 113,
@@ -61,8 +27,23 @@
                 125,
                 126,
                 127,
-                128,
-                129,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Update an existing file via apply_patch",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "lines": "75-118",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "lines": [
                 130,
                 131,
                 132,
@@ -91,8 +72,23 @@
                 155,
                 156,
                 157,
-                158,
-                159,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete a file via apply_patch",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "lines": "124-151",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/apply_patch/mod.rs",
+              "lines": [
                 160,
                 161,
                 162,
@@ -110,75 +106,7 @@
                 174,
                 175,
                 176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Delete a file via apply_patch",
-      "testMappings": [
-        {
-          "file": "codelet/tools/src/apply_patch.rs",
-          "lines": "568-590",
-          "implMappings": [
-            {
-              "file": "codelet/tools/src/apply_patch.rs",
-              "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86
+                177
               ]
             }
           ]
@@ -189,63 +117,12 @@
       "name": "Multi-file patch with mixed operations",
       "testMappings": [
         {
-          "file": "codelet/tools/src/apply_patch.rs",
-          "lines": "594-625",
+          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "lines": "157-208",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch.rs",
+              "file": "codelet/tools/src/apply_patch/mod.rs",
               "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
                 106,
                 107,
                 108,
@@ -323,21 +200,7 @@
                 180,
                 181,
                 182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197
+                183
               ]
             }
           ]
@@ -348,22 +211,23 @@
       "name": "Malformed patch missing Begin Patch marker",
       "testMappings": [
         {
-          "file": "codelet/tools/src/apply_patch.rs",
-          "lines": "629-651",
+          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "lines": "214-229",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch.rs",
+              "file": "codelet/tools/src/apply_patch/parser.rs",
               "lines": [
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
               ]
             }
           ]
@@ -374,92 +238,50 @@
       "name": "Update File with non-matching context lines",
       "testMappings": [
         {
-          "file": "codelet/tools/src/apply_patch.rs",
-          "lines": "655-681",
+          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "lines": "244-278",
           "implMappings": [
             {
-              "file": "codelet/tools/src/apply_patch.rs",
+              "file": "codelet/tools/src/apply_patch/hunk.rs",
               "lines": [
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250,
-                251,
-                252,
-                253,
-                254,
-                255,
-                256,
-                257,
-                258,
-                259,
-                260,
-                261,
-                262,
-                263,
-                264,
-                265,
-                266,
-                267,
-                268,
-                269,
-                270,
-                271,
-                272,
-                273,
-                274,
-                275,
-                276,
-                277,
-                278
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
               ]
             }
           ]
@@ -470,8 +292,8 @@
       "name": "apply_patch tool is registered in Codex agent",
       "testMappings": [
         {
-          "file": "codelet/tools/src/apply_patch.rs",
-          "lines": "717-728",
+          "file": "codelet/tools/tests/apply_patch_tool_test.rs",
+          "lines": "284-301",
           "implMappings": [
             {
               "file": "codelet/providers/src/codex/mod.rs",
@@ -494,12 +316,14 @@
     "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/tools/src/apply_patch.rs"
+      "codelet/tools/tests/apply_patch_tool_test.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/apply_patch.rs",
+      "codelet/tools/src/apply_patch/mod.rs",
+      "codelet/tools/src/apply_patch/parser.rs",
+      "codelet/tools/src/apply_patch/hunk.rs",
       "codelet/providers/src/codex/mod.rs"
     ],
-    "totalLinesCovered": 570
+    "totalLinesCovered": 431
   }
 }
