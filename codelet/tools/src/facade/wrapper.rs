@@ -1313,7 +1313,7 @@ impl Tool for LsToolFacadeWrapper {
 
         // Execute the ls tool based on the operation type
         match internal_params {
-            InternalLsParams::List { path } => {
+            InternalLsParams::List { path, offset, limit, depth: _depth } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
                 let resolved_path = if let Some(p) = path {
                     match validate_and_resolve_path(self.session_id, &p, "ls") {
@@ -1342,11 +1342,15 @@ impl Tool for LsToolFacadeWrapper {
                 
                 let ls_args = LsArgs { path: resolved_path };
                 match self.ls_tool.call(ls_args).await {
-                    Ok(output) => Ok(LsOperationResult {
-                        success: true,
-                        output: Some(output),
-                        error: None,
-                    }),
+                    Ok(output) => {
+                        // BUG-110: Apply offset/limit pagination post-hoc on output lines
+                        let paginated = apply_pagination(&output, offset, limit);
+                        Ok(LsOperationResult {
+                            success: true,
+                            output: Some(paginated),
+                            error: None,
+                        })
+                    }
                     Err(e) => Ok(LsOperationResult {
                         success: false,
                         output: None,
@@ -1356,6 +1360,42 @@ impl Tool for LsToolFacadeWrapper {
             }
         }
     }
+}
+
+/// Apply offset and limit pagination to directory listing output.
+///
+/// Splits the output into lines, applies 1-indexed offset and limit,
+/// and appends a "More entries" note if there are remaining entries.
+fn apply_pagination(output: &str, offset: Option<usize>, limit: Option<usize>) -> String {
+    // If no pagination requested, return as-is
+    if offset.is_none() && limit.is_none() {
+        return output.to_string();
+    }
+
+    let lines: Vec<&str> = output.lines().collect();
+    if lines.is_empty() {
+        return output.to_string();
+    }
+
+    let total = lines.len();
+    let start_idx = offset.unwrap_or(1).saturating_sub(1); // Convert 1-indexed to 0-indexed
+
+    if start_idx >= total {
+        return format!("offset {offset} exceeds directory entry count ({total})", offset = offset.unwrap_or(1));
+    }
+
+    let remaining = total - start_idx;
+    let capped_limit = limit.map_or(remaining, |l| l.min(remaining));
+    let end_idx = start_idx + capped_limit;
+
+    let selected: Vec<&str> = lines[start_idx..end_idx].to_vec();
+    let mut result = selected.join("\n");
+
+    if end_idx < total {
+        result.push_str(&format!("\nMore than {capped_limit} entries found"));
+    }
+
+    result
 }
 
 // ============================================================================

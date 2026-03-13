@@ -93,3 +93,12 @@ base64 = "0.22"
 
 [build-dependencies]
 napi-build = "2"
+
+# Integration tests that require the noop feature to access testing modules
+[[test]]
+name = "model_refresh_invalidation_test"
+required-features = ["noop"]
+
+[[test]]
+name = "model_provider_listing_test"
+required-features = ["noop"]

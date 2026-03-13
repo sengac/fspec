@@ -132,13 +132,13 @@ fn parse_update_file(
             break;
         }
 
-        if line.starts_with('-') {
+        if let Some(stripped) = line.strip_prefix('-') {
             in_change = true;
-            removals.push(line[1..].to_string());
+            removals.push(stripped.to_string());
             i += 1;
-        } else if line.starts_with('+') {
+        } else if let Some(stripped) = line.strip_prefix('+') {
             in_change = true;
-            additions.push(line[1..].to_string());
+            additions.push(stripped.to_string());
             i += 1;
         } else if line.starts_with("@@ ") {
             // Hunk header — flush any in-progress hunk
@@ -158,8 +158,8 @@ fn parse_update_file(
             i += 1;
         } else {
             // Plain context line (space-prefixed or literal)
-            let ctx_text = if line.starts_with(' ') {
-                line[1..].to_string()
+            let ctx_text = if let Some(stripped) = line.strip_prefix(' ') {
+                stripped.to_string()
             } else {
                 line.to_string()
             };

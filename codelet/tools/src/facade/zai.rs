@@ -56,7 +56,7 @@ impl LsToolFacade for ZAIListDirFacade {
 
     fn map_params(&self, input: Value) -> Result<InternalLsParams, ToolError> {
         let path = extract_optional_string(&input, "path");
-        Ok(InternalLsParams::List { path })
+        Ok(InternalLsParams::List { path, offset: None, limit: None, depth: None })
     }
 }
 
@@ -372,7 +372,10 @@ mod tests {
         assert_eq!(
             result,
             InternalLsParams::List {
-                path: Some("/tmp/test".to_string())
+                path: Some("/tmp/test".to_string()),
+                offset: None,
+                limit: None,
+                depth: None,
             }
         );
     }
@@ -383,7 +386,7 @@ mod tests {
         let input = json!({});
 
         let result = facade.map_params(input).unwrap();
-        assert_eq!(result, InternalLsParams::List { path: None });
+        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
     }
 
     #[test]
@@ -395,7 +398,7 @@ mod tests {
 
         let result = facade.map_params(input).unwrap();
         // Empty path should be treated as None (use default)
-        assert_eq!(result, InternalLsParams::List { path: None });
+        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
     }
 
     #[test]
@@ -406,7 +409,7 @@ mod tests {
         });
 
         let result = facade.map_params(input).unwrap();
-        assert_eq!(result, InternalLsParams::List { path: None });
+        assert_eq!(result, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
     }
 
     #[test]

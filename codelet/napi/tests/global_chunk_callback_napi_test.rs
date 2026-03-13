@@ -36,7 +36,9 @@ mod register_global_chunk_callback_at_startup {
         let declarations = read_napi_declarations();
         
         // Verify sessionSetGlobalChunkCallback is exported in NAPI declarations
-        let has_global_callback_export = declarations.contains("sessionSetGlobalChunkCallback(callback:");
+        // The declaration may span multiple lines, so check for the function name
+        let has_global_callback_export = declarations.contains("sessionSetGlobalChunkCallback(")
+            && declarations.contains("callback:");
         
         assert!(
             has_global_callback_export,
@@ -49,7 +51,9 @@ mod register_global_chunk_callback_at_startup {
         let declarations = read_napi_declarations();
         
         // Verify the callback parameter accepts a function
-        let has_callback_param = declarations.contains("sessionSetGlobalChunkCallback(callback: (");
+        // The declaration may span multiple lines with callback: on the next line
+        let has_callback_param = declarations.contains("sessionSetGlobalChunkCallback(")
+            && declarations.contains("callback: (");
         
         assert!(
             has_callback_param,
@@ -338,8 +342,9 @@ mod no_per_session_napi_attachment_functions {
         let declarations = read_napi_declarations();
         
         // Check TypeScript declarations for sessionSetGlobalChunkCallback export
-        // NAPI generates "export declare function" not "export function"
-        let has_global_callback = declarations.contains("sessionSetGlobalChunkCallback(callback:");
+        // The declaration may span multiple lines with callback: on the next line
+        let has_global_callback = declarations.contains("sessionSetGlobalChunkCallback(")
+            && declarations.contains("callback:");
         
         assert!(
             has_global_callback,

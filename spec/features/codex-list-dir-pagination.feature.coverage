@@ -1,0 +1,266 @@
+{
+  "scenarios": [
+    {
+      "name": "CodexListDirFacade maps offset and limit to InternalLsParams",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "799-848",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexListDirFacade backward compatible without optional params",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "851-874",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexListDirFacade schema includes offset limit and depth properties",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "877-901",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexListDirFacade maps depth to InternalLsParams",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "904-935",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Other facades provide None for offset limit and depth",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "938-958",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/traits.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/facade/codex.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/facade/codex.rs",
+      "codelet/tools/src/facade/traits.rs"
+    ],
+    "totalLinesCovered": 321
+  }
+}

@@ -244,7 +244,18 @@ pub type BoxedSearchToolFacade = Arc<dyn SearchToolFacade>;
 #[derive(Debug, Clone, PartialEq)]
 pub enum InternalLsParams {
     /// List directory contents
-    List { path: Option<String> },
+    List {
+        path: Option<String>,
+        /// The entry number to start listing from (1-indexed).
+        /// Used by Codex's `offset` param for pagination.
+        offset: Option<usize>,
+        /// The maximum number of entries to return.
+        /// Used by Codex's `limit` param for pagination.
+        limit: Option<usize>,
+        /// The maximum directory depth to traverse.
+        /// Used by Codex's `depth` param. Must be 1 or greater.
+        depth: Option<usize>,
+    },
 }
 
 /// Provider-specific tool facade trait for directory listing operations.

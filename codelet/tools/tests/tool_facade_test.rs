@@ -693,7 +693,10 @@ async fn test_map_gemini_list_directory_parameters_with_path() -> Result<()> {
     assert_eq!(
         internal,
         InternalLsParams::List {
-            path: Some("src".to_string())
+            path: Some("src".to_string()),
+            offset: None,
+            limit: None,
+            depth: None,
         }
     );
 
@@ -714,7 +717,7 @@ async fn test_map_gemini_list_directory_with_empty_parameters() -> Result<()> {
 
     // @step Then the facade maps to InternalLsParams::List with path None
     let internal = facade.map_params(gemini_params)?;
-    assert_eq!(internal, InternalLsParams::List { path: None });
+    assert_eq!(internal, InternalLsParams::List { path: None, offset: None, limit: None, depth: None });
 
     // @step And the base LsTool lists the current directory
     // The base tool execution is handled by the existing LsTool

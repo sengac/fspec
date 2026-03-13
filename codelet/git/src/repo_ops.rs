@@ -1,6 +1,6 @@
 //! Git repository operations (init, add, commit, config, resolve_ref)
 //!
-//! These operations provide a pure-Rust alternative to isomorphic-git
+//! These operations provide a pure-Rust alternative
 //! for repository management. Used by production code (resolveRef)
 //! and test infrastructure (init, add, commit, setConfig).
 
@@ -416,7 +416,7 @@ pub fn git_commit(
 
     // Build parents
     let parents: SmallVec<[gix::ObjectId; 1]> = if let Some(parent_id) = parent {
-        SmallVec::from_buf([parent_id.into()])
+        SmallVec::from_buf([parent_id])
     } else {
         SmallVec::new()
     };
