@@ -58,7 +58,7 @@ impl SearchToolFacade for GeminiSearchFileContentFacade {
             .and_then(|p| p.as_str())
             .map(String::from);
 
-        Ok(InternalSearchParams::Grep { pattern, path })
+        Ok(InternalSearchParams::Grep { pattern, path, include: None, limit: None })
     }
 }
 

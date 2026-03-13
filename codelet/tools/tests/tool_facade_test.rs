@@ -542,7 +542,9 @@ async fn test_map_gemini_search_file_content_parameters_to_internal_format() -> 
         internal,
         InternalSearchParams::Grep {
             pattern: "TODO".to_string(),
-            path: Some("src".to_string())
+            path: Some("src".to_string()),
+            include: None,
+            limit: None,
         }
     );
 

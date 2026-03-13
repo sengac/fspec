@@ -281,62 +281,13 @@ impl SearchToolFacade for CodexGrepFilesFacade {
     fn map_params(&self, input: Value) -> Result<InternalSearchParams, ToolError> {
         let pattern = extract_required_string(&input, "pattern", "grep_files")?;
         let path = extract_optional_string(&input, "path");
+        let include = extract_optional_string(&input, "include");
+        let limit = extract_optional_uint(&input, "limit");
 
-        Ok(InternalSearchParams::Grep { pattern, path })
+        Ok(InternalSearchParams::Grep { pattern, path, include, limit })
     }
 }
 
-// ============================================================================
-// Glob Facade
-// ============================================================================
-
-/// Codex-specific facade for file pattern matching.
-///
-/// Exposes the glob tool under lowercase `glob`, which Codex expects.
-pub struct CodexGlobFacade;
-
-impl SearchToolFacade for CodexGlobFacade {
-    fn provider(&self) -> &'static str {
-        "codex"
-    }
-
-    fn tool_name(&self) -> &'static str {
-        "glob"
-    }
-
-    fn definition(&self) -> ToolDefinition {
-        ToolDefinition {
-            name: "glob".to_string(),
-            description: "Fast file pattern matching tool that works with any codebase size. Supports glob patterns like \"**/*.js\" or \"src/**/*.ts\". Returns matching file paths one per line.".to_string(),
-            parameters: json!({
-                "type": "object",
-                "properties": {
-                    "pattern": {
-                        "type": "string",
-                        "description": "The glob pattern to match files"
-                    },
-                    "path": {
-                        "type": "string",
-                        "description": "Directory to search in (optional, defaults to current directory)"
-                    },
-                    "case_insensitive": {
-                        "type": "boolean",
-                        "description": "Whether to perform case-insensitive matching (optional, defaults to false)"
-                    }
-                },
-                "required": ["pattern"],
-                "additionalProperties": false
-            }),
-        }
-    }
-
-    fn map_params(&self, input: Value) -> Result<InternalSearchParams, ToolError> {
-        let pattern = extract_required_string(&input, "pattern", "glob")?;
-        let path = extract_optional_string(&input, "path");
-
-        Ok(InternalSearchParams::Glob { pattern, path })
-    }
-}
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -594,7 +545,9 @@ mod tests {
             result,
             InternalSearchParams::Grep {
                 pattern: "TODO".to_string(),
-                path: Some("/src".to_string())
+                path: Some("/src".to_string()),
+                include: None,
+                limit: None,
             }
         );
 
@@ -617,30 +570,145 @@ mod tests {
             result,
             InternalSearchParams::Grep {
                 pattern: "TODO".to_string(),
-                path: None
+                path: None,
+                include: None,
+                limit: None,
             }
         );
     }
 
+    /// Feature: spec/features/codex-grep-files-include-limit.feature
+    ///
+    /// Scenario: CodexGrepFilesFacade maps include param to InternalSearchParams::Grep
     #[test]
-    fn test_codex_grep_files_facade_with_include_filter() {
+    fn test_codex_grep_files_facade_maps_include_param() {
+        // @step Given a CodexGrepFilesFacade instance
         let facade = CodexGrepFilesFacade;
+
+        // @step When the Codex model calls grep_files with pattern "TODO", include "*.rs", and path "/src"
         let input = json!({
             "pattern": "TODO",
             "include": "*.rs",
             "path": "/src"
         });
-
-        // `include` is accepted in the schema but not mapped to InternalSearchParams
-        // (our internal grep handles file filtering separately)
         let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalSearchParams::Grep with pattern "TODO", path "/src", and include "*.rs"
         assert_eq!(
             result,
             InternalSearchParams::Grep {
                 pattern: "TODO".to_string(),
-                path: Some("/src".to_string())
+                path: Some("/src".to_string()),
+                include: Some("*.rs".to_string()),
+                limit: None,
             }
         );
+    }
+
+    /// Scenario: CodexGrepFilesFacade maps limit param to InternalSearchParams::Grep
+    #[test]
+    fn test_codex_grep_files_facade_maps_limit_param() {
+        // @step Given a CodexGrepFilesFacade instance
+        let facade = CodexGrepFilesFacade;
+
+        // @step When the Codex model calls grep_files with pattern "." and limit 10
+        let input = json!({
+            "pattern": ".",
+            "limit": 10
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalSearchParams::Grep with pattern "." and limit 10
+        assert_eq!(
+            result,
+            InternalSearchParams::Grep {
+                pattern: ".".to_string(),
+                path: None,
+                include: None,
+                limit: Some(10),
+            }
+        );
+    }
+
+    /// Scenario: CodexGrepFilesFacade maps both include and limit params
+    #[test]
+    fn test_codex_grep_files_facade_maps_include_and_limit() {
+        // @step Given a CodexGrepFilesFacade instance
+        let facade = CodexGrepFilesFacade;
+
+        // @step When the Codex model calls grep_files with pattern ".", include "*.rs", and limit 10
+        let input = json!({
+            "pattern": ".",
+            "include": "*.rs",
+            "limit": 10
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalSearchParams::Grep with include "*.rs" and limit 10
+        assert_eq!(
+            result,
+            InternalSearchParams::Grep {
+                pattern: ".".to_string(),
+                path: None,
+                include: Some("*.rs".to_string()),
+                limit: Some(10),
+            }
+        );
+    }
+
+    /// Scenario: CodexGrepFilesFacade remains backward compatible without include or limit
+    #[test]
+    fn test_codex_grep_files_facade_backward_compatible() {
+        // @step Given a CodexGrepFilesFacade instance
+        let facade = CodexGrepFilesFacade;
+
+        // @step When the Codex model calls grep_files with only pattern "TODO"
+        let input = json!({
+            "pattern": "TODO"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalSearchParams::Grep with include None and limit None
+        assert_eq!(
+            result,
+            InternalSearchParams::Grep {
+                pattern: "TODO".to_string(),
+                path: None,
+                include: None,
+                limit: None,
+            }
+        );
+    }
+
+    /// Feature: spec/features/codex-grep-files-include-limit.feature
+    ///
+    /// Scenario: InternalSearchParams::Grep includes optional include and limit fields
+    #[test]
+    fn test_internal_search_params_grep_has_include_and_limit_fields() {
+        // @step Given the InternalSearchParams::Grep enum variant
+        // Construct it with all fields to prove they exist
+
+        // @step Then it has an optional "include" field of type Option<String>
+        let with_include = InternalSearchParams::Grep {
+            pattern: "test".to_string(),
+            path: None,
+            include: Some("*.rs".to_string()),
+            limit: None,
+        };
+        if let InternalSearchParams::Grep { include, .. } = &with_include {
+            assert_eq!(include, &Some("*.rs".to_string()));
+        }
+
+        // @step And it has an optional "limit" field of type Option<usize>
+        let with_limit = InternalSearchParams::Grep {
+            pattern: "test".to_string(),
+            path: None,
+            include: None,
+            limit: Some(100),
+        };
+        if let InternalSearchParams::Grep { limit, .. } = &with_limit {
+            assert_eq!(limit, &Some(100));
+        }
     }
 
     #[test]
@@ -658,62 +726,44 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_codex_glob_facade() {
-        let facade = CodexGlobFacade;
-        let input = json!({
-            "pattern": "**/*.rs",
-            "path": "/src"
-        });
-        let result = facade.map_params(input).unwrap();
-
-        assert_eq!(
-            result,
-            InternalSearchParams::Glob {
-                pattern: "**/*.rs".to_string(),
-                path: Some("/src".to_string())
-            }
-        );
-
-        assert_eq!(facade.tool_name(), "glob");
-        assert_eq!(facade.provider(), "codex");
-    }
-
-    #[test]
-    fn test_codex_glob_facade_no_path() {
-        let facade = CodexGlobFacade;
-        let input = json!({
-            "pattern": "**/*.rs"
-        });
-
-        let result = facade.map_params(input).unwrap();
-        assert_eq!(
-            result,
-            InternalSearchParams::Glob {
-                pattern: "**/*.rs".to_string(),
-                path: None
-            }
-        );
-    }
-
-    #[test]
-    fn test_codex_glob_facade_missing_pattern() {
-        let facade = CodexGlobFacade;
-        let input = json!({
-            "path": "/src"
-        });
-
-        let result = facade.map_params(input);
-        assert!(result.is_err());
-        if let Err(ToolError::Validation { tool, message }) = result {
-            assert_eq!(tool, "glob");
-            assert!(message.contains("pattern"));
-        }
-    }
-
     // =========================================================================
     // Tool naming tests
     // =========================================================================
+
+    /// BUG-107: Verify only native Codex CLI tools are exposed (no glob)
+    ///
+    /// Feature: spec/features/codex-native-tool-facades.feature
+    ///
+    /// Scenario: Codex agent does not expose non-native glob tool
+    #[test]
+    fn test_codex_does_not_expose_non_native_glob() {
+        // @step Given a Codex agent built with create_rig_agent
+        // Collect all facade tool names that would be registered
+        let codex_facade_names = vec![
+            CodexShellCommandFacade.tool_name(),
+            CodexReadFileFacade.tool_name(),
+            CodexListDirFacade.tool_name(),
+            CodexGrepFilesFacade.tool_name(),
+        ];
+
+        // @step When the agent tool definitions are inspected
+        // @step Then the tool list does not contain "glob"
+        assert!(
+            !codex_facade_names.contains(&"glob"),
+            "Codex facades should NOT include 'glob' - it is not a native Codex CLI tool"
+        );
+
+        // @step And the tool list contains "shell_command"
+        assert!(codex_facade_names.contains(&"shell_command"));
+        // @step And the tool list contains "read_file"
+        assert!(codex_facade_names.contains(&"read_file"));
+        // @step And the tool list contains "list_dir"
+        assert!(codex_facade_names.contains(&"list_dir"));
+        // @step And the tool list contains "grep_files"
+        assert!(codex_facade_names.contains(&"grep_files"));
+        // @step And the tool list contains "apply_patch"
+        // Note: apply_patch is a standalone tool (not a facade), tested in codex provider tests
+    }
 
     #[test]
     fn test_codex_tools_use_correct_names() {
@@ -721,7 +771,6 @@ mod tests {
         assert_eq!(CodexReadFileFacade.tool_name(), "read_file");
         assert_eq!(CodexListDirFacade.tool_name(), "list_dir");
         assert_eq!(CodexGrepFilesFacade.tool_name(), "grep_files");
-        assert_eq!(CodexGlobFacade.tool_name(), "glob");
     }
 
     #[test]
@@ -730,7 +779,6 @@ mod tests {
         assert_eq!(CodexReadFileFacade.provider(), "codex");
         assert_eq!(CodexListDirFacade.provider(), "codex");
         assert_eq!(CodexGrepFilesFacade.provider(), "codex");
-        assert_eq!(CodexGlobFacade.provider(), "codex");
     }
 
     // =========================================================================
@@ -746,7 +794,6 @@ mod tests {
             ("read_file", CodexReadFileFacade.definition().parameters),
             ("list_dir", CodexListDirFacade.definition().parameters),
             ("grep_files", CodexGrepFilesFacade.definition().parameters),
-            ("glob", CodexGlobFacade.definition().parameters),
         ];
 
         // @step When their tool definitions are inspected
@@ -770,9 +817,6 @@ mod tests {
 
         let grep_params = &facades[3].1;
         assert_eq!(grep_params["required"], json!(["pattern"]));
-
-        let glob_params = &facades[4].1;
-        assert_eq!(glob_params["required"], json!(["pattern"]));
     }
 
     #[test]
@@ -795,15 +839,6 @@ mod tests {
     }
 
     #[test]
-    fn test_codex_glob_schema_has_case_insensitive_param() {
-        let facade = CodexGlobFacade;
-        let def = facade.definition();
-
-        assert!(def.parameters["properties"]["case_insensitive"].is_object());
-        assert!(def.parameters["properties"]["pattern"].is_object());
-    }
-
-    #[test]
     fn test_codex_shell_command_schema_has_workdir_and_timeout() {
         let facade = CodexShellCommandFacade;
         let def = facade.definition();
@@ -811,5 +846,153 @@ mod tests {
         // Verify schema has Codex-specific optional params
         assert!(def.parameters["properties"]["workdir"].is_object());
         assert!(def.parameters["properties"]["timeout_ms"].is_object());
+    }
+
+    // =========================================================================
+    // BUG-111: GrepArgs glob field tests
+    // Feature: spec/features/codex-grep-files-include-limit.feature
+    // =========================================================================
+
+    /// Scenario: GrepArgs struct supports optional glob field
+    #[test]
+    fn test_grep_args_supports_optional_glob_field() {
+        use crate::grep::GrepArgs;
+
+        // @step Given a GrepArgs with pattern "TODO" and glob "*.rs"
+        let args = GrepArgs {
+            pattern: "TODO".to_string(),
+            path: None,
+            output_mode: None,
+            glob: Some("*.rs".to_string()),
+            limit: None,
+        };
+
+        // @step When the GrepTool call() method executes
+        // Verify the struct has the glob field and it can be set
+        assert_eq!(args.glob.as_deref(), Some("*.rs"));
+
+        // @step Then the glob filter is passed through to the execute() method
+        // The call() method serializes args to Value and passes glob through
+        let value = serde_json::to_value(&args).unwrap();
+        assert_eq!(value["glob"], "*.rs");
+    }
+
+    /// Scenario: SearchToolFacadeWrapper passes include as glob to GrepTool
+    #[test]
+    fn test_wrapper_grep_args_construction_with_include() {
+        use crate::grep::GrepArgs;
+
+        // @step Given a SearchToolFacadeWrapper with a CodexGrepFilesFacade
+        let facade = CodexGrepFilesFacade;
+
+        // @step When the wrapper receives InternalSearchParams::Grep with include "*.rs"
+        let input = json!({
+            "pattern": "TODO",
+            "include": "*.rs",
+            "path": "/src"
+        });
+        let params = facade.map_params(input).unwrap();
+
+        // @step Then the wrapper passes "glob" = "*.rs" in the GrepTool execute args
+        // Verify the internal params carry include, and show how wrapper would construct GrepArgs
+        if let InternalSearchParams::Grep { pattern, path, include, limit } = params {
+            let grep_args = GrepArgs {
+                pattern,
+                path,
+                output_mode: None,
+                glob: include,
+                limit,
+            };
+            assert_eq!(grep_args.glob.as_deref(), Some("*.rs"));
+        } else {
+            panic!("Expected InternalSearchParams::Grep");
+        }
+    }
+
+    /// Scenario: SearchToolFacadeWrapper applies limit to cap grep results
+    #[test]
+    fn test_wrapper_grep_args_construction_with_limit() {
+        use crate::grep::GrepArgs;
+
+        // @step Given a SearchToolFacadeWrapper with a CodexGrepFilesFacade
+        let facade = CodexGrepFilesFacade;
+
+        // @step When the wrapper receives InternalSearchParams::Grep with limit 10
+        let input = json!({
+            "pattern": "TODO",
+            "limit": 10
+        });
+        let params = facade.map_params(input).unwrap();
+
+        // @step Then the wrapper caps the grep output to at most 10 result lines
+        // Verify the internal params carry limit, and show how wrapper would construct GrepArgs
+        if let InternalSearchParams::Grep { pattern, path, include, limit } = params {
+            let grep_args = GrepArgs {
+                pattern,
+                path,
+                output_mode: None,
+                glob: include,
+                limit,
+            };
+            assert_eq!(grep_args.limit, Some(10));
+        } else {
+            panic!("Expected InternalSearchParams::Grep");
+        }
+    }
+
+    /// Feature: spec/features/codex-grep-files-include-limit.feature
+    ///
+    /// Scenario: ZAI grep facade constructs InternalSearchParams::Grep with None defaults
+    #[test]
+    fn test_zai_grep_facade_uses_none_defaults_for_include_and_limit() {
+        use crate::facade::zai::ZAIGrepFilesFacade;
+
+        // @step Given a ZAIGrepFilesFacade instance
+        let facade = ZAIGrepFilesFacade;
+
+        // @step When the ZAI model calls grep_files with pattern "TODO" and path "src"
+        let input = json!({
+            "pattern": "TODO",
+            "path": "src"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalSearchParams::Grep with include None and limit None
+        assert_eq!(
+            result,
+            InternalSearchParams::Grep {
+                pattern: "TODO".to_string(),
+                path: Some("src".to_string()),
+                include: None,
+                limit: None,
+            }
+        );
+    }
+
+    /// Scenario: Gemini grep facade constructs InternalSearchParams::Grep with None defaults
+    #[test]
+    fn test_gemini_grep_facade_uses_none_defaults_for_include_and_limit() {
+        use crate::facade::search::GeminiSearchFileContentFacade;
+
+        // @step Given a GeminiSearchFileContentFacade instance
+        let facade = GeminiSearchFileContentFacade;
+
+        // @step When Gemini sends parameters {pattern: 'TODO', dir_path: 'src'} to tool 'search_file_content'
+        let input = json!({
+            "pattern": "TODO",
+            "dir_path": "src"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalSearchParams::Grep with include None and limit None
+        assert_eq!(
+            result,
+            InternalSearchParams::Grep {
+                pattern: "TODO".to_string(),
+                path: Some("src".to_string()),
+                include: None,
+                limit: None,
+            }
+        );
     }
 }

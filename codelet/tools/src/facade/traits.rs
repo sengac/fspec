@@ -151,6 +151,12 @@ pub enum InternalSearchParams {
     Grep {
         pattern: String,
         path: Option<String>,
+        /// Glob filter to limit which files are searched (e.g., "*.rs").
+        /// Maps to ripgrep's `--glob` flag. Used by Codex's `include` param.
+        include: Option<String>,
+        /// Maximum number of file paths to return.
+        /// Used by Codex's `limit` param to cap results.
+        limit: Option<usize>,
     },
     /// Find files matching glob pattern
     Glob {

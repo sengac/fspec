@@ -485,20 +485,92 @@
       ]
     },
     {
-      "name": "CodexGlobFacade maps glob to InternalSearchParams::Glob",
-      "testMappings": []
+      "name": "Codex agent does not expose non-native glob tool",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "718-758",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                288,
+                289,
+                290
+              ]
+            },
+            {
+              "file": "codelet/providers/src/codex/mod.rs",
+              "lines": [
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 8,
-    "coveredScenarios": 7,
-    "coveragePercent": 88,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
     "testFiles": [
       "codelet/tools/src/facade/codex.rs"
     ],
     "implFiles": [
-      "codelet/tools/src/facade/codex.rs"
+      "codelet/tools/src/facade/codex.rs",
+      "codelet/providers/src/codex/mod.rs"
     ],
-    "totalLinesCovered": 587
+    "totalLinesCovered": 682
   }
 }

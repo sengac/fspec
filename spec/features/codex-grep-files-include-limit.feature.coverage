@@ -1,0 +1,396 @@
+{
+  "scenarios": [
+    {
+      "name": "CodexGrepFilesFacade maps include param to InternalSearchParams::Grep",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "582-607",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexGrepFilesFacade maps limit param to InternalSearchParams::Grep",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "608-632",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexGrepFilesFacade maps both include and limit params",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "633-658",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CodexGrepFilesFacade remains backward compatible without include or limit",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "659-680",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/codex.rs",
+              "lines": [
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "InternalSearchParams::Grep includes optional include and limit fields",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "685-715",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/traits.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SearchToolFacadeWrapper passes include as glob to GrepTool",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "880-910",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                1115,
+                1116,
+                1117,
+                1118,
+                1119,
+                1120,
+                1121,
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129,
+                1130,
+                1131,
+                1132,
+                1133,
+                1134,
+                1135,
+                1136,
+                1137,
+                1138,
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151,
+                1152,
+                1153,
+                1154,
+                1155,
+                1156,
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1163,
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169,
+                1170,
+                1171,
+                1172,
+                1173,
+                1174,
+                1175,
+                1176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SearchToolFacadeWrapper applies limit to cap grep results",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "912-945",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                1115,
+                1116,
+                1117,
+                1118,
+                1119,
+                1120,
+                1121,
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129,
+                1130,
+                1131,
+                1132,
+                1133,
+                1134,
+                1135,
+                1136,
+                1137,
+                1138,
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151,
+                1152,
+                1153,
+                1154,
+                1155,
+                1156,
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1163,
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169,
+                1170,
+                1171,
+                1172,
+                1173,
+                1174,
+                1175,
+                1176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GrepArgs struct supports optional glob field",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "856-878",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/grep.rs",
+              "lines": [
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ZAI grep facade constructs InternalSearchParams::Grep with None defaults",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "945-970",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/zai.rs",
+              "lines": [
+                332,
+                333,
+                334,
+                335,
+                336
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini grep facade constructs InternalSearchParams::Grep with None defaults",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/facade/codex.rs",
+          "lines": "972-1000",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/search.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/facade/codex.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/facade/codex.rs",
+      "codelet/tools/src/facade/traits.rs",
+      "codelet/tools/src/facade/wrapper.rs",
+      "codelet/tools/src/grep.rs",
+      "codelet/tools/src/facade/zai.rs",
+      "codelet/tools/src/facade/search.rs"
+    ],
+    "totalLinesCovered": 488
+  }
+}

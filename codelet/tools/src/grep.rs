@@ -220,6 +220,10 @@ impl GrepTool {
 
         let glob_pattern = args.get("glob").and_then(|v| v.as_str());
         let file_type = args.get("type").and_then(|v| v.as_str());
+        let result_limit = args
+            .get("limit")
+            .and_then(serde_json::Value::as_u64)
+            .map(|v| v as usize);
 
         // Build matcher
         let matcher = match Self::build_matcher(pattern, case_insensitive, multiline) {
@@ -271,6 +275,13 @@ impl GrepTool {
         let mut results: Vec<FileSearchResult> = Vec::new();
 
         for entry in walker.flatten() {
+            // If we have a limit and already have enough results, stop early
+            if let Some(max) = result_limit {
+                if results.len() >= max {
+                    break;
+                }
+            }
+
             if !entry.file_type().is_some_and(|ft| ft.is_file()) {
                 continue;
             }
@@ -288,6 +299,11 @@ impl GrepTool {
                     results.push(result);
                 }
             }
+        }
+
+        // Apply limit to results if set
+        if let Some(max) = result_limit {
+            results.truncate(max);
         }
 
         // Format output based on mode
@@ -370,6 +386,12 @@ pub struct GrepArgs {
     /// Output mode: files_with_matches, content, or count
     #[serde(skip_serializing_if = "Option::is_none")]
     pub output_mode: Option<String>,
+    /// Glob filter to limit which files are searched (e.g., "*.rs")
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub glob: Option<String>,
+    /// Maximum number of result entries to return
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
 }
 
 impl rig::tool::Tool for GrepTool {
@@ -417,6 +439,12 @@ impl rig::tool::Tool for GrepTool {
         }
         if let Some(mode) = args.output_mode {
             value_map.insert("output_mode".to_string(), serde_json::Value::String(mode));
+        }
+        if let Some(glob) = args.glob {
+            value_map.insert("glob".to_string(), serde_json::Value::String(glob));
+        }
+        if let Some(limit) = args.limit {
+            value_map.insert("limit".to_string(), serde_json::Value::Number(serde_json::Number::from(limit)));
         }
 
         let result = self

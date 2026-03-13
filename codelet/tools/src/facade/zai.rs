@@ -333,7 +333,7 @@ impl SearchToolFacade for ZAIGrepFilesFacade {
         let pattern = extract_required_string(&input, "pattern", "grep_files")?;
         let path = extract_optional_string(&input, "path");
 
-        Ok(InternalSearchParams::Grep { pattern, path })
+        Ok(InternalSearchParams::Grep { pattern, path, include: None, limit: None })
     }
 }
 
@@ -630,20 +630,30 @@ mod tests {
     // grep_files tests
     // =========================================================================
 
+    /// Feature: spec/features/codex-grep-files-include-limit.feature
+    ///
+    /// Scenario: ZAI grep facade constructs InternalSearchParams::Grep with None defaults
     #[test]
     fn test_zai_grep_files_facade() {
+        // @step Given a ZAIGrepFilesFacade instance
         let facade = ZAIGrepFilesFacade;
+
+        // @step When the ZAI model calls grep_files with pattern "TODO" and path "src"
         let input = json!({
             "pattern": "TODO",
             "path": "src"
         });
 
         let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalSearchParams::Grep with include None and limit None
         assert_eq!(
             result,
             InternalSearchParams::Grep {
                 pattern: "TODO".to_string(),
-                path: Some("src".to_string())
+                path: Some("src".to_string()),
+                include: None,
+                limit: None,
             }
         );
     }
@@ -660,7 +670,9 @@ mod tests {
             result,
             InternalSearchParams::Grep {
                 pattern: "TODO".to_string(),
-                path: None
+                path: None,
+                include: None,
+                limit: None,
             }
         );
     }

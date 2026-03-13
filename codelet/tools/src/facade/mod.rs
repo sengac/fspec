@@ -69,7 +69,7 @@ pub use zai::{
     ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
 };
 pub use codex::{
-    CodexGlobFacade, CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
+    CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
     CodexShellCommandFacade,
 };
 pub use registry::ProviderToolRegistry;

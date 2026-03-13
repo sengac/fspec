@@ -1113,7 +1113,7 @@ impl Tool for SearchToolFacadeWrapper {
 
         // Execute the appropriate base tool based on the operation type
         match internal_params {
-            InternalSearchParams::Grep { pattern, path } => {
+            InternalSearchParams::Grep { pattern, path, include, limit } => {
                 // TOOL-014: Validate and resolve path for worktree isolation
                 let resolved_path = if let Some(p) = path {
                     match validate_and_resolve_path(self.session_id, &p, "grep") {
@@ -1145,13 +1145,28 @@ impl Tool for SearchToolFacadeWrapper {
                     pattern,
                     path: resolved_path,
                     output_mode: None,
+                    glob: include,
+                    limit,
                 };
                 match self.grep_tool.call(grep_args).await {
-                    Ok(output) => Ok(SearchOperationResult {
-                        success: true,
-                        output: Some(output),
-                        error: None,
-                    }),
+                    Ok(output) => {
+                        // Apply limit: cap the number of result lines if limit is set
+                        let capped_output = if let Some(max) = limit {
+                            let lines: Vec<&str> = output.lines().collect();
+                            if lines.len() > max {
+                                lines[..max].join("\n")
+                            } else {
+                                output
+                            }
+                        } else {
+                            output
+                        };
+                        Ok(SearchOperationResult {
+                            success: true,
+                            output: Some(capped_output),
+                            error: None,
+                        })
+                    }
                     Err(e) => Ok(SearchOperationResult {
                         success: false,
                         output: None,

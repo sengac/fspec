@@ -39,6 +39,8 @@ async fn test_grep_search_returns_file_paths_containing_pattern() {
             pattern: "TODO".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
             output_mode: None,
+            glob: None,
+            limit: None,
         })
         .await
         .unwrap();
@@ -70,6 +72,8 @@ async fn test_grep_content_mode_shows_lines_with_numbers() {
             pattern: "export function".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
             output_mode: Some("content".to_string()),
+            glob: None,
+            limit: None,
         })
         .await
         .unwrap();
@@ -110,6 +114,8 @@ async fn test_grep_respects_gitignore() {
             pattern: "TODO".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
             output_mode: None,
+            glob: None,
+            limit: None,
         })
         .await
         .unwrap();
@@ -136,6 +142,8 @@ async fn test_grep_no_matches() {
             pattern: "XYZNONEXISTENT123".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
             output_mode: None,
+            glob: None,
+            limit: None,
         })
         .await
         .unwrap();

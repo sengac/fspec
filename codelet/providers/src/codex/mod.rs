@@ -287,7 +287,7 @@ impl CodexProvider {
     ///
     /// This method encapsulates all Codex-specific configuration:
     /// - Model name (GPT or compatible)
-    /// - Codex-native tool names (shell_command, read_file, list_dir, grep_files, glob) via facade wrappers
+    /// - Codex-native tool names (shell_command, read_file, list_dir, grep_files) via facade wrappers
     /// - Non-Codex tools kept with standard naming (Write, Edit, AstGrep, AstGrepRefactor)
     /// - Fspec/Bridge tools reusing OpenAI facades
     ///
@@ -308,7 +308,7 @@ impl CodexProvider {
             ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
         };
         use codelet_tools::facade::{
-            BashToolFacadeWrapper, CodexGlobFacade, CodexGrepFilesFacade, CodexListDirFacade,
+            BashToolFacadeWrapper, CodexGrepFilesFacade, CodexListDirFacade,
             CodexReadFileFacade, CodexShellCommandFacade, FileToolFacadeWrapper,
             LsToolFacadeWrapper, SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
         };
@@ -337,12 +337,9 @@ impl CodexProvider {
         // Grep facade: Grep → grep_files
         let grep_files = SearchToolFacadeWrapper::new(Arc::new(CodexGrepFilesFacade), session_id);
 
-        // @step And glob uses SearchToolFacadeWrapper with CodexGlobFacade
-        // Glob facade: Glob → glob
-        let glob = SearchToolFacadeWrapper::new(Arc::new(CodexGlobFacade), session_id);
-
         // Build agent with Codex-native tools using rig's builder pattern
         // TOOL-015: Uses FacadeToolWrapper for tools with Codex equivalents
+        // BUG-107: glob removed — not part of native Codex CLI tool set
         // NOTE: Do NOT set .max_tokens() — the Codex backend API rejects
         // `max_output_tokens` with 400: {"detail":"Unsupported parameter: max_output_tokens"}
         let mut agent_builder = self
@@ -353,7 +350,6 @@ impl CodexProvider {
             .tool(read_file)       // Codex-native read_file
             .tool(list_dir)        // Codex-native list_dir
             .tool(grep_files)      // Codex-native grep_files
-            .tool(glob)            // Codex-native glob
             // @step And AstGrep, AstGrepRefactor remain as direct tool registrations
             // BUG-105: Replace WriteTool + EditTool with Codex-native apply_patch.
             // Codex models are trained to use apply_patch for all file modifications.
@@ -513,13 +509,20 @@ mod tests {
         assert_eq!(params["reasoning"]["summary"], "auto");
     }
 
+    /// Feature: spec/features/codex-native-tool-facades.feature
+    ///
+    /// Scenario: Codex agent does not expose non-native glob tool
+    /// BUG-107: glob is NOT part of the native Codex CLI tool set
     #[tokio::test]
-    async fn create_rig_agent_exposes_lowercase_glob_tool_definition() {
+    async fn create_rig_agent_does_not_expose_non_native_glob_tool() {
+        // @step Given a Codex agent built with create_rig_agent
         let provider = CodexProvider::from_api_key("sk-proj-test-key-12345", "gpt-5.1-codex")
             .expect("Provider should initialize");
 
         let session_id = Uuid::new_v4();
         let agent = provider.create_rig_agent(session_id, None, None);
+
+        // @step When the agent tool definitions are inspected
         let tool_defs = agent
             .tool_server_handle
             .get_tool_defs(None)
@@ -527,8 +530,21 @@ mod tests {
             .expect("Tool definitions should be available");
 
         let tool_names: Vec<&str> = tool_defs.iter().map(|def| def.name.as_str()).collect();
-        assert!(tool_names.contains(&"glob"));
-        assert!(!tool_names.contains(&"Glob"));
+
+        // @step Then the tool list does not contain "glob"
+        assert!(!tool_names.contains(&"glob"), "Codex agent should NOT expose non-native 'glob' tool, but found: {:?}", tool_names);
+        assert!(!tool_names.contains(&"Glob"), "Codex agent should NOT expose 'Glob' tool either");
+
+        // @step And the tool list contains "shell_command"
+        assert!(tool_names.contains(&"shell_command"));
+        // @step And the tool list contains "read_file"
+        assert!(tool_names.contains(&"read_file"));
+        // @step And the tool list contains "list_dir"
+        assert!(tool_names.contains(&"list_dir"));
+        // @step And the tool list contains "grep_files"
+        assert!(tool_names.contains(&"grep_files"));
+        // @step And the tool list contains "apply_patch"
+        assert!(tool_names.contains(&"apply_patch"));
     }
 
     #[test]
