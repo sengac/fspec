@@ -1,0 +1,81 @@
+{
+  "scenarios": [
+    {
+      "name": "ZAI DeepSearch uses streaming execution path",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/deep_search_handler/tests.rs",
+          "lines": "24-35",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-streaming providers remain unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/deep_search_handler/tests.rs",
+          "lines": "37-50",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ZAI DeepSearch config includes max_tokens in additional_params",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/deep_search_handler/tests.rs",
+          "lines": "53-70",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_provider_config.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/deep_search_handler/tests.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/deep_search_handler.rs",
+      "codelet/napi/src/deep_search_provider_config.rs"
+    ],
+    "totalLinesCovered": 60
+  }
+}

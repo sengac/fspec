@@ -90,7 +90,8 @@ fn zai_request_config(system_prompt: &str) -> DeepSearchRequestConfig {
         preamble: system_prompt.to_string(),
         additional_params: Some(json!({
             "temperature": 1.0,
-            "top_p": 0.95
+            "top_p": 0.95,
+            "max_tokens": SUB_AGENT_MAX_TOKENS
         })),
         max_tokens: Some(SUB_AGENT_MAX_TOKENS),
     }
@@ -139,20 +140,26 @@ mod tests {
         );
     }
 
+    // Scenario: ZAI DeepSearch config includes max_tokens in additional_params
+    // Feature: spec/features/glm-zai-deepsearch-fails-with-500-internal-server-error.feature
+
+    // @step Given a DeepSearch request config is built for provider "zai"
     #[test]
     fn zai_request_config_sets_glm_defaults() {
         let config = request_config_for_provider("zai", "glm-4.7", "deep search prompt", false)
             .expect("zai config should build");
 
+        // @step When the config is serialized for the HTTP request
+        let params = config.additional_params.as_ref().expect("params");
+
         assert_eq!(config.max_tokens, Some(SUB_AGENT_MAX_TOKENS));
-        assert_eq!(
-            config.additional_params.as_ref().expect("params")["temperature"],
-            1.0
-        );
-        assert_eq!(
-            config.additional_params.as_ref().expect("params")["top_p"],
-            0.95
-        );
+
+        // @step Then the additional_params includes max_tokens set to 8192
+        assert_eq!(params["max_tokens"], SUB_AGENT_MAX_TOKENS);
+
+        // @step Then the additional_params includes temperature and top_p
+        assert_eq!(params["temperature"], 1.0);
+        assert_eq!(params["top_p"], 0.95);
     }
 
     #[test]

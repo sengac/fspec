@@ -135,7 +135,7 @@ macro_rules! build_and_run {
 }
 
 fn provider_uses_streaming_execution(provider_name: &str) -> bool {
-    provider_name == "codex"
+    provider_name == "codex" || provider_name == "zai"
 }
 
 async fn collect_final_response_from_stream<S, R>(stream: S) -> Result<String, String>
