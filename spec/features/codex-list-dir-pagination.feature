@@ -1,3 +1,4 @@
+@done
 @BUG-110
 Feature: Codex list_dir facade missing offset and limit pagination params
 

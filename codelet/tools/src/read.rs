@@ -40,7 +40,7 @@ use crate::image_dimensions::{
 ///   - Gemini (Google): 20MB inline request
 ///
 /// We use the strictest limit as a universal safe default.
-const MAX_IMAGE_BASE64_BYTES: usize = 5 * 1024 * 1024; // 5MB
+pub const MAX_IMAGE_BASE64_BYTES: usize = 5 * 1024 * 1024; // 5MB
 
 /// Structured output for the Read tool supporting multimodal content
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -50,6 +50,57 @@ pub enum ReadOutput {
     Text { content: String },
     /// Image content as base64-encoded data
     Image { data: String, media_type: String },
+}
+
+/// Validate binary image data (size + pixel dimensions) and encode to [`ReadOutput::Image`].
+///
+/// Shared by `ReadTool` and `ViewImageTool` — single source of truth for the
+/// base64 size limit, pixel dimension limit, and encoding step.
+pub fn validate_and_encode_image(
+    binary_content: &[u8],
+    media_type: ImageMediaType,
+    file_path_str: &str,
+    tool_name: &'static str,
+) -> Result<ReadOutput, ToolError> {
+    // Calculate exact base64 output size without encoding: ceil(n/3) * 4
+    let raw_size = binary_content.len();
+    let base64_size = raw_size.div_ceil(3) * 4;
+
+    if base64_size > MAX_IMAGE_BASE64_BYTES {
+        let actual_mb = base64_size as f64 / (1024.0 * 1024.0);
+        let limit_mb = MAX_IMAGE_BASE64_BYTES as f64 / (1024.0 * 1024.0);
+        return Err(ToolError::Validation {
+            tool: tool_name,
+            message: format!(
+                "Image file is too large for LLM processing: {file_path_str}\n\
+                 Base64 size: {actual_mb:.1} MB (limit: {limit_mb:.1} MB)\n\
+                 Suggestions:\n\
+                 - Resize the image to reduce file size (e.g., use `convert` or `sips` in Bash)\n\
+                 - Use offset/limit parameters with the Read tool to view the file as text instead"
+            ),
+        });
+    }
+
+    // Validate pixel dimensions (PNG IHDR or JPEG SOF marker)
+    let dimensions =
+        extract_png_dimensions(binary_content).or_else(|| extract_jpeg_dimensions(binary_content));
+
+    if let Some((width, height)) = dimensions {
+        if exceeds_pixel_limit(width, height) {
+            return Err(ToolError::Validation {
+                tool: tool_name,
+                message: format_dimension_error(Some(file_path_str), width, height),
+            });
+        }
+    }
+    // If dimensions can't be extracted (corrupt header, unsupported format),
+    // allow the image through — don't block valid images due to parsing failure
+
+    let base64_data = BASE64.encode(binary_content);
+    Ok(ReadOutput::Image {
+        data: base64_data,
+        media_type: media_type.as_mime().to_string(),
+    })
 }
 
 /// Read tool for reading file contents.
@@ -254,47 +305,8 @@ impl rig::tool::Tool for ReadTool {
                 Self::process_as_text(binary_content, &file_path_str, args.offset, args.limit)?
             }
             FileType::Image(media_type) => {
-                // For binary images, validate size before returning (EXT-014)
-                // Calculate exact base64 output size without encoding: ceil(n/3) * 4
-                let raw_size = binary_content.len();
-                let base64_size = raw_size.div_ceil(3) * 4;
-
-                if base64_size > MAX_IMAGE_BASE64_BYTES {
-                    let actual_mb = base64_size as f64 / (1024.0 * 1024.0);
-                    let limit_mb = MAX_IMAGE_BASE64_BYTES as f64 / (1024.0 * 1024.0);
-                    return Err(ToolError::Validation {
-                        tool: "read",
-                        message: format!(
-                            "Image file is too large for LLM processing: {file_path_str}\n\
-                             Base64 size: {actual_mb:.1} MB (limit: {limit_mb:.1} MB)\n\
-                             Suggestions:\n\
-                             - Resize the image to reduce file size (e.g., use `convert` or `sips` in Bash)\n\
-                             - Use offset/limit parameters to read the file as text instead"
-                        ),
-                    });
-                }
-
-                // EXT-016: Validate pixel dimensions before returning image data
-                // Extract dimensions from raw bytes (PNG IHDR or JPEG SOF marker)
-                let dimensions = extract_png_dimensions(&binary_content)
-                    .or_else(|| extract_jpeg_dimensions(&binary_content));
-
-                if let Some((width, height)) = dimensions {
-                    if exceeds_pixel_limit(width, height) {
-                        return Err(ToolError::Validation {
-                            tool: "read",
-                            message: format_dimension_error(Some(&file_path_str), width, height),
-                        });
-                    }
-                }
-                // If dimensions can't be extracted (corrupt header, unsupported format),
-                // allow the image through — don't block valid images due to parsing failure
-
-                let base64_data = BASE64.encode(&binary_content);
-                ReadOutput::Image {
-                    data: base64_data,
-                    media_type: media_type.as_mime().to_string(),
-                }
+                // EXT-014/EXT-016: Validate size + dimensions, then encode
+                validate_and_encode_image(&binary_content, media_type, &file_path_str, "read")?
             }
             FileType::Exempt(exempt_type) => {
                 // PDF and IPYNB files are exempt from token limits

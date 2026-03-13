@@ -305,7 +305,7 @@ impl CodexProvider {
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, WebSearchTool,
+            AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, ViewImageTool, WebSearchTool,
             ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
         };
         use codelet_tools::facade::{
@@ -356,6 +356,7 @@ impl CodexProvider {
             // Codex models are trained to use apply_patch for all file modifications.
             // Keeping Write/Edit would cause the model to choose between competing interfaces.
             .tool(ApplyPatchTool::new(session_id))  // Codex-native apply_patch
+            .tool(ViewImageTool::new(session_id))  // Codex-native view_image (BUG-112)
             .tool(AstGrepTool::new(session_id))
             .tool(AstGrepRefactorTool::new(session_id))
             .tool(WebSearchTool::new(session_id))
@@ -551,6 +552,10 @@ mod tests {
         // BUG-105 Rule [6]: WriteTool and EditTool removed to prevent competing edit interfaces
         assert!(!tool_names.contains(&"Write"), "Codex agent should NOT expose 'Write' tool (BUG-105), but found: {tool_names:?}");
         assert!(!tool_names.contains(&"Edit"), "Codex agent should NOT expose 'Edit' tool (BUG-105), but found: {tool_names:?}");
+
+        // @step Then the agent's tool list includes a tool named "view_image"
+        // BUG-112: Codex-native view_image tool for viewing local image files
+        assert!(tool_names.contains(&"view_image"), "Codex agent should expose 'view_image' tool (BUG-112), but found: {tool_names:?}");
     }
 
     #[test]
