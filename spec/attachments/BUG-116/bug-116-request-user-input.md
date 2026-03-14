@@ -1,60 +1,120 @@
-# BUG-116: Codex agent missing request_user_input tool
+# BUG-116: Codex facade maps request_user_input to HITL tool
 
-## Problem
-
-The Codex CLI native tool set includes a `request_user_input` tool for prompting the user for structured input during a task. This tool is missing from the Codex facade.
-
-## Codex CLI Native Spec
-
-From `codex-rs/core/src/tools/spec.rs`:
+## Architecture
 
 ```
-name: "request_user_input"
-params:
-  - purpose: String - explanation of why input is needed
-  - items: Array - input field definitions for structured user prompts
+Codex LLM → request_user_input (Codex-native schema)
+    ↓
+CodexRequestUserInputFacade (codelet/tools/src/facade/codex.rs)
+    ↓
+RequestUserInputTool (codelet/tools/src/ — provider-agnostic, TOOL-017)
+    ↓
+PauseHandler → TUI modal → oneshot response
 ```
 
-This tool allows the model to pause execution and ask the user for specific information (e.g., "Which database should I connect to?", "What is your preferred naming convention?"). The Codex CLI renders these as interactive prompts.
+## Codex-Native Tool Schema to Map
 
-## Current State
+### `request_user_input` → HITL tool
 
-No `request_user_input` tool exists in:
-- `codelet/tools/src/facade/codex.rs`
-- `codelet/providers/src/codex/mod.rs`
-
-## Impact
-
-- Model cannot request structured user input during complex tasks
-- Model may attempt to call this tool and receive an unknown tool error
-- Model falls back to asking questions in plain text, which doesn't pause execution or provide structured response handling
-
-## Recommended Fix
-
-Create a `RequestUserInputTool` that:
-
-1. Accepts `purpose` (String) and `items` (Array of input field definitions)
-2. Delegates to the existing `PauseHandler` mechanism (`codelet/tools/src/tool_pause.rs`) to pause the agent and wait for user input
-3. Returns the user's responses as structured JSON
-
-### Integration with existing pause system
-
-The codebase already has a `tool_pause` module with `PauseHandler`, `PauseRequest`, and `PauseResponse` types. The `request_user_input` tool could be implemented as a specialized pause:
-
-```rust
-pause_for_user(PauseRequest {
-    kind: PauseKind::UserInput,
-    purpose: args.purpose,
-    items: args.items,
-}).await
+```json
+{
+  "name": "request_user_input",
+  "parameters": {
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["id", "header", "question"],
+        "properties": {
+          "id": { "type": "string", "description": "Stable snake_case identifier" },
+          "header": { "type": "string", "description": "Short UI label (≤12 chars)" },
+          "question": { "type": "string", "description": "Single-sentence prompt" },
+          "options": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "required": ["label", "description"],
+              "properties": {
+                "label": { "type": "string", "description": "1-5 word label" },
+                "description": { "type": "string", "description": "One sentence impact" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["questions"]
+}
 ```
 
-The TUI would render the input fields and return the user's responses.
+The Codex schema is already close to the HITL tool schema (TOOL-017). The facade is a thin translation:
+- `questions` → pass through directly (same structure)
+- Codex requires non-empty `options` on every question — the HITL tool should validate this
+- Codex always adds "Other" freeform option (`is_other = true`) — the HITL tool should do the same
 
-Register in `CodexProvider::create_rig_agent()`.
+### Response Schema
+
+```json
+{
+  "answers": {
+    "<question_id>": {
+      "selected": ["Option A"],
+      "other": "optional freeform text"
+    }
+  }
+}
+```
+
+## How Block-on-Oneshot Works
+
+The HITL tool (TOOL-017) implements this pattern. The facade just translates schemas:
+
+1. LLM calls `request_user_input({ questions: [...] })`
+2. Facade maps to HITL tool
+3. HITL tool creates oneshot channel, pauses agent via PauseHandler
+4. TUI renders question modal with options + freeform
+5. User answers → oneshot resolves → HITL tool returns answers
+6. Facade formats response in Codex-expected shape
+
+### Cancellation
+
+If the user cancels or the session is interrupted:
+- Codex expects: error message "request_user_input was cancelled before receiving a response"
+- The facade should catch the HITL tool's cancellation and return this Codex-specific error message
+
+### Mode Gating
+
+Codex gates this by collaboration mode. Our facade should:
+- Return error when no TUI is present (headless/non-interactive mode)
+- Error message: "request_user_input is unavailable in the current session mode"
+
+## VTCode Reference
+
+VTCode implements this for **all providers**:
+
+- **Core tool** (`vtcode-core/src/tools/request_user_input.rs`): Returns error by design — actual execution intercepted by TUI
+- **HITL pipeline** (`src/agent/runloop/unified/tool_pipeline/hitl.rs`): Intercepts the tool call in the TUI runloop
+- **Wizard modal** (`src/agent/runloop/unified/request_user_input/modal.rs`): Multi-step wizard with options + freeform
+- **Auto-suggestions** (`suggestions.rs`): When LLM omits options, VTCode auto-generates from question text and hints
+- **Provider-agnostic**: Registered once in builtin registry, available for Anthropic, OpenAI, Gemini, Ollama, etc.
+
+VTCode also extends the Codex schema with:
+- `focus_area`: Optional topic hint for auto-suggested options
+- `analysis_hints`: Optional weakness/risk hints for auto-generated choices
 
 ## References
 
-- Codex CLI tool spec: `codex-rs/core/src/tools/spec.rs`
+- Codex CLI request_user_input handler: `/tmp/codex/codex-rs/core/src/tools/handlers/request_user_input.rs`
+- Codex session integration: `/tmp/codex/codex-rs/core/src/codex.rs` (`request_user_input()`)
+- Codex TUI overlay: `/tmp/codex/codex-rs/tui/src/bottom_pane/request_user_input/mod.rs`
+- VTCode tool declaration: `/tmp/VTCode/vtcode-core/src/tools/request_user_input.rs`
+- VTCode HITL pipeline: `/tmp/VTCode/src/agent/runloop/unified/tool_pipeline/hitl.rs`
+- VTCode TUI modal: `/tmp/VTCode/src/agent/runloop/unified/request_user_input/modal.rs`
+- Existing Codex facade: `codelet/tools/src/facade/codex.rs`
 - Tool pause system: `codelet/tools/src/tool_pause.rs`
-- PauseHandler types: `PauseKind`, `PauseRequest`, `PauseResponse`
+- HITL tool: TOOL-017

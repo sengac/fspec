@@ -100,6 +100,8 @@ pub use traits::{
     FspecToolFacade, InternalBashParams, InternalFileParams, InternalIndentationParams,
     InternalLsParams, InternalSearchParams, InternalWebSearchParams, LsToolFacade,
     SearchToolFacade, ToolDefinition, ToolFacade,
+    // TOOL-016: Unified exec facade types
+    BoxedExecToolFacade, ExecToolFacade, InternalExecParams,
 };
 pub use web_search::{
     ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
@@ -108,6 +110,8 @@ pub use web_search::{
 pub use wrapper::{
     BashToolFacadeWrapper, BridgeToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper,
     FspecToolFacadeWrapper, LsToolFacadeWrapper, SearchToolFacadeWrapper,
+    // TOOL-016: Exec tool facade wrapper
+    ExecToolFacadeWrapper, ExecOperationResult,
     // BLOCK-006: Block notification callbacks
     emit_block_notification, set_block_notification_callback, set_get_work_unit_stage_callback,
     BlockNotificationCallback, GetWorkUnitStageCallback,

@@ -2,8 +2,9 @@
 Feature: Codex view_image tool
 
   """
-  Follows the same standalone rig::tool::Tool pattern as ApplyPatchTool — struct with session_id, Args struct with JsonSchema derive, definition() and call() methods
-  Reuses ReadTool's image validation logic (base64 size check, pixel dimension check) and file_type detection rather than duplicating it
+  Uses the FileToolFacade pattern — CodexViewImageFacade maps Codex-native view_image params
+  to InternalFileParams::Read, which delegates to ReadTool's existing image validation logic
+  (base64 size check, pixel dimension check, file type detection).
   """
 
   # ========================================
@@ -11,25 +12,25 @@ Feature: Codex view_image tool
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. ViewImageTool must be a standalone rig::tool::Tool with NAME = "view_image" (not a facade, since no other provider has this tool)
-  #   2. ViewImageTool must accept a single required 'path' parameter (String) matching the Codex CLI spec
-  #   3. ViewImageTool must validate and resolve the path using validate_and_resolve_path for worktree isolation
-  #   4. ViewImageTool must check the file path against the blocklist before any I/O
-  #   5. ViewImageTool must only accept image files (PNG, JPEG, GIF, WEBP) — not SVG, PDF, text, or other types
-  #   6. ViewImageTool must validate base64 size <= 5MB and pixel dimensions using the same limits as ReadTool
-  #   7. ViewImageTool must return the same JSON format as ReadTool for images (ReadOutput::Image with data and media_type)
-  #   8. ViewImageTool must be registered in CodexProvider::create_rig_agent() with .tool(ViewImageTool::new(session_id))
-  #   9. ViewImageTool must be exported from codelet_tools lib.rs
+  #   1. CodexViewImageFacade must implement FileToolFacade with tool_name "view_image"
+  #   2. CodexViewImageFacade must accept a required 'path' parameter (String) matching the Codex CLI spec
+  #   3. CodexViewImageFacade must map view_image params to InternalFileParams::Read for ReadTool delegation
+  #   4. ReadTool validates and resolves the path using validate_and_resolve_path for worktree isolation
+  #   5. ReadTool checks the file path against the blocklist before any I/O
+  #   6. ReadTool only accepts image files (PNG, JPEG, GIF, WEBP) — not SVG, PDF, text, or other types
+  #   7. ReadTool validates base64 size <= 5MB and pixel dimensions
+  #   8. The facade must be registered in CodexProvider::create_rig_agent() via FileToolFacadeWrapper
+  #   9. CodexViewImageFacade must be exported from codelet_tools facade module
   #
   # EXAMPLES:
-  #   1. Model calls view_image with path to a PNG → returns base64-encoded PNG data with media_type image/png
-  #   2. Model calls view_image with path to a JPEG → returns base64-encoded JPEG data with media_type image/jpeg
+  #   1. Model calls view_image with path to a PNG → facade maps to Read, returns base64-encoded PNG data
+  #   2. Model calls view_image with path to a JPEG → facade maps to Read, returns base64-encoded JPEG data
   #   3. Model calls view_image with path to a text file → error: not an image file
   #   4. Model calls view_image with path to an SVG file → error: SVG is text-based, not a binary image
   #   5. Model calls view_image with non-existent path → error: file not found
   #   6. Model calls view_image with oversized image (>5MB base64) → error: image too large
   #   7. Model calls view_image with blocklisted path → error: blocked
-  #   8. ViewImageTool is registered in Codex agent → tool appears in agent's tool list as view_image
+  #   8. Facade registered in Codex agent → tool appears in agent's tool list as view_image
   #
   # ========================================
 
@@ -39,66 +40,37 @@ Feature: Codex view_image tool
     So that I can view images the same way as the native Codex CLI
 
   @tool @codex
-  Scenario: View a PNG image file
-    Given a ViewImageTool instance with a valid session ID
-    And a PNG image file exists at a known path
-    When view_image is called with the path to the PNG file
-    Then the result is a JSON object with type "image"
-    And the media_type is "image/png"
-    And the data field contains base64-encoded PNG data
+  Scenario: CodexViewImageFacade maps view_image path to InternalFileParams::Read
+    Given a CodexViewImageFacade instance
+    When the Codex model calls view_image with path "/tmp/screenshot.png"
+    Then the facade maps to InternalFileParams::Read with file_path "/tmp/screenshot.png"
+    And the facade tool name is "view_image"
+    And the facade provider is "codex"
 
   @tool @codex
-  Scenario: View a JPEG image file
-    Given a ViewImageTool instance with a valid session ID
-    And a JPEG image file exists at a known path
-    When view_image is called with the path to the JPEG file
-    Then the result is a JSON object with type "image"
-    And the media_type is "image/jpeg"
-    And the data field contains base64-encoded JPEG data
+  Scenario: CodexViewImageFacade accepts detail param for compatibility
+    Given a CodexViewImageFacade instance
+    When the Codex model calls view_image with path and detail "original"
+    Then the facade maps to InternalFileParams::Read ignoring the detail param
 
   @tool @codex
-  Scenario: Reject a text file as not an image
-    Given a ViewImageTool instance with a valid session ID
-    And a plain text file exists at a known path
-    When view_image is called with the path to the text file
-    Then the tool returns an error indicating the file is not a supported image
+  Scenario: CodexViewImageFacade rejects missing path
+    Given a CodexViewImageFacade instance
+    When view_image is called with no path parameter
+    Then the facade returns a validation error for tool "view_image" mentioning "path"
 
   @tool @codex
-  Scenario: Reject an SVG file as not a binary image
-    Given a ViewImageTool instance with a valid session ID
-    And an SVG file exists at a known path
-    When view_image is called with the path to the SVG file
-    Then the tool returns an error indicating SVG is not a supported binary image format
-
-  @tool @codex
-  Scenario: Return error for non-existent file
-    Given a ViewImageTool instance with a valid session ID
-    When view_image is called with a path that does not exist
-    Then the tool returns an error indicating the file was not found
-
-  @tool @codex
-  Scenario: Reject an oversized image
-    Given a ViewImageTool instance with a valid session ID
-    And an image file exists whose base64 encoding exceeds 5MB
-    When view_image is called with the path to the oversized image
-    Then the tool returns an error indicating the image is too large for LLM processing
-
-  @tool @codex
-  Scenario: Reject a blocklisted path
-    Given a ViewImageTool instance with a valid session ID
-    And a blocklist is initialized with a rule blocking the target path
-    When view_image is called with the blocklisted path
-    Then the tool returns a blocked error
-
-  @tool @codex @integration
-  Scenario: ViewImageTool is registered in Codex agent
-    Given a CodexProvider with create_rig_agent configured
-    When the agent is built with a session_id
-    Then the agent's tool list includes a tool named "view_image"
+  Scenario: CodexViewImageFacade rejects empty path
+    Given a CodexViewImageFacade instance
+    When view_image is called with an empty path
+    Then the facade returns an error
 
   @tool @codex
   Scenario: Tool definition matches Codex CLI spec
-    Given a ViewImageTool instance with a valid session ID
+    Given a CodexViewImageFacade instance
     When the tool definition is requested
     Then the tool name is "view_image"
+    And the description mentions viewing a local image
     And the parameters schema has a required "path" property of type string
+    And additionalProperties is false
+    And a "detail" property exists for model compatibility

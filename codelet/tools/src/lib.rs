@@ -39,6 +39,7 @@ pub mod tool_pause;
 pub mod tool_progress;
 pub mod truncation;
 pub mod validation;
+pub mod unified_exec;
 pub mod web_search;
 pub mod session_search;
 pub mod write;
@@ -88,6 +89,14 @@ pub use fspec::FspecTool;
 pub use glob::GlobTool;
 pub use grep::GrepTool;
 pub use ls::LsTool;
+pub use unified_exec::{
+    UnifiedExecTool, UnifiedExecArgs, UnifiedExecResult,
+    ProcessStore, ExecCommand, session_id_to_evict,
+    MIN_YIELD_TIME_MS, MAX_YIELD_TIME_MS, DEFAULT_YIELD_TIME_MS,
+    MIN_EMPTY_YIELD_TIME_MS, MAX_UNIFIED_EXEC_PROCESSES,
+    UNIFIED_EXEC_OUTPUT_MAX_BYTES, LRU_PROTECT_COUNT,
+    clamp_yield_time, clamp_poll_yield_time,
+};
 pub use page_fetcher::{Heading, Link, PageContent, PageFetcher};
 pub use read::{ReadOutput, ReadTool};
 pub use search_engine::{SearchEngine, SearchResult};

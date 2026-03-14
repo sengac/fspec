@@ -1518,6 +1518,212 @@ impl Tool for BridgeToolFacadeWrapper {
     }
 }
 
+// ============================================================================
+// ExecToolFacadeWrapper - Adapts ExecToolFacade implementations to rig::tool::Tool
+// ============================================================================
+
+use super::traits::{BoxedExecToolFacade, InternalExecParams};
+use crate::unified_exec::{UnifiedExecTool, UnifiedExecArgs};
+
+/// Result type for exec facade operations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExecOperationResult {
+    pub success: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub exit_code: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub output: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wall_time_seconds: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+impl std::fmt::Display for ExecOperationResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", serde_json::to_string(self).unwrap_or_default())
+    }
+}
+
+/// Wrapper that adapts an ExecToolFacade to rig's Tool trait.
+///
+/// This enables provider-specific exec facades (e.g. Codex exec_command, write_stdin, shell)
+/// to be used with rig's agent builder while maintaining the facade's custom tool name,
+/// schema, and parameter mapping. Delegates execution to UnifiedExecTool.
+///
+/// ## Execution Flow
+///
+/// 1. LLM calls tool with provider-specific params (e.g. Codex `exec_command` schema)
+/// 2. Facade maps provider params → `InternalExecParams` variant
+/// 3. Wrapper converts `InternalExecParams` → JSON args for `UnifiedExecTool`
+/// 4. `UnifiedExecTool.call()` executes and returns `UnifiedExecResult`
+/// 5. Wrapper maps result → `ExecOperationResult` for the LLM
+pub struct ExecToolFacadeWrapper {
+    /// The underlying facade providing name, schema, and param mapping
+    facade: BoxedExecToolFacade,
+    /// The base unified exec tool for actual execution
+    exec_tool: UnifiedExecTool,
+    /// Session ID for notification emission and worktree isolation
+    session_id: Uuid,
+}
+
+impl ExecToolFacadeWrapper {
+    /// Create a new wrapper for the given exec facade with session association.
+    ///
+    /// # Arguments
+    /// * `facade` - The provider-specific facade for schema/naming
+    /// * `session_id` - The session ID for worktree isolation and context
+    pub fn new(facade: BoxedExecToolFacade, session_id: Uuid) -> Self {
+        Self {
+            facade,
+            exec_tool: UnifiedExecTool::new(session_id),
+            session_id,
+        }
+    }
+
+    /// Get the facade's provider name
+    pub fn provider(&self) -> &'static str {
+        self.facade.provider()
+    }
+
+    /// Get the session ID associated with this tool instance
+    pub fn session_id(&self) -> Uuid {
+        self.session_id
+    }
+}
+
+/// Convert `InternalExecParams` to JSON for `UnifiedExecTool`.
+fn internal_exec_params_to_json(params: InternalExecParams) -> Value {
+    match params {
+        InternalExecParams::Run {
+            command,
+            workdir,
+            tty,
+            yield_time_ms,
+            timeout_secs: _,
+            max_output_tokens: _,
+        } => {
+            let mut args = serde_json::json!({
+                "action": "run",
+                "command": command,
+                "tty": tty,
+            });
+            if let Some(w) = workdir {
+                args["workdir"] = Value::String(w);
+            }
+            if let Some(y) = yield_time_ms {
+                args["yield_time_ms"] = Value::Number(serde_json::Number::from(y));
+            }
+            args
+        }
+        InternalExecParams::Write {
+            session_id,
+            input,
+            yield_time_ms,
+            max_output_tokens: _,
+        } => {
+            let mut args = serde_json::json!({
+                "action": "write",
+                "session_id": session_id,
+                "input": input,
+            });
+            if let Some(y) = yield_time_ms {
+                args["yield_time_ms"] = Value::Number(serde_json::Number::from(y));
+            }
+            args
+        }
+        InternalExecParams::Poll {
+            session_id,
+            yield_time_ms,
+            max_output_tokens: _,
+        } => {
+            let mut args = serde_json::json!({
+                "action": "poll",
+                "session_id": session_id,
+            });
+            if let Some(y) = yield_time_ms {
+                args["yield_time_ms"] = Value::Number(serde_json::Number::from(y));
+            }
+            args
+        }
+        InternalExecParams::List => {
+            serde_json::json!({ "action": "list" })
+        }
+        InternalExecParams::Close { session_id } => {
+            serde_json::json!({
+                "action": "close",
+                "session_id": session_id,
+            })
+        }
+    }
+}
+
+impl Tool for ExecToolFacadeWrapper {
+    const NAME: &'static str = "exec_facade_wrapper";
+
+    type Error = ToolError;
+    type Args = FacadeArgs;
+    type Output = ExecOperationResult;
+
+    /// Override to return the facade's tool name (e.g., "exec_command" for Codex)
+    fn name(&self) -> String {
+        self.facade.tool_name().to_string()
+    }
+
+    /// Return the facade's provider-specific tool definition
+    async fn definition(&self, _prompt: String) -> RigToolDefinition {
+        let facade_def = self.facade.definition();
+        RigToolDefinition {
+            name: facade_def.name,
+            description: facade_def.description,
+            parameters: facade_def.parameters,
+        }
+    }
+
+    /// Map provider params to internal format and execute via UnifiedExecTool
+    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Use the facade to map provider-specific params to internal format
+        let internal_params = self.facade.map_params(args.0)?;
+
+        // Convert internal params to JSON args for UnifiedExecTool
+        let json_args = internal_exec_params_to_json(internal_params);
+
+        // Execute via the unified exec tool
+        match self.exec_tool.call(UnifiedExecArgs(json_args)).await {
+            Ok(result) => Ok(ExecOperationResult {
+                success: result.exit_code.is_none_or(|c| c == 0),
+                exit_code: result.exit_code,
+                session_id: result.session_id,
+                output: result.output,
+                wall_time_seconds: result.wall_time_seconds,
+                error: result.error,
+            }),
+            Err(ToolError::Blocked { message, .. }) => {
+                // Emit notification to TUI for blocked commands
+                emit_block_notification(self.session_id, "exec", &message);
+                Ok(ExecOperationResult {
+                    success: false,
+                    exit_code: None,
+                    session_id: None,
+                    output: None,
+                    wall_time_seconds: None,
+                    error: Some(message),
+                })
+            }
+            Err(e) => Ok(ExecOperationResult {
+                success: false,
+                exit_code: None,
+                session_id: None,
+                output: None,
+                wall_time_seconds: None,
+                error: Some(e.to_string()),
+            }),
+        }
+    }
+}
+
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used)]
 mod bridge_wrapper_tests {

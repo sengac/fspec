@@ -1,55 +1,87 @@
-# BUG-115: Codex agent missing write_stdin interactive session input tool
+# BUG-115: Codex facade maps write_stdin to unified exec tool
 
-## Problem
-
-The Codex CLI native tool set includes a `write_stdin` tool for sending input to interactive shell sessions (e.g., responding to prompts, entering passwords, providing stdin data). This tool is missing from the Codex facade.
-
-## Codex CLI Native Spec
-
-From `codex-rs/core/src/tools/spec.rs`:
+## Architecture
 
 ```
-name: "write_stdin"
-params:
-  - session_id: Number (required) - ID of the running shell session
-  - chars: String - characters to write to stdin
-  - yield_time_ms: Number - how long to wait for output after writing
-  - max_output_tokens: Number - cap on output tokens to return
+Codex LLM → write_stdin (Codex-native schema)
+    ↓
+CodexWriteStdinFacade (codelet/tools/src/facade/codex.rs)
+    ↓
+UnifiedExecTool write/poll action (codelet/tools/src/ — provider-agnostic, TOOL-016)
+    ↓
+ProcessStore lookup → stdin write → output poll
 ```
 
-This tool works in conjunction with `exec_command` (which can create persistent sessions) or `shell_command` (which may leave processes running). The `session_id` refers to a process session that was started by a previous exec/shell tool call.
+## Codex-Native Tool Schema to Map
 
-## Current State
+### `write_stdin` → unified exec `write` or `poll` action
 
-No `write_stdin` tool exists in:
-- `codelet/tools/src/facade/codex.rs`
-- `codelet/providers/src/codex/mod.rs`
+```json
+{
+  "name": "write_stdin",
+  "parameters": {
+    "session_id": { "type": "number", "description": "ID of running session from exec_command" },
+    "chars": { "type": "string", "description": "Characters to write (empty = poll)" },
+    "yield_time_ms": { "type": "number", "description": "Wait time for output" },
+    "max_output_tokens": { "type": "number" }
+  },
+  "required": ["session_id"]
+}
+```
 
-There is no session tracking mechanism for running shell processes in the current `BashTool` implementation — each `BashTool::call()` spawns and completes a process in one call.
+Facade mapping:
+- `session_id` (Number) → unified exec `session_id` (String, e.g., "4237")
+- `chars` → unified exec `input`
+- Empty `chars` or missing → unified exec `poll` action instead of `write`
+- `yield_time_ms` → unified exec `yield_time_ms`
+- `max_output_tokens` → unified exec `max_output_tokens`
 
-## Impact
+### Output Schema (shared with exec_command)
 
-- Model cannot interact with interactive processes that require stdin input
-- Model cannot respond to prompts from long-running commands
-- Model may attempt to call `write_stdin` and receive an unknown tool error
+```json
+{
+  "session_id": "number — present when process is still running",
+  "exit_code": "number — present when process has exited",
+  "output": "string — new output since last read",
+  "wall_time_seconds": "number",
+  "chunk_id": "string",
+  "original_token_count": "number"
+}
+```
 
-## Recommended Fix
+## The Yield-and-Resume Lifecycle
 
-This is a more complex feature that requires:
+This facade only makes sense in context of the full lifecycle:
 
-1. **Session tracking**: A mechanism to keep shell processes alive across tool calls, indexed by session ID
-2. **stdin writing**: Write characters to the process's stdin pipe
-3. **Output capture**: Wait `yield_time_ms` for output and return up to `max_output_tokens`
+1. **LLM calls `exec_command`** → unified exec spawns process, returns `session_id` if still alive
+2. **LLM calls `write_stdin`** (this facade) → unified exec writes to stdin, polls output
+3. **LLM calls `write_stdin` again** → repeat as needed
+4. **Process exits** → response has `exit_code`, no `session_id` → LLM stops calling
 
-### Minimal approach
-Accept the tool call, return an error explaining that interactive sessions are not supported, and suggest using non-interactive alternatives. This prevents unknown tool errors while being honest about limitations.
+The facade translates Codex's numeric `session_id` to the unified exec's string session IDs and maps `chars` to the `input` parameter.
 
-### Full approach
-Implement process session tracking with stdin/stdout pipes. This would require significant changes to the `BashTool` architecture.
+## Empty Write = Poll
 
-Register in `CodexProvider::create_rig_agent()`.
+When `chars` is empty or absent, the facade should map to the `poll` action:
+- Higher minimum yield time (5000ms vs 250ms for writes)
+- Used to check if long-running processes have produced output or exited
+- Codex's `MIN_EMPTY_YIELD_TIME_MS = 5000ms`
+
+## VTCode Reference
+
+VTCode handles this as the `"write"` and `"poll"` actions of its unified `unified_exec` tool:
+
+```json
+{"action": "write", "session_id": "run-4237", "input": "print('hello')\n", "yield_time_ms": 250}
+{"action": "poll", "session_id": "run-4237", "yield_time_ms": 5000}
+```
+
+Provider-agnostic — available for all providers, not just Codex.
 
 ## References
 
-- Codex CLI tool spec: `codex-rs/core/src/tools/spec.rs`
-- BashTool implementation: `codelet/tools/src/bash.rs`
+- Codex CLI write_stdin spec: `/tmp/codex/codex-rs/core/src/tools/spec.rs` (`create_write_stdin_tool()`)
+- Codex write_stdin handler: `/tmp/codex/codex-rs/core/src/tools/handlers/unified_exec.rs` (line 284–308)
+- Codex process manager: `/tmp/codex/codex-rs/core/src/unified_exec/process_manager.rs`
+- Existing Codex facade: `codelet/tools/src/facade/codex.rs`
+- Unified exec tool: TOOL-016

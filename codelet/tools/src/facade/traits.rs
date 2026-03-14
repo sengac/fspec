@@ -278,3 +278,78 @@ pub trait LsToolFacade: Send + Sync {
 
 /// Type alias for a boxed LsToolFacade
 pub type BoxedLsToolFacade = Arc<dyn LsToolFacade>;
+
+// ============================================================================
+// Exec Tool Facade (TOOL-016: Unified Exec Tool)
+// ============================================================================
+
+/// Internal parameters for unified exec operations.
+/// All provider-specific parameters are mapped to these internal types.
+#[derive(Debug, Clone, PartialEq)]
+pub enum InternalExecParams {
+    /// Execute a command (one-shot or session-creating)
+    Run {
+        /// Command as shell string or argv array
+        command: Value,
+        /// Working directory override
+        workdir: Option<String>,
+        /// Allocate PTY
+        tty: bool,
+        /// Yield time in ms before returning
+        yield_time_ms: Option<u64>,
+        /// Max output tokens
+        max_output_tokens: Option<u64>,
+        /// Hard timeout in seconds
+        timeout_secs: Option<u64>,
+    },
+    /// Send input to a running session
+    Write {
+        /// Session identifier
+        session_id: String,
+        /// Input bytes to send to stdin
+        input: String,
+        /// Yield time in ms
+        yield_time_ms: Option<u64>,
+        /// Max output tokens
+        max_output_tokens: Option<u64>,
+    },
+    /// Poll output from a running session (no stdin input)
+    Poll {
+        /// Session identifier
+        session_id: String,
+        /// Yield time in ms
+        yield_time_ms: Option<u64>,
+        /// Max output tokens
+        max_output_tokens: Option<u64>,
+    },
+    /// List active sessions
+    List,
+    /// Close/terminate a session
+    Close {
+        /// Session identifier
+        session_id: String,
+    },
+}
+
+/// Provider-specific tool facade trait for unified exec operations.
+///
+/// Each facade adapts an exec tool's interface for a specific LLM provider,
+/// handling differences in tool naming, parameter schemas, and parameter formats.
+/// Used by Codex facades (BUG-114/BUG-115) to map exec_command/write_stdin/shell
+/// to the provider-agnostic unified exec tool (TOOL-016).
+pub trait ExecToolFacade: Send + Sync {
+    /// Returns the provider this facade is for (e.g., "codex")
+    fn provider(&self) -> &'static str;
+
+    /// Returns the tool name as the provider expects it
+    fn tool_name(&self) -> &'static str;
+
+    /// Returns the tool definition with provider-specific schema
+    fn definition(&self) -> ToolDefinition;
+
+    /// Maps provider-specific parameters to internal exec parameters
+    fn map_params(&self, input: Value) -> Result<InternalExecParams, ToolError>;
+}
+
+/// Type alias for a boxed ExecToolFacade
+pub type BoxedExecToolFacade = Arc<dyn ExecToolFacade>;

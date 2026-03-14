@@ -1,84 +1,99 @@
-# BUG-114: Codex agent missing shell and exec_command alternative exec tools
+# BUG-114: Codex facade maps shell and exec_command to unified exec tool
 
-## Problem
-
-The Codex CLI native tool set includes two additional execution tools beyond `shell_command`. Both are missing from the Codex facade.
-
-## Codex CLI Native Spec
-
-### `shell` — raw exec without shell interpretation
-
-From `codex-rs/core/src/tools/spec.rs`:
+## Architecture
 
 ```
-name: "shell"
-params:
-  - command: Array<String> (required) - passed to execvp()
-  - workdir: String - working directory
-  - timeout_ms: Number - timeout in milliseconds
-  - sandbox_permissions: String - escalation control
-  - justification: String - approval justification
-  - prefix_rule: Array<String> - permission prefix pattern
+Codex LLM → shell / exec_command (Codex-native schemas)
+    ↓
+CodexShellFacade / CodexExecCommandFacade (codelet/tools/src/facade/codex.rs)
+    ↓
+UnifiedExecTool (codelet/tools/src/ — provider-agnostic, TOOL-016)
+    ↓
+ProcessStore + PTY/pipe spawning
 ```
 
-Key difference from `shell_command`: the `command` parameter is an **array of strings** passed directly to `execvp()`, bypassing shell interpretation. This avoids shell injection risks and is used when the model wants to run a specific binary with exact arguments.
+## Codex-Native Tool Schemas to Map
 
-### `exec_command` — unified exec with PTY support
+### `shell` → unified exec `run` action (no shell interpretation)
 
-From `codex-rs/core/src/tools/spec.rs`:
-
-```
-name: "exec_command"
-params:
-  - cmd: String (required) - command to execute
-  - workdir: String - working directory
-  - shell: String - shell to use (e.g., "/bin/bash")
-  - tty: Boolean - whether to allocate a PTY
-  - yield_time_ms: Number - how long to wait for output
-  - max_output_tokens: Number - cap on output tokens
-  - login: Boolean - login shell semantics
-  - sandbox_permissions: String
-  - justification: String
-  - prefix_rule: Array<String>
+```json
+{
+  "name": "shell",
+  "parameters": {
+    "command": { "type": "array", "items": { "type": "string" }, "description": "argv passed to execvp()" },
+    "workdir": { "type": "string" },
+    "timeout_ms": { "type": "number" }
+  },
+  "required": ["command"]
+}
 ```
 
-Key feature: PTY support via `tty: true`, and output capping via `max_output_tokens`. This is the most flexible execution tool in the Codex spec.
+Facade mapping:
+- `command: ["ls", "-la"]` → unified exec `run` action with `command` as array, shell interpretation disabled
+- `workdir` → unified exec `workdir`
+- `timeout_ms` → unified exec `timeout_secs` (convert ms → s)
 
-## Current State
+### `exec_command` → unified exec `run` action (with PTY support)
 
-Neither `shell` nor `exec_command` exist in:
-- `codelet/tools/src/facade/codex.rs`
-- `codelet/providers/src/codex/mod.rs`
+```json
+{
+  "name": "exec_command",
+  "parameters": {
+    "cmd": { "type": "string", "description": "Shell command to execute" },
+    "workdir": { "type": "string" },
+    "shell": { "type": "string", "description": "Shell binary to use" },
+    "tty": { "type": "boolean", "description": "Allocate PTY", "default": false },
+    "yield_time_ms": { "type": "number", "description": "Wait time before yielding" },
+    "max_output_tokens": { "type": "number" },
+    "login": { "type": "boolean", "description": "Login shell semantics" }
+  },
+  "required": ["cmd"]
+}
+```
 
-Only `shell_command` (mapped from `BashTool`) is available.
+Facade mapping:
+- `cmd` → unified exec `command` (string form)
+- `tty` → unified exec `tty`
+- `yield_time_ms` → unified exec `yield_time_ms`
+- `max_output_tokens` → unified exec `max_output_tokens`
+- `workdir` → unified exec `workdir`
 
-## Impact
+### Output Schema (shared by exec_command and write_stdin)
 
-- Model cannot use `shell` for safe argument-passing without shell interpretation
-- Model cannot use `exec_command` for PTY-based interactive commands
-- Model may attempt to call these tools and receive unknown tool errors
+```json
+{
+  "session_id": "number — present when process is still running",
+  "exit_code": "number — present when process has exited",
+  "output": "string — command output, possibly truncated",
+  "wall_time_seconds": "number",
+  "chunk_id": "string",
+  "original_token_count": "number"
+}
+```
 
-## Recommended Fix
+## How exec_command Yield-and-Resume Works
 
-### `shell`
-Create a tool that:
-1. Takes `command` as `Vec<String>`
-2. Executes via `tokio::process::Command::new(command[0]).args(&command[1..])`
-3. Does NOT invoke through a shell
-4. Maps `workdir` to the process working directory
-5. Maps `timeout_ms` to a timeout
+See TOOL-016 for the full unified exec implementation. The Codex facade just translates parameter names:
 
-### `exec_command`
-Create a tool that:
-1. Takes `cmd` as a string
-2. Optionally uses a specified `shell`
-3. Supports `tty: true` for PTY allocation (may require a PTY library)
-4. Supports `max_output_tokens` to cap output
-5. Supports `yield_time_ms` to wait for output before returning
+1. LLM calls `exec_command({ cmd: "python3", tty: true, yield_time_ms: 5000 })`
+2. Facade maps to unified exec run action
+3. Unified exec spawns PTY, collects output for yield_time_ms
+4. If process exits → response has `exit_code`, no `session_id`
+5. If process still running → response has `session_id` for `write_stdin` follow-up
 
-Both should be registered in `CodexProvider::create_rig_agent()`.
+## VTCode Reference
+
+VTCode (`/tmp/VTCode`) consolidates shell, exec_command, and all PTY tools into one `unified_exec` tool with action-based dispatch. All legacy Codex tool names (`exec_command`, `write_stdin`, `shell`, `run_pty_cmd`, etc.) are registered as aliases that route to the unified executor. This is **provider-agnostic** — available for Anthropic, OpenAI, Gemini, Ollama, LM Studio, DeepSeek, and all other providers.
+
+Key files:
+- `vtcode-core/src/tools/registry/builtins.rs` — unified_exec registration with all aliases
+- `vtcode-core/src/tools/handlers/session_tool_catalog.rs` — unified_exec_parameters() schema
+- `vtcode-config/src/constants/tools.rs` — tool name constants
 
 ## References
 
-- Codex CLI tool spec: `codex-rs/core/src/tools/spec.rs`
-- BashTool implementation: `codelet/tools/src/bash.rs`
+- Codex CLI tool spec: `/tmp/codex/codex-rs/core/src/tools/spec.rs`
+- Codex unified_exec handler: `/tmp/codex/codex-rs/core/src/tools/handlers/unified_exec.rs`
+- Codex process manager: `/tmp/codex/codex-rs/core/src/unified_exec/process_manager.rs`
+- Existing Codex facade: `codelet/tools/src/facade/codex.rs`
+- Unified exec tool: TOOL-016
