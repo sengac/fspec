@@ -222,36 +222,41 @@ async fn test_write_input_to_running_session() {
 #[tokio::test]
 async fn test_write_causes_process_exit() {
     // @step Given a running session with session_id from command "cat" and tty true
+    // Note: PTY is currently pipe-mode fallback (FIX-1 documented limitation).
+    // We use `head -n1` (argv form) instead of `cat` with Ctrl+D because
+    // `head -n1` deterministically exits after reading one line of input,
+    // whereas `cat` requires true EOF (stdin close) which our mpsc-based
+    // stdin forwarding channel keeps alive. Argv form bypasses shell wrapping
+    // so there's no parent `sh` process to wait for.
     let tool = UnifiedExecTool::new(Uuid::nil());
     let run_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
         "action": "run",
-        "command": "cat",
+        "command": ["head", "-n1"],
         "tty": true,
         "yield_time_ms": 500
     }))).await.unwrap();
     let session_id = run_result.session_id.as_deref().unwrap().to_string();
 
     // @step When I call the write action with EOF signal to terminate the process
-    // Close the stdin channel by dropping the sender — send Ctrl+D (EOF)
+    // Sending a line causes `head -n1` to output it and exit.
     let write_result: UnifiedExecResult = tool.call(UnifiedExecArgs(json!({
         "action": "write",
         "session_id": session_id,
-        "input": "\u{0004}",
+        "input": "goodbye\n",
         "yield_time_ms": 2000
     }))).await.unwrap();
 
     // @step Then the response should contain exit_code
-    // Note: EOF via pipe may not immediately terminate cat; give it time
-    if write_result.exit_code.is_some() {
-        // @step And the response should not contain a session_id
-        assert!(write_result.session_id.is_none());
-    } else {
-        // Process hasn't exited yet — close it
-        let _ = tool.call(UnifiedExecArgs(json!({
-            "action": "close",
-            "session_id": session_id
-        }))).await;
-    }
+    assert!(
+        write_result.exit_code.is_some(),
+        "expected exit_code after process exits, got: {write_result:?}"
+    );
+
+    // @step And the response should not contain a session_id
+    assert!(
+        write_result.session_id.is_none(),
+        "session_id should be absent when process has exited"
+    );
 }
 
 // ============================================================================

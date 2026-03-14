@@ -13,9 +13,9 @@
 //! Feature: spec/features/codex-native-tool-facades.feature
 
 use super::traits::{
-    BashToolFacade, FileToolFacade, InternalBashParams, InternalFileParams,
-    InternalIndentationParams, InternalLsParams, InternalSearchParams, LsToolFacade,
-    SearchToolFacade, ToolDefinition,
+    BashToolFacade, ExecToolFacade, FileToolFacade, InternalBashParams, InternalExecParams,
+    InternalFileParams, InternalIndentationParams, InternalLsParams, InternalSearchParams,
+    LsToolFacade, SearchToolFacade, ToolDefinition,
 };
 use super::param_extract::{extract_optional_bool, extract_optional_string, extract_optional_uint, extract_required_string};
 use crate::ToolError;
@@ -402,6 +402,189 @@ impl SearchToolFacade for CodexGrepFilesFacade {
         let limit = extract_optional_uint(&input, "limit");
 
         Ok(InternalSearchParams::Grep { pattern, path, include, limit })
+    }
+}
+
+// ============================================================================
+// Shell Facade (BUG-114: execvp-style, no shell interpretation)
+// ============================================================================
+
+/// Codex-specific facade for raw shell execution (execvp-style).
+///
+/// Maps Codex's `shell` tool to the unified exec tool via `InternalExecParams::Run`.
+/// The Codex CLI defines `shell` with:
+/// - `command` (required): Array of strings passed to execvp()
+/// - `workdir` (optional): Working directory for execution
+/// - `timeout_ms` (optional): Timeout in milliseconds (converted to seconds for unified exec)
+///
+/// Unlike `shell_command` (which uses BashToolFacade for one-shot commands),
+/// `shell` always passes command as an argv array with no shell interpretation.
+///
+/// Feature: spec/features/codex-shell-exec-facades.feature
+pub struct CodexShellFacade;
+
+impl ExecToolFacade for CodexShellFacade {
+    fn provider(&self) -> &'static str {
+        "codex"
+    }
+
+    fn tool_name(&self) -> &'static str {
+        "shell"
+    }
+
+    fn definition(&self) -> ToolDefinition {
+        ToolDefinition {
+            name: "shell".to_string(),
+            description: "Execute a command via execvp (no shell interpretation). The command is an array of strings passed directly as argv.".to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {
+                    "command": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "argv passed to execvp()"
+                    },
+                    "workdir": {
+                        "type": "string",
+                        "description": "The working directory to execute the command in"
+                    },
+                    "timeout_ms": {
+                        "type": "number",
+                        "description": "The timeout for the command in milliseconds"
+                    }
+                },
+                "required": ["command"],
+                "additionalProperties": false
+            }),
+        }
+    }
+
+    fn map_params(&self, input: Value) -> Result<InternalExecParams, ToolError> {
+        // command is required and must be an array of strings
+        let command_val = input.get("command").ok_or_else(|| ToolError::Validation {
+            tool: "shell",
+            message: "Missing required parameter: command".to_string(),
+        })?;
+        if !command_val.is_array() {
+            return Err(ToolError::Validation {
+                tool: "shell",
+                message: "command must be an array of strings".to_string(),
+            });
+        }
+        // Validate the array is non-empty
+        if let Some(arr) = command_val.as_array() {
+            if arr.is_empty() {
+                return Err(ToolError::Validation {
+                    tool: "shell",
+                    message: "command array must not be empty".to_string(),
+                });
+            }
+        }
+
+        let workdir = extract_optional_string(&input, "workdir");
+        let timeout_ms = input.get("timeout_ms").and_then(Value::as_u64);
+        let timeout_secs = timeout_ms.map(|ms| ms / 1000);
+
+        Ok(InternalExecParams::Run {
+            command: command_val.clone(),
+            workdir,
+            tty: false,
+            yield_time_ms: None,
+            max_output_tokens: None,
+            timeout_secs,
+        })
+    }
+}
+
+// ============================================================================
+// Exec Command Facade (BUG-114: PTY-capable unified exec)
+// ============================================================================
+
+/// Codex-specific facade for PTY-capable command execution.
+///
+/// Maps Codex's `exec_command` tool to the unified exec tool via `InternalExecParams::Run`.
+/// The Codex CLI defines `exec_command` with:
+/// - `cmd` (required): Shell command to execute (string)
+/// - `workdir` (optional): Working directory for execution
+/// - `shell` (optional): Shell binary to use (accepted but ignored)
+/// - `tty` (optional): Allocate PTY (default false)
+/// - `yield_time_ms` (optional): Wait time before yielding
+/// - `max_output_tokens` (optional): Max output tokens
+/// - `login` (optional): Login shell semantics (accepted but ignored)
+///
+/// The `shell` and `login` params are accepted in the schema for model compatibility
+/// but silently ignored.
+///
+/// Feature: spec/features/codex-shell-exec-facades.feature
+pub struct CodexExecCommandFacade;
+
+impl ExecToolFacade for CodexExecCommandFacade {
+    fn provider(&self) -> &'static str {
+        "codex"
+    }
+
+    fn tool_name(&self) -> &'static str {
+        "exec_command"
+    }
+
+    fn definition(&self) -> ToolDefinition {
+        ToolDefinition {
+            name: "exec_command".to_string(),
+            description: "Execute a shell command with optional PTY allocation. Returns session_id when the process is still running for follow-up via write_stdin.".to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {
+                    "cmd": {
+                        "type": "string",
+                        "description": "Shell command to execute"
+                    },
+                    "workdir": {
+                        "type": "string",
+                        "description": "The working directory to execute the command in"
+                    },
+                    "shell": {
+                        "type": "string",
+                        "description": "Shell binary to use"
+                    },
+                    "tty": {
+                        "type": "boolean",
+                        "description": "Allocate PTY. Defaults to false."
+                    },
+                    "yield_time_ms": {
+                        "type": "number",
+                        "description": "Wait time in milliseconds before yielding control back"
+                    },
+                    "max_output_tokens": {
+                        "type": "number",
+                        "description": "Maximum number of output tokens"
+                    },
+                    "login": {
+                        "type": "boolean",
+                        "description": "Whether to run with login shell semantics"
+                    }
+                },
+                "required": ["cmd"],
+                "additionalProperties": false
+            }),
+        }
+    }
+
+    fn map_params(&self, input: Value) -> Result<InternalExecParams, ToolError> {
+        let cmd = extract_required_string(&input, "cmd", "exec_command")?;
+        let workdir = extract_optional_string(&input, "workdir");
+        let tty = extract_optional_bool(&input, "tty").unwrap_or(false);
+        let yield_time_ms = input.get("yield_time_ms").and_then(Value::as_u64);
+        let max_output_tokens = input.get("max_output_tokens").and_then(Value::as_u64);
+        // shell and login params are silently ignored
+
+        Ok(InternalExecParams::Run {
+            command: Value::String(cmd),
+            workdir,
+            tty,
+            yield_time_ms,
+            max_output_tokens,
+            timeout_secs: None,
+        })
     }
 }
 
@@ -1818,5 +2001,369 @@ mod tests {
 
         // @step And a "detail" property exists for model compatibility
         assert!(def.parameters["properties"]["detail"].is_object());
+    }
+
+    // =========================================================================
+    // BUG-114: shell facade tests (ExecToolFacade)
+    // Feature: spec/features/codex-shell-exec-facades.feature
+    // =========================================================================
+
+    /// Scenario: CodexShellFacade maps shell command array to InternalExecParams::Run
+    #[test]
+    fn test_codex_shell_facade_maps_command_array() {
+        // @step Given a CodexShellFacade instance
+        let facade = CodexShellFacade;
+
+        // @step When the Codex model calls shell with command ["ls", "-la"] and workdir "/tmp"
+        let input = json!({
+            "command": ["ls", "-la"],
+            "workdir": "/tmp"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Run with command as JSON array ["ls", "-la"]
+        // @step And tty is false
+        // @step And workdir is "/tmp"
+        assert_eq!(
+            result,
+            InternalExecParams::Run {
+                command: json!(["ls", "-la"]),
+                workdir: Some("/tmp".to_string()),
+                tty: false,
+                yield_time_ms: None,
+                max_output_tokens: None,
+                timeout_secs: None,
+            }
+        );
+
+        // @step And the facade tool name is "shell"
+        assert_eq!(facade.tool_name(), "shell");
+
+        // @step And the facade provider is "codex"
+        assert_eq!(facade.provider(), "codex");
+    }
+
+    /// Scenario: CodexShellFacade converts timeout_ms to timeout_secs
+    #[test]
+    fn test_codex_shell_facade_converts_timeout() {
+        // @step Given a CodexShellFacade instance
+        let facade = CodexShellFacade;
+
+        // @step When the Codex model calls shell with command ["git", "status"] and timeout_ms 5000
+        let input = json!({
+            "command": ["git", "status"],
+            "timeout_ms": 5000
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Run with timeout_secs 5
+        if let InternalExecParams::Run { timeout_secs, .. } = &result {
+            assert_eq!(*timeout_secs, Some(5));
+        } else {
+            panic!("Expected InternalExecParams::Run");
+        }
+    }
+
+    /// Scenario: CodexShellFacade without optional params defaults to None
+    #[test]
+    fn test_codex_shell_facade_defaults_to_none() {
+        // @step Given a CodexShellFacade instance
+        let facade = CodexShellFacade;
+
+        // @step When the Codex model calls shell with only command ["echo", "hello"]
+        let input = json!({
+            "command": ["echo", "hello"]
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Run with workdir None
+        // @step And timeout_secs is None
+        // @step And yield_time_ms is None
+        assert_eq!(
+            result,
+            InternalExecParams::Run {
+                command: json!(["echo", "hello"]),
+                workdir: None,
+                tty: false,
+                yield_time_ms: None,
+                max_output_tokens: None,
+                timeout_secs: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexShellFacade validates required command parameter
+    #[test]
+    fn test_codex_shell_facade_missing_command() {
+        // @step Given a CodexShellFacade instance
+        let facade = CodexShellFacade;
+
+        // @step When the Codex model calls shell with missing command field
+        let input = json!({});
+        let result = facade.map_params(input);
+
+        // @step Then the facade returns a validation error for tool "shell" mentioning "command"
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "shell");
+            assert!(message.contains("command"));
+        } else {
+            panic!("Expected ToolError::Validation");
+        }
+    }
+
+    /// Scenario: CodexShellFacade rejects empty command array
+    #[test]
+    fn test_codex_shell_facade_empty_command_array() {
+        let facade = CodexShellFacade;
+        let input = json!({
+            "command": []
+        });
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    /// Scenario: CodexShellFacade rejects non-array command
+    #[test]
+    fn test_codex_shell_facade_non_array_command() {
+        let facade = CodexShellFacade;
+        let input = json!({
+            "command": "ls -la"
+        });
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    /// Scenario: CodexShellFacade schema has additionalProperties false
+    #[test]
+    fn test_codex_shell_facade_schema() {
+        // @step Given a CodexShellFacade instance
+        let facade = CodexShellFacade;
+
+        // @step When the tool definition schema is inspected
+        let def = facade.definition();
+
+        // @step Then the schema has additionalProperties set to false
+        assert_eq!(def.parameters["additionalProperties"], false);
+
+        // @step And the required array contains only "command"
+        assert_eq!(def.parameters["required"], json!(["command"]));
+
+        // @step And command property type is "array" with items type "string"
+        assert_eq!(def.parameters["properties"]["command"]["type"], "array");
+        assert_eq!(
+            def.parameters["properties"]["command"]["items"]["type"],
+            "string"
+        );
+    }
+
+    // =========================================================================
+    // BUG-114: exec_command facade tests (ExecToolFacade)
+    // Feature: spec/features/codex-shell-exec-facades.feature
+    // =========================================================================
+
+    /// Scenario: CodexExecCommandFacade maps exec_command with PTY to InternalExecParams::Run
+    #[test]
+    fn test_codex_exec_command_facade_maps_pty() {
+        // @step Given a CodexExecCommandFacade instance
+        let facade = CodexExecCommandFacade;
+
+        // @step When the Codex model calls exec_command with cmd "python3" tty true and yield_time_ms 5000
+        let input = json!({
+            "cmd": "python3",
+            "tty": true,
+            "yield_time_ms": 5000
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Run with command as string "python3"
+        // @step And tty is true
+        // @step And yield_time_ms is 5000
+        assert_eq!(
+            result,
+            InternalExecParams::Run {
+                command: Value::String("python3".to_string()),
+                workdir: None,
+                tty: true,
+                yield_time_ms: Some(5000),
+                max_output_tokens: None,
+                timeout_secs: None,
+            }
+        );
+
+        // @step And the facade tool name is "exec_command"
+        assert_eq!(facade.tool_name(), "exec_command");
+
+        // @step And the facade provider is "codex"
+        assert_eq!(facade.provider(), "codex");
+    }
+
+    /// Scenario: CodexExecCommandFacade defaults to tty false when not specified
+    #[test]
+    fn test_codex_exec_command_facade_defaults_tty_false() {
+        // @step Given a CodexExecCommandFacade instance
+        let facade = CodexExecCommandFacade;
+
+        // @step When the Codex model calls exec_command with only cmd "ls"
+        let input = json!({
+            "cmd": "ls"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Run with tty false
+        // @step And yield_time_ms is None
+        // @step And max_output_tokens is None
+        assert_eq!(
+            result,
+            InternalExecParams::Run {
+                command: Value::String("ls".to_string()),
+                workdir: None,
+                tty: false,
+                yield_time_ms: None,
+                max_output_tokens: None,
+                timeout_secs: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexExecCommandFacade maps all optional params
+    #[test]
+    fn test_codex_exec_command_facade_all_params() {
+        // @step Given a CodexExecCommandFacade instance
+        let facade = CodexExecCommandFacade;
+
+        // @step When the Codex model calls exec_command with cmd "python3" workdir "/app" tty true yield_time_ms 10000 and max_output_tokens 4096
+        let input = json!({
+            "cmd": "python3",
+            "workdir": "/app",
+            "tty": true,
+            "yield_time_ms": 10000,
+            "max_output_tokens": 4096
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Run with command "python3"
+        // @step And workdir is "/app"
+        // @step And tty is true
+        // @step And yield_time_ms is 10000
+        // @step And max_output_tokens is 4096
+        assert_eq!(
+            result,
+            InternalExecParams::Run {
+                command: Value::String("python3".to_string()),
+                workdir: Some("/app".to_string()),
+                tty: true,
+                yield_time_ms: Some(10000),
+                max_output_tokens: Some(4096),
+                timeout_secs: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexExecCommandFacade validates required cmd parameter
+    #[test]
+    fn test_codex_exec_command_facade_missing_cmd() {
+        // @step Given a CodexExecCommandFacade instance
+        let facade = CodexExecCommandFacade;
+
+        // @step When the Codex model calls exec_command with missing cmd field
+        let input = json!({});
+        let result = facade.map_params(input);
+
+        // @step Then the facade returns a validation error for tool "exec_command" mentioning "cmd"
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "exec_command");
+            assert!(message.contains("cmd"));
+        } else {
+            panic!("Expected ToolError::Validation");
+        }
+    }
+
+    /// Scenario: CodexExecCommandFacade silently ignores Codex-native approval params
+    #[test]
+    fn test_codex_exec_command_facade_ignores_approval_params() {
+        // @step Given a CodexExecCommandFacade instance
+        let facade = CodexExecCommandFacade;
+
+        // @step When the Codex model calls exec_command with cmd "ls" and login true and shell "/bin/bash"
+        let input = json!({
+            "cmd": "ls",
+            "login": true,
+            "shell": "/bin/bash"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Run with command "ls"
+        // @step And tty is false
+        assert_eq!(
+            result,
+            InternalExecParams::Run {
+                command: Value::String("ls".to_string()),
+                workdir: None,
+                tty: false,
+                yield_time_ms: None,
+                max_output_tokens: None,
+                timeout_secs: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexExecCommandFacade schema has additionalProperties false
+    #[test]
+    fn test_codex_exec_command_facade_schema() {
+        // @step Given a CodexExecCommandFacade instance
+        let facade = CodexExecCommandFacade;
+
+        // @step When the tool definition schema is inspected
+        let def = facade.definition();
+
+        // @step Then the schema has additionalProperties set to false
+        assert_eq!(def.parameters["additionalProperties"], false);
+
+        // @step And the required array contains only "cmd"
+        assert_eq!(def.parameters["required"], json!(["cmd"]));
+
+        // @step And the schema has properties for cmd workdir shell tty yield_time_ms max_output_tokens and login
+        assert!(def.parameters["properties"]["cmd"].is_object());
+        assert!(def.parameters["properties"]["workdir"].is_object());
+        assert!(def.parameters["properties"]["shell"].is_object());
+        assert!(def.parameters["properties"]["tty"].is_object());
+        assert!(def.parameters["properties"]["yield_time_ms"].is_object());
+        assert!(def.parameters["properties"]["max_output_tokens"].is_object());
+        assert!(def.parameters["properties"]["login"].is_object());
+    }
+
+    /// Scenario: CodexExecCommandFacade rejects empty cmd
+    #[test]
+    fn test_codex_exec_command_facade_empty_cmd() {
+        let facade = CodexExecCommandFacade;
+        let input = json!({
+            "cmd": ""
+        });
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    /// Feature: spec/features/codex-shell-exec-facades.feature
+    ///
+    /// Scenario: Both facades are registered in Codex create_rig_agent
+    #[test]
+    fn test_both_facades_tool_names_and_schemas() {
+        // @step Given a CodexShellFacade and CodexExecCommandFacade instance
+        let shell_facade = CodexShellFacade;
+        let exec_facade = CodexExecCommandFacade;
+
+        // @step When the Codex tool name list is inspected
+        let shell_def = shell_facade.definition();
+        let exec_def = exec_facade.definition();
+
+        // @step Then "shell" is present and maps command as array type
+        assert_eq!(shell_def.name, "shell");
+        assert_eq!(shell_def.parameters["properties"]["command"]["type"], "array");
+
+        // @step And "exec_command" is present and maps cmd as string type
+        assert_eq!(exec_def.name, "exec_command");
+        assert_eq!(exec_def.parameters["properties"]["cmd"]["type"], "string");
     }
 }

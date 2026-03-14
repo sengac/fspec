@@ -309,10 +309,10 @@ impl CodexProvider {
             ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
         };
         use codelet_tools::facade::{
-            BashToolFacadeWrapper, CodexGrepFilesFacade, CodexListDirFacade,
-            CodexReadFileFacade, CodexShellCommandFacade, CodexViewImageFacade,
-            FileToolFacadeWrapper, LsToolFacadeWrapper, SearchToolFacadeWrapper,
-            codex_bridge_tool, codex_fspec_tool,
+            BashToolFacadeWrapper, CodexExecCommandFacade, CodexGrepFilesFacade, CodexListDirFacade,
+            CodexReadFileFacade, CodexShellCommandFacade, CodexShellFacade, CodexViewImageFacade,
+            ExecToolFacadeWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
+            SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -343,6 +343,12 @@ impl CodexProvider {
         // Grep facade: Grep → grep_files
         let grep_files = SearchToolFacadeWrapper::new(Arc::new(CodexGrepFilesFacade), session_id);
 
+        // BUG-114: Exec facades: UnifiedExec → shell, exec_command
+        // shell: execvp-style (argv array, no shell interpretation)
+        let shell = ExecToolFacadeWrapper::new(Arc::new(CodexShellFacade), session_id);
+        // exec_command: PTY-capable with yield-and-resume
+        let exec_command = ExecToolFacadeWrapper::new(Arc::new(CodexExecCommandFacade), session_id);
+
         // Build agent with Codex-native tools using rig's builder pattern
         // TOOL-015: Uses FacadeToolWrapper for tools with Codex equivalents
         // BUG-107: glob removed — not part of native Codex CLI tool set
@@ -357,6 +363,8 @@ impl CodexProvider {
             .tool(view_image)      // Codex-native view_image (BUG-112: facade, not standalone)
             .tool(list_dir)        // Codex-native list_dir
             .tool(grep_files)      // Codex-native grep_files
+            .tool(shell)           // BUG-114: Codex-native shell (execvp argv)
+            .tool(exec_command)    // BUG-114: Codex-native exec_command (PTY)
             // @step And AstGrep, AstGrepRefactor remain as direct tool registrations
             // BUG-105: Replace WriteTool + EditTool with Codex-native apply_patch.
             // Codex models are trained to use apply_patch for all file modifications.
@@ -561,6 +569,46 @@ mod tests {
         // @step Then the agent's tool list includes a tool named "view_image"
         // BUG-112: Codex-native view_image tool for viewing local image files
         assert!(tool_names.contains(&"view_image"), "Codex agent should expose 'view_image' tool (BUG-112), but found: {tool_names:?}");
+    }
+
+    /// Feature: spec/features/codex-shell-exec-facades.feature
+    ///
+    /// Scenario: Both facades are registered in Codex create_rig_agent
+    #[tokio::test]
+    async fn create_rig_agent_exposes_shell_and_exec_command_tools() {
+        // @step Given a CodexProvider with create_rig_agent configured
+        let provider = CodexProvider::from_api_key("sk-proj-test-key-12345", "gpt-5.1-codex")
+            .expect("Provider should initialize");
+
+        // @step When the agent is built with session_id
+        let session_id = Uuid::new_v4();
+        let agent = provider.create_rig_agent(session_id, None, None);
+
+        let tool_defs = agent
+            .tool_server_handle
+            .get_tool_defs(None)
+            .await
+            .expect("Tool definitions should be available");
+
+        let tool_names: Vec<&str> = tool_defs.iter().map(|def| def.name.as_str()).collect();
+
+        // @step Then the tool list contains "shell"
+        assert!(tool_names.contains(&"shell"), "Codex agent should expose 'shell' tool (BUG-114), but found: {tool_names:?}");
+
+        // @step And the tool list contains "exec_command"
+        assert!(tool_names.contains(&"exec_command"), "Codex agent should expose 'exec_command' tool (BUG-114), but found: {tool_names:?}");
+
+        // @step And shell uses ExecToolFacadeWrapper with CodexShellFacade
+        // Verify shell tool has the correct schema (array command)
+        let shell_def = tool_defs.iter().find(|d| d.name == "shell").unwrap();
+        assert_eq!(shell_def.parameters["properties"]["command"]["type"], "array");
+        assert_eq!(shell_def.parameters["required"][0], "command");
+
+        // @step And exec_command uses ExecToolFacadeWrapper with CodexExecCommandFacade
+        // Verify exec_command tool has the correct schema (string cmd)
+        let exec_def = tool_defs.iter().find(|d| d.name == "exec_command").unwrap();
+        assert_eq!(exec_def.parameters["properties"]["cmd"]["type"], "string");
+        assert_eq!(exec_def.parameters["required"][0], "cmd");
     }
 
     #[test]

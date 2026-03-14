@@ -361,11 +361,26 @@ async fn poll_session(
                 error: None,
             })
         }
-        _ => {
-            // Still running
+        Some(None) => {
+            // Process still running
             Ok(UnifiedExecResult {
                 exit_code: None,
                 session_id: Some(session_id.to_string()),
+                output: Some(truncate_output_str(&output)),
+                wall_time_seconds: Some(wall_time),
+                sessions: None,
+                error: None,
+            })
+        }
+        None => {
+            // Session no longer in store — removed by the background reaper
+            // after detecting process exit during the yield wait. The process
+            // already exited; we just didn't observe it via try_wait because
+            // the reaper got there first. Return exit_code -1 (unknown) since
+            // we don't have the actual status.
+            Ok(UnifiedExecResult {
+                exit_code: Some(-1),
+                session_id: None,
                 output: Some(truncate_output_str(&output)),
                 wall_time_seconds: Some(wall_time),
                 sessions: None,

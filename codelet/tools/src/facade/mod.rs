@@ -70,8 +70,8 @@ pub use zai::{
     ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
 };
 pub use codex::{
-    CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
-    CodexShellCommandFacade, CodexViewImageFacade,
+    CodexExecCommandFacade, CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
+    CodexShellCommandFacade, CodexShellFacade, CodexViewImageFacade,
 };
 pub use registry::ProviderToolRegistry;
 pub use search::{GeminiGlobFacade, GeminiSearchFileContentFacade};

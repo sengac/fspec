@@ -218,3 +218,25 @@ if buf.len() > UNIFIED_EXEC_OUTPUT_MAX_BYTES {
 12. FIX-11 (Non-tty write rejection) — deferred, depends on FIX-1
 13. FIX-9 (timeout/max_output_tokens wiring) — deferred, enhancement
 14. FIX-10 (CancellationToken) — deferred, enhancement
+
+---
+
+## Post-Done Review Fixes (2026-03-14)
+
+### FIX-15: poll_session reaper race condition
+
+**Violation:** Feature scenario line 120 (Write causes process to exit)
+
+`poll_session()` lumped `Some(None)` (process alive) and `None` (session removed)
+under a single `_ =>` wildcard. When the background reaper removed a session during
+the yield wait (e.g., head -n1 exits, reaper detects at 2s mark), `try_wait` returned
+`None` (session gone) but `poll_session` reported it as "still running" with a
+`session_id` — the opposite of the truth.
+
+**Fix:** Split the `_ =>` arm into explicit `Some(None)` (still running) and `None`
+(reaped — return exit_code: -1, no session_id). The test used `cat` + Ctrl+D which
+could never work in pipe mode; changed to `head -n1` (argv form) which deterministically
+exits after one line of input.
+
+**Status:** [x] Fixed — `poll_session` now handles all three `try_wait` variants correctly.
+Test unconditionally asserts exit_code and absent session_id.
