@@ -620,7 +620,7 @@ mod tests {
         // @step And write_stdin uses ExecToolFacadeWrapper with CodexWriteStdinFacade (BUG-115)
         assert!(tool_names.contains(&"write_stdin"), "Codex agent should expose 'write_stdin' tool (BUG-115), but found: {tool_names:?}");
         let write_def = tool_defs.iter().find(|d| d.name == "write_stdin").unwrap();
-        assert_eq!(write_def.parameters["properties"]["session_id"]["type"], "number");
+        assert_eq!(write_def.parameters["properties"]["session_id"]["type"], "string");
         assert_eq!(write_def.parameters["required"][0], "session_id");
     }
 

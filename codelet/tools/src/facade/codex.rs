@@ -597,12 +597,12 @@ impl ExecToolFacade for CodexExecCommandFacade {
 /// Maps Codex's `write_stdin` tool to the unified exec tool via
 /// `InternalExecParams::Write` (non-empty chars) or `InternalExecParams::Poll` (empty/absent chars).
 /// The Codex CLI defines `write_stdin` with:
-/// - `session_id` (required): Numeric ID of running session from exec_command
+/// - `session_id` (required): Hex string ID of running session from exec_command
 /// - `chars` (optional): Characters to write — empty or absent means poll
 /// - `yield_time_ms` (optional): Wait time for output
 /// - `max_output_tokens` (optional): Max output tokens
 ///
-/// The facade converts session_id from Codex Number to unified exec String.
+/// The session_id is a hex UUID segment string (e.g. "05e8aa9c") returned by exec_command.
 /// Empty `chars` or missing `chars` field triggers poll action instead of write.
 ///
 /// Feature: spec/features/codex-write-stdin-facade.feature
@@ -625,8 +625,8 @@ impl ExecToolFacade for CodexWriteStdinFacade {
                 "type": "object",
                 "properties": {
                     "session_id": {
-                        "type": "number",
-                        "description": "ID of running session from exec_command"
+                        "type": "string",
+                        "description": "Session ID returned by exec_command"
                     },
                     "chars": {
                         "type": "string",
@@ -648,13 +648,21 @@ impl ExecToolFacade for CodexWriteStdinFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalExecParams, ToolError> {
-        // session_id is required and must be a number → convert to string
+        // session_id is required and must be a string (hex UUID segment from exec_command)
         let session_id_val = input.get("session_id").ok_or_else(|| ToolError::Validation {
             tool: "write_stdin",
             message: "Missing required parameter: session_id".to_string(),
         })?;
         let session_id = match session_id_val {
-            Value::Number(n) => n.to_string(),
+            Value::String(s) => {
+                if s.is_empty() {
+                    return Err(ToolError::Validation {
+                        tool: "write_stdin",
+                        message: "session_id must not be empty".to_string(),
+                    });
+                }
+                s.clone()
+            }
             Value::Null => {
                 return Err(ToolError::Validation {
                     tool: "write_stdin",
@@ -664,7 +672,7 @@ impl ExecToolFacade for CodexWriteStdinFacade {
             _ => {
                 return Err(ToolError::Validation {
                     tool: "write_stdin",
-                    message: "session_id must be a number".to_string(),
+                    message: "session_id must be a string".to_string(),
                 });
             }
         };
@@ -2626,20 +2634,20 @@ mod tests {
         // @step Given a CodexWriteStdinFacade instance
         let facade = CodexWriteStdinFacade;
 
-        // @step When the Codex model calls write_stdin with session_id 4237 and chars "print(42)\n"
+        // @step When the Codex model calls write_stdin with session_id "a1b2c3d4" and chars "print(42)\n"
         let input = json!({
-            "session_id": 4237,
+            "session_id": "a1b2c3d4",
             "chars": "print(42)\n"
         });
         let result = facade.map_params(input).unwrap();
 
-        // @step Then the facade maps to InternalExecParams::Write with session_id "4237" and input "print(42)\n"
+        // @step Then the facade maps to InternalExecParams::Write with session_id "a1b2c3d4" and input "print(42)\n"
         // @step And yield_time_ms is None
         // @step And max_output_tokens is None
         assert_eq!(
             result,
             InternalExecParams::Write {
-                session_id: "4237".to_string(),
+                session_id: "a1b2c3d4".to_string(),
                 input: "print(42)\n".to_string(),
                 yield_time_ms: None,
                 max_output_tokens: None,
@@ -2653,22 +2661,22 @@ mod tests {
         // @step Given a CodexWriteStdinFacade instance
         let facade = CodexWriteStdinFacade;
 
-        // @step When the Codex model calls write_stdin with session_id 4237 chars "exit()\n" yield_time_ms 5000 and max_output_tokens 1024
+        // @step When the Codex model calls write_stdin with session_id "a1b2c3d4" chars "exit()\n" yield_time_ms 5000 and max_output_tokens 1024
         let input = json!({
-            "session_id": 4237,
+            "session_id": "a1b2c3d4",
             "chars": "exit()\n",
             "yield_time_ms": 5000,
             "max_output_tokens": 1024
         });
         let result = facade.map_params(input).unwrap();
 
-        // @step Then the facade maps to InternalExecParams::Write with session_id "4237" and input "exit()\n"
+        // @step Then the facade maps to InternalExecParams::Write with session_id "a1b2c3d4" and input "exit()\n"
         // @step And yield_time_ms is 5000
         // @step And max_output_tokens is 1024
         assert_eq!(
             result,
             InternalExecParams::Write {
-                session_id: "4237".to_string(),
+                session_id: "a1b2c3d4".to_string(),
                 input: "exit()\n".to_string(),
                 yield_time_ms: Some(5000),
                 max_output_tokens: Some(1024),
@@ -2682,20 +2690,20 @@ mod tests {
         // @step Given a CodexWriteStdinFacade instance
         let facade = CodexWriteStdinFacade;
 
-        // @step When the Codex model calls write_stdin with session_id 4237 and chars ""
+        // @step When the Codex model calls write_stdin with session_id "a1b2c3d4" and chars ""
         let input = json!({
-            "session_id": 4237,
+            "session_id": "a1b2c3d4",
             "chars": ""
         });
         let result = facade.map_params(input).unwrap();
 
-        // @step Then the facade maps to InternalExecParams::Poll with session_id "4237"
+        // @step Then the facade maps to InternalExecParams::Poll with session_id "a1b2c3d4"
         // @step And yield_time_ms is None
         // @step And max_output_tokens is None
         assert_eq!(
             result,
             InternalExecParams::Poll {
-                session_id: "4237".to_string(),
+                session_id: "a1b2c3d4".to_string(),
                 yield_time_ms: None,
                 max_output_tokens: None,
             }
@@ -2708,46 +2716,69 @@ mod tests {
         // @step Given a CodexWriteStdinFacade instance
         let facade = CodexWriteStdinFacade;
 
-        // @step When the Codex model calls write_stdin with session_id 4237 and no chars field
+        // @step When the Codex model calls write_stdin with session_id "a1b2c3d4" and no chars field
         let input = json!({
-            "session_id": 4237
+            "session_id": "a1b2c3d4"
         });
         let result = facade.map_params(input).unwrap();
 
-        // @step Then the facade maps to InternalExecParams::Poll with session_id "4237"
+        // @step Then the facade maps to InternalExecParams::Poll with session_id "a1b2c3d4"
         assert_eq!(
             result,
             InternalExecParams::Poll {
-                session_id: "4237".to_string(),
+                session_id: "a1b2c3d4".to_string(),
                 yield_time_ms: None,
                 max_output_tokens: None,
             }
         );
     }
 
-    /// Scenario: CodexWriteStdinFacade converts numeric session_id to string
+    /// Scenario: CodexWriteStdinFacade accepts string session_id directly
     #[test]
-    fn test_codex_write_stdin_converts_numeric_session_id() {
+    fn test_codex_write_stdin_accepts_string_session_id() {
         // @step Given a CodexWriteStdinFacade instance
         let facade = CodexWriteStdinFacade;
 
-        // @step When the Codex model calls write_stdin with session_id 99 and chars "hello"
+        // @step When the Codex model calls write_stdin with session_id "05e8aa9c" and chars "hello"
         let input = json!({
-            "session_id": 99,
+            "session_id": "05e8aa9c",
             "chars": "hello"
         });
         let result = facade.map_params(input).unwrap();
 
-        // @step Then the facade maps to InternalExecParams::Write with session_id "99" and input "hello"
+        // @step Then the facade maps to InternalExecParams::Write with session_id "05e8aa9c" and input "hello"
         assert_eq!(
             result,
             InternalExecParams::Write {
-                session_id: "99".to_string(),
+                session_id: "05e8aa9c".to_string(),
                 input: "hello".to_string(),
                 yield_time_ms: None,
                 max_output_tokens: None,
             }
         );
+    }
+
+    /// Scenario: CodexWriteStdinFacade rejects numeric session_id
+    #[test]
+    fn test_codex_write_stdin_rejects_numeric_session_id() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin with session_id 99 (number)
+        let input = json!({
+            "session_id": 99,
+            "chars": "hello"
+        });
+        let result = facade.map_params(input);
+
+        // @step Then the facade returns a validation error mentioning "session_id must be a string"
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "write_stdin");
+            assert!(message.contains("session_id must be a string"));
+        } else {
+            panic!("Expected ToolError::Validation");
+        }
     }
 
     /// Scenario: CodexWriteStdinFacade validates required session_id parameter
