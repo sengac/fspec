@@ -784,6 +784,63 @@ pub struct FspecResult {
     pub tool_call_id: String,
 }
 
+/// BUG-117: HITL request state — questions to present to the user
+/// Returned by session_get_hitl_request NAPI getter for TypeScript to poll
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct NapiHitlRequestState {
+    /// Questions to present to the user (1-3 items)
+    pub questions: Vec<HitlQuestionInfo>,
+}
+
+/// BUG-117: A single HITL question
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct HitlQuestionInfo {
+    /// Stable snake_case identifier for mapping answers
+    pub id: String,
+    /// Short UI label (≤12 chars)
+    pub header: String,
+    /// Single-sentence prompt shown to user
+    pub question: String,
+    /// Optional mutually exclusive choices (2-3 items)
+    pub options: Option<Vec<HitlOptionInfo>>,
+}
+
+/// BUG-117: An option for a HITL question
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct HitlOptionInfo {
+    /// User-facing label (1-5 words)
+    pub label: String,
+    /// One sentence explaining impact
+    pub description: String,
+}
+
+/// BUG-117: HITL response from TypeScript after user answers questions
+/// Sent via session_send_hitl_response NAPI function
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct HitlResponseInfo {
+    /// Whether the user cancelled the modal
+    pub cancelled: bool,
+    /// Answers keyed by question id (None when cancelled)
+    pub answers: Option<Vec<HitlAnswerEntry>>,
+}
+
+/// BUG-117: A single answer entry (id + answer data)
+/// Using a Vec of entries instead of HashMap because NAPI doesn't support HashMap directly
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct HitlAnswerEntry {
+    /// Question id this answer corresponds to
+    pub id: String,
+    /// Labels of selected options
+    pub selected: Vec<String>,
+    /// Optional freeform text
+    pub other: Option<String>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

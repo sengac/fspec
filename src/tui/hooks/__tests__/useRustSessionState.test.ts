@@ -76,6 +76,10 @@ function createMockStateSource(initialState: MockState): {
     setBaseThinkingLevel: (_sessionId: string, level: number) => {
       state.baseThinkingLevel = level;
     },
+    // PERF-002: Compaction progress
+    getCompactionProgress: () => null,
+    // BUG-118: HITL request
+    getHitlRequest: () => null,
   };
 
   return {

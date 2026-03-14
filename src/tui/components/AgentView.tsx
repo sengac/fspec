@@ -193,6 +193,7 @@ import {
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
+import { useHitlInput } from '../hooks/useHitlInput';
 import {
   createSession,
   createIsolatedSession,
@@ -1360,9 +1361,19 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const displayIsDebugEnabled = rustSnapshot.isDebugEnabled || isDebugEnabled;
   const displayIsPaused = rustSnapshot.isPaused;
   const displayPauseInfo = rustSnapshot.pauseInfo;
+  const displayHitlRequest = rustSnapshot.hitlRequest;
 
   // Triple pause selection state: 0 = Allow Once, 1 = Allow Session, 2 = Deny
   const [triplePauseSelection, setTriplePauseSelection] = useState(0);
+
+  // BUG-118: HITL input state — extracted to composable hook
+  const hitlInput = useHitlInput({
+    sessionId: currentSessionId,
+    isPaused: displayIsPaused,
+    hitlRequest: displayHitlRequest,
+    inputValue,
+    clearInputValue: () => setInputValue(''),
+  });
 
   // Reset triple pause selection when pause ends or changes to non-triple
   useEffect(() => {
@@ -6345,6 +6356,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
             isPaused={displayIsPaused}
             pauseInfo={displayPauseInfo}
             triplePauseSelection={triplePauseSelection}
+            hitlRequest={displayHitlRequest}
+            hitlQuestionIndex={hitlInput.state.questionIndex}
+            hitlSelectedOption={hitlInput.state.selectedOption}
+            hitlFreeformActive={hitlInput.isCurrentQuestionFreeform}
             isCompacting={compaction.state.isActive}
             compactionProgress={compaction.state.progress}
             actionPrompt={actionPrompt}

@@ -30,7 +30,7 @@ mod fixtures;
 use codelet_providers::claude_auth::{read_claude_auth, write_claude_auth, ClaudeAuthJson};
 use codelet_providers::claude_oauth::{
     build_authorize_url, calculate_expiry, exchange_authorization_code,
-    parse_authorization_code, refresh_access_token_at, CLAUDE_TOKEN_ENDPOINT,
+    parse_authorization_code, refresh_access_token_at,
 };
 use codelet_providers::claude_oauth_server::{
     claude_browser_oauth_login_inner, ClaudeOAuthServerConfig,

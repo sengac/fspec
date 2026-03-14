@@ -898,6 +898,50 @@ export declare function globSearch(
 ): Promise<GlobResult>;
 
 /**
+ * BUG-117: A single answer entry (id + answer data)
+ * Using a Vec of entries instead of HashMap because NAPI doesn't support HashMap directly
+ */
+export interface HitlAnswerEntry {
+  /** Question id this answer corresponds to */
+  id: string;
+  /** Labels of selected options */
+  selected: Array<string>;
+  /** Optional freeform text */
+  other?: string;
+}
+
+/** BUG-117: An option for a HITL question */
+export interface HitlOptionInfo {
+  /** User-facing label (1-5 words) */
+  label: string;
+  /** One sentence explaining impact */
+  description: string;
+}
+
+/** BUG-117: A single HITL question */
+export interface HitlQuestionInfo {
+  /** Stable snake_case identifier for mapping answers */
+  id: string;
+  /** Short UI label (≤12 chars) */
+  header: string;
+  /** Single-sentence prompt shown to user */
+  question: string;
+  /** Optional mutually exclusive choices (2-3 items) */
+  options?: Array<HitlOptionInfo>;
+}
+
+/**
+ * BUG-117: HITL response from TypeScript after user answers questions
+ * Sent via session_send_hitl_response NAPI function
+ */
+export interface HitlResponseInfo {
+  /** Whether the user cancelled the modal */
+  cancelled: boolean;
+  /** Answers keyed by question id (None when cancelled) */
+  answers?: Array<HitlAnswerEntry>;
+}
+
+/**
  * Inspect session diff before merging
  *
  * Returns diff information without modifying the worktree or any session state.
@@ -1269,6 +1313,15 @@ export interface NapiHistoryEntry {
   project: string;
   sessionId: string;
   hasPastedContent: boolean;
+}
+
+/**
+ * BUG-117: HITL request state — questions to present to the user
+ * Returned by session_get_hitl_request NAPI getter for TypeScript to poll
+ */
+export interface NapiHitlRequestState {
+  /** Questions to present to the user (1-3 items) */
+  questions: Array<HitlQuestionInfo>;
 }
 
 export interface NapiMergeRecord {
@@ -1880,6 +1933,16 @@ export declare function sessionGetEffectiveCwd(
 export declare function sessionGetFirst(): string | null;
 
 /**
+ * Get HITL request state for a session (BUG-117)
+ *
+ * Returns the current HITL questions if the session is paused waiting for user input.
+ * TypeScript polls this to render the HITL question UI inline (like pause state).
+ */
+export declare function sessionGetHitlRequest(
+  sessionId: string
+): NapiHitlRequestState | null;
+
+/**
  * Get the INTERNAL provider state from the provider_manager
  * This reads the actual provider that will be used for API calls, not just metadata.
  * BUG-097: Used to verify that sessionSetModelProfile actually updates the provider_manager.
@@ -2194,6 +2257,27 @@ export interface SessionRoleInfo {
 export declare function sessionSendFspecResult(
   sessionId: string,
   result: FspecResult
+): void;
+
+/**
+ * Send HITL response back to Rust (BUG-117)
+ *
+ * Called by TypeScript after the user answers questions in the HITL modal.
+ * The response is sent back to unblock the handler that's waiting for it.
+ *
+ * TypeScript usage:
+ * ```typescript
+ * sessionSendHitlResponse(sessionId, {
+ *   cancelled: false,
+ *   answers: [
+ *     { id: 'approach', selected: ['Option A'], other: 'Additional notes' },
+ *   ],
+ * });
+ * ```
+ */
+export declare function sessionSendHitlResponse(
+  sessionId: string,
+  response: HitlResponseInfo
 ): void;
 
 /** Send input to a session with optional thinking config */

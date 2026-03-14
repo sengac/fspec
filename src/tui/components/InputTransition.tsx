@@ -17,12 +17,13 @@
  */
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Text } from 'ink';
+import { Text, Box } from 'ink';
 import { useThinkingText, ThinkingIndicator } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
 import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants';
 import type { PauseInfo } from '../types/pause';
 import type { ActionPrompt } from '../types/actionPrompt';
+import type { HitlRequestInfo } from '../types/hitlRequest';
 import { type CompactionProgress } from '../hooks/useRustSessionState';
 import { useInputCompat, InputPriority } from '../input/index';
 import { logger } from '../../utils/logger';
@@ -98,6 +99,30 @@ export interface InputTransitionProps extends MultiLineInputProps {
    * Bound to setActionPrompt(null) in AgentView.
    */
   clearActionPrompt?: () => void;
+
+  /**
+   * BUG-118: HITL request info for rendering inline user input questions.
+   * When set alongside isPaused, renders HITL question UI instead of pause UI.
+   */
+  hitlRequest?: HitlRequestInfo | null;
+
+  /**
+   * BUG-118: Current question index in multi-step HITL (0-based).
+   */
+  hitlQuestionIndex?: number;
+
+  /**
+   * BUG-118: Currently selected option index for HITL questions with options.
+   * -1 means no option selected (freeform input mode).
+   */
+  hitlSelectedOption?: number;
+
+  /**
+   * BUG-118: Whether the current HITL question is freeform (no options).
+   * When true, shows the MultiLineInput below the question header
+   * so the user can type a text response.
+   */
+  hitlFreeformActive?: boolean;
 }
 
 /**
@@ -136,6 +161,10 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   triplePauseSelection = 0,
   actionPrompt,
   clearActionPrompt,
+  hitlRequest,
+  hitlQuestionIndex = 0,
+  hitlSelectedOption = 0,
+  hitlFreeformActive = false,
 }) => {
   // All useState hooks grouped together
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>(
@@ -340,7 +369,74 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     return () => clearTimeout(timer);
   }, [animationPhase, visibleChars, placeholder.length]);
 
-  // Show pause indicator when paused
+  // BUG-118: Show HITL question UI when paused with hitl_request
+  // HITL takes priority over pauseInfo — a stale pauseInfo from a previous
+  // tool pause must not shadow an active HITL prompt that the user needs to answer.
+  if (isPaused && hitlRequest && hitlRequest.questions.length > 0) {
+    const totalQuestions = hitlRequest.questions.length;
+    const currentQuestion = hitlRequest.questions[hitlQuestionIndex] ?? hitlRequest.questions[0];
+    const hasOptions = currentQuestion.options && currentQuestion.options.length > 0;
+
+    // Freeform question: show header + MultiLineInput for text capture
+    if (!hasOptions && hitlFreeformActive) {
+      return (
+        <Box flexDirection="column">
+          <Text>
+            <Text color="magenta">⏸ </Text>
+            {totalQuestions > 1 && (
+              <Text color="magenta">[{hitlQuestionIndex + 1}/{totalQuestions}] </Text>
+            )}
+            <Text bold>{currentQuestion.header}</Text>
+            <Text>: </Text>
+            <Text>{currentQuestion.question}</Text>
+            <Text dimColor> (Enter Submit | Esc Cancel)</Text>
+          </Text>
+          <MultiLineInput
+            value={value}
+            onChange={onChange}
+            onSubmit={onSubmit}
+            placeholder="Type your answer..."
+            isActive={isActive}
+            maxVisibleLines={maxVisibleLines}
+            suppressEnter={suppressEnter}
+          />
+        </Box>
+      );
+    }
+
+    // Options question: show options list with selection indicators
+    return (
+      <Text>
+        <Text color="magenta">⏸ </Text>
+        {totalQuestions > 1 && (
+          <Text color="magenta">[{hitlQuestionIndex + 1}/{totalQuestions}] </Text>
+        )}
+        <Text bold>{currentQuestion.header}</Text>
+        <Text>: </Text>
+        <Text>{currentQuestion.question}</Text>
+        {hasOptions && currentQuestion.options && (
+          <Text>
+            {'\n'}
+            {currentQuestion.options.map((opt, idx) => (
+              <Text key={opt.label}>
+                <Text color={hitlSelectedOption === idx ? 'green' : 'white'}>
+                  {hitlSelectedOption === idx ? ' ● ' : ' ○ '}
+                  {opt.label}
+                </Text>
+                <Text dimColor> — {opt.description}</Text>
+                {'\n'}
+              </Text>
+            ))}
+          </Text>
+        )}
+        <Text dimColor>
+          {' (↑/↓ Navigate | Enter Select | Esc Cancel)'}
+        </Text>
+      </Text>
+    );
+  }
+
+  // Show pause indicator when paused (only if no HITL request is active)
   if (isPaused && pauseInfo) {
     if (pauseInfo.kind === 'confirm') {
       // Confirm pause: show warning with Y/N options

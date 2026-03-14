@@ -18,11 +18,16 @@ import {
   sessionGetBaseThinkingLevel,
   sessionSetBaseThinkingLevel,
   sessionGetCompactionProgress,
+  sessionGetHitlRequest,
   type SessionModel,
   type SessionTokens,
   type CompactionProgress,
 } from '@sengac/codelet-napi';
 import { type PauseInfo, parsePauseInfo } from '../types/pause';
+import {
+  type HitlRequestInfo,
+  parseHitlRequestInfo,
+} from '../types/hitlRequest';
 
 // Re-export types for convenience
 export type { SessionModel, SessionTokens, CompactionProgress };
@@ -51,6 +56,8 @@ export interface RustStateSource {
   setBaseThinkingLevel(sessionId: string, level: number): void;
   /** PERF-002: Get compaction progress when session is compacting */
   getCompactionProgress(sessionId: string): CompactionProgress | null;
+  /** BUG-118: Get HITL request when session is paused for user input */
+  getHitlRequest(sessionId: string): HitlRequestInfo | null;
 }
 
 /**
@@ -121,6 +128,16 @@ export const defaultRustStateSource: RustStateSource = {
   getCompactionProgress(sessionId: string): CompactionProgress | null {
     try {
       return sessionGetCompactionProgress(sessionId);
+    } catch {
+      return null;
+    }
+  },
+
+  /** BUG-118: Get HITL request when session is paused for user input */
+  getHitlRequest(sessionId: string): HitlRequestInfo | null {
+    try {
+      const state = sessionGetHitlRequest(sessionId);
+      return parseHitlRequestInfo(state);
     } catch {
       return null;
     }

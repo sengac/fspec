@@ -19,6 +19,10 @@ import { useSyncExternalStore, useCallback } from 'react';
 import type { SessionModel, SessionTokens } from '@sengac/codelet-napi';
 import { type PauseInfo, pauseInfoEqual } from '../types/pause';
 import {
+  type HitlRequestInfo,
+  hitlRequestInfoEqual,
+} from '../types/hitlRequest';
+import {
   getOrCreateSubscription,
   invalidateCache,
   refreshSessionState,
@@ -56,6 +60,8 @@ export interface RustSessionSnapshot {
   isPaused: boolean;
   /** PAUSE-001: Pause details when session is paused, null otherwise */
   pauseInfo: PauseInfo | null;
+  /** BUG-118: HITL request info when session is paused for user input */
+  hitlRequest: HitlRequestInfo | null;
   /** PERF-002: True when session status is "compacting" */
   isCompacting: boolean;
   /** PERF-002: Compaction progress when session is compacting, null otherwise */
@@ -77,6 +83,7 @@ const EMPTY_SNAPSHOT: RustSessionSnapshot = Object.freeze({
   isLoading: false,
   isPaused: false,
   pauseInfo: null,
+  hitlRequest: null,
   isCompacting: false,
   compactionProgress: null,
   model: null,
@@ -128,6 +135,7 @@ function snapshotsAreEqual(
     a.isCompacting === b.isCompacting &&
     a.baseThinkingLevel === b.baseThinkingLevel && // TUI-054
     pauseInfoEqual(a.pauseInfo, b.pauseInfo) &&
+    hitlRequestInfoEqual(a.hitlRequest, b.hitlRequest) && // BUG-118
     compactionProgressEqual(a.compactionProgress, b.compactionProgress) &&
     tokensEqual(a.tokens, b.tokens) &&
     modelEqual(a.model, b.model)
@@ -147,6 +155,7 @@ function fetchFreshSnapshot(
   const isLoading = status === 'running';
   const isPaused = status === 'paused';
   const pauseInfo = isPaused ? source.getPauseState(sessionId) : null;
+  const hitlRequest = isPaused ? source.getHitlRequest(sessionId) : null;
   const isCompacting = status === 'compacting';
   const compactionProgress = isCompacting
     ? source.getCompactionProgress(sessionId)
@@ -158,6 +167,7 @@ function fetchFreshSnapshot(
     isLoading,
     isPaused,
     pauseInfo,
+    hitlRequest,
     isCompacting,
     compactionProgress,
     model,

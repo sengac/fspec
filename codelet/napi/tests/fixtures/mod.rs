@@ -8,6 +8,10 @@
 //!
 //! These mirror the fixtures from codelet-providers/tests/fixtures/mod.rs
 //! because test modules can't import across crate boundaries.
+//!
+//! Items here are used across multiple integration test crates. Each test binary
+//! only uses a subset, so we suppress dead_code warnings at the module level.
+#![allow(dead_code)]
 
 use base64::Engine;
 

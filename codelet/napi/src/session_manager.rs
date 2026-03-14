@@ -973,6 +973,14 @@ pub struct BackgroundSession {
     fspec_response_tx: std::sync::mpsc::Sender<crate::types::FspecResult>,
     fspec_response_rx: std::sync::Mutex<std::sync::mpsc::Receiver<crate::types::FspecResult>>,
 
+    /// BUG-117: Channel to send HITL response from TypeScript back to the blocking handler
+    hitl_response_tx: std::sync::mpsc::Sender<codelet_tools::request_user_input::HitlResponse>,
+    hitl_response_rx: std::sync::Mutex<std::sync::mpsc::Receiver<codelet_tools::request_user_input::HitlResponse>>,
+
+    /// BUG-117: HITL request state — stores questions while waiting for user response
+    /// TypeScript polls this via session_get_hitl_request NAPI getter (like pause_state)
+    hitl_request: RwLock<Option<codelet_tools::request_user_input::HitlRequest>>,
+
     /// TUI-054: Base thinking level for session (0=Off, 1=Low, 2=Medium, 3=High)
     /// This is the level set via /thinking command, persists for the session.
     /// Effective level = max(base_thinking_level, detected_level_from_text)
@@ -1034,6 +1042,9 @@ impl BackgroundSession {
         // CODE-009: Create fspec response channel (std::sync for blocking receive)
         let (fspec_response_tx, fspec_response_rx) = std::sync::mpsc::channel::<crate::types::FspecResult>();
 
+        // BUG-117: Create HITL response channel (std::sync for blocking receive)
+        let (hitl_response_tx, hitl_response_rx) = std::sync::mpsc::channel::<codelet_tools::request_user_input::HitlResponse>();
+
         Self {
             id,
             name: RwLock::new(name),
@@ -1062,6 +1073,9 @@ impl BackgroundSession {
             pause_response_rx: std::sync::Mutex::new(pause_response_rx),
             fspec_response_tx,
             fspec_response_rx: std::sync::Mutex::new(fspec_response_rx),
+            hitl_response_tx,
+            hitl_response_rx: std::sync::Mutex::new(hitl_response_rx),
+            hitl_request: RwLock::new(None),
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
             compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
             work_unit_context: RwLock::new(None), // TUI-059: No work unit context initially
@@ -1442,6 +1456,49 @@ impl BackgroundSession {
         if let Err(e) = self.fspec_response_tx.send(result) {
             tracing::error!("[FSPEC_SESSION] Failed to send fspec result: {:?}", e);
         }
+    }
+
+    // =========================================================================
+    // BUG-117: HITL response methods
+    // =========================================================================
+
+    /// Wait for HITL response (BUG-117) - BLOCKS until TypeScript sends user's answers
+    ///
+    /// Called by the HITL handler closure when request_user_input is invoked.
+    /// Blocks until the TUI renders the modal and the user responds.
+    pub fn wait_for_hitl_response(&self) -> codelet_tools::request_user_input::HitlResponse {
+        let rx = self.hitl_response_rx.lock().expect("hitl_response_rx lock poisoned");
+        // Block until we receive a response
+        rx.recv().unwrap_or(codelet_tools::request_user_input::HitlResponse::Cancelled {
+            cancelled: true,
+        })
+    }
+
+    /// Send HITL response (BUG-117)
+    ///
+    /// Called by NAPI function (sessionSendHitlResponse) when TypeScript
+    /// has collected the user's answers from the HITL input.
+    pub fn send_hitl_response(&self, response: codelet_tools::request_user_input::HitlResponse) {
+        if let Err(e) = self.hitl_response_tx.send(response) {
+            tracing::error!("[HITL_SESSION] Failed to send HITL response: {:?}", e);
+        }
+    }
+
+    /// Set HITL request state (BUG-117)
+    ///
+    /// Called by the HITL handler closure to store the questions for TypeScript to poll.
+    /// Pass None to clear when done.
+    pub fn set_hitl_request(&self, request: Option<codelet_tools::request_user_input::HitlRequest>) {
+        if let Ok(mut guard) = self.hitl_request.write() {
+            *guard = request;
+        }
+    }
+
+    /// Get HITL request state (BUG-117)
+    ///
+    /// Called by NAPI getter (session_get_hitl_request) for TypeScript to poll.
+    pub fn get_hitl_request(&self) -> Option<codelet_tools::request_user_input::HitlRequest> {
+        self.hitl_request.read().ok().and_then(|guard| guard.clone())
     }
 
     // =========================================================================
@@ -5375,6 +5432,28 @@ async fn agent_loop(
             // when multiple sessions run concurrently.
             codelet_tools::set_fspec_handler_for_session(session.id, Some(fspec_handler));
 
+            // BUG-117: Register HITL handler for request_user_input tool
+            // Follows the PAUSE pattern: store request state, set status Paused, block, clear on response
+            let session_for_hitl = session.clone();
+            let hitl_handler: codelet_tools::request_user_input::HitlHandler =
+                std::sync::Arc::new(move |_session_id, request: codelet_tools::request_user_input::HitlRequest| {
+                    // Store HITL request in session state for TypeScript to poll
+                    session_for_hitl.set_hitl_request(Some(request));
+
+                    // Set session status to Paused (triggers React re-render via SessionStateChange)
+                    session_for_hitl.set_status(SessionStatus::Paused);
+
+                    // Block until TypeScript sends response via session_send_hitl_response
+                    let response = session_for_hitl.wait_for_hitl_response();
+
+                    // Clear HITL request state and restore Running status
+                    session_for_hitl.set_hitl_request(None);
+                    session_for_hitl.set_status(SessionStatus::Running);
+
+                    Ok(response)
+                });
+            codelet_tools::set_hitl_handler(session.id, Some(hitl_handler));
+
             // AMGR-001: Register SessionSearch handler for this session
             // The handler accesses the persistence layer directly (MessageStore, SessionStore, BlobStore)
             let session_search_handler = crate::session_search_handler::create_handler(
@@ -5672,6 +5751,7 @@ async fn agent_loop(
             codelet_tools::set_session_search_handler(session.id, None);
             codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
+            codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
             codelet_tools::set_bridge_handler(None);
             codelet_tools::remove_bridge_session_context(session.id);
 
@@ -6453,6 +6533,28 @@ pub fn session_get_pause_state(session_id: String) -> Result<Option<NapiPauseSta
     Ok(session.get_pause_state().map(|s| s.into()))
 }
 
+/// Get HITL request state for a session (BUG-117)
+///
+/// Returns the current HITL questions if the session is paused waiting for user input.
+/// TypeScript polls this to render the HITL question UI inline (like pause state).
+#[napi]
+pub fn session_get_hitl_request(session_id: String) -> Result<Option<crate::types::NapiHitlRequestState>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    Ok(session.get_hitl_request().map(|req| crate::types::NapiHitlRequestState {
+        questions: req.questions.iter().map(|q| crate::types::HitlQuestionInfo {
+            id: q.id.clone(),
+            header: q.header.clone(),
+            question: q.question.clone(),
+            options: q.options.as_ref().map(|opts| {
+                opts.iter().map(|o| crate::types::HitlOptionInfo {
+                    label: o.label.clone(),
+                    description: o.description.clone(),
+                }).collect()
+            }),
+        }).collect(),
+    }))
+}
+
 /// Resume a paused session (PAUSE-001)
 ///
 /// Called when user presses Enter during a Continue pause.
@@ -6518,6 +6620,49 @@ pub fn session_pause_triple(session_id: String, choice: String) -> Result<()> {
 pub fn session_send_fspec_result(session_id: String, result: crate::types::FspecResult) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     session.send_fspec_result(result);
+    Ok(())
+}
+
+// === BUG-117: HITL response NAPI function ===
+
+/// Send HITL response back to Rust (BUG-117)
+///
+/// Called by TypeScript after the user answers questions in the HITL modal.
+/// The response is sent back to unblock the handler that's waiting for it.
+///
+/// TypeScript usage:
+/// ```typescript
+/// sessionSendHitlResponse(sessionId, {
+///   cancelled: false,
+///   answers: [
+///     { id: 'approach', selected: ['Option A'], other: 'Additional notes' },
+///   ],
+/// });
+/// ```
+#[napi]
+pub fn session_send_hitl_response(session_id: String, response: crate::types::HitlResponseInfo) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+
+    // Convert NAPI HitlResponseInfo to codelet_tools HitlResponse
+    let hitl_response = if response.cancelled {
+        codelet_tools::request_user_input::HitlResponse::Cancelled { cancelled: true }
+    } else {
+        let mut answers = std::collections::HashMap::new();
+        if let Some(entries) = response.answers {
+            for entry in entries {
+                answers.insert(
+                    entry.id,
+                    codelet_tools::request_user_input::HitlAnswer {
+                        selected: entry.selected,
+                        other: entry.other,
+                    },
+                );
+            }
+        }
+        codelet_tools::request_user_input::HitlResponse::Answered { answers }
+    };
+
+    session.send_hitl_response(hitl_response);
     Ok(())
 }
 
