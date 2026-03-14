@@ -312,7 +312,7 @@ impl OpenAIProvider {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WebSearchTool, WriteTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool,
-            DeepSearchTool,
+            DeepSearchTool, RequestUserInputTool,
         };
         use rig::client::CompletionClient;
 
@@ -338,7 +338,8 @@ impl OpenAIProvider {
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(InjectSummaryTool::new(session_id))
-            .tool(DeepSearchTool::new(session_id)); // RLM-001: DeepSearch tool
+            .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(RequestUserInputTool::new(session_id)); // TOOL-017: HITL tool
 
         // Set preamble if provided
         if let Some(p) = preamble {

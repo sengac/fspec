@@ -310,9 +310,10 @@ impl CodexProvider {
         };
         use codelet_tools::facade::{
             BashToolFacadeWrapper, CodexExecCommandFacade, CodexGrepFilesFacade, CodexListDirFacade,
-            CodexReadFileFacade, CodexShellCommandFacade, CodexShellFacade, CodexViewImageFacade,
-            ExecToolFacadeWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
-            SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
+            CodexReadFileFacade, CodexRequestUserInputFacade, CodexShellCommandFacade,
+            CodexShellFacade, CodexViewImageFacade, CodexWriteStdinFacade,
+            ExecToolFacadeWrapper, FileToolFacadeWrapper, HitlToolFacadeWrapper,
+            LsToolFacadeWrapper, SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -348,6 +349,10 @@ impl CodexProvider {
         let shell = ExecToolFacadeWrapper::new(Arc::new(CodexShellFacade), session_id);
         // exec_command: PTY-capable with yield-and-resume
         let exec_command = ExecToolFacadeWrapper::new(Arc::new(CodexExecCommandFacade), session_id);
+        // BUG-115: write_stdin: send input to running PTY session or poll for output
+        let write_stdin = ExecToolFacadeWrapper::new(Arc::new(CodexWriteStdinFacade), session_id);
+        // BUG-116: request_user_input: Codex-native HITL facade
+        let request_user_input = HitlToolFacadeWrapper::new(Arc::new(CodexRequestUserInputFacade), session_id);
 
         // Build agent with Codex-native tools using rig's builder pattern
         // TOOL-015: Uses FacadeToolWrapper for tools with Codex equivalents
@@ -365,6 +370,7 @@ impl CodexProvider {
             .tool(grep_files)      // Codex-native grep_files
             .tool(shell)           // BUG-114: Codex-native shell (execvp argv)
             .tool(exec_command)    // BUG-114: Codex-native exec_command (PTY)
+            .tool(write_stdin)     // BUG-115: Codex-native write_stdin (send input to PTY session)
             // @step And AstGrep, AstGrepRefactor remain as direct tool registrations
             // BUG-105: Replace WriteTool + EditTool with Codex-native apply_patch.
             // Codex models are trained to use apply_patch for all file modifications.
@@ -379,7 +385,8 @@ impl CodexProvider {
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(InjectSummaryTool::new(session_id))
-            .tool(DeepSearchTool::new(session_id)); // RLM-001: DeepSearch tool
+            .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(request_user_input); // BUG-116: Codex-native HITL facade
 
         // The Codex backend API REQUIRES non-empty `instructions` in every
         // Responses API request.  The rig layer maps preamble → instructions,
@@ -609,6 +616,12 @@ mod tests {
         let exec_def = tool_defs.iter().find(|d| d.name == "exec_command").unwrap();
         assert_eq!(exec_def.parameters["properties"]["cmd"]["type"], "string");
         assert_eq!(exec_def.parameters["required"][0], "cmd");
+
+        // @step And write_stdin uses ExecToolFacadeWrapper with CodexWriteStdinFacade (BUG-115)
+        assert!(tool_names.contains(&"write_stdin"), "Codex agent should expose 'write_stdin' tool (BUG-115), but found: {tool_names:?}");
+        let write_def = tool_defs.iter().find(|d| d.name == "write_stdin").unwrap();
+        assert_eq!(write_def.parameters["properties"]["session_id"]["type"], "number");
+        assert_eq!(write_def.parameters["required"][0], "session_id");
     }
 
     #[test]

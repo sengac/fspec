@@ -34,6 +34,7 @@ pub mod mcp;
 pub mod page_fetcher;
 pub mod pdf;
 pub mod read;
+pub mod request_user_input;
 pub mod search_engine;
 pub mod tool_pause;
 pub mod tool_progress;
@@ -140,6 +141,11 @@ pub use deep_search::{
     DEFAULT_DEEP_SEARCH_MAX_DEPTH, SUB_AGENT_TOOL_NAMES, SUB_AGENT_TOOL_COUNT,
     build_system_prompt, sub_agent_tool_names,
     set_deep_search_handler, has_deep_search_handler, clear_all_deep_search_handlers,
+};
+pub use request_user_input::{
+    RequestUserInputTool, RequestUserInputArgs,
+    HitlHandler, HitlRequest, HitlResponse, HitlQuestion, HitlOption, HitlAnswer,
+    set_hitl_handler, has_hitl_handler, execute_hitl, clear_all_hitl_handlers,
 };
 
 /// Tool definition for API requests

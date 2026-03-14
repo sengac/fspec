@@ -200,7 +200,7 @@ impl ZAIProvider {
             SearchToolFacadeWrapper, zai_bridge_tool, zai_fspec_tool, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
             ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
         };
-        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool};
+        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool, RequestUserInputTool};
         use std::sync::Arc;
 
         // Create Z.AI/GLM-specific tool facades (PROV-004)
@@ -246,7 +246,8 @@ impl ZAIProvider {
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(InjectSummaryTool::new(session_id))
-            .tool(DeepSearchTool::new(session_id)); // RLM-001: DeepSearch tool
+            .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(RequestUserInputTool::new(session_id)); // TOOL-017: HITL tool
 
         // Set preamble if provided
         if let Some(preamble_text) = preamble {

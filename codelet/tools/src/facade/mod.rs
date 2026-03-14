@@ -71,7 +71,8 @@ pub use zai::{
 };
 pub use codex::{
     CodexExecCommandFacade, CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
-    CodexShellCommandFacade, CodexShellFacade, CodexViewImageFacade,
+    CodexRequestUserInputFacade, CodexShellCommandFacade, CodexShellFacade, CodexViewImageFacade,
+    CodexWriteStdinFacade,
 };
 pub use registry::ProviderToolRegistry;
 pub use search::{GeminiGlobFacade, GeminiSearchFileContentFacade};
@@ -102,6 +103,8 @@ pub use traits::{
     SearchToolFacade, ToolDefinition, ToolFacade,
     // TOOL-016: Unified exec facade types
     BoxedExecToolFacade, ExecToolFacade, InternalExecParams,
+    // BUG-116: HITL facade types
+    BoxedHitlToolFacade, HitlToolFacade, InternalHitlParams,
 };
 pub use web_search::{
     ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
@@ -112,6 +115,8 @@ pub use wrapper::{
     FspecToolFacadeWrapper, LsToolFacadeWrapper, SearchToolFacadeWrapper,
     // TOOL-016: Exec tool facade wrapper
     ExecToolFacadeWrapper, ExecOperationResult,
+    // BUG-116: HITL tool facade wrapper
+    HitlToolFacadeWrapper, HitlOperationResult,
     // BLOCK-006: Block notification callbacks
     emit_block_notification, set_block_notification_callback, set_get_work_unit_stage_callback,
     BlockNotificationCallback, GetWorkUnitStageCallback,

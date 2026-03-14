@@ -353,3 +353,43 @@ pub trait ExecToolFacade: Send + Sync {
 
 /// Type alias for a boxed ExecToolFacade
 pub type BoxedExecToolFacade = Arc<dyn ExecToolFacade>;
+
+// ============================================================================
+// HITL Tool Facade (BUG-116: Codex request_user_input facade)
+// ============================================================================
+
+use crate::request_user_input::HitlQuestion;
+
+/// Internal parameters for HITL (human-in-the-loop) operations.
+/// All provider-specific parameters are mapped to these internal types.
+#[derive(Debug, Clone, PartialEq)]
+pub enum InternalHitlParams {
+    /// Request user input with structured questions
+    Request {
+        /// Array of 1-3 validated questions to present to the user
+        questions: Vec<HitlQuestion>,
+    },
+}
+
+/// Provider-specific tool facade trait for HITL operations.
+///
+/// Each facade adapts the HITL tool's interface for a specific LLM provider,
+/// handling differences in tool naming, parameter schemas, and parameter formats.
+/// Used by the Codex facade (BUG-116) to map request_user_input to the
+/// provider-agnostic HITL tool (TOOL-017).
+pub trait HitlToolFacade: Send + Sync {
+    /// Returns the provider this facade is for (e.g., "codex")
+    fn provider(&self) -> &'static str;
+
+    /// Returns the tool name as the provider expects it
+    fn tool_name(&self) -> &'static str;
+
+    /// Returns the tool definition with provider-specific schema
+    fn definition(&self) -> ToolDefinition;
+
+    /// Maps provider-specific parameters to internal HITL parameters
+    fn map_params(&self, input: Value) -> Result<InternalHitlParams, ToolError>;
+}
+
+/// Type alias for a boxed HitlToolFacade
+pub type BoxedHitlToolFacade = Arc<dyn HitlToolFacade>;

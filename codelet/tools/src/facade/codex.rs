@@ -13,9 +13,9 @@
 //! Feature: spec/features/codex-native-tool-facades.feature
 
 use super::traits::{
-    BashToolFacade, ExecToolFacade, FileToolFacade, InternalBashParams, InternalExecParams,
-    InternalFileParams, InternalIndentationParams, InternalLsParams, InternalSearchParams,
-    LsToolFacade, SearchToolFacade, ToolDefinition,
+    BashToolFacade, ExecToolFacade, FileToolFacade, HitlToolFacade, InternalBashParams,
+    InternalExecParams, InternalFileParams, InternalHitlParams, InternalIndentationParams,
+    InternalLsParams, InternalSearchParams, LsToolFacade, SearchToolFacade, ToolDefinition,
 };
 use super::param_extract::{extract_optional_bool, extract_optional_string, extract_optional_uint, extract_required_string};
 use crate::ToolError;
@@ -588,6 +588,254 @@ impl ExecToolFacade for CodexExecCommandFacade {
     }
 }
 
+// ============================================================================
+// Write Stdin Facade (BUG-115: write to running PTY session)
+// ============================================================================
+
+/// Codex-specific facade for writing to running PTY sessions.
+///
+/// Maps Codex's `write_stdin` tool to the unified exec tool via
+/// `InternalExecParams::Write` (non-empty chars) or `InternalExecParams::Poll` (empty/absent chars).
+/// The Codex CLI defines `write_stdin` with:
+/// - `session_id` (required): Numeric ID of running session from exec_command
+/// - `chars` (optional): Characters to write — empty or absent means poll
+/// - `yield_time_ms` (optional): Wait time for output
+/// - `max_output_tokens` (optional): Max output tokens
+///
+/// The facade converts session_id from Codex Number to unified exec String.
+/// Empty `chars` or missing `chars` field triggers poll action instead of write.
+///
+/// Feature: spec/features/codex-write-stdin-facade.feature
+pub struct CodexWriteStdinFacade;
+
+impl ExecToolFacade for CodexWriteStdinFacade {
+    fn provider(&self) -> &'static str {
+        "codex"
+    }
+
+    fn tool_name(&self) -> &'static str {
+        "write_stdin"
+    }
+
+    fn definition(&self) -> ToolDefinition {
+        ToolDefinition {
+            name: "write_stdin".to_string(),
+            description: "Send input to a running session's stdin and poll for output. Empty or absent chars polls without sending input.".to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {
+                    "session_id": {
+                        "type": "number",
+                        "description": "ID of running session from exec_command"
+                    },
+                    "chars": {
+                        "type": "string",
+                        "description": "Characters to write to stdin. Empty or absent = poll for output only."
+                    },
+                    "yield_time_ms": {
+                        "type": "number",
+                        "description": "Wait time in milliseconds for output"
+                    },
+                    "max_output_tokens": {
+                        "type": "number",
+                        "description": "Maximum number of output tokens"
+                    }
+                },
+                "required": ["session_id"],
+                "additionalProperties": false
+            }),
+        }
+    }
+
+    fn map_params(&self, input: Value) -> Result<InternalExecParams, ToolError> {
+        // session_id is required and must be a number → convert to string
+        let session_id_val = input.get("session_id").ok_or_else(|| ToolError::Validation {
+            tool: "write_stdin",
+            message: "Missing required parameter: session_id".to_string(),
+        })?;
+        let session_id = match session_id_val {
+            Value::Number(n) => n.to_string(),
+            Value::Null => {
+                return Err(ToolError::Validation {
+                    tool: "write_stdin",
+                    message: "Missing required parameter: session_id".to_string(),
+                });
+            }
+            _ => {
+                return Err(ToolError::Validation {
+                    tool: "write_stdin",
+                    message: "session_id must be a number".to_string(),
+                });
+            }
+        };
+
+        let chars = extract_optional_string(&input, "chars").unwrap_or_default();
+        let yield_time_ms = input.get("yield_time_ms").and_then(Value::as_u64);
+        let max_output_tokens = input.get("max_output_tokens").and_then(Value::as_u64);
+
+        // Empty chars = poll, non-empty chars = write
+        if chars.is_empty() {
+            Ok(InternalExecParams::Poll {
+                session_id,
+                yield_time_ms,
+                max_output_tokens,
+            })
+        } else {
+            Ok(InternalExecParams::Write {
+                session_id,
+                input: chars,
+                yield_time_ms,
+                max_output_tokens,
+            })
+        }
+    }
+}
+
+// ============================================================================
+// Request User Input Facade (BUG-116: maps to HITL tool)
+// ============================================================================
+
+/// Codex-specific facade for requesting structured user input.
+///
+/// Maps Codex's `request_user_input` tool to the provider-agnostic HITL tool (TOOL-017).
+/// The Codex CLI defines `request_user_input` with:
+/// - `questions` (required): Array of 1-3 questions with id, header, question, options
+///
+/// The Codex schema is structurally identical to the HITL tool schema, so the
+/// questions array passes through unchanged. The facade's role is:
+/// 1. Present the tool definition with `additionalProperties: false` (Codex convention)
+/// 2. Convert cancellation from the HITL handler to a Codex-specific error message
+///
+/// Feature: spec/features/codex-request-user-input-facade.feature
+pub struct CodexRequestUserInputFacade;
+
+impl HitlToolFacade for CodexRequestUserInputFacade {
+    fn provider(&self) -> &'static str {
+        "codex"
+    }
+
+    fn tool_name(&self) -> &'static str {
+        "request_user_input"
+    }
+
+    fn definition(&self) -> ToolDefinition {
+        ToolDefinition {
+            name: "request_user_input".to_string(),
+            description: "Request structured input from the user. Presents a modal with \
+                1-3 questions, each with optional multiple-choice options and freeform text \
+                input. The agent loop pauses until the user responds. Use when you need user \
+                preferences, decisions, or clarifications that cannot be inferred from context."
+                .to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {
+                    "questions": {
+                        "type": "array",
+                        "description": "Array of 1-3 questions to present to the user.",
+                        "minItems": 1,
+                        "maxItems": 3,
+                        "items": {
+                            "type": "object",
+                            "required": ["id", "header", "question"],
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "description": "Stable snake_case identifier for mapping answers."
+                                },
+                                "header": {
+                                    "type": "string",
+                                    "description": "Short label shown in UI (max 12 chars)."
+                                },
+                                "question": {
+                                    "type": "string",
+                                    "description": "Single-sentence prompt shown to user."
+                                },
+                                "options": {
+                                    "type": "array",
+                                    "description": "Optional mutually exclusive choices (2-3 items).",
+                                    "minItems": 2,
+                                    "maxItems": 3,
+                                    "items": {
+                                        "type": "object",
+                                        "required": ["label", "description"],
+                                        "properties": {
+                                            "label": {
+                                                "type": "string",
+                                                "description": "1-5 word label."
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "description": "One sentence explaining impact."
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": ["questions"],
+                "additionalProperties": false
+            }),
+        }
+    }
+
+    fn map_params(&self, input: Value) -> Result<InternalHitlParams, ToolError> {
+        use crate::request_user_input::{HitlOption, HitlQuestion};
+
+        let questions_val = input.get("questions").ok_or_else(|| ToolError::Validation {
+            tool: "request_user_input",
+            message: "Missing required parameter: questions".to_string(),
+        })?;
+
+        let questions_arr = questions_val.as_array().ok_or_else(|| ToolError::Validation {
+            tool: "request_user_input",
+            message: "questions must be an array".to_string(),
+        })?;
+
+        let mut questions = Vec::new();
+        for q in questions_arr {
+            let id = q.get("id")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
+            let header = q.get("header")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
+            let question = q.get("question")
+                .and_then(Value::as_str)
+                .unwrap_or("")
+                .to_string();
+
+            let options = q.get("options").and_then(|opts_val| {
+                opts_val.as_array().map(|opts_arr| {
+                    opts_arr.iter().map(|o| {
+                        HitlOption {
+                            label: o.get("label")
+                                .and_then(Value::as_str)
+                                .unwrap_or("")
+                                .to_string(),
+                            description: o.get("description")
+                                .and_then(Value::as_str)
+                                .unwrap_or("")
+                                .to_string(),
+                        }
+                    }).collect::<Vec<_>>()
+                })
+            });
+
+            questions.push(HitlQuestion {
+                id,
+                header,
+                question,
+                options,
+            });
+        }
+
+        Ok(InternalHitlParams::Request { questions })
+    }
+}
 
 #[cfg(test)]
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -2365,5 +2613,367 @@ mod tests {
         // @step And "exec_command" is present and maps cmd as string type
         assert_eq!(exec_def.name, "exec_command");
         assert_eq!(exec_def.parameters["properties"]["cmd"]["type"], "string");
+    }
+
+    // =========================================================================
+    // BUG-115: write_stdin facade tests
+    // Feature: spec/features/codex-write-stdin-facade.feature
+    // =========================================================================
+
+    /// Scenario: CodexWriteStdinFacade maps non-empty chars to InternalExecParams::Write
+    #[test]
+    fn test_codex_write_stdin_maps_non_empty_chars_to_write() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin with session_id 4237 and chars "print(42)\n"
+        let input = json!({
+            "session_id": 4237,
+            "chars": "print(42)\n"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Write with session_id "4237" and input "print(42)\n"
+        // @step And yield_time_ms is None
+        // @step And max_output_tokens is None
+        assert_eq!(
+            result,
+            InternalExecParams::Write {
+                session_id: "4237".to_string(),
+                input: "print(42)\n".to_string(),
+                yield_time_ms: None,
+                max_output_tokens: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexWriteStdinFacade passes all optional params through
+    #[test]
+    fn test_codex_write_stdin_passes_optional_params() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin with session_id 4237 chars "exit()\n" yield_time_ms 5000 and max_output_tokens 1024
+        let input = json!({
+            "session_id": 4237,
+            "chars": "exit()\n",
+            "yield_time_ms": 5000,
+            "max_output_tokens": 1024
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Write with session_id "4237" and input "exit()\n"
+        // @step And yield_time_ms is 5000
+        // @step And max_output_tokens is 1024
+        assert_eq!(
+            result,
+            InternalExecParams::Write {
+                session_id: "4237".to_string(),
+                input: "exit()\n".to_string(),
+                yield_time_ms: Some(5000),
+                max_output_tokens: Some(1024),
+            }
+        );
+    }
+
+    /// Scenario: CodexWriteStdinFacade maps empty chars to InternalExecParams::Poll
+    #[test]
+    fn test_codex_write_stdin_maps_empty_chars_to_poll() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin with session_id 4237 and chars ""
+        let input = json!({
+            "session_id": 4237,
+            "chars": ""
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Poll with session_id "4237"
+        // @step And yield_time_ms is None
+        // @step And max_output_tokens is None
+        assert_eq!(
+            result,
+            InternalExecParams::Poll {
+                session_id: "4237".to_string(),
+                yield_time_ms: None,
+                max_output_tokens: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexWriteStdinFacade maps absent chars to InternalExecParams::Poll
+    #[test]
+    fn test_codex_write_stdin_maps_absent_chars_to_poll() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin with session_id 4237 and no chars field
+        let input = json!({
+            "session_id": 4237
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Poll with session_id "4237"
+        assert_eq!(
+            result,
+            InternalExecParams::Poll {
+                session_id: "4237".to_string(),
+                yield_time_ms: None,
+                max_output_tokens: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexWriteStdinFacade converts numeric session_id to string
+    #[test]
+    fn test_codex_write_stdin_converts_numeric_session_id() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin with session_id 99 and chars "hello"
+        let input = json!({
+            "session_id": 99,
+            "chars": "hello"
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalExecParams::Write with session_id "99" and input "hello"
+        assert_eq!(
+            result,
+            InternalExecParams::Write {
+                session_id: "99".to_string(),
+                input: "hello".to_string(),
+                yield_time_ms: None,
+                max_output_tokens: None,
+            }
+        );
+    }
+
+    /// Scenario: CodexWriteStdinFacade validates required session_id parameter
+    #[test]
+    fn test_codex_write_stdin_validates_required_session_id() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin without session_id
+        let input = json!({
+            "chars": "hello"
+        });
+        let result = facade.map_params(input);
+
+        // @step Then the facade returns a validation error for tool "write_stdin" mentioning "session_id"
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "write_stdin");
+            assert!(message.contains("session_id"));
+        } else {
+            panic!("Expected ToolError::Validation");
+        }
+    }
+
+    /// Scenario: CodexWriteStdinFacade rejects null session_id
+    #[test]
+    fn test_codex_write_stdin_rejects_null_session_id() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex model calls write_stdin with session_id null
+        let input = json!({
+            "session_id": null
+        });
+        let result = facade.map_params(input);
+
+        // @step Then the facade returns a validation error for tool "write_stdin" mentioning "session_id"
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "write_stdin");
+            assert!(message.contains("session_id"));
+        } else {
+            panic!("Expected ToolError::Validation");
+        }
+    }
+
+    /// Scenario: CodexWriteStdinFacade schema has additionalProperties false
+    #[test]
+    fn test_codex_write_stdin_schema() {
+        // @step Given a CodexWriteStdinFacade instance
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the tool definition schema is inspected
+        let def = facade.definition();
+
+        // @step Then the schema has additionalProperties set to false
+        assert_eq!(def.parameters["additionalProperties"], false);
+
+        // @step And the schema has "session_id" in the required array
+        assert_eq!(def.parameters["required"], json!(["session_id"]));
+
+        // @step And the tool name is "write_stdin"
+        assert_eq!(def.name, "write_stdin");
+        assert_eq!(facade.tool_name(), "write_stdin");
+
+        // @step And the provider is "codex"
+        assert_eq!(facade.provider(), "codex");
+    }
+
+    /// Scenario: write_stdin facade is registered in Codex create_rig_agent
+    #[test]
+    fn test_codex_write_stdin_facade_tool_name_and_schema() {
+        // @step Given a CodexWriteStdinFacade instance registered via ExecToolFacadeWrapper
+        let facade = CodexWriteStdinFacade;
+
+        // @step When the Codex agent tool list is inspected
+        let def = facade.definition();
+
+        // @step Then the tool list contains "write_stdin"
+        assert_eq!(def.name, "write_stdin");
+        assert!(def.parameters["properties"]["session_id"].is_object());
+        assert!(def.parameters["properties"]["chars"].is_object());
+        assert!(def.parameters["properties"]["yield_time_ms"].is_object());
+        assert!(def.parameters["properties"]["max_output_tokens"].is_object());
+    }
+
+    // =========================================================================
+    // BUG-116: request_user_input facade tests (HitlToolFacade)
+    // Feature: spec/features/codex-request-user-input-facade.feature
+    // =========================================================================
+
+    /// Scenario: CodexRequestUserInputFacade maps questions to InternalHitlParams and returns answers
+    #[test]
+    fn test_codex_request_user_input_maps_questions() {
+        // @step Given a CodexRequestUserInputFacade instance
+        let facade = CodexRequestUserInputFacade;
+
+        // @step When the Codex model calls request_user_input with 2 questions each having 2 options
+        let input = json!({
+            "questions": [
+                {
+                    "id": "approach",
+                    "header": "Approach",
+                    "question": "Which approach do you prefer?",
+                    "options": [
+                        { "label": "Option A", "description": "First choice" },
+                        { "label": "Option B", "description": "Second choice" }
+                    ]
+                },
+                {
+                    "id": "priority",
+                    "header": "Priority",
+                    "question": "What is the priority?",
+                    "options": [
+                        { "label": "High", "description": "Do it now" },
+                        { "label": "Low", "description": "Do it later" }
+                    ]
+                }
+            ]
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade passes questions to execute_hitl unchanged
+        let InternalHitlParams::Request { questions } = &result;
+        assert_eq!(questions.len(), 2);
+        assert_eq!(questions[0].id, "approach");
+        assert_eq!(questions[0].header, "Approach");
+        assert_eq!(questions[0].question, "Which approach do you prefer?");
+        assert_eq!(questions[0].options.as_ref().unwrap().len(), 2);
+        assert_eq!(questions[1].id, "priority");
+    }
+
+    /// Scenario: Facade schema has additionalProperties false
+    #[test]
+    fn test_codex_request_user_input_schema_has_additional_properties_false() {
+        // @step Given a CodexRequestUserInputFacade instance
+        let facade = CodexRequestUserInputFacade;
+
+        // @step When the tool definition schema is inspected
+        let def = facade.definition();
+
+        // @step Then the schema has additionalProperties set to false
+        assert_eq!(def.parameters["additionalProperties"], false);
+
+        // @step And the schema has "questions" in the required array
+        assert_eq!(def.parameters["required"], json!(["questions"]));
+    }
+
+    /// Scenario: CodexRequestUserInputFacade tool name and provider
+    #[test]
+    fn test_codex_request_user_input_tool_name_and_provider() {
+        // @step Given a CodexRequestUserInputFacade instance
+        let facade = CodexRequestUserInputFacade;
+
+        // @step Then the facade tool name is "request_user_input"
+        assert_eq!(facade.tool_name(), "request_user_input");
+
+        // @step And the facade provider is "codex"
+        assert_eq!(facade.provider(), "codex");
+    }
+
+    /// Scenario: Freeform-only question without options maps correctly
+    #[test]
+    fn test_codex_request_user_input_freeform_only() {
+        // @step Given a CodexRequestUserInputFacade instance
+        let facade = CodexRequestUserInputFacade;
+
+        // @step When the Codex model calls request_user_input with a question without options
+        let input = json!({
+            "questions": [
+                {
+                    "id": "feedback",
+                    "header": "Feedback",
+                    "question": "Any additional feedback?"
+                }
+            ]
+        });
+        let result = facade.map_params(input).unwrap();
+
+        // @step Then the facade maps to InternalHitlParams::Request with options None
+        let InternalHitlParams::Request { questions } = &result;
+        assert_eq!(questions.len(), 1);
+        assert_eq!(questions[0].id, "feedback");
+        assert!(questions[0].options.is_none());
+    }
+
+    /// Scenario: Validation rejects missing questions parameter
+    #[test]
+    fn test_codex_request_user_input_missing_questions() {
+        // @step Given a CodexRequestUserInputFacade instance
+        let facade = CodexRequestUserInputFacade;
+
+        // @step When the Codex model calls request_user_input without questions
+        let input = json!({});
+        let result = facade.map_params(input);
+
+        // @step Then the facade returns a validation error about missing questions
+        assert!(result.is_err());
+        if let Err(ToolError::Validation { tool, message }) = result {
+            assert_eq!(tool, "request_user_input");
+            assert!(message.contains("questions"));
+        } else {
+            panic!("Expected ToolError::Validation");
+        }
+    }
+
+    /// Scenario: Facade definition has correct name and description
+    #[test]
+    fn test_codex_request_user_input_definition() {
+        // @step Given a CodexRequestUserInputFacade instance
+        let facade = CodexRequestUserInputFacade;
+
+        // @step When the tool definition is requested
+        let def = facade.definition();
+
+        // @step Then the tool name is "request_user_input"
+        assert_eq!(def.name, "request_user_input");
+
+        // @step And the description mentions requesting structured input
+        assert!(def.description.contains("structured input"));
+
+        // @step And the questions items schema has id, header, question as required
+        let items = &def.parameters["properties"]["questions"]["items"];
+        let required = items["required"].as_array().unwrap();
+        assert!(required.iter().any(|v| v.as_str() == Some("id")));
+        assert!(required.iter().any(|v| v.as_str() == Some("header")));
+        assert!(required.iter().any(|v| v.as_str() == Some("question")));
     }
 }
