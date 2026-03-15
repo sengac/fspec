@@ -173,13 +173,15 @@ describe('Feature: Session Header Work Unit Status Display', () => {
       expect(boardViewSource).toContain('TUI-060: Work units watcher is now handled by globalStreamListener');
     });
 
-    it('should have globalStreamListener that calls updateWorkUnitsFromWatcher on file changes', async () => {
+    it('should have globalStreamListener that calls loadData on file changes', async () => {
       // @step And the watcher should call fspecStore loadData on file changes
+      // TUI-079: globalStreamListener now calls loadData() (full re-read) instead of
+      // the lossy updateWorkUnitsFromWatcher() — the watcher event is purely a signal
       const globalListenerPath = path.join(__dirname, '..', '..', 'store', 'globalStreamListener.ts');
       const globalListenerSource = fs.readFileSync(globalListenerPath, 'utf-8');
 
-      // Verify the global listener updates work units
-      expect(globalListenerSource).toContain('updateWorkUnitsFromWatcher');
+      // Verify the global listener calls loadData for full re-read
+      expect(globalListenerSource).toContain('loadData()');
       expect(globalListenerSource).toContain('startWorkUnitsWatcher');
     });
   });

@@ -1,0 +1,508 @@
+{
+  "scenarios": [
+    {
+      "name": "Work unit status change preserves correct column priority order",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "115-177",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "External priority reordering is reflected on the board",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "179-230",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Last-changed indicator updates when status changes externally",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "236-314",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attachment added externally appears in details panel",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "320-365",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleted work unit disappears from the board",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "371-416",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "globalStreamListener calls loadData on WorkUnitsUpdate event",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "422-457",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Watcher event chunk data is not used for store updates",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "463-524",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session context cleared when attached work unit is deleted externally",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "530-580",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session header status syncs from store data after watcher reload",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "586-640",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New work unit created externally appears on the board",
+      "testMappings": [
+        {
+          "file": "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts",
+          "lines": "646-695",
+          "implMappings": [
+            {
+              "file": "src/tui/store/globalStreamListener.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/store/__tests__/globalStreamListener-watcher-update.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/store/globalStreamListener.ts"
+    ],
+    "totalLinesCovered": 872
+  }
+}

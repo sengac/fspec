@@ -62,28 +62,43 @@ function handleStreamChunk(
     return;
   }
 
-  if (chunk.type === 'WorkUnitsUpdate' && chunk.workUnits) {
-    useFspecStore.getState().updateWorkUnitsFromWatcher(chunk.workUnits);
-
-    const currentWorkUnitId = useSessionStore.getState().currentWorkUnitId;
-    if (currentWorkUnitId) {
-      const updatedWorkUnit = chunk.workUnits.find(
-        wu => wu.id === currentWorkUnitId
-      );
-      if (updatedWorkUnit) {
-        const currentStatus = useSessionStore.getState().currentWorkUnitStatus;
-        if (currentStatus !== updatedWorkUnit.status) {
-          useSessionStore
-            .getState()
-            .setCurrentWorkUnit(currentWorkUnitId, updatedWorkUnit.status);
-          void updateRustContext(
-            currentWorkUnitId,
-            updatedWorkUnit.title,
-            updatedWorkUnit.status
+  if (chunk.type === 'WorkUnitsUpdate') {
+    // TUI-079: Use loadData() for full re-read instead of lossy updateWorkUnitsFromWatcher().
+    // The watcher event serves purely as a "file changed" signal — chunk.workUnits is not used.
+    void useFspecStore
+      .getState()
+      .loadData()
+      .then(() => {
+        // Sync session context from the freshly-loaded store data (not from chunk)
+        const currentWorkUnitId = useSessionStore.getState().currentWorkUnitId;
+        if (currentWorkUnitId) {
+          const storeWorkUnits = useFspecStore.getState().workUnits;
+          const updatedWorkUnit = storeWorkUnits.find(
+            wu => wu.id === currentWorkUnitId
           );
+          if (updatedWorkUnit) {
+            // Work unit still exists — sync status if changed
+            const currentStatus =
+              useSessionStore.getState().currentWorkUnitStatus;
+            if (currentStatus !== updatedWorkUnit.status) {
+              useSessionStore
+                .getState()
+                .setCurrentWorkUnit(currentWorkUnitId, updatedWorkUnit.status);
+              void updateRustContext(
+                currentWorkUnitId,
+                updatedWorkUnit.title,
+                updatedWorkUnit.status
+              );
+            }
+          } else {
+            // TUI-079 Gap 8: Work unit was deleted — clear session context
+            useSessionStore.getState().setCurrentWorkUnit(null, null);
+            // Also clear Rust-side context to prevent stale reattachment
+            // via syncWorkUnitContextToStore()
+            void clearRustContext();
+          }
         }
-      }
-    }
+      });
   }
 }
 
@@ -162,5 +177,21 @@ async function updateRustContext(
     }
   } catch (e) {
     logger.debug(`[GlobalStreamListener] Error updating Rust context: ${e}`);
+  }
+}
+
+async function clearRustContext(): Promise<void> {
+  try {
+    const napi = await getNapiModule();
+    const activeSessionId = napi.sessionGetActive();
+
+    if (activeSessionId) {
+      const { sessionSetWorkUnitContext } = await import(
+        '@sengac/codelet-napi'
+      );
+      sessionSetWorkUnitContext(activeSessionId, null, null, null);
+    }
+  } catch (e) {
+    logger.debug(`[GlobalStreamListener] Error clearing Rust context: ${e}`);
   }
 }

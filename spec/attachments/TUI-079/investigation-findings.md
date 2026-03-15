@@ -111,3 +111,23 @@ This fixes all 6 gaps in one change:
 - ✅ No Rust-side changes needed
 
 The `updateWorkUnitsFromWatcher()` function and the partial data from the Rust watcher become unnecessary — the watcher event serves purely as a "file changed" signal.
+
+## Additional Findings (Post-Investigation)
+
+### Gap 7: `fspecStore.WorkUnit` interface missing `attachments` field
+
+The `fspecStore.ts` `WorkUnit` interface (lines 37-46) does not declare an `attachments` field, yet `UnifiedBoardLayout.tsx` and `BoardView.tsx` both access `workUnit.attachments`. This works at runtime because `loadData()` pushes the raw JSON object which carries extra fields. However, `updateWorkUnitsFromWatcher()` builds objects with only the declared fields, so new work units created externally have `attachments` as `undefined`. The recommended fix (switching to `loadData()`) resolves this since the full JSON object is used.
+
+### Gap 8: Session context not cleared when current work unit is deleted externally
+
+In `globalStreamListener.ts` lines 68-86, after the watcher update, the code checks `chunk.workUnits` for the current work unit to sync session status. If the current work unit is **deleted** externally:
+
+- `chunk.workUnits.find(wu => wu.id === currentWorkUnitId)` returns `undefined`
+- The code does nothing — `sessionStore.currentWorkUnitId` still points to the deleted unit
+- The session header continues showing the deleted work unit
+
+**This gap is NOT fixed by switching to `loadData()`.** After `loadData()` completes, the session sync logic still uses `chunk.workUnits` from the Rust watcher. The fix: after `loadData()`, check if `currentWorkUnitId` still exists in the store's `workUnits` array. If not, clear session context via `setCurrentWorkUnit(null, null)`.
+
+### Gap 9: `updated` timestamp stale (latent)
+
+`WorkUnitInfo` has no `updated` field. Existing units preserve stale `updated` from initial `loadData()`. No component currently renders this, so no visible impact — but it is a latent issue. The `loadData()` fix resolves this.
