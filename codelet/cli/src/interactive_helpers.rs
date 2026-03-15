@@ -12,7 +12,7 @@ use rig::OneOrMany;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::SystemTime;
-use tracing::warn;
+use tracing::debug;
 
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
 ///
@@ -283,7 +283,7 @@ pub async fn execute_compaction(
     compaction_in_progress: Arc<AtomicBool>,
     last_user_message: Option<&str>,
 ) -> Result<()> {
-    warn!(
+    debug!(
         "[execute_compaction] In-view DAG flow — messages_len={}",
         session.messages.len()
     );
@@ -295,7 +295,7 @@ pub async fn execute_compaction(
     // Step 2-3: Partition, clear, restore system reminders, clear turns
     let (reminder_count, compactable_count) = reset_session_to_reminders(session);
 
-    warn!(
+    debug!(
         "[execute_compaction] partition: system_reminders={}, compactable={}",
         reminder_count,
         compactable_count
@@ -316,7 +316,7 @@ pub async fn execute_compaction(
     // Step 5: Recalculate token tracker from post-clear messages
     recalculate_token_tracker(session);
 
-    warn!(
+    debug!(
         "[execute_compaction] In-view DAG flow complete — messages_len={}, tokens={}",
         session.messages.len(),
         session.token_tracker.input_tokens

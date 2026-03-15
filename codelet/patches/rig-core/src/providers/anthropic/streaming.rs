@@ -292,8 +292,8 @@ where
             let mut text_content = String::new();
 
             while let Some(sse_result) = sse_stream.next().await {
-                // PROV-009-DEBUG: Log every SSE result at the lowest level
-                tracing::warn!(
+                // PROV-009-DEBUG: Log every SSE result at debug level
+                tracing::debug!(
                     "[anthropic/streaming] SSE_RESULT received: is_ok={}, variant={:?}",
                     sse_result.is_ok(),
                     match &sse_result {
@@ -305,11 +305,11 @@ where
                 
                 match sse_result {
                     Ok(Event::Open) => {
-                        tracing::warn!("[anthropic/streaming] SSE Event::Open received");
+                        tracing::debug!("[anthropic/streaming] SSE Event::Open received");
                     }
                     Ok(Event::Message(sse)) => {
                         // PROV-009-DEBUG: Log raw SSE data before parsing
-                        tracing::warn!(
+                        tracing::debug!(
                             "[anthropic/streaming] SSE Message raw data (first 500 chars): {}",
                             sse.data.chars().take(500).collect::<String>()
                         );
@@ -345,7 +345,7 @@ where
 
                                         // PROV-005-DEBUG: Log stop_reason for debugging Opus 4.6 compaction
                                         if let Some(ref reason) = delta.stop_reason {
-                                            tracing::warn!(
+                                            tracing::debug!(
                                                 "[anthropic/streaming] MessageDelta stop_reason={:?}, stop_sequence={:?}",
                                                 reason,
                                                 delta.stop_sequence
@@ -481,7 +481,7 @@ fn handle_event(
             }
             ContentDelta::CompactionDelta { content } => {
                 // PROV-005-DEBUG: Server-side compaction delta received
-                tracing::warn!(
+                tracing::debug!(
                     "[anthropic/streaming] Server-side COMPACTION delta received - content_len={}",
                     content.len()
                 );
@@ -490,13 +490,13 @@ fn handle_event(
             }
             ContentDelta::Unknown => {
                 // PROV-005-DEBUG: Unknown delta type
-                tracing::warn!("[anthropic/streaming] Unknown ContentDelta type received");
+                tracing::debug!("[anthropic/streaming] Unknown ContentDelta type received");
                 None
             }
         },
         StreamingEvent::ContentBlockStart { content_block, index } => {
             // PROV-005-DEBUG: Log all content block starts
-            tracing::warn!(
+            tracing::debug!(
                 "[anthropic/streaming] ContentBlockStart index={} type={:?}",
                 index,
                 std::mem::discriminant(content_block)
@@ -520,7 +520,7 @@ fn handle_event(
             }
             Content::Compaction { content } => {
                 // PROV-005-DEBUG: Server-side compaction block received
-                tracing::warn!(
+                tracing::debug!(
                     "[anthropic/streaming] Server-side COMPACTION block received - content_len={}",
                     content.len()
                 );
@@ -529,7 +529,7 @@ fn handle_event(
             }
             Content::Unknown => {
                 // PROV-005-DEBUG: Unknown content block type
-                tracing::warn!("[anthropic/streaming] Unknown Content type in ContentBlockStart");
+                tracing::debug!("[anthropic/streaming] Unknown Content type in ContentBlockStart");
                 None
             }
             // Handle other content types - they don't need special handling

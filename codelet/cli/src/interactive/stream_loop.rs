@@ -42,7 +42,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::Notify;
 use tokio::time::interval;
-use tracing::{error, info, trace, warn};
+use tracing::{debug, error, info, trace, warn};
 
 /// Detect structural annotations from a completed turn's tool calls and store
 /// them in `session.annotations`. Rotates current into previous for next turn.
@@ -230,7 +230,7 @@ fn is_compaction_cancelled(error: &anyhow::Error) -> bool {
 /// This allows the post-loop compaction logic to detect and handle it
 fn signal_compaction_needed(token_state: &Arc<Mutex<TokenState>>) {
     // PROV-009-DEBUG: Log when signal_compaction_needed is called with backtrace
-    warn!(
+    debug!(
         "[signal_compaction_needed] CALLED - setting compaction_needed=true - BACKTRACE:\n{:?}",
         std::backtrace::Backtrace::capture()
     );
@@ -451,7 +451,7 @@ where
     let threshold = calculate_usable_context(context_window, max_output_tokens);
 
     // DIAG: Log compaction parameters for debugging
-    warn!(
+    debug!(
         "DIAG stream_loop: model={:?}, context_window={}, max_output={}, threshold={}, input_tokens={}, output_tokens={}",
         session.current_model_id(),
         context_window,
@@ -477,7 +477,7 @@ where
     let has_turns_to_compact = !convert_messages_to_turns(&session.messages).is_empty();
 
     // DIAG: Log pre-prompt compaction decision
-    warn!(
+    debug!(
         "DIAG pre-prompt check: prompt_tokens={}, current_tokens={}, estimated_total={}, threshold={}, has_turns={}, will_compact={}",
         prompt_tokens,
         current_tokens,
@@ -892,7 +892,7 @@ where
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
                     // PROV-005-DEBUG: Log FinalResponse received
-                    warn!(
+                    debug!(
                         "[stream_loop] FinalResponse received - checking compaction_needed state"
                     );
                     
@@ -1064,7 +1064,7 @@ where
                                 
                                 // Start a new FULL stream for the continuation
                                 // This stream can handle tool calls, unlike the previous simple approach
-                                warn!(
+                                debug!(
                                     "API REQUEST (Gemini continuation) - Provider: {}, Model: {}",
                                     session.current_provider_name(),
                                     session.current_model_id().as_deref().unwrap_or("NONE")
@@ -1237,7 +1237,7 @@ where
                                                 }));
                                                 let nested_hook = CompactionHook::new(Arc::clone(&nested_token_state), threshold);
 
-                                                warn!(
+                                                debug!(
                                                     "API REQUEST (Gemini nested continuation) - Provider: {}, Model: {}",
                                                     session.current_provider_name(),
                                                     session.current_model_id().as_deref().unwrap_or("NONE")
@@ -1386,8 +1386,8 @@ where
                     break;
                 }
                 Some(Err(e)) => {
-                    // PROV-009-DEBUG: Log EVERY error at warn level to trace compaction issues
-                    warn!(
+                    // PROV-009-DEBUG: Log EVERY error at debug level to trace compaction issues
+                    debug!(
                         "[stream_loop] STREAM ERROR RECEIVED: error={}, type={:?}",
                         e,
                         std::any::type_name_of_val(&e)
@@ -1404,7 +1404,7 @@ where
                         .unwrap_or(false);
 
                     // PROV-009-DEBUG: Log error classification
-                    warn!(
+                    debug!(
                         "[stream_loop] Error classification: is_compaction_cancel={}, compaction_triggered={}",
                         is_compaction_cancel,
                         compaction_triggered
@@ -1413,7 +1413,7 @@ where
                     if is_compaction_cancel && compaction_triggered {
                         // This is a compaction cancellation - break to run compaction logic
                         // Don't log as error, this is expected behavior
-                        warn!("[stream_loop] Breaking due to compaction cancellation (expected)");
+                        debug!("[stream_loop] Breaking due to compaction cancellation (expected)");
                         break;
                     }
 
@@ -1512,13 +1512,13 @@ where
                 }
                 None => {
                     // PROV-005-DEBUG: Log stream ended
-                    warn!(
+                    debug!(
                         "[stream_loop] Stream ended (None) - assistant_text_len={}, checking compaction_needed",
                         assistant_text.len()
                     );
                     // Check compaction state at stream end
                     if let Ok(state) = token_state.lock() {
-                        warn!(
+                        debug!(
                             "[stream_loop] At stream end: compaction_needed={}, input={}, output={}",
                             state.compaction_needed,
                             state.input_tokens,
@@ -1542,7 +1542,7 @@ where
                 }
                 _ => {
                     // PROV-005-DEBUG: Log unknown stream items
-                    warn!("[stream_loop] Unknown stream item received (ignored)");
+                    debug!("[stream_loop] Unknown stream item received (ignored)");
                 }
             }
 
@@ -1566,7 +1566,7 @@ where
         .unwrap_or(false);
 
     // PROV-005-DEBUG: Log post-loop compaction state
-    warn!(
+    debug!(
         "[stream_loop] POST-LOOP: compaction_needed={}, is_interrupted={}",
         compaction_needed,
         is_interrupted.load(Acquire)
@@ -1574,7 +1574,7 @@ where
 
     if compaction_needed && !is_interrupted.load(Acquire) {
         // PROV-005-DEBUG: Log entry to compaction block
-        warn!(
+        debug!(
             "[stream_loop] ENTERING compaction block - messages_len={}, approx_turns={}",
             session.messages.len(),
             session.messages.len() / 2
@@ -1649,7 +1649,7 @@ where
                 let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
 
                 // Start new stream with compacted context
-                warn!(
+                debug!(
                     "API REQUEST (retry after compaction) - Provider: {}, Model: {}",
                     session.current_provider_name(),
                     session.current_model_id().as_deref().unwrap_or("NONE")

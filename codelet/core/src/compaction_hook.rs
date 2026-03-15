@@ -165,7 +165,7 @@ where
         cancel_sig: CancelSignal,
     ) {
         // PROV-005-DEBUG: Log entry into hook with backtrace context
-        tracing::warn!(
+        tracing::debug!(
             "[CompactionHook] on_completion_call ENTERED - history_len={}, threshold={}",
             history.len(),
             self.threshold
@@ -178,7 +178,7 @@ where
         };
 
         // PROV-005-DEBUG: Log current token state
-        tracing::warn!(
+        tracing::debug!(
             "[CompactionHook] token_state: input={}, cache_read={}, cache_creation={}, output={}, total={}",
             state.input_tokens,
             state.cache_read_input_tokens,
@@ -196,8 +196,8 @@ where
         let last_known_total = state.total();
         let effective_total = last_known_total.max(estimated_payload);
 
-        // PROV-005-DEBUG: Log compaction decision calculation (changed to warn!)
-        tracing::warn!(
+        // PROV-005-DEBUG: Log compaction decision calculation (changed to debug)
+        tracing::debug!(
             "[CompactionHook] compaction_check: last_known={}, estimated={}, effective={}, threshold={}, will_trigger={}",
             last_known_total,
             estimated_payload,
@@ -215,7 +215,7 @@ where
             );
             cancel_sig.cancel();
         } else {
-            tracing::warn!(
+            tracing::debug!(
                 "[CompactionHook] compaction NOT triggered: {} tokens <= {} threshold",
                 effective_total,
                 self.threshold

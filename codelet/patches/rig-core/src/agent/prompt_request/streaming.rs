@@ -367,7 +367,7 @@ where
                 if let Some(ref hook) = self.hook {
                     let reader = chat_history.read().await;
                     // PROV-009-DEBUG: Log before hook call
-                    tracing::warn!(
+                    tracing::debug!(
                         "[rig/streaming] BEFORE on_completion_call - history_len={}, cancel_signal_cancelled={}",
                         reader.len(),
                         cancel_signal.is_cancelled()
@@ -377,7 +377,7 @@ where
                         .await;
 
                     // PROV-009-DEBUG: Log after hook call
-                    tracing::warn!(
+                    tracing::debug!(
                         "[rig/streaming] AFTER on_completion_call - cancel_signal_cancelled={}",
                         cancel_signal.is_cancelled()
                     );
@@ -615,7 +615,7 @@ where
                     current_span.record("gen_ai.usage.output_tokens", aggregated_usage.output_tokens);
                     tracing::info!("Agent multi-turn stream finished");
                     // PROV-005-DEBUG: Log before yielding final response
-                    tracing::warn!(
+                    tracing::debug!(
                         "[rig/streaming] yielding final_response - text_len={}, input_tokens={}, output_tokens={}",
                         last_text_response.len(),
                         aggregated_usage.input_tokens,

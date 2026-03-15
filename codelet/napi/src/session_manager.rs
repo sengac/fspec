@@ -5038,7 +5038,7 @@ macro_rules! run_with_provider {
         match $inner.provider_manager_mut().$getter() {
             Ok(provider) => {
                 // PROV-009-DEBUG: Log provider creation
-                tracing::warn!(
+                tracing::debug!(
                     "[run_with_provider] Creating agent - session={}, getter={}",
                     $session.id,
                     stringify!($getter)
@@ -5152,7 +5152,7 @@ async fn agent_loop(
             result = watcher_rx.recv() => {
                 match result {
                     Some(watcher_input) => {
-                        tracing::warn!("agent_loop received watcher input from {}: {}", watcher_input.role_name, watcher_input.message.chars().take(50).collect::<String>());
+                        tracing::debug!("agent_loop received watcher input from {}: {}", watcher_input.role_name, watcher_input.message.chars().take(50).collect::<String>());
                         // Format watcher input as a user message with structured prefix
                         let formatted = format_watcher_input(&watcher_input);
                         
@@ -5220,7 +5220,7 @@ async fn agent_loop(
                         let _ = response_tx.send(Err(
                             "sampling/createMessage not yet supported — V2 feature".to_string(),
                         ));
-                        tracing::warn!("[MCP] sampling/createMessage rejected (V2 feature)");
+                        tracing::debug!("[MCP] sampling/createMessage rejected (V2 feature)");
                         None // Don't process as agent input
                     }
                     None => {
@@ -5244,11 +5244,11 @@ async fn agent_loop(
         if let Some(input_with_images) = input_to_process {
             let input = &input_with_images.text;
 
-            tracing::warn!("Session {} processing input: {}", session.id, input.chars().take(50).collect::<String>());
+            tracing::debug!("Session {} processing input: {}", session.id, input.chars().take(50).collect::<String>());
             
             // BRIDGE-007: Log if images are present
             if let Some(ref images) = input_with_images.images {
-                tracing::warn!("Session {} has {} image(s) attached", session.id, images.len());
+                tracing::debug!("Session {} has {} image(s) attached", session.id, images.len());
             }
 
             // REFAC-007: Persist user message to Rust persistence layer
@@ -5271,7 +5271,7 @@ async fn agent_loop(
                 let inner = session.inner.lock().await;
                 let provider = inner.current_provider_name().to_string();
                 let model = inner.current_model_id().map(|s| s.to_string());
-                tracing::warn!("[AGENT-LOOP] current_provider={}, current_model={:?}", provider, model);
+                tracing::debug!("[AGENT-LOOP] current_provider={}, current_model={:?}", provider, model);
                 (provider, model)
             };
 
@@ -5592,7 +5592,7 @@ async fn agent_loop(
                 // Try to send - if channel is full, log warning
                 match watcher_input_tx.try_send(watcher_input) {
                     Ok(()) => {
-                        tracing::warn!("Bridge input injected successfully: {}", input.message.chars().take(50).collect::<String>());
+                        tracing::debug!("Bridge input injected successfully: {}", input.message.chars().take(50).collect::<String>());
                     }
                     Err(e) => {
                         tracing::warn!("Failed to inject bridge input: {}", e);
@@ -6801,7 +6801,7 @@ pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Re
 
 #[napi]
 pub async fn session_set_model(session_id: String, provider_id: String, model_id: String) -> Result<()> {
-    tracing::warn!("session_set_model called: session_id={}, provider_id={}, model_id={}", 
+    tracing::debug!("session_set_model called: session_id={}, provider_id={}, model_id={}", 
           session_id, provider_id, model_id);
     
     let session = SessionManager::instance().get_session(&session_id)?;
@@ -6811,7 +6811,7 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 
     // Construct model string and update the inner ProviderManager
     let model_string = format!("{}/{}", provider_id, model_id);
-    tracing::warn!("session_set_model: selecting model_string={}", model_string);
+    tracing::debug!("session_set_model: selecting model_string={}", model_string);
     
     let mut inner = session.inner.lock().await;
     // PROV-018: Codex models bypass registry validation (not in models.dev under 'codex')
@@ -6822,7 +6822,7 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     };
     match result {
         Ok(()) => {
-            tracing::warn!("session_set_model: model set successfully");
+            tracing::debug!("session_set_model: model set successfully");
             Ok(())
         }
         Err(e) => {
@@ -6839,7 +6839,7 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 /// The caller must ensure OPENAI_BASE_URL and OPENAI_API_KEY are set before calling.
 #[napi]
 pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String) -> Result<()> {
-    tracing::warn!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}", 
+    tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}", 
           session_id, provider_id, model_id);
     
     let session = SessionManager::instance().get_session(&session_id)?;
@@ -6851,7 +6851,7 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
     let mut inner = session.inner.lock().await;
     match inner.provider_manager_mut().set_model_direct(&provider_id, &model_id) {
         Ok(()) => {
-            tracing::warn!("session_set_model_profile: model set successfully");
+            tracing::debug!("session_set_model_profile: model set successfully");
             Ok(())
         }
         Err(e) => {
