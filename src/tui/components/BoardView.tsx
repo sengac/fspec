@@ -568,7 +568,8 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           if (currentColumn.units.length > 0 && selectedWorkUnitIndex > 0) {
             const workUnit = currentColumn.units[selectedWorkUnitIndex];
             await moveWorkUnitUp(workUnit.id);
-            await loadData();
+            // BUG-119: Removed explicit loadData() — the file watcher triggers
+            // a debounced loadData() automatically after moveWorkUnitUp writes to disk.
             // BOARD-010: Move selection cursor up with the work unit
             setSelectedWorkUnitIndex(selectedWorkUnitIndex - 1);
           }
@@ -579,7 +580,8 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           if (currentColumn.units.length > 0 && selectedWorkUnitIndex < currentColumn.units.length - 1) {
             const workUnit = currentColumn.units[selectedWorkUnitIndex];
             await moveWorkUnitDown(workUnit.id);
-            await loadData();
+            // BUG-119: Removed explicit loadData() — the file watcher triggers
+            // a debounced loadData() automatically after moveWorkUnitDown writes to disk.
             // BOARD-010: Move selection cursor down with the work unit
             setSelectedWorkUnitIndex(selectedWorkUnitIndex + 1);
           }

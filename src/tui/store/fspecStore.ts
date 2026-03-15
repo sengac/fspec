@@ -111,6 +111,14 @@ interface FspecState {
   getWorkUnitBySession: (sessionId: string) => string | undefined;
 }
 
+// BUG-119: In-flight guard to prevent concurrent loadData() calls
+let loadDataInFlight = false;
+
+/** @internal Reset the in-flight guard — only for test isolation */
+export function _resetLoadDataGuard(): void {
+  loadDataInFlight = false;
+}
+
 export const useFspecStore = create<FspecState>()(
   immer((set, get) => ({
     workUnits: [],
@@ -134,9 +142,14 @@ export const useFspecStore = create<FspecState>()(
     },
 
     loadData: async () => {
-      set(state => {
-        state.error = null;
-      });
+      // BUG-119: In-flight guard — prevent concurrent loadData() calls
+      // that cause lock contention and error-state oscillation flickering.
+      if (loadDataInFlight) {
+        return;
+      }
+      loadDataInFlight = true;
+      // BUG-119: Do NOT clear error before reading — only clear on success.
+      // Pre-clearing causes board→error→board oscillation when reads fail.
       try {
         const cwd = get().cwd;
         const workUnitsData = await ensureWorkUnitsFile(cwd);
@@ -165,13 +178,28 @@ export const useFspecStore = create<FspecState>()(
           }
         }
 
+        // BUG-119: Clear error only on success (not before reading)
         set(state => {
           state.workUnits = orderedWorkUnits;
           state.epics = Object.values(epicsData.epics);
           state.isLoaded = true;
+          state.error = null;
         });
       } catch (error) {
         const err = error as Error;
+
+        // BUG-119: Lock contention is transient — the watcher will retry.
+        // Do NOT set error state, which would flash the ErrorView.
+        const isLockContention =
+          err.message.includes('Lock file is already being held') ||
+          err.message.includes('ELOCKED');
+        if (isLockContention) {
+          logger.debug(
+            '[ZUSTAND] loadData lock contention, will retry on next watcher event'
+          );
+          return;
+        }
+
         logger.error('[ZUSTAND] loadData error:', err);
         logger.error('[ZUSTAND] Stack trace:', err.stack);
 
@@ -199,6 +227,8 @@ export const useFspecStore = create<FspecState>()(
             state.error = err.stack || err.message;
           });
         }
+      } finally {
+        loadDataInFlight = false;
       }
     },
 
@@ -315,7 +345,10 @@ export const useFspecStore = create<FspecState>()(
           Object.assign(workUnitsData, updatedWorkUnitsData);
         });
       } catch (error) {
-        console.error('Failed to persist work unit order:', error);
+        logger.error(
+          '[ZUSTAND] Failed to persist work unit order (moveUp):',
+          error
+        );
       }
     },
 
@@ -356,7 +389,10 @@ export const useFspecStore = create<FspecState>()(
           Object.assign(workUnitsData, updatedWorkUnitsData);
         });
       } catch (error) {
-        console.error('Failed to persist work unit order:', error);
+        logger.error(
+          '[ZUSTAND] Failed to persist work unit order (moveDown):',
+          error
+        );
       }
     },
 

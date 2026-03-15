@@ -884,12 +884,16 @@ describe('Feature: BoardView watcher update (TUI-079)', () => {
       expect(useSessionStore.getState().currentWorkUnitStatus).toBeNull();
 
       // Verify Rust-side context is also cleared to prevent stale reattachment
-      expect(vi.mocked(sessionSetWorkUnitContext)).toHaveBeenCalledWith(
-        'session-abc',
-        null,
-        null,
-        null
-      );
+      // BUG-119: With debounced loadData(), the clearRustContext() async chain
+      // (dynamic import) may not have resolved yet — use waitFor to poll.
+      await vi.waitFor(() => {
+        expect(vi.mocked(sessionSetWorkUnitContext)).toHaveBeenCalledWith(
+          'session-abc',
+          null,
+          null,
+          null
+        );
+      });
     });
   });
 
