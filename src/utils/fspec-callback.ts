@@ -2,6 +2,7 @@
 // This function uses Commander.js directly to execute fspec commands programmatically
 // CODE-002/CODE-005: Support ALL fspec commands EXCEPT bootstrap and init
 
+import type { Command as CommandType } from 'commander';
 import { createProgram } from '../cli/program';
 import {
   createCaptureContext,
@@ -14,6 +15,153 @@ import {
 
 // Commands that are excluded from FspecTool (must use CLI directly)
 const EXCLUDED_COMMANDS = ['bootstrap', 'init'];
+
+/**
+ * Introspect a Commander.js command and generate Fspec-tool-formatted usage documentation.
+ * This uses the real registered options/arguments from Commander — no manual docs to maintain.
+ */
+function generateCommandUsageFromCommander(cmd: CommandType): string {
+  const name = cmd.name();
+  const description = cmd.description();
+
+  // Get positional arguments
+  const positionalArgs = (cmd.registeredArguments || []).map(
+    (a: { name: () => string; required: boolean; description: string }) => ({
+      name: a.name(),
+      required: a.required,
+      description: a.description,
+    })
+  );
+
+  // Get named options (excluding --help/--version which Commander adds automatically)
+  const options = cmd.options
+    .filter(
+      (o: { long?: string }) => o.long !== '--help' && o.long !== '--version'
+    )
+    .map(
+      (o: {
+        long?: string;
+        short?: string;
+        flags: string;
+        description: string;
+        required: boolean;
+        optional: boolean;
+      }) => {
+        const longName = o.long?.replace(/^--/, '') || '';
+        // Convert kebab-case to camelCase for Fspec tool args
+        const camelName = longName.replace(
+          /-([a-z])/g,
+          (_: string, c: string) => c.toUpperCase()
+        );
+        return {
+          argKey: camelName,
+          cliFlag: o.flags,
+          description: o.description,
+          isBoolean: !o.required && !o.optional,
+        };
+      }
+    );
+
+  let usage = `## ${name}\n\n`;
+  usage += `${description}\n\n`;
+
+  // Tool call format
+  usage += `### Fspec Tool Call\n\`\`\`\n`;
+  usage += `command: "${name}"\n`;
+
+  if (positionalArgs.length > 0) {
+    const argExamples = positionalArgs.map(
+      (a: { name: string; required: boolean }) =>
+        a.required ? `"<${a.name}>"` : `"<${a.name}>?"`
+    );
+    usage += `args: {"_": [${argExamples.join(', ')}]`;
+    if (options.length > 0) {
+      usage += `, ...`;
+    }
+    usage += `}\n`;
+  } else if (options.length > 0) {
+    usage += `args: {...}\n`;
+  } else {
+    usage += `args: {}\n`;
+  }
+  usage += `\`\`\`\n\n`;
+
+  // Positional args table
+  if (positionalArgs.length > 0) {
+    usage += `### Positional Arguments (\`_\` array)\n`;
+    usage += `| Position | Name | Required | Description |\n`;
+    usage += `|----------|------|----------|-------------|\n`;
+    positionalArgs.forEach(
+      (
+        a: { name: string; required: boolean; description: string },
+        i: number
+      ) => {
+        usage += `| ${i} | ${a.name} | ${a.required ? 'Yes' : 'No'} | ${a.description || '-'} |\n`;
+      }
+    );
+    usage += `\n`;
+  }
+
+  // Named options table
+  if (options.length > 0) {
+    usage += `### Named Options (use as keys in \`args\` JSON)\n`;
+    usage += `| Arg Key (camelCase) | Type | Description |\n`;
+    usage += `|---------------------|------|-------------|\n`;
+    options.forEach(
+      (o: { argKey: string; isBoolean: boolean; description: string }) => {
+        const type = o.isBoolean ? 'boolean' : 'string';
+        usage += `| ${o.argKey} | ${type} | ${o.description || '-'} |\n`;
+      }
+    );
+    usage += `\n`;
+  } else {
+    usage += `### Named Options\nThis command has no named options.\n\n`;
+  }
+
+  return usage;
+}
+
+/**
+ * Get the set of valid camelCase arg keys for a Commander command's options.
+ */
+function getValidOptionKeys(cmd: CommandType): Set<string> {
+  const valid = new Set<string>();
+  for (const opt of cmd.options) {
+    if (opt.long && opt.long !== '--help' && opt.long !== '--version') {
+      const kebab = opt.long.replace(/^--/, '');
+      const camel = kebab.replace(/-([a-z])/g, (_: string, c: string) =>
+        c.toUpperCase()
+      );
+      valid.add(camel);
+    }
+    if (opt.short) {
+      valid.add(opt.short.replace(/^-/, ''));
+    }
+  }
+  return valid;
+}
+
+/**
+ * Validate args keys against a command's registered options.
+ * Returns array of invalid arg key names, or empty if all valid.
+ */
+function findInvalidArgs(
+  cmd: CommandType,
+  args: Record<string, unknown>
+): string[] {
+  const validKeys = getValidOptionKeys(cmd);
+  const invalid: string[] = [];
+  for (const key of Object.keys(args)) {
+    // Skip special keys that fspec-callback handles internally
+    if (key === '_' || key === 'cwd' || key === 'format') {
+      continue;
+    }
+    if (!validKeys.has(key)) {
+      invalid.push(key);
+    }
+  }
+  return invalid;
+}
 
 /**
  * Generate AI-friendly help for the Fspec tool.
@@ -526,12 +674,23 @@ export async function fspecCallback(
           data: commandHelp,
         });
       }
-      // Fall back to general help with note about unknown command
+      // Fall back to introspecting the actual Commander.js command
+      const program = createProgram();
+      const cmd = program.commands.find(
+        (c: CommandType) => c.name() === args.command
+      );
+      if (cmd) {
+        return JSON.stringify({
+          success: true,
+          data: generateCommandUsageFromCommander(cmd),
+        });
+      }
+      // Command truly not found
       return JSON.stringify({
-        success: true,
-        data:
-          `Command "${args.command}" not found in quick reference.\n\n` +
-          generateFspecToolHelp(),
+        success: false,
+        error: `Command "${args.command}" not found.`,
+        errorType: 'CommandNotFound',
+        suggestions: [`Use command: "help" to see all available commands.`],
       });
     }
 
@@ -552,6 +711,28 @@ export async function fspecCallback(
         `Use 'fspec ${command}' directly in terminal`,
         'Setup commands require CLI environment',
       ],
+    });
+  }
+
+  // Handle --help embedded in command string (e.g., "audit-coverage --help")
+  const helpMatch = command.match(/^(.+?)\s+--help$/);
+  if (helpMatch) {
+    const realCommand = helpMatch[1].trim();
+    const program = createProgram();
+    const cmd = program.commands.find(
+      (c: CommandType) => c.name() === realCommand
+    );
+    if (cmd) {
+      return JSON.stringify({
+        success: true,
+        data: generateCommandUsageFromCommander(cmd),
+      });
+    }
+    return JSON.stringify({
+      success: false,
+      error: `Command '${realCommand}' not found.`,
+      errorType: 'CommandNotFound',
+      suggestions: [`Use command: "help" to see all available commands.`],
     });
   }
 
@@ -655,12 +836,29 @@ export async function fspecCallback(
     setFspecPositionalArgs(positionalArgsStrings);
 
     // Dynamically check if the command supports --format option
-    const cmd = program.commands.find(c => c.name() === command);
+    const cmd = program.commands.find((c: CommandType) => c.name() === command);
     const hasFormatOption = cmd?.options.some(
-      opt => opt.long === '--format' || opt.short === '-f'
+      (opt: { long?: string; short?: string }) =>
+        opt.long === '--format' || opt.short === '-f'
     );
     if (hasFormatOption) {
       argv.push('--format', 'json');
+    }
+
+    // Pre-validate: check all named args against command's actual options
+    // This catches invalid args BEFORE Commander.js and returns useful guidance
+    if (cmd) {
+      const invalidArgs = findInvalidArgs(cmd, args);
+      if (invalidArgs.length > 0) {
+        resetOutputContext();
+        return JSON.stringify({
+          success: false,
+          error: `Unknown argument${invalidArgs.length > 1 ? 's' : ''} for "${command}": ${invalidArgs.join(', ')}`,
+          errorType: 'InvalidArgs',
+          invalidArgs,
+          commandUsage: generateCommandUsageFromCommander(cmd),
+        });
+      }
     }
 
     // Convert remaining args object to CLI flags
@@ -845,7 +1043,32 @@ export async function fspecCallback(
         success: false,
         error: `Command '${command}' not found.`,
         errorType: 'CommandNotFound',
-        suggestions: ['Run fspec --help to see available commands'],
+        suggestions: [`Use command: "help" to see all available commands.`],
+      });
+    }
+
+    // Handle Commander validation errors with introspected usage info
+    if (
+      errorCode === 'commander.unknownOption' ||
+      errorCode === 'commander.missingArgument' ||
+      errorCode === 'commander.excessArguments' ||
+      errorCode === 'commander.optionMissingArgument' ||
+      errorCode === 'commander.missingMandatoryOptionValue'
+    ) {
+      // Look up the command to generate usage info
+      const errProgram = createProgram();
+      const errCmd = errProgram.commands.find(
+        (c: CommandType) => c.name() === command
+      );
+      const usage = errCmd
+        ? generateCommandUsageFromCommander(errCmd)
+        : undefined;
+
+      return JSON.stringify({
+        success: false,
+        error: errorMessage.replace(/^error:\s*/i, ''),
+        errorType: 'InvalidArgs',
+        ...(usage ? { commandUsage: usage } : {}),
       });
     }
 
