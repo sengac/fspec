@@ -190,6 +190,10 @@
           "description": "Agent interaction functionality"
         },
         {
+          "name": "@agent-manager",
+          "description": "Agent manager tool for programmatic agent orchestration, role management, and inter-agent communication"
+        },
+        {
           "name": "@agent-modal",
           "description": "Agent modal component features and interactions"
         },
@@ -204,6 +208,10 @@
         {
           "name": "@answer-question",
           "description": "Question answering operations"
+        },
+        {
+          "name": "@any-to-any",
+          "description": "Any-to-any messaging between sessions regardless of ChainOfCommand relationship"
         },
         {
           "name": "@assumption-management",
@@ -236,6 +244,10 @@
         {
           "name": "@auto-transition",
           "description": "Automatic state transitions"
+        },
+        {
+          "name": "@bidirectional",
+          "description": "Bidirectional communication between agents regardless of ChainOfCommand direction"
         },
         {
           "name": "@blocked-state",
@@ -374,6 +386,10 @@
           "description": "Context window and memory management features"
         },
         {
+          "name": "@context-references",
+          "description": "Message context references that attach resolved session history to inter-agent messages"
+        },
+        {
           "name": "@context-window",
           "description": "Context window management and monitoring features"
         },
@@ -502,6 +518,10 @@
           "description": "Scenario generation from examples"
         },
         {
+          "name": "@get-status",
+          "description": "Get status action for querying detailed session information"
+        },
+        {
           "name": "@help-system",
           "description": "Help system and documentation features"
         },
@@ -532,6 +552,10 @@
         {
           "name": "@install",
           "description": "Installation and setup functionality"
+        },
+        {
+          "name": "@inter-agent-coordination",
+          "description": "Inter-agent coordination patterns including discover-inspect-communicate-verify loops, bidirectional messaging, and context-referenced communication"
         },
         {
           "name": "@interaction",
@@ -806,12 +830,20 @@
           "description": "Session switching between conversations"
         },
         {
+          "name": "@set-role",
+          "description": "Set role action for changing agent role, brief, and auto_inject settings"
+        },
+        {
           "name": "@settings-navigation",
           "description": "Settings navigation and UI interactions"
         },
         {
           "name": "@soft-dependency",
           "description": "Soft dependency relationships"
+        },
+        {
+          "name": "@spawn",
+          "description": "Agent spawn action for creating new supervisor sessions"
         },
         {
           "name": "@state-enforcement",
@@ -2478,7 +2510,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-03-15T10:15:45.292Z",
+    "lastUpdated": "2026-03-16T02:11:34.671Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

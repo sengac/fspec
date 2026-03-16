@@ -4,8 +4,8 @@
  * Computes supervisor slug and instance number from session ID.
  * Returns null if session is not a supervisor.
  *
- * SOLID: Single Responsibility - only supervisor header info computation
- * DRY: Reusable across any component that needs supervisor info
+ * AMGR-008: Simplified after removing supervisor template infrastructure.
+ * Uses role string directly instead of SupervisorRole struct.
  */
 
 import { useMemo } from 'react';
@@ -14,7 +14,6 @@ import {
   sessionGetRole,
   sessionGetSupervisors,
 } from '@sengac/codelet-napi';
-import { generateSlug } from '../utils/supervisorTemplateStorage';
 
 export interface SupervisorHeaderInfo {
   /** Template slug (e.g., "security-reviewer") */
@@ -25,6 +24,16 @@ export interface SupervisorHeaderInfo {
   roleName: string;
   /** Subordinate session ID */
   subordinateId: string;
+}
+
+/**
+ * Generate a URL-friendly slug from a name string
+ */
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 /**

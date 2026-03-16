@@ -941,6 +941,14 @@ export interface HitlResponseInfo {
   answers?: Array<HitlAnswerEntry>;
 }
 
+/** BRIDGE-007: Image data for supervisor input (from Telegram bridge) */
+export interface IncomingMessageImage {
+  /** Base64-encoded image data */
+  data: string;
+  /** Media type (e.g., "image/jpeg", "image/png") */
+  mediaType: string;
+}
+
 /**
  * Inspect session diff before merging
  *
@@ -1837,21 +1845,6 @@ export declare function sessionCompact(
 ): Promise<CompactionResult>;
 
 /**
- * Create a supervisor session for a subordinate session (WATCH-007)
- *
- * Creates a new session that supervises the specified subordinate session.
- * The supervisor is registered in ChainOfCommand and immediately starts observing
- * the subordinate's output stream via broadcast subscription.
- * WATCH-019: Now spawns supervisor_agent_loop instead of regular agent_loop.
- */
-export declare function sessionCreateSupervisor(
-  subordinateId: string,
-  model: string,
-  project: string,
-  name: string
-): Promise<string>;
-
-/**
  * GIT-020: Execute a bash command within a session's context.
  *
  * This function is exposed for E2E testing of Bash tool cwd restriction.
@@ -1988,11 +1981,7 @@ export declare function sessionGetPendingInput(
  */
 export declare function sessionGetPrev(): string | null;
 
-/**
- * Get the role for a session (WATCH-004)
- *
- * Returns None for regular sessions, role info for supervisor sessions.
- */
+/** Get the role for a session (AMGR-008: simplified — returns role string wrapped in SupervisorRoleInfo for compat) */
 export declare function sessionGetRole(
   sessionId: string
 ): SupervisorRoleInfo | null;
@@ -2356,11 +2345,7 @@ export declare function sessionSetPendingInput(
   input?: string | undefined | null
 ): void;
 
-/**
- * Set the role for a session (WATCH-004)
- *
- * Used to mark a session as a supervisor with a specific role and brief.
- */
+/** Set the role for a session (AMGR-008: simplified — role is now a plain string) */
 export declare function sessionSetRole(
   sessionId: string,
   roleName: string,
@@ -2531,9 +2516,9 @@ export type StreamChunk =
   | { type: 'Error'; error: string }
   | { type: 'UserInput'; text: string }
   | {
-      type: 'SupervisorInput';
+      type: 'IncomingMessage';
       text: string /** Optional images for multimodal input (BRIDGE-007) */;
-      images?: Array<SupervisorInputImage>;
+      images?: Array<IncomingMessageImage>;
     }
   | {
       type: 'SupervisorPendingInjection';
@@ -2549,14 +2534,6 @@ export type StreamChunk =
       worktreePath?: string;
     };
 
-/** BRIDGE-007: Image data for supervisor input (from Telegram bridge) */
-export interface SupervisorInputImage {
-  /** Base64-encoded image data */
-  data: string;
-  /** Media type (e.g., "image/jpeg", "image/png") */
-  mediaType: string;
-}
-
 /**
  * Supervisor pending injection information (WATCH-020)
  * Sent when auto_inject=false and supervisor detects an [INTERJECT] block
@@ -2568,11 +2545,11 @@ export interface SupervisorPendingInjectionInfo {
   content: string;
 }
 
-/** Session role info returned to TypeScript (WATCH-004) */
+/** Session role info returned to TypeScript (AMGR-008: simplified from SupervisorRoleInfo) */
 export interface SupervisorRoleInfo {
-  /** Role name (e.g., "code-reviewer", "supervisor") */
+  /** Role name (e.g., "security-reviewer") */
   name: string;
-  /** Optional brief describing what this role does */
+  /** Optional brief describing what this role does (always None for now, kept for API compat) */
   brief?: string;
 }
 

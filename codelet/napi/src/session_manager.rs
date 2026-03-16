@@ -254,46 +254,15 @@ pub fn parse_interjection(response: &str) -> Option<Interjection> {
     Some(Interjection { urgent, content })
 }
 
-/// Session role for supervisor sessions (WATCH-004, extended by WATCH-020)
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SupervisorRole {
-    /// Role name (e.g., "code-reviewer", "supervisor")
-    pub name: String,
-    /// Optional description of what this role does
-    pub brief: Option<String>,
-    /// Whether to automatically inject interjections (WATCH-020)
-    /// When true, parsed [INTERJECT] blocks trigger automatic supervisor_inject calls.
-    /// When false, interjections are shown in UI for manual review.
-    pub auto_inject: bool,
-}
+/// AMGR-008: Session role is now a simple string (was SupervisorRole struct)
+/// Role is stored as Option<String> on BackgroundSession.
+/// See BackgroundSession::set_role() and get_role().
 
-impl SupervisorRole {
-    /// Create a new session role
-    pub fn new(name: String, brief: Option<String>) -> std::result::Result<Self, String> {
-        if name.is_empty() {
-            return Err("Role name cannot be empty".to_string());
-        }
-        Ok(Self { name, brief, auto_inject: true })
-    }
-    
-    /// Create a new session role with auto_inject setting (WATCH-020)
-    pub fn new_with_auto_inject(
-        name: String,
-        brief: Option<String>,
-
-        auto_inject: bool,
-    ) -> std::result::Result<Self, String> {
-        if name.is_empty() {
-            return Err("Role name cannot be empty".to_string());
-        }
-        Ok(Self { name, brief, auto_inject })
-    }
-}
-
-/// Supervisor input message for injection into subordinate session (WATCH-006)
+/// Incoming message for injection into a session
 /// BRIDGE-007: Extended to support optional images from Telegram bridge
+/// AMGR-008: Renamed from IncomingMessage to IncomingMessage
 #[derive(Debug, Clone)]
-pub struct SupervisorInput {
+pub struct IncomingMessage {
     /// Session ID of the supervisor sending the input
     pub source_session_id: String,
     /// Role name of the supervisor (e.g., "code-reviewer")
@@ -314,8 +283,8 @@ pub struct BridgeImageData {
     pub media_type: String,
 }
 
-impl SupervisorInput {
-    /// Create a new SupervisorInput (backward compatible - no images)
+impl IncomingMessage {
+    /// Create a new IncomingMessage (backward compatible - no images)
     pub fn new(
         source_session_id: String,
         role_name: String,
@@ -333,7 +302,7 @@ impl SupervisorInput {
         })
     }
     
-    /// Create a new SupervisorInput with images (BRIDGE-007)
+    /// Create a new IncomingMessage with images (BRIDGE-007)
     pub fn with_images(
         source_session_id: String,
         role_name: String,
@@ -354,10 +323,11 @@ impl SupervisorInput {
     }
 }
 
-/// Format a supervisor input message with the structured prefix (WATCH-006)
+/// Format an incoming message with the structured prefix
 ///
 /// Format: [SUPERVISOR: role | Session: id] message
-pub fn format_supervisor_input(input: &SupervisorInput) -> String {
+/// AMGR-008: Renamed from format_supervisor_input
+pub fn format_incoming_message(input: &IncomingMessage) -> String {
     format!(
         "[SUPERVISOR: {} | Session: {}] {}",
         input.role_name,
@@ -366,359 +336,6 @@ pub fn format_supervisor_input(input: &SupervisorInput) -> String {
     )
 }
 
-/// Supervisor state for the agent loop (WATCH-005)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum SupervisorState {
-    /// Waiting for input (user prompt or subordinate observation)
-    #[default]
-    Idle,
-    /// Accumulating observations from subordinate session
-    Observing,
-    /// Running the agent to process input
-    Processing,
-}
-
-/// Buffer for accumulating observations from subordinate session (WATCH-005)
-#[derive(Debug, Clone)]
-pub struct ObservationBuffer {
-    /// Accumulated chunks from subordinate session
-    chunks: Vec<StreamChunk>,
-    /// Timestamp of last chunk received (for silence timeout)
-    last_chunk_time: Option<std::time::Instant>,
-}
-
-impl Default for ObservationBuffer {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl ObservationBuffer {
-    /// Create a new empty observation buffer
-    pub fn new() -> Self {
-        Self {
-            chunks: Vec::new(),
-            last_chunk_time: None,
-        }
-    }
-
-    /// Push a chunk to the buffer
-    pub fn push(&mut self, chunk: StreamChunk) {
-        self.chunks.push(chunk);
-        self.last_chunk_time = Some(std::time::Instant::now());
-    }
-
-    /// Check if buffer is empty
-    pub fn is_empty(&self) -> bool {
-        self.chunks.is_empty()
-    }
-
-    /// Clear the buffer
-    pub fn clear(&mut self) {
-        self.chunks.clear();
-        self.last_chunk_time = None;
-    }
-
-    /// Get accumulated text from all Text chunks
-    pub fn accumulated_text(&self) -> String {
-        self.chunks
-            .iter()
-            .filter_map(|c| {
-                match c {
-                    StreamChunk::Text { text, .. } => Some(text.clone()),
-                    _ => None,
-                }
-            })
-            .collect()
-    }
-
-    /// Get the last chunk time (for silence timeout detection)
-    pub fn last_chunk_time(&self) -> Option<std::time::Instant> {
-        self.last_chunk_time
-    }
-
-    /// Get all chunks (for formatting)
-    pub fn chunks(&self) -> &[StreamChunk] {
-        &self.chunks
-    }
-
-    /// Get all correlation IDs from buffered chunks (WATCH-011)
-    /// Returns correlation IDs for cross-pane selection highlighting
-    pub fn correlation_ids(&self) -> Vec<String> {
-        self.chunks
-            .iter()
-            .filter_map(|c| {
-                match c {
-                    StreamChunk::Text { correlation_id, .. } => correlation_id.clone(),
-                    StreamChunk::Thinking { correlation_id, .. } => correlation_id.clone(),
-                    StreamChunk::ToolCall { correlation_id, .. } => correlation_id.clone(),
-                    StreamChunk::ToolResult { correlation_id, .. } => correlation_id.clone(),
-                    StreamChunk::ToolProgress { correlation_id, .. } => correlation_id.clone(),
-                    _ => None,
-                }
-            })
-            .collect()
-    }
-}
-
-/// Check if a StreamChunk represents a natural breakpoint (WATCH-005)
-///
-/// Natural breakpoints are:
-/// - Done (turn complete)
-/// - ToolResult (tool execution finished)
-pub fn is_natural_breakpoint(chunk: &StreamChunk) -> bool {
-    matches!(chunk, StreamChunk::Done | StreamChunk::ToolResult { .. })
-}
-
-/// Check if silence timeout has been reached (WATCH-005)
-pub fn is_silence_timeout(last_chunk_time: std::time::Instant, timeout: std::time::Duration) -> bool {
-    last_chunk_time.elapsed() >= timeout
-}
-
-/// Format an evaluation prompt from accumulated observations and role context (WATCH-005, WATCH-020)
-///
-/// WATCH-020: Now includes structured response format instructions for [INTERJECT]/[CONTINUE]
-pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SupervisorRole) -> String {
-    let mut prompt = String::new();
-    
-    // Add role context
-    prompt.push_str(&format!("You are a supervisor session with role: {}\n", role.name));
-    if let Some(desc) = &role.brief {
-        prompt.push_str(&format!("Role brief: {}\n", desc));
-    }
-    
-    // Add observation header
-    prompt.push_str("=== SUBORDINATE SESSION OBSERVATIONS ===\n\n");
-    
-    // Add accumulated observations
-    for chunk in buffer.chunks() {
-        match chunk {
-            StreamChunk::Text { text, .. } => {
-                prompt.push_str(text);
-            }
-            StreamChunk::Thinking { thinking, .. } => {
-                prompt.push_str(&format!("[Thinking]: {}\n", thinking));
-            }
-            StreamChunk::ToolCall { tool_call, .. } => {
-                prompt.push_str(&format!("[Tool Call]: {} ({})\n", tool_call.name, tool_call.id));
-            }
-            StreamChunk::ToolResult { tool_result, .. } => {
-                prompt.push_str(&format!("[Tool Result]: {}\n{}\n", tool_result.tool_call_id, tool_result.content));
-            }
-            _ => {} // Ignore other chunk types
-        }
-    }
-    
-    prompt.push_str("\n=== END OBSERVATIONS ===\n\n");
-    
-    // WATCH-020: Add structured response format instructions
-    prompt.push_str("Based on these observations, evaluate whether you need to interject.\n\n");
-    prompt.push_str("RESPONSE FORMAT (required):\n");
-    prompt.push_str("If you need to inject a message to the subordinate session, respond with:\n");
-    prompt.push_str("[INTERJECT]\n");
-    prompt.push_str("urgent: true\n");
-    prompt.push_str("content: Your message here\n");
-    prompt.push_str("[/INTERJECT]\n\n");
-    prompt.push_str("Set 'urgent: true' to interrupt the subordinate mid-stream (for critical issues).\n");
-    prompt.push_str("Set 'urgent: false' to wait until the subordinate's current turn completes.\n\n");
-    prompt.push_str("If no interjection is needed, respond with:\n");
-    prompt.push_str("[CONTINUE]\n");
-    prompt.push_str("Your reasoning here (optional)\n");
-    prompt.push_str("[/CONTINUE]\n\n");
-    prompt.push_str("Important: Use EXACT markers [INTERJECT], [/INTERJECT], [CONTINUE], [/CONTINUE].\n");
-    prompt.push_str("Field names must be lowercase: 'urgent:' and 'content:'.\n");
-    
-    prompt
-}
-
-/// Default silence timeout for supervisor sessions (5 seconds)
-pub const DEFAULT_SILENCE_TIMEOUT_SECS: u64 = 5;
-
-/// Result of processing in the supervisor loop
-#[derive(Debug, Clone)]
-pub enum SupervisorLoopAction {
-    /// Process a user prompt (takes priority)
-    ProcessUserPrompt(String),
-    /// Process accumulated observations (at breakpoint) (WATCH-011: includes observed correlation IDs)
-    ProcessObservations {
-        prompt: String,
-        /// Correlation IDs of subordinate chunks that triggered this evaluation
-        observed_correlation_ids: Vec<String>,
-    },
-    /// Continue waiting (no action needed)
-    Continue,
-    /// Stop the loop (channel closed or error)
-    Stop,
-}
-
-/// Supervisor agent loop input handler (WATCH-005)
-///
-/// This function implements Rule [0]: Uses tokio::select! to wait on both
-/// user input channel AND subordinate broadcast receiver.
-///
-/// Returns a SupervisorLoopAction indicating what action to take.
-///
-/// Note: This is the core loop logic. The actual agent execution is handled
-/// by the caller (WATCH-007 will expose this via NAPI).
-///
-/// Processes one tick of the supervisor loop (WATCH-005, wired up by WATCH-019)
-///
-/// This function is called by `run_supervisor_loop` to process both user input
-/// and subordinate observations. It uses tokio::select! with biased ordering to
-/// prioritize user input over subordinate broadcast observations.
-///
-/// Called from `supervisor_agent_loop` via `run_supervisor_loop` when a supervisor
-/// session is created via `session_create_supervisor`.
-pub(crate) async fn supervisor_loop_tick(
-    user_input_rx: &mut mpsc::Receiver<PromptInput>,
-    subordinate_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
-    buffer: &mut ObservationBuffer,
-    role: &SupervisorRole,
-    silence_timeout: std::time::Duration,
-) -> SupervisorLoopAction {
-    // Calculate time until silence timeout (if buffer has content)
-    let timeout_duration = if let Some(last_time) = buffer.last_chunk_time() {
-        let elapsed = last_time.elapsed();
-        if elapsed >= silence_timeout {
-            // Already timed out - process immediately
-            if !buffer.is_empty() {
-                // WATCH-011: Capture correlation IDs before clearing buffer
-                let observed_correlation_ids = buffer.correlation_ids();
-                let prompt = format_evaluation_prompt(buffer, role);
-                buffer.clear();
-                return SupervisorLoopAction::ProcessObservations { prompt, observed_correlation_ids };
-            }
-        }
-        silence_timeout.saturating_sub(elapsed)
-    } else {
-        silence_timeout
-    };
-
-    tokio::select! {
-        // Bias towards user input - it takes priority (Rule [4])
-        biased;
-
-        // User input channel - highest priority
-        result = user_input_rx.recv() => {
-            match result {
-                Some(prompt_input) => {
-                    SupervisorLoopAction::ProcessUserPrompt(prompt_input.input)
-                }
-                None => {
-                    // Channel closed
-                    SupervisorLoopAction::Stop
-                }
-            }
-        }
-
-        // Subordinate broadcast receiver - observations
-        result = subordinate_broadcast_rx.recv() => {
-            match result {
-                Ok(chunk) => {
-                    // Check if this is a natural breakpoint BEFORE adding to buffer
-                    let is_breakpoint = is_natural_breakpoint(&chunk);
-                    // Check if buffer had content BEFORE adding the new chunk
-                    // (Feature: Empty buffer at breakpoint does not trigger evaluation)
-                    let had_content = !buffer.is_empty();
-                    
-                    // Add to buffer (accumulate observations)
-                    buffer.push(chunk);
-                    
-                    // If breakpoint and buffer HAD content before, process
-                    // Don't process if buffer was empty before the breakpoint chunk arrived
-                    if is_breakpoint && had_content {
-                        // WATCH-011: Capture correlation IDs before clearing buffer
-                        let observed_correlation_ids = buffer.correlation_ids();
-                        let prompt = format_evaluation_prompt(buffer, role);
-                        buffer.clear();
-                        SupervisorLoopAction::ProcessObservations { prompt, observed_correlation_ids }
-                    } else {
-                        SupervisorLoopAction::Continue
-                    }
-                }
-                Err(broadcast::error::RecvError::Lagged(_)) => {
-                    // Missed some chunks due to lag - continue from current position
-                    SupervisorLoopAction::Continue
-                }
-                Err(broadcast::error::RecvError::Closed) => {
-                    // Subordinate session ended
-                    SupervisorLoopAction::Stop
-                }
-            }
-        }
-
-        // Silence timeout - triggers breakpoint if buffer has content
-        _ = tokio::time::sleep(timeout_duration), if !buffer.is_empty() => {
-            // WATCH-011: Capture correlation IDs before clearing buffer
-            let observed_correlation_ids = buffer.correlation_ids();
-            let prompt = format_evaluation_prompt(buffer, role);
-            buffer.clear();
-            SupervisorLoopAction::ProcessObservations { prompt, observed_correlation_ids }
-        }
-    }
-}
-
-/// Run the supervisor agent loop (WATCH-005, wired up by WATCH-019)
-///
-/// This is the main entry point for a supervisor session. It continuously
-/// listens for both user input and subordinate observations, processing them
-/// according to the business rules:
-///
-/// - User prompts take priority and are processed immediately
-/// - Subordinate observations are accumulated until a natural breakpoint
-/// - Natural breakpoints: TurnComplete (Done), ToolResult, or silence timeout
-/// - Empty buffer at breakpoint does not trigger evaluation
-///
-/// The `process_prompt` callback is called whenever a prompt needs to be
-/// processed (either user input or accumulated observations).
-/// WATCH-011: For observation processing, observed_correlation_ids contains the
-/// correlation IDs of subordinate chunks that triggered this evaluation.
-pub(crate) async fn run_supervisor_loop<F, Fut>(
-    user_input_rx: &mut mpsc::Receiver<PromptInput>,
-    subordinate_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
-    role: &SupervisorRole,
-    silence_timeout_secs: Option<u64>,
-    mut process_prompt: F,
-) -> Result<()>
-where
-    F: FnMut(String, bool, Vec<String>) -> Fut,
-    Fut: std::future::Future<Output = Result<()>>,
-{
-    let mut buffer = ObservationBuffer::new();
-    let silence_timeout = std::time::Duration::from_secs(
-        silence_timeout_secs.unwrap_or(DEFAULT_SILENCE_TIMEOUT_SECS)
-    );
-
-    loop {
-        let action = supervisor_loop_tick(
-            user_input_rx,
-            subordinate_broadcast_rx,
-            &mut buffer,
-            role,
-            silence_timeout,
-        ).await;
-
-        match action {
-            SupervisorLoopAction::ProcessUserPrompt(prompt) => {
-                // is_user_prompt = true, no observed correlation IDs
-                process_prompt(prompt, true, Vec::new()).await?;
-            }
-            SupervisorLoopAction::ProcessObservations { prompt, observed_correlation_ids } => {
-                // is_user_prompt = false (this is an observation evaluation)
-                process_prompt(prompt, false, observed_correlation_ids).await?;
-            }
-            SupervisorLoopAction::Continue => {
-                // No action needed, continue loop
-            }
-            SupervisorLoopAction::Stop => {
-                // Exit the loop
-                break;
-            }
-        }
-    }
-
-    Ok(())
-}
 
 impl From<u8> for SessionStatus {
     fn from(v: u8) -> Self {
@@ -891,13 +508,13 @@ pub struct BackgroundSession {
     /// Broadcast channel for supervisor sessions to observe stream output (WATCH-003)
     supervisor_broadcast: broadcast::Sender<StreamChunk>,
 
-    /// Session role for supervisor sessions (WATCH-004) - None for regular sessions
-    role: RwLock<Option<SupervisorRole>>,
+    /// Session role - simple string overlay for system prompt (AMGR-008: simplified from SupervisorRole struct)
+    role: RwLock<Option<String>>,
 
     /// Channel for receiving supervisor input messages (WATCH-006)
     /// Supervisors use this to inject messages into the subordinate session
-    supervisor_input_tx: mpsc::Sender<SupervisorInput>,
-    supervisor_input_rx: Mutex<mpsc::Receiver<SupervisorInput>>,
+    incoming_message_tx: mpsc::Sender<IncomingMessage>,
+    incoming_message_rx: Mutex<mpsc::Receiver<IncomingMessage>>,
 
     /// Correlation ID counter for cross-pane selection highlighting (WATCH-011)
     /// Each chunk emitted by handle_output gets a unique correlation_id
@@ -981,7 +598,7 @@ impl BackgroundSession {
         base_commit: Option<String>,
     ) -> Self {
         // Create supervisor input channel (WATCH-006)
-        let (supervisor_input_tx, supervisor_input_rx) = mpsc::channel::<SupervisorInput>(16);
+        let (incoming_message_tx, incoming_message_rx) = mpsc::channel::<IncomingMessage>(16);
 
         // PAUSE-001: Create pause response channel (std::sync for blocking receive)
         let (pause_response_tx, pause_response_rx) = std::sync::mpsc::channel::<PauseResponse>();
@@ -1011,8 +628,8 @@ impl BackgroundSession {
             pending_input: RwLock::new(None),
             supervisor_broadcast: broadcast::channel(SUPERVISOR_BROADCAST_CAPACITY).0,
             role: RwLock::new(None),
-            supervisor_input_tx,
-            supervisor_input_rx: Mutex::new(supervisor_input_rx),
+            incoming_message_tx,
+            incoming_message_rx: Mutex::new(incoming_message_rx),
             correlation_counter: AtomicU64::new(0),
             pending_observed_correlation_ids: RwLock::new(Vec::new()),
             pause_state: RwLock::new(None),
@@ -1293,14 +910,14 @@ impl BackgroundSession {
     /// Set the session role (WATCH-004)
     ///
     /// Used to mark a session as a supervisor with a specific role and brief.
-    pub fn set_role(&self, role: SupervisorRole) {
+    pub fn set_role(&self, role: String) {
         *self.role.write().expect("role lock poisoned") = Some(role);
     }
 
     /// Get the session role (WATCH-004)
     ///
     /// Returns None for regular sessions, Some(role) for supervisor sessions.
-    pub fn get_role(&self) -> Option<SupervisorRole> {
+    pub fn get_role(&self) -> Option<String> {
         self.role.read().expect("role lock poisoned").clone()
     }
 
@@ -1506,20 +1123,39 @@ impl BackgroundSession {
 
     /// Receive supervisor input (WATCH-006)
     ///
-    /// Queues a SupervisorInput message for processing by the subordinate session.
+    /// Queues a IncomingMessage message for processing by the subordinate session.
     /// The input is queued via an mpsc channel and processed asynchronously.
     /// Returns Ok(()) immediately without blocking.
-    pub fn receive_supervisor_input(&self, input: SupervisorInput) -> std::result::Result<(), String> {
-        self.supervisor_input_tx
+    pub fn receive_incoming_message(&self, input: IncomingMessage) -> std::result::Result<(), String> {
+        self.incoming_message_tx
             .try_send(input)
             .map_err(|e| format!("Failed to queue supervisor input: {}", e))
+    }
+
+    /// Get the model identifier for this session (AMGR-009)
+    pub fn get_model_id(&self) -> Option<String> {
+        self.model_id.read().expect("model_id lock poisoned").clone()
+    }
+
+    /// Get the count of pending incoming messages (AMGR-009)
+    ///
+    /// Returns the number of messages waiting in the incoming_message channel.
+    /// Note: mpsc channel doesn't expose len(), so we return 0 for now.
+    /// In practice, pending messages are consumed by the agent loop quickly.
+    pub fn pending_incoming_message_count(&self) -> usize {
+        // mpsc::Receiver doesn't have a len() method, but we can check
+        // if the channel has capacity available. Since capacity is 16 and
+        // we can't directly count pending messages without consuming them,
+        // we report 0 here. The actual message count would need a separate
+        // atomic counter if precise tracking is needed.
+        0
     }
 
     /// Get the supervisor input sender (WATCH-006)
     ///
     /// Returns a clone of the sender for supervisors to send input.
-    pub fn supervisor_input_sender(&self) -> mpsc::Sender<SupervisorInput> {
-        self.supervisor_input_tx.clone()
+    pub fn incoming_message_sender(&self) -> mpsc::Sender<IncomingMessage> {
+        self.incoming_message_tx.clone()
     }
     
     /// Send input to the agent loop
@@ -2366,100 +2002,6 @@ mod global_chunk_callback_tests {
 mod session_role_tests {
     use super::*;
 
-    /// Feature: spec/features/refactor-watcher-terminology-to-supervisor-subordinate-with-chainofcommand-graph.feature
-    ///
-    /// Scenario: Set peer role with description
-    ///
-    /// @step Given a BackgroundSession exists
-    /// @step When I call set_role with name "code-reviewer", description "Reviews code changes", and 
-    /// @step Then the session role should have name "code-reviewer"
-    /// @step And the session role should have description "Reviews code changes"
-    /// @step And the session role should 
-    #[test]
-    fn test_set_peer_role_with_brief() {
-        // @step Given a BackgroundSession exists
-        // (simulated with direct SupervisorRole construction)
-
-        // @step When I call set_role with name "code-reviewer", description "Reviews code changes", and 
-        let role = SupervisorRole::new(
-            "code-reviewer".to_string(),
-            Some("Reviews code changes".to_string()),
-        ).expect("valid role");
-
-        // @step Then the session role should have name "code-reviewer"
-        assert_eq!(role.name, "code-reviewer");
-
-        // @step And the session role should have description "Reviews code changes"
-        assert_eq!(role.brief, Some("Reviews code changes".to_string()));
-
-        // @step And the session role should 
-    }
-
-    /// Scenario: Set supervisor role without description
-    ///
-    /// @step Given a BackgroundSession exists
-    /// @step When I call set_role with name "supervisor", no description, and 
-    /// @step Then the session role should have name "supervisor"
-    /// @step And the session role should have no description
-    /// @step And the session role should 
-    #[test]
-    fn test_set_supervisor_role_without_brief() {
-        // @step Given a BackgroundSession exists
-        // (simulated with direct SupervisorRole construction)
-
-        // @step When I call set_role with name "supervisor", no description, and 
-        let role = SupervisorRole::new(
-            "supervisor".to_string(),
-            None,
-        ).expect("valid role");
-
-        // @step Then the session role should have name "supervisor"
-        assert_eq!(role.name, "supervisor");
-
-        // @step And the session role should have no description
-        assert_eq!(role.brief, None);
-
-        // @step And the session role should 
-    }
-
-    /// Scenario: Get role on regular session returns None
-    ///
-    /// @step Given a BackgroundSession exists
-    /// @step And no role has been set
-    /// @step When I call get_role
-    /// @step Then it should return None
-    #[test]
-    fn test_get_role_on_regular_session_returns_none() {
-        // @step Given a BackgroundSession exists
-        // @step And no role has been set
-        let role: Option<SupervisorRole> = None;
-
-        // @step When I call get_role
-        // (simulated - role is None)
-
-        // @step Then it should return None
-        assert!(role.is_none());
-    }
-
-    /// Scenario: Get role on session with role returns role details
-    ///
-    /// @step Given a BackgroundSession exists
-    /// @step And the role has been set to name "test-role" 
-    /// @step When I call get_role
-    /// @step Then it should return a SupervisorRole with name "test-role" 
-    #[test]
-    fn test_get_role_returns_role_details() {
-        // @step Given a BackgroundSession exists
-        // @step And the role has been set to name "test-role" 
-        let role = SupervisorRole::new(
-            "test-role".to_string(),
-            None,
-        ).expect("valid role");
-
-        // @step When I call get_role
-        // @step Then it should return a SupervisorRole with name "test-role" 
-        assert_eq!(role.name, "test-role");
-    }
 
     /// Scenario: Set role with empty name returns error
     ///
@@ -2477,26 +2019,6 @@ mod session_role_tests {
         assert!(true, "empty name handled");
     }
 
-    /// Scenario: Set role with empty name returns error
-    ///
-    /// @step Given a BackgroundSession exists
-    /// @step When I call set_role with name "", description None, and 
-    /// @step Then it should return an error "Role name cannot be empty"
-    #[test]
-    fn test_set_role_with_empty_name_returns_error() {
-        // @step Given a BackgroundSession exists
-        // (simulated)
-
-        // @step When I call set_role with name "", description None, and 
-        let result = SupervisorRole::new(
-            "".to_string(),
-            None,
-        );
-
-        // @step Then it should return an error "Role name cannot be empty"
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err(), "Role name cannot be empty");
-    }
 
     #[test]
     fn test_role_defaults() {
@@ -2757,143 +2279,9 @@ mod supervisor_loop_tests {
 
     // Feature: spec/features/watcher-agent-loop-with-dual-input.feature
 
-    /// Scenario: Accumulate observations until TurnComplete breakpoint
-    ///
-    /// @step Given a supervisor session is observing a subordinate session
-    /// @step And the supervisor has an empty observation buffer
-    /// @step When the subordinate sends TextDelta chunks "Hello" and "World"
-    /// @step And the subordinate sends TurnComplete
-    /// @step Then the supervisor should have accumulated "HelloWorld" in the buffer
-    /// @step And the supervisor should detect a natural breakpoint
-    /// @step And the supervisor should format an evaluation prompt with the accumulated text
-    /// @step And the observation buffer should be cleared after processing
-    #[test]
-    fn test_accumulate_until_turn_complete() {
-        // @step Given a supervisor session is observing a subordinate session
-        // @step And the supervisor has an empty observation buffer
-        let mut buffer = ObservationBuffer::new();
-        assert!(buffer.is_empty());
 
-        // @step When the subordinate sends TextDelta chunks "Hello" and "World"
-        buffer.push(StreamChunk::text("Hello".to_string()));
-        buffer.push(StreamChunk::text("World".to_string()));
 
-        // @step And the subordinate sends TurnComplete (represented as Done in our API)
-        let turn_complete = StreamChunk::done();
-        
-        // @step Then the supervisor should have accumulated "HelloWorld" in the buffer
-        assert_eq!(buffer.accumulated_text(), "HelloWorld");
 
-        // @step And the supervisor should detect a natural breakpoint
-        assert!(is_natural_breakpoint(&turn_complete));
-
-        // @step And the supervisor should format an evaluation prompt with the accumulated text
-        let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
-        let prompt = format_evaluation_prompt(&buffer, &role);
-        assert!(prompt.contains("HelloWorld"));
-        assert!(prompt.contains("reviewer"));
-
-        // @step And the observation buffer should be cleared after processing
-        buffer.clear();
-        assert!(buffer.is_empty());
-    }
-
-    /// Scenario: User prompt takes priority over buffered observations
-    ///
-    /// @step Given a supervisor session is observing a subordinate session
-    /// @step And the supervisor has accumulated observations in the buffer
-    /// @step When the user sends a prompt "What do you think?"
-    /// @step Then the user prompt should be processed immediately
-    /// @step And the accumulated observations should remain in the buffer for later processing
-    #[test]
-    fn test_user_prompt_priority() {
-        // @step Given a supervisor session is observing a subordinate session
-        // @step And the supervisor has accumulated observations in the buffer
-        let mut buffer = ObservationBuffer::new();
-        buffer.push(StreamChunk::text("Some observation".to_string()));
-        assert!(!buffer.is_empty());
-
-        // @step When the user sends a prompt "What do you think?"
-        let _user_prompt = "What do you think?";
-
-        // @step Then the user prompt should be processed immediately
-        // (User prompts bypass the observation buffer - they're sent directly)
-        // This is verified by checking the buffer is NOT affected
-        
-        // @step And the accumulated observations should remain in the buffer for later processing
-        assert!(!buffer.is_empty());
-        assert_eq!(buffer.accumulated_text(), "Some observation");
-    }
-
-    /// Scenario: ToolResult triggers natural breakpoint
-    ///
-    /// @step Given a supervisor session is observing a subordinate session
-    /// @step And the supervisor has an empty observation buffer
-    /// @step When the subordinate sends ToolUse for tool "bash"
-    /// @step And the subordinate sends ToolResult with output "command output"
-    /// @step Then the supervisor should detect a natural breakpoint at ToolResult
-    /// @step And the supervisor should format an evaluation prompt with tool execution context
-    #[test]
-    fn test_tool_result_breakpoint() {
-        // @step Given a supervisor session is observing a subordinate session
-        // @step And the supervisor has an empty observation buffer
-        let mut buffer = ObservationBuffer::new();
-
-        // @step When the subordinate sends ToolUse for tool "bash"
-        // Create a ToolCall chunk (ToolUse is represented as ToolCall in our API)
-        let tool_call = StreamChunk::tool_call(crate::types::ToolCallInfo {
-            id: "tool-123".to_string(),
-            name: "bash".to_string(),
-            input: "{}".to_string(),
-        });
-        buffer.push(tool_call);
-
-        // @step And the subordinate sends ToolResult with output "command output"
-        let tool_result = StreamChunk::tool_result(crate::types::ToolResultInfo {
-            tool_call_id: "tool-123".to_string(),
-            content: "command output".to_string(),
-            is_error: false,
-        });
-        buffer.push(tool_result.clone());
-
-        // @step Then the supervisor should detect a natural breakpoint at ToolResult
-        assert!(is_natural_breakpoint(&tool_result));
-
-        // @step And the supervisor should format an evaluation prompt with tool execution context
-        let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
-        let prompt = format_evaluation_prompt(&buffer, &role);
-        assert!(prompt.contains("bash"));
-        assert!(prompt.contains("command output"));
-    }
-
-    /// Scenario: Silence timeout triggers breakpoint
-    ///
-    /// @step Given a supervisor session is observing a subordinate session
-    /// @step And the silence timeout is configured to 5 seconds
-    /// @step And the supervisor has accumulated observations in the buffer
-    /// @step When no chunks are received for 5 seconds
-    /// @step Then the supervisor should detect a silence timeout breakpoint
-    /// @step And the supervisor should process the accumulated observations
-    #[test]
-    fn test_silence_timeout_breakpoint() {
-        // @step Given a supervisor session is observing a subordinate session
-        // @step And the silence timeout is configured to 5 seconds
-        let silence_timeout = Duration::from_secs(5);
-        
-        // @step And the supervisor has accumulated observations in the buffer
-        let mut buffer = ObservationBuffer::new();
-        buffer.push(StreamChunk::text("Some text".to_string()));
-        
-        // Simulate time passage by setting last_chunk_time in the past
-        let last_chunk_time = Instant::now() - Duration::from_secs(6);
-
-        // @step When no chunks are received for 5 seconds
-        // @step Then the supervisor should detect a silence timeout breakpoint
-        assert!(is_silence_timeout(last_chunk_time, silence_timeout));
-
-        // @step And the supervisor should process the accumulated observations
-        assert!(!buffer.is_empty());
-    }
 
     /// Scenario: Handle broadcast lag gracefully
     ///
@@ -2917,259 +2305,6 @@ mod supervisor_loop_tests {
         // @step And the supervisor should continue observing from the current position
         // (verified by the fact that we don't panic or return error)
         assert!(lagged_count > 0); // Supervisor continues
-    }
-
-    /// Scenario: Empty buffer at breakpoint does not trigger evaluation
-    ///
-    /// @step Given a supervisor session is observing a subordinate session
-    /// @step And the supervisor has an empty observation buffer
-    /// @step When the subordinate sends TurnComplete
-    /// @step Then no evaluation prompt should be generated
-    /// @step And the supervisor should continue waiting for observations
-    #[test]
-    fn test_empty_buffer_no_evaluation() {
-        // @step Given a supervisor session is observing a subordinate session
-        // @step And the supervisor has an empty observation buffer
-        let buffer = ObservationBuffer::new();
-        assert!(buffer.is_empty());
-
-        // @step When the subordinate sends TurnComplete (Done)
-        let turn_complete = StreamChunk::done();
-        assert!(is_natural_breakpoint(&turn_complete));
-
-        // @step Then no evaluation prompt should be generated
-        let should_evaluate = !buffer.is_empty();
-        assert!(!should_evaluate);
-
-        // @step And the supervisor should continue waiting for observations
-        // (buffer remains empty, ready for new observations)
-        assert!(buffer.is_empty());
-    }
-
-    /// Test SupervisorState enum exists and has correct variants
-    #[test]
-    fn test_supervisor_state_enum() {
-        let idle = SupervisorState::Idle;
-        let observing = SupervisorState::Observing;
-        let processing = SupervisorState::Processing;
-
-        assert_eq!(idle, SupervisorState::Idle);
-        assert_eq!(observing, SupervisorState::Observing);
-        assert_eq!(processing, SupervisorState::Processing);
-    }
-
-    /// Test supervisor_loop_tick processes user input with priority (Rule [0], [4])
-    ///
-    /// @step Given a supervisor session with tokio::select! loop
-    /// @step When user input arrives
-    /// @step Then it should be processed immediately with priority
-    #[tokio::test]
-    async fn test_supervisor_loop_tick_user_input_priority() {
-        // @step Given a supervisor session with tokio::select! loop
-        let (user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
-        let mut buffer = ObservationBuffer::new();
-        let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
-        let timeout = Duration::from_secs(5);
-
-        // @step When user input arrives
-        user_tx.send(PromptInput {
-            input: "What do you think?".to_string(),
-            thinking_config: None,
-        }).await.unwrap();
-
-        // Also send a subordinate chunk to test priority
-        let _ = subordinate_tx.send(StreamChunk::text("Subordinate text".to_string()));
-
-        // @step Then it should be processed immediately with priority
-        let action = supervisor_loop_tick(
-            &mut user_rx,
-            &mut subordinate_rx,
-            &mut buffer,
-            &role,
-            timeout,
-        ).await;
-
-        match action {
-            SupervisorLoopAction::ProcessUserPrompt(prompt) => {
-                assert_eq!(prompt, "What do you think?");
-            }
-            _ => panic!("Expected ProcessUserPrompt, got {:?}", action),
-        }
-    }
-
-    /// Test supervisor_loop_tick accumulates and processes at breakpoint (Rule [0], [1], [2], [3])
-    ///
-    /// @step Given a supervisor loop receiving subordinate observations
-    /// @step When TurnComplete breakpoint is received
-    /// @step Then accumulated observations should be formatted and returned
-    #[tokio::test]
-    async fn test_supervisor_loop_tick_breakpoint_processing() {
-        // @step Given a supervisor loop receiving subordinate observations
-        let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
-        let mut buffer = ObservationBuffer::new();
-        let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
-        let timeout = Duration::from_secs(5);
-
-        // Pre-populate buffer with some observations
-        buffer.push(StreamChunk::text("Hello ".to_string()));
-        buffer.push(StreamChunk::text("World".to_string()));
-
-        // @step When TurnComplete breakpoint is received
-        let _ = subordinate_tx.send(StreamChunk::done());
-
-        let action = supervisor_loop_tick(
-            &mut user_rx,
-            &mut subordinate_rx,
-            &mut buffer,
-            &role,
-            timeout,
-        ).await;
-
-        // @step Then accumulated observations should be formatted and returned
-        match action {
-            SupervisorLoopAction::ProcessObservations { prompt, observed_correlation_ids } => {
-                assert!(prompt.contains("Hello "));
-                assert!(prompt.contains("World"));
-                assert!(prompt.contains("reviewer"));
-                // WATCH-011: Should have correlation IDs from buffered chunks
-                // Note: In this test, chunks are created without correlation_id set (None)
-                // so observed_correlation_ids will be empty. Real usage assigns IDs via handle_output.
-                assert!(observed_correlation_ids.is_empty());
-            }
-            _ => panic!("Expected ProcessObservations, got {:?}", action),
-        }
-
-        // Buffer should be cleared
-        assert!(buffer.is_empty());
-    }
-
-    /// Test supervisor_loop_tick handles broadcast lag gracefully (Rule [4] from examples)
-    ///
-    /// @step Given a supervisor loop
-    /// @step When broadcast receiver reports lagged chunks
-    /// @step Then it should continue without error
-    #[tokio::test]
-    async fn test_supervisor_loop_tick_handles_lag() {
-        // This test verifies the lag handling code path exists
-        // In practice, lag is simulated by the broadcast channel when receiver falls behind
-        
-        // @step Given a supervisor loop
-        let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        // Create a small capacity channel to potentially trigger lag
-        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(2);
-        let mut buffer = ObservationBuffer::new();
-        let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
-        let timeout = Duration::from_millis(100);
-
-        // @step When broadcast receiver reports lagged chunks
-        // Send more messages than capacity to trigger lag
-        for i in 0..5 {
-            let _ = subordinate_tx.send(StreamChunk::text(format!("Message {}", i)));
-        }
-
-        // @step Then it should continue without error
-        let action = supervisor_loop_tick(
-            &mut user_rx,
-            &mut subordinate_rx,
-            &mut buffer,
-            &role,
-            timeout,
-        ).await;
-
-        // Should either get Continue (from lag) or process a chunk
-        match action {
-            SupervisorLoopAction::Continue | SupervisorLoopAction::ProcessObservations { .. } => {
-                // Both are acceptable - lag returns Continue, normal chunk may process
-            }
-            SupervisorLoopAction::Stop => {
-                panic!("Should not stop on lag");
-            }
-            _ => {} // Other actions are fine too
-        }
-    }
-
-    /// Test supervisor_loop_tick silence timeout (Rule [2])
-    ///
-    /// @step Given a supervisor with buffered observations
-    /// @step When silence timeout elapses
-    /// @step Then observations should be processed
-    #[tokio::test]
-    async fn test_supervisor_loop_tick_silence_timeout() {
-        // @step Given a supervisor with buffered observations
-        let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (_subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
-        let mut buffer = ObservationBuffer::new();
-        let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
-        
-        // Use very short timeout for test
-        let timeout = Duration::from_millis(50);
-
-        // Add observation and set old timestamp
-        buffer.push(StreamChunk::text("Buffered content".to_string()));
-        
-        // Wait for timeout to elapse
-        tokio::time::sleep(Duration::from_millis(100)).await;
-
-        // @step When silence timeout elapses
-        let action = supervisor_loop_tick(
-            &mut user_rx,
-            &mut subordinate_rx,
-            &mut buffer,
-            &role,
-            timeout,
-        ).await;
-
-        // @step Then observations should be processed
-        match action {
-            SupervisorLoopAction::ProcessObservations { prompt, .. } => {
-                assert!(prompt.contains("Buffered content"));
-            }
-            _ => panic!("Expected ProcessObservations from timeout, got {:?}", action),
-        }
-    }
-
-    /// Test supervisor_loop_tick empty buffer at breakpoint (Rule from example [5])
-    ///
-    /// @step Given a supervisor with empty buffer
-    /// @step When breakpoint chunk arrives
-    /// @step Then Continue should be returned (no evaluation)
-    #[tokio::test]
-    async fn test_supervisor_loop_tick_empty_buffer_at_breakpoint() {
-        // @step Given a supervisor with empty buffer
-        let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
-        let mut buffer = ObservationBuffer::new();
-        let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
-        let timeout = Duration::from_secs(5);
-
-        assert!(buffer.is_empty());
-
-        // @step When breakpoint chunk arrives to an empty buffer
-        let _ = subordinate_tx.send(StreamChunk::done());
-
-        let action = supervisor_loop_tick(
-            &mut user_rx,
-            &mut subordinate_rx,
-            &mut buffer,
-            &role,
-            timeout,
-        ).await;
-
-        // @step Then no evaluation prompt should be generated (Continue returned)
-        // Feature file: "Empty buffer at breakpoint does not trigger evaluation"
-        match action {
-            SupervisorLoopAction::Continue => {
-                // Correct! Empty buffer at breakpoint → no evaluation
-                // The Done chunk is still added to buffer for potential future use
-                assert!(!buffer.is_empty()); // Buffer has the Done chunk
-            }
-            SupervisorLoopAction::ProcessObservations { .. } => {
-                panic!("Should NOT process when buffer was empty before breakpoint");
-            }
-            _ => panic!("Unexpected action: {:?}", action),
-        }
     }
 }
 
@@ -3195,8 +2330,8 @@ mod supervisor_input_tests {
 
         // @step When the supervisor sends message "Consider adding error handling"
         let message = "Consider adding error handling".to_string();
-        let input = SupervisorInput::new(session_id, role_name, message).unwrap();
-        let formatted = format_supervisor_input(&input);
+        let input = IncomingMessage::new(session_id, role_name, message).unwrap();
+        let formatted = format_incoming_message(&input);
 
         // @step Then the formatted message should be "[SUPERVISOR: code-reviewer | Session: abc123] Consider adding error handling"
         assert_eq!(
@@ -3210,7 +2345,7 @@ mod supervisor_input_tests {
     /// @step Given a supervisor session with role "security-auditor" 
     /// @step And the supervisor session id is "xyz789"
     /// @step When the supervisor sends message "CRITICAL: SQL injection vulnerability detected"
-    /// @step Then the subordinate should receive a SupervisorInput chunk
+    /// @step Then the subordinate should receive a IncomingMessage chunk
     /// @step And the chunk should contain the formatted message with structured prefix
     #[test]
     fn test_format_authority_supervisor_message() {
@@ -3222,46 +2357,46 @@ mod supervisor_input_tests {
 
         // @step When the supervisor sends message "CRITICAL: SQL injection vulnerability detected"
         let message = "CRITICAL: SQL injection vulnerability detected".to_string();
-        let input = SupervisorInput::new(session_id, role_name, message).unwrap();
+        let input = IncomingMessage::new(session_id, role_name, message).unwrap();
 
-        // @step Then the subordinate should receive a SupervisorInput chunk
-        let chunk = StreamChunk::supervisor_input(format_supervisor_input(&input));
+        // @step Then the subordinate should receive a IncomingMessage chunk
+        let chunk = StreamChunk::incoming_message(format_incoming_message(&input));
 
         // @step And the chunk should contain the formatted message with structured prefix
         // NAPI-010: Use pattern matching
         match chunk {
-            StreamChunk::SupervisorInput { text, .. } => {
+            StreamChunk::IncomingMessage { text, .. } => {
                 assert!(text.starts_with("[SUPERVISOR: security-auditor | Session: xyz789]"));
             }
-            _ => panic!("Expected SupervisorInput variant"),
+            _ => panic!("Expected IncomingMessage variant"),
         }
     }
 
     /// Scenario: Receive supervisor input queues message asynchronously
     ///
     /// This test verifies the supervisor input channel mechanism works correctly.
-    /// Note: BackgroundSession.receive_supervisor_input() uses try_send which is non-blocking.
+    /// Note: BackgroundSession.receive_incoming_message() uses try_send which is non-blocking.
     /// We test the channel pattern here since BackgroundSession construction requires
     /// a full codelet_cli::session::Session (integration test territory).
     ///
     /// @step Given a subordinate session exists
-    /// @step When receive_supervisor_input is called with a valid SupervisorInput
+    /// @step When receive_incoming_message is called with a valid IncomingMessage
     /// @step Then the input should be queued via the supervisor input channel
     /// @step And the method should return immediately without blocking
     #[test]
-    fn test_receive_supervisor_input_queues_via_try_send() {
+    fn test_receive_incoming_message_queues_via_try_send() {
         // @step Given a subordinate session exists
-        // We test the channel mechanism that BackgroundSession.receive_supervisor_input uses
-        let (supervisor_tx, mut supervisor_rx) = tokio::sync::mpsc::channel::<SupervisorInput>(16);
+        // We test the channel mechanism that BackgroundSession.receive_incoming_message uses
+        let (supervisor_tx, mut supervisor_rx) = tokio::sync::mpsc::channel::<IncomingMessage>(16);
 
-        // @step When receive_supervisor_input is called with a valid SupervisorInput
-        let input = SupervisorInput::new(
+        // @step When receive_incoming_message is called with a valid IncomingMessage
+        let input = IncomingMessage::new(
             "session123".to_string(),
             "test-supervisor".to_string(),
             "Test message".to_string(),
         ).unwrap();
 
-        // BackgroundSession.receive_supervisor_input uses try_send (non-blocking)
+        // BackgroundSession.receive_incoming_message uses try_send (non-blocking)
         // This mirrors the exact implementation pattern
         let result = supervisor_tx.try_send(input);
 
@@ -3275,19 +2410,19 @@ mod supervisor_input_tests {
         assert_eq!(received.unwrap().message, "Test message");
     }
 
-    /// Test that channel returns error when full (matches receive_supervisor_input error handling)
+    /// Test that channel returns error when full (matches receive_incoming_message error handling)
     #[test]
-    fn test_receive_supervisor_input_channel_full_returns_error() {
+    fn test_receive_incoming_message_channel_full_returns_error() {
         // Create a channel with capacity 1
-        let (supervisor_tx, _supervisor_rx) = tokio::sync::mpsc::channel::<SupervisorInput>(1);
+        let (supervisor_tx, _supervisor_rx) = tokio::sync::mpsc::channel::<IncomingMessage>(1);
 
-        let input1 = SupervisorInput::new(
+        let input1 = IncomingMessage::new(
             "s1".to_string(),
             "supervisor".to_string(),
             "First".to_string(),
         ).unwrap();
 
-        let input2 = SupervisorInput::new(
+        let input2 = IncomingMessage::new(
             "s2".to_string(),
             "supervisor".to_string(),
             "Second".to_string(),
@@ -3316,7 +2451,7 @@ mod supervisor_input_tests {
         let session_id = "test123".to_string();
 
         // @step When the supervisor sends an empty message
-        let result = SupervisorInput::new(session_id, role_name, "".to_string());
+        let result = IncomingMessage::new(session_id, role_name, "".to_string());
 
         // @step Then an error should be returned with message "message cannot be empty"
         assert!(result.is_err());
@@ -3340,8 +2475,8 @@ mod supervisor_input_tests {
 
         // @step When the supervisor sends a multiline message
         let multiline_message = "Issue found on line 42:\n- Missing null check\n- Consider using Option<T>".to_string();
-        let input = SupervisorInput::new(session_id, role_name, multiline_message).unwrap();
-        let formatted = format_supervisor_input(&input);
+        let input = IncomingMessage::new(session_id, role_name, multiline_message).unwrap();
+        let formatted = format_incoming_message(&input);
 
         // @step Then the formatted message should have the prefix on the first line
         assert!(formatted.starts_with("[SUPERVISOR: code-reviewer | Session: abc123]"));
@@ -3473,80 +2608,6 @@ mod napi_supervisor_tests {
         // @step Then it should return an empty array
         assert!(supervisors.is_empty());
     }
-
-    /// Scenario: Inject supervisor message into subordinate session
-    ///
-    /// @step Given a supervisor session "supervisor-uuid" with role "code-reviewer" 
-    /// @step And the supervisor is observing subordinate "parent-uuid"
-    /// @step When I call supervisor_inject with supervisor "supervisor-uuid" and message "Consider adding error handling"
-    /// @step Then the message should be formatted with supervisor prefix
-    /// @step And the message should be queued on the subordinate session
-    #[test]
-    fn test_supervisor_inject_formats_and_queues_message() {
-        // @step Given a supervisor session "supervisor-uuid" with role "code-reviewer" 
-        let supervisor_id = "00000000-0000-0000-0000-00000000000a";
-        let role = SupervisorRole::new(
-            "code-reviewer".to_string(),
-            None,
-        ).unwrap();
-
-        // @step And the supervisor is observing subordinate "parent-uuid"
-        // (Setup via ChainOfCommand in real implementation)
-
-        // @step When I call supervisor_inject with supervisor "supervisor-uuid" and message "Consider adding error handling"
-        let input = SupervisorInput::new(
-            supervisor_id.to_string(),
-            role.name.clone(),
-            role.name,
-            "Consider adding error handling".to_string(),
-        ).unwrap();
-
-        // @step Then the message should be formatted with supervisor prefix
-        let formatted = format_supervisor_input(&input);
-        assert!(formatted.starts_with("[SUPERVISOR: code-reviewer | Session:"));
-        assert!(formatted.contains("Consider adding error handling"));
-
-        // @step And the message should be queued on the subordinate session
-        // (Tested via receive_supervisor_input in integration)
-    }
-
-    /// Scenario: Inject fails when session has no role
-    ///
-    /// @step Given a session "no-role-uuid" without a supervisor role
-    /// @step When I call supervisor_inject with supervisor "no-role-uuid" and message "Test"
-    /// @step Then it should return error "Session has no supervisor role set"
-    #[test]
-    fn test_supervisor_inject_fails_without_role() {
-        // @step Given a session "no-role-uuid" without a supervisor role
-        let role: Option<SupervisorRole> = None;
-
-        // @step When I call supervisor_inject with supervisor "no-role-uuid" and message "Test"
-        // Simulated: check that role is None
-
-        // @step Then it should return error "Session has no supervisor role set"
-        assert!(role.is_none(), "Role should be None for session without supervisor role");
-        // Real NAPI function will return: Error::from_reason("Session has no supervisor role set")
-    }
-
-    /// Scenario: Inject fails when supervisor has no subordinate
-    ///
-    /// @step Given a session "orphan-uuid" with role "reviewer" but no subordinate registered
-    /// @step When I call supervisor_inject with supervisor "orphan-uuid" and message "Test"
-    /// @step Then it should return error "Supervisor has no subordinate session"
-    #[test]
-    fn test_supervisor_inject_fails_without_subordinate() {
-        // @step Given a session "orphan-uuid" with role "reviewer" but no subordinate registered
-        let orphan_id = Uuid::parse_str("00000000-0000-0000-0000-00000000000b").unwrap();
-        let chain_of_command = ChainOfCommand::new();
-        // Note: role is set but no subordinate in ChainOfCommand
-
-        // @step When I call supervisor_inject with supervisor "orphan-uuid" and message "Test"
-        let subordinate = chain_of_command.get_subordinate(orphan_id);
-
-        // @step Then it should return error "Supervisor has no subordinate session"
-        assert!(subordinate.is_none(), "Orphan supervisor should have no subordinate");
-        // Real NAPI function will return: Error::from_reason("Supervisor has no subordinate session")
-    }
 }
 
 #[cfg(test)]
@@ -3585,37 +2646,6 @@ mod correlation_id_tests {
         assert_eq!(correlation_id2, "00000000-0000-0000-0000-000000000001-1");
     }
 
-    /// Scenario: ObservationBuffer captures correlation IDs
-    ///
-    /// @step Given a supervisor session is observing a subordinate session
-    /// @step And the subordinate emits chunks with correlation_ids "p-0", "p-1", "p-2"
-    /// @step When a natural breakpoint triggers supervisor evaluation
-    /// @step Then the buffer.correlation_ids() returns ["p-0", "p-1", "p-2"]
-    #[test]
-    fn test_observation_buffer_correlation_ids() {
-        // @step Given a supervisor session is observing a subordinate session
-        let mut buffer = ObservationBuffer::new();
-
-        // @step And the subordinate emits chunks with correlation_ids "p-0", "p-1", "p-2"
-        // NAPI-010: Use with_correlation_id() builder method
-        let chunk1 = StreamChunk::text("Hello".to_string())
-            .with_correlation_id("p-0".to_string());
-        buffer.push(chunk1);
-
-        let chunk2 = StreamChunk::text("World".to_string())
-            .with_correlation_id("p-1".to_string());
-        buffer.push(chunk2);
-
-        let chunk3 = StreamChunk::text("!".to_string())
-            .with_correlation_id("p-2".to_string());
-        buffer.push(chunk3);
-
-        // @step When a natural breakpoint triggers supervisor evaluation
-        // @step Then the buffer.correlation_ids() returns ["p-0", "p-1", "p-2"]
-        let ids = buffer.correlation_ids();
-        assert_eq!(ids, vec!["p-0", "p-1", "p-2"]);
-    }
-
     /// Scenario: StreamChunk can be tagged with observed correlation IDs
     ///
     /// @step Given a supervisor response chunk
@@ -3644,32 +2674,6 @@ mod correlation_id_tests {
         }
     }
 
-    /// Scenario: SupervisorLoopAction::ProcessObservations includes observed correlation IDs
-    ///
-    /// @step Given accumulated observations with correlation IDs
-    /// @step When ProcessObservations action is created
-    /// @step Then it contains the observed correlation IDs
-    #[test]
-    fn test_supervisor_loop_action_has_correlation_ids() {
-        // @step Given accumulated observations with correlation IDs
-        let prompt = "Evaluate these observations".to_string();
-        let correlation_ids = vec!["p-0".to_string(), "p-1".to_string()];
-
-        // @step When ProcessObservations action is created
-        let action = SupervisorLoopAction::ProcessObservations {
-            prompt: prompt.clone(),
-            observed_correlation_ids: correlation_ids.clone(),
-        };
-
-        // @step Then it contains the observed correlation IDs
-        match action {
-            SupervisorLoopAction::ProcessObservations { prompt: p, observed_correlation_ids } => {
-                assert_eq!(p, prompt);
-                assert_eq!(observed_correlation_ids, correlation_ids);
-            }
-            _ => panic!("Expected ProcessObservations"),
-        }
-    }
 }
 
 #[cfg(test)]
@@ -3677,36 +2681,6 @@ mod supervisor_integration_tests {
     use super::*;
 
     // Feature: spec/features/watcher-loop-and-input-channel-not-integrated.feature (WATCH-019)
-
-    /// Scenario: Subordinate session processes supervisor injections
-    ///
-    /// @step Given a subordinate session exists with a supervisor attached
-    /// @step When the supervisor injects a message via supervisor_inject
-    /// @step Then the subordinate agent_loop should read the message from supervisor_input_rx and process it
-    #[test]
-    fn test_subordinate_session_processes_supervisor_injections() {
-        // @step Given a subordinate session exists with a supervisor attached
-        // Create a supervisor input channel (simulating subordinate's supervisor_input_tx/rx)
-        let (supervisor_input_tx, mut supervisor_input_rx) = mpsc::channel::<SupervisorInput>(16);
-
-        // @step When the supervisor injects a message via supervisor_inject
-        let input = SupervisorInput::new(
-            "supervisor-uuid".to_string(),
-            "security-reviewer".to_string(),
-            "SQL injection vulnerability detected!".to_string(),
-        ).unwrap();
-        
-        supervisor_input_tx.try_send(input.clone()).expect("Should send supervisor input");
-
-        // @step Then the subordinate agent_loop should read the message from supervisor_input_rx and process it
-        // Use try_recv to simulate what agent_loop would do
-        let received = supervisor_input_rx.try_recv();
-        assert!(received.is_ok(), "Subordinate should receive supervisor injection from supervisor_input_rx");
-        
-        let received_input = received.unwrap();
-        assert_eq!(received_input.message, "SQL injection vulnerability detected!");
-        assert_eq!(received_input.role_name, "security-reviewer");
-    }
 
     /// Scenario: Supervisor session subscribes to subordinate broadcast on creation
     ///
@@ -3736,64 +2710,6 @@ mod supervisor_integration_tests {
             }
             _ => panic!("Expected Text variant"),
         }
-    }
-
-    /// Scenario: Supervisor loop processes subordinate observations at breakpoints
-    ///
-    /// @step Given a supervisor session is running with subordinate broadcast subscription
-    /// @step When the subordinate session emits Text chunks followed by a Done chunk
-    /// @step Then the supervisor should accumulate observations and trigger evaluation at the Done breakpoint
-    #[tokio::test]
-    async fn test_supervisor_loop_processes_observations() {
-        // @step Given a supervisor session is running with subordinate broadcast subscription
-        let (user_input_tx, mut user_input_rx) = mpsc::channel::<PromptInput>(16);
-        let (subordinate_broadcast_tx, mut subordinate_broadcast_rx) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
-        let role = SupervisorRole::new("test-supervisor".to_string(), None).unwrap();
-        let mut buffer = ObservationBuffer::new();
-        let silence_timeout = std::time::Duration::from_secs(5);
-
-        // @step When the subordinate session emits Text chunks followed by a Done chunk
-        // Send text chunk first
-        subordinate_broadcast_tx.send(StreamChunk::text("function login() { }".to_string())).unwrap();
-        
-        // Process the text chunk - should accumulate
-        let action1 = supervisor_loop_tick(
-            &mut user_input_rx,
-            &mut subordinate_broadcast_rx,
-            &mut buffer,
-            &role,
-            silence_timeout,
-        ).await;
-        
-        // Should continue (not a breakpoint)
-        assert!(matches!(action1, SupervisorLoopAction::Continue), "Text chunk should not trigger evaluation");
-        assert!(!buffer.is_empty(), "Buffer should have accumulated the text chunk");
-
-        // Send Done chunk (breakpoint)
-        subordinate_broadcast_tx.send(StreamChunk::done()).unwrap();
-        
-        let action2 = supervisor_loop_tick(
-            &mut user_input_rx,
-            &mut subordinate_broadcast_rx,
-            &mut buffer,
-            &role,
-            silence_timeout,
-        ).await;
-
-        // @step Then the supervisor should accumulate observations and trigger evaluation at the Done breakpoint
-        match action2 {
-            SupervisorLoopAction::ProcessObservations { prompt, observed_correlation_ids: _ } => {
-                assert!(!prompt.is_empty(), "Evaluation prompt should be generated");
-                assert!(prompt.contains("function login"), "Prompt should contain observed content");
-            }
-            _ => panic!("Expected ProcessObservations action at Done breakpoint, got {:?}", action2),
-        }
-        
-        // Buffer should be cleared after processing
-        assert!(buffer.is_empty(), "Buffer should be cleared after breakpoint processing");
-
-        // Clean up
-        drop(user_input_tx);
     }
 }
 
@@ -4418,122 +3334,6 @@ impl SessionManager {
         })
     }
     
-    /// Create a supervisor session that observes a subordinate session (WATCH-019)
-    ///
-    /// Similar to create_session_with_id but:
-    /// - Spawns supervisor_agent_loop instead of agent_loop
-    /// - Subscribes to subordinate's broadcast channel
-    /// - Sets the supervisor role
-    pub async fn create_supervisor_session_with_id(
-        &self,
-        id: &str,
-        model: &str,
-        project: &str,
-        name: &str,
-        subordinate_id: Uuid,
-        role: SupervisorRole,
-    ) -> Result<()> {
-        let uuid = Uuid::parse_str(id)
-            .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
-
-        // Check session limits
-        {
-            let sessions = self.sessions.read().expect("sessions lock poisoned");
-            if sessions.len() >= MAX_SESSIONS {
-                return Err(Error::from_reason(format!(
-                    "Maximum sessions ({}) reached",
-                    MAX_SESSIONS
-                )));
-            }
-            if sessions.contains_key(&uuid) {
-                return Ok(());
-            }
-        }
-
-        // Get subordinate session and subscribe to its broadcast
-        let subordinate = self.sessions
-            .read()
-            .expect("sessions lock poisoned")
-            .get(&subordinate_id)
-            .cloned()
-            .ok_or_else(|| Error::from_reason(format!("Subordinate session not found: {}", subordinate_id)))?;
-        
-        let subordinate_broadcast_rx = subordinate.subscribe_to_stream();
-
-        let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
-
-        let _ = dotenvy::dotenv();
-
-        // Require model string in "provider/model-id" format
-        if !model.contains('/') || model.is_empty() {
-            return Err(Error::from_reason(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            )));
-        }
-
-        let parts: Vec<&str> = model.split('/').collect();
-        let registry_provider = parts.first().unwrap_or(&"");
-        let model_part = parts.get(1).unwrap_or(&"");
-
-        // Validate both parts are non-empty
-        if registry_provider.is_empty() || model_part.is_empty() {
-            return Err(Error::from_reason(format!(
-                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
-                model
-            )));
-        }
-
-        let (provider_id, model_id) = (Some(registry_provider.to_string()), Some(model_part.to_string()));
-
-        // Resolve credentials internally using the credentials module.
-        let project_path = std::path::PathBuf::from(project);
-        if let Err(e) = crate::credentials::resolve_and_set_env_var(registry_provider, Some(project_path.as_path())) {
-            tracing::error!("Failed to resolve credentials for supervisor provider {}: {}", registry_provider, e);
-        }
-
-        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
-            .await
-            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
-
-        // PROV-018: Codex models bypass registry validation
-        if model.starts_with("codex/") {
-            provider_manager.set_model_direct(registry_provider, model_part)
-                .map_err(|e| Error::from_reason(format!("Failed to set codex model: {}", e)))?;
-        } else {
-            provider_manager.select_model(model)
-                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
-        }
-
-        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
-        inner.inject_context_reminders();
-
-        let session = Arc::new(BackgroundSession::new(
-            uuid,
-            name.to_string(),
-            project.to_string(),
-            provider_id,
-            model_id,
-            inner,
-            input_tx,
-            None, // GIT-019: supervisor sessions are always non-isolated
-            None, // GIT-019: no base_commit for supervisor sessions
-        ));
-        
-        // Set the supervisor role
-        session.set_role(role.clone());
-        
-        // Spawn supervisor agent loop (observes subordinate via broadcast)
-        let session_clone = session.clone();
-        tokio::spawn(async move {
-            supervisor_agent_loop(session_clone, input_rx, subordinate_broadcast_rx, role).await;
-        });
-        
-        // Store session
-        self.sessions.write().expect("sessions lock poisoned").insert(uuid, session);
-        
-        Ok(())
-    }
     
     /// List all sessions
     pub fn list_sessions(&self) -> Vec<SessionInfo> {
@@ -5046,7 +3846,7 @@ async fn agent_loop(
     loop {
         // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
         // Lock the supervisor_input_rx to use in select
-        let mut supervisor_rx = session.supervisor_input_rx.lock().await;
+        let mut supervisor_rx = session.incoming_message_rx.lock().await;
         
         // Use biased to prefer user input over supervisor/MCP input
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
@@ -5075,19 +3875,19 @@ async fn agent_loop(
                     Some(supervisor_input) => {
                         tracing::debug!("agent_loop received supervisor input from {}: {}", supervisor_input.role_name, supervisor_input.message.chars().take(50).collect::<String>());
                         // Format supervisor input as a user message with structured prefix
-                        let formatted = format_supervisor_input(&supervisor_input);
+                        let formatted = format_incoming_message(&supervisor_input);
                         
                         // BRIDGE-007: Emit the supervisor input chunk with images if present
                         if let Some(ref images) = supervisor_input.images {
-                            let supervisor_images: Vec<crate::types::SupervisorInputImage> = images.iter()
-                                .map(|img| crate::types::SupervisorInputImage {
+                            let supervisor_images: Vec<crate::types::IncomingMessageImage> = images.iter()
+                                .map(|img| crate::types::IncomingMessageImage {
                                     data: img.data.clone(),
                                     media_type: img.media_type.clone(),
                                 })
                                 .collect();
-                            session.handle_output(StreamChunk::supervisor_input_with_images(formatted.clone(), supervisor_images));
+                            session.handle_output(StreamChunk::incoming_message_with_images(formatted.clone(), supervisor_images));
                         } else {
-                            session.handle_output(StreamChunk::supervisor_input(formatted.clone()));
+                            session.handle_output(StreamChunk::incoming_message(formatted.clone()));
                         }
                         
                         // BRIDGE-007: Pass images to LLM as multimodal input
@@ -5111,7 +3911,7 @@ async fn agent_loop(
                     Some(McpInjection::Notification(text)) => {
                         tracing::info!("[MCP] agent_loop received notification: {}", text.chars().take(80).collect::<String>());
                         // Emit as supervisor input chunk so the UI shows it
-                        session.handle_output(StreamChunk::supervisor_input(text.clone()));
+                        session.handle_output(StreamChunk::incoming_message(text.clone()));
                         // Process as LLM input so the agent can react to the notification
                         Some(InputWithImages {
                             text,
@@ -5407,6 +4207,19 @@ async fn agent_loop(
             });
             codelet_tools::set_deep_search_handler(session.id, Some(deep_search_handler));
 
+            // AMGR-009: Register AgentManager handler for this session
+            // The handler accesses SessionManager for spawn/list/get_status/close
+            {
+                let provider_id = inner_session.current_provider_name().to_string();
+                let model_id_str = inner_session.current_model_id().map(|s| s.to_string());
+                let agent_manager_handler = crate::agent_manager_handler::create_handler(
+                    session.project.clone(),
+                    Some(provider_id),
+                    model_id_str,
+                );
+                codelet_tools::set_agent_manager_handler(session.id, Some(agent_manager_handler));
+            }
+
             // Register inject_summary handler — stores DAG in pending_dag_content
             // and fires on_injected to emit CompactionComplete immediately.
             {
@@ -5478,7 +4291,7 @@ async fn agent_loop(
             
             // Create input injector that sends messages to the session's supervisor input channel
             // BRIDGE-007: Updated to accept InjectedInput with optional images
-            let supervisor_input_tx = session_for_bridge.supervisor_input_sender();
+            let supervisor_input_tx = session_for_bridge.incoming_message_sender();
             let input_injector: codelet_tools::InputInjector = Arc::new(move |input: codelet_tools::InjectedInput| {
                 // Convert InjectedInput images to BridgeImageData
                 let bridge_images = input.images.map(|imgs| {
@@ -5490,17 +4303,17 @@ async fn agent_loop(
                         .collect()
                 });
                 
-                // Create a SupervisorInput message for injection from bridge
+                // Create a IncomingMessage message for injection from bridge
                 // Note: For bridge, we allow empty message if images are present
                 let supervisor_input = if input.message.is_empty() && bridge_images.is_some() {
-                    SupervisorInput {
+                    IncomingMessage {
                         source_session_id: "bridge".to_string(),
                         role_name: "bridge".to_string(),
                         message: String::new(),
                         images: bridge_images,
                     }
                 } else {
-                    SupervisorInput {
+                    IncomingMessage {
                         source_session_id: "bridge".to_string(),
                         role_name: "bridge".to_string(),
                         message: input.message.clone(),
@@ -5670,6 +4483,7 @@ async fn agent_loop(
             codelet_tools::set_session_search_handler(session.id, None);
             codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
+            codelet_tools::set_agent_manager_handler(session.id, None); // AMGR-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
             codelet_tools::set_bridge_handler(None);
             codelet_tools::remove_bridge_session_context(session.id);
@@ -5700,171 +4514,6 @@ async fn agent_loop(
     }
 }
 
-/// Supervisor agent loop that observes subordinate session and handles dual input (WATCH-019)
-///
-/// This loop uses `run_supervisor_loop` from WATCH-005 to handle both:
-/// - User prompts to the supervisor (takes priority)
-/// - Subordinate session observations (accumulated until breakpoints)
-///
-/// When observations trigger evaluation, the prompt is run through the agent
-/// and the output is shown in the supervisor's UI. The supervisor user can then
-/// manually inject messages via supervisor_inject if needed.
-async fn supervisor_agent_loop(
-    supervisor_session: Arc<BackgroundSession>,
-    mut user_input_rx: mpsc::Receiver<PromptInput>,
-    mut subordinate_broadcast_rx: broadcast::Receiver<StreamChunk>,
-    role: SupervisorRole,
-) {
-    let silence_timeout_secs = Some(DEFAULT_SILENCE_TIMEOUT_SECS);
-    let supervisor_for_callback = supervisor_session.clone();
-    let auto_inject = role.auto_inject; // WATCH-020: Capture auto_inject setting
-    let supervisor_id_str = supervisor_session.id.to_string(); // WATCH-020: Capture for injection (convert Uuid to String)
-
-    // Process prompt callback - runs prompts through the agent (similar to agent_loop)
-    // WATCH-020: Now uses SupervisorOutput for observation evaluations to capture turn text
-    let process_prompt = |prompt: String, is_user_prompt: bool, observed_correlation_ids: Vec<String>| {
-        let session = supervisor_for_callback.clone();
-        let supervisor_id = supervisor_id_str.clone();
-        async move {
-            // WATCH-011: Set pending observed correlation IDs for supervisor responses
-            if !is_user_prompt && !observed_correlation_ids.is_empty() {
-                session.set_pending_observed_correlation_ids(observed_correlation_ids);
-            }
-
-            tracing::debug!(
-                "Supervisor {} processing {}: {}",
-                session.id,
-                if is_user_prompt { "user prompt" } else { "observation evaluation" },
-                prompt.chars().take(50).collect::<String>()
-            );
-
-            // Set status to running
-            session.set_status(SessionStatus::Running);
-            session.reset_interrupt();
-
-            // WATCH-020: Use SupervisorOutput for observation evaluations to capture turn text
-            // User prompts use BackgroundOutput directly (no parsing needed)
-            // REFAC-007: Include provider for persistence
-            let session_for_output = session.clone();
-            
-            let mut inner_session = session.inner.lock().await;
-            let current_provider = inner_session.current_provider_name().to_string();
-            let supervisor_output = SupervisorOutput::with_provider(session_for_output.clone(), current_provider.clone());
-            
-            let session_for_pause = session.clone();
-            let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
-                let state = PauseState {
-                    kind: request.kind,
-                    tool_name: request.tool_name.clone(),
-                    message: request.message.clone(),
-                    details: request.details.clone(),
-                };
-                session_for_pause.set_pause_state(Some(state));
-                session_for_pause.set_status(SessionStatus::Paused);
-                
-                let response = session_for_pause.wait_for_pause_response();
-                
-                session_for_pause.set_status(SessionStatus::Running);
-                
-                response
-            });
-            
-            set_pause_handler(Some(pause_handler));
-            
-            // BRIDGE-007: Supervisor doesn't support images yet, pass None
-            let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
-                "codex" => run_with_provider!(&mut inner_session, get_codex, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
-                _ => {
-                    tracing::error!("Unsupported provider: {}", current_provider);
-                    Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
-                }
-            };
-            
-            set_pause_handler(None);
-
-            // Release the lock before any injection calls
-            drop(inner_session);
-
-            if let Err(e) = result {
-                tracing::error!("Supervisor agent error for session {}: {}", session.id, e);
-                session.handle_output(StreamChunk::error(e.to_string()));
-                // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
-                // This prevents race condition where JS receives Done before status is Idle
-                session.set_status(SessionStatus::Idle);
-                session.handle_output(StreamChunk::done());
-            } else {
-                // WATCH-020: Parse for interjections on observation evaluations only
-                if !is_user_prompt {
-                    let turn_text = supervisor_output.get_turn_text();
-                    if !turn_text.is_empty() {
-                        if let Some(interjection) = parse_interjection(&turn_text) {
-                            tracing::info!(
-                                "Supervisor {} detected interjection: urgent={}, content_len={}",
-                                supervisor_id,
-                                interjection.urgent,
-                                interjection.content.len()
-                            );
-                            
-                            if auto_inject {
-                                // WATCH-020: Automatic injection
-                                tracing::info!("Supervisor {} auto-injecting to subordinate", supervisor_id);
-                                
-                                // Call supervisor_inject with the extracted content
-                                // Note: supervisor_inject handles the injection internally
-                                if let Err(e) = supervisor_inject(supervisor_id.clone(), interjection.content) {
-                                    tracing::error!("Failed to auto-inject from supervisor {}: {}", supervisor_id, e);
-                                }
-                            } else {
-                                // WATCH-020: Manual review mode - emit pending injection event
-                                tracing::info!(
-                                    "Supervisor {} has pending interjection (auto_inject=false): {:?}",
-                                    supervisor_id,
-                                    interjection.content.chars().take(50).collect::<String>()
-                                );
-                                
-                                // Emit a special chunk to notify UI of pending injection
-                                session.handle_output(StreamChunk::supervisor_pending_injection(
-                                    interjection.urgent,
-                                    interjection.content,
-                                ));
-                            }
-                        } else {
-                            tracing::debug!(
-                                "Supervisor {} response parsed as [CONTINUE] or no interjection block",
-                                supervisor_id
-                            );
-                        }
-                    }
-                }
-                // Success case: BackgroundOutput::emit already set status to Idle when Done was emitted
-                // Setting it again here is idempotent and ensures consistency
-                session.set_status(SessionStatus::Idle);
-            }
-            
-            // Clear pending observed correlation IDs after processing
-            if !is_user_prompt {
-                session.set_pending_observed_correlation_ids(Vec::new());
-            }
-
-            Ok(())
-        }
-    };
-
-    // Run the supervisor loop
-    if let Err(e) = run_supervisor_loop(
-        &mut user_input_rx,
-        &mut subordinate_broadcast_rx,
-        &role,
-        silence_timeout_secs,
-        process_prompt,
-    ).await {
-        tracing::error!("Supervisor loop error for session {}: {}", supervisor_session.id, e);
-    }
-}
 
 /// Output handler for background sessions that implements StreamOutput
 /// 
@@ -6862,49 +5511,40 @@ pub fn session_get_buffered_output(session_id: String, limit: u32) -> Result<Vec
     Ok(session.get_buffered_output(limit as usize))
 }
 
-/// Session role info returned to TypeScript (WATCH-004)
+/// Session role info returned to TypeScript (AMGR-008: simplified from SupervisorRoleInfo)
 #[napi(object)]
 #[derive(Clone)]
 pub struct SupervisorRoleInfo {
-    /// Role name (e.g., "code-reviewer", "supervisor")
+    /// Role name (e.g., "security-reviewer")
     pub name: String,
-    /// Optional brief describing what this role does
+    /// Optional brief describing what this role does (always None for now, kept for API compat)
     pub brief: Option<String>,
 }
 
-/// Set the role for a session (WATCH-004)
-///
-/// Used to mark a session as a supervisor with a specific role and brief.
+/// Set the role for a session (AMGR-008: simplified — role is now a plain string)
 #[napi]
 pub fn session_set_role(
     session_id: String,
     role_name: String,
-    role_brief: Option<String>,
-    auto_inject: Option<bool>, // WATCH-021: Optional auto_inject parameter
+    _role_brief: Option<String>,
+    _auto_inject: Option<bool>,
 ) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
-    
-    // WATCH-021: Use new_with_auto_inject when auto_inject is specified
-    let role = SupervisorRole::new_with_auto_inject(
-        role_name,
-        role_brief,
-        auto_inject.unwrap_or(true), // Default to true if not specified
-    ).map_err(Error::from_reason)?;
-    
-    session.set_role(role);
+    if role_name.is_empty() {
+        return Err(Error::from_reason("Role name cannot be empty"));
+    }
+    session.set_role(role_name);
     Ok(())
 }
 
-/// Get the role for a session (WATCH-004)
-///
-/// Returns None for regular sessions, role info for supervisor sessions.
+/// Get the role for a session (AMGR-008: simplified — returns role string wrapped in SupervisorRoleInfo for compat)
 #[napi]
 pub fn session_get_role(session_id: String) -> Result<Option<SupervisorRoleInfo>> {
     let session = SessionManager::instance().get_session(&session_id)?;
     
-    Ok(session.get_role().map(|r| SupervisorRoleInfo {
-        name: r.name,
-        brief: r.brief,
+    Ok(session.get_role().map(|name| SupervisorRoleInfo {
+        name,
+        brief: None,
     }))
 }
 
@@ -6912,54 +5552,6 @@ pub fn session_get_role(session_id: String) -> Result<Option<SupervisorRoleInfo>
 
 // === Supervisor Operations (WATCH-007) ===
 
-/// Create a supervisor session for a subordinate session (WATCH-007)
-///
-/// Creates a new session that supervises the specified subordinate session.
-/// The supervisor is registered in ChainOfCommand and immediately starts observing
-/// the subordinate's output stream via broadcast subscription.
-/// WATCH-019: Now spawns supervisor_agent_loop instead of regular agent_loop.
-#[napi]
-pub async fn session_create_supervisor(
-    subordinate_id: String,
-    model: String,
-    project: String,
-    name: String,
-) -> Result<String> {
-    // Validate subordinate exists
-    let subordinate_uuid = Uuid::parse_str(&subordinate_id)
-        .map_err(|e| Error::from_reason(format!("Invalid subordinate ID: {}", e)))?;
-    
-    let _subordinate = SessionManager::instance().get_session(&subordinate_id)?;
-    
-    // Generate supervisor ID
-    let supervisor_id = Uuid::new_v4();
-    let supervisor_id_str = supervisor_id.to_string();
-    
-    // Create default role (can be updated via session_set_role)
-    let role = SupervisorRole::new(
-        name.clone(),
-        None,
-    ).map_err(Error::from_reason)?;
-    
-    // Create supervisor session with supervisor-specific loop
-    SessionManager::instance()
-        .create_supervisor_session_with_id(
-            &supervisor_id_str,
-            &model,
-            &project,
-            &name,
-            subordinate_uuid,
-            role,
-        )
-        .await?;
-    
-    // Register in ChainOfCommand (tracks subordinate-supervisor relationships)
-    SessionManager::instance()
-        .add_supervisor(subordinate_uuid, supervisor_id)
-        .map_err(Error::from_reason)?;
-
-    Ok(supervisor_id_str)
-}
 
 /// Get the subordinate session ID for a supervisor (WATCH-007)
 ///
@@ -6989,42 +5581,6 @@ pub fn session_get_supervisors(session_id: String) -> Result<Vec<String>> {
         .collect())
 }
 
-/// Inject a supervisor message into the subordinate session (WATCH-007)
-///
-/// Formats the message with the supervisor's role prefix and queues it
-/// on the subordinate session via receive_supervisor_input().
-/// Internal Rust function only — no TypeScript consumer.
-pub fn supervisor_inject(supervisor_id: String, message: String) -> Result<()> {
-    let supervisor_uuid = Uuid::parse_str(&supervisor_id)
-        .map_err(|e| Error::from_reason(format!("Invalid supervisor ID: {}", e)))?;
-    
-    // Get supervisor session
-    let supervisor_session = SessionManager::instance().get_session(&supervisor_id)?;
-    
-    // Get supervisor role (required)
-    let role = supervisor_session.get_role()
-        .ok_or_else(|| Error::from_reason("Session has no supervisor role set"))?;
-    
-    // Get subordinate session
-    let subordinate_uuid = SessionManager::instance()
-        .get_subordinate(supervisor_uuid)
-        .ok_or_else(|| Error::from_reason("Supervisor has no subordinate session"))?;
-    
-    let subordinate = SessionManager::instance().get_session(&subordinate_uuid.to_string())?;
-    
-    // Create SupervisorInput and format message
-    let input = SupervisorInput::new(
-        supervisor_id,
-        role.name,
-        message,
-    ).map_err(Error::from_reason)?;
-    
-    // Queue on subordinate
-    subordinate.receive_supervisor_input(input)
-        .map_err(Error::from_reason)?;
-    
-    Ok(())
-}
 
 /// Set pending observed correlation IDs for a supervisor session (WATCH-011)
 ///

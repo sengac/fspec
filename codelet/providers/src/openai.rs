@@ -312,7 +312,7 @@ impl OpenAIProvider {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WebSearchTool, WriteTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool,
-            DeepSearchTool, RequestUserInputTool,
+            DeepSearchTool, RequestUserInputTool, AgentManagerTool,
         };
         use rig::client::CompletionClient;
 
@@ -339,6 +339,7 @@ impl OpenAIProvider {
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
             .tool(RequestUserInputTool::new(session_id)); // TOOL-017: HITL tool
 
         // Set preamble if provided

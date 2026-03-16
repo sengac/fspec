@@ -49,9 +49,6 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   // History
   { name: 'search', description: 'Search command history' },
 
-  // Supervisors
-  { name: 'supervisor', description: 'Manage supervisor sessions' },
-
   // Blocklist (BLOCK-004)
   { name: 'blocklist', description: 'Manage blocklist rules' },
 

@@ -31,7 +31,7 @@ pub struct NapiToolCall {
 /// BRIDGE-007: Image data for supervisor input (from Telegram bridge)
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SupervisorInputImage {
+pub struct IncomingMessageImage {
     /// Base64-encoded image data
     pub data: String,
     /// Media type (e.g., "image/jpeg", "image/png")
@@ -318,11 +318,11 @@ pub enum StreamChunk {
 
     /// Supervisor input message (WATCH-006: for supervisor injection into subordinate session)
     /// BRIDGE-007: Extended to support optional images from Telegram bridge
-    SupervisorInput {
+    IncomingMessage {
         text: String,
         /// Optional images for multimodal input (BRIDGE-007)
         #[napi(js_name = "images")]
-        images: Option<Vec<SupervisorInputImage>>,
+        images: Option<Vec<IncomingMessageImage>>,
     },
 
     /// Supervisor pending injection - when auto_inject=false (WATCH-020)
@@ -451,13 +451,13 @@ impl StreamChunk {
 
     /// Supervisor input message (WATCH-006: for supervisor injection into subordinate session)
     /// BRIDGE-007: Extended to support optional images
-    pub fn supervisor_input(formatted_message: String) -> Self {
-        Self::SupervisorInput { text: formatted_message, images: None }
+    pub fn incoming_message(formatted_message: String) -> Self {
+        Self::IncomingMessage { text: formatted_message, images: None }
     }
     
     /// Supervisor input message with images (BRIDGE-007)
-    pub fn supervisor_input_with_images(formatted_message: String, images: Vec<SupervisorInputImage>) -> Self {
-        Self::SupervisorInput { 
+    pub fn incoming_message_with_images(formatted_message: String, images: Vec<IncomingMessageImage>) -> Self {
+        Self::IncomingMessage { 
             text: formatted_message, 
             images: if images.is_empty() { None } else { Some(images) }
         }
@@ -627,7 +627,7 @@ impl StreamChunk {
                 "type": "userInput",
                 "text": text,
             }),
-            Self::SupervisorInput { text, images } => {
+            Self::IncomingMessage { text, images } => {
                 let mut obj = json!({
                     "type": "supervisorInput",
                     "text": text,

@@ -307,6 +307,7 @@ impl CodexProvider {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, WebSearchTool,
             ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
+            AgentManagerTool,
         };
         use codelet_tools::facade::{
             BashToolFacadeWrapper, CodexExecCommandFacade, CodexGrepFilesFacade, CodexListDirFacade,
@@ -386,6 +387,7 @@ impl CodexProvider {
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
             .tool(request_user_input); // BUG-116: Codex-native HITL facade
 
         // The Codex backend API REQUIRES non-empty `instructions` in every

@@ -5,6 +5,7 @@
 //!
 //! CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
 
+pub mod agent_manager;
 pub mod astgrep;
 pub mod astgrep_refactor;
 pub mod apply_patch;
@@ -54,6 +55,13 @@ pub mod bridge_test_fixtures;
 mod bridge_integration_tests;
 
 pub use error::ToolError;
+
+pub use agent_manager::{
+    AgentManagerTool, AgentManagerHandler, AgentManagerResult,
+    AgentManagerAction, SessionEntry, SessionStatus,
+    set_agent_manager_handler, has_agent_manager_handler,
+    clear_all_agent_manager_handlers,
+};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

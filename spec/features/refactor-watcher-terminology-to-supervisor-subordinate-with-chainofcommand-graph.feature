@@ -1,3 +1,4 @@
+@done
 @WATCH-024
 Feature: Refactor watcher terminology to supervisor/subordinate with ChainOfCommand graph
 

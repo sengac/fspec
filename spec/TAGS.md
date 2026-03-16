@@ -65,10 +65,12 @@ Tags that categorize features by functional area.
 | `@agent-detection` | Agent detection and runtime configuration features |
 | `@agent-integration` | Features related to AI agent initialization, detection, and integration |
 | `@agent-interaction` | Agent interaction functionality |
+| `@agent-manager` | Agent manager tool for programmatic agent orchestration, role management, and inter-agent communication |
 | `@agent-modal` | Agent modal component features and interactions |
 | `@agent-support` | Multi-agent support and agent-specific configurations |
 | `@ai-assistance` | AI-assisted features for analysis and extraction |
 | `@answer-question` | Question answering operations |
+| `@any-to-any` | Any-to-any messaging between sessions regardless of ChainOfCommand relationship |
 | `@assumption-management` | Assumption tracking in Example Mapping |
 | `@attachment` | File attachment management features |
 | `@attachment-management` | Attachment management features for work units |
@@ -77,6 +79,7 @@ Tags that categorize features by functional area.
 | `@authentication` | Authentication and authorization functionality |
 | `@auto-blocking` | Automatic blocking state transitions |
 | `@auto-transition` | Automatic state transitions |
+| `@bidirectional` | Bidirectional communication between agents regardless of ChainOfCommand direction |
 | `@blocked-state` | Blocked state handling |
 | `@board` | Kanban board operations |
 | `@board-view` | Kanban board visualization |
@@ -111,6 +114,7 @@ Tags that categorize features by functional area.
 | `@connection` | Connection and lifecycle scenarios |
 | `@connection-test` | Connection testing functionality |
 | `@context-management` | Context window and memory management features |
+| `@context-references` | Message context references that attach resolved session history to inter-agent messages |
 | `@context-window` | Context window management and monitoring features |
 | `@coverage` | Coverage tracking and traceability features |
 | `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |
@@ -143,6 +147,7 @@ Tags that categorize features by functional area.
 | `@foundation` | Foundation documentation and schema features |
 | `@foundation-management` | FOUNDATION.md Operations |
 | `@generate-scenarios` | Scenario generation from examples |
+| `@get-status` | Get status action for querying detailed session information |
 | `@help-system` | Help system and documentation features |
 | `@help-text` | Help and documentation features |
 | `@history-project-filter` | History filtering by project |
@@ -151,6 +156,7 @@ Tags that categorize features by functional area.
 | `@impact-analysis` | Impact analysis and dependency chains |
 | `@infrastructure` | Core infrastructure and shared utilities |
 | `@install` | Installation and setup functionality |
+| `@inter-agent-coordination` | Inter-agent coordination patterns including discover-inspect-communicate-verify loops, bidirectional messaging, and context-referenced communication |
 | `@interaction` | User interaction and input handling features |
 | `@interactive-cli` | Interactive CLI features and TUI workflows |
 | `@kanban` | Kanban board and workflow management |
@@ -219,8 +225,10 @@ Tags that categorize features by functional area.
 | `@session-rename` | Session renaming |
 | `@session-resume` | Session resume and persistence scenarios |
 | `@session-switch` | Session switching between conversations |
+| `@set-role` | Set role action for changing agent role, brief, and auto_inject settings |
 | `@settings-navigation` | Settings navigation and UI interactions |
 | `@soft-dependency` | Soft dependency relationships |
+| `@spawn` | Agent spawn action for creating new supervisor sessions |
 | `@state-enforcement` | State transition enforcement |
 | `@state-history` | State history tracking |
 | `@state-management` | Work unit state management and transitions |
@@ -861,7 +869,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-03-15T10:15:45.292Z_
+_Last updated: 2026-03-16T02:11:34.671Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -54,6 +54,10 @@ pub mod inject_summary_handler;
 #[cfg(not(feature = "noop"))]
 pub mod deep_search_handler;
 
+// AMGR-009: AgentManager handler bridges tools layer to SessionManager
+#[cfg(not(feature = "noop"))]
+pub mod agent_manager_handler;
+
 #[cfg(not(feature = "noop"))]
 pub(crate) mod deep_search_provider_config;
 

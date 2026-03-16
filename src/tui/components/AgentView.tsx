@@ -28,7 +28,6 @@ import { Box, Text, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
-import { SupervisorCreateView } from './SupervisorCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
 
@@ -127,19 +126,6 @@ import {
   parseModelString,
   findSectionForPersistedModel,
 } from '../utils/model-selection';
-import {
-  findTemplateBySlug,
-  loadSupervisorTemplates,
-  saveSupervisorTemplates,
-  createTemplate,
-  updateTemplate,
-} from '../utils/supervisorTemplateStorage';
-import type {
-  SupervisorTemplate,
-  SupervisorInstance,
-} from '../types/supervisorTemplate';
-import { SupervisorTemplateList } from './SupervisorTemplateList';
-import { SupervisorTemplateForm } from './SupervisorTemplateForm';
 import { BlocklistListView, type BlocklistRule } from './BlocklistListView';
 import { SessionHeader } from './SessionHeader';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
@@ -1102,46 +1088,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-040: Delete session dialog state
   const [showSessionDeleteDialog, setShowSessionDeleteDialog] = useState(false);
 
-  // WATCH-008: Supervisor management overlay state
-  const [isSupervisorMode, setIsSupervisorMode] = useState(false);
-  // TUI-050: Trigger state for supervisor mode initialization (avoids TDZ with handleSupervisorMode)
-  const [triggerSupervisorModeInit, setTriggerSupervisorModeInit] = useState(false);
-  const [supervisorList, setSupervisorList] = useState<SupervisorInfo[]>([]);
-  const [supervisorIndex, setSupervisorIndex] = useState(0);
-  const [supervisorScrollOffset, setSupervisorScrollOffset] = useState(0);
-  const [_showSupervisorDeleteDialog, setShowSupervisorDeleteDialog] =
-    useState(false);
-  const [isSupervisorEditMode, setIsSupervisorEditMode] = useState(false);
-  const [supervisorEditValue, setSupervisorEditValue] = useState('');
-  // WATCH-009: Supervisor creation view state
-  const [isSupervisorCreateMode, setIsSupervisorCreateMode] = useState(false);
-  // WATCH-023: Supervisor template management state
-  const [supervisorTemplates, setSupervisorTemplates] = useState<SupervisorTemplate[]>(
-    []
-  );
-  const [supervisorInstances, setSupervisorInstances] = useState<SupervisorInstance[]>(
-    []
-  );
-  const [isTemplateFormMode, setIsTemplateFormMode] = useState(false);
-  const [templateFormMode, setTemplateFormMode] = useState<'create' | 'edit'>(
-    'create'
-  );
-  const [editingTemplate, setEditingTemplate] = useState<
-    SupervisorTemplate | undefined
-  >(undefined);
-  const [showTemplateDeleteDialog, setShowTemplateDeleteDialog] =
-    useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<{
-    template: SupervisorTemplate;
-    instances: SupervisorInstance[];
-  } | null>(null);
-  const [instanceToKill, setInstanceToKill] = useState<SupervisorInstance | null>(
-    null
-  );
-  const [showInstanceKillDialog, setShowInstanceKillDialog] = useState(false);
-  // WATCH-023: Supervisor error dialog state
-  const [supervisorError, setSupervisorError] = useState<string | null>(null);
-  // WATCH-010: Supervisor split view state
+  // WATCH-010: Supervisor split view state (preserved for SplitSessionView)
   const [isSupervisorSessionView, setIsSupervisorSessionView] = useState(false);
   const [activePane, setActivePane] = useState<'subordinate' | 'supervisor'>('supervisor');
   const [_subordinateSessionId, setSubordinateSessionId] = useState<string | null>(null);

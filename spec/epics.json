@@ -457,7 +457,17 @@
       "createdAt": "2026-03-08T07:47:41.616Z",
       "workUnits": [
         "AMGR-001",
-        "AMGR-002"
+        "AMGR-002",
+        "AMGR-003",
+        "AMGR-004",
+        "AMGR-005",
+        "AMGR-006",
+        "AMGR-007",
+        "AMGR-008",
+        "AMGR-009",
+        "AMGR-010",
+        "AMGR-011",
+        "AMGR-012"
       ]
     },
     "hierarchical-compaction": {

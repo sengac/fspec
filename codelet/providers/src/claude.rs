@@ -502,7 +502,7 @@ impl ClaudeProvider {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WriteTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool,
-            DeepSearchTool, RequestUserInputTool,
+            DeepSearchTool, RequestUserInputTool, AgentManagerTool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -531,6 +531,7 @@ impl ClaudeProvider {
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
+            .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
             .tool(RequestUserInputTool::new(session_id)); // TOOL-017: HITL tool
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade
