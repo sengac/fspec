@@ -439,7 +439,11 @@ fn extract_work_unit_id(
 }
 
 /// Resolve message content, handling blob references
-fn resolve_message_content(msg: &StoredMessage) -> String {
+///
+/// Handles both direct blob references in `msg.content` and additional
+/// blob refs in `msg.blob_refs`. Used by both SessionSearch and AgentManager
+/// handlers to resolve stored message content for display/search.
+pub fn resolve_message_content(msg: &StoredMessage) -> String {
     // If the content is a blob reference, try to resolve it
     if is_blob_reference(&msg.content) {
         if let Some(hash) = crate::persistence::extract_blob_hash(&msg.content) {

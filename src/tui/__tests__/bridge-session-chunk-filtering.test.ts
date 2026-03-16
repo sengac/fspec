@@ -150,7 +150,7 @@ describe('Feature: Bridge session chunk filtering', () => {
 
       // @step Then Rust should emit SupervisorInput chunk with session_id "session-x"
       const supervisorInputChunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: 'User input from Telegram',
         authorName: 'TelegramUser',
       };

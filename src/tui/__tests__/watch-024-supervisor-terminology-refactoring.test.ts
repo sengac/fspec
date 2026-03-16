@@ -281,8 +281,8 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
   describe('Scenario: StreamChunk variants use supervisor naming', () => {
     it('should have supervisor StreamChunk variants', () => {
       // @step Given the StreamChunk enum has been updated
-      // @step Then the WatcherInput variant is renamed to SupervisorInput
-      expect(fileContainsRustIdentifier(TYPES_RS, 'SupervisorInput')).toBe(
+      // @step Then the WatcherInput variant is renamed to IncomingMessage (AMGR refactor)
+      expect(fileContainsRustIdentifier(TYPES_RS, 'IncomingMessage')).toBe(
         true
       );
       expect(fileContains(TYPES_RS, 'WatcherInput')).toBe(false);
@@ -299,14 +299,15 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       expect(fileContains(TYPES_RS, '"supervisorPendingInjection"')).toBe(true);
       expect(fileContains(TYPES_RS, '"watcherPendingInjection"')).toBe(false);
 
-      // Verify TypeScript chunk type checks match the Rust wire format
+      // Verify TypeScript chunk type checks match the NAPI discriminant format
+      // NAPI serializes Rust enum variant names as-is → 'IncomingMessage' (PascalCase)
       const chunkProcessor = join(TUI_UTILS, 'chunkProcessor.ts');
-      expect(fileContains(chunkProcessor, "'SupervisorInput'")).toBe(true);
+      expect(fileContains(chunkProcessor, "'IncomingMessage'")).toBe(true);
       expect(fileContains(chunkProcessor, "'WatcherInput'")).toBe(false);
 
-      // Verify index.d.ts matches
+      // Verify index.d.ts matches NAPI discriminant
       const indexDts = join(PROJECT_ROOT, 'codelet', 'napi', 'index.d.ts');
-      expect(fileContains(indexDts, "'SupervisorInput'")).toBe(true);
+      expect(fileContains(indexDts, "'IncomingMessage'")).toBe(true);
       expect(fileContains(indexDts, "'WatcherInput'")).toBe(false);
       expect(fileContains(indexDts, "'SupervisorPendingInjection'")).toBe(true);
       expect(fileContains(indexDts, "'WatcherPendingInjection'")).toBe(false);

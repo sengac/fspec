@@ -236,7 +236,7 @@ export function processChunksToMessages(
         correlationId,
         observedCorrelationIds,
       });
-    } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+    } else if (chunk.type === 'IncomingMessage' && chunk.text) {
       const msg = processSupervisorInputChunk(chunk.text);
       msg.correlationId = correlationId;
       msg.observedCorrelationIds = observedCorrelationIds;
@@ -455,7 +455,7 @@ export function processStreamingChunk(
     return false;
   }
 
-  if (chunk.type === 'SupervisorInput' && chunk.text) {
+  if (chunk.type === 'IncomingMessage' && chunk.text) {
     const msg = processSupervisorInputChunk(chunk.text);
     conversation.push(msg);
     return true;

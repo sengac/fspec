@@ -104,7 +104,7 @@ describe('Feature: TUI session chunk filtering', () => {
       // @step When the bridge sends input to session "session-main"
       // Bridge input comes through as SupervisorInput chunk with session_id
       const supervisorInputChunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: 'Hello from bridge',
         authorName: 'BridgeUser',
       };

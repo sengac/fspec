@@ -130,7 +130,7 @@ describe('Purple Supervisor Input Display', () => {
     it('should convert SupervisorInput chunk to supervisor-input message', () => {
       // @step Given a StreamChunk with type "SupervisorInput"
       const chunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: '[SUPERVISOR: Security Reviewer | Session: abc-123]\nVulnerability detected',
       };
 

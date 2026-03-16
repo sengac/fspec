@@ -22,33 +22,48 @@ impl MockBackgroundSession {
 }
 
 /// Mock ChainOfCommand for testing
+/// FIX-10: Updated to 1:N structure matching real ChainOfCommand
 struct MockChainOfCommand {
     subordinate_to_supervisors: std::collections::HashMap<Uuid, Vec<Uuid>>,
-    supervisor_to_subordinate: std::collections::HashMap<Uuid, Uuid>,
+    supervisor_to_subordinates: std::collections::HashMap<Uuid, Vec<Uuid>>,
 }
 
 impl MockChainOfCommand {
     fn new() -> Self {
         Self {
             subordinate_to_supervisors: std::collections::HashMap::new(),
-            supervisor_to_subordinate: std::collections::HashMap::new(),
+            supervisor_to_subordinates: std::collections::HashMap::new(),
         }
     }
 
     fn add_supervisor(&mut self, parent_id: Uuid, watcher_id: Uuid) {
-        self.supervisor_to_subordinate.insert(watcher_id, parent_id);
+        self.supervisor_to_subordinates
+            .entry(watcher_id)
+            .or_default()
+            .push(parent_id);
         self.subordinate_to_supervisors
             .entry(parent_id)
             .or_default()
             .push(watcher_id);
     }
 
-    fn get_subordinate(&self, watcher_id: Uuid) -> Option<Uuid> {
-        self.supervisor_to_subordinate.get(&watcher_id).copied()
+    fn get_subordinates(&self, supervisor_id: Uuid) -> Vec<Uuid> {
+        self.supervisor_to_subordinates
+            .get(&supervisor_id)
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    fn get_supervisors(&self, subordinate_id: Uuid) -> Vec<Uuid> {
+        self.subordinate_to_supervisors
+            .get(&subordinate_id)
+            .cloned()
+            .unwrap_or_default()
     }
 }
 
 /// Build navigation list (same logic as in navigation.rs)
+/// FIX-10: Updated to match real navigation.rs 1:N API
 fn build_navigation_list(
     sessions: &IndexMap<Uuid, Arc<MockBackgroundSession>>,
     chain_of_command: &MockChainOfCommand,
@@ -57,21 +72,21 @@ fn build_navigation_list(
 
     // Iterate through sessions in insertion order
     for session_id in sessions.keys() {
-        // Check if this session is a watcher (has a parent)
-        if chain_of_command.get_subordinate(*session_id).is_some() {
-            // Skip watchers in the top-level iteration
-            // They'll be added after their parent
+        // Check if this session is a supervisor (has any subordinates)
+        if !chain_of_command.get_subordinates(*session_id).is_empty() {
+            // Skip supervisors in the top-level iteration
+            // They'll be added after their subordinate
             continue;
         }
 
-        // Add the parent session
+        // Add the subordinate session
         result.push(*session_id);
 
-        // Add all watchers for this session (in insertion order)
-        // We need to iterate sessions to maintain insertion order
-        for watcher_id in sessions.keys() {
-            if chain_of_command.get_subordinate(*watcher_id) == Some(*session_id) {
-                result.push(*watcher_id);
+        // Add all supervisors for this session (in insertion order)
+        let supervisors = chain_of_command.get_supervisors(*session_id);
+        for supervisor_id in supervisors {
+            if sessions.contains_key(&supervisor_id) {
+                result.push(supervisor_id);
             }
         }
     }

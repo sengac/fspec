@@ -45,10 +45,10 @@ pub fn build_navigation_list(
 
     // Iterate through sessions in insertion order
     for session_id in sessions.keys() {
-        // Check if this session is a supervisor (has a subordinate)
-        let subordinate = chain_of_command.get_subordinate(*session_id);
+        // Check if this session is a supervisor (has any subordinates)
+        let has_subordinates = !chain_of_command.get_subordinates(*session_id).is_empty();
 
-        if subordinate.is_some() {
+        if has_subordinates {
             continue;
         }
 

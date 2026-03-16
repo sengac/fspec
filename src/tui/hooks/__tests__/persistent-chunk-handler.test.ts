@@ -115,7 +115,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
 
       // @step When the bridge sends input to session "test-session"
       const supervisorInputChunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: '[SUPERVISOR: Telegram | Session: bridge-123]\nHello from Telegram!',
       };
       manager.simulateChunk(session.id, supervisorInputChunk);
@@ -173,7 +173,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
 
       // @step When the bridge sends input to session "test-session"
       const supervisorInputChunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: '[SUPERVISOR: Telegram | Session: bridge-456]\nRead the file package.json',
       };
       manager.simulateChunk(session.id, supervisorInputChunk);
@@ -243,7 +243,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
 
       // @step When the bridge sends input to session "test-session"
       const supervisorInputChunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: '[SUPERVISOR: Telegram | Session: bridge-789]\nHello!',
       };
       manager.simulateChunk(session.id, supervisorInputChunk);
@@ -322,7 +322,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
 
       // @step And the bridge sends input to session "session-A"
       const supervisorInputChunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: '[SUPERVISOR: Telegram | Session: bridge-A]\nMessage for session A',
       };
       manager.simulateChunk(sessionA.id, supervisorInputChunk);
@@ -483,7 +483,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       // @step When the bridge sends input to session "test-session"
       // @step And a SupervisorInput chunk is emitted
       const supervisorInputChunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: '[SUPERVISOR: Telegram | Session: bridge-watcher]\nInjected message from bridge',
       };
       manager.simulateChunk(session.id, supervisorInputChunk);
@@ -622,7 +622,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       const conversation: ConversationMessage[] = [];
       const ctx = createChunkContext();
       const chunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: '[SUPERVISOR: Test | Session: test-123]\nTest input',
       };
 

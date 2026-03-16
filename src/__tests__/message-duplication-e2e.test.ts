@@ -150,7 +150,7 @@ describe('Message Duplication Bug Investigation', () => {
     // This mimics what happens when watcher_input is received
     const testMessage = `Test message ${Date.now()}`;
     const supervisorInputChunk: StreamChunk = {
-      type: 'SupervisorInput',
+      type: 'IncomingMessage',
       text: `[SUPERVISOR: bridge | Session: bridge] ${testMessage}`,
     };
 
@@ -301,7 +301,7 @@ describe('Message Duplication Bug Investigation', () => {
 
     for (const msg of messages) {
       const chunk: StreamChunk = {
-        type: 'SupervisorInput',
+        type: 'IncomingMessage',
         text: `[SUPERVISOR: test | Session: test] ${msg}`,
       };
       manager.simulateChunk(sessionId, chunk);

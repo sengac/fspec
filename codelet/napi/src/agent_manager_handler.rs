@@ -16,6 +16,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::session_manager::{IncomingMessage, SessionManager};
+use crate::session_search_handler::resolve_message_content;
 
 /// Create an AgentManagerHandler closure for a specific session.
 ///
@@ -169,10 +170,11 @@ fn handle_list(session_manager: &SessionManager) -> AgentManagerResult {
             .map(|id| id.to_string());
 
         // Get subordinates (sessions spawned by this session)
-        let subordinate = session_manager.get_subordinate(uuid);
-        let subordinate_ids = subordinate
-            .map(|id| vec![id.to_string()])
-            .unwrap_or_default();
+        let subordinate_ids: Vec<String> = session_manager
+            .get_subordinates(uuid)
+            .iter()
+            .map(|id| id.to_string())
+            .collect();
 
         entries.push(SessionEntry {
             session_id: info.id.clone(),
@@ -213,10 +215,11 @@ fn handle_get_status(
         .map(|id| id.to_string());
 
     // Get subordinates
-    let subordinate = session_manager.get_subordinate(uuid);
-    let subordinate_ids = subordinate
-        .map(|id| vec![id.to_string()])
-        .unwrap_or_default();
+    let subordinate_ids: Vec<String> = session_manager
+        .get_subordinates(uuid)
+        .iter()
+        .map(|id| id.to_string())
+        .collect();
 
     // Count pending incoming messages
     let pending_messages = session.pending_incoming_message_count();
@@ -465,7 +468,7 @@ fn resolve_turns_context(session_id: &str, turns: &[usize]) -> (String, bool) {
     for &idx in turns {
         if idx < messages.len() {
             let msg = &messages[idx];
-            let content = resolve_stored_message_content(msg);
+            let content = resolve_message_content(msg);
             // Truncate very long messages in context
             let truncated = if content.len() > 2000 {
                 format!("{}... [truncated]", &content[..2000])
@@ -546,7 +549,7 @@ fn resolve_query_context(session_id: &str, query: &str) -> (String, bool) {
     let mut lines = Vec::new();
     let mut matched_turns = Vec::new();
     for (idx, msg) in messages.iter().enumerate() {
-        let content = resolve_stored_message_content(msg);
+        let content = resolve_message_content(msg);
         if ripgrep_is_match(&matcher, &content) {
             let truncated = if content.len() > 2000 {
                 format!("{}... [truncated]", &content[..2000])
@@ -575,36 +578,6 @@ fn resolve_query_context(session_id: &str, query: &str) -> (String, bool) {
     (block, true)
 }
 
-/// Resolve a StoredMessage's content, handling blob references
-///
-/// Same logic as session_search_handler::resolve_message_content but
-/// kept as a separate function to avoid making that private function public.
-fn resolve_stored_message_content(msg: &crate::persistence::StoredMessage) -> String {
-    use crate::persistence;
-    use crate::persistence::{extract_blob_hash, is_blob_reference};
-
-    // Check if the content itself is a blob reference
-    if is_blob_reference(&msg.content) {
-        if let Some(hash) = extract_blob_hash(&msg.content) {
-            if let Ok(bytes) = persistence::get_blob(hash) {
-                return String::from_utf8_lossy(&bytes).to_string();
-            }
-        }
-    }
-
-    // Check for additional blob refs
-    if !msg.blob_refs.is_empty() {
-        let mut parts = vec![msg.content.clone()];
-        for blob_ref in &msg.blob_refs {
-            if let Ok(bytes) = persistence::get_blob(blob_ref) {
-                parts.push(String::from_utf8_lossy(&bytes).to_string());
-            }
-        }
-        return parts.join("\n");
-    }
-
-    msg.content.clone()
-}
 
 /// Format turn indices as a compact label (e.g., "1-3" or "1,3,5")
 fn format_turns_label(turns: &[usize]) -> String {

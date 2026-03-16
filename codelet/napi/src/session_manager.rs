@@ -34,7 +34,7 @@ use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, RwLock};
 use tokio::sync::{broadcast, mpsc, Mutex, Notify};
 use uuid::Uuid;
@@ -516,6 +516,11 @@ pub struct BackgroundSession {
     incoming_message_tx: mpsc::Sender<IncomingMessage>,
     incoming_message_rx: Mutex<mpsc::Receiver<IncomingMessage>>,
 
+    /// FIX-6: Counter for pending incoming messages in the channel.
+    /// Incremented on send (receive_incoming_message), decremented on recv (agent_loop).
+    /// mpsc::Receiver doesn't expose len(), so we track it with an atomic counter.
+    incoming_message_pending: Arc<AtomicUsize>,
+
     /// Correlation ID counter for cross-pane selection highlighting (WATCH-011)
     /// Each chunk emitted by handle_output gets a unique correlation_id
     correlation_counter: AtomicU64,
@@ -630,6 +635,7 @@ impl BackgroundSession {
             role: RwLock::new(None),
             incoming_message_tx,
             incoming_message_rx: Mutex::new(incoming_message_rx),
+            incoming_message_pending: Arc::new(AtomicUsize::new(0)),
             correlation_counter: AtomicU64::new(0),
             pending_observed_correlation_ids: RwLock::new(Vec::new()),
             pause_state: RwLock::new(None),
@@ -1129,7 +1135,10 @@ impl BackgroundSession {
     pub fn receive_incoming_message(&self, input: IncomingMessage) -> std::result::Result<(), String> {
         self.incoming_message_tx
             .try_send(input)
-            .map_err(|e| format!("Failed to queue supervisor input: {}", e))
+            .map_err(|e| format!("Failed to queue supervisor input: {}", e))?;
+        // FIX-6: Increment pending counter after successful send
+        self.incoming_message_pending.fetch_add(1, Ordering::Release);
+        Ok(())
     }
 
     /// Get the model identifier for this session (AMGR-009)
@@ -1140,24 +1149,12 @@ impl BackgroundSession {
     /// Get the count of pending incoming messages (AMGR-009)
     ///
     /// Returns the number of messages waiting in the incoming_message channel.
-    /// Note: mpsc channel doesn't expose len(), so we return 0 for now.
-    /// In practice, pending messages are consumed by the agent loop quickly.
+    /// FIX-6: Uses an AtomicUsize counter that is incremented on send and
+    /// decremented on receive in the agent loop.
     pub fn pending_incoming_message_count(&self) -> usize {
-        // mpsc::Receiver doesn't have a len() method, but we can check
-        // if the channel has capacity available. Since capacity is 16 and
-        // we can't directly count pending messages without consuming them,
-        // we report 0 here. The actual message count would need a separate
-        // atomic counter if precise tracking is needed.
-        0
+        self.incoming_message_pending.load(Ordering::Acquire)
     }
 
-    /// Get the supervisor input sender (WATCH-006)
-    ///
-    /// Returns a clone of the sender for supervisors to send input.
-    pub fn incoming_message_sender(&self) -> mpsc::Sender<IncomingMessage> {
-        self.incoming_message_tx.clone()
-    }
-    
     /// Send input to the agent loop
     ///
     /// Buffers the user input as a UserInput chunk before sending to the agent,
@@ -1277,14 +1274,14 @@ impl BackgroundSession {
 /// Tracks subordinate-supervisor relationships between sessions (WATCH-002)
 ///
 /// ChainOfCommand enables supervisor sessions to observe subordinate sessions.
-/// - One supervisor can only observe one subordinate (1:1 from supervisor side)
+/// FIX-7: One supervisor can now spawn multiple subordinates (1:N from supervisor side)
 /// - One subordinate can have multiple supervisors (1:N from subordinate side)
-/// - Circular supervision is prevented
+/// - Circular supervision is prevented via BFS cycle detection
 pub struct ChainOfCommand {
     /// Subordinate session ID → list of supervisor session IDs
     subordinate_to_supervisors: RwLock<HashMap<Uuid, Vec<Uuid>>>,
-    /// Supervisor session ID → subordinate session ID
-    supervisor_to_subordinate: RwLock<HashMap<Uuid, Uuid>>,
+    /// Supervisor session ID → list of subordinate session IDs (FIX-7: changed from Uuid to Vec<Uuid>)
+    supervisor_to_subordinates: RwLock<HashMap<Uuid, Vec<Uuid>>>,
 }
 
 impl Default for ChainOfCommand {
@@ -1298,40 +1295,57 @@ impl ChainOfCommand {
     pub fn new() -> Self {
         Self {
             subordinate_to_supervisors: RwLock::new(HashMap::new()),
-            supervisor_to_subordinate: RwLock::new(HashMap::new()),
+            supervisor_to_subordinates: RwLock::new(HashMap::new()),
         }
     }
 
     /// Register a supervisor for a subordinate session
     ///
+    /// FIX-7: No longer rejects when a supervisor already has subordinates.
+    /// Multiple subordinates per supervisor are now allowed.
+    ///
     /// Returns an error if:
-    /// - The supervisor already has a subordinate (supervisor can only observe one subordinate)
     /// - Adding would create a circular supervision relationship
+    /// - The same subordinate is already registered under this supervisor (duplicate)
     pub fn add_supervisor(&self, subordinate_id: Uuid, supervisor_id: Uuid) -> std::result::Result<(), String> {
         // Acquire write lock for the entire operation to prevent TOCTOU race
-        let mut sup2sub = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
+        let mut sup2subs = self.supervisor_to_subordinates.write().expect("supervisor_to_subordinates lock poisoned");
         
-        // Check if supervisor already has a subordinate
-        if sup2sub.contains_key(&supervisor_id) {
-            return Err("supervisor already has a subordinate".to_string());
+        // Check for duplicate: supervisor already has this specific subordinate
+        if let Some(existing) = sup2subs.get(&supervisor_id) {
+            if existing.contains(&subordinate_id) {
+                return Err("subordinate already registered under this supervisor".to_string());
+            }
         }
 
-        // Check for circular supervision: would the proposed supervisor be in the subordinate's chain?
-        // Check if subordinate_id is supervising supervisor_id (direct cycle)
-        if sup2sub.get(&subordinate_id) == Some(&supervisor_id) {
-            return Err("circular supervision not allowed".to_string());
-        }
-        // Check deeper cycles: walk up from subordinate_id
-        let mut current = subordinate_id;
-        while let Some(&ancestor) = sup2sub.get(&current) {
-            if ancestor == supervisor_id {
-                return Err("circular supervision not allowed".to_string());
+        // Check for circular supervision via BFS:
+        // Walk the subordinate tree from subordinate_id. If supervisor_id appears
+        // anywhere as a subordinate (transitively), adding it would create a cycle.
+        {
+            let mut visited = std::collections::HashSet::new();
+            let mut queue = std::collections::VecDeque::new();
+            
+            // Start from subordinate_id — check if it supervises anything that leads back to supervisor_id
+            queue.push_back(subordinate_id);
+            visited.insert(subordinate_id);
+            
+            while let Some(current) = queue.pop_front() {
+                // If current supervises supervisor_id, that's a cycle
+                if let Some(subordinates) = sup2subs.get(&current) {
+                    for &sub in subordinates {
+                        if sub == supervisor_id {
+                            return Err("circular supervision not allowed".to_string());
+                        }
+                        if visited.insert(sub) {
+                            queue.push_back(sub);
+                        }
+                    }
+                }
             }
-            current = ancestor;
         }
 
         // Add the relationship (still under write lock)
-        sup2sub.insert(supervisor_id, subordinate_id);
+        sup2subs.entry(supervisor_id).or_default().push(subordinate_id);
         
         // Now acquire subordinate_to_supervisors lock
         let mut sub2sup = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
@@ -1344,20 +1358,22 @@ impl ChainOfCommand {
     ///
     /// Removes the supervisor from both maps. Safe to call even if supervisor doesn't exist.
     pub fn remove_supervisor(&self, supervisor_id: Uuid) {
-        // Get the subordinate (if any) and remove from supervisor_to_subordinate
-        let subordinate_id = {
-            let mut sup2sub = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
-            sup2sub.remove(&supervisor_id)
+        // Get all subordinates (if any) and remove the supervisor entry
+        let subordinate_ids = {
+            let mut sup2subs = self.supervisor_to_subordinates.write().expect("supervisor_to_subordinates lock poisoned");
+            sup2subs.remove(&supervisor_id).unwrap_or_default()
         };
 
-        // If there was a subordinate, remove supervisor from subordinate's list
-        if let Some(subordinate_id) = subordinate_id {
+        // For each subordinate, remove this supervisor from their list
+        if !subordinate_ids.is_empty() {
             let mut sub2sup = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
-            if let Some(supervisors) = sub2sup.get_mut(&subordinate_id) {
-                supervisors.retain(|&id| id != supervisor_id);
-                // Remove empty entries
-                if supervisors.is_empty() {
-                    sub2sup.remove(&subordinate_id);
+            for subordinate_id in subordinate_ids {
+                if let Some(supervisors) = sub2sup.get_mut(&subordinate_id) {
+                    supervisors.retain(|&id| id != supervisor_id);
+                    // Remove empty entries
+                    if supervisors.is_empty() {
+                        sub2sup.remove(&subordinate_id);
+                    }
                 }
             }
         }
@@ -1371,18 +1387,27 @@ impl ChainOfCommand {
         sub2sup.get(&subordinate_id).cloned().unwrap_or_default()
     }
 
-    /// Get the subordinate for a supervisor session
+    /// Get the first subordinate for a supervisor session (backward compat)
     ///
-    /// Returns None if the session is not a supervisor (or doesn't exist).
+    /// Returns None if the session has no subordinates.
+    /// For multiple subordinates, use `get_subordinates()`.
     pub fn get_subordinate(&self, supervisor_id: Uuid) -> Option<Uuid> {
-        let sup2sub = self.supervisor_to_subordinate.read().expect("supervisor_to_subordinate lock poisoned");
-        sup2sub.get(&supervisor_id).copied()
+        let sup2subs = self.supervisor_to_subordinates.read().expect("supervisor_to_subordinates lock poisoned");
+        sup2subs.get(&supervisor_id).and_then(|v| v.first().copied())
+    }
+
+    /// Get all subordinates for a supervisor session (FIX-7)
+    ///
+    /// Returns an empty Vec if the session has no subordinates.
+    pub fn get_subordinates(&self, supervisor_id: Uuid) -> Vec<Uuid> {
+        let sup2subs = self.supervisor_to_subordinates.read().expect("supervisor_to_subordinates lock poisoned");
+        sup2subs.get(&supervisor_id).cloned().unwrap_or_default()
     }
 
     /// Clean up all supervisor relationships when a subordinate session is removed
     ///
-    /// This removes the subordinate from subordinate_to_supervisors and removes all its
-    /// supervisors from supervisor_to_subordinate.
+    /// This removes the subordinate from subordinate_to_supervisors and removes it
+    /// from each supervisor's subordinate list in supervisor_to_subordinates.
     pub fn cleanup_subordinate(&self, subordinate_id: Uuid) {
         // Get and remove all supervisors for this subordinate
         let supervisors = {
@@ -1390,11 +1415,16 @@ impl ChainOfCommand {
             sub2sup.remove(&subordinate_id).unwrap_or_default()
         };
 
-        // Remove each supervisor from supervisor_to_subordinate
+        // Remove subordinate from each supervisor's list
         {
-            let mut sup2sub = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
+            let mut sup2subs = self.supervisor_to_subordinates.write().expect("supervisor_to_subordinates lock poisoned");
             for supervisor_id in supervisors {
-                sup2sub.remove(&supervisor_id);
+                if let Some(subordinates) = sup2subs.get_mut(&supervisor_id) {
+                    subordinates.retain(|&id| id != subordinate_id);
+                    if subordinates.is_empty() {
+                        sup2subs.remove(&supervisor_id);
+                    }
+                }
             }
         }
     }
@@ -1402,8 +1432,8 @@ impl ChainOfCommand {
     /// Check if the ChainOfCommand has no entries
     pub fn is_empty(&self) -> bool {
         let sub2sup = self.subordinate_to_supervisors.read().expect("subordinate_to_supervisors lock poisoned");
-        let sup2sub = self.supervisor_to_subordinate.read().expect("supervisor_to_subordinate lock poisoned");
-        sub2sup.is_empty() && sup2sub.is_empty()
+        let sup2subs = self.supervisor_to_subordinates.read().expect("supervisor_to_subordinates lock poisoned");
+        sub2sup.is_empty() && sup2subs.is_empty()
     }
 }
 
@@ -2154,14 +2184,15 @@ mod chain_of_command_tests {
         assert_eq!(subordinate, None, "get_subordinate should return None");
     }
 
-    /// Scenario: Supervisor cannot observe multiple subordinates
+    /// Scenario: Supervisor can observe multiple subordinates (FIX-7)
     ///
     /// @step Given a ChainOfCommand with no relationships
     /// @step And session "xyz" is supervising session "abc"
     /// @step When I call add_supervisor with subordinate_id "def" and supervisor_id "xyz"
-    /// @step Then it should return an error "supervisor already has a subordinate"
+    /// @step Then it should succeed
+    /// @step And get_subordinates for "xyz" should return ["abc", "def"]
     #[test]
-    fn test_supervisor_cannot_observe_multiple_subordinates() {
+    fn test_supervisor_can_observe_multiple_subordinates() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
@@ -2175,11 +2206,40 @@ mod chain_of_command_tests {
         // @step When I call add_supervisor with subordinate_id "def" and supervisor_id "xyz"
         let result = chain_of_command.add_supervisor(subordinate_def, supervisor_id);
 
-        // @step Then it should return an error "supervisor already has a subordinate"
-        assert!(result.is_err(), "add_supervisor should fail");
+        // @step Then it should succeed
+        assert!(result.is_ok(), "add_supervisor should succeed for multiple subordinates");
+
+        // @step And get_subordinates for "xyz" should return ["abc", "def"]
+        let subordinates = chain_of_command.get_subordinates(supervisor_id);
+        assert_eq!(subordinates.len(), 2, "should have exactly 2 subordinates");
+        assert!(subordinates.contains(&subordinate_abc), "subordinates should contain abc");
+        assert!(subordinates.contains(&subordinate_def), "subordinates should contain def");
+        
+        // get_subordinate (singular, backward compat) returns first
+        let first = chain_of_command.get_subordinate(supervisor_id);
+        assert_eq!(first, Some(subordinate_abc), "get_subordinate should return first (abc)");
+    }
+
+    /// Scenario: Duplicate subordinate under same supervisor is rejected
+    ///
+    /// @step Given a ChainOfCommand with no relationships
+    /// @step And session "xyz" is supervising session "abc"
+    /// @step When I call add_supervisor with subordinate_id "abc" and supervisor_id "xyz" again
+    /// @step Then it should return an error about duplicate registration
+    #[test]
+    fn test_duplicate_subordinate_under_same_supervisor_rejected() {
+        let chain_of_command = ChainOfCommand::new();
+
+        let subordinate_abc = Uuid::parse_str("00000000-0000-0000-0000-0000000000a5").unwrap();
+        let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000c5").unwrap();
+
+        let _ = chain_of_command.add_supervisor(subordinate_abc, supervisor_id);
+        let result = chain_of_command.add_supervisor(subordinate_abc, supervisor_id);
+
+        assert!(result.is_err(), "duplicate add_supervisor should fail");
         assert!(
-            result.unwrap_err().contains("already has a subordinate"),
-            "error should mention 'already has a subordinate'"
+            result.unwrap_err().contains("already registered"),
+            "error should mention 'already registered'"
         );
     }
 
@@ -3481,9 +3541,14 @@ impl SessionManager {
         self.chain_of_command.get_supervisors(subordinate_id)
     }
     
-    /// Get the subordinate for a supervisor session
+    /// Get the first subordinate for a supervisor session (backward compat)
     pub fn get_subordinate(&self, supervisor_id: Uuid) -> Option<Uuid> {
         self.chain_of_command.get_subordinate(supervisor_id)
+    }
+    
+    /// Get all subordinates for a supervisor session (FIX-7)
+    pub fn get_subordinates(&self, supervisor_id: Uuid) -> Vec<Uuid> {
+        self.chain_of_command.get_subordinates(supervisor_id)
     }
     
 }
@@ -3873,6 +3938,8 @@ async fn agent_loop(
             result = supervisor_rx.recv() => {
                 match result {
                     Some(supervisor_input) => {
+                        // FIX-6: Decrement pending counter when message is consumed
+                        session.incoming_message_pending.fetch_sub(1, Ordering::Release);
                         tracing::debug!("agent_loop received supervisor input from {}: {}", supervisor_input.role_name, supervisor_input.message.chars().take(50).collect::<String>());
                         // Format supervisor input as a user message with structured prefix
                         let formatted = format_incoming_message(&supervisor_input);
@@ -4291,7 +4358,9 @@ async fn agent_loop(
             
             // Create input injector that sends messages to the session's supervisor input channel
             // BRIDGE-007: Updated to accept InjectedInput with optional images
-            let supervisor_input_tx = session_for_bridge.incoming_message_sender();
+            // FIX-6b: Use receive_incoming_message() instead of raw sender to centralize
+            // counter logic (incoming_message_pending AtomicUsize)
+            let session_for_injector = session_for_bridge.clone();
             let input_injector: codelet_tools::InputInjector = Arc::new(move |input: codelet_tools::InjectedInput| {
                 // Convert InjectedInput images to BridgeImageData
                 let bridge_images = input.images.map(|imgs| {
@@ -4321,8 +4390,8 @@ async fn agent_loop(
                     }
                 };
                 
-                // Try to send - if channel is full, log warning
-                match supervisor_input_tx.try_send(supervisor_input) {
+                // FIX-6b: Route through receive_incoming_message() to track pending count
+                match session_for_injector.receive_incoming_message(supervisor_input) {
                     Ok(()) => {
                         tracing::debug!("Bridge input injected successfully: {}", input.message.chars().take(50).collect::<String>());
                     }
@@ -4528,15 +4597,6 @@ struct BackgroundOutput {
 }
 
 impl BackgroundOutput {
-    #[allow(dead_code)] // May be used directly in tests or future code paths
-    fn new(session: Arc<BackgroundSession>) -> Self {
-        Self { 
-            session,
-            assistant_content: std::sync::Mutex::new(Vec::new()),
-            provider: "claude".to_string(), // Default, will be overridden
-        }
-    }
-    
     fn with_provider(session: Arc<BackgroundSession>, provider: String) -> Self {
         Self {
             session,
@@ -4773,60 +4833,6 @@ impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter {
             });
             self.session.handle_output(chunk);
         }
-    }
-}
-
-// =============================================================================
-// SUPERVISOR OUTPUT (WATCH-020)
-// =============================================================================
-
-/// Supervisor output handler that captures turn text during streaming (WATCH-020)
-///
-/// Wraps BackgroundOutput to accumulate Text chunks for parsing after turn completion.
-/// Used for observation evaluations to detect [INTERJECT]/[CONTINUE] blocks.
-struct SupervisorOutput {
-    inner: BackgroundOutput,
-    turn_text: std::sync::Mutex<String>,
-}
-
-impl SupervisorOutput {
-    #[allow(dead_code)] // Kept for symmetry with with_provider
-    fn new(session: Arc<BackgroundSession>) -> Self {
-        // SupervisorOutput uses BackgroundOutput internally, but for supervisor prompts we don't persist
-        // (supervisor prompts are injected observations, not user input)
-        Self {
-            inner: BackgroundOutput::new(session),
-            turn_text: std::sync::Mutex::new(String::new()),
-        }
-    }
-    
-    fn with_provider(session: Arc<BackgroundSession>, provider: String) -> Self {
-        Self {
-            inner: BackgroundOutput::with_provider(session, provider),
-            turn_text: std::sync::Mutex::new(String::new()),
-        }
-    }
-    
-    /// Get the accumulated turn text for parsing
-    fn get_turn_text(&self) -> String {
-        self.turn_text.lock().unwrap().clone()
-    }
-}
-
-impl codelet_cli::interactive::StreamOutput for SupervisorOutput {
-    fn emit(&self, event: codelet_cli::interactive::StreamEvent) {
-        // Capture Text events for later parsing (WATCH-020)
-        if let codelet_cli::interactive::StreamEvent::Text(ref text) = event {
-            let mut turn_text = self.turn_text.lock().unwrap();
-            turn_text.push_str(text);
-        }
-        
-        // Delegate all events to inner handler for normal output
-        self.inner.emit(event);
-    }
-    
-    fn progress_emitter(&self) -> Option<std::sync::Arc<dyn codelet_cli::interactive::StreamOutput>> {
-        self.inner.progress_emitter()
     }
 }
 

@@ -93,8 +93,6 @@ import {
   sessionGetSupervisors,
   sessionGetRole,
   sessionSetRole,
-  // WATCH-009: Supervisor creation NAPI function
-  sessionCreateSupervisor,
   // WATCH-010: Supervisor split view NAPI function
   sessionGetSubordinate,
   // WATCH-011: Cross-pane correlation ID functions
@@ -112,7 +110,6 @@ import {
   blocklistLoad,
   blocklistInit,
   // REFAC-008: sessionSendFspecResult removed - handled by GlobalSessionStreamManager
-  type SupervisorRoleInfo,
 } from '@sengac/codelet-napi';
 import {
   detectThinkingLevel,
@@ -137,6 +134,7 @@ import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { ThinkingLevelDialog } from './ThinkingLevelDialog';
+import { RoleDialog } from '../../components/RoleDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { handleMergeWorktree } from '../handlers/mergeWorktreeHandler';
 import { handlePersistentSessionStateChange } from '../handlers/persistentSessionStateHandler';
@@ -250,14 +248,6 @@ interface MergedSession extends SessionManifest {
   backgroundStatus: 'running' | 'idle' | null; // null = persisted-only
 }
 
-// WATCH-008: Supervisor information for management overlay
-interface SupervisorInfo {
-  id: string;
-  name: string;
-  role: SupervisorRoleInfo | null;
-  status: 'idle' | 'running';
-}
-
 // TUI-047: Get status icon for session in resume list
 const getSessionStatusIcon = (session: MergedSession): string => {
   if (session.isBackgroundSession) {
@@ -309,7 +299,7 @@ const processChunksToConversation = (
         correlationId,
         observedCorrelationIds,
       });
-    } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+    } else if (chunk.type === 'IncomingMessage' && chunk.text) {
       // WATCH-012: Handle supervisor input messages - parse prefix and format for display
       const supervisorInfo = parseSupervisorPrefix(chunk.text);
       if (supervisorInfo) {
@@ -1111,6 +1101,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-054: Thinking level dialog state
   const [showThinkingLevelDialog, setShowThinkingLevelDialog] = useState(false);
 
+  // AMGR-012: Role dialog state
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+
   // GIT-037: Generic action prompt state for deferred user confirmation
   const [actionPrompt, setActionPrompt] = useState<ActionPrompt | null>(null);
 
@@ -1130,8 +1123,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, BLOCK-004: add blocklist)
     disabled:
       isResumeMode ||
-      isSupervisorMode ||
-      isSupervisorEditMode ||
       isBlocklistMode ||
       showModelSelector ||
       showSettingsTab ||
@@ -1382,8 +1373,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // Disable popup when other overlays/modes are active (BLOCK-004: add blocklist)
     disabled:
       isResumeMode ||
-      isSupervisorMode ||
-      isSupervisorEditMode ||
       isBlocklistMode ||
       showModelSelector ||
       showSettingsTab ||
@@ -1420,22 +1409,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
       setResumeScrollOffset(0);
     }
   }, [isResumeMode]);
-
-  // WATCH-008: Supervisor management overlay - calculate visible height for scroll logic
-  const supervisorVisibleHeight = Math.max(
-    1,
-    Math.floor((terminalHeight - 6) / 2)
-  ); // 2 lines per supervisor
-
-  // WATCH-008: Keep selected supervisor visible by adjusting scroll offset
-  useEffect(() => {
-    if (!isSupervisorMode) return;
-    if (supervisorIndex < supervisorScrollOffset) {
-      setSupervisorScrollOffset(supervisorIndex);
-    } else if (supervisorIndex >= supervisorScrollOffset + supervisorVisibleHeight) {
-      setSupervisorScrollOffset(supervisorIndex - supervisorVisibleHeight + 1);
-    }
-  }, [supervisorIndex, supervisorScrollOffset, supervisorVisibleHeight, isSupervisorMode]);
 
   // WATCH-010: Detect if current session is a supervisor and setup split view
   useEffect(() => {
@@ -1787,59 +1760,17 @@ export const AgentView: React.FC<AgentViewProps> = ({
       return;
     }
 
-    // WATCH-023: Handle /supervisor spawn <slug> command - quick spawn from template
-    if (userMessage.startsWith('/supervisor spawn ')) {
+    // AMGR-012: Handle /role command — open role dialog for current session
+    if (userMessage === '/role') {
       setInputValue('');
-      const slug = userMessage.slice('/supervisor spawn '.length).trim();
-
-      if (!slug) {
-        setSupervisorError('Usage: /supervisor spawn <slug>');
-        return;
-      }
-
       if (!currentSessionId) {
-        setSupervisorError('No active session. Start a session first.');
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'Start a session first to set a role.' },
+        ]);
         return;
       }
-
-      // Find template by slug
-      void (async () => {
-        try {
-          const template = await findTemplateBySlug(slug);
-
-          if (!template) {
-            setSupervisorError(`No template found with slug: ${slug}`);
-            return;
-          }
-
-          // Create supervisor from template
-          const supervisorId = await sessionCreateSupervisor(
-            currentSessionId,
-            template.modelId,
-            currentProjectRef.current,
-            template.name
-          );
-
-          // Set role with template settings
-          sessionSetRole(
-            supervisorId,
-            template.name,
-            template.brief || null,
-            template.autoInject
-          );
-        } catch (err) {
-          const errorMessage =
-            err instanceof Error ? err.message : 'Failed to spawn supervisor';
-          setSupervisorError(`Spawn failed: ${errorMessage}`);
-        }
-      })();
-      return;
-    }
-
-    // WATCH-008: Handle /supervisor command - show supervisor management overlay
-    if (userMessage === '/supervisor') {
-      setInputValue('');
-      void handleSupervisorMode();
+      setShowRoleDialog(true);
       return;
     }
 
@@ -2676,7 +2607,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               });
               // NAPI-009: Reject the promise on error
               reject(new Error(chunk.error));
-            } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+            } else if (chunk.type === 'IncomingMessage' && chunk.text) {
               // BRIDGE-006: Handle supervisor/bridge input messages during streaming
               const supervisorInfo = parseSupervisorPrefix(chunk.text);
               setConversation(prev => {
@@ -2919,10 +2850,24 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // Handle /supervisor command - trigger initialization (avoiding TDZ with handleSupervisorMode)
-      if (userMessage === '/supervisor') {
+      // AMGR-012: Handle /role command - open role dialog
+      if (userMessage === '/role') {
         setInputValue('');
-        setTriggerSupervisorModeInit(true); // Will trigger useEffect to call handleSupervisorMode
+        if (currentSessionId) {
+          setShowRoleDialog(true);
+        } else {
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: 'Start a session first to set a role.' },
+          ]);
+        }
+        return;
+      }
+
+      // BLOCK-004: Handle /blocklist command - show blocklist management overlay
+      if (userMessage === '/blocklist') {
+        setInputValue('');
+        void handleBlocklistMode();
         return;
       }
 
@@ -3510,7 +3455,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         ...prev,
         { type: 'user-input', content: chunk.text! },
       ]);
-    } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+    } else if (chunk.type === 'IncomingMessage' && chunk.text) {
       // WATCH-012: Handle supervisor/bridge input messages - parse prefix and format for display
       const supervisorInfo = parseSupervisorPrefix(chunk.text);
       setConversation(prev => {
@@ -4045,65 +3990,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, []);
 
-  // WATCH-008: Enter supervisor mode (show supervisor management overlay)
-  const handleSupervisorMode = useCallback(async () => {
-    if (!currentSessionId) {
-      setConversation(prev => [
-        ...prev,
-        {
-          type: 'status',
-          content: 'No active session. Start a session first.',
-        },
-      ]);
-      return;
-    }
-
-    try {
-      // WATCH-023: Load templates from storage
-      const templates = await loadSupervisorTemplates();
-      setSupervisorTemplates(templates);
-
-      // Get supervisors for current session and map to instances
-      const supervisorIds = sessionGetSupervisors(currentSessionId);
-
-      // Build supervisor info list (for backwards compatibility) and instances
-      const supervisors: SupervisorInfo[] = [];
-      const instances: SupervisorInstance[] = [];
-
-      for (const id of supervisorIds) {
-        const role = sessionGetRole(id);
-        const status = sessionGetStatus(id);
-        supervisors.push({
-          id,
-          name: role?.name || 'Unnamed Supervisor',
-          role,
-          status: status === 'running' ? 'running' : 'idle',
-        });
-
-        // WATCH-023: Map supervisors to template instances
-        // Find matching template by name (templates store the "role name")
-        const matchingTemplate = templates.find(t => t.name === role?.name);
-        if (matchingTemplate) {
-          instances.push({
-            sessionId: id,
-            templateId: matchingTemplate.id,
-            status: status === 'running' ? 'running' : 'idle',
-          });
-        }
-      }
-
-      setSupervisorList(supervisors);
-      setSupervisorInstances(instances);
-      setSupervisorIndex(0);
-      setSupervisorScrollOffset(0);
-      setIsSupervisorMode(true);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to list supervisors';
-      setSupervisorError(`Supervisor list failed: ${errorMessage}`);
-    }
-  }, [currentSessionId]);
-
   // BLOCK-004: Enter blocklist mode (show blocklist management overlay)
   const handleBlocklistMode = useCallback(async () => {
     try {
@@ -4156,358 +4042,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
       void handleResumeMode();
     }
   }, [triggerResumeModeInit, handleResumeMode]);
-
-  // TUI-050: Trigger useEffect for supervisor mode initialization (called from handleSubmitWithCommand)
-  useEffect(() => {
-    if (triggerSupervisorModeInit) {
-      setTriggerSupervisorModeInit(false);
-      void handleSupervisorMode();
-    }
-  }, [triggerSupervisorModeInit, handleSupervisorMode]);
-
-  // WATCH-008: Select supervisor and switch to it
-  const _handleSupervisorSelect = useCallback(async () => {
-    if (supervisorList.length === 0 || supervisorIndex >= supervisorList.length) {
-      return;
-    }
-
-    const selectedSupervisor = supervisorList[supervisorIndex];
-
-    try {
-      // REFAC-008: Cleanup previous handler before switching to supervisor session
-      cleanupCurrentSessionHandler();
-
-      // Switch to the supervisor session (atomic transition via store)
-      activateSession(selectedSupervisor.id);
-
-      // GIT-029: Apply any pending isolation state that arrived before activation
-      applyPendingIsolationState(selectedSupervisor.id);
-
-      setIsSupervisorMode(false);
-      setSupervisorList([]);
-
-      // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-      sessionCleanupRef.current = attachToSession(
-        selectedSupervisor.id,
-        (chunk: StreamChunk) => {
-          handleStreamChunk(chunk);
-        }
-      );
-
-      // Get buffered output and display
-      const mergedChunks = sessionGetMergedOutput(selectedSupervisor.id);
-      const restoredMessages = processChunksToConversation(
-        mergedChunks,
-        formatToolHeader,
-        formatCollapsedOutput
-      );
-      setConversation(restoredMessages);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to switch to supervisor';
-      setSupervisorError(`Switch failed: ${errorMessage}`);
-    }
-  }, [
-    supervisorList,
-    supervisorIndex,
-    handleStreamChunk,
-    formatToolHeader,
-    formatCollapsedOutput,
-    processChunksToConversation,
-    activateSession,
-  ]);
-
-  // WATCH-008: Delete selected supervisor
-  const _handleSupervisorDelete = useCallback(async () => {
-    if (supervisorList.length === 0 || supervisorIndex >= supervisorList.length) {
-      return;
-    }
-
-    const selectedSupervisor = supervisorList[supervisorIndex];
-
-    try {
-      // Destroy the supervisor session
-      // TUI-068: Use destroySession from sessionService
-      await destroySession(selectedSupervisor.id);
-
-      // Remove from list
-      const newList = supervisorList.filter((_, i) => i !== supervisorIndex);
-      setSupervisorList(newList);
-
-      // Adjust selection index if needed
-      if (supervisorIndex >= newList.length && newList.length > 0) {
-        setSupervisorIndex(newList.length - 1);
-      }
-
-      setShowSupervisorDeleteDialog(false);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete supervisor';
-      setSupervisorError(`Delete failed: ${errorMessage}`);
-      setShowSupervisorDeleteDialog(false);
-    }
-  }, [supervisorList, supervisorIndex]);
-
-  // WATCH-009: Create a new supervisor session
-  const handleSupervisorCreate = useCallback(
-    async (
-      name: string,
-      model: string,
-      brief: string,
-      autoInject: boolean
-    ) => {
-      if (!currentSessionId || !name.trim()) {
-        return;
-      }
-
-      try {
-        // Create the supervisor session using NAPI
-        const supervisorId = await sessionCreateSupervisor(
-          currentSessionId,
-          model,
-          currentProjectRef.current,
-          name.trim()
-        );
-
-        // Set the role information (name, brief, autoInject)
-        sessionSetRole(
-          supervisorId,
-          name.trim(),
-          brief.trim() || null,
-          autoInject
-        );
-
-        // Refresh the supervisor list by re-calling handleSupervisorMode
-        await handleSupervisorMode();
-
-        // Close the creation view
-        setIsSupervisorCreateMode(false);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to create supervisor';
-        setSupervisorError(`Supervisor creation failed: ${errorMessage}`);
-        setIsSupervisorCreateMode(false);
-      }
-    },
-    [currentSessionId, handleSupervisorMode]
-  );
-
-  // WATCH-023: Spawn supervisor from template
-  const handleTemplateSpawn = useCallback(
-    async (template: SupervisorTemplate) => {
-      if (!currentSessionId) return;
-
-      try {
-        const supervisorId = await sessionCreateSupervisor(
-          currentSessionId,
-          template.modelId,
-          currentProjectRef.current,
-          template.name
-        );
-
-        sessionSetRole(
-          supervisorId,
-          template.name,
-          template.brief || null,
-          template.autoInject
-        );
-
-        // Refresh the supervisor list
-        await handleSupervisorMode();
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to spawn supervisor';
-        setSupervisorError(`Spawn failed: ${errorMessage}`);
-      }
-    },
-    [currentSessionId, handleSupervisorMode]
-  );
-
-  // WATCH-023: Open existing supervisor instance
-  const handleInstanceOpen = useCallback(
-    async (instance: SupervisorInstance) => {
-      try {
-        // REFAC-008: Cleanup previous handler before switching to supervisor instance
-        cleanupCurrentSessionHandler();
-
-        // Switch to supervisor instance session (atomic transition via store)
-        activateSession(instance.sessionId);
-
-        // GIT-029: Apply any pending isolation state that arrived before activation
-        applyPendingIsolationState(instance.sessionId);
-
-        setIsSupervisorMode(false);
-        setSupervisorList([]);
-
-        // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-        sessionCleanupRef.current = attachToSession(
-          instance.sessionId,
-          (chunk: StreamChunk) => {
-            handleStreamChunk(chunk);
-          }
-        );
-
-        const mergedChunks = sessionGetMergedOutput(instance.sessionId);
-        const restoredMessages = processChunksToConversation(
-          mergedChunks,
-          formatToolHeader,
-          formatCollapsedOutput
-        );
-        setConversation(restoredMessages);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to switch to supervisor';
-        setSupervisorError(`Switch failed: ${errorMessage}`);
-      }
-    },
-    [
-      supervisorTemplates,
-      handleStreamChunk,
-      formatToolHeader,
-      formatCollapsedOutput,
-      activateSession,
-    ]
-  );
-
-  // WATCH-023: Edit template
-  const handleTemplateEdit = useCallback((template: SupervisorTemplate) => {
-    setEditingTemplate(template);
-    setTemplateFormMode('edit');
-    setIsTemplateFormMode(true);
-  }, []);
-
-  // WATCH-023: Delete template (shows confirmation dialog)
-  const handleTemplateDelete = useCallback(
-    (template: SupervisorTemplate, instances: SupervisorInstance[]) => {
-      setTemplateToDelete({ template, instances });
-      setShowTemplateDeleteDialog(true);
-    },
-    []
-  );
-
-  // WATCH-023: Confirm template deletion
-  const handleTemplateDeleteConfirm = useCallback(async () => {
-    if (!templateToDelete) return;
-
-    try {
-      // Kill all instances first
-      for (const instance of templateToDelete.instances) {
-        try {
-          // TUI-068: Use destroySession from sessionService
-          await destroySession(instance.sessionId);
-        } catch (err) {
-          // Failed to destroy session manager instance - indicates backend issues
-          logger.error(
-            `Failed to destroy session manager instance ${instance.sessionId}:`,
-            err
-          );
-        }
-      }
-
-      // Delete template from storage
-      const updatedTemplates = supervisorTemplates.filter(
-        t => t.id !== templateToDelete.template.id
-      );
-      saveSupervisorTemplates(updatedTemplates);
-      setSupervisorTemplates(updatedTemplates);
-
-      // Refresh the supervisor list
-      await handleSupervisorMode();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete template';
-      setSupervisorError(`Delete failed: ${errorMessage}`);
-    } finally {
-      setShowTemplateDeleteDialog(false);
-      setTemplateToDelete(null);
-    }
-  }, [templateToDelete, supervisorTemplates, handleSupervisorMode]);
-
-  // WATCH-023: Kill supervisor instance (shows confirmation dialog)
-  const handleInstanceKill = useCallback((instance: SupervisorInstance) => {
-    setInstanceToKill(instance);
-    setShowInstanceKillDialog(true);
-  }, []);
-
-  // WATCH-023: Confirm instance kill
-  const handleInstanceKillConfirm = useCallback(async () => {
-    if (!instanceToKill) return;
-
-    try {
-      // TUI-068: Use destroySession from sessionService
-      await destroySession(instanceToKill.sessionId);
-
-      // Refresh the supervisor list
-      await handleSupervisorMode();
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to kill instance';
-      setSupervisorError(`Kill failed: ${errorMessage}`);
-    } finally {
-      setShowInstanceKillDialog(false);
-      setInstanceToKill(null);
-    }
-  }, [instanceToKill, handleSupervisorMode]);
-
-  // WATCH-023: Create new template
-  const handleTemplateCreateNew = useCallback(() => {
-    setEditingTemplate(undefined);
-    setTemplateFormMode('create');
-    setIsTemplateFormMode(true);
-  }, []);
-
-  // WATCH-023: Save template (create or edit)
-  const handleTemplateSave = useCallback(
-    async (
-      name: string,
-      modelId: string,
-      brief: string,
-      autoInject: boolean
-    ) => {
-      try {
-        let updatedTemplates: SupervisorTemplate[];
-
-        if (templateFormMode === 'edit' && editingTemplate) {
-          // Update existing template
-          const updated = updateTemplate(editingTemplate, {
-            name,
-            modelId,
-            brief,
-            autoInject,
-          });
-          updatedTemplates = supervisorTemplates.map(t =>
-            t.id === updated.id ? updated : t
-          );
-        } else {
-          // Create new template
-          const newTemplate = createTemplate(
-            name,
-            modelId,
-            brief,
-            autoInject
-          );
-          updatedTemplates = [...supervisorTemplates, newTemplate];
-        }
-
-        saveSupervisorTemplates(updatedTemplates);
-        setSupervisorTemplates(updatedTemplates);
-
-        setIsTemplateFormMode(false);
-        setEditingTemplate(undefined);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to save template';
-        setSupervisorError(`Save failed: ${errorMessage}`);
-      }
-    },
-    [templateFormMode, editingTemplate, supervisorTemplates]
-  );
-
-  // WATCH-023: Cancel template form
-  const handleTemplateFormCancel = useCallback(() => {
-    setIsTemplateFormMode(false);
-    setEditingTemplate(undefined);
-  }, []);
 
   // NAPI-003 + TUI-047: Select session and restore conversation
   // UNIFIED: Both background and persisted sessions now use the same chunk-based restore flow.
@@ -5010,15 +4544,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // TUI-050: Handle Enter for slash commands even if palette wasn't shown yet
       // (e.g., user types "/debug" and presses Enter before palette could render)
-      // IMPORTANT: Only do this when NOT in another mode (resume, supervisor, etc.)
+      // IMPORTANT: Only do this when NOT in another mode (resume, etc.)
       // Otherwise Enter gets incorrectly captured when user is selecting from a list
       if (
         key.return &&
         inputValue.startsWith('/') &&
         inputValue.trim().length > 1 &&
         !isResumeMode &&
-        !isSupervisorMode &&
-        !isSupervisorEditMode &&
         !showModelSelector &&
         !showSettingsTab
       ) {
@@ -5059,82 +4591,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
           return true;
         }
         // No text input in resume mode - just navigation
-        return true;
-      }
-
-      // WATCH-023: Supervisor mode - SupervisorTemplateList handles its own input
-      if (isSupervisorMode) {
-        // Dialogs handle their own input via useInput
-        if (showTemplateDeleteDialog || showInstanceKillDialog) {
-          return true;
-        }
-        // Let SupervisorTemplateList handle all other input
-        return true;
-      }
-
-      // WATCH-008: Supervisor edit mode keyboard handling
-      if (isSupervisorEditMode) {
-        if (key.escape) {
-          setIsSupervisorEditMode(false);
-          setSupervisorEditValue('');
-          return true;
-        }
-        if (key.return) {
-          // Save the edited name and persist to backend
-          if (supervisorEditValue.trim()) {
-            const selectedSupervisor = supervisorList[supervisorIndex];
-            if (selectedSupervisor) {
-              // Persist to backend via NAPI - only update local state on success
-              try {
-                // WATCH-021: Pass null for autoInject - defaults to true.
-                // Note: This will reset auto_inject to true if it was previously false.
-                // For now, editing only changes the name. To preserve auto_inject,
-                // we'd need to extend sessionGetRole to return the current value.
-                sessionSetRole(
-                  selectedSupervisor.id,
-                  supervisorEditValue.trim(),
-                  selectedSupervisor.role?.brief || null,
-                  null // Defaults to true
-                );
-                // Update local state ONLY if backend save succeeded
-                const updatedList = [...supervisorList];
-                updatedList[supervisorIndex] = {
-                  ...updatedList[supervisorIndex],
-                  name: supervisorEditValue.trim(),
-                };
-                setSupervisorList(updatedList);
-              } catch (err) {
-                const errorMessage =
-                  err instanceof Error
-                    ? err.message
-                    : 'Failed to save supervisor name';
-                setConversation(prev => [
-                  ...prev,
-                  { type: 'status', content: `Edit failed: ${errorMessage}` },
-                ]);
-                // Do NOT update local state - keep showing old name for consistency
-              }
-            }
-          }
-          setIsSupervisorEditMode(false);
-          setSupervisorEditValue('');
-          return true;
-        }
-        if (key.backspace || key.delete) {
-          setSupervisorEditValue(prev => prev.slice(0, -1));
-          return true;
-        }
-        // Accept printable characters for editing
-        const clean = input
-          .split('')
-          .filter(ch => {
-            const code = ch.charCodeAt(0);
-            return code >= 32 && code <= 126;
-          })
-          .join('');
-        if (clean) {
-          setSupervisorEditValue(prev => prev + clean);
-        }
         return true;
       }
 
@@ -5723,61 +5179,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     );
   }
 
-  // WATCH-009: Supervisor creation view (full-screen form)
-  if (isSupervisorCreateMode) {
-    // Build list of available model IDs from providerSections
-    // WATCH-023 FIX: Include provider prefix so Rust can parse "provider/model"
-    const availableModelIds: string[] = providerSections.flatMap(section =>
-      section.models.map(model => `${section.providerId}/${model.id}`)
-    );
-    // Get current model ID for default selection (include provider prefix)
-    const currentModelId =
-      currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
-        ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
-        : '';
-
-    return (
-      <SupervisorCreateView
-        currentModel={currentModelId}
-        availableModels={
-          availableModelIds.length > 0 ? availableModelIds : [currentModelId]
-        }
-        terminalWidth={terminalWidth}
-        terminalHeight={terminalHeight}
-        onCreate={handleSupervisorCreate}
-        onCancel={() => setIsSupervisorCreateMode(false)}
-      />
-    );
-  }
-
-  // WATCH-023: Template create/edit form
-  if (isTemplateFormMode) {
-    // WATCH-023 FIX: Include provider prefix so Rust can parse "provider/model"
-    const availableModelIds: string[] = providerSections.flatMap(section =>
-      section.models.map(model => `${section.providerId}/${model.id}`)
-    );
-    // Get current model ID for default selection (include provider prefix)
-    const currentModelId =
-      currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
-        ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
-        : '';
-
-    return (
-      <SupervisorTemplateForm
-        mode={templateFormMode}
-        template={editingTemplate}
-        currentModel={currentModelId}
-        availableModels={
-          availableModelIds.length > 0 ? availableModelIds : [currentModelId]
-        }
-        terminalWidth={terminalWidth}
-        terminalHeight={terminalHeight}
-        onSave={handleTemplateSave}
-        onCancel={handleTemplateFormCancel}
-      />
-    );
-  }
-
   // BLOCK-004: Blocklist management overlay
   if (isBlocklistMode) {
     return (
@@ -5791,88 +5192,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
           setIsBlocklistMode(false);
         }}
       />
-    );
-  }
-
-  // WATCH-023: Supervisor template management overlay (replaces old WATCH-008 overlay)
-  if (isSupervisorMode) {
-    return (
-      <>
-        <SupervisorTemplateList
-          templates={supervisorTemplates}
-          instances={supervisorInstances}
-          terminalWidth={terminalWidth}
-          terminalHeight={terminalHeight}
-          onSpawn={handleTemplateSpawn}
-          onOpen={handleInstanceOpen}
-          onEdit={handleTemplateEdit}
-          onDelete={handleTemplateDelete}
-          onKillInstance={handleInstanceKill}
-          onCreateNew={handleTemplateCreateNew}
-          onClose={() => {
-            setIsSupervisorMode(false);
-            setSupervisorList([]);
-          }}
-        />
-        {/* Template delete confirmation dialog */}
-        {showTemplateDeleteDialog && templateToDelete && (
-          <ThreeButtonDialog
-            message={`Delete template "${templateToDelete.template.name}"?`}
-            description={
-              templateToDelete.instances.length > 0
-                ? `This will kill ${templateToDelete.instances.length} active supervisor${templateToDelete.instances.length !== 1 ? 's' : ''}.`
-                : undefined
-            }
-            options={['Delete', 'Cancel']}
-            onSelect={(index: number) => {
-              if (index === 0) {
-                void handleTemplateDeleteConfirm();
-              } else {
-                setShowTemplateDeleteDialog(false);
-                setTemplateToDelete(null);
-              }
-            }}
-            onCancel={() => {
-              setShowTemplateDeleteDialog(false);
-              setTemplateToDelete(null);
-            }}
-          />
-        )}
-        {/* Instance kill confirmation dialog */}
-        {showInstanceKillDialog && instanceToKill && (
-          <ThreeButtonDialog
-            message="Kill this supervisor instance?"
-            options={['Kill', 'Cancel']}
-            onSelect={(index: number) => {
-              if (index === 0) {
-                void handleInstanceKillConfirm();
-              } else {
-                setShowInstanceKillDialog(false);
-                setInstanceToKill(null);
-              }
-            }}
-            onCancel={() => {
-              setShowInstanceKillDialog(false);
-              setInstanceToKill(null);
-            }}
-          />
-        )}
-        {/* TUI-046: Exit confirmation dialog */}
-        {showExitConfirmation && (
-          <ThreeButtonDialog
-            message="Exit Session?"
-            description={
-              displayIsLoading
-                ? 'The agent is currently running. Choose how to exit.'
-                : 'Choose how to exit the session.'
-            }
-            options={['Detach', 'Close Session', 'Cancel']}
-            defaultSelectedIndex={0}
-            onSelect={handleExitChoice}
-            onCancel={() => setShowExitConfirmation(false)}
-          />
-        )}
-      </>
     );
   }
 
@@ -6306,11 +5625,34 @@ export const AgentView: React.FC<AgentViewProps> = ({
         />
       )}
 
-      {/* WATCH-023: Supervisor error dialog */}
-      {supervisorError && (
-        <ErrorDialog
-          message={supervisorError}
-          onClose={() => setSupervisorError(null)}
+      {/* AMGR-012: Role dialog */}
+      {showRoleDialog && currentSessionId && (
+        <RoleDialog
+          initialRole={(() => {
+            try {
+              const role = sessionGetRole(currentSessionId);
+              return role?.name ?? '';
+            } catch {
+              return '';
+            }
+          })()}
+          onSubmit={(role: string) => {
+            try {
+              if (role.trim()) {
+                sessionSetRole(currentSessionId, role.trim(), null, null);
+              } else {
+                sessionSetRole(currentSessionId, '', null, null);
+              }
+            } catch (err) {
+              const errorMessage = err instanceof Error ? err.message : 'Failed to set role';
+              setConversation(prev => [
+                ...prev,
+                { type: 'status', content: `Role error: ${errorMessage}` },
+              ]);
+            }
+            setShowRoleDialog(false);
+          }}
+          onClose={() => setShowRoleDialog(false)}
         />
       )}
 

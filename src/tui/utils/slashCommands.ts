@@ -52,6 +52,9 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   // Blocklist (BLOCK-004)
   { name: 'blocklist', description: 'Manage blocklist rules' },
 
+  // AMGR-012: Role management
+  { name: 'role', description: 'Set or edit session role' },
+
   // GIT-036: Merge worktree and close session
   {
     name: 'merge-worktree',
