@@ -181,7 +181,7 @@ describe('ConversationInputArea', () => {
       const onSubmit = vi.fn();
       const slashCommandEnterHandler = vi.fn(() => true);
 
-      // Simulates slash command handler in view (AgentView/SplitSessionView)
+      // Simulates slash command handler in view (AgentView)
       function SlashCommandHandler() {
         useInputCompat({
           id: 'slash-command',

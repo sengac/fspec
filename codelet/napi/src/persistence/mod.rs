@@ -159,6 +159,19 @@ pub fn create_session_with_provider(
         .create_with_provider(name, project, provider)
 }
 
+/// Save a session manifest to disk (for externally-created manifests)
+///
+/// Used by AgentManager to persist subordinate sessions that are created
+/// entirely in Rust without TypeScript involvement.
+pub fn save_session(session: &SessionManifest) -> Result<(), String> {
+    init_stores()?;
+    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    store
+        .as_mut()
+        .ok_or("Session store not initialized")?
+        .save(session)
+}
+
 /// Load a session by ID
 pub fn load_session(id: Uuid) -> Result<SessionManifest, String> {
     init_stores()?;

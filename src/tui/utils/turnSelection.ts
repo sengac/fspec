@@ -2,11 +2,9 @@
  * Turn selection utilities for VirtualList-based conversation views
  *
  * SOLID: Single responsibility - utilities for turn selection logic
- * DRY: Shared between AgentView and SplitSessionView
  *
  * Used by:
  * - AgentView.tsx (main conversation view)
- * - SplitSessionView.tsx (supervisor split view)
  */
 
 import type { ConversationLine } from '../types/conversation';

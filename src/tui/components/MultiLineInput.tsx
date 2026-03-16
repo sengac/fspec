@@ -199,7 +199,7 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
       }
 
       // TUI-049: Shift+Left/Right for session switching - let it propagate to view level
-      // These are handled by AgentView/SplitSessionView, not by the input component
+      // These are handled by AgentView, not by the input component
       if (input.includes('[1;2D') || input.includes('\x1b[1;2D')) {
         return false; // Let Shift+Left propagate to view level
       }

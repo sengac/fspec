@@ -2,7 +2,7 @@
  * Hook for managing turn selection state in VirtualList-based views
  *
  * SOLID: Single responsibility - encapsulates turn selection state management
- * DRY: Shared pattern between AgentView and SplitSessionView
+ * DRY: Shared pattern for turn selection
  *
  * Provides:
  * - Selection mode state (on/off)

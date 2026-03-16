@@ -2,7 +2,7 @@
  * Session Header Utilities
  *
  * Shared utilities for session header display.
- * Used by both AgentView and SplitSessionView.
+ * Used by AgentView.
  *
  * SOLID: Single Responsibility - only header formatting logic
  * DRY: Shared between all session views

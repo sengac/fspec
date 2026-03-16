@@ -1,5 +1,5 @@
 /**
- * Conversation types shared between AgentView and SplitSessionView
+ * Conversation types used by AgentView
  *
  * SOLID: Single source of truth for conversation-related types
  */

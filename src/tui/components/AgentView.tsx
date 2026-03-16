@@ -28,7 +28,6 @@ import { Box, Text, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
-import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
 
 import { FileSearchPopup } from './FileSearchPopup';
@@ -93,11 +92,6 @@ import {
   sessionGetSupervisors,
   sessionGetRole,
   sessionSetRole,
-  // WATCH-010: Supervisor split view NAPI function
-  sessionGetSubordinate,
-  // WATCH-011: Cross-pane correlation ID functions
-  sessionSetObservedCorrelationIds,
-  sessionClearObservedCorrelationIds,
   // PAUSE-001: Pause resume/confirm functions
   sessionPauseResume,
   sessionPauseConfirm,
@@ -1078,24 +1072,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-040: Delete session dialog state
   const [showSessionDeleteDialog, setShowSessionDeleteDialog] = useState(false);
 
-  // WATCH-010: Supervisor split view state (preserved for SplitSessionView)
-  const [isSupervisorSessionView, setIsSupervisorSessionView] = useState(false);
-  const [activePane, setActivePane] = useState<'subordinate' | 'supervisor'>('supervisor');
-  const [_subordinateSessionId, setSubordinateSessionId] = useState<string | null>(null);
-  const [subordinateSessionName, setSubordinateSessionName] = useState<string>('');
-  const [subordinateConversation, setSubordinateConversation] = useState<
-    ConversationLine[]
-  >([]);
-  const [isSplitViewSelectMode, setIsSplitViewSelectMode] = useState(false);
-  const [splitViewSelectedIndex, setSplitViewSelectedIndex] = useState(0);
-  // WATCH-016: Modal state for supervisor pane turn viewing
-  const [showSupervisorTurnModal, setShowSupervisorTurnModal] = useState(false);
-  const [supervisorTurnModalContent, setSupervisorTurnModalContent] =
-    useState<string>('');
-  const [supervisorTurnModalRole, setSupervisorTurnModalRole] = useState<
-    'user' | 'assistant' | 'supervisor'
-  >('assistant');
-  // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
+  // TUI-092: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   // TUI-054: Thinking level dialog state
@@ -1252,23 +1229,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
     contextWindow: displayContextWindow,
   } = rustModelInfo;
 
-  // VIEWNV-001: Calculate session number (1-based index of current session in list of subordinate sessions)
+  // VIEWNV-001: Calculate session number (1-based index of current session in list)
   // This helps users identify which session they're in when switching with Shift+Left/Right
   const sessionNumber = useMemo(() => {
     if (!currentSessionId) {
       return undefined;
     }
 
-    // Get all sessions and filter to subordinate sessions only (exclude supervisors)
     const allSessions = sessionManagerList();
-    const subordinateSessions = allSessions.filter(session => {
-      // A session is a subordinate (not a supervisor) if it has no subordinate itself
-      const subordinate = sessionGetSubordinate(session.id);
-      return !subordinate;
-    });
-
-    // Find current session's position (1-based)
-    const index = subordinateSessions.findIndex(s => s.id === currentSessionId);
+    const index = allSessions.findIndex(s => s.id === currentSessionId);
     return index >= 0 ? index + 1 : undefined;
   }, [currentSessionId]);
 
@@ -1346,9 +1315,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
   interface CachedMessageLines {
     content: string;
     isStreaming: boolean;
-    isThinking: boolean; // SOLID: Include isThinking in cache key for proper invalidation
+    isThinking: boolean;
     terminalWidth: number;
-    isSupervisorView: boolean; // WATCH-010: Include supervisor view state since it affects line width
     lines: ConversationLine[];
   }
   const lineCacheRef = useRef<Map<number, CachedMessageLines>>(new Map());
@@ -1409,85 +1377,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
       setResumeScrollOffset(0);
     }
   }, [isResumeMode]);
-
-  // WATCH-010: Detect if current session is a supervisor and setup split view
-  useEffect(() => {
-    if (!currentSessionId) {
-      setIsSupervisorSessionView(false);
-      setSubordinateSessionId(null);
-      setSubordinateSessionName('');
-      setSubordinateConversation([]);
-      return;
-    }
-
-    try {
-      const subordinateId = sessionGetSubordinate(currentSessionId);
-
-      if (subordinateId) {
-        // This is a supervisor session - enable split view
-        setIsSupervisorSessionView(true);
-        setSubordinateSessionId(subordinateId);
-
-        // Get subordinate session name from session list
-        const sessions = sessionManagerList();
-        const subordinateSession = sessions.find(s => s.id === subordinateId);
-        setSubordinateSessionName(subordinateSession?.name || 'Subordinate Session');
-
-        // Load subordinate session conversation
-        const subordinateChunks = sessionGetMergedOutput(subordinateId);
-        const subordinateMessages = processChunksToConversation(
-          subordinateChunks,
-          formatToolHeader,
-          formatCollapsedOutput
-        );
-
-        // Convert ConversationMessage[] to ConversationLine[] for display
-        const subordinatePaneWidth = calculatePaneWidth(terminalWidth, 'split');
-        const subordinateLines = messagesToLines(subordinateMessages, subordinatePaneWidth);
-        setSubordinateConversation(subordinateLines);
-
-        // BRIDGE-012: Subscribe to subordinate session for live updates via GlobalSessionStreamManager
-        // This uses the global callback architecture - no per-session NAPI attach/detach
-        const unregisterSubordinateHandler = attachToSession(
-          subordinateId,
-          (chunk: StreamChunk) => {
-            if (chunk) {
-              const updatedChunks = sessionGetMergedOutput(subordinateId);
-              const updatedMessages = processChunksToConversation(
-                updatedChunks,
-                formatToolHeader,
-                formatCollapsedOutput
-              );
-              const updatedPaneWidth = calculatePaneWidth(
-                terminalWidth,
-                'split'
-              );
-              const updatedLines = messagesToLines(
-                updatedMessages,
-                updatedPaneWidth
-              );
-              setSubordinateConversation(updatedLines);
-            }
-          }
-        );
-
-        // Cleanup: unregister handler when effect re-runs or component unmounts
-        // BRIDGE-012: Handler cleanup only - global callback stays registered
-        return () => {
-          unregisterSubordinateHandler();
-        };
-      } else {
-        // Not a supervisor session - disable split view
-        setIsSupervisorSessionView(false);
-        setSubordinateSessionId(null);
-        setSubordinateSessionName('');
-        setSubordinateConversation([]);
-      }
-    } catch {
-      // Error checking subordinate - not a supervisor
-      setIsSupervisorSessionView(false);
-    }
-  }, [currentSessionId]);
 
   // TUI-074: Settings filtering and scroll now handled by ProviderSettingsScreen
 
@@ -2633,34 +2522,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
         );
       });
 
-      // WATCH-011: Set observed correlation IDs for supervisor sessions
-      // When a supervisor sends input, tag its response with the subordinate chunks it has observed
-      let isSupervisorSession = false;
-      if (activeSessionId) {
-        try {
-          const subordinateId = sessionGetSubordinate(activeSessionId);
-          if (subordinateId) {
-            isSupervisorSession = true;
-            // Get subordinate's buffered output and extract correlation IDs
-            const subordinateChunks = sessionGetMergedOutput(subordinateId);
-            const correlationIds = subordinateChunks
-              .filter((chunk: StreamChunk) => chunk.correlationId)
-              .map((chunk: StreamChunk) => chunk.correlationId as string);
-
-            if (correlationIds.length > 0) {
-              // Tag supervisor's response chunks with the observed subordinate chunk IDs
-              sessionSetObservedCorrelationIds(activeSessionId, correlationIds);
-            }
-          }
-        } catch (err) {
-          // Failed to get subordinate session or set correlation IDs - indicates session hierarchy issues
-          logger.error(
-            'Failed to process supervisor session subordinate relationship:',
-            err
-          );
-        }
-      }
-
       // NAPI-009: Send the input to the background session (non-blocking)
       // The background session's agent_loop will process it and emit chunks via the callback
       sessionSendInput(activeSessionId, userMessage, thinkingConfig);
@@ -2677,16 +2538,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // BRIDGE-013: Cleanup handleSubmit's handler so persistent handler can take over
       cleanupCurrentSessionHandler();
-
-      // WATCH-011: Clear observed correlation IDs after response completes
-      if (isSupervisorSession && activeSessionId) {
-        try {
-          sessionClearObservedCorrelationIds(activeSessionId);
-        } catch (err) {
-          // Failed to clear observed correlation IDs - indicates session management issues
-          logger.error('Failed to clear observed correlation IDs:', err);
-        }
-      }
 
       // Persist full envelopes to session (includes tool calls and results)
       // REFAC-007: Final assistant message persistence now handled by Rust
@@ -4594,68 +4445,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return true;
       }
 
-      // WATCH-010: Split view keyboard handling for supervisor sessions
-      if (isSupervisorSessionView && !displayIsLoading) {
-        // Tab toggles turn-select mode
-        if (key.tab && !key.shift) {
-          setIsSplitViewSelectMode(prev => !prev);
-          return true;
-        }
-
-        // Left arrow switches to subordinate pane
-        if (key.leftArrow && !key.shift) {
-          setActivePane('subordinate');
-          setSplitViewSelectedIndex(0); // Reset selection when switching panes
-          return true;
-        }
-
-        // Right arrow switches to supervisor pane
-        if (key.rightArrow && !key.shift) {
-          setActivePane('supervisor');
-          setSplitViewSelectedIndex(0); // Reset selection when switching panes
-          return true;
-        }
-
-        // Up/Down navigation in select mode
-        if (isSplitViewSelectMode) {
-          const targetConversation =
-            activePane === 'subordinate' ? subordinateConversation : conversation;
-          const maxIndex = Math.max(0, targetConversation.length - 1);
-
-          if (key.upArrow) {
-            setSplitViewSelectedIndex(prev => Math.max(0, prev - 1));
-            return true;
-          }
-          if (key.downArrow) {
-            setSplitViewSelectedIndex(prev => Math.min(maxIndex, prev + 1));
-            return true;
-          }
-
-          // Enter key for "Discuss Selected" - pre-fill input with context
-          if (key.return && activePane === 'subordinate') {
-            const selectedLine = subordinateConversation[splitViewSelectedIndex];
-            if (selectedLine) {
-              const turnNum = splitViewSelectedIndex + 1;
-              const preview =
-                selectedLine.content.slice(0, 100) +
-                (selectedLine.content.length > 100 ? '...' : '');
-              const prefill = `Regarding turn ${turnNum} in subordinate session:\n\`\`\`\n${preview}\n\`\`\`\n`;
-              setInputValue(prefill);
-              setIsSplitViewSelectMode(false);
-            }
-            return true;
-          }
-        }
-
-        // Escape exits select mode if active
-        if (key.escape && isSplitViewSelectMode) {
-          setIsSplitViewSelectMode(false);
-          return true;
-        }
-
-        // Don't intercept other keys - let them fall through to normal handling
-      }
-
       if (showProviderSelector) {
         if (key.escape) {
           setShowProviderSelector(false);
@@ -4689,10 +4478,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       }
 
       // VIEWNV-001: Shift+Left/Right for unified session navigation
-      // Skip when in supervisor view - SplitSessionView handles its own navigation
       // Uses sessionNavigation hook which determines correct target based on position in tree
       // Check escape sequences first, then Ink key detection
-      if (!isSupervisorSessionView) {
+      {
         const isShiftLeft =
           input.includes('[1;2D') ||
           input.includes('\x1b[1;2D') ||
@@ -4720,12 +4508,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
           setShowExitConfirmation(false);
           return true;
         }
-        // Priority 2: Close supervisor turn modal (WATCH-016)
-        if (showSupervisorTurnModal) {
-          setShowSupervisorTurnModal(false);
-          return true;
-        }
-        // Priority 3: Close turn modal
+        // Priority 2: Close turn modal
         if (showTurnModal) {
           setShowTurnModal(false);
           return true;
@@ -4783,13 +4566,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // Only recompute lines for messages that changed, reuse cached lines for unchanged messages
   // PERF-003: Uses deferredConversation to prioritize user input over streaming updates
   // TUI-045: Removed expansion logic - modal now handles full content viewing
-  // WATCH-010: Use half width when in split view mode (supervisor session)
   const conversationLines = useMemo((): ConversationLine[] => {
-    // Calculate max width based on whether we're in split view or full view
-    // Uses shared calculatePaneWidth utility for consistent width calculation
-    const maxWidth = isSupervisorSessionView
-      ? calculatePaneWidth(terminalWidth, 'split')
-      : calculatePaneWidth(terminalWidth, 'full');
+    const maxWidth = calculatePaneWidth(terminalWidth, 'full');
     const lines: ConversationLine[] = [];
     const cache = lineCacheRef.current;
 
@@ -4808,14 +4586,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Check cache for this message
       const cached = cache.get(msgIndex);
       const isThinking = msg.type === 'thinking';
-      // WATCH-010: Include isSupervisorSessionView in cache check since width depends on it
       if (
         cached &&
         cached.content === effectiveContent &&
         cached.isStreaming === msg.isStreaming &&
         cached.isThinking === isThinking &&
-        cached.terminalWidth === terminalWidth &&
-        cached.isSupervisorView === isSupervisorSessionView
+        cached.terminalWidth === terminalWidth
       ) {
         // Cache hit - reuse cached lines
         lines.push(...cached.lines);
@@ -4831,7 +4607,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
           isStreaming: msg.isStreaming ?? false,
           isThinking,
           terminalWidth,
-          isSupervisorView: isSupervisorSessionView,
           lines: messageLines,
         });
         lines.push(...messageLines);
@@ -4846,7 +4621,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
 
     return lines;
-  }, [deferredConversation, terminalWidth, isSupervisorSessionView]);
+  }, [deferredConversation, terminalWidth]);
 
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
@@ -5192,89 +4967,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
           setIsBlocklistMode(false);
         }}
       />
-    );
-  }
-
-  // WATCH-010: Supervisor split view - shows subordinate conversation on left, supervisor conversation on right
-  // WATCH-018: Extracted to separate SplitSessionView component for isolation and debugging
-  // WATCH-015: Pass model info and token stats to SplitSessionView for full header display
-  // WATCH-016: Added onOpenTurnContent callback for opening TurnContentModal from supervisor pane
-  if (isSupervisorSessionView) {
-    // WATCH-016: Handler for opening turn content modal from supervisor pane
-    const handleOpenSupervisorTurnContent = (
-      messageIndex: number,
-      content: string
-    ) => {
-      // Determine role from conversation (default to assistant for supervisor responses)
-      const turnLines = conversationLines.filter(
-        line => line.messageIndex === messageIndex
-      );
-      const role =
-        turnLines.length > 0
-          ? (turnLines[0].role as 'user' | 'assistant' | 'supervisor')
-          : 'assistant';
-      setSupervisorTurnModalContent(content);
-      setSupervisorTurnModalRole(role);
-      setShowSupervisorTurnModal(true);
-    };
-
-    return (
-      <>
-        <SplitSessionView
-          sessionId={currentSessionId}
-          subordinateSessionName={subordinateSessionName}
-          terminalWidth={terminalWidth}
-          subordinateConversation={subordinateConversation}
-          supervisorConversation={conversationLines}
-          inputValue={inputValue}
-          onInputChange={setInputValue}
-          onSubmit={handleSubmit}
-          isLoading={displayIsLoading}
-          modelId={displayModelId}
-          displayReasoning={displayReasoning}
-          displayHasVision={displayHasVision}
-          displayContextWindow={displayContextWindow}
-          tokenUsage={tokenUsage}
-          rustTokens={rustTokens}
-          contextFillPercentage={contextFillPercentage}
-          isTurnSelectMode={isTurnSelectMode}
-          onOpenTurnContent={handleOpenSupervisorTurnContent}
-          // VIEWNV-001: Navigation callbacks for Shift+Arrow handling
-          onNavigate={async (targetSessionId: string) => {
-            // Save pending input to current session before switching
-            if (currentSessionId && inputValue) {
-              try {
-                sessionSetPendingInput(currentSessionId, inputValue);
-              } catch (err) {
-                // Failed to set pending input before switching - indicates session management issues
-                logger.error(
-                  'Failed to set pending input before session switch:',
-                  err
-                );
-              }
-            }
-            // REFAC-008: Cleanup current handler before navigating
-            cleanupCurrentSessionHandler();
-            // Resume the target session
-            await resumeSessionById(targetSessionId);
-          }}
-          onNavigateToBoard={() => {
-            // REFAC-008: Cleanup current handler before exiting to board
-            cleanupCurrentSessionHandler();
-            onExit();
-          }}
-        />
-        {/* WATCH-016: Turn content modal for supervisor pane */}
-        {showSupervisorTurnModal && (
-          <TurnContentModal
-            content={supervisorTurnModalContent}
-            role={supervisorTurnModalRole}
-            terminalWidth={terminalWidth}
-            terminalHeight={terminalHeight}
-            isFocused={showSupervisorTurnModal}
-          />
-        )}
-      </>
     );
   }
 

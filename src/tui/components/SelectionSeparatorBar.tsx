@@ -2,7 +2,7 @@
  * SelectionSeparatorBar - Visual indicator for selected turn boundaries
  *
  * SOLID: Single responsibility - renders the arrow bar for turn selection
- * DRY: Shared between AgentView and SplitSessionView
+ * DRY: Shared component for turn selection UI
  *
  * Renders a gray bar with arrows (▼ or ▲) to indicate the boundaries
  * of the currently selected turn in turn-select mode.

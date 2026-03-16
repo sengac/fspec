@@ -474,10 +474,7 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
         true
       );
 
-      // @step And the split view header displays [SUPERVISOR] instead of [WATCHER]
-      const splitView = join(TUI_COMPONENTS, 'SplitSessionView.tsx');
-      expect(fileContains(splitView, '[SUPERVISOR]')).toBe(true);
-      expect(fileContains(splitView, '[WATCHER]')).toBe(false);
+      // SplitSessionView was removed in TUI-080 (dead split view cleanup)
     });
   });
 

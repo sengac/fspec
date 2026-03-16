@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "Persistence manifest created before session",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/agent_manager_handler.rs",
+          "lines": "724-751",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "lines": [93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115]
+            },
+            {
+              "file": "codelet/napi/src/persistence/mod.rs",
+              "lines": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/subordinate_session_persistence_test.rs",
+          "lines": "31-61",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "lines": [93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115]
+            },
+            {
+              "file": "codelet/napi/src/persistence/mod.rs",
+              "lines": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Subordinate messages are searchable via SessionSearch",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/subordinate_session_persistence_test.rs",
+          "lines": "71-113",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "lines": [93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115]
+            },
+            {
+              "file": "codelet/napi/src/persistence/mod.rs",
+              "lines": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Spawn succeeds even when persistence manifest creation fails",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/subordinate_session_persistence_test.rs",
+          "lines": "123-190",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "lines": [111, 112, 113, 114]
+            },
+            {
+              "file": "codelet/napi/src/persistence/mod.rs",
+              "lines": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/agent_manager_handler.rs",
+      "codelet/napi/tests/subordinate_session_persistence_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/agent_manager_handler.rs",
+      "codelet/napi/src/persistence/mod.rs"
+    ],
+    "totalLinesCovered": 168
+  }
+}

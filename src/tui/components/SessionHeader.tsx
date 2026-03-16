@@ -2,7 +2,7 @@
  * SessionHeader - Shared header component for session views
  *
  * Displays model info, capability indicators, and token usage.
- * Used by both AgentView (normal mode) and SplitSessionView (supervisor mode).
+ * Used by AgentView.
  *
  * Work unit ID and status are read from Zustand sessionStore (not props).
  *
