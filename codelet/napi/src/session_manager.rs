@@ -153,7 +153,7 @@ impl WorkUnitContext {
 /// Parsed interjection from supervisor AI response (WATCH-020)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Interjection {
-    /// Whether this is an urgent interjection (interrupt parent mid-stream)
+    /// Whether this is an urgent interjection (interrupt subordinate mid-stream)
     pub urgent: bool,
     /// The message content to inject
     pub content: String,
@@ -290,13 +290,13 @@ impl SupervisorRole {
     }
 }
 
-/// Supervisor input message for injection into parent session (WATCH-006)
+/// Supervisor input message for injection into subordinate session (WATCH-006)
 /// BRIDGE-007: Extended to support optional images from Telegram bridge
 #[derive(Debug, Clone)]
 pub struct SupervisorInput {
-    /// Session ID of the watcher sending the input
+    /// Session ID of the supervisor sending the input
     pub source_session_id: String,
-    /// Role name of the watcher (e.g., "code-reviewer")
+    /// Role name of the supervisor (e.g., "code-reviewer")
     pub role_name: String,
     /// The message content to inject
     pub message: String,
@@ -369,19 +369,19 @@ pub fn format_supervisor_input(input: &SupervisorInput) -> String {
 /// Supervisor state for the agent loop (WATCH-005)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SupervisorState {
-    /// Waiting for input (user prompt or parent observation)
+    /// Waiting for input (user prompt or subordinate observation)
     #[default]
     Idle,
-    /// Accumulating observations from parent session
+    /// Accumulating observations from subordinate session
     Observing,
     /// Running the agent to process input
     Processing,
 }
 
-/// Buffer for accumulating observations from parent session (WATCH-005)
+/// Buffer for accumulating observations from subordinate session (WATCH-005)
 #[derive(Debug, Clone)]
 pub struct ObservationBuffer {
-    /// Accumulated chunks from parent session
+    /// Accumulated chunks from subordinate session
     chunks: Vec<StreamChunk>,
     /// Timestamp of last chunk received (for silence timeout)
     last_chunk_time: Option<std::time::Instant>,
@@ -488,7 +488,7 @@ pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SupervisorRol
     }
     
     // Add observation header
-    prompt.push_str("=== PARENT SESSION OBSERVATIONS ===\n\n");
+    prompt.push_str("=== SUBORDINATE SESSION OBSERVATIONS ===\n\n");
     
     // Add accumulated observations
     for chunk in buffer.chunks() {
@@ -514,13 +514,13 @@ pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SupervisorRol
     // WATCH-020: Add structured response format instructions
     prompt.push_str("Based on these observations, evaluate whether you need to interject.\n\n");
     prompt.push_str("RESPONSE FORMAT (required):\n");
-    prompt.push_str("If you need to inject a message to the parent session, respond with:\n");
+    prompt.push_str("If you need to inject a message to the subordinate session, respond with:\n");
     prompt.push_str("[INTERJECT]\n");
     prompt.push_str("urgent: true\n");
     prompt.push_str("content: Your message here\n");
     prompt.push_str("[/INTERJECT]\n\n");
-    prompt.push_str("Set 'urgent: true' to interrupt the parent mid-stream (for critical issues).\n");
-    prompt.push_str("Set 'urgent: false' to wait until the parent's current turn completes.\n\n");
+    prompt.push_str("Set 'urgent: true' to interrupt the subordinate mid-stream (for critical issues).\n");
+    prompt.push_str("Set 'urgent: false' to wait until the subordinate's current turn completes.\n\n");
     prompt.push_str("If no interjection is needed, respond with:\n");
     prompt.push_str("[CONTINUE]\n");
     prompt.push_str("Your reasoning here (optional)\n");
@@ -534,7 +534,7 @@ pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SupervisorRol
 /// Default silence timeout for supervisor sessions (5 seconds)
 pub const DEFAULT_SILENCE_TIMEOUT_SECS: u64 = 5;
 
-/// Result of processing in the watcher loop
+/// Result of processing in the supervisor loop
 #[derive(Debug, Clone)]
 pub enum SupervisorLoopAction {
     /// Process a user prompt (takes priority)
@@ -542,7 +542,7 @@ pub enum SupervisorLoopAction {
     /// Process accumulated observations (at breakpoint) (WATCH-011: includes observed correlation IDs)
     ProcessObservations {
         prompt: String,
-        /// Correlation IDs of parent chunks that triggered this evaluation
+        /// Correlation IDs of subordinate chunks that triggered this evaluation
         observed_correlation_ids: Vec<String>,
     },
     /// Continue waiting (no action needed)
@@ -554,24 +554,24 @@ pub enum SupervisorLoopAction {
 /// Supervisor agent loop input handler (WATCH-005)
 ///
 /// This function implements Rule [0]: Uses tokio::select! to wait on both
-/// user input channel AND parent broadcast receiver.
+/// user input channel AND subordinate broadcast receiver.
 ///
 /// Returns a SupervisorLoopAction indicating what action to take.
 ///
 /// Note: This is the core loop logic. The actual agent execution is handled
 /// by the caller (WATCH-007 will expose this via NAPI).
 ///
-/// Processes one tick of the watcher loop (WATCH-005, wired up by WATCH-019)
+/// Processes one tick of the supervisor loop (WATCH-005, wired up by WATCH-019)
 ///
 /// This function is called by `run_supervisor_loop` to process both user input
-/// and parent observations. It uses tokio::select! with biased ordering to
-/// prioritize user input over parent broadcast observations.
+/// and subordinate observations. It uses tokio::select! with biased ordering to
+/// prioritize user input over subordinate broadcast observations.
 ///
-/// Called from `supervisor_agent_loop` via `run_supervisor_loop` when a watcher
+/// Called from `supervisor_agent_loop` via `run_supervisor_loop` when a supervisor
 /// session is created via `session_create_supervisor`.
 pub(crate) async fn supervisor_loop_tick(
     user_input_rx: &mut mpsc::Receiver<PromptInput>,
-    parent_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
+    subordinate_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
     buffer: &mut ObservationBuffer,
     role: &SupervisorRole,
     silence_timeout: std::time::Duration,
@@ -611,8 +611,8 @@ pub(crate) async fn supervisor_loop_tick(
             }
         }
 
-        // Parent broadcast receiver - observations
-        result = parent_broadcast_rx.recv() => {
+        // Subordinate broadcast receiver - observations
+        result = subordinate_broadcast_rx.recv() => {
             match result {
                 Ok(chunk) => {
                     // Check if this is a natural breakpoint BEFORE adding to buffer
@@ -641,7 +641,7 @@ pub(crate) async fn supervisor_loop_tick(
                     SupervisorLoopAction::Continue
                 }
                 Err(broadcast::error::RecvError::Closed) => {
-                    // Parent session ended
+                    // Subordinate session ended
                     SupervisorLoopAction::Stop
                 }
             }
@@ -658,27 +658,24 @@ pub(crate) async fn supervisor_loop_tick(
     }
 }
 
-/// Run the watcher agent loop (WATCH-005, wired up by WATCH-019)
+/// Run the supervisor agent loop (WATCH-005, wired up by WATCH-019)
 ///
 /// This is the main entry point for a supervisor session. It continuously
-/// listens for both user input and parent observations, processing them
+/// listens for both user input and subordinate observations, processing them
 /// according to the business rules:
 ///
 /// - User prompts take priority and are processed immediately
-/// - Parent observations are accumulated until a natural breakpoint
+/// - Subordinate observations are accumulated until a natural breakpoint
 /// - Natural breakpoints: TurnComplete (Done), ToolResult, or silence timeout
 /// - Empty buffer at breakpoint does not trigger evaluation
 ///
 /// The `process_prompt` callback is called whenever a prompt needs to be
 /// processed (either user input or accumulated observations).
 /// WATCH-011: For observation processing, observed_correlation_ids contains the
-/// correlation IDs of parent chunks that triggered this evaluation.
-///
-/// Called from `supervisor_agent_loop` when a supervisor session is created via
-/// `session_create_supervisor` / `create_watcher_session_with_id`.
+/// correlation IDs of subordinate chunks that triggered this evaluation.
 pub(crate) async fn run_supervisor_loop<F, Fut>(
     user_input_rx: &mut mpsc::Receiver<PromptInput>,
-    parent_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
+    subordinate_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
     role: &SupervisorRole,
     silence_timeout_secs: Option<u64>,
     mut process_prompt: F,
@@ -695,7 +692,7 @@ where
     loop {
         let action = supervisor_loop_tick(
             user_input_rx,
-            parent_broadcast_rx,
+            subordinate_broadcast_rx,
             &mut buffer,
             role,
             silence_timeout,
@@ -898,7 +895,7 @@ pub struct BackgroundSession {
     role: RwLock<Option<SupervisorRole>>,
 
     /// Channel for receiving supervisor input messages (WATCH-006)
-    /// Supervisors use this to inject messages into the parent session
+    /// Supervisors use this to inject messages into the subordinate session
     supervisor_input_tx: mpsc::Sender<SupervisorInput>,
     supervisor_input_rx: Mutex<mpsc::Receiver<SupervisorInput>>,
 
@@ -906,9 +903,9 @@ pub struct BackgroundSession {
     /// Each chunk emitted by handle_output gets a unique correlation_id
     correlation_counter: AtomicU64,
 
-    /// Pending observed correlation IDs for watcher responses (WATCH-011)
-    /// When a watcher processes observations, this is set to the correlation IDs
-    /// of the parent chunks that triggered the evaluation. handle_output then
+    /// Pending observed correlation IDs for supervisor responses (WATCH-011)
+    /// When a supervisor processes observations, this is set to the correlation IDs
+    /// of the subordinate chunks that triggered the evaluation. handle_output then
     /// tags output chunks with these IDs until cleared.
     pending_observed_correlation_ids: RwLock<Vec<String>>,
 
@@ -1240,15 +1237,15 @@ impl BackgroundSession {
     
     /// Handle output chunk - buffer and optionally forward to callback
     /// WATCH-011: Assigns correlation_id for cross-pane selection highlighting
-    /// WATCH-011: Applies pending_observed_correlation_ids for watcher responses
+    /// WATCH-011: Applies pending_observed_correlation_ids for supervisor responses
     pub fn handle_output(&self, chunk: StreamChunk) {
         // WATCH-011: Assign correlation_id if not already set (for variants that support it)
         let id = self.correlation_counter.fetch_add(1, Ordering::SeqCst);
         let correlation_id = format!("{}-{}", self.id, id);
         let chunk = chunk.with_correlation_id(correlation_id);
 
-        // WATCH-011: Apply pending observed_correlation_ids for watcher responses
-        // This tags watcher output chunks with the parent chunk IDs that triggered this response
+        // WATCH-011: Apply pending observed_correlation_ids for supervisor responses
+        // This tags supervisor output chunks with the subordinate chunk IDs that triggered this response
         let chunk = {
             let pending_ids = self.pending_observed_correlation_ids.read()
                 .expect("pending_observed_correlation_ids lock poisoned");
@@ -1295,7 +1292,7 @@ impl BackgroundSession {
 
     /// Set the session role (WATCH-004)
     ///
-    /// Used to mark a session as a watcher with a specific role and brief .
+    /// Used to mark a session as a supervisor with a specific role and brief.
     pub fn set_role(&self, role: SupervisorRole) {
         *self.role.write().expect("role lock poisoned") = Some(role);
     }
@@ -1309,7 +1306,7 @@ impl BackgroundSession {
 
     /// Clear the session role (WATCH-004)
     ///
-    /// Returns the session to a regular (non-watcher) state.
+    /// Returns the session to a regular (non-supervisor) state.
     pub fn clear_role(&self) {
         *self.role.write().expect("role lock poisoned") = None;
     }
@@ -1489,7 +1486,7 @@ impl BackgroundSession {
 
     /// Set pending observed correlation IDs (WATCH-011)
     ///
-    /// When a watcher processes observations, call this before sending the
+    /// When a supervisor processes observations, call this before sending the
     /// evaluation prompt. All subsequent output chunks from handle_output
     /// will be tagged with these IDs until clear_pending_observed_correlation_ids is called.
     pub fn set_pending_observed_correlation_ids(&self, ids: Vec<String>) {
@@ -1499,7 +1496,7 @@ impl BackgroundSession {
 
     /// Clear pending observed correlation IDs (WATCH-011)
     ///
-    /// Call this after the watcher finishes processing an observation response.
+    /// Call this after the supervisor finishes processing an observation response.
     /// Subsequent output chunks will no longer be tagged with observed IDs.
     pub fn clear_pending_observed_correlation_ids(&self) {
         self.pending_observed_correlation_ids.write()
@@ -1509,7 +1506,7 @@ impl BackgroundSession {
 
     /// Receive supervisor input (WATCH-006)
     ///
-    /// Queues a SupervisorInput message for processing by the parent session.
+    /// Queues a SupervisorInput message for processing by the subordinate session.
     /// The input is queued via an mpsc channel and processed asynchronously.
     /// Returns Ok(()) immediately without blocking.
     pub fn receive_supervisor_input(&self, input: SupervisorInput) -> std::result::Result<(), String> {
@@ -1520,7 +1517,7 @@ impl BackgroundSession {
 
     /// Get the supervisor input sender (WATCH-006)
     ///
-    /// Returns a clone of the sender for watchers to send input.
+    /// Returns a clone of the sender for supervisors to send input.
     pub fn supervisor_input_sender(&self) -> mpsc::Sender<SupervisorInput> {
         self.supervisor_input_tx.clone()
     }
@@ -1641,16 +1638,16 @@ impl BackgroundSession {
     }
 }
 
-/// Tracks parent-watcher relationships between sessions (WATCH-002)
+/// Tracks subordinate-supervisor relationships between sessions (WATCH-002)
 ///
-/// ChainOfCommand enables supervisor sessions to observe parent sessions.
-/// - One watcher can only watch one parent (1:1 from watcher side)
-/// - One parent can have multiple watchers (1:N from parent side)
-/// - Circular watching is prevented
+/// ChainOfCommand enables supervisor sessions to observe subordinate sessions.
+/// - One supervisor can only observe one subordinate (1:1 from supervisor side)
+/// - One subordinate can have multiple supervisors (1:N from subordinate side)
+/// - Circular supervision is prevented
 pub struct ChainOfCommand {
-    /// Parent session ID → list of supervisor session IDs
+    /// Subordinate session ID → list of supervisor session IDs
     subordinate_to_supervisors: RwLock<HashMap<Uuid, Vec<Uuid>>>,
-    /// Supervisor session ID → parent session ID
+    /// Supervisor session ID → subordinate session ID
     supervisor_to_subordinate: RwLock<HashMap<Uuid, Uuid>>,
 }
 
@@ -1669,113 +1666,112 @@ impl ChainOfCommand {
         }
     }
 
-    /// Register a watcher for a parent session
+    /// Register a supervisor for a subordinate session
     ///
     /// Returns an error if:
-    /// - The watcher already has a parent (watcher can only watch one parent)
-    /// - Adding would create a circular watch relationship
-    pub fn add_supervisor(&self, parent_id: Uuid, watcher_id: Uuid) -> std::result::Result<(), String> {
+    /// - The supervisor already has a subordinate (supervisor can only observe one subordinate)
+    /// - Adding would create a circular supervision relationship
+    pub fn add_supervisor(&self, subordinate_id: Uuid, supervisor_id: Uuid) -> std::result::Result<(), String> {
         // Acquire write lock for the entire operation to prevent TOCTOU race
-        let mut w2p = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
+        let mut sup2sub = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
         
-        // Check if watcher already has a parent
-        if w2p.contains_key(&watcher_id) {
-            return Err("watcher already has a parent".to_string());
+        // Check if supervisor already has a subordinate
+        if sup2sub.contains_key(&supervisor_id) {
+            return Err("supervisor already has a subordinate".to_string());
         }
 
-        // Check for circular watching: would the proposed watcher be in the parent's chain?
-        // If the watcher is already a parent of something in the chain, we'd have a cycle
-        // Check if parent_id is watching watcher_id (direct cycle)
-        if w2p.get(&parent_id) == Some(&watcher_id) {
-            return Err("circular watching not allowed".to_string());
+        // Check for circular supervision: would the proposed supervisor be in the subordinate's chain?
+        // Check if subordinate_id is supervising supervisor_id (direct cycle)
+        if sup2sub.get(&subordinate_id) == Some(&supervisor_id) {
+            return Err("circular supervision not allowed".to_string());
         }
-        // Check deeper cycles: walk up from parent_id
-        let mut current = parent_id;
-        while let Some(&grandparent) = w2p.get(&current) {
-            if grandparent == watcher_id {
-                return Err("circular watching not allowed".to_string());
+        // Check deeper cycles: walk up from subordinate_id
+        let mut current = subordinate_id;
+        while let Some(&ancestor) = sup2sub.get(&current) {
+            if ancestor == supervisor_id {
+                return Err("circular supervision not allowed".to_string());
             }
-            current = grandparent;
+            current = ancestor;
         }
 
         // Add the relationship (still under write lock)
-        w2p.insert(watcher_id, parent_id);
+        sup2sub.insert(supervisor_id, subordinate_id);
         
         // Now acquire subordinate_to_supervisors lock
-        let mut p2w = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
-        p2w.entry(parent_id).or_default().push(watcher_id);
+        let mut sub2sup = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
+        sub2sup.entry(subordinate_id).or_default().push(supervisor_id);
 
         Ok(())
     }
 
-    /// Remove a watcher relationship
+    /// Remove a supervisor relationship
     ///
-    /// Removes the watcher from both maps. Safe to call even if watcher doesn't exist.
-    pub fn remove_supervisor(&self, watcher_id: Uuid) {
-        // Get the parent (if any) and remove from supervisor_to_subordinate
-        let parent_id = {
-            let mut w2p = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
-            w2p.remove(&watcher_id)
+    /// Removes the supervisor from both maps. Safe to call even if supervisor doesn't exist.
+    pub fn remove_supervisor(&self, supervisor_id: Uuid) {
+        // Get the subordinate (if any) and remove from supervisor_to_subordinate
+        let subordinate_id = {
+            let mut sup2sub = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
+            sup2sub.remove(&supervisor_id)
         };
 
-        // If there was a parent, remove watcher from parent's list
-        if let Some(parent_id) = parent_id {
-            let mut p2w = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
-            if let Some(watchers) = p2w.get_mut(&parent_id) {
-                watchers.retain(|&id| id != watcher_id);
+        // If there was a subordinate, remove supervisor from subordinate's list
+        if let Some(subordinate_id) = subordinate_id {
+            let mut sub2sup = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
+            if let Some(supervisors) = sub2sup.get_mut(&subordinate_id) {
+                supervisors.retain(|&id| id != supervisor_id);
                 // Remove empty entries
-                if watchers.is_empty() {
-                    p2w.remove(&parent_id);
+                if supervisors.is_empty() {
+                    sub2sup.remove(&subordinate_id);
                 }
             }
         }
     }
 
-    /// Get all watchers for a parent session
+    /// Get all supervisors for a subordinate session
     ///
-    /// Returns an empty Vec if the parent has no watchers.
-    pub fn get_supervisors(&self, parent_id: Uuid) -> Vec<Uuid> {
-        let p2w = self.subordinate_to_supervisors.read().expect("subordinate_to_supervisors lock poisoned");
-        p2w.get(&parent_id).cloned().unwrap_or_default()
+    /// Returns an empty Vec if the subordinate has no supervisors.
+    pub fn get_supervisors(&self, subordinate_id: Uuid) -> Vec<Uuid> {
+        let sub2sup = self.subordinate_to_supervisors.read().expect("subordinate_to_supervisors lock poisoned");
+        sub2sup.get(&subordinate_id).cloned().unwrap_or_default()
     }
 
-    /// Get the parent for a supervisor session
+    /// Get the subordinate for a supervisor session
     ///
-    /// Returns None if the session is not a watcher (or doesn't exist).
-    pub fn get_subordinate(&self, watcher_id: Uuid) -> Option<Uuid> {
-        let w2p = self.supervisor_to_subordinate.read().expect("supervisor_to_subordinate lock poisoned");
-        w2p.get(&watcher_id).copied()
+    /// Returns None if the session is not a supervisor (or doesn't exist).
+    pub fn get_subordinate(&self, supervisor_id: Uuid) -> Option<Uuid> {
+        let sup2sub = self.supervisor_to_subordinate.read().expect("supervisor_to_subordinate lock poisoned");
+        sup2sub.get(&supervisor_id).copied()
     }
 
-    /// Clean up all watcher relationships when a parent session is removed
+    /// Clean up all supervisor relationships when a subordinate session is removed
     ///
-    /// This removes the parent from subordinate_to_supervisors and removes all its
-    /// watchers from supervisor_to_subordinate.
-    pub fn cleanup_parent(&self, parent_id: Uuid) {
-        // Get and remove all watchers for this parent
-        let watchers = {
-            let mut p2w = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
-            p2w.remove(&parent_id).unwrap_or_default()
+    /// This removes the subordinate from subordinate_to_supervisors and removes all its
+    /// supervisors from supervisor_to_subordinate.
+    pub fn cleanup_subordinate(&self, subordinate_id: Uuid) {
+        // Get and remove all supervisors for this subordinate
+        let supervisors = {
+            let mut sub2sup = self.subordinate_to_supervisors.write().expect("subordinate_to_supervisors lock poisoned");
+            sub2sup.remove(&subordinate_id).unwrap_or_default()
         };
 
-        // Remove each watcher from supervisor_to_subordinate
+        // Remove each supervisor from supervisor_to_subordinate
         {
-            let mut w2p = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
-            for watcher_id in watchers {
-                w2p.remove(&watcher_id);
+            let mut sup2sub = self.supervisor_to_subordinate.write().expect("supervisor_to_subordinate lock poisoned");
+            for supervisor_id in supervisors {
+                sup2sub.remove(&supervisor_id);
             }
         }
     }
 
     /// Check if the ChainOfCommand has no entries
     pub fn is_empty(&self) -> bool {
-        let p2w = self.subordinate_to_supervisors.read().expect("subordinate_to_supervisors lock poisoned");
-        let w2p = self.supervisor_to_subordinate.read().expect("supervisor_to_subordinate lock poisoned");
-        p2w.is_empty() && w2p.is_empty()
+        let sub2sup = self.subordinate_to_supervisors.read().expect("subordinate_to_supervisors lock poisoned");
+        let sup2sub = self.supervisor_to_subordinate.read().expect("supervisor_to_subordinate lock poisoned");
+        sub2sup.is_empty() && sup2sub.is_empty()
     }
 }
 
-/// Broadcast channel capacity for watcher stream observation (WATCH-003)
+/// Broadcast channel capacity for supervisor stream observation (WATCH-003)
 pub const SUPERVISOR_BROADCAST_CAPACITY: usize = 256;
 
 #[cfg(test)]
@@ -1787,7 +1783,7 @@ mod supervisor_broadcast_tests {
     /// Scenario: Broadcast with no subscribers still buffers normally
     ///
     /// @step Given a BackgroundSession with broadcast channel initialized
-    /// @step And no watchers have subscribed to the stream
+    /// @step And no supervisors have subscribed to the stream
     /// @step When handle_output is called with a TextDelta chunk
     /// @step Then the chunk should be added to the output buffer
     /// @step And no error should occur from the broadcast
@@ -1797,7 +1793,7 @@ mod supervisor_broadcast_tests {
         let (tx, _rx) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
         let output_buffer: RwLock<Vec<StreamChunk>> = RwLock::new(Vec::new());
 
-        // @step And no watchers have subscribed to the stream
+        // @step And no supervisors have subscribed to the stream
         // (no receivers created - tx has no subscribers)
 
         // @step When handle_output is called with a TextDelta chunk
@@ -1822,36 +1818,36 @@ mod supervisor_broadcast_tests {
         // (if we got here, no panic occurred)
     }
 
-    /// Scenario: Single watcher receives chunks via broadcast
+    /// Scenario: Single supervisor receives chunks via broadcast
     ///
     /// @step Given a BackgroundSession with broadcast channel initialized
-    /// @step And a watcher has called subscribe_to_stream to get a receiver
+    /// @step And a supervisor has called subscribe_to_stream to get a receiver
     /// @step When handle_output is called with a TextDelta chunk
-    /// @step Then the watcher should receive the same chunk via its receiver
+    /// @step Then the supervisor should receive the same chunk via its receiver
     /// @step And the chunk should also be buffered normally
     #[test]
-    fn test_single_watcher_receives_chunks() {
+    fn test_single_supervisor_receives_chunks() {
         // @step Given a BackgroundSession with broadcast channel initialized
         let (tx, mut rx) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
         let output_buffer: RwLock<Vec<StreamChunk>> = RwLock::new(Vec::new());
 
-        // @step And a watcher has called subscribe_to_stream to get a receiver
+        // @step And a supervisor has called subscribe_to_stream to get a receiver
         // rx is already subscribed (created from channel)
 
         // @step When handle_output is called with a TextDelta chunk
-        let chunk = StreamChunk::text("watcher test".to_string());
+        let chunk = StreamChunk::text("supervisor test".to_string());
         {
             let mut buffer = output_buffer.write().expect("lock");
             buffer.push(chunk.clone());
         }
         let _ = tx.send(chunk.clone());
 
-        // @step Then the watcher should receive the same chunk via its receiver
+        // @step Then the supervisor should receive the same chunk via its receiver
         let received = rx.try_recv().expect("should receive chunk");
         // NAPI-010: Use pattern matching to check variant
         match received {
             StreamChunk::Text { text, .. } => {
-                assert_eq!(text, "watcher test");
+                assert_eq!(text, "supervisor test");
             }
             _ => panic!("Expected Text variant"),
         }
@@ -1861,61 +1857,61 @@ mod supervisor_broadcast_tests {
         assert_eq!(buffer.len(), 1);
     }
 
-    /// Scenario: Multiple watchers receive chunks independently
+    /// Scenario: Multiple supervisors receive chunks independently
     ///
     /// @step Given a BackgroundSession with broadcast channel initialized
-    /// @step And watcher A has subscribed to the stream
-    /// @step And watcher B has subscribed to the stream
+    /// @step And supervisor A has subscribed to the stream
+    /// @step And supervisor B has subscribed to the stream
     /// @step When handle_output is called with a TextDelta chunk
-    /// @step Then watcher A should receive the chunk via its receiver
-    /// @step And watcher B should receive the chunk via its receiver
+    /// @step Then supervisor A should receive the chunk via its receiver
+    /// @step And supervisor B should receive the chunk via its receiver
     /// @step And both received chunks should be identical
     #[test]
-    fn test_multiple_watchers_receive_independently() {
+    fn test_multiple_supervisors_receive_independently() {
         // @step Given a BackgroundSession with broadcast channel initialized
         let (tx, mut rx_a) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
 
-        // @step And watcher A has subscribed to the stream
+        // @step And supervisor A has subscribed to the stream
         // rx_a is already subscribed
 
-        // @step And watcher B has subscribed to the stream
+        // @step And supervisor B has subscribed to the stream
         let mut rx_b = tx.subscribe();
 
         // @step When handle_output is called with a TextDelta chunk
-        let chunk = StreamChunk::text("multi-watcher".to_string());
+        let chunk = StreamChunk::text("multi-supervisor".to_string());
         let _ = tx.send(chunk.clone());
 
-        // @step Then watcher A should receive the chunk via its receiver
-        let received_a = rx_a.try_recv().expect("watcher A should receive");
+        // @step Then supervisor A should receive the chunk via its receiver
+        let received_a = rx_a.try_recv().expect("supervisor A should receive");
 
-        // @step And watcher B should receive the chunk via its receiver
-        let received_b = rx_b.try_recv().expect("watcher B should receive");
+        // @step And supervisor B should receive the chunk via its receiver
+        let received_b = rx_b.try_recv().expect("supervisor B should receive");
 
         // @step And both received chunks should be identical
         // NAPI-010: Use pattern matching to check variants
         match (&received_a, &received_b) {
             (StreamChunk::Text { text: text_a, .. }, StreamChunk::Text { text: text_b, .. }) => {
                 assert_eq!(text_a, text_b);
-                assert_eq!(text_a, "multi-watcher");
+                assert_eq!(text_a, "multi-supervisor");
             }
             _ => panic!("Expected Text variants"),
         }
     }
 
-    /// Scenario: Slow watcher receives lagged error when falling behind
+    /// Scenario: Slow supervisor receives lagged error when falling behind
     ///
     /// @step Given a BackgroundSession with broadcast channel capacity of 256
-    /// @step And a watcher has subscribed to the stream
-    /// @step And the watcher has not consumed any chunks
+    /// @step And a supervisor has subscribed to the stream
+    /// @step And the supervisor has not consumed any chunks
     /// @step When handle_output is called 300 times with chunks
-    /// @step Then the watcher should receive RecvError::Lagged when trying to receive
+    /// @step Then the supervisor should receive RecvError::Lagged when trying to receive
     #[test]
-    fn test_slow_watcher_receives_lagged_error() {
+    fn test_slow_supervisor_receives_lagged_error() {
         // @step Given a BackgroundSession with broadcast channel capacity of 256
         let (tx, mut rx) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
 
-        // @step And a watcher has subscribed to the stream
-        // @step And the watcher has not consumed any chunks
+        // @step And a supervisor has subscribed to the stream
+        // @step And the supervisor has not consumed any chunks
         // (rx exists but we don't call recv)
 
         // @step When handle_output is called 300 times with chunks
@@ -1924,7 +1920,7 @@ mod supervisor_broadcast_tests {
             let _ = tx.send(chunk);
         }
 
-        // @step Then the watcher should receive RecvError::Lagged when trying to receive
+        // @step Then the supervisor should receive RecvError::Lagged when trying to receive
         match rx.try_recv() {
             Err(broadcast::error::TryRecvError::Lagged(n)) => {
                 assert!(n > 0, "should have lagged by some messages");
@@ -1935,35 +1931,35 @@ mod supervisor_broadcast_tests {
         }
     }
 
-    /// Scenario: Dropped receiver does not affect other watchers
+    /// Scenario: Dropped receiver does not affect other supervisors
     ///
     /// @step Given a BackgroundSession with broadcast channel initialized
-    /// @step And watcher A has subscribed to the stream
-    /// @step And watcher B has subscribed to the stream
-    /// @step When watcher A drops its receiver
+    /// @step And supervisor A has subscribed to the stream
+    /// @step And supervisor B has subscribed to the stream
+    /// @step When supervisor A drops its receiver
     /// @step And handle_output is called with a TextDelta chunk
-    /// @step Then watcher B should still receive the chunk normally
-    /// @step And the parent session should continue operating normally
+    /// @step Then supervisor B should still receive the chunk normally
+    /// @step And the subordinate session should continue operating normally
     #[test]
     fn test_dropped_receiver_does_not_affect_others() {
         // @step Given a BackgroundSession with broadcast channel initialized
         let (tx, rx_a) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
 
-        // @step And watcher A has subscribed to the stream
+        // @step And supervisor A has subscribed to the stream
         // rx_a exists
 
-        // @step And watcher B has subscribed to the stream
+        // @step And supervisor B has subscribed to the stream
         let mut rx_b = tx.subscribe();
 
-        // @step When watcher A drops its receiver
+        // @step When supervisor A drops its receiver
         drop(rx_a);
 
         // @step And handle_output is called with a TextDelta chunk
         let chunk = StreamChunk::text("after drop".to_string());
         let send_result = tx.send(chunk);
 
-        // @step Then watcher B should still receive the chunk normally
-        let received = rx_b.try_recv().expect("watcher B should receive");
+        // @step Then supervisor B should still receive the chunk normally
+        let received = rx_b.try_recv().expect("supervisor B should receive");
         // NAPI-010: Use pattern matching
         match received {
             StreamChunk::Text { text, .. } => {
@@ -1972,7 +1968,7 @@ mod supervisor_broadcast_tests {
             _ => panic!("Expected Text variant"),
         }
 
-        // @step And the parent session should continue operating normally
+        // @step And the subordinate session should continue operating normally
         assert!(send_result.is_ok(), "send should succeed with remaining receiver");
     }
 
@@ -1980,10 +1976,10 @@ mod supervisor_broadcast_tests {
     ///
     /// @step Given a BackgroundSession with broadcast channel initialized
     /// @step And handle_output has been called 10 times with chunks
-    /// @step When a new watcher subscribes to the stream
+    /// @step When a new supervisor subscribes to the stream
     /// @step And handle_output is called with a new chunk
-    /// @step Then the new watcher should receive only the new chunk
-    /// @step And the new watcher should not receive the previous 10 chunks
+    /// @step Then the new supervisor should receive only the new chunk
+    /// @step And the new supervisor should not receive the previous 10 chunks
     #[test]
     fn test_late_subscriber_starts_from_current() {
         // @step Given a BackgroundSession with broadcast channel initialized
@@ -1995,14 +1991,14 @@ mod supervisor_broadcast_tests {
             let _ = tx.send(chunk);
         }
 
-        // @step When a new watcher subscribes to the stream
+        // @step When a new supervisor subscribes to the stream
         let mut late_rx = tx.subscribe();
 
         // @step And handle_output is called with a new chunk
         let new_chunk = StreamChunk::text("new chunk".to_string());
         let _ = tx.send(new_chunk);
 
-        // @step Then the new watcher should receive only the new chunk
+        // @step Then the new supervisor should receive only the new chunk
         let received = late_rx.try_recv().expect("should receive new chunk");
         // NAPI-010: Use pattern matching
         match received {
@@ -2012,7 +2008,7 @@ mod supervisor_broadcast_tests {
             _ => panic!("Expected Text variant"),
         }
 
-        // @step And the new watcher should not receive the previous 10 chunks
+        // @step And the new supervisor should not receive the previous 10 chunks
         // (already verified - we only got one chunk, the new one)
         match late_rx.try_recv() {
             Err(broadcast::error::TryRecvError::Empty) => {
@@ -2076,7 +2072,7 @@ mod is_attached_gating_tests {
         
         // @step Then the TUI should display the bridge input in the conversation
         // @step And the TUI should display the LLM response chunks in the conversation
-        // The bridge/watcher receives the chunk because supervisor_broadcast is NOT gated
+        // The bridge/supervisor receives the chunk because supervisor_broadcast is NOT gated
         let received = rx.try_recv().expect("bridge should receive chunk regardless of is_attached");
         match received {
             StreamChunk::Text { text, .. } => {
@@ -2515,239 +2511,239 @@ mod session_role_tests {
 mod chain_of_command_tests {
     use super::*;
 
-    /// Scenario: Register a watcher for a parent session
+    /// Scenario: Register a supervisor for a subordinate session
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And a parent session "abc" exists
+    /// @step And a subordinate session "abc" exists
     /// @step And a supervisor session "xyz" exists
-    /// @step When I call add_supervisor with parent_id "abc" and watcher_id "xyz"
+    /// @step When I call add_supervisor with subordinate_id "abc" and supervisor_id "xyz"
     /// @step Then get_supervisors for "abc" should return ["xyz"]
-    /// @step And get_parent for "xyz" should return "abc"
+    /// @step And get_subordinate for "xyz" should return "abc"
     #[test]
-    fn test_register_watcher_for_parent_session() {
+    fn test_register_supervisor_for_subordinate_session() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
-        // @step And a parent session "abc" exists
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a1").unwrap();
+        // @step And a subordinate session "abc" exists
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a1").unwrap();
 
         // @step And a supervisor session "xyz" exists
-        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b1").unwrap();
+        let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b1").unwrap();
 
-        // @step When I call add_supervisor with parent_id "abc" and watcher_id "xyz"
-        let result = chain_of_command.add_supervisor(parent_id, watcher_id);
+        // @step When I call add_supervisor with subordinate_id "abc" and supervisor_id "xyz"
+        let result = chain_of_command.add_supervisor(subordinate_id, supervisor_id);
         assert!(result.is_ok(), "add_supervisor should succeed");
 
         // @step Then get_supervisors for "abc" should return ["xyz"]
-        let watchers = chain_of_command.get_supervisors(parent_id);
-        assert_eq!(watchers, vec![watcher_id], "get_supervisors should return [xyz]");
+        let supervisors = chain_of_command.get_supervisors(subordinate_id);
+        assert_eq!(supervisors, vec![supervisor_id], "get_supervisors should return [xyz]");
 
-        // @step And get_parent for "xyz" should return "abc"
-        let parent = chain_of_command.get_subordinate(watcher_id);
-        assert_eq!(parent, Some(parent_id), "get_parent should return abc");
+        // @step And get_subordinate for "xyz" should return "abc"
+        let subordinate = chain_of_command.get_subordinate(supervisor_id);
+        assert_eq!(subordinate, Some(subordinate_id), "get_subordinate should return abc");
     }
 
-    /// Scenario: Parent with multiple watchers
+    /// Scenario: Subordinate with multiple supervisors
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And a parent session "abc" exists
+    /// @step And a subordinate session "abc" exists
     /// @step And supervisor sessions "xyz" and "def" exist
-    /// @step When I call add_supervisor with parent_id "abc" and watcher_id "xyz"
-    /// @step And I call add_supervisor with parent_id "abc" and watcher_id "def"
+    /// @step When I call add_supervisor with subordinate_id "abc" and supervisor_id "xyz"
+    /// @step And I call add_supervisor with subordinate_id "abc" and supervisor_id "def"
     /// @step Then get_supervisors for "abc" should return ["xyz", "def"]
     #[test]
-    fn test_parent_with_multiple_watchers() {
+    fn test_subordinate_with_multiple_supervisors() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
-        // @step And a parent session "abc" exists
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a2").unwrap();
+        // @step And a subordinate session "abc" exists
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a2").unwrap();
 
         // @step And supervisor sessions "xyz" and "def" exist
-        let watcher_xyz = Uuid::parse_str("00000000-0000-0000-0000-0000000000b2").unwrap();
-        let watcher_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000c2").unwrap();
+        let supervisor_xyz = Uuid::parse_str("00000000-0000-0000-0000-0000000000b2").unwrap();
+        let supervisor_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000c2").unwrap();
 
-        // @step When I call add_supervisor with parent_id "abc" and watcher_id "xyz"
-        let result1 = chain_of_command.add_supervisor(parent_id, watcher_xyz);
+        // @step When I call add_supervisor with subordinate_id "abc" and supervisor_id "xyz"
+        let result1 = chain_of_command.add_supervisor(subordinate_id, supervisor_xyz);
         assert!(result1.is_ok(), "first add_supervisor should succeed");
 
-        // @step And I call add_supervisor with parent_id "abc" and watcher_id "def"
-        let result2 = chain_of_command.add_supervisor(parent_id, watcher_def);
+        // @step And I call add_supervisor with subordinate_id "abc" and supervisor_id "def"
+        let result2 = chain_of_command.add_supervisor(subordinate_id, supervisor_def);
         assert!(result2.is_ok(), "second add_supervisor should succeed");
 
         // @step Then get_supervisors for "abc" should return ["xyz", "def"]
-        let watchers = chain_of_command.get_supervisors(parent_id);
-        assert!(watchers.contains(&watcher_xyz), "watchers should contain xyz");
-        assert!(watchers.contains(&watcher_def), "watchers should contain def");
-        assert_eq!(watchers.len(), 2, "should have exactly 2 watchers");
+        let supervisors = chain_of_command.get_supervisors(subordinate_id);
+        assert!(supervisors.contains(&supervisor_xyz), "supervisors should contain xyz");
+        assert!(supervisors.contains(&supervisor_def), "supervisors should contain def");
+        assert_eq!(supervisors.len(), 2, "should have exactly 2 supervisors");
     }
 
-    /// Scenario: Query parent for a watcher
+    /// Scenario: Query subordinate for a supervisor
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And session "xyz" is watching session "abc"
-    /// @step When I call get_parent with watcher_id "xyz"
+    /// @step And session "xyz" is supervising session "abc"
+    /// @step When I call get_subordinate with supervisor_id "xyz"
     /// @step Then it should return "abc"
     #[test]
-    fn test_query_parent_for_watcher() {
+    fn test_query_subordinate_for_supervisor() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a3").unwrap();
-        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b3").unwrap();
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a3").unwrap();
+        let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b3").unwrap();
 
-        // @step And session "xyz" is watching session "abc"
-        let _ = chain_of_command.add_supervisor(parent_id, watcher_id);
+        // @step And session "xyz" is supervising session "abc"
+        let _ = chain_of_command.add_supervisor(subordinate_id, supervisor_id);
 
-        // @step When I call get_parent with watcher_id "xyz"
-        let result = chain_of_command.get_subordinate(watcher_id);
+        // @step When I call get_subordinate with supervisor_id "xyz"
+        let result = chain_of_command.get_subordinate(supervisor_id);
 
         // @step Then it should return "abc"
-        assert_eq!(result, Some(parent_id), "get_parent should return abc");
+        assert_eq!(result, Some(subordinate_id), "get_subordinate should return abc");
     }
 
-    /// Scenario: Remove a watcher relationship
+    /// Scenario: Remove a supervisor relationship
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And session "xyz" is watching session "abc"
-    /// @step When I call remove_supervisor with watcher_id "xyz"
+    /// @step And session "xyz" is supervising session "abc"
+    /// @step When I call remove_supervisor with supervisor_id "xyz"
     /// @step Then get_supervisors for "abc" should return an empty list
-    /// @step And get_parent for "xyz" should return None
+    /// @step And get_subordinate for "xyz" should return None
     #[test]
     fn test_remove_supervisor_relationship() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a4").unwrap();
-        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b4").unwrap();
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a4").unwrap();
+        let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b4").unwrap();
 
-        // @step And session "xyz" is watching session "abc"
-        let _ = chain_of_command.add_supervisor(parent_id, watcher_id);
+        // @step And session "xyz" is supervising session "abc"
+        let _ = chain_of_command.add_supervisor(subordinate_id, supervisor_id);
 
-        // @step When I call remove_supervisor with watcher_id "xyz"
-        chain_of_command.remove_supervisor(watcher_id);
+        // @step When I call remove_supervisor with supervisor_id "xyz"
+        chain_of_command.remove_supervisor(supervisor_id);
 
         // @step Then get_supervisors for "abc" should return an empty list
-        let watchers = chain_of_command.get_supervisors(parent_id);
-        assert!(watchers.is_empty(), "get_supervisors should return empty list");
+        let supervisors = chain_of_command.get_supervisors(subordinate_id);
+        assert!(supervisors.is_empty(), "get_supervisors should return empty list");
 
-        // @step And get_parent for "xyz" should return None
-        let parent = chain_of_command.get_subordinate(watcher_id);
-        assert_eq!(parent, None, "get_parent should return None");
+        // @step And get_subordinate for "xyz" should return None
+        let subordinate = chain_of_command.get_subordinate(supervisor_id);
+        assert_eq!(subordinate, None, "get_subordinate should return None");
     }
 
-    /// Scenario: Supervisor cannot watch multiple parents
+    /// Scenario: Supervisor cannot observe multiple subordinates
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And session "xyz" is watching session "abc"
-    /// @step When I call add_supervisor with parent_id "def" and watcher_id "xyz"
-    /// @step Then it should return an error "watcher already has a parent"
+    /// @step And session "xyz" is supervising session "abc"
+    /// @step When I call add_supervisor with subordinate_id "def" and supervisor_id "xyz"
+    /// @step Then it should return an error "supervisor already has a subordinate"
     #[test]
-    fn test_watcher_cannot_watch_multiple_parents() {
+    fn test_supervisor_cannot_observe_multiple_subordinates() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
-        let parent_abc = Uuid::parse_str("00000000-0000-0000-0000-0000000000a5").unwrap();
-        let parent_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000b5").unwrap();
-        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000c5").unwrap();
+        let subordinate_abc = Uuid::parse_str("00000000-0000-0000-0000-0000000000a5").unwrap();
+        let subordinate_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000b5").unwrap();
+        let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000c5").unwrap();
 
-        // @step And session "xyz" is watching session "abc"
-        let _ = chain_of_command.add_supervisor(parent_abc, watcher_id);
+        // @step And session "xyz" is supervising session "abc"
+        let _ = chain_of_command.add_supervisor(subordinate_abc, supervisor_id);
 
-        // @step When I call add_supervisor with parent_id "def" and watcher_id "xyz"
-        let result = chain_of_command.add_supervisor(parent_def, watcher_id);
+        // @step When I call add_supervisor with subordinate_id "def" and supervisor_id "xyz"
+        let result = chain_of_command.add_supervisor(subordinate_def, supervisor_id);
 
-        // @step Then it should return an error "watcher already has a parent"
+        // @step Then it should return an error "supervisor already has a subordinate"
         assert!(result.is_err(), "add_supervisor should fail");
         assert!(
-            result.unwrap_err().contains("already has a parent"),
-            "error should mention 'already has a parent'"
+            result.unwrap_err().contains("already has a subordinate"),
+            "error should mention 'already has a subordinate'"
         );
     }
 
-    /// Scenario: Circular watching is prevented
+    /// Scenario: Circular supervision is prevented
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And session "B" is watching session "A"
-    /// @step When I call add_supervisor with parent_id "B" and watcher_id "A"
-    /// @step Then it should return an error "circular watching not allowed"
+    /// @step And session "B" is supervising session "A"
+    /// @step When I call add_supervisor with subordinate_id "B" and supervisor_id "A"
+    /// @step Then it should return an error "circular supervision not allowed"
     #[test]
-    fn test_circular_watching_prevented() {
+    fn test_circular_supervision_prevented() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
         let session_a = Uuid::parse_str("00000000-0000-0000-0000-0000000000a6").unwrap();
         let session_b = Uuid::parse_str("00000000-0000-0000-0000-0000000000b6").unwrap();
 
-        // @step And session "B" is watching session "A"
+        // @step And session "B" is supervising session "A"
         let _ = chain_of_command.add_supervisor(session_a, session_b);
 
-        // @step When I call add_supervisor with parent_id "B" and watcher_id "A"
+        // @step When I call add_supervisor with subordinate_id "B" and supervisor_id "A"
         let result = chain_of_command.add_supervisor(session_b, session_a);
 
-        // @step Then it should return an error "circular watching not allowed"
-        assert!(result.is_err(), "add_supervisor should fail for circular watching");
+        // @step Then it should return an error "circular supervision not allowed"
+        assert!(result.is_err(), "add_supervisor should fail for circular supervision");
         assert!(
             result.unwrap_err().contains("circular"),
             "error should mention 'circular'"
         );
     }
 
-    /// Scenario: Regular session has no parent
+    /// Scenario: Regular session has no subordinate
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And a regular session "abc" exists that is not a watcher
-    /// @step When I call get_parent with session_id "abc"
+    /// @step And a regular session "abc" exists that is not a supervisor
+    /// @step When I call get_subordinate with session_id "abc"
     /// @step Then it should return None
     #[test]
-    fn test_regular_session_has_no_parent() {
+    fn test_regular_session_has_no_subordinate() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
-        // @step And a regular session "abc" exists that is not a watcher
+        // @step And a regular session "abc" exists that is not a supervisor
         let session_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a7").unwrap();
 
-        // @step When I call get_parent with session_id "abc"
-        let parent = chain_of_command.get_subordinate(session_id);
+        // @step When I call get_subordinate with session_id "abc"
+        let subordinate = chain_of_command.get_subordinate(session_id);
 
         // @step Then it should return None
-        assert_eq!(parent, None, "regular session should have no parent");
+        assert_eq!(subordinate, None, "regular session should have no subordinate");
     }
 
-    /// Scenario: Cleanup watchers when parent session is removed
+    /// Scenario: Cleanup supervisors when subordinate session is removed
     ///
     /// @step Given a ChainOfCommand with no relationships
-    /// @step And session "xyz" is watching session "abc"
-    /// @step And session "def" is watching session "abc"
-    /// @step When parent session "abc" is removed
-    /// @step Then get_parent for "xyz" should return None
-    /// @step And get_parent for "def" should return None
+    /// @step And session "xyz" is supervising session "abc"
+    /// @step And session "def" is supervising session "abc"
+    /// @step When subordinate session "abc" is removed
+    /// @step Then get_subordinate for "xyz" should return None
+    /// @step And get_subordinate for "def" should return None
     /// @step And the ChainOfCommand should have no entries
     #[test]
-    fn test_cleanup_watchers_when_parent_removed() {
+    fn test_cleanup_supervisors_when_subordinate_removed() {
         // @step Given a ChainOfCommand with no relationships
         let chain_of_command = ChainOfCommand::new();
 
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a8").unwrap();
-        let watcher_xyz = Uuid::parse_str("00000000-0000-0000-0000-0000000000b8").unwrap();
-        let watcher_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000c8").unwrap();
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a8").unwrap();
+        let supervisor_xyz = Uuid::parse_str("00000000-0000-0000-0000-0000000000b8").unwrap();
+        let supervisor_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000c8").unwrap();
 
-        // @step And session "xyz" is watching session "abc"
-        let _ = chain_of_command.add_supervisor(parent_id, watcher_xyz);
+        // @step And session "xyz" is supervising session "abc"
+        let _ = chain_of_command.add_supervisor(subordinate_id, supervisor_xyz);
 
-        // @step And session "def" is watching session "abc"
-        let _ = chain_of_command.add_supervisor(parent_id, watcher_def);
+        // @step And session "def" is supervising session "abc"
+        let _ = chain_of_command.add_supervisor(subordinate_id, supervisor_def);
 
-        // @step When parent session "abc" is removed
-        chain_of_command.cleanup_parent(parent_id);
+        // @step When subordinate session "abc" is removed
+        chain_of_command.cleanup_subordinate(subordinate_id);
 
-        // @step Then get_parent for "xyz" should return None
-        let parent_xyz = chain_of_command.get_subordinate(watcher_xyz);
-        assert_eq!(parent_xyz, None, "get_parent for xyz should return None after cleanup");
+        // @step Then get_subordinate for "xyz" should return None
+        let sub_xyz = chain_of_command.get_subordinate(supervisor_xyz);
+        assert_eq!(sub_xyz, None, "get_subordinate for xyz should return None after cleanup");
 
-        // @step And get_parent for "def" should return None
-        let parent_def = chain_of_command.get_subordinate(watcher_def);
-        assert_eq!(parent_def, None, "get_parent for def should return None after cleanup");
+        // @step And get_subordinate for "def" should return None
+        let sub_def = chain_of_command.get_subordinate(supervisor_def);
+        assert_eq!(sub_def, None, "get_subordinate for def should return None after cleanup");
 
         // @step And the ChainOfCommand should have no entries
         assert!(chain_of_command.is_empty(), "ChainOfCommand should be empty after cleanup");
@@ -2755,7 +2751,7 @@ mod chain_of_command_tests {
 }
 
 #[cfg(test)]
-mod watcher_loop_tests {
+mod supervisor_loop_tests {
     use super::*;
     use std::time::{Duration, Instant};
 
@@ -2763,35 +2759,35 @@ mod watcher_loop_tests {
 
     /// Scenario: Accumulate observations until TurnComplete breakpoint
     ///
-    /// @step Given a supervisor session is observing a parent session
-    /// @step And the watcher has an empty observation buffer
-    /// @step When the parent sends TextDelta chunks "Hello" and "World"
-    /// @step And the parent sends TurnComplete
-    /// @step Then the watcher should have accumulated "HelloWorld" in the buffer
-    /// @step And the watcher should detect a natural breakpoint
-    /// @step And the watcher should format an evaluation prompt with the accumulated text
+    /// @step Given a supervisor session is observing a subordinate session
+    /// @step And the supervisor has an empty observation buffer
+    /// @step When the subordinate sends TextDelta chunks "Hello" and "World"
+    /// @step And the subordinate sends TurnComplete
+    /// @step Then the supervisor should have accumulated "HelloWorld" in the buffer
+    /// @step And the supervisor should detect a natural breakpoint
+    /// @step And the supervisor should format an evaluation prompt with the accumulated text
     /// @step And the observation buffer should be cleared after processing
     #[test]
     fn test_accumulate_until_turn_complete() {
-        // @step Given a supervisor session is observing a parent session
-        // @step And the watcher has an empty observation buffer
+        // @step Given a supervisor session is observing a subordinate session
+        // @step And the supervisor has an empty observation buffer
         let mut buffer = ObservationBuffer::new();
         assert!(buffer.is_empty());
 
-        // @step When the parent sends TextDelta chunks "Hello" and "World"
+        // @step When the subordinate sends TextDelta chunks "Hello" and "World"
         buffer.push(StreamChunk::text("Hello".to_string()));
         buffer.push(StreamChunk::text("World".to_string()));
 
-        // @step And the parent sends TurnComplete (represented as Done in our API)
+        // @step And the subordinate sends TurnComplete (represented as Done in our API)
         let turn_complete = StreamChunk::done();
         
-        // @step Then the watcher should have accumulated "HelloWorld" in the buffer
+        // @step Then the supervisor should have accumulated "HelloWorld" in the buffer
         assert_eq!(buffer.accumulated_text(), "HelloWorld");
 
-        // @step And the watcher should detect a natural breakpoint
+        // @step And the supervisor should detect a natural breakpoint
         assert!(is_natural_breakpoint(&turn_complete));
 
-        // @step And the watcher should format an evaluation prompt with the accumulated text
+        // @step And the supervisor should format an evaluation prompt with the accumulated text
         let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
         let prompt = format_evaluation_prompt(&buffer, &role);
         assert!(prompt.contains("HelloWorld"));
@@ -2804,15 +2800,15 @@ mod watcher_loop_tests {
 
     /// Scenario: User prompt takes priority over buffered observations
     ///
-    /// @step Given a supervisor session is observing a parent session
-    /// @step And the watcher has accumulated observations in the buffer
+    /// @step Given a supervisor session is observing a subordinate session
+    /// @step And the supervisor has accumulated observations in the buffer
     /// @step When the user sends a prompt "What do you think?"
     /// @step Then the user prompt should be processed immediately
     /// @step And the accumulated observations should remain in the buffer for later processing
     #[test]
     fn test_user_prompt_priority() {
-        // @step Given a supervisor session is observing a parent session
-        // @step And the watcher has accumulated observations in the buffer
+        // @step Given a supervisor session is observing a subordinate session
+        // @step And the supervisor has accumulated observations in the buffer
         let mut buffer = ObservationBuffer::new();
         buffer.push(StreamChunk::text("Some observation".to_string()));
         assert!(!buffer.is_empty());
@@ -2831,19 +2827,19 @@ mod watcher_loop_tests {
 
     /// Scenario: ToolResult triggers natural breakpoint
     ///
-    /// @step Given a supervisor session is observing a parent session
-    /// @step And the watcher has an empty observation buffer
-    /// @step When the parent sends ToolUse for tool "bash"
-    /// @step And the parent sends ToolResult with output "command output"
-    /// @step Then the watcher should detect a natural breakpoint at ToolResult
-    /// @step And the watcher should format an evaluation prompt with tool execution context
+    /// @step Given a supervisor session is observing a subordinate session
+    /// @step And the supervisor has an empty observation buffer
+    /// @step When the subordinate sends ToolUse for tool "bash"
+    /// @step And the subordinate sends ToolResult with output "command output"
+    /// @step Then the supervisor should detect a natural breakpoint at ToolResult
+    /// @step And the supervisor should format an evaluation prompt with tool execution context
     #[test]
     fn test_tool_result_breakpoint() {
-        // @step Given a supervisor session is observing a parent session
-        // @step And the watcher has an empty observation buffer
+        // @step Given a supervisor session is observing a subordinate session
+        // @step And the supervisor has an empty observation buffer
         let mut buffer = ObservationBuffer::new();
 
-        // @step When the parent sends ToolUse for tool "bash"
+        // @step When the subordinate sends ToolUse for tool "bash"
         // Create a ToolCall chunk (ToolUse is represented as ToolCall in our API)
         let tool_call = StreamChunk::tool_call(crate::types::ToolCallInfo {
             id: "tool-123".to_string(),
@@ -2852,7 +2848,7 @@ mod watcher_loop_tests {
         });
         buffer.push(tool_call);
 
-        // @step And the parent sends ToolResult with output "command output"
+        // @step And the subordinate sends ToolResult with output "command output"
         let tool_result = StreamChunk::tool_result(crate::types::ToolResultInfo {
             tool_call_id: "tool-123".to_string(),
             content: "command output".to_string(),
@@ -2860,10 +2856,10 @@ mod watcher_loop_tests {
         });
         buffer.push(tool_result.clone());
 
-        // @step Then the watcher should detect a natural breakpoint at ToolResult
+        // @step Then the supervisor should detect a natural breakpoint at ToolResult
         assert!(is_natural_breakpoint(&tool_result));
 
-        // @step And the watcher should format an evaluation prompt with tool execution context
+        // @step And the supervisor should format an evaluation prompt with tool execution context
         let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
         let prompt = format_evaluation_prompt(&buffer, &role);
         assert!(prompt.contains("bash"));
@@ -2872,19 +2868,19 @@ mod watcher_loop_tests {
 
     /// Scenario: Silence timeout triggers breakpoint
     ///
-    /// @step Given a supervisor session is observing a parent session
+    /// @step Given a supervisor session is observing a subordinate session
     /// @step And the silence timeout is configured to 5 seconds
-    /// @step And the watcher has accumulated observations in the buffer
+    /// @step And the supervisor has accumulated observations in the buffer
     /// @step When no chunks are received for 5 seconds
-    /// @step Then the watcher should detect a silence timeout breakpoint
-    /// @step And the watcher should process the accumulated observations
+    /// @step Then the supervisor should detect a silence timeout breakpoint
+    /// @step And the supervisor should process the accumulated observations
     #[test]
     fn test_silence_timeout_breakpoint() {
-        // @step Given a supervisor session is observing a parent session
+        // @step Given a supervisor session is observing a subordinate session
         // @step And the silence timeout is configured to 5 seconds
         let silence_timeout = Duration::from_secs(5);
         
-        // @step And the watcher has accumulated observations in the buffer
+        // @step And the supervisor has accumulated observations in the buffer
         let mut buffer = ObservationBuffer::new();
         buffer.push(StreamChunk::text("Some text".to_string()));
         
@@ -2892,52 +2888,52 @@ mod watcher_loop_tests {
         let last_chunk_time = Instant::now() - Duration::from_secs(6);
 
         // @step When no chunks are received for 5 seconds
-        // @step Then the watcher should detect a silence timeout breakpoint
+        // @step Then the supervisor should detect a silence timeout breakpoint
         assert!(is_silence_timeout(last_chunk_time, silence_timeout));
 
-        // @step And the watcher should process the accumulated observations
+        // @step And the supervisor should process the accumulated observations
         assert!(!buffer.is_empty());
     }
 
     /// Scenario: Handle broadcast lag gracefully
     ///
-    /// @step Given a supervisor session is observing a parent session
-    /// @step When the watcher receives RecvError::Lagged with 10 missed chunks
-    /// @step Then the watcher should log a warning about 10 missed chunks
-    /// @step And the watcher should continue observing from the current position
+    /// @step Given a supervisor session is observing a subordinate session
+    /// @step When the supervisor receives RecvError::Lagged with 10 missed chunks
+    /// @step Then the supervisor should log a warning about 10 missed chunks
+    /// @step And the supervisor should continue observing from the current position
     #[test]
     fn test_handle_broadcast_lag() {
-        // @step Given a supervisor session is observing a parent session
+        // @step Given a supervisor session is observing a subordinate session
         // (simulated)
 
-        // @step When the watcher receives RecvError::Lagged with 10 missed chunks
+        // @step When the supervisor receives RecvError::Lagged with 10 missed chunks
         let lagged_count: u64 = 10;
 
-        // @step Then the watcher should log a warning about 10 missed chunks
+        // @step Then the supervisor should log a warning about 10 missed chunks
         // (logging is a side effect - we verify the count is captured)
         let warning_message = format!("Supervisor lagged behind by {} chunks", lagged_count);
         assert!(warning_message.contains("10"));
 
-        // @step And the watcher should continue observing from the current position
+        // @step And the supervisor should continue observing from the current position
         // (verified by the fact that we don't panic or return error)
         assert!(lagged_count > 0); // Supervisor continues
     }
 
     /// Scenario: Empty buffer at breakpoint does not trigger evaluation
     ///
-    /// @step Given a supervisor session is observing a parent session
-    /// @step And the watcher has an empty observation buffer
-    /// @step When the parent sends TurnComplete
+    /// @step Given a supervisor session is observing a subordinate session
+    /// @step And the supervisor has an empty observation buffer
+    /// @step When the subordinate sends TurnComplete
     /// @step Then no evaluation prompt should be generated
-    /// @step And the watcher should continue waiting for observations
+    /// @step And the supervisor should continue waiting for observations
     #[test]
     fn test_empty_buffer_no_evaluation() {
-        // @step Given a supervisor session is observing a parent session
-        // @step And the watcher has an empty observation buffer
+        // @step Given a supervisor session is observing a subordinate session
+        // @step And the supervisor has an empty observation buffer
         let buffer = ObservationBuffer::new();
         assert!(buffer.is_empty());
 
-        // @step When the parent sends TurnComplete (Done)
+        // @step When the subordinate sends TurnComplete (Done)
         let turn_complete = StreamChunk::done();
         assert!(is_natural_breakpoint(&turn_complete));
 
@@ -2945,14 +2941,14 @@ mod watcher_loop_tests {
         let should_evaluate = !buffer.is_empty();
         assert!(!should_evaluate);
 
-        // @step And the watcher should continue waiting for observations
+        // @step And the supervisor should continue waiting for observations
         // (buffer remains empty, ready for new observations)
         assert!(buffer.is_empty());
     }
 
     /// Test SupervisorState enum exists and has correct variants
     #[test]
-    fn test_watcher_state_enum() {
+    fn test_supervisor_state_enum() {
         let idle = SupervisorState::Idle;
         let observing = SupervisorState::Observing;
         let processing = SupervisorState::Processing;
@@ -2971,7 +2967,7 @@ mod watcher_loop_tests {
     async fn test_supervisor_loop_tick_user_input_priority() {
         // @step Given a supervisor session with tokio::select! loop
         let (user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (parent_tx, mut parent_rx) = broadcast::channel::<StreamChunk>(256);
+        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
         let mut buffer = ObservationBuffer::new();
         let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
         let timeout = Duration::from_secs(5);
@@ -2982,13 +2978,13 @@ mod watcher_loop_tests {
             thinking_config: None,
         }).await.unwrap();
 
-        // Also send a parent chunk to test priority
-        let _ = parent_tx.send(StreamChunk::text("Parent text".to_string()));
+        // Also send a subordinate chunk to test priority
+        let _ = subordinate_tx.send(StreamChunk::text("Subordinate text".to_string()));
 
         // @step Then it should be processed immediately with priority
         let action = supervisor_loop_tick(
             &mut user_rx,
-            &mut parent_rx,
+            &mut subordinate_rx,
             &mut buffer,
             &role,
             timeout,
@@ -3004,14 +3000,14 @@ mod watcher_loop_tests {
 
     /// Test supervisor_loop_tick accumulates and processes at breakpoint (Rule [0], [1], [2], [3])
     ///
-    /// @step Given a watcher loop receiving parent observations
+    /// @step Given a supervisor loop receiving subordinate observations
     /// @step When TurnComplete breakpoint is received
     /// @step Then accumulated observations should be formatted and returned
     #[tokio::test]
     async fn test_supervisor_loop_tick_breakpoint_processing() {
-        // @step Given a watcher loop receiving parent observations
+        // @step Given a supervisor loop receiving subordinate observations
         let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (parent_tx, mut parent_rx) = broadcast::channel::<StreamChunk>(256);
+        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
         let mut buffer = ObservationBuffer::new();
         let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
         let timeout = Duration::from_secs(5);
@@ -3021,11 +3017,11 @@ mod watcher_loop_tests {
         buffer.push(StreamChunk::text("World".to_string()));
 
         // @step When TurnComplete breakpoint is received
-        let _ = parent_tx.send(StreamChunk::done());
+        let _ = subordinate_tx.send(StreamChunk::done());
 
         let action = supervisor_loop_tick(
             &mut user_rx,
-            &mut parent_rx,
+            &mut subordinate_rx,
             &mut buffer,
             &role,
             timeout,
@@ -3051,7 +3047,7 @@ mod watcher_loop_tests {
 
     /// Test supervisor_loop_tick handles broadcast lag gracefully (Rule [4] from examples)
     ///
-    /// @step Given a watcher loop
+    /// @step Given a supervisor loop
     /// @step When broadcast receiver reports lagged chunks
     /// @step Then it should continue without error
     #[tokio::test]
@@ -3059,10 +3055,10 @@ mod watcher_loop_tests {
         // This test verifies the lag handling code path exists
         // In practice, lag is simulated by the broadcast channel when receiver falls behind
         
-        // @step Given a watcher loop
+        // @step Given a supervisor loop
         let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
         // Create a small capacity channel to potentially trigger lag
-        let (parent_tx, mut parent_rx) = broadcast::channel::<StreamChunk>(2);
+        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(2);
         let mut buffer = ObservationBuffer::new();
         let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
         let timeout = Duration::from_millis(100);
@@ -3070,13 +3066,13 @@ mod watcher_loop_tests {
         // @step When broadcast receiver reports lagged chunks
         // Send more messages than capacity to trigger lag
         for i in 0..5 {
-            let _ = parent_tx.send(StreamChunk::text(format!("Message {}", i)));
+            let _ = subordinate_tx.send(StreamChunk::text(format!("Message {}", i)));
         }
 
         // @step Then it should continue without error
         let action = supervisor_loop_tick(
             &mut user_rx,
-            &mut parent_rx,
+            &mut subordinate_rx,
             &mut buffer,
             &role,
             timeout,
@@ -3096,14 +3092,14 @@ mod watcher_loop_tests {
 
     /// Test supervisor_loop_tick silence timeout (Rule [2])
     ///
-    /// @step Given a watcher with buffered observations
+    /// @step Given a supervisor with buffered observations
     /// @step When silence timeout elapses
     /// @step Then observations should be processed
     #[tokio::test]
     async fn test_supervisor_loop_tick_silence_timeout() {
-        // @step Given a watcher with buffered observations
+        // @step Given a supervisor with buffered observations
         let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (_parent_tx, mut parent_rx) = broadcast::channel::<StreamChunk>(256);
+        let (_subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
         let mut buffer = ObservationBuffer::new();
         let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
         
@@ -3119,7 +3115,7 @@ mod watcher_loop_tests {
         // @step When silence timeout elapses
         let action = supervisor_loop_tick(
             &mut user_rx,
-            &mut parent_rx,
+            &mut subordinate_rx,
             &mut buffer,
             &role,
             timeout,
@@ -3136,14 +3132,14 @@ mod watcher_loop_tests {
 
     /// Test supervisor_loop_tick empty buffer at breakpoint (Rule from example [5])
     ///
-    /// @step Given a watcher with empty buffer
+    /// @step Given a supervisor with empty buffer
     /// @step When breakpoint chunk arrives
     /// @step Then Continue should be returned (no evaluation)
     #[tokio::test]
     async fn test_supervisor_loop_tick_empty_buffer_at_breakpoint() {
-        // @step Given a watcher with empty buffer
+        // @step Given a supervisor with empty buffer
         let (_user_tx, mut user_rx) = mpsc::channel::<PromptInput>(32);
-        let (parent_tx, mut parent_rx) = broadcast::channel::<StreamChunk>(256);
+        let (subordinate_tx, mut subordinate_rx) = broadcast::channel::<StreamChunk>(256);
         let mut buffer = ObservationBuffer::new();
         let role = SupervisorRole::new("reviewer".to_string(), None).unwrap();
         let timeout = Duration::from_secs(5);
@@ -3151,11 +3147,11 @@ mod watcher_loop_tests {
         assert!(buffer.is_empty());
 
         // @step When breakpoint chunk arrives to an empty buffer
-        let _ = parent_tx.send(StreamChunk::done());
+        let _ = subordinate_tx.send(StreamChunk::done());
 
         let action = supervisor_loop_tick(
             &mut user_rx,
-            &mut parent_rx,
+            &mut subordinate_rx,
             &mut buffer,
             &role,
             timeout,
@@ -3183,21 +3179,21 @@ mod supervisor_input_tests {
 
     // Feature: spec/features/watcher-injection-message-format.feature
 
-    /// Scenario: Format peer watcher message with structured prefix
+    /// Scenario: Format peer supervisor message with structured prefix
     ///
     /// @step Given a supervisor session with role "code-reviewer" 
     /// @step And the supervisor session id is "abc123"
-    /// @step When the watcher sends message "Consider adding error handling"
+    /// @step When the supervisor sends message "Consider adding error handling"
     /// @step Then the formatted message should be "[SUPERVISOR: code-reviewer | Session: abc123] Consider adding error handling"
     #[test]
-    fn test_format_peer_watcher_message() {
+    fn test_format_peer_supervisor_message() {
         // @step Given a supervisor session with role "code-reviewer" 
         let role_name = "code-reviewer".to_string();
 
         // @step And the supervisor session id is "abc123"
         let session_id = "abc123".to_string();
 
-        // @step When the watcher sends message "Consider adding error handling"
+        // @step When the supervisor sends message "Consider adding error handling"
         let message = "Consider adding error handling".to_string();
         let input = SupervisorInput::new(session_id, role_name, message).unwrap();
         let formatted = format_supervisor_input(&input);
@@ -3209,26 +3205,26 @@ mod supervisor_input_tests {
         );
     }
 
-    /// Scenario: Format supervisor watcher message with structured prefix
+    /// Scenario: Format authority supervisor message with structured prefix
     ///
     /// @step Given a supervisor session with role "security-auditor" 
     /// @step And the supervisor session id is "xyz789"
-    /// @step When the watcher sends message "CRITICAL: SQL injection vulnerability detected"
-    /// @step Then the parent should receive a SupervisorInput chunk
+    /// @step When the supervisor sends message "CRITICAL: SQL injection vulnerability detected"
+    /// @step Then the subordinate should receive a SupervisorInput chunk
     /// @step And the chunk should contain the formatted message with structured prefix
     #[test]
-    fn test_format_supervisor_watcher_message() {
+    fn test_format_authority_supervisor_message() {
         // @step Given a supervisor session with role "security-auditor" 
         let role_name = "security-auditor".to_string();
 
         // @step And the supervisor session id is "xyz789"
         let session_id = "xyz789".to_string();
 
-        // @step When the watcher sends message "CRITICAL: SQL injection vulnerability detected"
+        // @step When the supervisor sends message "CRITICAL: SQL injection vulnerability detected"
         let message = "CRITICAL: SQL injection vulnerability detected".to_string();
         let input = SupervisorInput::new(session_id, role_name, message).unwrap();
 
-        // @step Then the parent should receive a SupervisorInput chunk
+        // @step Then the subordinate should receive a SupervisorInput chunk
         let chunk = StreamChunk::supervisor_input(format_supervisor_input(&input));
 
         // @step And the chunk should contain the formatted message with structured prefix
@@ -3248,33 +3244,33 @@ mod supervisor_input_tests {
     /// We test the channel pattern here since BackgroundSession construction requires
     /// a full codelet_cli::session::Session (integration test territory).
     ///
-    /// @step Given a parent session exists
+    /// @step Given a subordinate session exists
     /// @step When receive_supervisor_input is called with a valid SupervisorInput
     /// @step Then the input should be queued via the supervisor input channel
     /// @step And the method should return immediately without blocking
     #[test]
     fn test_receive_supervisor_input_queues_via_try_send() {
-        // @step Given a parent session exists
+        // @step Given a subordinate session exists
         // We test the channel mechanism that BackgroundSession.receive_supervisor_input uses
-        let (watcher_tx, mut watcher_rx) = tokio::sync::mpsc::channel::<SupervisorInput>(16);
+        let (supervisor_tx, mut supervisor_rx) = tokio::sync::mpsc::channel::<SupervisorInput>(16);
 
         // @step When receive_supervisor_input is called with a valid SupervisorInput
         let input = SupervisorInput::new(
             "session123".to_string(),
-            "test-watcher".to_string(),
+            "test-supervisor".to_string(),
             "Test message".to_string(),
         ).unwrap();
 
         // BackgroundSession.receive_supervisor_input uses try_send (non-blocking)
         // This mirrors the exact implementation pattern
-        let result = watcher_tx.try_send(input);
+        let result = supervisor_tx.try_send(input);
 
         // @step Then the input should be queued via the supervisor input channel
         assert!(result.is_ok(), "try_send should succeed when channel has capacity");
 
         // @step And the method should return immediately without blocking
         // try_send is guaranteed non-blocking - verified by using try_send instead of send
-        let received = watcher_rx.try_recv();
+        let received = supervisor_rx.try_recv();
         assert!(received.is_ok(), "Message should be in channel");
         assert_eq!(received.unwrap().message, "Test message");
     }
@@ -3283,43 +3279,43 @@ mod supervisor_input_tests {
     #[test]
     fn test_receive_supervisor_input_channel_full_returns_error() {
         // Create a channel with capacity 1
-        let (watcher_tx, _watcher_rx) = tokio::sync::mpsc::channel::<SupervisorInput>(1);
+        let (supervisor_tx, _supervisor_rx) = tokio::sync::mpsc::channel::<SupervisorInput>(1);
 
         let input1 = SupervisorInput::new(
             "s1".to_string(),
-            "watcher".to_string(),
+            "supervisor".to_string(),
             "First".to_string(),
         ).unwrap();
 
         let input2 = SupervisorInput::new(
             "s2".to_string(),
-            "watcher".to_string(),
+            "supervisor".to_string(),
             "Second".to_string(),
         ).unwrap();
 
         // First send should succeed
-        assert!(watcher_tx.try_send(input1).is_ok());
+        assert!(supervisor_tx.try_send(input1).is_ok());
 
         // Second send should fail (channel full)
-        let result = watcher_tx.try_send(input2);
+        let result = supervisor_tx.try_send(input2);
         assert!(result.is_err(), "try_send should fail when channel is full");
     }
 
-    /// Scenario: Empty watcher message returns error
+    /// Scenario: Empty supervisor message returns error
     ///
-    /// @step Given a supervisor session with role "test-watcher" 
+    /// @step Given a supervisor session with role "test-supervisor" 
     /// @step And the supervisor session id is "test123"
-    /// @step When the watcher sends an empty message
+    /// @step When the supervisor sends an empty message
     /// @step Then an error should be returned with message "message cannot be empty"
     #[test]
-    fn test_empty_watcher_message_returns_error() {
-        // @step Given a supervisor session with role "test-watcher" 
-        let role_name = "test-watcher".to_string();
+    fn test_empty_supervisor_message_returns_error() {
+        // @step Given a supervisor session with role "test-supervisor" 
+        let role_name = "test-supervisor".to_string();
 
         // @step And the supervisor session id is "test123"
         let session_id = "test123".to_string();
 
-        // @step When the watcher sends an empty message
+        // @step When the supervisor sends an empty message
         let result = SupervisorInput::new(session_id, role_name, "".to_string());
 
         // @step Then an error should be returned with message "message cannot be empty"
@@ -3327,22 +3323,22 @@ mod supervisor_input_tests {
         assert_eq!(result.unwrap_err(), "message cannot be empty");
     }
 
-    /// Scenario: Multiline watcher message preserves formatting
+    /// Scenario: Multiline supervisor message preserves formatting
     ///
     /// @step Given a supervisor session with role "code-reviewer" 
     /// @step And the supervisor session id is "abc123"
-    /// @step When the watcher sends a multiline message
+    /// @step When the supervisor sends a multiline message
     /// @step Then the formatted message should have the prefix on the first line
     /// @step And subsequent lines should be preserved without additional prefixes
     #[test]
-    fn test_multiline_watcher_message_preserves_formatting() {
+    fn test_multiline_supervisor_message_preserves_formatting() {
         // @step Given a supervisor session with role "code-reviewer" 
         let role_name = "code-reviewer".to_string();
 
         // @step And the supervisor session id is "abc123"
         let session_id = "abc123".to_string();
 
-        // @step When the watcher sends a multiline message
+        // @step When the supervisor sends a multiline message
         let multiline_message = "Issue found on line 42:\n- Missing null check\n- Consider using Option<T>".to_string();
         let input = SupervisorInput::new(session_id, role_name, multiline_message).unwrap();
         let formatted = format_supervisor_input(&input);
@@ -3360,66 +3356,66 @@ mod supervisor_input_tests {
 }
 
 #[cfg(test)]
-mod napi_watcher_tests {
+mod napi_supervisor_tests {
     use super::*;
 
     // Feature: spec/features/napi-bindings-for-watcher-operations.feature
 
-    /// Scenario: Create supervisor session for a parent
+    /// Scenario: Create supervisor session for a subordinate
     ///
-    /// @step Given a parent session exists with id "parent-uuid"
-    /// @step When I call session_create_supervisor with parent "parent-uuid", model "claude-sonnet-4", project "/project", name "Code Reviewer"
+    /// @step Given a subordinate session exists with id "parent-uuid"
+    /// @step When I call session_create_supervisor with subordinate "parent-uuid", model "claude-sonnet-4", project "/project", name "Code Reviewer"
     /// @step Then a new supervisor session should be created and returned
-    /// @step And the watcher should be registered in ChainOfCommand with parent "parent-uuid"
-    /// Note: Broadcast subscription happens lazily when watcher loop starts
+    /// @step And the supervisor should be registered in ChainOfCommand with subordinate "parent-uuid"
+    /// Note: Broadcast subscription happens lazily when supervisor loop starts
     #[test]
-    fn test_create_watcher_registers_in_chain_of_command() {
-        // @step Given a parent session exists with id "parent-uuid"
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap();
-        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-000000000002").unwrap();
+    fn test_create_supervisor_registers_in_chain_of_command() {
+        // @step Given a subordinate session exists with id "parent-uuid"
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap();
+        let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-000000000002").unwrap();
         let chain_of_command = ChainOfCommand::new();
 
         // @step When I call session_create_supervisor (simulated via ChainOfCommand.add_supervisor)
-        let result = chain_of_command.add_supervisor(parent_id, watcher_id);
+        let result = chain_of_command.add_supervisor(subordinate_id, supervisor_id);
 
         // @step Then a new supervisor session should be created and returned
         assert!(result.is_ok());
 
-        // @step And the watcher should be registered in ChainOfCommand with parent "parent-uuid"
-        assert_eq!(chain_of_command.get_subordinate(watcher_id), Some(parent_id));
+        // @step And the supervisor should be registered in ChainOfCommand with subordinate "parent-uuid"
+        assert_eq!(chain_of_command.get_subordinate(supervisor_id), Some(subordinate_id));
 
-        // Broadcast subscription is lazy - happens when watcher loop starts via subscribe_to_stream()
-        assert!(chain_of_command.get_supervisors(parent_id).contains(&watcher_id));
+        // Broadcast subscription is lazy - happens when supervisor loop starts via subscribe_to_stream()
+        assert!(chain_of_command.get_supervisors(subordinate_id).contains(&supervisor_id));
     }
 
-    /// Scenario: Get parent of a supervisor session
+    /// Scenario: Get subordinate of a supervisor session
     ///
-    /// @step Given a supervisor session "watcher-uuid" watching parent "parent-uuid"
-    /// @step When I call session_get_subordinate with "watcher-uuid"
+    /// @step Given a supervisor session "supervisor-uuid" observing subordinate "parent-uuid"
+    /// @step When I call session_get_subordinate with "supervisor-uuid"
     /// @step Then it should return "parent-uuid"
     #[test]
-    fn test_get_parent_returns_parent_id() {
-        // @step Given a supervisor session "watcher-uuid" watching parent "parent-uuid"
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-000000000003").unwrap();
-        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-000000000004").unwrap();
+    fn test_get_subordinate_returns_subordinate_id() {
+        // @step Given a supervisor session "supervisor-uuid" observing subordinate "parent-uuid"
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-000000000003").unwrap();
+        let supervisor_id = Uuid::parse_str("00000000-0000-0000-0000-000000000004").unwrap();
         let chain_of_command = ChainOfCommand::new();
-        chain_of_command.add_supervisor(parent_id, watcher_id).unwrap();
+        chain_of_command.add_supervisor(subordinate_id, supervisor_id).unwrap();
 
-        // @step When I call session_get_subordinate with "watcher-uuid"
-        let result = chain_of_command.get_subordinate(watcher_id);
+        // @step When I call session_get_subordinate with "supervisor-uuid"
+        let result = chain_of_command.get_subordinate(supervisor_id);
 
         // @step Then it should return "parent-uuid"
-        assert_eq!(result, Some(parent_id));
+        assert_eq!(result, Some(subordinate_id));
     }
 
-    /// Scenario: Get parent of a regular session returns None
+    /// Scenario: Get subordinate of a regular session returns None
     ///
-    /// @step Given a regular session "regular-uuid" with no parent
+    /// @step Given a regular session "regular-uuid" with no subordinate
     /// @step When I call session_get_subordinate with "regular-uuid"
     /// @step Then it should return None
     #[test]
-    fn test_get_parent_returns_none_for_regular_session() {
-        // @step Given a regular session "regular-uuid" with no parent
+    fn test_get_subordinate_returns_none_for_regular_session() {
+        // @step Given a regular session "regular-uuid" with no subordinate
         let regular_id = Uuid::parse_str("00000000-0000-0000-0000-000000000005").unwrap();
         let chain_of_command = ChainOfCommand::new();
 
@@ -3430,101 +3426,101 @@ mod napi_watcher_tests {
         assert_eq!(result, None);
     }
 
-    /// Scenario: Get watchers of a parent session
+    /// Scenario: Get supervisors of a subordinate session
     ///
-    /// @step Given a parent session "parent-uuid"
-    /// @step And supervisor session "watcher-1-uuid" watching "parent-uuid"
-    /// @step And supervisor session "watcher-2-uuid" watching "parent-uuid"
+    /// @step Given a subordinate session "parent-uuid"
+    /// @step And supervisor session "supervisor-1-uuid" supervising "parent-uuid"
+    /// @step And supervisor session "supervisor-2-uuid" supervising "parent-uuid"
     /// @step When I call session_get_supervisors with "parent-uuid"
-    /// @step Then it should return ["watcher-1-uuid", "watcher-2-uuid"]
+    /// @step Then it should return ["supervisor-1-uuid", "supervisor-2-uuid"]
     #[test]
-    fn test_get_supervisors_returns_watcher_list() {
-        // @step Given a parent session "parent-uuid"
-        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-000000000006").unwrap();
-        let watcher_1_id = Uuid::parse_str("00000000-0000-0000-0000-000000000007").unwrap();
-        let watcher_2_id = Uuid::parse_str("00000000-0000-0000-0000-000000000008").unwrap();
+    fn test_get_supervisors_returns_supervisor_list() {
+        // @step Given a subordinate session "parent-uuid"
+        let subordinate_id = Uuid::parse_str("00000000-0000-0000-0000-000000000006").unwrap();
+        let supervisor_1_id = Uuid::parse_str("00000000-0000-0000-0000-000000000007").unwrap();
+        let supervisor_2_id = Uuid::parse_str("00000000-0000-0000-0000-000000000008").unwrap();
         let chain_of_command = ChainOfCommand::new();
 
-        // @step And supervisor session "watcher-1-uuid" watching "parent-uuid"
-        chain_of_command.add_supervisor(parent_id, watcher_1_id).unwrap();
+        // @step And supervisor session "supervisor-1-uuid" supervising "parent-uuid"
+        chain_of_command.add_supervisor(subordinate_id, supervisor_1_id).unwrap();
 
-        // @step And supervisor session "watcher-2-uuid" watching "parent-uuid"
-        chain_of_command.add_supervisor(parent_id, watcher_2_id).unwrap();
+        // @step And supervisor session "supervisor-2-uuid" supervising "parent-uuid"
+        chain_of_command.add_supervisor(subordinate_id, supervisor_2_id).unwrap();
 
         // @step When I call session_get_supervisors with "parent-uuid"
-        let watchers = chain_of_command.get_supervisors(parent_id);
+        let supervisors = chain_of_command.get_supervisors(subordinate_id);
 
-        // @step Then it should return ["watcher-1-uuid", "watcher-2-uuid"]
-        assert_eq!(watchers.len(), 2);
-        assert!(watchers.contains(&watcher_1_id));
-        assert!(watchers.contains(&watcher_2_id));
+        // @step Then it should return ["supervisor-1-uuid", "supervisor-2-uuid"]
+        assert_eq!(supervisors.len(), 2);
+        assert!(supervisors.contains(&supervisor_1_id));
+        assert!(supervisors.contains(&supervisor_2_id));
     }
 
-    /// Scenario: Get watchers of a session with no watchers
+    /// Scenario: Get supervisors of a session with no supervisors
     ///
-    /// @step Given a session "lonely-uuid" with no watchers
+    /// @step Given a session "lonely-uuid" with no supervisors
     /// @step When I call session_get_supervisors with "lonely-uuid"
     /// @step Then it should return an empty array
     #[test]
-    fn test_get_supervisors_returns_empty_for_no_watchers() {
-        // @step Given a session "lonely-uuid" with no watchers
+    fn test_get_supervisors_returns_empty_for_no_supervisors() {
+        // @step Given a session "lonely-uuid" with no supervisors
         let lonely_id = Uuid::parse_str("00000000-0000-0000-0000-000000000009").unwrap();
         let chain_of_command = ChainOfCommand::new();
 
         // @step When I call session_get_supervisors with "lonely-uuid"
-        let watchers = chain_of_command.get_supervisors(lonely_id);
+        let supervisors = chain_of_command.get_supervisors(lonely_id);
 
         // @step Then it should return an empty array
-        assert!(watchers.is_empty());
+        assert!(supervisors.is_empty());
     }
 
-    /// Scenario: Inject watcher message into parent session
+    /// Scenario: Inject supervisor message into subordinate session
     ///
-    /// @step Given a supervisor session "watcher-uuid" with role "code-reviewer" 
-    /// @step And the watcher is watching parent "parent-uuid"
-    /// @step When I call supervisor_inject with watcher "watcher-uuid" and message "Consider adding error handling"
-    /// @step Then the message should be formatted with watcher prefix
-    /// @step And the message should be queued on the parent session
+    /// @step Given a supervisor session "supervisor-uuid" with role "code-reviewer" 
+    /// @step And the supervisor is observing subordinate "parent-uuid"
+    /// @step When I call supervisor_inject with supervisor "supervisor-uuid" and message "Consider adding error handling"
+    /// @step Then the message should be formatted with supervisor prefix
+    /// @step And the message should be queued on the subordinate session
     #[test]
     fn test_supervisor_inject_formats_and_queues_message() {
-        // @step Given a supervisor session "watcher-uuid" with role "code-reviewer" 
-        let watcher_id = "00000000-0000-0000-0000-00000000000a";
+        // @step Given a supervisor session "supervisor-uuid" with role "code-reviewer" 
+        let supervisor_id = "00000000-0000-0000-0000-00000000000a";
         let role = SupervisorRole::new(
             "code-reviewer".to_string(),
             None,
         ).unwrap();
 
-        // @step And the watcher is watching parent "parent-uuid"
+        // @step And the supervisor is observing subordinate "parent-uuid"
         // (Setup via ChainOfCommand in real implementation)
 
-        // @step When I call supervisor_inject with watcher "watcher-uuid" and message "Consider adding error handling"
+        // @step When I call supervisor_inject with supervisor "supervisor-uuid" and message "Consider adding error handling"
         let input = SupervisorInput::new(
-            watcher_id.to_string(),
+            supervisor_id.to_string(),
             role.name.clone(),
             role.name,
             "Consider adding error handling".to_string(),
         ).unwrap();
 
-        // @step Then the message should be formatted with watcher prefix
+        // @step Then the message should be formatted with supervisor prefix
         let formatted = format_supervisor_input(&input);
         assert!(formatted.starts_with("[SUPERVISOR: code-reviewer | Session:"));
         assert!(formatted.contains("Consider adding error handling"));
 
-        // @step And the message should be queued on the parent session
+        // @step And the message should be queued on the subordinate session
         // (Tested via receive_supervisor_input in integration)
     }
 
     /// Scenario: Inject fails when session has no role
     ///
     /// @step Given a session "no-role-uuid" without a supervisor role
-    /// @step When I call supervisor_inject with watcher "no-role-uuid" and message "Test"
+    /// @step When I call supervisor_inject with supervisor "no-role-uuid" and message "Test"
     /// @step Then it should return error "Session has no supervisor role set"
     #[test]
     fn test_supervisor_inject_fails_without_role() {
         // @step Given a session "no-role-uuid" without a supervisor role
         let role: Option<SupervisorRole> = None;
 
-        // @step When I call supervisor_inject with watcher "no-role-uuid" and message "Test"
+        // @step When I call supervisor_inject with supervisor "no-role-uuid" and message "Test"
         // Simulated: check that role is None
 
         // @step Then it should return error "Session has no supervisor role set"
@@ -3532,24 +3528,24 @@ mod napi_watcher_tests {
         // Real NAPI function will return: Error::from_reason("Session has no supervisor role set")
     }
 
-    /// Scenario: Inject fails when watcher has no parent
+    /// Scenario: Inject fails when supervisor has no subordinate
     ///
-    /// @step Given a session "orphan-uuid" with role "reviewer" but no parent registered
-    /// @step When I call supervisor_inject with watcher "orphan-uuid" and message "Test"
-    /// @step Then it should return error "Supervisor has no parent session"
+    /// @step Given a session "orphan-uuid" with role "reviewer" but no subordinate registered
+    /// @step When I call supervisor_inject with supervisor "orphan-uuid" and message "Test"
+    /// @step Then it should return error "Supervisor has no subordinate session"
     #[test]
-    fn test_supervisor_inject_fails_without_parent() {
-        // @step Given a session "orphan-uuid" with role "reviewer" but no parent registered
+    fn test_supervisor_inject_fails_without_subordinate() {
+        // @step Given a session "orphan-uuid" with role "reviewer" but no subordinate registered
         let orphan_id = Uuid::parse_str("00000000-0000-0000-0000-00000000000b").unwrap();
         let chain_of_command = ChainOfCommand::new();
-        // Note: role is set but no parent in ChainOfCommand
+        // Note: role is set but no subordinate in ChainOfCommand
 
-        // @step When I call supervisor_inject with watcher "orphan-uuid" and message "Test"
-        let parent = chain_of_command.get_subordinate(orphan_id);
+        // @step When I call supervisor_inject with supervisor "orphan-uuid" and message "Test"
+        let subordinate = chain_of_command.get_subordinate(orphan_id);
 
-        // @step Then it should return error "Supervisor has no parent session"
-        assert!(parent.is_none(), "Orphan watcher should have no parent");
-        // Real NAPI function will return: Error::from_reason("Supervisor has no parent session")
+        // @step Then it should return error "Supervisor has no subordinate session"
+        assert!(subordinate.is_none(), "Orphan supervisor should have no subordinate");
+        // Real NAPI function will return: Error::from_reason("Supervisor has no subordinate session")
     }
 }
 
@@ -3561,20 +3557,20 @@ mod correlation_id_tests {
 
     /// Scenario: StreamChunk receives correlation ID in handle_output
     ///
-    /// @step Given a parent session exists
-    /// @step When the parent session emits a Text chunk via handle_output()
+    /// @step Given a subordinate session exists
+    /// @step When the subordinate session emits a Text chunk via handle_output()
     /// @step Then the chunk receives a unique correlation_id assigned by an atomic counter
     /// @step And the correlation_id is in format "{session_id}-{counter}"
     #[test]
     fn test_correlation_id_format() {
-        // @step Given a parent session exists
+        // @step Given a subordinate session exists
         let session_id = Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap();
 
         // Simulate correlation ID assignment as done in handle_output
         // Using AtomicU64::fetch_add as in the real implementation
         let counter = AtomicU64::new(0);
 
-        // @step When the parent session emits a Text chunk via handle_output()
+        // @step When the subordinate session emits a Text chunk via handle_output()
         let id1 = counter.fetch_add(1, Ordering::SeqCst);
         let correlation_id1 = format!("{}-{}", session_id, id1);
 
@@ -3591,16 +3587,16 @@ mod correlation_id_tests {
 
     /// Scenario: ObservationBuffer captures correlation IDs
     ///
-    /// @step Given a supervisor session is observing a parent session
-    /// @step And the parent emits chunks with correlation_ids "p-0", "p-1", "p-2"
-    /// @step When a natural breakpoint triggers watcher evaluation
+    /// @step Given a supervisor session is observing a subordinate session
+    /// @step And the subordinate emits chunks with correlation_ids "p-0", "p-1", "p-2"
+    /// @step When a natural breakpoint triggers supervisor evaluation
     /// @step Then the buffer.correlation_ids() returns ["p-0", "p-1", "p-2"]
     #[test]
     fn test_observation_buffer_correlation_ids() {
-        // @step Given a supervisor session is observing a parent session
+        // @step Given a supervisor session is observing a subordinate session
         let mut buffer = ObservationBuffer::new();
 
-        // @step And the parent emits chunks with correlation_ids "p-0", "p-1", "p-2"
+        // @step And the subordinate emits chunks with correlation_ids "p-0", "p-1", "p-2"
         // NAPI-010: Use with_correlation_id() builder method
         let chunk1 = StreamChunk::text("Hello".to_string())
             .with_correlation_id("p-0".to_string());
@@ -3614,7 +3610,7 @@ mod correlation_id_tests {
             .with_correlation_id("p-2".to_string());
         buffer.push(chunk3);
 
-        // @step When a natural breakpoint triggers watcher evaluation
+        // @step When a natural breakpoint triggers supervisor evaluation
         // @step Then the buffer.correlation_ids() returns ["p-0", "p-1", "p-2"]
         let ids = buffer.correlation_ids();
         assert_eq!(ids, vec!["p-0", "p-1", "p-2"]);
@@ -3622,12 +3618,12 @@ mod correlation_id_tests {
 
     /// Scenario: StreamChunk can be tagged with observed correlation IDs
     ///
-    /// @step Given a watcher response chunk
+    /// @step Given a supervisor response chunk
     /// @step When it is tagged with observed correlation IDs
     /// @step Then the chunk has observed_correlation_ids set
     #[test]
     fn test_stream_chunk_with_observed_correlation_ids() {
-        // @step Given a watcher response chunk
+        // @step Given a supervisor response chunk
         let chunk = StreamChunk::text("I noticed an issue".to_string());
 
         // @step When it is tagged with observed correlation IDs
@@ -3654,7 +3650,7 @@ mod correlation_id_tests {
     /// @step When ProcessObservations action is created
     /// @step Then it contains the observed correlation IDs
     #[test]
-    fn test_watcher_loop_action_has_correlation_ids() {
+    fn test_supervisor_loop_action_has_correlation_ids() {
         // @step Given accumulated observations with correlation IDs
         let prompt = "Evaluate these observations".to_string();
         let correlation_ids = vec!["p-0".to_string(), "p-1".to_string()];
@@ -3677,93 +3673,93 @@ mod correlation_id_tests {
 }
 
 #[cfg(test)]
-mod watcher_integration_tests {
+mod supervisor_integration_tests {
     use super::*;
 
     // Feature: spec/features/watcher-loop-and-input-channel-not-integrated.feature (WATCH-019)
 
-    /// Scenario: Parent session processes watcher injections
+    /// Scenario: Subordinate session processes supervisor injections
     ///
-    /// @step Given a parent session exists with a watcher attached
-    /// @step When the watcher injects a message via supervisor_inject
-    /// @step Then the parent agent_loop should read the message from supervisor_input_rx and process it
+    /// @step Given a subordinate session exists with a supervisor attached
+    /// @step When the supervisor injects a message via supervisor_inject
+    /// @step Then the subordinate agent_loop should read the message from supervisor_input_rx and process it
     #[test]
-    fn test_parent_session_processes_supervisor_injections() {
-        // @step Given a parent session exists with a watcher attached
-        // Create a supervisor input channel (simulating parent's supervisor_input_tx/rx)
+    fn test_subordinate_session_processes_supervisor_injections() {
+        // @step Given a subordinate session exists with a supervisor attached
+        // Create a supervisor input channel (simulating subordinate's supervisor_input_tx/rx)
         let (supervisor_input_tx, mut supervisor_input_rx) = mpsc::channel::<SupervisorInput>(16);
 
-        // @step When the watcher injects a message via supervisor_inject
+        // @step When the supervisor injects a message via supervisor_inject
         let input = SupervisorInput::new(
-            "watcher-uuid".to_string(),
+            "supervisor-uuid".to_string(),
             "security-reviewer".to_string(),
             "SQL injection vulnerability detected!".to_string(),
         ).unwrap();
         
         supervisor_input_tx.try_send(input.clone()).expect("Should send supervisor input");
 
-        // @step Then the parent agent_loop should read the message from supervisor_input_rx and process it
+        // @step Then the subordinate agent_loop should read the message from supervisor_input_rx and process it
         // Use try_recv to simulate what agent_loop would do
         let received = supervisor_input_rx.try_recv();
-        assert!(received.is_ok(), "Parent should receive watcher injection from supervisor_input_rx");
+        assert!(received.is_ok(), "Subordinate should receive supervisor injection from supervisor_input_rx");
         
         let received_input = received.unwrap();
         assert_eq!(received_input.message, "SQL injection vulnerability detected!");
         assert_eq!(received_input.role_name, "security-reviewer");
     }
 
-    /// Scenario: Supervisor session subscribes to parent broadcast on creation
+    /// Scenario: Supervisor session subscribes to subordinate broadcast on creation
     ///
-    /// @step Given a parent session exists with an active broadcast channel
-    /// @step When session_create_supervisor is called with the parent session ID
-    /// @step Then the watcher should have a broadcast receiver subscribed to the parent's stream
+    /// @step Given a subordinate session exists with an active broadcast channel
+    /// @step When session_create_supervisor is called with the subordinate session ID
+    /// @step Then the supervisor should have a broadcast receiver subscribed to the subordinate's stream
     #[test]
-    fn test_watcher_subscribes_to_parent_broadcast() {
-        // @step Given a parent session exists with an active broadcast channel
-        let (parent_broadcast_tx, _) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
+    fn test_supervisor_subscribes_to_subordinate_broadcast() {
+        // @step Given a subordinate session exists with an active broadcast channel
+        let (subordinate_broadcast_tx, _) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
 
-        // @step When session_create_supervisor is called with the parent session ID
-        // Simulate what session_create_supervisor SHOULD do: subscribe to parent's broadcast
-        let mut supervisor_broadcast_rx = parent_broadcast_tx.subscribe();
+        // @step When session_create_supervisor is called with the subordinate session ID
+        // Simulate what session_create_supervisor does: subscribe to subordinate's broadcast
+        let mut supervisor_broadcast_rx = subordinate_broadcast_tx.subscribe();
 
-        // @step Then the watcher should have a broadcast receiver subscribed to the parent's stream
-        // Send a chunk from parent and verify watcher receives it
-        let test_chunk = StreamChunk::text("test from parent".to_string());
-        parent_broadcast_tx.send(test_chunk.clone()).expect("Should send");
+        // @step Then the supervisor should have a broadcast receiver subscribed to the subordinate's stream
+        // Send a chunk from subordinate and verify supervisor receives it
+        let test_chunk = StreamChunk::text("test from subordinate".to_string());
+        subordinate_broadcast_tx.send(test_chunk.clone()).expect("Should send");
         
         let received = supervisor_broadcast_rx.try_recv();
-        assert!(received.is_ok(), "Supervisor should receive chunks from parent broadcast");
+        assert!(received.is_ok(), "Supervisor should receive chunks from subordinate broadcast");
         // NAPI-010: Check using pattern matching on the enum variant
         match received.unwrap() {
             StreamChunk::Text { text, .. } => {
-                assert_eq!(text, "test from parent");
+                assert_eq!(text, "test from subordinate");
             }
             _ => panic!("Expected Text variant"),
         }
     }
 
-    /// Scenario: Supervisor loop processes parent observations at breakpoints
+    /// Scenario: Supervisor loop processes subordinate observations at breakpoints
     ///
-    /// @step Given a supervisor session is running with parent broadcast subscription
-    /// @step When the parent session emits Text chunks followed by a Done chunk
-    /// @step Then the watcher should accumulate observations and trigger evaluation at the Done breakpoint
+    /// @step Given a supervisor session is running with subordinate broadcast subscription
+    /// @step When the subordinate session emits Text chunks followed by a Done chunk
+    /// @step Then the supervisor should accumulate observations and trigger evaluation at the Done breakpoint
     #[tokio::test]
-    async fn test_watcher_loop_processes_observations() {
-        // @step Given a supervisor session is running with parent broadcast subscription
+    async fn test_supervisor_loop_processes_observations() {
+        // @step Given a supervisor session is running with subordinate broadcast subscription
         let (user_input_tx, mut user_input_rx) = mpsc::channel::<PromptInput>(16);
-        let (parent_broadcast_tx, mut parent_broadcast_rx) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
-        let role = SupervisorRole::new("test-watcher".to_string(), None).unwrap();
+        let (subordinate_broadcast_tx, mut subordinate_broadcast_rx) = broadcast::channel::<StreamChunk>(SUPERVISOR_BROADCAST_CAPACITY);
+        let role = SupervisorRole::new("test-supervisor".to_string(), None).unwrap();
         let mut buffer = ObservationBuffer::new();
         let silence_timeout = std::time::Duration::from_secs(5);
 
-        // @step When the parent session emits Text chunks followed by a Done chunk
+        // @step When the subordinate session emits Text chunks followed by a Done chunk
         // Send text chunk first
-        parent_broadcast_tx.send(StreamChunk::text("function login() { }".to_string())).unwrap();
+        subordinate_broadcast_tx.send(StreamChunk::text("function login() { }".to_string())).unwrap();
         
         // Process the text chunk - should accumulate
         let action1 = supervisor_loop_tick(
             &mut user_input_rx,
-            &mut parent_broadcast_rx,
+            &mut subordinate_broadcast_rx,
             &mut buffer,
             &role,
             silence_timeout,
@@ -3774,17 +3770,17 @@ mod watcher_integration_tests {
         assert!(!buffer.is_empty(), "Buffer should have accumulated the text chunk");
 
         // Send Done chunk (breakpoint)
-        parent_broadcast_tx.send(StreamChunk::done()).unwrap();
+        subordinate_broadcast_tx.send(StreamChunk::done()).unwrap();
         
         let action2 = supervisor_loop_tick(
             &mut user_input_rx,
-            &mut parent_broadcast_rx,
+            &mut subordinate_broadcast_rx,
             &mut buffer,
             &role,
             silence_timeout,
         ).await;
 
-        // @step Then the watcher should accumulate observations and trigger evaluation at the Done breakpoint
+        // @step Then the supervisor should accumulate observations and trigger evaluation at the Done breakpoint
         match action2 {
             SupervisorLoopAction::ProcessObservations { prompt, observed_correlation_ids: _ } => {
                 assert!(!prompt.is_empty(), "Evaluation prompt should be generated");
@@ -4048,7 +4044,7 @@ mod work_unit_context_tests {
 /// sessions from oldest to newest without needing timestamps.
 pub struct SessionManager {
     sessions: RwLock<IndexMap<Uuid, Arc<BackgroundSession>>>,
-    /// Tracks parent-watcher relationships between sessions (WATCH-002)
+    /// Tracks subordinate-supervisor relationships between sessions (WATCH-002)
     chain_of_command: ChainOfCommand,
     /// Tracks the currently active (attached) session for navigation (VIEWNV-001)
     active_session_id: RwLock<Option<Uuid>>,
@@ -4422,19 +4418,19 @@ impl SessionManager {
         })
     }
     
-    /// Create a supervisor session that observes a parent session (WATCH-019)
+    /// Create a supervisor session that observes a subordinate session (WATCH-019)
     ///
     /// Similar to create_session_with_id but:
     /// - Spawns supervisor_agent_loop instead of agent_loop
-    /// - Subscribes to parent's broadcast channel
+    /// - Subscribes to subordinate's broadcast channel
     /// - Sets the supervisor role
-    pub async fn create_watcher_session_with_id(
+    pub async fn create_supervisor_session_with_id(
         &self,
         id: &str,
         model: &str,
         project: &str,
         name: &str,
-        parent_id: Uuid,
+        subordinate_id: Uuid,
         role: SupervisorRole,
     ) -> Result<()> {
         let uuid = Uuid::parse_str(id)
@@ -4454,15 +4450,15 @@ impl SessionManager {
             }
         }
 
-        // Get parent session and subscribe to its broadcast
-        let parent = self.sessions
+        // Get subordinate session and subscribe to its broadcast
+        let subordinate = self.sessions
             .read()
             .expect("sessions lock poisoned")
-            .get(&parent_id)
+            .get(&subordinate_id)
             .cloned()
-            .ok_or_else(|| Error::from_reason(format!("Parent session not found: {}", parent_id)))?;
+            .ok_or_else(|| Error::from_reason(format!("Subordinate session not found: {}", subordinate_id)))?;
         
-        let parent_broadcast_rx = parent.subscribe_to_stream();
+        let subordinate_broadcast_rx = subordinate.subscribe_to_stream();
 
         let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
 
@@ -4493,7 +4489,7 @@ impl SessionManager {
         // Resolve credentials internally using the credentials module.
         let project_path = std::path::PathBuf::from(project);
         if let Err(e) = crate::credentials::resolve_and_set_env_var(registry_provider, Some(project_path.as_path())) {
-            tracing::error!("Failed to resolve credentials for watcher provider {}: {}", registry_provider, e);
+            tracing::error!("Failed to resolve credentials for supervisor provider {}: {}", registry_provider, e);
         }
 
         let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
@@ -4527,10 +4523,10 @@ impl SessionManager {
         // Set the supervisor role
         session.set_role(role.clone());
         
-        // Spawn watcher agent loop (observes parent via broadcast)
+        // Spawn supervisor agent loop (observes subordinate via broadcast)
         let session_clone = session.clone();
         tokio::spawn(async move {
-            supervisor_agent_loop(session_clone, input_rx, parent_broadcast_rx, role).await;
+            supervisor_agent_loop(session_clone, input_rx, subordinate_broadcast_rx, role).await;
         });
         
         // Store session
@@ -4569,10 +4565,10 @@ impl SessionManager {
     /// Get the next session after the active one (VIEWNV-001)
     ///
     /// Uses hierarchy-aware navigation:
-    /// - From board: returns first parent session
-    /// - From parent session with watchers: returns first watcher
-    /// - From parent session without watchers: returns next parent session
-    /// - From watcher: returns next sibling watcher, or next parent session
+    /// - From board: returns first subordinate session
+    /// - From subordinate session with supervisors: returns first supervisor
+    /// - From subordinate session without supervisors: returns next subordinate session
+    /// - From supervisor: returns next sibling supervisor, or next subordinate session
     /// - From last item: returns None (show create dialog)
     pub fn get_next_session(&self) -> Option<String> {
         use crate::navigation::{build_navigation_list, get_next_target, NavigationTarget};
@@ -4580,7 +4576,7 @@ impl SessionManager {
         let sessions = self.sessions.read().expect("sessions lock poisoned");
         let active = self.active_session_id.read().expect("active_session lock poisoned");
         
-        // Build the navigation list with watchers following their parents
+        // Build the navigation list with supervisors following their subordinates
         let nav_list = build_navigation_list(&sessions, &self.chain_of_command);
 
         // Get the next target
@@ -4596,16 +4592,16 @@ impl SessionManager {
     ///
     /// Uses hierarchy-aware navigation:
     /// - From board: returns None (stay on board)
-    /// - From first parent session: returns None (go to board)
-    /// - From watcher: returns prev sibling watcher, or parent session
-    /// - From parent session: returns last watcher of prev session, or prev session
+    /// - From first subordinate session: returns None (go to board)
+    /// - From supervisor: returns prev sibling supervisor, or subordinate session
+    /// - From subordinate session: returns last supervisor of prev session, or prev session
     pub fn get_prev_session(&self) -> Option<String> {
         use crate::navigation::{build_navigation_list, get_prev_target, NavigationTarget};
         
         let sessions = self.sessions.read().expect("sessions lock poisoned");
         let active = self.active_session_id.read().expect("active_session lock poisoned");
 
-        // Build the navigation list with watchers following their parents
+        // Build the navigation list with supervisors following their subordinates
         let nav_list = build_navigation_list(&sessions, &self.chain_of_command);
 
         // Get the previous target
@@ -4618,7 +4614,7 @@ impl SessionManager {
     }
     
     /// Get the first session (VIEWNV-001)
-    /// Returns the first parent session (not a watcher)
+    /// Returns the first subordinate session (not a supervisor)
     pub fn get_first_session(&self) -> Option<String> {
         use crate::navigation::build_navigation_list;
         
@@ -4646,10 +4642,10 @@ impl SessionManager {
         let uuid = Uuid::parse_str(id)
             .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
         
-        // Clean up watch graph relationships (WATCH-002)
-        // If this session was a parent, clean up all its watchers
-        self.chain_of_command.cleanup_parent(uuid);
-        // If this session was a watcher, remove its relationship
+        // Clean up ChainOfCommand relationships (WATCH-002)
+        // If this session was a subordinate, clean up all its supervisors
+        self.chain_of_command.cleanup_subordinate(uuid);
+        // If this session was a supervisor, remove its relationship
         self.chain_of_command.remove_supervisor(uuid);
         
         // VIEWNV-001: Use shift_remove to maintain insertion order
@@ -4670,24 +4666,24 @@ impl SessionManager {
     
     // === ChainOfCommand delegation methods (WATCH-002) ===
     
-    /// Register a watcher for a parent session
-    pub fn add_supervisor(&self, parent_id: Uuid, watcher_id: Uuid) -> std::result::Result<(), String> {
-        self.chain_of_command.add_supervisor(parent_id, watcher_id)
+    /// Register a supervisor for a subordinate session
+    pub fn add_supervisor(&self, subordinate_id: Uuid, supervisor_id: Uuid) -> std::result::Result<(), String> {
+        self.chain_of_command.add_supervisor(subordinate_id, supervisor_id)
     }
     
-    /// Remove a watcher relationship
-    pub fn remove_supervisor(&self, watcher_id: Uuid) {
-        self.chain_of_command.remove_supervisor(watcher_id)
+    /// Remove a supervisor relationship
+    pub fn remove_supervisor(&self, supervisor_id: Uuid) {
+        self.chain_of_command.remove_supervisor(supervisor_id)
     }
     
-    /// Get all watchers for a parent session
-    pub fn get_supervisors(&self, parent_id: Uuid) -> Vec<Uuid> {
-        self.chain_of_command.get_supervisors(parent_id)
+    /// Get all supervisors for a subordinate session
+    pub fn get_supervisors(&self, subordinate_id: Uuid) -> Vec<Uuid> {
+        self.chain_of_command.get_supervisors(subordinate_id)
     }
     
-    /// Get the parent for a supervisor session
-    pub fn get_subordinate(&self, watcher_id: Uuid) -> Option<Uuid> {
-        self.chain_of_command.get_subordinate(watcher_id)
+    /// Get the subordinate for a supervisor session
+    pub fn get_subordinate(&self, supervisor_id: Uuid) -> Option<Uuid> {
+        self.chain_of_command.get_subordinate(supervisor_id)
     }
     
 }
@@ -5032,7 +5028,7 @@ struct InputWithImages {
 }
 
 /// Agent loop that runs in background tokio task
-/// WATCH-019: Modified to also process watcher injections via supervisor_input_rx
+/// WATCH-019: Modified to also process supervisor injections via supervisor_input_rx
 /// REFAC-007: Persists messages to Rust persistence layer
 /// BRIDGE-007: Now supports multimodal input with images from bridge
 /// MCP-001: Processes MCP server-initiated messages (notifications + sampling)
@@ -5050,9 +5046,9 @@ async fn agent_loop(
     loop {
         // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
         // Lock the supervisor_input_rx to use in select
-        let mut watcher_rx = session.supervisor_input_rx.lock().await;
+        let mut supervisor_rx = session.supervisor_input_rx.lock().await;
         
-        // Use biased to prefer user input over watcher/MCP input
+        // Use biased to prefer user input over supervisor/MCP input
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
         let input_to_process: Option<InputWithImages> = tokio::select! {
             biased;
@@ -5067,14 +5063,14 @@ async fn agent_loop(
                     }),
                     None => {
                         // Channel closed, exit loop
-                        drop(watcher_rx);
+                        drop(supervisor_rx);
                         break;
                     }
                 }
             }
             
             // WATCH-019: Supervisor injection input
-            result = watcher_rx.recv() => {
+            result = supervisor_rx.recv() => {
                 match result {
                     Some(supervisor_input) => {
                         tracing::debug!("agent_loop received supervisor input from {}: {}", supervisor_input.role_name, supervisor_input.message.chars().take(50).collect::<String>());
@@ -5162,7 +5158,7 @@ async fn agent_loop(
         };
         
         // Drop the lock before processing to avoid holding it during agent execution
-        drop(watcher_rx);
+        drop(supervisor_rx);
         
         // If we got input to process, run the agent
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
@@ -5203,7 +5199,7 @@ async fn agent_loop(
             // BRIDGE-006: Unified thinking level detection
             // Single source of truth - same logic for TUI, Bridge, and Supervisor input.
             // This replaces the old approach where TypeScript passed thinking_config
-            // only for TUI input (watcher/bridge was hardcoded to None).
+            // only for TUI input (supervisor/bridge was hardcoded to None).
             //
             // Priority (PROV-005 fix):
             // 1. ALWAYS use model-aware config for adaptive thinking models (Opus 4.6, Sonnet 4.6)
@@ -5388,7 +5384,7 @@ async fn agent_loop(
             codelet_tools::set_session_search_handler(session.id, Some(session_search_handler));
 
             // RLM-001: Register DeepSearch handler for this session
-            // BUG-102: Capture provider and model from parent session so the
+            // BUG-102: Capture provider and model from current session so the
             // sub-agent inherits the same LLM configuration.
             // Returns a Future (not sync) because the sub-agent makes async LLM API calls
             let deep_search_project_path = std::path::PathBuf::from(&session.project);
@@ -5447,7 +5443,7 @@ async fn agent_loop(
             // This is the Adapter Pattern - adapts StreamChunk broadcast to JSON broadcast
             let supervisor_broadcast_sender = session_for_bridge.supervisor_broadcast.clone();
             let broadcast_rx_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || {
-                // Subscribe to the watcher broadcast
+                // Subscribe to the supervisor broadcast
                 let mut stream_rx = supervisor_broadcast_sender.subscribe();
                 
                 // Create a new JSON broadcast channel for this bridge connection
@@ -5704,33 +5700,33 @@ async fn agent_loop(
     }
 }
 
-/// Supervisor agent loop that observes parent session and handles dual input (WATCH-019)
+/// Supervisor agent loop that observes subordinate session and handles dual input (WATCH-019)
 ///
 /// This loop uses `run_supervisor_loop` from WATCH-005 to handle both:
-/// - User prompts to the watcher (takes priority)
-/// - Parent session observations (accumulated until breakpoints)
+/// - User prompts to the supervisor (takes priority)
+/// - Subordinate session observations (accumulated until breakpoints)
 ///
 /// When observations trigger evaluation, the prompt is run through the agent
-/// and the output is shown in the watcher's UI. The watcher user can then
+/// and the output is shown in the supervisor's UI. The supervisor user can then
 /// manually inject messages via supervisor_inject if needed.
 async fn supervisor_agent_loop(
-    watcher_session: Arc<BackgroundSession>,
+    supervisor_session: Arc<BackgroundSession>,
     mut user_input_rx: mpsc::Receiver<PromptInput>,
-    mut parent_broadcast_rx: broadcast::Receiver<StreamChunk>,
+    mut subordinate_broadcast_rx: broadcast::Receiver<StreamChunk>,
     role: SupervisorRole,
 ) {
     let silence_timeout_secs = Some(DEFAULT_SILENCE_TIMEOUT_SECS);
-    let watcher_for_callback = watcher_session.clone();
+    let supervisor_for_callback = supervisor_session.clone();
     let auto_inject = role.auto_inject; // WATCH-020: Capture auto_inject setting
-    let watcher_id = watcher_session.id.to_string(); // WATCH-020: Capture for injection (convert Uuid to String)
+    let supervisor_id_str = supervisor_session.id.to_string(); // WATCH-020: Capture for injection (convert Uuid to String)
 
     // Process prompt callback - runs prompts through the agent (similar to agent_loop)
     // WATCH-020: Now uses SupervisorOutput for observation evaluations to capture turn text
     let process_prompt = |prompt: String, is_user_prompt: bool, observed_correlation_ids: Vec<String>| {
-        let session = watcher_for_callback.clone();
-        let watcher_id = watcher_id.clone();
+        let session = supervisor_for_callback.clone();
+        let supervisor_id = supervisor_id_str.clone();
         async move {
-            // WATCH-011: Set pending observed correlation IDs for watcher responses
+            // WATCH-011: Set pending observed correlation IDs for supervisor responses
             if !is_user_prompt && !observed_correlation_ids.is_empty() {
                 session.set_pending_observed_correlation_ids(observed_correlation_ids);
             }
@@ -5753,7 +5749,7 @@ async fn supervisor_agent_loop(
             
             let mut inner_session = session.inner.lock().await;
             let current_provider = inner_session.current_provider_name().to_string();
-            let watcher_output = SupervisorOutput::with_provider(session_for_output.clone(), current_provider.clone());
+            let supervisor_output = SupervisorOutput::with_provider(session_for_output.clone(), current_provider.clone());
             
             let session_for_pause = session.clone();
             let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
@@ -5777,11 +5773,11 @@ async fn supervisor_agent_loop(
             
             // BRIDGE-007: Supervisor doesn't support images yet, pass None
             let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
-                "codex" => run_with_provider!(&mut inner_session, get_codex, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
+                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
+                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
+                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
+                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
+                "codex" => run_with_provider!(&mut inner_session, get_codex, &prompt, None, session, &supervisor_output, None::<serde_json::Value>),
                 _ => {
                     tracing::error!("Unsupported provider: {}", current_provider);
                     Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
@@ -5803,30 +5799,30 @@ async fn supervisor_agent_loop(
             } else {
                 // WATCH-020: Parse for interjections on observation evaluations only
                 if !is_user_prompt {
-                    let turn_text = watcher_output.get_turn_text();
+                    let turn_text = supervisor_output.get_turn_text();
                     if !turn_text.is_empty() {
                         if let Some(interjection) = parse_interjection(&turn_text) {
                             tracing::info!(
                                 "Supervisor {} detected interjection: urgent={}, content_len={}",
-                                watcher_id,
+                                supervisor_id,
                                 interjection.urgent,
                                 interjection.content.len()
                             );
                             
                             if auto_inject {
                                 // WATCH-020: Automatic injection
-                                tracing::info!("Supervisor {} auto-injecting to parent", watcher_id);
+                                tracing::info!("Supervisor {} auto-injecting to subordinate", supervisor_id);
                                 
                                 // Call supervisor_inject with the extracted content
-                                // Note: supervisor_inject is a NAPI function that handles the injection
-                                if let Err(e) = supervisor_inject(watcher_id.clone(), interjection.content) {
-                                    tracing::error!("Failed to auto-inject from watcher {}: {}", watcher_id, e);
+                                // Note: supervisor_inject handles the injection internally
+                                if let Err(e) = supervisor_inject(supervisor_id.clone(), interjection.content) {
+                                    tracing::error!("Failed to auto-inject from supervisor {}: {}", supervisor_id, e);
                                 }
                             } else {
                                 // WATCH-020: Manual review mode - emit pending injection event
                                 tracing::info!(
                                     "Supervisor {} has pending interjection (auto_inject=false): {:?}",
-                                    watcher_id,
+                                    supervisor_id,
                                     interjection.content.chars().take(50).collect::<String>()
                                 );
                                 
@@ -5839,7 +5835,7 @@ async fn supervisor_agent_loop(
                         } else {
                             tracing::debug!(
                                 "Supervisor {} response parsed as [CONTINUE] or no interjection block",
-                                watcher_id
+                                supervisor_id
                             );
                         }
                     }
@@ -5858,15 +5854,15 @@ async fn supervisor_agent_loop(
         }
     };
 
-    // Run the watcher loop
+    // Run the supervisor loop
     if let Err(e) = run_supervisor_loop(
         &mut user_input_rx,
-        &mut parent_broadcast_rx,
+        &mut subordinate_broadcast_rx,
         &role,
         silence_timeout_secs,
         process_prompt,
     ).await {
-        tracing::error!("Supervisor loop error for session {}: {}", watcher_session.id, e);
+        tracing::error!("Supervisor loop error for session {}: {}", supervisor_session.id, e);
     }
 }
 
@@ -6132,7 +6128,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter {
 }
 
 // =============================================================================
-// WATCHER OUTPUT (WATCH-020)
+// SUPERVISOR OUTPUT (WATCH-020)
 // =============================================================================
 
 /// Supervisor output handler that captures turn text during streaming (WATCH-020)
@@ -6147,8 +6143,8 @@ struct SupervisorOutput {
 impl SupervisorOutput {
     #[allow(dead_code)] // Kept for symmetry with with_provider
     fn new(session: Arc<BackgroundSession>) -> Self {
-        // SupervisorOutput uses BackgroundOutput internally, but for watcher prompts we don't persist
-        // (watcher prompts are injected observations, not user input)
+        // SupervisorOutput uses BackgroundOutput internally, but for supervisor prompts we don't persist
+        // (supervisor prompts are injected observations, not user input)
         Self {
             inner: BackgroundOutput::new(session),
             turn_text: std::sync::Mutex::new(String::new()),
@@ -6916,28 +6912,28 @@ pub fn session_get_role(session_id: String) -> Result<Option<SupervisorRoleInfo>
 
 // === Supervisor Operations (WATCH-007) ===
 
-/// Create a supervisor session for a parent session (WATCH-007)
+/// Create a supervisor session for a subordinate session (WATCH-007)
 ///
-/// Creates a new session that watches the specified parent session.
-/// The watcher is registered in ChainOfCommand and immediately starts observing
-/// the parent's output stream via broadcast subscription.
+/// Creates a new session that supervises the specified subordinate session.
+/// The supervisor is registered in ChainOfCommand and immediately starts observing
+/// the subordinate's output stream via broadcast subscription.
 /// WATCH-019: Now spawns supervisor_agent_loop instead of regular agent_loop.
 #[napi]
 pub async fn session_create_supervisor(
-    parent_id: String,
+    subordinate_id: String,
     model: String,
     project: String,
     name: String,
 ) -> Result<String> {
-    // Validate parent exists
-    let parent_uuid = Uuid::parse_str(&parent_id)
-        .map_err(|e| Error::from_reason(format!("Invalid parent ID: {}", e)))?;
+    // Validate subordinate exists
+    let subordinate_uuid = Uuid::parse_str(&subordinate_id)
+        .map_err(|e| Error::from_reason(format!("Invalid subordinate ID: {}", e)))?;
     
-    let _parent = SessionManager::instance().get_session(&parent_id)?;
+    let _subordinate = SessionManager::instance().get_session(&subordinate_id)?;
     
-    // Generate watcher ID
-    let watcher_id = Uuid::new_v4();
-    let watcher_id_str = watcher_id.to_string();
+    // Generate supervisor ID
+    let supervisor_id = Uuid::new_v4();
+    let supervisor_id_str = supervisor_id.to_string();
     
     // Create default role (can be updated via session_set_role)
     let role = SupervisorRole::new(
@@ -6945,29 +6941,29 @@ pub async fn session_create_supervisor(
         None,
     ).map_err(Error::from_reason)?;
     
-    // Create supervisor session with watcher-specific loop
+    // Create supervisor session with supervisor-specific loop
     SessionManager::instance()
-        .create_watcher_session_with_id(
-            &watcher_id_str,
+        .create_supervisor_session_with_id(
+            &supervisor_id_str,
             &model,
             &project,
             &name,
-            parent_uuid,
+            subordinate_uuid,
             role,
         )
         .await?;
     
-    // Register in ChainOfCommand (tracks parent-watcher relationships)
+    // Register in ChainOfCommand (tracks subordinate-supervisor relationships)
     SessionManager::instance()
-        .add_supervisor(parent_uuid, watcher_id)
+        .add_supervisor(subordinate_uuid, supervisor_id)
         .map_err(Error::from_reason)?;
 
-    Ok(watcher_id_str)
+    Ok(supervisor_id_str)
 }
 
-/// Get the parent session ID for a watcher (WATCH-007)
+/// Get the subordinate session ID for a supervisor (WATCH-007)
 ///
-/// Returns the parent session ID if the session is a watcher, None otherwise.
+/// Returns the subordinate session ID if the session is a supervisor, None otherwise.
 #[napi]
 pub fn session_get_subordinate(session_id: String) -> Result<Option<String>> {
     let uuid = Uuid::parse_str(&session_id)
@@ -6978,9 +6974,9 @@ pub fn session_get_subordinate(session_id: String) -> Result<Option<String>> {
         .map(|id| id.to_string()))
 }
 
-/// Get all supervisor session IDs for a parent session (WATCH-007)
+/// Get all supervisor session IDs for a subordinate session (WATCH-007)
 ///
-/// Returns a list of session IDs that are watching the specified parent.
+/// Returns a list of session IDs that are supervising the specified subordinate.
 #[napi]
 pub fn session_get_supervisors(session_id: String) -> Result<Vec<String>> {
     let uuid = Uuid::parse_str(&session_id)
@@ -6998,33 +6994,33 @@ pub fn session_get_supervisors(session_id: String) -> Result<Vec<String>> {
 /// Formats the message with the supervisor's role prefix and queues it
 /// on the subordinate session via receive_supervisor_input().
 /// Internal Rust function only — no TypeScript consumer.
-pub fn supervisor_inject(watcher_id: String, message: String) -> Result<()> {
-    let watcher_uuid = Uuid::parse_str(&watcher_id)
-        .map_err(|e| Error::from_reason(format!("Invalid watcher ID: {}", e)))?;
+pub fn supervisor_inject(supervisor_id: String, message: String) -> Result<()> {
+    let supervisor_uuid = Uuid::parse_str(&supervisor_id)
+        .map_err(|e| Error::from_reason(format!("Invalid supervisor ID: {}", e)))?;
     
     // Get supervisor session
-    let watcher = SessionManager::instance().get_session(&watcher_id)?;
+    let supervisor_session = SessionManager::instance().get_session(&supervisor_id)?;
     
     // Get supervisor role (required)
-    let role = watcher.get_role()
+    let role = supervisor_session.get_role()
         .ok_or_else(|| Error::from_reason("Session has no supervisor role set"))?;
     
-    // Get parent session
-    let parent_uuid = SessionManager::instance()
-        .get_subordinate(watcher_uuid)
-        .ok_or_else(|| Error::from_reason("Supervisor has no parent session"))?;
+    // Get subordinate session
+    let subordinate_uuid = SessionManager::instance()
+        .get_subordinate(supervisor_uuid)
+        .ok_or_else(|| Error::from_reason("Supervisor has no subordinate session"))?;
     
-    let parent = SessionManager::instance().get_session(&parent_uuid.to_string())?;
+    let subordinate = SessionManager::instance().get_session(&subordinate_uuid.to_string())?;
     
     // Create SupervisorInput and format message
     let input = SupervisorInput::new(
-        watcher_id,
+        supervisor_id,
         role.name,
         message,
     ).map_err(Error::from_reason)?;
     
-    // Queue on parent
-    parent.receive_supervisor_input(input)
+    // Queue on subordinate
+    subordinate.receive_supervisor_input(input)
         .map_err(Error::from_reason)?;
     
     Ok(())
@@ -7037,7 +7033,7 @@ pub fn supervisor_inject(watcher_id: String, message: String) -> Result<()> {
 /// (in observed_correlation_ids field) until session_clear_observed_correlation_ids is called.
 ///
 /// This enables cross-pane highlighting: when viewing a supervisor session in split view,
-/// selecting a watcher turn shows which parent turns it was responding to.
+/// selecting a supervisor turn shows which subordinate turns it was responding to.
 #[napi]
 pub fn session_set_observed_correlation_ids(session_id: String, correlation_ids: Vec<String>) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
@@ -7047,7 +7043,7 @@ pub fn session_set_observed_correlation_ids(session_id: String, correlation_ids:
 
 /// Clear pending observed correlation IDs for a session (WATCH-011)
 ///
-/// Call this after the watcher finishes processing an observation response.
+/// Call this after the supervisor finishes processing an observation response.
 /// Subsequent output chunks will no longer have observed_correlation_ids set.
 #[napi]
 pub fn session_clear_observed_correlation_ids(session_id: String) -> Result<()> {

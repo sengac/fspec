@@ -78,19 +78,19 @@ const LAZY_MODE_THRESHOLD = 50; // Messages
  *
  * @param messages - Conversation messages
  * @param maxWidth - Maximum line width for wrapping
- * @param isWatcherView - Whether this is a supervisor view (affects width calculation)
+ * @param isSupervisorView - Whether this is a supervisor view (affects width calculation)
  * @returns LazyConversationLinesResult with lineCount and accessor functions
  */
 export function useLazyConversationLines(
   messages: ConversationMessage[],
   maxWidth: number,
-  isWatcherView: boolean = false
+  isSupervisorView: boolean = false
 ): LazyConversationLinesResult {
   // Track previous values for incremental updates
   const indexRef = useRef<LazyLineIndex | null>(null);
   const prevMessagesRef = useRef<ConversationMessage[]>([]);
   const prevMaxWidthRef = useRef<number>(maxWidth);
-  const prevWatcherViewRef = useRef<boolean>(isWatcherView);
+  const prevSupervisorViewRef = useRef<boolean>(isSupervisorView);
 
   // Determine if lazy mode should be active
   const isLazyMode = messages.length >= LAZY_MODE_THRESHOLD;
@@ -100,12 +100,12 @@ export function useLazyConversationLines(
   const lineCount = useMemo(() => {
     const prevMessages = prevMessagesRef.current;
     const prevMaxWidth = prevMaxWidthRef.current;
-    const prevWatcherView = prevWatcherViewRef.current;
+    const prevSupervisorView = prevSupervisorViewRef.current;
 
     // Store new values
     prevMessagesRef.current = messages;
     prevMaxWidthRef.current = maxWidth;
-    prevWatcherViewRef.current = isWatcherView;
+    prevSupervisorViewRef.current = isSupervisorView;
 
     if (!isLazyMode) {
       // Small conversation - don't use lazy index
@@ -118,10 +118,10 @@ export function useLazyConversationLines(
 
     // Check if we need to rebuild
     const widthChanged = maxWidth !== prevMaxWidth;
-    const watcherViewChanged = isWatcherView !== prevWatcherView;
+    const supervisorViewChanged = isSupervisorView !== prevSupervisorView;
     const messagesChanged = messages !== prevMessages;
 
-    if (!index || widthChanged || watcherViewChanged) {
+    if (!index || widthChanged || supervisorViewChanged) {
       // Full rebuild needed
       if (index) {
         index.dispose();
@@ -148,7 +148,7 @@ export function useLazyConversationLines(
     }
 
     return index.length;
-  }, [messages, maxWidth, isWatcherView, isLazyMode]);
+  }, [messages, maxWidth, isSupervisorView, isLazyMode]);
 
   // Get lines in range - stable callback
   const getLines = useCallback(

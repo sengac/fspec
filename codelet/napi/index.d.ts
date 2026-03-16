@@ -1814,7 +1814,7 @@ export declare function sessionClearHistory(sessionId: string): void;
 /**
  * Clear pending observed correlation IDs for a session (WATCH-011)
  *
- * Call this after the watcher finishes processing an observation response.
+ * Call this after the supervisor finishes processing an observation response.
  * Subsequent output chunks will no longer have observed_correlation_ids set.
  */
 export declare function sessionClearObservedCorrelationIds(
@@ -1837,15 +1837,15 @@ export declare function sessionCompact(
 ): Promise<CompactionResult>;
 
 /**
- * Create a supervisor session for a parent session (WATCH-007)
+ * Create a supervisor session for a subordinate session (WATCH-007)
  *
- * Creates a new session that watches the specified parent session.
- * The watcher is registered in ChainOfCommand and immediately starts observing
- * the parent's output stream via broadcast subscription.
+ * Creates a new session that supervises the specified subordinate session.
+ * The supervisor is registered in ChainOfCommand and immediately starts observing
+ * the subordinate's output stream via broadcast subscription.
  * WATCH-019: Now spawns supervisor_agent_loop instead of regular agent_loop.
  */
 export declare function sessionCreateSupervisor(
-  parentId: string,
+  subordinateId: string,
   model: string,
   project: string,
   name: string
@@ -2001,16 +2001,16 @@ export declare function sessionGetRole(
 export declare function sessionGetStatus(sessionId: string): string;
 
 /**
- * Get the parent session ID for a watcher (WATCH-007)
+ * Get the subordinate session ID for a supervisor (WATCH-007)
  *
- * Returns the parent session ID if the session is a watcher, None otherwise.
+ * Returns the subordinate session ID if the session is a supervisor, None otherwise.
  */
 export declare function sessionGetSubordinate(sessionId: string): string | null;
 
 /**
- * Get all supervisor session IDs for a parent session (WATCH-007)
+ * Get all supervisor session IDs for a subordinate session (WATCH-007)
  *
- * Returns a list of session IDs that are watching the specified parent.
+ * Returns a list of session IDs that are supervising the specified subordinate.
  */
 export declare function sessionGetSupervisors(sessionId: string): Array<string>;
 
@@ -2338,7 +2338,7 @@ export declare function sessionSetModelProfile(
  * (in observed_correlation_ids field) until session_clear_observed_correlation_ids is called.
  *
  * This enables cross-pane highlighting: when viewing a supervisor session in split view,
- * selecting a watcher turn shows which parent turns it was responding to.
+ * selecting a supervisor turn shows which subordinate turns it was responding to.
  */
 export declare function sessionSetObservedCorrelationIds(
   sessionId: string,

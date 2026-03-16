@@ -5,7 +5,7 @@
  * User can also dismiss early with ESC key.
  * Reuses the base Dialog component for consistent modal styling.
  *
- * Coverage: spec/features/watcher-templates.feature (now uses supervisor terminology)
+ * Coverage: spec/features/supervisor-templates.feature
  */
 
 import React, { useEffect, useState } from 'react';

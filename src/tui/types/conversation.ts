@@ -11,7 +11,7 @@ export type MessageType =
   | 'thinking' // Extended thinking/reasoning content
   | 'tool-call' // Tool invocation (header + result)
   | 'status' // Status messages (interrupted, errors, etc.)
-  | 'supervisor-input'; // WATCH-012: Watcher injection message displayed in purple
+  | 'supervisor-input'; // WATCH-012: Supervisor injection message displayed in purple
 
 // Conversation message type for display
 // SOLID: type field provides semantic meaning, role is derived for display

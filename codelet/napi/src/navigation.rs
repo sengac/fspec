@@ -4,14 +4,14 @@
  * Provides hierarchy-aware navigation through sessions and supervisors.
  *
  * Navigation order:
- * Board → Session1 → S1.Watcher1 → S1.Watcher2 → Session2 → S2.Watcher1 → ... → Create Dialog
+ * Board → Session1 → S1.Supervisor1 → S1.Supervisor2 → Session2 → S2.Supervisor1 → ... → Create Dialog
  *
  * Rules:
  * - Shift+Right from session with supervisors → first supervisor
  * - Shift+Right from session without supervisors → next session
  * - Shift+Right from supervisor → next sibling, or next session if last sibling
- * - Shift+Left from first supervisor → parent session
- * - Shift+Left from supervisor → prev sibling, or parent if first sibling
+ * - Shift+Left from first supervisor → subordinate session
+ * - Shift+Left from supervisor → prev sibling, or subordinate if first sibling
  * - Shift+Left from first session → board
  */
 use indexmap::IndexMap;
@@ -35,7 +35,7 @@ pub enum NavigationTarget {
 
 /// Build a flattened navigation list from sessions and supervisors.
 ///
-/// The list is ordered: Session1 → S1.Watchers → Session2 → S2.Watchers → ...
+/// The list is ordered: Session1 → S1.Supervisors → Session2 → S2.Supervisors → ...
 /// Each session is followed by its supervisors (in creation order).
 pub fn build_navigation_list(
     sessions: &IndexMap<Uuid, Arc<BackgroundSession>>,
@@ -45,14 +45,14 @@ pub fn build_navigation_list(
 
     // Iterate through sessions in insertion order
     for session_id in sessions.keys() {
-        // Check if this session is a supervisor (has a parent)
-        let parent = chain_of_command.get_subordinate(*session_id);
+        // Check if this session is a supervisor (has a subordinate)
+        let subordinate = chain_of_command.get_subordinate(*session_id);
 
-        if parent.is_some() {
+        if subordinate.is_some() {
             continue;
         }
 
-        // Add the parent session
+        // Add the subordinate session
         result.push(*session_id);
 
         // Add all supervisors for this session
@@ -114,7 +114,7 @@ pub fn get_next_target(
 ///
 /// - If no active session (BoardView), returns None (stay on board)
 /// - If at first session, returns Board
-/// - If at a supervisor, returns prev sibling or parent session
+/// - If at a supervisor, returns prev sibling or subordinate session
 /// - Otherwise returns previous item in list
 pub fn get_prev_target(
     nav_list: &[Uuid],
