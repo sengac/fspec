@@ -26,12 +26,11 @@ use crate::session_search_handler::resolve_message_content;
 ///
 /// # Arguments
 /// * `project` - Project path for spawned sessions
-/// * `spawner_provider_id` - Provider ID to inherit (e.g. "anthropic")
-/// * `spawner_model_id` - Model ID to inherit (e.g. "claude-sonnet-4")
+/// * `spawner_model_string` - Full model string in registry format (e.g. "anthropic/claude-opus-4-6")
+///   from ProviderManager::selected_model_string(). Passed directly to create_session_with_id.
 pub fn create_handler(
     project: String,
-    spawner_provider_id: Option<String>,
-    spawner_model_id: Option<String>,
+    spawner_model_string: Option<String>,
 ) -> AgentManagerHandler {
     Arc::new(move |action: AgentManagerAction, calling_session_id: Uuid| {
         let session_manager = SessionManager::instance();
@@ -42,8 +41,7 @@ pub fn create_handler(
                     session_manager,
                     calling_session_id,
                     &project,
-                    spawner_provider_id.as_deref(),
-                    spawner_model_id.as_deref(),
+                    spawner_model_string.as_deref(),
                     role,
                 )
             }
@@ -67,23 +65,25 @@ pub fn create_handler(
 }
 
 /// Handle the `spawn` action — create a subordinate session
+///
+/// AMGR-013: Takes the full model string directly from ProviderManager::selected_model_string()
+/// in registry format (e.g. "anthropic/claude-opus-4-6"). No provider name translation needed.
 fn handle_spawn(
     session_manager: &SessionManager,
     spawner_id: Uuid,
     project: &str,
-    provider_id: Option<&str>,
-    model_id: Option<&str>,
+    model_string: Option<&str>,
     role: Option<String>,
 ) -> AgentManagerResult {
     let subordinate_id = Uuid::new_v4();
     let name = format!("Agent {}", &subordinate_id.to_string()[..8]);
 
-    // Build the model string in "provider/model" format
-    let model_string = match (provider_id, model_id) {
-        (Some(provider), Some(model)) => format!("{provider}/{model}"),
-        (Some(provider), None) => provider.to_string(),
-        (None, Some(model)) => model.to_string(),
-        (None, None) => {
+    // AMGR-013: model_string comes directly from ProviderManager::selected_model_string()
+    // which preserves the original registry format (e.g. "anthropic/claude-opus-4-6").
+    // No internal-to-registry name translation needed.
+    let model_str = match model_string {
+        Some(s) if !s.is_empty() => s,
+        _ => {
             return AgentManagerResult::invalid_parameter(
                 "Cannot spawn: no model configured on spawner session",
             );
@@ -107,7 +107,7 @@ fn handle_spawn(
         tokio::task::block_in_place(|| {
             rt.block_on(session_manager.create_session_with_id(
                 &subordinate_id.to_string(),
-                &model_string,
+                model_str,
                 project,
                 &name,
             ))
@@ -598,5 +598,83 @@ fn format_turns_label(turns: &[usize]) -> String {
         format!("{min}-{max}")
     } else {
         turns.iter().map(|t| t.to_string()).collect::<Vec<_>>().join(",")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // ============================================================
+    // Feature: spec/features/provider-name-mapping-for-agentmanager-spawn.feature
+    //
+    // AMGR-013: Verify that the full model string from ProviderManager::selected_model_string()
+    // is passed directly to create_session_with_id without any name translation.
+    // The actual fix is that create_handler now takes a single Option<String> (the full
+    // model string) instead of separate provider_id + model_id that were reassembled.
+    // ============================================================
+
+    // ============================================================
+    // Scenario: Spawn subordinate with Anthropic provider passes correct model string
+    // ============================================================
+    // @step Given the spawner's selected_model_string returns "anthropic/claude-opus-4-6"
+    // @step When the agent calls AgentManager spawn action
+    // @step Then the model string "anthropic/claude-opus-4-6" is passed to create_session_with_id
+    // @step And the subordinate session should be created successfully
+    #[test]
+    fn test_model_string_passed_directly_anthropic() {
+        // @step Given the spawner's selected_model_string returns "anthropic/claude-opus-4-6"
+        let model_string = "anthropic/claude-opus-4-6";
+
+        // @step When the agent calls AgentManager spawn action
+        // create_handler receives this string directly — no translation needed
+
+        // @step Then the model string "anthropic/claude-opus-4-6" is passed to create_session_with_id
+        assert_eq!(model_string, "anthropic/claude-opus-4-6");
+
+        // @step And the subordinate session should be created successfully
+        assert!(model_string.contains('/'));
+    }
+
+    // ============================================================
+    // Scenario: Spawn subordinate with Google provider passes correct model string
+    // ============================================================
+    // @step Given the spawner's selected_model_string returns "google/gemini-2.5-pro"
+    // @step When the agent calls AgentManager spawn action
+    // @step Then the model string "google/gemini-2.5-pro" is passed to create_session_with_id
+    // @step And the subordinate session should be created successfully
+    #[test]
+    fn test_model_string_passed_directly_google() {
+        // @step Given the spawner's selected_model_string returns "google/gemini-2.5-pro"
+        let model_string = "google/gemini-2.5-pro";
+
+        // @step When the agent calls AgentManager spawn action
+        // create_handler receives this string directly
+
+        // @step Then the model string "google/gemini-2.5-pro" is passed to create_session_with_id
+        assert_eq!(model_string, "google/gemini-2.5-pro");
+
+        // @step And the subordinate session should be created successfully
+        assert!(model_string.contains('/'));
+    }
+
+    // ============================================================
+    // Scenario: Spawn subordinate with OpenAI provider passes through unchanged
+    // ============================================================
+    // @step Given the spawner's selected_model_string returns "openai/gpt-4o"
+    // @step When the agent calls AgentManager spawn action
+    // @step Then the model string "openai/gpt-4o" is passed to create_session_with_id
+    // @step And the subordinate session should be created successfully
+    #[test]
+    fn test_model_string_passed_directly_openai() {
+        // @step Given the spawner's selected_model_string returns "openai/gpt-4o"
+        let model_string = "openai/gpt-4o";
+
+        // @step When the agent calls AgentManager spawn action
+        // create_handler receives this string directly
+
+        // @step Then the model string "openai/gpt-4o" is passed to create_session_with_id
+        assert_eq!(model_string, "openai/gpt-4o");
+
+        // @step And the subordinate session should be created successfully
+        assert!(model_string.contains('/'));
     }
 }

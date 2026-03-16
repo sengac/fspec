@@ -467,7 +467,8 @@
         "AMGR-009",
         "AMGR-010",
         "AMGR-011",
-        "AMGR-012"
+        "AMGR-012",
+        "AMGR-013"
       ]
     },
     "hierarchical-compaction": {

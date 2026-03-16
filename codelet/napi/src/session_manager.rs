@@ -2030,7 +2030,6 @@ mod global_chunk_callback_tests {
 
 #[cfg(test)]
 mod session_role_tests {
-    use super::*;
 
 
     /// Scenario: Set role with empty name returns error
@@ -2334,8 +2333,6 @@ mod chain_of_command_tests {
 
 #[cfg(test)]
 mod supervisor_loop_tests {
-    use super::*;
-    use std::time::{Duration, Instant};
 
     // Feature: spec/features/watcher-agent-loop-with-dual-input.feature
 
@@ -4276,13 +4273,15 @@ async fn agent_loop(
 
             // AMGR-009: Register AgentManager handler for this session
             // The handler accesses SessionManager for spawn/list/get_status/close
+            // AMGR-013: Use selected_model_string() which preserves the original
+            // "provider/model" registry format (e.g. "anthropic/claude-opus-4-6")
+            // instead of current_provider_name() which returns the internal name ("claude").
             {
-                let provider_id = inner_session.current_provider_name().to_string();
-                let model_id_str = inner_session.current_model_id().map(|s| s.to_string());
+                let full_model_string = inner_session.provider_manager().selected_model_string()
+                    .map(|s| s.to_string());
                 let agent_manager_handler = crate::agent_manager_handler::create_handler(
                     session.project.clone(),
-                    Some(provider_id),
-                    model_id_str,
+                    full_model_string,
                 );
                 codelet_tools::set_agent_manager_handler(session.id, Some(agent_manager_handler));
             }
