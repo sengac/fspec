@@ -2,7 +2,7 @@
  * SessionHeader - Shared header component for session views
  *
  * Displays model info, capability indicators, and token usage.
- * Used by both AgentView (normal mode) and SplitSessionView (watcher mode).
+ * Used by both AgentView (normal mode) and SplitSessionView (supervisor mode).
  *
  * Work unit ID and status are read from Zustand sessionStore (not props).
  *
@@ -10,8 +10,8 @@
  *   #1 (AUTH-001: implementing): claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *   ─────────────────────────────────────────────────────────────────
  *
- * Watcher mode:
- *   Watcher: security-reviewer #1 | #2: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
+ * Supervisor mode:
+ *   Supervisor: security-reviewer #1 | #2: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *   ──────────────────────────────────────────────────────────────────────────────────────────
  *
  * Badge Colors:
@@ -41,9 +41,9 @@ import { JsThinkingLevel } from '@sengac/codelet-napi';
 import { useCurrentWorkUnitId, useCurrentWorkUnitStatus } from '../store/sessionStore';
 
 /**
- * Watcher info for header display
+ * Supervisor info for header display
  */
-export interface WatcherHeaderInfo {
+export interface SupervisorHeaderInfo {
   /** Template slug (e.g., "security-reviewer") */
   slug: string;
   /** Instance number (1-based) */
@@ -79,8 +79,8 @@ export interface SessionHeaderProps {
   contextFillPercentage?: number;
   /** Compaction reduction percentage (shown after compaction) */
   compactionReduction?: number | null;
-  /** Watcher info - if present, shows watcher prefix */
-  watcherInfo?: WatcherHeaderInfo;
+  /** Supervisor info - if present, shows supervisor prefix */
+  supervisorInfo?: SupervisorHeaderInfo;
   /** Session number (1-based index in session list) - helps identify session when switching */
   sessionNumber?: number;
   /** GIT-029: Whether session is isolated (has a git worktree) */
@@ -121,7 +121,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   rustTokens = { inputTokens: 0, outputTokens: 0 },
   contextFillPercentage = 0,
   compactionReduction = null,
-  watcherInfo,
+  supervisorInfo,
   sessionNumber,
   isIsolated = false,
 }) => {
@@ -157,9 +157,9 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   // codes are handled properly by cli-truncate when textWrap="truncate-end".
   let leftContent = '';
 
-  // Watcher prefix (if applicable) - blue bold
-  if (watcherInfo) {
-    leftContent += chalk.blue.bold(`Watcher: ${watcherInfo.slug} #${watcherInfo.instanceNumber}`);
+  // Supervisor prefix (if applicable) - blue bold
+  if (supervisorInfo) {
+    leftContent += chalk.blue.bold(`Supervisor: ${supervisorInfo.slug} #${supervisorInfo.instanceNumber}`);
     leftContent += ' | ';
   }
 

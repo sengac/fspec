@@ -1,17 +1,17 @@
 /**
- * Watcher Template Types
+ * Supervisor Template Types
  *
- * Type definitions for watcher templates and instances.
- * Part of WATCH-023: Watcher Templates and Improved Creation UX
+ * Type definitions for supervisor templates and instances.
+ * Part of WATCH-023: Supervisor Templates and Improved Creation UX
  *
- * @see spec/features/watcher-templates.feature
+ * @see spec/features/supervisor-templates.feature
  */
 
 /**
- * A saved watcher configuration that can spawn multiple instances.
- * Templates are stored at user level (~/.fspec/watcher-templates.json).
+ * A saved supervisor configuration that can spawn multiple instances.
+ * Templates are stored at user level (~/.fspec/supervisor-templates.json).
  */
-export interface WatcherTemplate {
+export interface SupervisorTemplate {
   /** Unique identifier (UUID) */
   id: string;
   /** Display name (e.g., "Security Reviewer") */
@@ -20,8 +20,6 @@ export interface WatcherTemplate {
   slug: string;
   /** Model identifier (e.g., "anthropic/claude-sonnet-4-20250514") */
   modelId: string;
-  /** Authority level: peer (suggestions) or supervisor (directives) */
-  authority: 'peer' | 'supervisor';
   /** Watching brief - instructions for what to watch for */
   brief: string;
   /** Whether to auto-inject messages into parent session */
@@ -33,33 +31,33 @@ export interface WatcherTemplate {
 }
 
 /**
- * A running watcher instance spawned from a template.
+ * A running supervisor instance spawned from a template.
  * Instances are ephemeral and tied to session lifecycle.
  */
-export interface WatcherInstance {
-  /** Session ID of the watcher */
+export interface SupervisorInstance {
+  /** Session ID of the supervisor */
   sessionId: string;
   /** ID of the template this instance was spawned from */
   templateId: string;
-  /** Current status of the watcher */
+  /** Current status of the supervisor */
   status: 'running' | 'idle';
 }
 
 /**
- * Union type for flat list navigation in WatcherTemplateList.
+ * Union type for flat list navigation in SupervisorTemplateList.
  * Follows the same pattern as ModelListItem in AgentView.tsx.
  */
-export type WatcherListItem =
+export type SupervisorListItem =
   | {
       type: 'template';
-      template: WatcherTemplate;
+      template: SupervisorTemplate;
       isExpanded: boolean;
       instanceCount: number;
     }
   | {
       type: 'instance';
-      template: WatcherTemplate;
-      instance: WatcherInstance;
+      template: SupervisorTemplate;
+      instance: SupervisorInstance;
     }
   | {
       type: 'create-new';

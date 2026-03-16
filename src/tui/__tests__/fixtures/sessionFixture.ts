@@ -161,8 +161,8 @@ export const createSessionNAPIMocks = () => ({
   sessionInterrupt: vi.fn(),
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),
-  sessionGetParent: vi.fn().mockReturnValue(null),
-  sessionGetWatchers: vi.fn().mockReturnValue([]),
+  sessionGetSubordinate: vi.fn().mockReturnValue(null),
+  sessionGetSupervisors: vi.fn().mockReturnValue([]),
 
   // Required exports for compatibility
   ChunkType: {

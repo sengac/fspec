@@ -18,7 +18,7 @@ import { normalizeEmojiWidth, sanitizeForTerminal } from '../utils/stringWidth';
  */
 export const getDisplayRole = (
   msg: ConversationMessage
-): 'user' | 'assistant' | 'tool' | 'watcher' => {
+): 'user' | 'assistant' | 'tool' | 'supervisor' => {
   switch (msg.type) {
     case 'user-input':
       return 'user';
@@ -30,8 +30,8 @@ export const getDisplayRole = (
       return 'tool';
     case 'status':
       return 'tool';
-    case 'watcher-input':
-      return 'watcher'; // WATCH-012: Watcher input displayed in magenta
+    case 'supervisor-input':
+      return 'supervisor'; // WATCH-012: Supervisor input displayed in magenta
   }
 };
 
@@ -58,11 +58,11 @@ export const wrapMessageToLines = (
 
   // Add role prefix to first line
   // SOLID: Thinking messages get no prefix (the [Thinking] header is already in content)
-  // WATCH-012: Watcher messages already have '[W] RoleName>' prefix from processChunksToConversation
+  // WATCH-012: Supervisor messages already have '[W] RoleName>' prefix from processChunksToConversation
   const isThinking = msg.type === 'thinking';
-  const isWatcher = msg.type === 'watcher-input';
+  const isSupervisor = msg.type === 'supervisor-input';
   const prefix =
-    isThinking || isWatcher
+    isThinking || isSupervisor
       ? ''
       : msg.type === 'user-input'
         ? 'You: '

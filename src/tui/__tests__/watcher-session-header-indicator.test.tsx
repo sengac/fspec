@@ -1,16 +1,16 @@
 /**
  * Feature: spec/features/watcher-session-header-indicator.feature
  *
- * Tests for Watcher Session Header Indicator (WATCH-015)
+ * Tests for Supervisor Session Header Indicator (WATCH-015)
  *
  * These tests verify:
- * 1. useWatcherHeaderInfo hook returns correct watcher info
+ * 1. useSupervisorHeaderInfo hook returns correct supervisor info
  * 2. SessionHeader utilities work correctly
- * 3. Slug generation for watchers
+ * 3. Slug generation for supervisors
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { generateSlug } from '../utils/watcherTemplateStorage';
+import { generateSlug } from '../utils/supervisorTemplateStorage';
 import {
   formatContextWindow,
   getContextFillColor,
@@ -19,91 +19,90 @@ import {
 
 // Mock the NAPI functions
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionGetParent: vi.fn(),
+  sessionGetSubordinate: vi.fn(),
   sessionGetRole: vi.fn(),
-  sessionGetWatchers: vi.fn(),
+  sessionGetSupervisors: vi.fn(),
 }));
 
 import {
-  sessionGetParent,
+  sessionGetSubordinate,
   sessionGetRole,
-  sessionGetWatchers,
+  sessionGetSupervisors,
 } from '@sengac/codelet-napi';
 
-const mockSessionGetParent = sessionGetParent as ReturnType<typeof vi.fn>;
+const mockSessionGetSubordinate = sessionGetSubordinate as ReturnType<typeof vi.fn>;
 const mockSessionGetRole = sessionGetRole as ReturnType<typeof vi.fn>;
-const mockSessionGetWatchers = sessionGetWatchers as ReturnType<typeof vi.fn>;
+const mockSessionGetSupervisors = sessionGetSupervisors as ReturnType<typeof vi.fn>;
 
-describe('Watcher Session Header Indicator', () => {
+describe('Supervisor Session Header Indicator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Watcher header info computation', () => {
-    // Test the logic that would be in useWatcherHeaderInfo
+  describe('Supervisor header info computation', () => {
+    // Test the logic that would be in useSupervisorHeaderInfo
     // without actually using React hooks (which require react-dom)
 
-    it('should return null for non-watcher session', () => {
-      // @step Given a regular session (no parent)
-      mockSessionGetParent.mockReturnValue(null);
+    it('should return null for non-supervisor session', () => {
+      // @step Given a regular session (no subordinate)
+      mockSessionGetSubordinate.mockReturnValue(null);
 
-      // @step When checking if session is a watcher
-      const parentId = mockSessionGetParent('regular-session-id');
+      // @step When checking if session is a supervisor
+      const subordinateId = mockSessionGetSubordinate('regular-session-id');
 
-      // @step Then parent is null (not a watcher)
-      expect(parentId).toBeNull();
+      // @step Then subordinate is null (not a supervisor)
+      expect(subordinateId).toBeNull();
     });
 
-    it('should identify watcher session by parent ID', () => {
-      // @step Given a watcher session with parent
-      const watcherId = 'watcher-session-id';
-      const parentId = 'parent-session-id';
-      mockSessionGetParent.mockReturnValue(parentId);
+    it('should identify supervisor session by subordinate ID', () => {
+      // @step Given a supervisor session with subordinate
+      const supervisorId = 'supervisor-session-id';
+      const subordinateId = 'subordinate-session-id';
+      mockSessionGetSubordinate.mockReturnValue(subordinateId);
 
-      // @step When checking parent
-      const result = mockSessionGetParent(watcherId);
+      // @step When checking subordinate
+      const result = mockSessionGetSubordinate(supervisorId);
 
-      // @step Then parent ID is returned
-      expect(result).toBe(parentId);
+      // @step Then subordinate ID is returned
+      expect(result).toBe(subordinateId);
     });
 
-    it('should get watcher role info', () => {
-      // @step Given a watcher with role configured
+    it('should get supervisor role info', () => {
+      // @step Given a supervisor with role configured
+      // WATCH-024: sessionGetRole returns SupervisorRoleInfo { name, brief } — no authority
       mockSessionGetRole.mockReturnValue({
         name: 'Security Reviewer',
-        description: 'Reviews code for security issues',
-        authority: 'supervisor',
+        brief: 'Reviews code for security issues',
       });
 
       // @step When getting role
-      const role = mockSessionGetRole('watcher-id');
+      const role = mockSessionGetRole('supervisor-id');
 
       // @step Then role info is correct
       expect(role.name).toBe('Security Reviewer');
-      expect(role.authority).toBe('supervisor');
+      expect(role.brief).toBe('Reviews code for security issues');
     });
 
-    it('should calculate instance number for multiple watchers', () => {
-      // @step Given multiple watchers of the same type
-      const parentId = 'parent-session-id';
-      const watchers = ['watcher-1', 'watcher-2', 'watcher-3'];
+    it('should calculate instance number for multiple supervisors', () => {
+      // @step Given multiple supervisors of the same type
+      const subordinateId = 'subordinate-session-id';
+      const supervisors = ['supervisor-1', 'supervisor-2', 'supervisor-3'];
 
-      mockSessionGetWatchers.mockReturnValue(watchers);
+      mockSessionGetSupervisors.mockReturnValue(supervisors);
       mockSessionGetRole.mockReturnValue({
         name: 'Security Reviewer',
-        description: '',
-        authority: 'supervisor',
+        brief: null,
       });
 
       // @step When counting instances
-      const allWatchers = mockSessionGetWatchers(parentId);
-      const targetWatcher = 'watcher-3';
+      const allSupervisors = mockSessionGetSupervisors(subordinateId);
+      const targetSupervisor = 'supervisor-3';
       const targetSlug = generateSlug('Security Reviewer');
       
       let instanceNumber = 1;
-      for (const watcherId of allWatchers) {
-        if (watcherId === targetWatcher) break;
-        const role = mockSessionGetRole(watcherId);
+      for (const supervisorId of allSupervisors) {
+        if (supervisorId === targetSupervisor) break;
+        const role = mockSessionGetRole(supervisorId);
         if (role && generateSlug(role.name) === targetSlug) {
           instanceNumber++;
         }
@@ -113,26 +112,26 @@ describe('Watcher Session Header Indicator', () => {
       expect(instanceNumber).toBe(3);
     });
 
-    it('should count only watchers with same slug for instance number', () => {
-      // @step Given watchers of different types
-      const watchers = ['security-1', 'test-1', 'security-2'];
+    it('should count only supervisors with same slug for instance number', () => {
+      // @step Given supervisors of different types
+      const supervisors = ['security-1', 'test-1', 'security-2'];
 
-      mockSessionGetWatchers.mockReturnValue(watchers);
+      mockSessionGetSupervisors.mockReturnValue(supervisors);
       mockSessionGetRole.mockImplementation((id: string) => {
         if (id === 'test-1') {
-          return { name: 'Test Enforcer', description: '', authority: 'peer' };
+          return { name: 'Test Enforcer', brief: null };
         }
-        return { name: 'Security Reviewer', description: '', authority: 'supervisor' };
+        return { name: 'Security Reviewer', brief: null };
       });
 
       // @step When counting security reviewer instances
-      const targetWatcher = 'security-2';
+      const targetSupervisor = 'security-2';
       const targetSlug = generateSlug('Security Reviewer');
       
       let instanceNumber = 1;
-      for (const watcherId of watchers) {
-        if (watcherId === targetWatcher) break;
-        const role = mockSessionGetRole(watcherId);
+      for (const supervisorId of supervisors) {
+        if (supervisorId === targetSupervisor) break;
+        const role = mockSessionGetRole(supervisorId);
         if (role && generateSlug(role.name) === targetSlug) {
           instanceNumber++;
         }
@@ -225,11 +224,11 @@ describe('Watcher Session Header Indicator', () => {
     // These tests document the expected header format
     // TUI-060: Removed "Agent" prefix - format is now just model name with optional session number and work unit
     
-    it('should have correct watcher header format', () => {
-      // Expected format: "Watcher: {slug} #{n} | {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
+    it('should have correct supervisor header format', () => {
+      // Expected format: "Supervisor: {slug} #{n} | {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
       // With bottom border separator
-      // Watcher info in blue, separator | in white, model info in cyan
-      const watcherInfo = { slug: 'security-reviewer', instanceNumber: 1 };
+      // Supervisor info in blue, separator | in white, model info in cyan
+      const supervisorInfo = { slug: 'security-reviewer', instanceNumber: 1 };
       const modelId = 'claude-sonnet-4-20250514';
       const hasReasoning = true;
       const hasVision = true;
@@ -239,7 +238,7 @@ describe('Watcher Session Header Indicator', () => {
       const fillPercentage = 45;
 
       // Verify all components are correct
-      expect(`Watcher: ${watcherInfo.slug} #${watcherInfo.instanceNumber}`).toBe('Watcher: security-reviewer #1');
+      expect(`Supervisor: ${supervisorInfo.slug} #${supervisorInfo.instanceNumber}`).toBe('Supervisor: security-reviewer #1');
       expect(modelId).toBe('claude-sonnet-4-20250514');
       expect(hasReasoning ? '[R]' : '').toBe('[R]');
       expect(hasVision ? '[V]' : '').toBe('[V]');
@@ -248,14 +247,14 @@ describe('Watcher Session Header Indicator', () => {
       expect(`[${fillPercentage}%]`).toBe('[45%]');
     });
 
-    it('should use pipe separator between watcher and model info', () => {
-      // Format: "Watcher: ... | {model}"
+    it('should use pipe separator between supervisor and model info', () => {
+      // Format: "Supervisor: ... | {model}"
       // The pipe | is used as separator (white color)
       const separator = '|';
       expect(separator).toBe('|');
     });
 
-    it('should have correct regular header format (no watcher prefix)', () => {
+    it('should have correct regular header format (no supervisor prefix)', () => {
       // Expected format: "#N (WORK-ID: status): {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
       // With bottom border separator
       // TUI-060: No "Agent:" prefix - just session number, work unit, and model
@@ -266,8 +265,8 @@ describe('Watcher Session Header Indicator', () => {
 
       const regularHeader = `#${sessionNumber} (${workUnitId}: ${workUnitStatus}): ${modelId}`;
       expect(regularHeader).toBe('#1 (AUTH-001: implementing): claude-sonnet-4-20250514');
-      // Regular session header should NOT contain watcher info or "Agent:" prefix
-      expect(regularHeader).not.toContain('Watcher:');
+      // Regular session header should NOT contain supervisor info or "Agent:" prefix
+      expect(regularHeader).not.toContain('Supervisor:');
       expect(regularHeader).not.toContain('Agent:');
     });
   });

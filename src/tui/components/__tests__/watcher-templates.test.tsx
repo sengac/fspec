@@ -1,11 +1,11 @@
 /**
  * Feature: spec/features/watcher-templates.feature
- * Tests for Watcher Templates and Improved Creation UX (WATCH-023)
+ * Tests for Supervisor Templates and Improved Creation UX (WATCH-023)
  *
  * This consolidated test file covers:
- * - Storage: loadWatcherTemplates, saveWatcherTemplates, generateSlug
- * - List: buildFlatWatcherList, display, navigation, CRUD
- * - Form: field navigation, model filter, authority toggle, create/edit modes
+ * - Storage: loadSupervisorTemplates, saveSupervisorTemplates, generateSlug
+ * - List: buildFlatSupervisorList, display, navigation, CRUD
+ * - Form: field navigation, model filter, auto-inject toggle, create/edit modes
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -56,18 +56,18 @@ vi.mock('../../../utils/config', () => ({
 }));
 
 // Mock NAPI module
-const mockSessionGetWatchers = vi.fn();
+const mockSessionGetSupervisors = vi.fn();
 const mockSessionGetRole = vi.fn();
 const mockSessionGetStatus = vi.fn();
-const mockSessionCreateWatcher = vi.fn();
+const mockSessionCreateSupervisor = vi.fn();
 const mockSessionSetRole = vi.fn();
 const mockSessionManagerDestroy = vi.fn();
 
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionGetWatchers: mockSessionGetWatchers,
+  sessionGetSupervisors: mockSessionGetSupervisors,
   sessionGetRole: mockSessionGetRole,
   sessionGetStatus: mockSessionGetStatus,
-  sessionCreateWatcher: mockSessionCreateWatcher,
+  sessionCreateSupervisor: mockSessionCreateSupervisor,
   sessionSetRole: mockSessionSetRole,
   sessionManagerDestroy: mockSessionManagerDestroy,
   persistenceSetDataDirectory: vi.fn(),
@@ -93,37 +93,36 @@ const { getFspecUserDir } = await import('../../../utils/config');
 // Import REAL implementations from source (now that mocks are set up)
 import {
   generateSlug,
-  loadWatcherTemplates,
-  saveWatcherTemplates,
-  buildFlatWatcherList,
+  loadSupervisorTemplates,
+  saveSupervisorTemplates,
+  buildFlatSupervisorList,
   filterTemplates,
   formatTemplateDisplay,
-} from '../../utils/watcherTemplateStorage';
-import type { WatcherTemplate, WatcherInstance, WatcherListItem } from '../../types/watcherTemplate';
+} from '../../utils/supervisorTemplateStorage';
+import type { SupervisorTemplate, SupervisorInstance, SupervisorListItem } from '../../types/supervisorTemplate';
 
 // === TEST HELPERS ===
 
-const createMockTemplate = (id: string, name: string, authority: 'peer' | 'supervisor' = 'peer'): WatcherTemplate => ({
+const createMockTemplate = (id: string, name: string): SupervisorTemplate => ({
   id,
   name,
   slug: generateSlug(name),
   modelId: 'anthropic/claude-sonnet-4-20250514',
-  authority,
   brief: `Brief for ${name}`,
   autoInject: false,
   createdAt: '2026-01-24T00:00:00.000Z',
   updatedAt: '2026-01-24T00:00:00.000Z',
 });
 
-const createMockInstance = (sessionId: string, templateId: string, status: 'running' | 'idle' = 'idle'): WatcherInstance => ({
+const createMockInstance = (sessionId: string, templateId: string, status: 'running' | 'idle' = 'idle'): SupervisorInstance => ({
   sessionId,
   templateId,
   status,
 });
 
-// Navigation helpers for form tests
-type FormField = 'name' | 'model' | 'authority' | 'brief' | 'autoInject';
-const FORM_FIELDS: FormField[] = ['name', 'model', 'authority', 'brief', 'autoInject'];
+// Navigation helpers for form tests — MUST match SupervisorTemplateForm.tsx FOCUS_ORDER
+type FormField = 'name' | 'model' | 'brief' | 'autoInject';
+const FORM_FIELDS: FormField[] = ['name', 'model', 'brief', 'autoInject'];
 const navigateFieldDown = (f: FormField): FormField => FORM_FIELDS[Math.min(FORM_FIELDS.length - 1, FORM_FIELDS.indexOf(f) + 1)];
 const navigateFieldUp = (f: FormField): FormField => FORM_FIELDS[Math.max(0, FORM_FIELDS.indexOf(f) - 1)];
 const navigateFieldTab = (f: FormField, shift: boolean): FormField => {
@@ -139,17 +138,9 @@ const filterModels = (models: ModelOption[], query: string): ModelOption[] => {
   return models.filter(m => m.modelId.toLowerCase().includes(q) || m.displayName.toLowerCase().includes(q));
 };
 
-// Authority toggle helper
-type Authority = 'peer' | 'supervisor';
-const toggleAuthority = (curr: Authority, dir: 'left' | 'right'): Authority => {
-  if (dir === 'right' && curr === 'peer') return 'supervisor';
-  if (dir === 'left' && curr === 'supervisor') return 'peer';
-  return curr;
-};
-
 // === TESTS ===
 
-describe('Feature: Watcher Templates and Improved Creation UX', () => {
+describe('Feature: Supervisor Templates and Improved Creation UX', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -181,30 +172,30 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   // =============================================
 
   describe('Storage operations', () => {
-    const mockTemplates: WatcherTemplate[] = [
-      createMockTemplate('t1', 'Security Reviewer', 'supervisor'),
-      createMockTemplate('t2', 'Test Enforcer', 'peer'),
+    const mockTemplates: SupervisorTemplate[] = [
+      createMockTemplate('t1', 'Security Reviewer'),
+      createMockTemplate('t2', 'Test Enforcer'),
     ];
 
     it('should load templates from storage', async () => {
       mockReadFile.mockResolvedValue(JSON.stringify(mockTemplates));
-      const templates = await loadWatcherTemplates();
+      const templates = await loadSupervisorTemplates();
       expect(getFspecUserDir).toHaveBeenCalled();
-      expect(mockReadFile).toHaveBeenCalledWith(join('/mock/home/.fspec', 'watcher-templates.json'), 'utf-8');
+      expect(mockReadFile).toHaveBeenCalledWith(join('/mock/home/.fspec', 'supervisor-templates.json'), 'utf-8');
       expect(templates).toEqual(mockTemplates);
     });
 
     it('should return empty array when file does not exist', async () => {
       mockReadFile.mockRejectedValue({ code: 'ENOENT' });
-      const templates = await loadWatcherTemplates();
+      const templates = await loadSupervisorTemplates();
       expect(templates).toEqual([]);
     });
 
     it('should save templates to storage', () => {
-      saveWatcherTemplates(mockTemplates);
+      saveSupervisorTemplates(mockTemplates);
       expect(mockMkdirSync).toHaveBeenCalledWith('/mock/home/.fspec', { recursive: true });
       expect(mockWriteFileSync).toHaveBeenCalledWith(
-        join('/mock/home/.fspec', 'watcher-templates.json'),
+        join('/mock/home/.fspec', 'supervisor-templates.json'),
         JSON.stringify(mockTemplates, null, 2)
       );
     });
@@ -217,12 +208,12 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   describe('Scenario: Quick spawn via slash command', () => {
     it('should find template by slug', async () => {
       // @step Given I have a "Security Reviewer" template with slug "security-reviewer"
-      const mockTemplates = [createMockTemplate('t1', 'Security Reviewer', 'supervisor')];
+      const mockTemplates = [createMockTemplate('t1', 'Security Reviewer')];
       vi.mocked(readFile).mockResolvedValue(JSON.stringify(mockTemplates));
-      // @step When I type "/watcher spawn security-reviewer"
-      const templates = await loadWatcherTemplates();
+      // @step When I type "/supervisor spawn security-reviewer"
+      const templates = await loadSupervisorTemplates();
       const found = templates.find(t => t.slug === 'security-reviewer');
-      // @step Then a watcher instance spawns immediately without opening the overlay
+      // @step Then a supervisor instance spawns immediately without opening the overlay
       expect(found).toBeDefined();
       expect(found?.name).toBe('Security Reviewer');
     });
@@ -230,12 +221,12 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
 
   describe('Scenario: Quick spawn with unknown slug shows error', () => {
     it('should return undefined for unknown slug', async () => {
-      // @step Given no template exists with slug "unknown-watcher"
+      // @step Given no template exists with slug "unknown-supervisor"
       vi.mocked(readFile).mockResolvedValue(JSON.stringify([]));
-      // @step When I type "/watcher spawn unknown-watcher"
-      const templates = await loadWatcherTemplates();
-      const found = templates.find(t => t.slug === 'unknown-watcher');
-      // @step Then I should see error "No template found with slug: unknown-watcher"
+      // @step When I type "/supervisor spawn unknown-supervisor"
+      const templates = await loadSupervisorTemplates();
+      const found = templates.find(t => t.slug === 'unknown-supervisor');
+      // @step Then I should see error "No template found with slug: unknown-supervisor"
       expect(found).toBeUndefined();
     });
   });
@@ -247,18 +238,18 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   describe('Scenario: View templates with active instance count', () => {
     it('should display templates with instance count badges in alphabetical order', () => {
       // @step Given I have a "Security Reviewer" template with 2 active instances
-      const securityTemplate = createMockTemplate('t1', 'Security Reviewer', 'supervisor');
+      const securityTemplate = createMockTemplate('t1', 'Security Reviewer');
       const instances = [createMockInstance('s1', 't1', 'running'), createMockInstance('s2', 't1', 'idle')];
       // @step And I have a "Test Enforcer" template with no active instances
-      const testTemplate = createMockTemplate('t2', 'Test Enforcer', 'peer');
-      // @step When I open the /watcher overlay
-      const flatList = buildFlatWatcherList([securityTemplate, testTemplate], instances, new Set());
-      // @step Then I should see "Security Reviewer (Supervisor)" with "[2 active]"
+      const testTemplate = createMockTemplate('t2', 'Test Enforcer');
+      // @step When I open the /supervisor overlay
+      const flatList = buildFlatSupervisorList([securityTemplate, testTemplate], instances, new Set());
+      // @step Then I should see "Security Reviewer" with "[2 active]"
       const secItem = flatList.find(i => i.type === 'template' && i.template.name === 'Security Reviewer');
-      expect(secItem && secItem.type === 'template' && formatTemplateDisplay(secItem.template, secItem.instanceCount)).toBe('Security Reviewer (Supervisor) [2 active]');
-      // @step And I should see "Test Enforcer (Peer)" without an active badge
+      expect(secItem && secItem.type === 'template' && formatTemplateDisplay(secItem.template, secItem.instanceCount)).toBe('Security Reviewer [2 active]');
+      // @step And I should see "Test Enforcer" without an active badge
       const testItem = flatList.find(i => i.type === 'template' && i.template.name === 'Test Enforcer');
-      expect(testItem && testItem.type === 'template' && formatTemplateDisplay(testItem.template, testItem.instanceCount)).toBe('Test Enforcer (Peer)');
+      expect(testItem && testItem.type === 'template' && formatTemplateDisplay(testItem.template, testItem.instanceCount)).toBe('Test Enforcer');
       // @step And templates should be in alphabetical order
       const templateItems = flatList.filter(i => i.type === 'template');
       expect(templateItems[0].type === 'template' && templateItems[0].template.name).toBe('Security Reviewer');
@@ -268,12 +259,12 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   describe('Scenario: Expand template to show instances', () => {
     it('should show nested instances when template is expanded', () => {
       // @step Given "Security Reviewer" template has 2 active instances and is collapsed
-      const template = createMockTemplate('t1', 'Security Reviewer', 'supervisor');
+      const template = createMockTemplate('t1', 'Security Reviewer');
       const instances = [createMockInstance('s1', 't1', 'running'), createMockInstance('s2', 't1', 'idle')];
-      expect(buildFlatWatcherList([template], instances, new Set()).filter(i => i.type === 'instance')).toHaveLength(0);
+      expect(buildFlatSupervisorList([template], instances, new Set()).filter(i => i.type === 'instance')).toHaveLength(0);
       // @step When I press the right arrow key
       // @step Then the template should expand
-      const expandedList = buildFlatWatcherList([template], instances, new Set(['t1']));
+      const expandedList = buildFlatSupervisorList([template], instances, new Set(['t1']));
       // @step And I should see "#1 running" nested with tree connector
       // @step And I should see "#2 idle" nested with tree connector
       const instanceItems = expandedList.filter(i => i.type === 'instance');
@@ -284,23 +275,23 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   describe('Scenario: Collapse template to hide instances', () => {
     it('should hide instances when template is collapsed', () => {
       // @step Given "Security Reviewer" template is expanded showing instances
-      const template = createMockTemplate('t1', 'Security Reviewer', 'supervisor');
+      const template = createMockTemplate('t1', 'Security Reviewer');
       const instances = [createMockInstance('s1', 't1', 'running'), createMockInstance('s2', 't1', 'idle')];
       const expanded = new Set(['t1']);
-      expect(buildFlatWatcherList([template], instances, expanded).filter(i => i.type === 'instance')).toHaveLength(2);
+      expect(buildFlatSupervisorList([template], instances, expanded).filter(i => i.type === 'instance')).toHaveLength(2);
       // @step When I press the left arrow key
       expanded.delete('t1');
       // @step Then the template should collapse
       // @step And instances should be hidden
-      expect(buildFlatWatcherList([template], instances, expanded).filter(i => i.type === 'instance')).toHaveLength(0);
+      expect(buildFlatSupervisorList([template], instances, expanded).filter(i => i.type === 'instance')).toHaveLength(0);
     });
   });
 
   describe('Scenario: Navigate list with arrow keys', () => {
     it('should navigate selection with up/down arrow keys', () => {
-      // @step Given I have multiple templates in the /watcher overlay
-      const templates = [createMockTemplate('t1', 'A', 'peer'), createMockTemplate('t2', 'B', 'peer')];
-      const flatList = buildFlatWatcherList(templates, [], new Set());
+      // @step Given I have multiple templates in the /supervisor overlay
+      const templates = [createMockTemplate('t1', 'A'), createMockTemplate('t2', 'B')];
+      const flatList = buildFlatSupervisorList(templates, [], new Set());
       let idx = 0;
       // @step When I press the down arrow key
       idx = Math.min(flatList.length - 1, idx + 1);
@@ -329,11 +320,11 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
 
   describe('Scenario: Empty state with no templates', () => {
     it('should show empty state when no templates exist', () => {
-      // @step Given I have no watcher templates
-      // @step When I open the /watcher overlay
-      const flatList = buildFlatWatcherList([], [], new Set());
-      // @step Then I should see "No watcher templates yet"
-      // @step And I should see an explanation of what watchers do
+      // @step Given I have no supervisor templates
+      // @step When I open the /supervisor overlay
+      const flatList = buildFlatSupervisorList([], [], new Set());
+      // @step Then I should see "No supervisor templates yet"
+      // @step And I should see an explanation of what supervisors do
       // @step And I should see "Press N to create your first template"
       expect(flatList).toHaveLength(1);
       expect(flatList[0].type).toBe('create-new');
@@ -347,34 +338,34 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   describe('Scenario: Spawn new instance from template', () => {
     it('should spawn instance when Enter is pressed on template', () => {
       // @step Given "Security Reviewer" template is selected
-      const template = createMockTemplate('t1', 'Security Reviewer', 'supervisor');
-      const flatList = buildFlatWatcherList([template], [], new Set());
+      const template = createMockTemplate('t1', 'Security Reviewer');
+      const flatList = buildFlatSupervisorList([template], [], new Set());
       const selectedItem = flatList[0];
       expect(selectedItem.type).toBe('template');
       // @step When I press Enter
       if (selectedItem.type === 'template') {
-        mockSessionCreateWatcher.mockReturnValue('new-session');
-        const watcherSessionId = mockSessionCreateWatcher('parent-session');
-        mockSessionSetRole(watcherSessionId, selectedItem.template.name, selectedItem.template.brief, selectedItem.template.authority);
-        // @step Then a new watcher instance spawns with the template's settings
-        expect(mockSessionCreateWatcher).toHaveBeenCalledWith('parent-session');
-        expect(mockSessionSetRole).toHaveBeenCalledWith('new-session', 'Security Reviewer', 'Brief for Security Reviewer', 'supervisor');
+        mockSessionCreateSupervisor.mockReturnValue('new-session');
+        const supervisorSessionId = mockSessionCreateSupervisor('subordinate-session');
+        mockSessionSetRole(supervisorSessionId, selectedItem.template.name, selectedItem.template.brief);
+        // @step Then a new supervisor instance spawns with the template's settings
+        expect(mockSessionCreateSupervisor).toHaveBeenCalledWith('subordinate-session');
+        expect(mockSessionSetRole).toHaveBeenCalledWith('new-session', 'Security Reviewer', 'Brief for Security Reviewer');
       }
       // @step And the active count badge updates accordingly
     });
   });
 
-  describe('Scenario: Open existing watcher instance', () => {
+  describe('Scenario: Open existing supervisor instance', () => {
     it('should switch to instance session when Enter is pressed on instance', () => {
       // @step Given "Security Reviewer" is expanded with instance "#1 running" selected
-      const template = createMockTemplate('t1', 'Security Reviewer', 'supervisor');
-      const instance = createMockInstance('watcher-session-1', 't1', 'running');
-      const flatList = buildFlatWatcherList([template], [instance], new Set(['t1']));
+      const template = createMockTemplate('t1', 'Security Reviewer');
+      const instance = createMockInstance('supervisor-session-1', 't1', 'running');
+      const flatList = buildFlatSupervisorList([template], [instance], new Set(['t1']));
       const instanceItem = flatList.find(i => i.type === 'instance');
       // @step When I press Enter
       // @step Then the overlay closes
-      // @step And I switch to that watcher's session
-      expect(instanceItem && instanceItem.type === 'instance' && instanceItem.instance.sessionId).toBe('watcher-session-1');
+      // @step And I switch to that supervisor's session
+      expect(instanceItem && instanceItem.type === 'instance' && instanceItem.instance.sessionId).toBe('supervisor-session-1');
     });
   });
 
@@ -384,29 +375,28 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
 
   describe('Scenario: Create new template', () => {
     it('should open form in create mode with empty fields except model', () => {
-      // @step Given the /watcher overlay is open
+      // @step Given the /supervisor overlay is open
       // @step When I press N
       // @step Then the template form opens in create mode
-      // @step And all fields are empty except Model which defaults to parent's model
-      const parentModelId = 'anthropic/claude-sonnet-4-20250514';
-      const formState = { name: '', modelId: parentModelId, authority: 'peer' as Authority, brief: '', autoInject: false };
+      // @step And all fields are empty except Model which defaults to subordinate's model
+      const subordinateModelId = 'anthropic/claude-sonnet-4-20250514';
+      const formState = { name: '', modelId: subordinateModelId, brief: '', autoInject: false };
       expect(formState.name).toBe('');
-      expect(formState.modelId).toBe(parentModelId);
+      expect(formState.modelId).toBe(subordinateModelId);
     });
   });
 
   describe('Scenario: Edit existing template', () => {
     it('should open form in edit mode with pre-populated fields', () => {
       // @step Given "Security Reviewer" template is selected
-      const template = createMockTemplate('t1', 'Security Reviewer', 'supervisor');
+      const template = createMockTemplate('t1', 'Security Reviewer');
       template.brief = 'Watch for security vulnerabilities';
       template.autoInject = true;
       // @step When I press E
       // @step Then the template form opens in edit mode
       // @step And all fields are pre-populated from the template
-      const formState = { name: template.name, modelId: template.modelId, authority: template.authority, brief: template.brief, autoInject: template.autoInject };
+      const formState = { name: template.name, modelId: template.modelId, brief: template.brief, autoInject: template.autoInject };
       expect(formState.name).toBe('Security Reviewer');
-      expect(formState.authority).toBe('supervisor');
       expect(formState.autoInject).toBe(true);
     });
   });
@@ -414,7 +404,7 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   describe('Scenario: Delete template without active instances', () => {
     it('should delete template after confirmation', () => {
       // @step Given "Architecture Advisor" template has no active instances and is selected
-      const template = createMockTemplate('t1', 'Architecture Advisor', 'peer');
+      const template = createMockTemplate('t1', 'Architecture Advisor');
       // @step When I press D
       // @step Then a confirmation dialog appears
       const confirmMessage = `Delete template "${template.name}"?`;
@@ -425,13 +415,13 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   });
 
   describe('Scenario: Delete template with active instances shows warning', () => {
-    it('should show warning and kill instances when deleting template with active watchers', () => {
+    it('should show warning and kill instances when deleting template with active supervisors', () => {
       // @step Given "Security Reviewer" template has 2 active instances and is selected
       const instances = [createMockInstance('s1', 't1', 'running'), createMockInstance('s2', 't1', 'idle')];
       // @step When I press D
-      // @step Then a confirmation dialog warns "This will kill 2 active watchers"
-      const warningMessage = `This will kill ${instances.length} active watchers`;
-      expect(warningMessage).toBe('This will kill 2 active watchers');
+      // @step Then a confirmation dialog warns "This will kill 2 active supervisors"
+      const warningMessage = `This will kill ${instances.length} active supervisors`;
+      expect(warningMessage).toBe('This will kill 2 active supervisors');
       // @step When I confirm
       // @step Then all active instances are killed
       instances.forEach(i => mockSessionManagerDestroy(i.sessionId));
@@ -440,7 +430,7 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
     });
   });
 
-  describe('Scenario: Kill watcher instance', () => {
+  describe('Scenario: Kill supervisor instance', () => {
     it('should kill instance when D is pressed on instance', () => {
       // @step Given "Security Reviewer" is expanded with instance "#2 idle" selected
       const instances = [createMockInstance('s1', 't1', 'running'), createMockInstance('s2', 't1', 'idle')];
@@ -477,8 +467,8 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
       // @step Given the template form is open
       let field: FormField = 'name';
       // @step When I press Tab repeatedly
-      // @step Then focus cycles through: Name, Model, Authority, Brief, Auto-inject
-      const expected: FormField[] = ['model', 'authority', 'brief', 'autoInject', 'name'];
+      // @step Then focus cycles through: Name, Model, Brief, Auto-inject
+      const expected: FormField[] = ['model', 'brief', 'autoInject', 'name'];
       expected.forEach(exp => {
         field = navigateFieldTab(field, false);
         expect(field).toBe(exp);
@@ -490,13 +480,13 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   // MODEL SELECTION (spec:180-195)
   // =============================================
 
-  describe('Scenario: Model defaults to parent session model', () => {
-    it('should initialize model field with parent session model', () => {
-      // @step Given my parent session uses "claude-sonnet-4"
-      const parentModelId = 'anthropic/claude-sonnet-4-20250514';
+  describe('Scenario: Model defaults to subordinate session model', () => {
+    it('should initialize model field with subordinate session model', () => {
+      // @step Given my subordinate session uses "claude-sonnet-4"
+      const subordinateModelId = 'anthropic/claude-sonnet-4-20250514';
       // @step When I open the template form
       // @step Then Model field shows "claude-sonnet-4"
-      expect(parentModelId).toContain('claude-sonnet-4');
+      expect(subordinateModelId).toContain('claude-sonnet-4');
     });
   });
 
@@ -535,34 +525,21 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
   });
 
   // =============================================
-  // AUTHORITY FIELD (spec:201-212)
+  // AUTO-INJECT FIELD (replaces removed Authority field)
   // =============================================
 
-  describe('Scenario: Authority shows inline explanation when focused', () => {
-    it('should display explanations for authority options', () => {
-      // @step Given the template form is open
-      // @step When I focus the Authority field
-      // @step Then I see "Peer: Suggestions the AI can consider or ignore"
-      // @step And I see "Supervisor: Directives the AI should follow"
-      const peerExplanation = 'Peer: Suggestions the AI can consider or ignore';
-      const supervisorExplanation = 'Supervisor: Directives the AI should follow';
-      expect(peerExplanation).toContain('Peer');
-      expect(supervisorExplanation).toContain('Supervisor');
-    });
-  });
-
-  describe('Scenario: Toggle authority with arrow keys', () => {
-    it('should toggle between Peer and Supervisor with left/right arrows', () => {
-      // @step Given Authority field is focused showing "Peer"
-      let authority: Authority = 'peer';
-      // @step When I press the right arrow key
-      authority = toggleAuthority(authority, 'right');
-      // @step Then Authority changes to "Supervisor"
-      expect(authority).toBe('supervisor');
-      // @step When I press the left arrow key
-      authority = toggleAuthority(authority, 'left');
-      // @step Then Authority changes to "Peer"
-      expect(authority).toBe('peer');
+  describe('Scenario: Toggle auto-inject with arrow keys', () => {
+    it('should toggle between enabled and disabled with left/right arrows', () => {
+      // @step Given Auto-inject field is focused showing "Enabled"
+      let autoInject = true;
+      // @step When I press the left/right arrow key
+      autoInject = !autoInject;
+      // @step Then Auto-inject changes to "Disabled"
+      expect(autoInject).toBe(false);
+      // @step When I press the left/right arrow key again
+      autoInject = !autoInject;
+      // @step Then Auto-inject changes to "Enabled"
+      expect(autoInject).toBe(true);
     });
   });
 });

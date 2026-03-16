@@ -1,12 +1,12 @@
 // Feature: spec/features/sibling-watcher-navigation.feature
-// Tests for WATCH-013: Sibling Watcher Navigation
+// Tests for WATCH-013: Sibling Supervisor Navigation
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the NAPI bindings
 vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerList: vi.fn(),
-  sessionGetParent: vi.fn(),
+  sessionGetSubordinate: vi.fn(),
   sessionGetMergedOutput: vi.fn(),
   sessionGetStatus: vi.fn(),
   sessionSetPendingInput: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock('@sengac/codelet-napi', () => ({
 
 import {
   sessionManagerList,
-  sessionGetParent,
+  sessionGetSubordinate,
   sessionSetPendingInput,
   sessionGetPendingInput,
 } from '@sengac/codelet-napi';
@@ -46,17 +46,17 @@ function simulateSwitchToSession(
   direction: 'prev' | 'next',
   currentSessionId: string,
   allSessions: MockSession[],
-  getParent: (id: string) => string | null
+  getSubordinate: (id: string) => string | null
 ): MockSession | null {
-  // Get current session's parent
-  const currentParentId = getParent(currentSessionId);
+  // Get current session's subordinate
+  const currentSubordinateId = getSubordinate(currentSessionId);
 
   let sessionsToNavigate: MockSession[];
 
-  if (currentParentId !== null) {
-    // In a watcher session - filter to only sibling watchers (same parent)
+  if (currentSubordinateId !== null) {
+    // In a supervisor session - filter to only sibling supervisors (same subordinate)
     sessionsToNavigate = allSessions.filter(
-      s => getParent(s.id) === currentParentId
+      s => getSubordinate(s.id) === currentSubordinateId
     );
   } else {
     // Regular session - navigate through all sessions
@@ -88,34 +88,41 @@ function simulateSwitchToSession(
   return sessionsToNavigate[targetIndex];
 }
 
-describe('Sibling Watcher Navigation', () => {
+describe('Sibling Supervisor Navigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Scenario: Navigate forward through sibling watchers', () => {
-    it('should navigate only through watchers of the same parent', () => {
-      // @step Given a parent session "Main Dev" exists
-      const parentSession = createMockSession('parent-main-dev', 'Main Dev');
+  describe('Scenario: Navigate forward through sibling supervisors', () => {
+    it('should navigate only through supervisors of the same subordinate', () => {
+      // @step Given a subordinate session "Main Dev" exists
+      const subordinateSession = createMockSession(
+        'subordinate-main-dev',
+        'Main Dev'
+      );
 
-      // @step And three watcher sessions exist for "Main Dev": "W1", "W2", "W3"
-      const w1 = createMockSession('watcher-w1', 'W1');
-      const w2 = createMockSession('watcher-w2', 'W2');
-      const w3 = createMockSession('watcher-w3', 'W3');
+      // @step And three supervisor sessions exist for "Main Dev": "W1", "W2", "W3"
+      const w1 = createMockSession('supervisor-w1', 'W1');
+      const w2 = createMockSession('supervisor-w2', 'W2');
+      const w3 = createMockSession('supervisor-w3', 'W3');
 
-      const allSessions = [parentSession, w1, w2, w3];
+      const allSessions = [subordinateSession, w1, w2, w3];
       vi.mocked(sessionManagerList).mockReturnValue(allSessions);
 
-      // Setup parent relationships
-      vi.mocked(sessionGetParent).mockImplementation((id: string) => {
-        if (id === 'watcher-w1' || id === 'watcher-w2' || id === 'watcher-w3') {
-          return 'parent-main-dev';
+      // Setup subordinate relationships
+      vi.mocked(sessionGetSubordinate).mockImplementation((id: string) => {
+        if (
+          id === 'supervisor-w1' ||
+          id === 'supervisor-w2' ||
+          id === 'supervisor-w3'
+        ) {
+          return 'subordinate-main-dev';
         }
-        return null; // Parent session has no parent
+        return null; // Subordinate session has no subordinate
       });
 
-      // @step And I am viewing watcher session "W1"
-      let currentSessionId = 'watcher-w1';
+      // @step And I am viewing supervisor session "W1"
+      let currentSessionId = 'supervisor-w1';
 
       // @step When I press Shift+Right
       let targetSession = simulateSwitchToSession(
@@ -124,19 +131,19 @@ describe('Sibling Watcher Navigation', () => {
         allSessions,
         id => {
           if (
-            id === 'watcher-w1' ||
-            id === 'watcher-w2' ||
-            id === 'watcher-w3'
+            id === 'supervisor-w1' ||
+            id === 'supervisor-w2' ||
+            id === 'supervisor-w3'
           ) {
-            return 'parent-main-dev';
+            return 'subordinate-main-dev';
           }
           return null;
         }
       );
 
-      // @step Then I should be viewing watcher session "W2"
+      // @step Then I should be viewing supervisor session "W2"
       expect(targetSession).not.toBeNull();
-      expect(targetSession!.id).toBe('watcher-w2');
+      expect(targetSession!.id).toBe('supervisor-w2');
       currentSessionId = targetSession!.id;
 
       // @step When I press Shift+Right
@@ -146,19 +153,19 @@ describe('Sibling Watcher Navigation', () => {
         allSessions,
         id => {
           if (
-            id === 'watcher-w1' ||
-            id === 'watcher-w2' ||
-            id === 'watcher-w3'
+            id === 'supervisor-w1' ||
+            id === 'supervisor-w2' ||
+            id === 'supervisor-w3'
           ) {
-            return 'parent-main-dev';
+            return 'subordinate-main-dev';
           }
           return null;
         }
       );
 
-      // @step Then I should be viewing watcher session "W3"
+      // @step Then I should be viewing supervisor session "W3"
       expect(targetSession).not.toBeNull();
-      expect(targetSession!.id).toBe('watcher-w3');
+      expect(targetSession!.id).toBe('supervisor-w3');
       currentSessionId = targetSession!.id;
 
       // @step When I press Shift+Right
@@ -168,33 +175,33 @@ describe('Sibling Watcher Navigation', () => {
         allSessions,
         id => {
           if (
-            id === 'watcher-w1' ||
-            id === 'watcher-w2' ||
-            id === 'watcher-w3'
+            id === 'supervisor-w1' ||
+            id === 'supervisor-w2' ||
+            id === 'supervisor-w3'
           ) {
-            return 'parent-main-dev';
+            return 'subordinate-main-dev';
           }
           return null;
         }
       );
 
-      // @step Then I should be viewing watcher session "W1"
+      // @step Then I should be viewing supervisor session "W1"
       expect(targetSession).not.toBeNull();
-      expect(targetSession!.id).toBe('watcher-w1');
+      expect(targetSession!.id).toBe('supervisor-w1');
     });
   });
 
   describe('Scenario: Regular session navigates through all sessions', () => {
-    it('should navigate through all sessions when in a non-watcher session', () => {
+    it('should navigate through all sessions when in a non-supervisor session', () => {
       // @step Given three sessions exist: "Session A", "Session B", "Session C"
       const sessionA = createMockSession('session-a', 'Session A');
       const sessionB = createMockSession('session-b', 'Session B');
       const sessionC = createMockSession('session-c', 'Session C');
 
-      // @step And none of the sessions are watchers
+      // @step And none of the sessions are supervisors
       const allSessions = [sessionA, sessionB, sessionC];
       vi.mocked(sessionManagerList).mockReturnValue(allSessions);
-      vi.mocked(sessionGetParent).mockReturnValue(null); // No parents
+      vi.mocked(sessionGetSubordinate).mockReturnValue(null); // No subordinates
 
       // @step And I am viewing session "Session B"
       let currentSessionId = 'session-b';
@@ -226,25 +233,28 @@ describe('Sibling Watcher Navigation', () => {
     });
   });
 
-  describe('Scenario: Single watcher has no siblings to navigate', () => {
-    it('should not navigate when only one watcher exists for a parent', () => {
-      // @step Given a parent session "Main Dev" exists
-      const parentSession = createMockSession('parent-main-dev', 'Main Dev');
+  describe('Scenario: Single supervisor has no siblings to navigate', () => {
+    it('should not navigate when only one supervisor exists for a subordinate', () => {
+      // @step Given a subordinate session "Main Dev" exists
+      const subordinateSession = createMockSession(
+        'subordinate-main-dev',
+        'Main Dev'
+      );
 
-      // @step And one watcher session "W1" exists for "Main Dev"
-      const w1 = createMockSession('watcher-w1', 'W1');
+      // @step And one supervisor session "W1" exists for "Main Dev"
+      const w1 = createMockSession('supervisor-w1', 'W1');
 
-      const allSessions = [parentSession, w1];
+      const allSessions = [subordinateSession, w1];
       vi.mocked(sessionManagerList).mockReturnValue(allSessions);
-      vi.mocked(sessionGetParent).mockImplementation((id: string) => {
-        if (id === 'watcher-w1') {
-          return 'parent-main-dev';
+      vi.mocked(sessionGetSubordinate).mockImplementation((id: string) => {
+        if (id === 'supervisor-w1') {
+          return 'subordinate-main-dev';
         }
         return null;
       });
 
-      // @step And I am viewing watcher session "W1"
-      const currentSessionId = 'watcher-w1';
+      // @step And I am viewing supervisor session "W1"
+      const currentSessionId = 'supervisor-w1';
 
       // @step When I press Shift+Right
       const targetSession = simulateSwitchToSession(
@@ -252,38 +262,41 @@ describe('Sibling Watcher Navigation', () => {
         currentSessionId,
         allSessions,
         id => {
-          if (id === 'watcher-w1') {
-            return 'parent-main-dev';
+          if (id === 'supervisor-w1') {
+            return 'subordinate-main-dev';
           }
           return null;
         }
       );
 
-      // @step Then I should remain viewing watcher session "W1"
+      // @step Then I should remain viewing supervisor session "W1"
       expect(targetSession).toBeNull(); // No navigation should occur
     });
   });
 
-  describe('Scenario: Navigate backward through sibling watchers', () => {
+  describe('Scenario: Navigate backward through sibling supervisors', () => {
     it('should navigate backward with wrap-around', () => {
-      // @step Given a parent session "Main Dev" exists
-      const parentSession = createMockSession('parent-main-dev', 'Main Dev');
+      // @step Given a subordinate session "Main Dev" exists
+      const subordinateSession = createMockSession(
+        'subordinate-main-dev',
+        'Main Dev'
+      );
 
-      // @step And two watcher sessions exist for "Main Dev": "W1", "W2"
-      const w1 = createMockSession('watcher-w1', 'W1');
-      const w2 = createMockSession('watcher-w2', 'W2');
+      // @step And two supervisor sessions exist for "Main Dev": "W1", "W2"
+      const w1 = createMockSession('supervisor-w1', 'W1');
+      const w2 = createMockSession('supervisor-w2', 'W2');
 
-      const allSessions = [parentSession, w1, w2];
+      const allSessions = [subordinateSession, w1, w2];
       vi.mocked(sessionManagerList).mockReturnValue(allSessions);
-      vi.mocked(sessionGetParent).mockImplementation((id: string) => {
-        if (id === 'watcher-w1' || id === 'watcher-w2') {
-          return 'parent-main-dev';
+      vi.mocked(sessionGetSubordinate).mockImplementation((id: string) => {
+        if (id === 'supervisor-w1' || id === 'supervisor-w2') {
+          return 'subordinate-main-dev';
         }
         return null;
       });
 
-      // @step And I am viewing watcher session "W1"
-      let currentSessionId = 'watcher-w1';
+      // @step And I am viewing supervisor session "W1"
+      let currentSessionId = 'supervisor-w1';
 
       // @step When I press Shift+Left
       let targetSession = simulateSwitchToSession(
@@ -291,16 +304,16 @@ describe('Sibling Watcher Navigation', () => {
         currentSessionId,
         allSessions,
         id => {
-          if (id === 'watcher-w1' || id === 'watcher-w2') {
-            return 'parent-main-dev';
+          if (id === 'supervisor-w1' || id === 'supervisor-w2') {
+            return 'subordinate-main-dev';
           }
           return null;
         }
       );
 
-      // @step Then I should be viewing watcher session "W2"
+      // @step Then I should be viewing supervisor session "W2"
       expect(targetSession).not.toBeNull();
-      expect(targetSession!.id).toBe('watcher-w2');
+      expect(targetSession!.id).toBe('supervisor-w2');
       currentSessionId = targetSession!.id;
 
       // @step When I press Shift+Left
@@ -309,47 +322,47 @@ describe('Sibling Watcher Navigation', () => {
         currentSessionId,
         allSessions,
         id => {
-          if (id === 'watcher-w1' || id === 'watcher-w2') {
-            return 'parent-main-dev';
+          if (id === 'supervisor-w1' || id === 'supervisor-w2') {
+            return 'subordinate-main-dev';
           }
           return null;
         }
       );
 
-      // @step Then I should be viewing watcher session "W1"
+      // @step Then I should be viewing supervisor session "W1"
       expect(targetSession).not.toBeNull();
-      expect(targetSession!.id).toBe('watcher-w1');
+      expect(targetSession!.id).toBe('supervisor-w1');
     });
   });
 
-  describe('Scenario: Watchers of different parents are isolated', () => {
-    it('should only navigate between watchers of the same parent', () => {
-      // @step Given two parent sessions exist: "Parent A" and "Parent B"
-      const parentA = createMockSession('parent-a', 'Parent A');
-      const parentB = createMockSession('parent-b', 'Parent B');
+  describe('Scenario: Supervisors of different subordinates are isolated', () => {
+    it('should only navigate between supervisors of the same subordinate', () => {
+      // @step Given two subordinate sessions exist: "Subordinate A" and "Subordinate B"
+      const subA = createMockSession('subordinate-a', 'Subordinate A');
+      const subB = createMockSession('subordinate-b', 'Subordinate B');
 
-      // @step And two watcher sessions exist for "Parent A": "W1", "W2"
-      const w1 = createMockSession('watcher-w1', 'W1');
-      const w2 = createMockSession('watcher-w2', 'W2');
+      // @step And two supervisor sessions exist for "Subordinate A": "W1", "W2"
+      const w1 = createMockSession('supervisor-w1', 'W1');
+      const w2 = createMockSession('supervisor-w2', 'W2');
 
-      // @step And two watcher sessions exist for "Parent B": "W3", "W4"
-      const w3 = createMockSession('watcher-w3', 'W3');
-      const w4 = createMockSession('watcher-w4', 'W4');
+      // @step And two supervisor sessions exist for "Subordinate B": "W3", "W4"
+      const w3 = createMockSession('supervisor-w3', 'W3');
+      const w4 = createMockSession('supervisor-w4', 'W4');
 
-      const allSessions = [parentA, parentB, w1, w2, w3, w4];
+      const allSessions = [subA, subB, w1, w2, w3, w4];
       vi.mocked(sessionManagerList).mockReturnValue(allSessions);
-      vi.mocked(sessionGetParent).mockImplementation((id: string) => {
-        if (id === 'watcher-w1' || id === 'watcher-w2') {
-          return 'parent-a';
+      vi.mocked(sessionGetSubordinate).mockImplementation((id: string) => {
+        if (id === 'supervisor-w1' || id === 'supervisor-w2') {
+          return 'subordinate-a';
         }
-        if (id === 'watcher-w3' || id === 'watcher-w4') {
-          return 'parent-b';
+        if (id === 'supervisor-w3' || id === 'supervisor-w4') {
+          return 'subordinate-b';
         }
-        return null; // Parent sessions have no parent
+        return null; // Subordinate sessions have no subordinate
       });
 
-      // @step And I am viewing watcher session "W1"
-      const currentSessionId = 'watcher-w1';
+      // @step And I am viewing supervisor session "W1"
+      const currentSessionId = 'supervisor-w1';
 
       // @step When I press Shift+Right
       const targetSession = simulateSwitchToSession(
@@ -357,23 +370,23 @@ describe('Sibling Watcher Navigation', () => {
         currentSessionId,
         allSessions,
         id => {
-          if (id === 'watcher-w1' || id === 'watcher-w2') {
-            return 'parent-a';
+          if (id === 'supervisor-w1' || id === 'supervisor-w2') {
+            return 'subordinate-a';
           }
-          if (id === 'watcher-w3' || id === 'watcher-w4') {
-            return 'parent-b';
+          if (id === 'supervisor-w3' || id === 'supervisor-w4') {
+            return 'subordinate-b';
           }
           return null;
         }
       );
 
-      // @step Then I should be viewing watcher session "W2"
+      // @step Then I should be viewing supervisor session "W2"
       expect(targetSession).not.toBeNull();
-      expect(targetSession!.id).toBe('watcher-w2');
+      expect(targetSession!.id).toBe('supervisor-w2');
 
       // @step And I should not navigate to "W3" or "W4"
-      expect(targetSession!.id).not.toBe('watcher-w3');
-      expect(targetSession!.id).not.toBe('watcher-w4');
+      expect(targetSession!.id).not.toBe('supervisor-w3');
+      expect(targetSession!.id).not.toBe('supervisor-w4');
     });
   });
 });

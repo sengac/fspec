@@ -1,8 +1,7 @@
 /**
- * WatcherTemplateForm - Form for creating/editing watcher templates
+ * SupervisorTemplateForm - Form for creating/editing supervisor templates
  *
- * WATCH-023: Watcher Templates and Improved Creation UX
- * Refactored from WatcherCreateView.tsx (WATCH-009, WATCH-021)
+ * WATCH-023: Supervisor Templates and Improved Creation UX
  * INPUT-001: Uses centralized input handling with CRITICAL priority
  *
  * Features:
@@ -10,31 +9,30 @@
  * - Pre-populates fields when editing
  * - ↑/↓ arrows navigate between fields (in addition to Tab)
  * - Type-to-filter model selection
- * - Inline authority explanation when focused
  *
- * @see spec/features/watcher-templates.feature
+ * @see spec/features/supervisor-templates.feature
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Box, Text } from 'ink';
-import type { WatcherTemplate } from '../types/watcherTemplate';
+import type { SupervisorTemplate } from '../types/supervisorTemplate';
 import { useInputCompat, InputPriority } from '../input/index';
 
-type FocusField = 'name' | 'model' | 'authority' | 'brief' | 'autoInject';
-const FOCUS_ORDER: FocusField[] = ['name', 'model', 'authority', 'brief', 'autoInject'];
+type FocusField = 'name' | 'model' | 'brief' | 'autoInject';
+const FOCUS_ORDER: FocusField[] = ['name', 'model', 'brief', 'autoInject'];
 
-interface WatcherTemplateFormProps {
+interface SupervisorTemplateFormProps {
   mode: 'create' | 'edit';
-  template?: WatcherTemplate;
+  template?: SupervisorTemplate;
   currentModel: string;
   availableModels: string[];
   terminalWidth: number;
   terminalHeight: number;
-  onSave: (name: string, authority: 'peer' | 'supervisor', model: string, brief: string, autoInject: boolean) => void;
+  onSave: (name: string, model: string, brief: string, autoInject: boolean) => void;
   onCancel: () => void;
 }
 
-export function WatcherTemplateForm({
+export function SupervisorTemplateForm({
   mode,
   template,
   currentModel,
@@ -43,9 +41,8 @@ export function WatcherTemplateForm({
   terminalHeight,
   onSave,
   onCancel,
-}: WatcherTemplateFormProps): React.ReactElement {
+}: SupervisorTemplateFormProps): React.ReactElement {
   const [name, setName] = useState(template?.name ?? '');
-  const [authority, setAuthority] = useState<'peer' | 'supervisor'>(template?.authority ?? 'peer');
   const [modelFilter, setModelFilter] = useState('');
   const [selectedModelIndex, setSelectedModelIndex] = useState(0);
   const [brief, setBrief] = useState(template?.brief ?? '');
@@ -69,7 +66,6 @@ export function WatcherTemplateForm({
   useEffect(() => {
     if (mode === 'edit' && template) {
       setName(template.name);
-      setAuthority(template.authority);
       setBrief(template.brief);
       setAutoInject(template.autoInject);
       // Set initial filter to show current model
@@ -99,14 +95,14 @@ export function WatcherTemplateForm({
 
   const handleSave = useCallback(() => {
     if (!name.trim()) return;
-    onSave(name.trim(), authority, selectedModel, brief.trim(), autoInject);
-  }, [name, authority, selectedModel, brief, autoInject, onSave]);
+    onSave(name.trim(), selectedModel, brief.trim(), autoInject);
+  }, [name, selectedModel, brief, autoInject, onSave]);
 
   // Handle keyboard input with CRITICAL priority (full-screen form)
   useInputCompat({
-    id: 'watcher-template-form',
+    id: 'supervisor-template-form',
     priority: InputPriority.CRITICAL,
-    description: 'Watcher template form keyboard navigation',
+    description: 'Supervisor template form keyboard navigation',
     handler: (input, key) => {
       if (key.escape) {
         onCancel();
@@ -160,14 +156,6 @@ export function WatcherTemplateForm({
           }
           break;
 
-        case 'authority':
-          if (key.upArrow) { cycleFocusBackward(); return true; }
-          if (key.downArrow) { cycleFocusForward(); return true; }
-          if (key.leftArrow || key.rightArrow) {
-            setAuthority(p => p === 'peer' ? 'supervisor' : 'peer');
-          }
-          break;
-
         case 'brief':
           if (key.upArrow) { cycleFocusBackward(); return true; }
           if (key.downArrow) { cycleFocusForward(); return true; }
@@ -192,7 +180,7 @@ export function WatcherTemplateForm({
   });
 
   const isNameValid = name.trim().length > 0;
-  const title = mode === 'create' ? 'Create Watcher Template' : 'Edit Watcher Template';
+  const title = mode === 'create' ? 'Create Supervisor Template' : 'Edit Supervisor Template';
   const buttonText = mode === 'create' ? 'Create' : 'Save';
 
   // Show limited number of filtered models
@@ -258,36 +246,9 @@ export function WatcherTemplateForm({
                 </Box>
               )}
               {focusField === 'model' && filteredModels.length === 0 && (
-                <Text color="red" dimColor>No models match "{modelFilter}"</Text>
+                <Text color="red" dimColor>No models match &quot;{modelFilter}&quot;</Text>
               )}
             </Box>
-          </Box>
-
-          {/* Authority field */}
-          <Box marginBottom={1} flexDirection="column">
-            <Text color={focusField === 'authority' ? 'cyan' : 'white'}>Authority:</Text>
-            <Box>
-              <Text 
-                backgroundColor={focusField === 'authority' && authority === 'peer' ? 'blue' : undefined} 
-                color={authority === 'peer' ? 'green' : 'gray'}
-              >
-                [{authority === 'peer' ? '●' : ' '}] Peer
-              </Text>
-              <Text> </Text>
-              <Text 
-                backgroundColor={focusField === 'authority' && authority === 'supervisor' ? 'blue' : undefined} 
-                color={authority === 'supervisor' ? 'yellow' : 'gray'}
-              >
-                [{authority === 'supervisor' ? '●' : ' '}] Supervisor
-              </Text>
-            </Box>
-            {/* Inline explanation when focused */}
-            {focusField === 'authority' && (
-              <Box flexDirection="column" marginTop={0}>
-                <Text dimColor italic>Peer: Suggestions the AI can consider or ignore</Text>
-                <Text dimColor italic>Supervisor: Directives the AI should follow</Text>
-              </Box>
-            )}
           </Box>
 
           {/* Brief field */}

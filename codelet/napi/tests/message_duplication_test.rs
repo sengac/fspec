@@ -22,10 +22,10 @@ struct TestPromptInput {
     input: String,
 }
 
-/// Fixture: Simulates WatcherInput for bridge/watcher messages
+/// Fixture: Simulates SupervisorInput for bridge/watcher messages
 /// Only includes fields actually used in tests
 #[derive(Debug, Clone)]
-struct TestWatcherInput {
+struct TestSupervisorInput {
     message: String,
 }
 
@@ -70,7 +70,7 @@ async fn test_mpsc_channel_single_delivery() {
 #[tokio::test]
 async fn test_select_biased_no_duplication() {
     let (user_tx, mut user_rx) = mpsc::channel::<TestPromptInput>(16);
-    let (watcher_tx, mut watcher_rx) = mpsc::channel::<TestWatcherInput>(16);
+    let (supervisor_tx, mut supervisor_rx) = mpsc::channel::<TestSupervisorInput>(16);
     
     let user_receive_count = Arc::new(AtomicUsize::new(0));
     let watcher_receive_count = Arc::new(AtomicUsize::new(0));
@@ -93,7 +93,7 @@ async fn test_select_biased_no_duplication() {
                     }
                 }
                 
-                result = watcher_rx.recv() => {
+                result = supervisor_rx.recv() => {
                     match result {
                         Some(input) => {
                             watcher_count_clone.fetch_add(1, Ordering::SeqCst);
@@ -119,8 +119,8 @@ async fn test_select_biased_no_duplication() {
         .expect("send should succeed");
 
     // Send ONE watcher message
-    watcher_tx
-        .send(TestWatcherInput {
+    supervisor_tx
+        .send(TestSupervisorInput {
             message: "Hello from bridge".to_string(),
         })
         .await
@@ -131,7 +131,7 @@ async fn test_select_biased_no_duplication() {
 
     // Close channels
     drop(user_tx);
-    drop(watcher_tx);
+    drop(supervisor_tx);
 
     // Wait for processor
     let _ = timeout(Duration::from_secs(1), processor).await;
@@ -150,24 +150,24 @@ async fn test_select_biased_no_duplication() {
 }
 
 /// Test 3: Verify that Mutex<Receiver> in select! doesn't cause issues
-/// This mimics the watcher_input_rx.lock().await pattern in agent_loop
+/// This mimics the supervisor_input_rx.lock().await pattern in agent_loop
 #[tokio::test]
 async fn test_mutex_receiver_in_select_no_duplication() {
     use tokio::sync::Mutex;
 
     let (user_tx, mut user_rx) = mpsc::channel::<TestPromptInput>(16);
-    let (watcher_tx, watcher_rx) = mpsc::channel::<TestWatcherInput>(16);
-    let watcher_rx = Arc::new(Mutex::new(watcher_rx));
+    let (supervisor_tx, supervisor_rx) = mpsc::channel::<TestSupervisorInput>(16);
+    let supervisor_rx = Arc::new(Mutex::new(supervisor_rx));
 
     let total_receive_count = Arc::new(AtomicUsize::new(0));
     let count_clone = total_receive_count.clone();
-    let watcher_rx_clone = watcher_rx.clone();
+    let supervisor_rx_clone = supervisor_rx.clone();
 
     // Spawn processor that mimics exact agent_loop pattern
     let processor = tokio::spawn(async move {
         loop {
-            // Lock watcher_rx like agent_loop does
-            let mut watcher_guard = watcher_rx_clone.lock().await;
+            // Lock supervisor_rx like agent_loop does
+            let mut watcher_guard = supervisor_rx_clone.lock().await;
 
             let input = tokio::select! {
                 biased;
@@ -213,8 +213,8 @@ async fn test_mutex_receiver_in_select_no_duplication() {
         .await
         .unwrap();
 
-    watcher_tx
-        .send(TestWatcherInput {
+    supervisor_tx
+        .send(TestSupervisorInput {
             message: "Test 2".to_string(),
         })
         .await
@@ -225,7 +225,7 @@ async fn test_mutex_receiver_in_select_no_duplication() {
 
     // Close user channel to stop loop
     drop(user_tx);
-    drop(watcher_tx);
+    drop(supervisor_tx);
 
     let _ = timeout(Duration::from_secs(1), processor).await;
 

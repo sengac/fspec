@@ -22,11 +22,10 @@ import {
 // ============================================================================
 
 /**
- * Parsed watcher/bridge message info
+ * Parsed supervisor/bridge message info
  */
-export interface ParsedWatcherInfo {
+export interface ParsedSupervisorInfo {
   role: string;
-  authority: 'Supervisor' | 'Peer';
   sessionId: string;
   content: string;
 }
@@ -66,27 +65,26 @@ export interface ChunkProcessResult {
 }
 
 // ============================================================================
-// Watcher Prefix Parsing
+// Supervisor Prefix Parsing
 // ============================================================================
 
 /**
- * Parse watcher message prefix to extract role, authority, session ID, and content.
- * Format: [WATCHER: role | Authority: level | Session: id]\ncontent
+ * Parse supervisor message prefix to extract role, session ID, and content.
+ * Format: [SUPERVISOR: role | Session: id]\ncontent
  *
- * Used for both watcher session injections and bridge inputs.
+ * Used for both supervisor session injections and bridge inputs.
  *
  * @param text - The raw message text
- * @returns ParsedWatcherInfo if prefix found, null otherwise
+ * @returns ParsedSupervisorInfo if prefix found, null otherwise
  */
-export function parseWatcherPrefix(text: string): ParsedWatcherInfo | null {
-  const match = text.match(
-    /^\[WATCHER: ([^|]+) \| Authority: (Supervisor|Peer) \| Session: ([^\]]+)\]\n?/
-  );
+export function parseSupervisorPrefix(
+  text: string
+): ParsedSupervisorInfo | null {
+  const match = text.match(/^\[SUPERVISOR: ([^|]+) \| Session: ([^\]]+)\]\n?/);
   if (match) {
     return {
       role: match[1].trim(),
-      authority: match[2] as 'Supervisor' | 'Peer',
-      sessionId: match[3].trim(),
+      sessionId: match[2].trim(),
       content: text.slice(match[0].length),
     };
   }
@@ -94,27 +92,27 @@ export function parseWatcherPrefix(text: string): ParsedWatcherInfo | null {
 }
 
 /**
- * Format watcher info for display in conversation.
+ * Format supervisor info for display in conversation.
  * Produces: "[W] role> content"
  */
-export function formatWatcherMessage(info: ParsedWatcherInfo): string {
+export function formatSupervisorMessage(info: ParsedSupervisorInfo): string {
   return `[W] ${info.role}> ${info.content}`;
 }
 
 /**
- * Process a WatcherInput chunk into a conversation message.
+ * Process a SupervisorInput chunk into a conversation message.
  */
-export function processWatcherInputChunk(text: string): ConversationMessage {
-  const watcherInfo = parseWatcherPrefix(text);
-  if (watcherInfo) {
+export function processSupervisorInputChunk(text: string): ConversationMessage {
+  const supervisorInfo = parseSupervisorPrefix(text);
+  if (supervisorInfo) {
     return {
-      type: 'watcher-input',
-      content: formatWatcherMessage(watcherInfo),
+      type: 'supervisor-input',
+      content: formatSupervisorMessage(supervisorInfo),
     };
   }
   // Fallback: display raw message if parsing fails
   return {
-    type: 'watcher-input',
+    type: 'supervisor-input',
     content: text,
   };
 }
@@ -238,8 +236,8 @@ export function processChunksToMessages(
         correlationId,
         observedCorrelationIds,
       });
-    } else if (chunk.type === 'WatcherInput' && chunk.text) {
-      const msg = processWatcherInputChunk(chunk.text);
+    } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+      const msg = processSupervisorInputChunk(chunk.text);
       msg.correlationId = correlationId;
       msg.observedCorrelationIds = observedCorrelationIds;
       messages.push(msg);
@@ -457,8 +455,8 @@ export function processStreamingChunk(
     return false;
   }
 
-  if (chunk.type === 'WatcherInput' && chunk.text) {
-    const msg = processWatcherInputChunk(chunk.text);
+  if (chunk.type === 'SupervisorInput' && chunk.text) {
+    const msg = processSupervisorInputChunk(chunk.text);
     conversation.push(msg);
     return true;
   }

@@ -13,7 +13,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock the codelet-napi module
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionGetParent: vi.fn(),
+  sessionGetSubordinate: vi.fn(),
   sessionGetMergedOutput: vi.fn(),
   sessionGetRole: vi.fn(),
   sessionGetStatus: vi.fn(),
@@ -45,7 +45,7 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
   describe('Scenario: StreamChunk receives correlation ID in handle_output', () => {
     it('should assign unique correlation_id via atomic counter', () => {
       // @step Given a parent session exists
-      const sessionId = 'parent-session-123';
+      const sessionId = 'subordinate-session-123';
 
       // @step When the parent session emits a Text chunk via handle_output()
       // Simulating what handle_output does in Rust
@@ -60,26 +60,26 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
       const chunk2CorrelationId = assignCorrelationId();
 
       // @step Then the chunk receives a unique correlation_id assigned by an atomic counter
-      expect(chunk1CorrelationId).toBe('parent-session-123-0');
-      expect(chunk2CorrelationId).toBe('parent-session-123-1');
+      expect(chunk1CorrelationId).toBe('subordinate-session-123-0');
+      expect(chunk2CorrelationId).toBe('subordinate-session-123-1');
       expect(chunk1CorrelationId).not.toBe(chunk2CorrelationId);
 
       // @step And the correlation_id is in format "{session_id}-{counter}"
-      expect(chunk1CorrelationId).toMatch(/^parent-session-123-\d+$/);
+      expect(chunk1CorrelationId).toMatch(/^subordinate-session-123-\d+$/);
 
       // @step And the chunk broadcast to watchers carries the same correlation_id
       // This is verified by the fact that the same ID is used
-      expect(chunk1CorrelationId).toBe('parent-session-123-0');
+      expect(chunk1CorrelationId).toBe('subordinate-session-123-0');
     });
   });
 
-  describe('Scenario: Parent turn selection highlights correlated watcher turns', () => {
-    it('should highlight watcher turns that observed the selected parent turn', () => {
+  describe('Scenario: Subordinate turn selection highlights correlated supervisor turns', () => {
+    it('should highlight supervisor turns that observed the selected subordinate turn', () => {
       // @step Given I am viewing a watcher session in split view
       // (setup state representing split view)
 
       // @step And the parent pane shows turns 1, 2, 3 with correlation IDs
-      const parentConversation: ConversationLine[] = [
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Hello', messageIndex: 0, correlationId: 'p-0' },
         { role: 'assistant', content: 'Hi', messageIndex: 1, correlationId: 'p-1' },
         { role: 'user', content: 'Help me', messageIndex: 2, correlationId: 'p-2' },
@@ -87,8 +87,8 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
       ];
 
       // @step And the watcher responded to turn 3 (watcher turn 5 has observed_correlation_ids pointing to turn 3)
-      const watcherConversation: ConversationLine[] = [
-        { role: 'user', content: 'Watch for issues', messageIndex: 0 }, // User message to watcher
+      const supervisorConversation: ConversationLine[] = [
+        { role: 'user', content: 'Watch for issues', messageIndex: 0 }, // User message to supervisor
         { role: 'assistant', content: 'Watching...', messageIndex: 1 },
         { role: 'assistant', content: 'I noticed something', messageIndex: 2, observedCorrelationIds: ['p-3'] }, // Observed turn 3
       ];
@@ -97,25 +97,25 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
       // (simulated by select mode being active)
 
       // @step And I navigate to select turn 3 in the parent pane
-      const selectedParentTurn = 3;
+      const selectedSubordinateTurn = 3;
 
       // Build correlation maps
-      const { parentToWatcherTurns } = buildCorrelationMaps(parentConversation, watcherConversation);
+      const { subordinateToSupervisorTurns } = buildCorrelationMaps(subordinateConversation, supervisorConversation);
 
       // @step Then turn 5 in the watcher pane is highlighted with cyan color, bold text, and vertical bar prefix
-      const highlightedWatcherTurns = parentToWatcherTurns.get(selectedParentTurn);
-      expect(highlightedWatcherTurns).toBeDefined();
-      expect(highlightedWatcherTurns!.has(2)).toBe(true); // Watcher turn 2 (messageIndex) observed parent turn 3
+      const highlightedSupervisorTurns = subordinateToSupervisorTurns.get(selectedSubordinateTurn);
+      expect(highlightedSupervisorTurns).toBeDefined();
+      expect(highlightedSupervisorTurns!.has(2)).toBe(true); // Watcher turn 2 (messageIndex) observed parent turn 3
     });
   });
 
-  describe('Scenario: Watcher turn selection highlights observed parent turns', () => {
-    it('should highlight parent turns that the selected watcher turn was observing', () => {
+  describe('Scenario: Supervisor turn selection highlights observed subordinate turns', () => {
+    it('should highlight subordinate turns that the selected supervisor turn was observing', () => {
       // @step Given I am viewing a watcher session in split view
       // (setup state)
 
       // @step And the watcher turn 5 observed parent turns 3 and 4 (observed_correlation_ids includes both)
-      const parentConversation: ConversationLine[] = [
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Hello', messageIndex: 0, correlationId: 'p-0' },
         { role: 'assistant', content: 'Hi', messageIndex: 1, correlationId: 'p-1' },
         { role: 'user', content: 'Question 1', messageIndex: 2, correlationId: 'p-2' },
@@ -123,57 +123,57 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
         { role: 'user', content: 'Question 2', messageIndex: 4, correlationId: 'p-4' },
       ];
 
-      const watcherConversation: ConversationLine[] = [
+      const supervisorConversation: ConversationLine[] = [
         { role: 'user', content: 'Watch', messageIndex: 0 },
         { role: 'assistant', content: 'OK', messageIndex: 1 },
         { role: 'assistant', content: 'Found issues', messageIndex: 2, observedCorrelationIds: ['p-3', 'p-4'] },
       ];
 
       // @step When I switch to watcher pane and press Tab to enter turn-select mode
-      // (simulated by watcher pane active)
+      // (simulated by supervisor pane active)
 
       // @step And I navigate to select turn 5 in the watcher pane
-      const selectedWatcherTurn = 2; // messageIndex 2
+      const selectedSupervisorTurn = 2; // messageIndex 2
 
       // Build correlation maps
-      const { watcherToParentTurns } = buildCorrelationMaps(parentConversation, watcherConversation);
+      const { supervisorToSubordinateTurns } = buildCorrelationMaps(subordinateConversation, supervisorConversation);
 
       // @step Then turns 3 and 4 in the parent pane are highlighted with cyan color, bold text, and vertical bar prefix
-      const highlightedParentTurns = watcherToParentTurns.get(selectedWatcherTurn);
-      expect(highlightedParentTurns).toBeDefined();
-      expect(highlightedParentTurns!.has(3)).toBe(true); // Parent turn 3
-      expect(highlightedParentTurns!.has(4)).toBe(true); // Parent turn 4
+      const highlightedSubordinateTurns = supervisorToSubordinateTurns.get(selectedSupervisorTurn);
+      expect(highlightedSubordinateTurns).toBeDefined();
+      expect(highlightedSubordinateTurns!.has(3)).toBe(true); // Parent turn 3
+      expect(highlightedSubordinateTurns!.has(4)).toBe(true); // Parent turn 4
     });
   });
 
-  describe('Scenario: Direct user message to watcher has no correlation', () => {
-    it('should not highlight any parent turns when selecting a direct user message', () => {
+  describe('Scenario: Direct user message to supervisor has no correlation', () => {
+    it('should not highlight any subordinate turns when selecting a direct user message', () => {
       // @step Given I am viewing a watcher session in split view
       // (setup state)
 
       // @step And turn 1 in watcher pane is a direct user message (no observed_correlation_ids)
-      const parentConversation: ConversationLine[] = [
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Hello', messageIndex: 0, correlationId: 'p-0' },
         { role: 'assistant', content: 'Hi', messageIndex: 1, correlationId: 'p-1' },
       ];
 
-      const watcherConversation: ConversationLine[] = [
+      const supervisorConversation: ConversationLine[] = [
         { role: 'user', content: 'Watch for issues', messageIndex: 0 }, // Direct user message, no observedCorrelationIds
         { role: 'assistant', content: 'Watching...', messageIndex: 1 },
       ];
 
       // @step When I switch to watcher pane and press Tab to enter turn-select mode
-      // (simulated by watcher pane active)
+      // (simulated by supervisor pane active)
 
       // @step And I select turn 1 in the watcher pane
-      const selectedWatcherTurn = 0; // Direct user message
+      const selectedSupervisorTurn = 0; // Direct user message
 
       // Build correlation maps
-      const { watcherToParentTurns } = buildCorrelationMaps(parentConversation, watcherConversation);
+      const { supervisorToSubordinateTurns } = buildCorrelationMaps(subordinateConversation, supervisorConversation);
 
       // @step Then no highlight appears in the parent pane
-      const highlightedParentTurns = watcherToParentTurns.get(selectedWatcherTurn);
-      expect(highlightedParentTurns).toBeUndefined();
+      const highlightedSubordinateTurns = supervisorToSubordinateTurns.get(selectedSupervisorTurn);
+      expect(highlightedSubordinateTurns).toBeUndefined();
 
       // @step And the parent pane content remains dimmed
       // (this is a UI concern, verified by the fact that no turns are highlighted)
@@ -186,45 +186,45 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
       // (setup state)
 
       // @step And the parent pane has multiple turns with correlated watcher observations
-      const parentConversation: ConversationLine[] = [
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Turn 1', messageIndex: 0, correlationId: 'p-0' },
         { role: 'assistant', content: 'Turn 2', messageIndex: 1, correlationId: 'p-1' },
         { role: 'user', content: 'Turn 3', messageIndex: 2, correlationId: 'p-2' },
         { role: 'assistant', content: 'Turn 4', messageIndex: 3, correlationId: 'p-3' },
       ];
 
-      const watcherConversation: ConversationLine[] = [
+      const supervisorConversation: ConversationLine[] = [
         { role: 'assistant', content: 'Observed turn 1', messageIndex: 0, observedCorrelationIds: ['p-0', 'p-1'] },
         { role: 'assistant', content: 'Observed turn 2', messageIndex: 1, observedCorrelationIds: ['p-2', 'p-3'] },
       ];
 
       // Build correlation maps
-      const { parentToWatcherTurns } = buildCorrelationMaps(parentConversation, watcherConversation);
+      const { subordinateToSupervisorTurns } = buildCorrelationMaps(subordinateConversation, supervisorConversation);
 
       // @step When I press Tab to enter turn-select mode in parent pane
       // (simulated)
 
       // Initially select turn 0
-      let selectedParentTurn = 0;
-      let highlightedWatcherTurns = parentToWatcherTurns.get(selectedParentTurn);
-      expect(highlightedWatcherTurns).toBeDefined();
-      expect(highlightedWatcherTurns!.has(0)).toBe(true); // Watcher turn 0 observed parent turn 0
+      let selectedSubordinateTurn = 0;
+      let highlightedSupervisorTurns = subordinateToSupervisorTurns.get(selectedSubordinateTurn);
+      expect(highlightedSupervisorTurns).toBeDefined();
+      expect(highlightedSupervisorTurns!.has(0)).toBe(true); // Watcher turn 0 observed parent turn 0
 
       // @step And I press Down arrow to move selection to the next turn
-      selectedParentTurn = 2; // Move to turn 2
+      selectedSubordinateTurn = 2; // Move to turn 2
 
       // @step Then the cross-pane highlight in watcher pane updates to show the newly correlated turn
-      highlightedWatcherTurns = parentToWatcherTurns.get(selectedParentTurn);
-      expect(highlightedWatcherTurns).toBeDefined();
-      expect(highlightedWatcherTurns!.has(1)).toBe(true); // Watcher turn 1 observed parent turn 2
+      highlightedSupervisorTurns = subordinateToSupervisorTurns.get(selectedSubordinateTurn);
+      expect(highlightedSupervisorTurns).toBeDefined();
+      expect(highlightedSupervisorTurns!.has(1)).toBe(true); // Watcher turn 1 observed parent turn 2
 
       // @step And the previously highlighted watcher turn returns to dimmed state
       // (verified by the fact that turn 0 is no longer in the highlighted set for the new selection)
-      expect(highlightedWatcherTurns!.has(0)).toBe(false);
+      expect(highlightedSupervisorTurns!.has(0)).toBe(false);
     });
   });
 
-  describe('Scenario: Watcher evaluation captures observed correlation IDs', () => {
+  describe('Scenario: Supervisor evaluation captures observed correlation IDs', () => {
     it('should capture correlation IDs from buffered chunks at breakpoint', () => {
       // @step Given a watcher session is observing a parent session
       // (simulated observation buffer)
@@ -242,7 +242,7 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
       observationBuffer.push({ type: 'Text', text: '!', correlationId: 'p-2' });
 
       // @step When a natural breakpoint (Done or ToolResult) triggers watcher evaluation
-      // Simulate what happens in watcher_loop_tick when breakpoint is reached
+      // Simulate what happens in supervisor_loop_tick when breakpoint is reached
       const captureCorrelationIds = (buffer: MockStreamChunk[]): string[] => {
         return buffer
           .filter(c => c.correlationId)
@@ -255,29 +255,29 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
       expect(observedCorrelationIds).toEqual(['p-0', 'p-1', 'p-2']);
 
       // @step And the watcher's response chunks can be tagged with these observed IDs
-      const watcherResponseChunk = {
+      const supervisorResponseChunk = {
         type: 'Text',
         text: 'I observed your conversation',
         observedCorrelationIds: observedCorrelationIds,
       };
-      expect(watcherResponseChunk.observedCorrelationIds).toEqual(['p-0', 'p-1', 'p-2']);
+      expect(supervisorResponseChunk.observedCorrelationIds).toEqual(['p-0', 'p-1', 'p-2']);
     });
   });
 
   describe('Utility: getHighlightedTurns helper function', () => {
     it('should return empty set when not in select mode', () => {
-      const parentConversation: ConversationLine[] = [
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Hello', messageIndex: 0, correlationId: 'p-0' },
       ];
-      const watcherConversation: ConversationLine[] = [
+      const supervisorConversation: ConversationLine[] = [
         { role: 'assistant', content: 'Observed', messageIndex: 0, observedCorrelationIds: ['p-0'] },
       ];
 
-      const correlationMaps = buildCorrelationMaps(parentConversation, watcherConversation);
+      const correlationMaps = buildCorrelationMaps(subordinateConversation, supervisorConversation);
 
       // Not in select mode - should return empty set
       const highlighted = getHighlightedTurns(
-        'parent',
+        'subordinate',
         false, // not in select mode
         0,
         null,
@@ -287,20 +287,20 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
       expect(highlighted.size).toBe(0);
     });
 
-    it('should highlight watcher turns when parent turn selected', () => {
-      const parentConversation: ConversationLine[] = [
+    it('should highlight supervisor turns when subordinate turn selected', () => {
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Hello', messageIndex: 0, correlationId: 'p-0' },
         { role: 'assistant', content: 'Hi', messageIndex: 1, correlationId: 'p-1' },
       ];
-      const watcherConversation: ConversationLine[] = [
+      const supervisorConversation: ConversationLine[] = [
         { role: 'assistant', content: 'Observed', messageIndex: 0, observedCorrelationIds: ['p-0', 'p-1'] },
       ];
 
-      const correlationMaps = buildCorrelationMaps(parentConversation, watcherConversation);
+      const correlationMaps = buildCorrelationMaps(subordinateConversation, supervisorConversation);
 
-      // Select parent turn 0 - should highlight watcher turn 0
+      // Select subordinate turn 0 - should highlight supervisor turn 0
       const highlighted = getHighlightedTurns(
-        'parent',
+        'subordinate',
         true, // in select mode
         0, // selected parent turn
         null,
@@ -311,19 +311,19 @@ describe('Feature: Cross-Pane Selection with Correlation IDs', () => {
     });
 
     it('should highlight parent turns when watcher turn selected', () => {
-      const parentConversation: ConversationLine[] = [
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Hello', messageIndex: 0, correlationId: 'p-0' },
         { role: 'assistant', content: 'Hi', messageIndex: 1, correlationId: 'p-1' },
       ];
-      const watcherConversation: ConversationLine[] = [
+      const supervisorConversation: ConversationLine[] = [
         { role: 'assistant', content: 'Observed', messageIndex: 0, observedCorrelationIds: ['p-0', 'p-1'] },
       ];
 
-      const correlationMaps = buildCorrelationMaps(parentConversation, watcherConversation);
+      const correlationMaps = buildCorrelationMaps(subordinateConversation, supervisorConversation);
 
       // Select watcher turn 0 - should highlight parent turns 0 and 1
       const highlighted = getHighlightedTurns(
-        'watcher',
+        'supervisor',
         true, // in select mode
         null,
         0, // selected watcher turn

@@ -1,24 +1,24 @@
 /**
  * VIEWNV-001: Session Navigation Module
  *
- * Provides hierarchy-aware navigation through sessions and watchers.
+ * Provides hierarchy-aware navigation through sessions and supervisors.
  *
  * Navigation order:
  * Board → Session1 → S1.Watcher1 → S1.Watcher2 → Session2 → S2.Watcher1 → ... → Create Dialog
  *
  * Rules:
- * - Shift+Right from session with watchers → first watcher
- * - Shift+Right from session without watchers → next session
- * - Shift+Right from watcher → next sibling, or next session if last sibling
- * - Shift+Left from first watcher → parent session
- * - Shift+Left from watcher → prev sibling, or parent if first sibling
+ * - Shift+Right from session with supervisors → first supervisor
+ * - Shift+Right from session without supervisors → next session
+ * - Shift+Right from supervisor → next sibling, or next session if last sibling
+ * - Shift+Left from first supervisor → parent session
+ * - Shift+Left from supervisor → prev sibling, or parent if first sibling
  * - Shift+Left from first session → board
  */
 use indexmap::IndexMap;
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::session_manager::{BackgroundSession, WatchGraph};
+use crate::session_manager::{BackgroundSession, ChainOfCommand};
 
 /// Navigation target result
 #[derive(Debug, Clone, PartialEq)]
@@ -33,20 +33,20 @@ pub enum NavigationTarget {
     None,
 }
 
-/// Build a flattened navigation list from sessions and watchers.
+/// Build a flattened navigation list from sessions and supervisors.
 ///
 /// The list is ordered: Session1 → S1.Watchers → Session2 → S2.Watchers → ...
-/// Each session is followed by its watchers (in creation order).
+/// Each session is followed by its supervisors (in creation order).
 pub fn build_navigation_list(
     sessions: &IndexMap<Uuid, Arc<BackgroundSession>>,
-    watch_graph: &WatchGraph,
+    chain_of_command: &ChainOfCommand,
 ) -> Vec<Uuid> {
     let mut result = Vec::new();
 
     // Iterate through sessions in insertion order
     for session_id in sessions.keys() {
-        // Check if this session is a watcher (has a parent)
-        let parent = watch_graph.get_parent(*session_id);
+        // Check if this session is a supervisor (has a parent)
+        let parent = chain_of_command.get_subordinate(*session_id);
 
         if parent.is_some() {
             continue;
@@ -55,12 +55,12 @@ pub fn build_navigation_list(
         // Add the parent session
         result.push(*session_id);
 
-        // Add all watchers for this session
-        let watchers = watch_graph.get_watchers(*session_id);
-        for watcher_id in watchers {
-            // Only add if the watcher exists in sessions
-            if sessions.contains_key(&watcher_id) {
-                result.push(watcher_id);
+        // Add all supervisors for this session
+        let supervisors = chain_of_command.get_supervisors(*session_id);
+        for supervisor_id in supervisors {
+            // Only add if the supervisor exists in sessions
+            if sessions.contains_key(&supervisor_id) {
+                result.push(supervisor_id);
             }
         }
     }
@@ -71,8 +71,8 @@ pub fn build_navigation_list(
 /// Get the next navigation target from the current position.
 ///
 /// - If no active session (BoardView), returns first session
-/// - If at a session, returns first watcher or next session
-/// - If at a watcher, returns next sibling or next session
+/// - If at a session, returns first supervisor or next session
+/// - If at a supervisor, returns next sibling or next session
 /// - If at the end, returns CreateDialog
 pub fn get_next_target(
     nav_list: &[Uuid],
@@ -114,7 +114,7 @@ pub fn get_next_target(
 ///
 /// - If no active session (BoardView), returns None (stay on board)
 /// - If at first session, returns Board
-/// - If at a watcher, returns prev sibling or parent session
+/// - If at a supervisor, returns prev sibling or parent session
 /// - Otherwise returns previous item in list
 pub fn get_prev_target(
     nav_list: &[Uuid],
@@ -196,32 +196,32 @@ mod tests {
         assert_eq!(result, NavigationTarget::CreateDialog);
     }
 
-    /// Test: Navigation list with watchers
+    /// Test: Navigation list with supervisors
     #[test]
-    fn test_get_next_through_watchers() {
+    fn test_get_next_through_supervisors() {
         let session_a = Uuid::new_v4();
-        let watcher_w1 = Uuid::new_v4();
-        let watcher_w2 = Uuid::new_v4();
+        let supervisor_w1 = Uuid::new_v4();
+        let supervisor_w2 = Uuid::new_v4();
         let session_b = Uuid::new_v4();
 
         // Navigation list: A → W1 → W2 → B
-        let nav_list = vec![session_a, watcher_w1, watcher_w2, session_b];
+        let nav_list = vec![session_a, supervisor_w1, supervisor_w2, session_b];
 
         // From A, go to W1
         assert_eq!(
             get_next_target(&nav_list, Some(session_a)),
-            NavigationTarget::Session(watcher_w1)
+            NavigationTarget::Session(supervisor_w1)
         );
 
         // From W1, go to W2
         assert_eq!(
-            get_next_target(&nav_list, Some(watcher_w1)),
-            NavigationTarget::Session(watcher_w2)
+            get_next_target(&nav_list, Some(supervisor_w1)),
+            NavigationTarget::Session(supervisor_w2)
         );
 
         // From W2, go to B
         assert_eq!(
-            get_next_target(&nav_list, Some(watcher_w2)),
+            get_next_target(&nav_list, Some(supervisor_w2)),
             NavigationTarget::Session(session_b)
         );
 
@@ -264,32 +264,32 @@ mod tests {
         assert_eq!(result, NavigationTarget::Session(a));
     }
 
-    /// Test: Navigation backwards through watchers
+    /// Test: Navigation backwards through supervisors
     #[test]
-    fn test_get_prev_through_watchers() {
+    fn test_get_prev_through_supervisors() {
         let session_a = Uuid::new_v4();
-        let watcher_w1 = Uuid::new_v4();
-        let watcher_w2 = Uuid::new_v4();
+        let supervisor_w1 = Uuid::new_v4();
+        let supervisor_w2 = Uuid::new_v4();
         let session_b = Uuid::new_v4();
 
         // Navigation list: A → W1 → W2 → B
-        let nav_list = vec![session_a, watcher_w1, watcher_w2, session_b];
+        let nav_list = vec![session_a, supervisor_w1, supervisor_w2, session_b];
 
         // From B, go to W2
         assert_eq!(
             get_prev_target(&nav_list, Some(session_b)),
-            NavigationTarget::Session(watcher_w2)
+            NavigationTarget::Session(supervisor_w2)
         );
 
         // From W2, go to W1
         assert_eq!(
-            get_prev_target(&nav_list, Some(watcher_w2)),
-            NavigationTarget::Session(watcher_w1)
+            get_prev_target(&nav_list, Some(supervisor_w2)),
+            NavigationTarget::Session(supervisor_w1)
         );
 
         // From W1, go to A
         assert_eq!(
-            get_prev_target(&nav_list, Some(watcher_w1)),
+            get_prev_target(&nav_list, Some(supervisor_w1)),
             NavigationTarget::Session(session_a)
         );
 

@@ -3,9 +3,9 @@
  *
  * Tests for Discuss Selected Feature (WATCH-016)
  *
- * This feature enables Enter key behavior in watcher split view:
- * - Parent pane: Pre-fill input with context for discussing the turn
- * - Watcher pane: Open TurnContentModal to view full content
+ * This feature enables Enter key behavior in supervisor split view:
+ * - Subordinate pane: Pre-fill input with context for discussing the turn
+ * - Supervisor pane: Open TurnContentModal to view full content
  */
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';
@@ -17,7 +17,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 // Mock the generateDiscussSelectedPrefill function
 const mockGenerateDiscussSelectedPrefill = vi.fn((turnNumber: number, turnContent: string, maxLength: number = 50) => {
   const preview = turnContent.slice(0, maxLength) + (turnContent.length > maxLength ? '...' : '');
-  return `Regarding turn ${turnNumber} in parent session:\n\`\`\`\n${preview}\n\`\`\`\n`;
+  return `Regarding turn ${turnNumber} in subordinate session:\n\`\`\`\n${preview}\n\`\`\`\n`;
 });
 
 // ============================================================
@@ -25,13 +25,13 @@ const mockGenerateDiscussSelectedPrefill = vi.fn((turnNumber: number, turnConten
 // ============================================================
 
 interface ConversationLine {
-  role: 'user' | 'assistant' | 'watcher' | 'status' | 'tool';
+  role: 'user' | 'assistant' | 'supervisor' | 'status' | 'tool';
   content: string;
   messageIndex: number;
   isSeparator?: boolean;
 }
 
-type ActivePane = 'parent' | 'watcher';
+type ActivePane = 'subordinate' | 'supervisor';
 
 interface SelectionState {
   isSelectMode: boolean;
@@ -40,8 +40,8 @@ interface SelectionState {
 
 interface SplitViewState {
   activePane: ActivePane;
-  parentSelection: SelectionState;
-  watcherSelection: SelectionState;
+  subordinateSelection: SelectionState;
+  supervisorSelection: SelectionState;
   inputValue: string;
   showTurnContentModal: boolean;
   turnContentModalContent: string;
@@ -53,26 +53,26 @@ interface SplitViewState {
 
 /**
  * Handle Enter key press in split view select mode.
- * - Parent pane: pre-fill input with context
- * - Watcher pane: open turn content modal
+ * - Subordinate pane: pre-fill input with context
+ * - Supervisor pane: open turn content modal
  */
 function handleEnterInSelectMode(
   state: SplitViewState,
-  parentConversation: ConversationLine[],
-  watcherConversation: ConversationLine[],
+  subordinateConversation: ConversationLine[],
+  supervisorConversation: ConversationLine[],
 ): SplitViewState {
   const newState = { ...state };
 
-  if (state.activePane === 'parent' && state.parentSelection.isSelectMode) {
-    const selectedLine = parentConversation[state.parentSelection.selectedIndex];
+  if (state.activePane === 'subordinate' && state.subordinateSelection.isSelectMode) {
+    const selectedLine = subordinateConversation[state.subordinateSelection.selectedIndex];
     if (selectedLine) {
       const turnNumber = selectedLine.messageIndex + 1; // 1-indexed
       const prefill = mockGenerateDiscussSelectedPrefill(turnNumber, selectedLine.content);
       newState.inputValue = prefill;
-      newState.parentSelection = { ...state.parentSelection, isSelectMode: false };
+      newState.subordinateSelection = { ...state.subordinateSelection, isSelectMode: false };
     }
-  } else if (state.activePane === 'watcher' && state.watcherSelection.isSelectMode) {
-    const selectedLine = watcherConversation[state.watcherSelection.selectedIndex];
+  } else if (state.activePane === 'supervisor' && state.supervisorSelection.isSelectMode) {
+    const selectedLine = supervisorConversation[state.supervisorSelection.selectedIndex];
     if (selectedLine) {
       newState.showTurnContentModal = true;
       newState.turnContentModalContent = selectedLine.content;
@@ -100,60 +100,60 @@ function getFirstContentOfTurn(lines: ConversationLine[], messageIndex: number):
 
 describe('Feature: Discuss Selected Feature', () => {
   let defaultState: SplitViewState;
-  let parentConversation: ConversationLine[];
-  let watcherConversation: ConversationLine[];
+  let subordinateConversation: ConversationLine[];
+  let supervisorConversation: ConversationLine[];
 
   beforeEach(() => {
     vi.clearAllMocks();
 
-    parentConversation = [
+    subordinateConversation = [
       { role: 'user', content: 'Hello', messageIndex: 0 },
       { role: 'assistant', content: 'Hi there!', messageIndex: 1 },
       { role: 'user', content: 'Write a login function', messageIndex: 2 },
       { role: 'assistant', content: 'Here is the code for a login function that handles authentication...', messageIndex: 3 },
     ];
 
-    watcherConversation = [
+    supervisorConversation = [
       { role: 'assistant', content: 'Watching for security issues...', messageIndex: 0 },
       { role: 'assistant', content: '⚠️ SQL INJECTION VULNERABILITY: This code is vulnerable to SQL injection. The username and password are directly interpolated into the query string. Use parameterized queries instead.', messageIndex: 1 },
     ];
 
     defaultState = {
-      activePane: 'parent',
-      parentSelection: { isSelectMode: true, selectedIndex: 2 },
-      watcherSelection: { isSelectMode: false, selectedIndex: 0 },
+      activePane: 'subordinate',
+      subordinateSelection: { isSelectMode: true, selectedIndex: 2 },
+      supervisorSelection: { isSelectMode: false, selectedIndex: 0 },
       inputValue: '',
       showTurnContentModal: false,
       turnContentModalContent: '',
     };
   });
 
-  describe('Scenario: Enter on selected turn in parent pane pre-fills input with context', () => {
-    it('should pre-fill input with formatted context when Enter pressed on parent selection', () => {
-      // @step Given I am viewing a watcher session in split view
+  describe('Scenario: Enter on selected turn in subordinate pane pre-fills input with context', () => {
+    it('should pre-fill input with formatted context when Enter pressed on subordinate selection', () => {
+      // @step Given I am viewing a supervisor session in split view
       const state = { ...defaultState };
-      expect(state.activePane).toBe('parent');
+      expect(state.activePane).toBe('subordinate');
 
-      // @step And the parent pane is active with turn-select mode enabled
-      expect(state.parentSelection.isSelectMode).toBe(true);
+      // @step And the subordinate pane is active with turn-select mode enabled
+      expect(state.subordinateSelection.isSelectMode).toBe(true);
 
       // @step And turn 3 is selected with content "Write a login function"
-      state.parentSelection.selectedIndex = 2; // 0-indexed, turn 3 = index 2
-      const selectedLine = parentConversation[state.parentSelection.selectedIndex];
+      state.subordinateSelection.selectedIndex = 2; // 0-indexed, turn 3 = index 2
+      const selectedLine = subordinateConversation[state.subordinateSelection.selectedIndex];
       expect(selectedLine.content).toBe('Write a login function');
 
       // @step When I press the Enter key
-      const newState = handleEnterInSelectMode(state, parentConversation, watcherConversation);
+      const newState = handleEnterInSelectMode(state, subordinateConversation, supervisorConversation);
 
-      // @step Then the input area is pre-filled with "Regarding turn 3 in parent session:"
-      expect(newState.inputValue).toContain('Regarding turn 3 in parent session:');
+      // @step Then the input area is pre-filled with "Regarding turn 3 in subordinate session:"
+      expect(newState.inputValue).toContain('Regarding turn 3 in subordinate session:');
 
       // @step And the pre-fill includes a code-fenced preview of the turn content
       expect(newState.inputValue).toContain('```');
       expect(newState.inputValue).toContain('Write a login function');
 
       // @step And turn-select mode is exited
-      expect(newState.parentSelection.isSelectMode).toBe(false);
+      expect(newState.subordinateSelection.isSelectMode).toBe(false);
 
       // @step And the cursor is positioned after the pre-fill for typing
       // (Verified by input having the prefill value - cursor positioning is handled by React/Ink)
@@ -161,57 +161,57 @@ describe('Feature: Discuss Selected Feature', () => {
     });
   });
 
-  describe('Scenario: Enter on selected turn in watcher pane opens full content modal', () => {
-    it('should open TurnContentModal when Enter pressed on watcher selection', () => {
-      // @step Given I am viewing a watcher session in split view
+  describe('Scenario: Enter on selected turn in supervisor pane opens full content modal', () => {
+    it('should open TurnContentModal when Enter pressed on supervisor selection', () => {
+      // @step Given I am viewing a supervisor session in split view
       const state: SplitViewState = {
         ...defaultState,
-        activePane: 'watcher',
-        parentSelection: { isSelectMode: false, selectedIndex: 0 },
-        watcherSelection: { isSelectMode: true, selectedIndex: 1 },
+        activePane: 'supervisor',
+        subordinateSelection: { isSelectMode: false, selectedIndex: 0 },
+        supervisorSelection: { isSelectMode: true, selectedIndex: 1 },
       };
 
-      // @step And the watcher pane is active with turn-select mode enabled
-      expect(state.activePane).toBe('watcher');
-      expect(state.watcherSelection.isSelectMode).toBe(true);
+      // @step And the supervisor pane is active with turn-select mode enabled
+      expect(state.activePane).toBe('supervisor');
+      expect(state.supervisorSelection.isSelectMode).toBe(true);
 
       // @step And turn 2 is selected with a long SQL injection warning message
-      const selectedLine = watcherConversation[state.watcherSelection.selectedIndex];
+      const selectedLine = supervisorConversation[state.supervisorSelection.selectedIndex];
       expect(selectedLine.content).toContain('SQL INJECTION VULNERABILITY');
 
       // @step When I press the Enter key
-      const newState = handleEnterInSelectMode(state, parentConversation, watcherConversation);
+      const newState = handleEnterInSelectMode(state, subordinateConversation, supervisorConversation);
 
       // @step Then the TurnContentModal opens
       expect(newState.showTurnContentModal).toBe(true);
 
-      // @step And the modal shows the full watcher response with scrolling support
+      // @step And the modal shows the full supervisor response with scrolling support
       expect(newState.turnContentModalContent).toBe(selectedLine.content);
     });
   });
 
-  describe('Scenario: Long content in parent pane is truncated in pre-fill', () => {
+  describe('Scenario: Long content in subordinate pane is truncated in pre-fill', () => {
     it('should truncate content to 50 characters with ellipsis', () => {
-      // @step Given I am viewing a watcher session in split view
+      // @step Given I am viewing a supervisor session in split view
       const longContent = 'This is a very long message that exceeds fifty characters and should be truncated with an ellipsis';
-      const parentWithLongContent: ConversationLine[] = [
+      const subordinateWithLongContent: ConversationLine[] = [
         { role: 'user', content: longContent, messageIndex: 0 },
       ];
 
       const state: SplitViewState = {
         ...defaultState,
-        parentSelection: { isSelectMode: true, selectedIndex: 0 },
+        subordinateSelection: { isSelectMode: true, selectedIndex: 0 },
       };
 
-      // @step And the parent pane is active with turn-select mode enabled
-      expect(state.activePane).toBe('parent');
-      expect(state.parentSelection.isSelectMode).toBe(true);
+      // @step And the subordinate pane is active with turn-select mode enabled
+      expect(state.activePane).toBe('subordinate');
+      expect(state.subordinateSelection.isSelectMode).toBe(true);
 
       // @step And a turn is selected with content exceeding 50 characters
       expect(longContent.length).toBeGreaterThan(50);
 
       // @step When I press the Enter key
-      const newState = handleEnterInSelectMode(state, parentWithLongContent, watcherConversation);
+      const newState = handleEnterInSelectMode(state, subordinateWithLongContent, supervisorConversation);
 
       // @step Then the pre-fill shows only the first 50 characters
       expect(mockGenerateDiscussSelectedPrefill).toHaveBeenCalledWith(1, longContent);
@@ -223,26 +223,26 @@ describe('Feature: Discuss Selected Feature', () => {
     });
   });
 
-  describe('Scenario: Select mode exits after discussing parent turn', () => {
+  describe('Scenario: Select mode exits after discussing subordinate turn', () => {
     it('should exit select mode and allow input after Enter', () => {
-      // @step Given I am viewing a watcher session in split view
+      // @step Given I am viewing a supervisor session in split view
       const state: SplitViewState = {
         ...defaultState,
-        parentSelection: { isSelectMode: true, selectedIndex: 1 },
+        subordinateSelection: { isSelectMode: true, selectedIndex: 1 },
       };
 
-      // @step And the parent pane is active with turn-select mode enabled
-      expect(state.activePane).toBe('parent');
-      expect(state.parentSelection.isSelectMode).toBe(true);
+      // @step And the subordinate pane is active with turn-select mode enabled
+      expect(state.activePane).toBe('subordinate');
+      expect(state.subordinateSelection.isSelectMode).toBe(true);
 
-      // @step And a turn is selected in the parent pane
-      expect(state.parentSelection.selectedIndex).toBe(1);
+      // @step And a turn is selected in the subordinate pane
+      expect(state.subordinateSelection.selectedIndex).toBe(1);
 
       // @step When I press the Enter key
-      const newState = handleEnterInSelectMode(state, parentConversation, watcherConversation);
+      const newState = handleEnterInSelectMode(state, subordinateConversation, supervisorConversation);
 
       // @step Then turn-select mode is disabled
-      expect(newState.parentSelection.isSelectMode).toBe(false);
+      expect(newState.subordinateSelection.isSelectMode).toBe(false);
 
       // @step And the input area gains focus
       // (Verified by select mode being disabled - focus naturally returns to input)
@@ -254,31 +254,31 @@ describe('Feature: Discuss Selected Feature', () => {
     });
   });
 
-  describe('Scenario: Modal updates when selecting different watcher turn', () => {
+  describe('Scenario: Modal updates when selecting different supervisor turn', () => {
     it('should update modal content when Enter pressed on new selection', () => {
-      // @step Given I am viewing a watcher session in split view
+      // @step Given I am viewing a supervisor session in split view
       const state: SplitViewState = {
         ...defaultState,
-        activePane: 'watcher',
-        parentSelection: { isSelectMode: false, selectedIndex: 0 },
-        watcherSelection: { isSelectMode: true, selectedIndex: 0 },
+        activePane: 'supervisor',
+        subordinateSelection: { isSelectMode: false, selectedIndex: 0 },
+        supervisorSelection: { isSelectMode: true, selectedIndex: 0 },
         showTurnContentModal: true,
-        turnContentModalContent: watcherConversation[0].content,
+        turnContentModalContent: supervisorConversation[0].content,
       };
 
-      // @step And the watcher pane is active with turn-select mode enabled
-      expect(state.activePane).toBe('watcher');
-      expect(state.watcherSelection.isSelectMode).toBe(true);
+      // @step And the supervisor pane is active with turn-select mode enabled
+      expect(state.activePane).toBe('supervisor');
+      expect(state.supervisorSelection.isSelectMode).toBe(true);
 
       // @step And the TurnContentModal is already open showing turn 1
       expect(state.showTurnContentModal).toBe(true);
       expect(state.turnContentModalContent).toBe('Watching for security issues...');
 
-      // @step And I navigate to select turn 2 in the watcher pane
-      state.watcherSelection.selectedIndex = 1;
+      // @step And I navigate to select turn 2 in the supervisor pane
+      state.supervisorSelection.selectedIndex = 1;
 
       // @step When I press the Enter key
-      const newState = handleEnterInSelectMode(state, parentConversation, watcherConversation);
+      const newState = handleEnterInSelectMode(state, subordinateConversation, supervisorConversation);
 
       // @step Then the TurnContentModal updates to show turn 2 content
       expect(newState.turnContentModalContent).toContain('SQL INJECTION VULNERABILITY');
@@ -290,7 +290,7 @@ describe('Feature: Discuss Selected Feature', () => {
 describe('Unit: generateDiscussSelectedPrefill', () => {
   it('should format prefill correctly', () => {
     const result = mockGenerateDiscussSelectedPrefill(3, 'Write a login function');
-    expect(result).toBe(`Regarding turn 3 in parent session:\n\`\`\`\nWrite a login function\n\`\`\`\n`);
+    expect(result).toBe(`Regarding turn 3 in subordinate session:\n\`\`\`\nWrite a login function\n\`\`\`\n`);
   });
 
   it('should truncate long content', () => {

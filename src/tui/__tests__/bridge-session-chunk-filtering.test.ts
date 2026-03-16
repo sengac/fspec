@@ -148,13 +148,13 @@ describe('Feature: Bridge session chunk filtering', () => {
       // @step When input arrives from the bridge WebSocket
       // This would be handled by the bridge receiving WS message and calling session.send()
 
-      // @step Then Rust should emit WatcherInput chunk with session_id "session-x"
-      const watcherInputChunk: StreamChunk = {
-        type: 'WatcherInput',
+      // @step Then Rust should emit SupervisorInput chunk with session_id "session-x"
+      const supervisorInputChunk: StreamChunk = {
+        type: 'SupervisorInput',
         text: 'User input from Telegram',
         authorName: 'TelegramUser',
       };
-      injectTestChunk(bridgedSessionId, watcherInputChunk);
+      injectTestChunk(bridgedSessionId, supervisorInputChunk);
 
       // @step And Rust should emit LLM response chunks with session_id "session-x"
       const thinkingChunk: StreamChunk = {
@@ -171,7 +171,7 @@ describe('Feature: Bridge session chunk filtering', () => {
 
       // @step And the bridge should relay all chunks with session_id "session-x"
       expect(relayedChunks).toHaveLength(3);
-      expect(relayedChunks[0].type).toBe('WatcherInput');
+      expect(relayedChunks[0].type).toBe('SupervisorInput');
       expect(relayedChunks[1].type).toBe('Thinking');
       expect(relayedChunks[2].type).toBe('TextDelta');
 

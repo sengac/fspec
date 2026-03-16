@@ -248,16 +248,18 @@ describe('REAL Integration: FspecTool NAPI Callback', () => {
     });
 
     it('should capture help output without exiting process', async () => {
-      // When --help is requested (or a command is missing required args),
-      // Commander.js should NOT call process.exit() - we override it
-      // The help text should be captured and returned
-      const result = await fspecCallback('research', '{"help":true}', testDir);
+      // When --help is requested via the help command,
+      // fspecCallback should return structured help content
+      const result = await fspecCallback(
+        'help',
+        '{"command":"research"}',
+        testDir
+      );
       const parsed = JSON.parse(result);
 
-      // Help output should be captured successfully (exit code 0)
+      // Help output should be captured successfully
       expect(parsed.success).toBe(true);
-      // The data should contain help text
-      expect(parsed.data).toContain('Usage:');
+      // The data should contain help text for the research command
       expect(parsed.data).toContain('research');
     });
 
@@ -285,7 +287,7 @@ describe('REAL Integration: FspecTool NAPI Callback', () => {
       expect(parsed.data).toContain('backlog');
     });
 
-    it('should fallback to general help for unknown command help', async () => {
+    it('should return error for unknown command help', async () => {
       const result = await fspecCallback(
         'help',
         '{"command":"unknown-cmd"}',
@@ -293,9 +295,9 @@ describe('REAL Integration: FspecTool NAPI Callback', () => {
       );
       const parsed = JSON.parse(result);
 
-      expect(parsed.success).toBe(true);
-      expect(parsed.data).toContain('not found in quick reference');
-      expect(parsed.data).toContain('# Fspec Tool Reference');
+      expect(parsed.success).toBe(false);
+      expect(parsed.errorType).toBe('CommandNotFound');
+      expect(parsed.error).toContain('not found');
     });
   });
 

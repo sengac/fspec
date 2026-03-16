@@ -5,7 +5,7 @@
  * INPUT-001: Uses centralized input handling with CRITICAL priority
  *
  * Features:
- * - Full-screen overlay (follows WatcherTemplateList pattern)
+ * - Full-screen overlay (follows SupervisorTemplateList pattern)
  * - Shows all rules from system and project configs
  * - Session-level rule toggling (disable/enable rules for current session)
  * - Keyboard navigation (j/k or arrows, Enter to toggle, Escape to close)

@@ -179,8 +179,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
   // VIEWNV-001: Session navigation helpers
-  sessionGetParent: vi.fn().mockReturnValue(null),
-  sessionGetWatchers: vi.fn().mockReturnValue([]),
+  sessionGetSubordinate: vi.fn().mockReturnValue(null),
+  sessionGetSupervisors: vi.fn().mockReturnValue([]),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
   sessionSendInput: vi.fn(),

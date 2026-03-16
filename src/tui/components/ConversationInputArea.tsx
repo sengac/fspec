@@ -2,7 +2,7 @@
  * ConversationInputArea - Reusable input area for conversation views
  *
  * Encapsulates the input area with border, prompt character, and InputTransition.
- * Used by both AgentView (main conversation) and SplitSessionView (watcher).
+ * Used by both AgentView (main conversation) and SplitSessionView (supervisor).
  *
  * SOLID: Single responsibility - handles input display and submission
  * DRY: Reused across different conversation views

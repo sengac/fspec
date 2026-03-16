@@ -6,7 +6,7 @@
 //! These tests verify that the navigation logic correctly traverses the session
 //! hierarchy: Board → Session → Watchers → Session → Watchers → ... → Create Dialog
 //!
-//! The navigation should respect the parent-watcher relationships stored in WatchGraph.
+//! The navigation should respect the parent-watcher relationships stored in ChainOfCommand.
 
 use indexmap::IndexMap;
 use std::sync::Arc;
@@ -21,44 +21,44 @@ impl MockBackgroundSession {
     }
 }
 
-/// Mock WatchGraph for testing
-struct MockWatchGraph {
-    parent_to_watchers: std::collections::HashMap<Uuid, Vec<Uuid>>,
-    watcher_to_parent: std::collections::HashMap<Uuid, Uuid>,
+/// Mock ChainOfCommand for testing
+struct MockChainOfCommand {
+    subordinate_to_supervisors: std::collections::HashMap<Uuid, Vec<Uuid>>,
+    supervisor_to_subordinate: std::collections::HashMap<Uuid, Uuid>,
 }
 
-impl MockWatchGraph {
+impl MockChainOfCommand {
     fn new() -> Self {
         Self {
-            parent_to_watchers: std::collections::HashMap::new(),
-            watcher_to_parent: std::collections::HashMap::new(),
+            subordinate_to_supervisors: std::collections::HashMap::new(),
+            supervisor_to_subordinate: std::collections::HashMap::new(),
         }
     }
 
-    fn add_watcher(&mut self, parent_id: Uuid, watcher_id: Uuid) {
-        self.watcher_to_parent.insert(watcher_id, parent_id);
-        self.parent_to_watchers
+    fn add_supervisor(&mut self, parent_id: Uuid, watcher_id: Uuid) {
+        self.supervisor_to_subordinate.insert(watcher_id, parent_id);
+        self.subordinate_to_supervisors
             .entry(parent_id)
             .or_default()
             .push(watcher_id);
     }
 
-    fn get_parent(&self, watcher_id: Uuid) -> Option<Uuid> {
-        self.watcher_to_parent.get(&watcher_id).copied()
+    fn get_subordinate(&self, watcher_id: Uuid) -> Option<Uuid> {
+        self.supervisor_to_subordinate.get(&watcher_id).copied()
     }
 }
 
 /// Build navigation list (same logic as in navigation.rs)
 fn build_navigation_list(
     sessions: &IndexMap<Uuid, Arc<MockBackgroundSession>>,
-    watch_graph: &MockWatchGraph,
+    chain_of_command: &MockChainOfCommand,
 ) -> Vec<Uuid> {
     let mut result = Vec::new();
 
     // Iterate through sessions in insertion order
     for session_id in sessions.keys() {
         // Check if this session is a watcher (has a parent)
-        if watch_graph.get_parent(*session_id).is_some() {
+        if chain_of_command.get_subordinate(*session_id).is_some() {
             // Skip watchers in the top-level iteration
             // They'll be added after their parent
             continue;
@@ -70,7 +70,7 @@ fn build_navigation_list(
         // Add all watchers for this session (in insertion order)
         // We need to iterate sessions to maintain insertion order
         for watcher_id in sessions.keys() {
-            if watch_graph.get_parent(*watcher_id) == Some(*session_id) {
+            if chain_of_command.get_subordinate(*watcher_id) == Some(*session_id) {
                 result.push(*watcher_id);
             }
         }
@@ -145,8 +145,8 @@ fn test_build_nav_list_no_watchers() {
     sessions.insert(b, Arc::new(MockBackgroundSession::new()));
     sessions.insert(c, Arc::new(MockBackgroundSession::new()));
 
-    let watch_graph = MockWatchGraph::new();
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let chain_of_command = MockChainOfCommand::new();
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
 
     assert_eq!(nav_list, vec![a, b, c]);
 }
@@ -170,11 +170,11 @@ fn test_build_nav_list_with_watchers() {
     sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
     sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
-    let mut watch_graph = MockWatchGraph::new();
-    watch_graph.add_watcher(a, w1);
-    watch_graph.add_watcher(a, w2);
+    let mut chain_of_command = MockChainOfCommand::new();
+    chain_of_command.add_supervisor(a, w1);
+    chain_of_command.add_supervisor(a, w2);
 
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
 
     // Navigation order: A → W1 → W2 → B
     assert_eq!(nav_list, vec![a, w1, w2, b]);
@@ -201,11 +201,11 @@ fn test_build_nav_list_multiple_parents_with_watchers() {
     sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
     sessions.insert(c, Arc::new(MockBackgroundSession::new()));
 
-    let mut watch_graph = MockWatchGraph::new();
-    watch_graph.add_watcher(a, w1);
-    watch_graph.add_watcher(b, w2);
+    let mut chain_of_command = MockChainOfCommand::new();
+    chain_of_command.add_supervisor(a, w1);
+    chain_of_command.add_supervisor(b, w2);
 
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
 
     // Navigation order: A → W1 → B → W2 → C
     assert_eq!(nav_list, vec![a, w1, b, w2, c]);
@@ -231,11 +231,11 @@ fn test_full_shift_right_navigation_with_watchers() {
     sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
     sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
-    let mut watch_graph = MockWatchGraph::new();
-    watch_graph.add_watcher(a, w1);
-    watch_graph.add_watcher(a, w2);
+    let mut chain_of_command = MockChainOfCommand::new();
+    chain_of_command.add_supervisor(a, w1);
+    chain_of_command.add_supervisor(a, w2);
 
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
 
     // Start from board (no active session)
     let mut active: Option<Uuid> = None;
@@ -285,11 +285,11 @@ fn test_full_shift_left_navigation_with_watchers() {
     sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
     sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
-    let mut watch_graph = MockWatchGraph::new();
-    watch_graph.add_watcher(a, w1);
-    watch_graph.add_watcher(a, w2);
+    let mut chain_of_command = MockChainOfCommand::new();
+    chain_of_command.add_supervisor(a, w1);
+    chain_of_command.add_supervisor(a, w2);
 
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
 
     // Start from B
     let mut active: Option<Uuid> = Some(b);
@@ -333,10 +333,10 @@ fn test_shift_right_from_last_watcher_goes_to_next_session() {
     sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
     sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
-    let mut watch_graph = MockWatchGraph::new();
-    watch_graph.add_watcher(a, w1);
+    let mut chain_of_command = MockChainOfCommand::new();
+    chain_of_command.add_supervisor(a, w1);
 
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
     assert_eq!(nav_list, vec![a, w1, b], "Navigation list should be A → W1 → B");
 
     // From W1, should go to B
@@ -362,11 +362,11 @@ fn test_shift_left_from_first_watcher_goes_to_parent() {
     sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
     sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
 
-    let mut watch_graph = MockWatchGraph::new();
-    watch_graph.add_watcher(a, w1);
-    watch_graph.add_watcher(a, w2);
+    let mut chain_of_command = MockChainOfCommand::new();
+    chain_of_command.add_supervisor(a, w1);
+    chain_of_command.add_supervisor(a, w2);
 
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
     assert_eq!(nav_list, vec![a, w1, w2], "Navigation list should be A → W1 → W2");
 
     // From W1, should go to A
@@ -392,11 +392,11 @@ fn test_shift_right_from_last_watcher_of_last_session_shows_create_dialog() {
     sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
     sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
 
-    let mut watch_graph = MockWatchGraph::new();
-    watch_graph.add_watcher(a, w1);
-    watch_graph.add_watcher(a, w2);
+    let mut chain_of_command = MockChainOfCommand::new();
+    chain_of_command.add_supervisor(a, w1);
+    chain_of_command.add_supervisor(a, w2);
 
-    let nav_list = build_navigation_list(&sessions, &watch_graph);
+    let nav_list = build_navigation_list(&sessions, &chain_of_command);
     assert_eq!(nav_list, vec![a, w1, w2], "Navigation list should be A → W1 → W2");
 
     // From W2 (last watcher of last session), should show create dialog

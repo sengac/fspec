@@ -1,18 +1,25 @@
 // Feature: spec/features/parent-command-for-quick-return.feature
 // Tests for WATCH-014: /parent Command for Quick Return
 //
+// NOTE: WATCH-024 removed the /parent slash command entirely.
+// Users navigate with Shift+Arrow instead.
+// These tests verify the underlying subordinate-lookup LOGIC still works,
+// even though the slash command is gone.
+//
 // Session switching now uses GlobalSessionStreamManager for handler registration.
-// These tests verify the /parent command LOGIC (parent lookup, navigation).
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the NAPI bindings
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionGetParent: vi.fn(),
+  sessionGetSubordinate: vi.fn(),
   sessionGetMergedOutput: vi.fn(),
 }));
 
-import { sessionGetParent, sessionGetMergedOutput } from '@sengac/codelet-napi';
+import {
+  sessionGetSubordinate,
+  sessionGetMergedOutput,
+} from '@sengac/codelet-napi';
 
 // Mock conversation state
 interface ConversationMessage {
@@ -26,10 +33,11 @@ interface MockStreamChunk {
   text?: string;
 }
 
-// Helper to simulate /parent command handling logic
-function handleParentCommand(
+// Helper to simulate subordinate-lookup navigation logic
+// (Originally the /parent command, now handled by Shift+Arrow navigation)
+function handleSubordinateNavigation(
   currentSessionId: string | null,
-  getParent: (id: string) => string | null,
+  getSubordinate: (id: string) => string | null,
   getMergedOutput: (id: string) => MockStreamChunk[],
   setCurrentSessionId: (id: string) => void,
   setConversation: (messages: ConversationMessage[]) => void,
@@ -43,72 +51,72 @@ function handleParentCommand(
     };
   }
 
-  // Check if session is a watcher
-  const parentId = getParent(currentSessionId);
+  // Check if session is a supervisor (has a subordinate)
+  const subordinateId = getSubordinate(currentSessionId);
 
-  if (!parentId) {
+  if (!subordinateId) {
     return {
       switchedTo: null,
       statusMessage:
-        'This session has no parent. /parent only works from watcher sessions.',
+        'This session has no subordinate. Navigation only works from supervisor sessions.',
     };
   }
 
-  // Get parent session name for status message
-  const parentName = getSessionName?.(parentId) || parentId;
+  // Get subordinate session name for status message
+  const subordinateName = getSessionName?.(subordinateId) || subordinateId;
 
-  // Switch to parent session (GlobalSessionStreamManager handles routing)
-  setCurrentSessionId(parentId);
+  // Switch to subordinate session (GlobalSessionStreamManager handles routing)
+  setCurrentSessionId(subordinateId);
 
   // Get merged output and restore conversation
-  const chunks = getMergedOutput(parentId);
+  const chunks = getMergedOutput(subordinateId);
   setConversation(chunks.map(c => ({ type: 'text', content: c.text || '' })));
 
   return {
-    switchedTo: parentId,
-    statusMessage: `Switched to parent session: ${parentName}`,
+    switchedTo: subordinateId,
+    statusMessage: `Switched to subordinate session: ${subordinateName}`,
   };
 }
 
-describe('/parent Command for Quick Return', () => {
+describe('Subordinate Navigation Logic (formerly /parent command)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Scenario: Switch to parent session from watcher', () => {
-    it('should switch from watcher to parent session when /parent is typed', () => {
-      // @step Given a parent session named "Main Dev Session" exists
-      const parentSessionId = 'main-dev-session';
-      const parentSessionName = 'Main Dev Session';
-      const parentChunks: MockStreamChunk[] = [
-        { chunk_type: 'Text', text: 'Previous conversation from parent' },
+  describe('Scenario: Switch to subordinate session from supervisor', () => {
+    it('should switch from supervisor to subordinate session', () => {
+      // @step Given a subordinate session named "Main Dev Session" exists
+      const subordinateSessionId = 'main-dev-session';
+      const subordinateSessionName = 'Main Dev Session';
+      const subordinateChunks: MockStreamChunk[] = [
+        { chunk_type: 'Text', text: 'Previous conversation from subordinate' },
       ];
-      vi.mocked(sessionGetMergedOutput).mockReturnValue(parentChunks);
+      vi.mocked(sessionGetMergedOutput).mockReturnValue(subordinateChunks);
 
-      // @step And a watcher session named "Security Reviewer" is attached to "Main Dev Session"
-      const watcherSessionId = 'security-reviewer';
-      vi.mocked(sessionGetParent).mockImplementation((id: string) => {
-        if (id === watcherSessionId) {
-          return parentSessionId;
+      // @step And a supervisor session named "Security Reviewer" is attached to "Main Dev Session"
+      const supervisorSessionId = 'security-reviewer';
+      vi.mocked(sessionGetSubordinate).mockImplementation((id: string) => {
+        if (id === supervisorSessionId) {
+          return subordinateSessionId;
         }
         return null;
       });
 
       // @step And the current session is "Security Reviewer"
-      const currentSessionId = watcherSessionId;
+      const currentSessionId = supervisorSessionId;
       let switchedToSessionId: string | null = null;
       let conversation: ConversationMessage[] = [];
 
       // Helper to get session name (simulates sessionManagerList lookup)
       const getSessionName = (id: string) => {
-        if (id === parentSessionId) return parentSessionName;
+        if (id === subordinateSessionId) return subordinateSessionName;
         return undefined;
       };
 
-      // @step When the user types "/parent"
-      const result = handleParentCommand(
+      // @step When navigation to subordinate is triggered
+      const result = handleSubordinateNavigation(
         currentSessionId,
-        vi.mocked(sessionGetParent),
+        vi.mocked(sessionGetSubordinate),
         vi.mocked(sessionGetMergedOutput),
         id => {
           switchedToSessionId = id;
@@ -120,38 +128,40 @@ describe('/parent Command for Quick Return', () => {
       );
 
       // @step Then the current session switches to "Main Dev Session"
-      expect(switchedToSessionId).toBe(parentSessionId);
-      expect(result.switchedTo).toBe(parentSessionId);
+      expect(switchedToSessionId).toBe(subordinateSessionId);
+      expect(result.switchedTo).toBe(subordinateSessionId);
 
-      // @step And a status message shows "Switched to parent session"
+      // @step And a status message shows "Switched to subordinate session"
       expect(result.statusMessage).toBe(
-        'Switched to parent session: Main Dev Session'
+        'Switched to subordinate session: Main Dev Session'
       );
 
-      // @step And the parent session conversation is displayed
-      expect(sessionGetMergedOutput).toHaveBeenCalledWith(parentSessionId);
+      // @step And the subordinate session conversation is displayed
+      expect(sessionGetMergedOutput).toHaveBeenCalledWith(subordinateSessionId);
       expect(conversation).toHaveLength(1);
-      expect(conversation[0].content).toBe('Previous conversation from parent');
+      expect(conversation[0].content).toBe(
+        'Previous conversation from subordinate'
+      );
     });
   });
 
-  describe('Scenario: Error when using /parent in regular session', () => {
-    it('should show error when /parent is typed in a non-watcher session', () => {
+  describe('Scenario: Error when navigating from non-supervisor session', () => {
+    it('should show error when navigating in a non-supervisor session', () => {
       // @step Given a regular session named "Code Project" exists
       const regularSessionId = 'code-project';
 
-      // @step And the session is not a watcher session
-      vi.mocked(sessionGetParent).mockReturnValue(null);
+      // @step And the session is not a supervisor session
+      vi.mocked(sessionGetSubordinate).mockReturnValue(null);
 
       // @step And the current session is "Code Project"
       const currentSessionId = regularSessionId;
       let switchedToSessionId: string | null = null;
       let conversation: ConversationMessage[] = [];
 
-      // @step When the user types "/parent"
-      const result = handleParentCommand(
+      // @step When navigation to subordinate is triggered
+      const result = handleSubordinateNavigation(
         currentSessionId,
-        vi.mocked(sessionGetParent),
+        vi.mocked(sessionGetSubordinate),
         vi.mocked(sessionGetMergedOutput),
         id => {
           switchedToSessionId = id;
@@ -161,9 +171,9 @@ describe('/parent Command for Quick Return', () => {
         }
       );
 
-      // @step Then a status message shows "This session has no parent. /parent only works from watcher sessions."
+      // @step Then a status message shows the session has no subordinate
       expect(result.statusMessage).toBe(
-        'This session has no parent. /parent only works from watcher sessions.'
+        'This session has no subordinate. Navigation only works from supervisor sessions.'
       );
 
       // @step And the current session remains "Code Project"
@@ -173,16 +183,16 @@ describe('/parent Command for Quick Return', () => {
   });
 
   describe('Scenario: Error when no active session exists', () => {
-    it('should show error when /parent is typed with no active session', () => {
+    it('should show error when navigating with no active session', () => {
       // @step Given no session is currently active
       const currentSessionId = null;
       let switchedToSessionId: string | null = null;
       let conversation: ConversationMessage[] = [];
 
-      // @step When the user types "/parent"
-      const result = handleParentCommand(
+      // @step When navigation to subordinate is triggered
+      const result = handleSubordinateNavigation(
         currentSessionId,
-        vi.mocked(sessionGetParent),
+        vi.mocked(sessionGetSubordinate),
         vi.mocked(sessionGetMergedOutput),
         id => {
           switchedToSessionId = id;
@@ -198,7 +208,7 @@ describe('/parent Command for Quick Return', () => {
       );
       expect(switchedToSessionId).toBeNull();
       expect(result.switchedTo).toBeNull();
-      expect(sessionGetParent).not.toHaveBeenCalled();
+      expect(sessionGetSubordinate).not.toHaveBeenCalled();
     });
   });
 });

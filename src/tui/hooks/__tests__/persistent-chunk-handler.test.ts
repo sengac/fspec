@@ -114,11 +114,11 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       );
 
       // @step When the bridge sends input to session "test-session"
-      const watcherInputChunk: StreamChunk = {
-        type: 'WatcherInput',
-        text: '[WATCHER: Telegram | Authority: Peer | Session: bridge-123]\nHello from Telegram!',
+      const supervisorInputChunk: StreamChunk = {
+        type: 'SupervisorInput',
+        text: '[SUPERVISOR: Telegram | Session: bridge-123]\nHello from Telegram!',
       };
-      manager.simulateChunk(session.id, watcherInputChunk);
+      manager.simulateChunk(session.id, supervisorInputChunk);
 
       // @step And the LLM responds with TextChunk data
       const textChunk: StreamChunk = {
@@ -138,7 +138,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       );
 
       // @step And the conversation should update in real-time
-      expect(conversation.some(m => m.type === 'watcher-input')).toBe(true);
+      expect(conversation.some(m => m.type === 'supervisor-input')).toBe(true);
 
       unregister();
     });
@@ -172,11 +172,11 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       );
 
       // @step When the bridge sends input to session "test-session"
-      const watcherInputChunk: StreamChunk = {
-        type: 'WatcherInput',
-        text: '[WATCHER: Telegram | Authority: Peer | Session: bridge-456]\nRead the file package.json',
+      const supervisorInputChunk: StreamChunk = {
+        type: 'SupervisorInput',
+        text: '[SUPERVISOR: Telegram | Session: bridge-456]\nRead the file package.json',
       };
-      manager.simulateChunk(session.id, watcherInputChunk);
+      manager.simulateChunk(session.id, supervisorInputChunk);
 
       // @step And the LLM responds with ToolCall chunks
       const toolCallChunk: StreamChunk = {
@@ -242,11 +242,11 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       );
 
       // @step When the bridge sends input to session "test-session"
-      const watcherInputChunk: StreamChunk = {
-        type: 'WatcherInput',
-        text: '[WATCHER: Telegram | Authority: Peer | Session: bridge-789]\nHello!',
+      const supervisorInputChunk: StreamChunk = {
+        type: 'SupervisorInput',
+        text: '[SUPERVISOR: Telegram | Session: bridge-789]\nHello!',
       };
-      manager.simulateChunk(session.id, watcherInputChunk);
+      manager.simulateChunk(session.id, supervisorInputChunk);
 
       const textChunk: StreamChunk = {
         type: 'Text',
@@ -321,11 +321,11 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       );
 
       // @step And the bridge sends input to session "session-A"
-      const watcherInputChunk: StreamChunk = {
-        type: 'WatcherInput',
-        text: '[WATCHER: Telegram | Authority: Peer | Session: bridge-A]\nMessage for session A',
+      const supervisorInputChunk: StreamChunk = {
+        type: 'SupervisorInput',
+        text: '[SUPERVISOR: Telegram | Session: bridge-A]\nMessage for session A',
       };
-      manager.simulateChunk(sessionA.id, watcherInputChunk);
+      manager.simulateChunk(sessionA.id, supervisorInputChunk);
 
       // @step And the LLM responds with TextChunk data for "session-A"
       const textChunkA: StreamChunk = {
@@ -454,10 +454,10 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
   });
 
   // ===========================================================================
-  // Scenario: WatcherInput chunk shows injected input before LLM response
+  // Scenario: SupervisorInput chunk shows injected input before LLM response
   // ===========================================================================
 
-  describe('Scenario: WatcherInput chunk shows injected input before LLM response', () => {
+  describe('Scenario: SupervisorInput chunk shows injected input before LLM response', () => {
     it('should display injected input before LLM response', async () => {
       // @step Given the TUI is viewing session "test-session"
       const session = persistenceCreateSessionWithProvider(
@@ -481,16 +481,16 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       );
 
       // @step When the bridge sends input to session "test-session"
-      // @step And a WatcherInput chunk is emitted
-      const watcherInputChunk: StreamChunk = {
-        type: 'WatcherInput',
-        text: '[WATCHER: Telegram | Authority: Peer | Session: bridge-watcher]\nInjected message from bridge',
+      // @step And a SupervisorInput chunk is emitted
+      const supervisorInputChunk: StreamChunk = {
+        type: 'SupervisorInput',
+        text: '[SUPERVISOR: Telegram | Session: bridge-watcher]\nInjected message from bridge',
       };
-      manager.simulateChunk(session.id, watcherInputChunk);
+      manager.simulateChunk(session.id, supervisorInputChunk);
 
       // @step Then the injected input should appear in the TUI conversation
-      expect(conversation.some(m => m.type === 'watcher-input')).toBe(true);
-      const watcherMsg = conversation.find(m => m.type === 'watcher-input');
+      expect(conversation.some(m => m.type === 'supervisor-input')).toBe(true);
+      const watcherMsg = conversation.find(m => m.type === 'supervisor-input');
       expect(watcherMsg?.content).toContain('Telegram');
 
       const textChunk: StreamChunk = {
@@ -501,7 +501,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
 
       // @step And the injected input should appear before the LLM response
       const watcherIndex = conversation.findIndex(
-        m => m.type === 'watcher-input'
+        m => m.type === 'supervisor-input'
       );
       const responseIndex = conversation.findIndex(
         m => m.type === 'assistant-text'
@@ -618,18 +618,18 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       expect(conversation[0].content).toContain('Let me think...');
     });
 
-    it('should process WatcherInput chunks correctly', () => {
+    it('should process SupervisorInput chunks correctly', () => {
       const conversation: ConversationMessage[] = [];
       const ctx = createChunkContext();
       const chunk: StreamChunk = {
-        type: 'WatcherInput',
-        text: '[WATCHER: Test | Authority: Peer | Session: test-123]\nTest input',
+        type: 'SupervisorInput',
+        text: '[SUPERVISOR: Test | Session: test-123]\nTest input',
       };
 
       const result = processStreamingChunk(chunk, conversation, ctx);
 
       expect(result).toBe(true);
-      expect(conversation[0].type).toBe('watcher-input');
+      expect(conversation[0].type).toBe('supervisor-input');
     });
 
     it('should process UserInput chunks correctly', () => {

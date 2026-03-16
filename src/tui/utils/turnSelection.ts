@@ -6,7 +6,7 @@
  *
  * Used by:
  * - AgentView.tsx (main conversation view)
- * - SplitSessionView.tsx (watcher split view)
+ * - SplitSessionView.tsx (supervisor split view)
  */
 
 import type { ConversationLine } from '../types/conversation';
@@ -101,7 +101,7 @@ export function getFirstContentOfTurn(
 
 /**
  * Generate pre-fill content for "Discuss Selected" feature.
- * When user selects a turn in parent pane and presses Enter,
+ * When user selects a turn in subordinate pane and presses Enter,
  * this generates context text to pre-fill the input.
  *
  * @param turnNumber - 1-indexed turn number for display
@@ -117,7 +117,7 @@ export function generateDiscussSelectedPrefill(
   const preview =
     turnContent.slice(0, maxPreviewLength) +
     (turnContent.length > maxPreviewLength ? '...' : '');
-  return `Regarding turn ${turnNumber} in parent session:\n\`\`\`\n${preview}\n\`\`\`\n`;
+  return `Regarding turn ${turnNumber} in subordinate session:\n\`\`\`\n${preview}\n\`\`\`\n`;
 }
 
 /**

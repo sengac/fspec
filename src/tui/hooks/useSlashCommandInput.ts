@@ -46,7 +46,7 @@ export interface UseSlashCommandInputOptions {
 
   /**
    * When true, the palette is disabled and will auto-hide
-   * Use this when other modes (resume, watcher, model selector) are active
+   * Use this when other modes (resume, supervisor, model selector) are active
    */
   disabled?: boolean;
 }

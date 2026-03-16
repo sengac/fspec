@@ -1,8 +1,7 @@
 /**
- * WatcherTemplateList - Template-centric watcher management overlay
+ * SupervisorTemplateList - Template-centric supervisor management overlay
  *
- * WATCH-023: Watcher Templates and Improved Creation UX
- * Replaces the old instance-centric watcher overlay (WATCH-008).
+ * WATCH-023: Supervisor Templates and Improved Creation UX
  * INPUT-001: Uses centralized input handling with CRITICAL priority
  *
  * Features:
@@ -12,30 +11,30 @@
  * - Arrow key navigation
  * - Actions: Enter (spawn/open), E (edit), D (delete), N (new)
  *
- * @see spec/features/watcher-templates.feature
+ * @see spec/features/supervisor-templates.feature
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Box, Text } from 'ink';
-import type { WatcherTemplate, WatcherInstance, WatcherListItem } from '../types/watcherTemplate';
-import { buildFlatWatcherList, filterTemplates, formatTemplateDisplay } from '../utils/watcherTemplateStorage';
+import type { SupervisorTemplate, SupervisorInstance, SupervisorListItem } from '../types/supervisorTemplate';
+import { buildFlatSupervisorList, filterTemplates, formatTemplateDisplay } from '../utils/supervisorTemplateStorage';
 import { useInputCompat, InputPriority } from '../input/index';
 
-interface WatcherTemplateListProps {
-  templates: WatcherTemplate[];
-  instances: WatcherInstance[];
+interface SupervisorTemplateListProps {
+  templates: SupervisorTemplate[];
+  instances: SupervisorInstance[];
   terminalWidth: number;
   terminalHeight: number;
-  onSpawn: (template: WatcherTemplate) => void;
-  onOpen: (instance: WatcherInstance) => void;
-  onEdit: (template: WatcherTemplate) => void;
-  onDelete: (template: WatcherTemplate, instances: WatcherInstance[]) => void;
-  onKillInstance: (instance: WatcherInstance) => void;
+  onSpawn: (template: SupervisorTemplate) => void;
+  onOpen: (instance: SupervisorInstance) => void;
+  onEdit: (template: SupervisorTemplate) => void;
+  onDelete: (template: SupervisorTemplate, instances: SupervisorInstance[]) => void;
+  onKillInstance: (instance: SupervisorInstance) => void;
   onCreateNew: () => void;
   onClose: () => void;
 }
 
-export function WatcherTemplateList({
+export function SupervisorTemplateList({
   templates,
   instances,
   terminalWidth,
@@ -47,7 +46,7 @@ export function WatcherTemplateList({
   onKillInstance,
   onCreateNew,
   onClose,
-}: WatcherTemplateListProps): React.ReactElement {
+}: SupervisorTemplateListProps): React.ReactElement {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set());
   const [filterQuery, setFilterQuery] = useState('');
@@ -61,7 +60,7 @@ export function WatcherTemplateList({
 
   // Build flat list for navigation
   const flatList = useMemo(() => 
-    buildFlatWatcherList(filteredTemplates, instances, expandedTemplates),
+    buildFlatSupervisorList(filteredTemplates, instances, expandedTemplates),
     [filteredTemplates, instances, expandedTemplates]
   );
 
@@ -101,9 +100,17 @@ export function WatcherTemplateList({
     if (!item) return;
 
     switch (item.type) {
-      case 'template':
-        onSpawn(item.template);
+      case 'template': {
+        // If template already has running instances, open the first one
+        // instead of spawning a new instance (avoids unwanted spawn dialog)
+        const templateInstances = instances.filter(i => i.templateId === item.template.id);
+        if (templateInstances.length > 0) {
+          onOpen(templateInstances[0]);
+        } else {
+          onSpawn(item.template);
+        }
         break;
+      }
       case 'instance':
         onOpen(item.instance);
         break;
@@ -111,13 +118,13 @@ export function WatcherTemplateList({
         onCreateNew();
         break;
     }
-  }, [flatList, selectedIndex, onSpawn, onOpen, onCreateNew]);
+  }, [flatList, selectedIndex, instances, onSpawn, onOpen, onCreateNew]);
 
   // Handle keyboard input with CRITICAL priority (overlay)
   useInputCompat({
-    id: 'watcher-template-list',
+    id: 'supervisor-template-list',
     priority: InputPriority.CRITICAL,
-    description: 'Watcher template list overlay',
+    description: 'Supervisor template list overlay',
     handler: (input, key) => {
       // Escape closes overlay
       if (key.escape) {
@@ -211,7 +218,7 @@ export function WatcherTemplateList({
         <Box flexDirection="column" padding={2} flexGrow={1}>
           {/* Header */}
           <Box marginBottom={1} borderStyle="single" borderBottom borderLeft={false} borderRight={false} borderTop={false}>
-            <Text bold color="magenta">Watcher Templates</Text>
+            <Text bold color="magenta">Supervisor Templates</Text>
             {filterQuery && (
               <Text dimColor> (filter: {filterQuery})</Text>
             )}
@@ -220,9 +227,9 @@ export function WatcherTemplateList({
           {/* Empty state */}
           {templates.length === 0 && !filterQuery && (
             <Box flexDirection="column" flexGrow={1} justifyContent="center">
-              <Text color="yellow">No watcher templates yet.</Text>
+              <Text color="yellow">No supervisor templates yet.</Text>
               <Text> </Text>
-              <Text dimColor>Watchers are AI agents that observe your session and</Text>
+              <Text dimColor>Supervisors are AI agents that observe your session and</Text>
               <Text dimColor>can interject with feedback (security issues, test</Text>
               <Text dimColor>coverage, architecture suggestions, etc.)</Text>
               <Text> </Text>

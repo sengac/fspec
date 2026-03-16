@@ -7,7 +7,7 @@
 // The detection logic lives in Rust and is applied in agent_loop for ALL input paths:
 // - TUI user input
 // - Bridge/Telegram input
-// - Watcher input
+// - Supervisor input
 //
 // Priority: disable keywords > high > medium > low > conversational exclusion
 //

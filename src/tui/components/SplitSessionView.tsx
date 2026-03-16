@@ -1,23 +1,23 @@
 /**
- * SplitSessionView - Split view for watcher sessions
+ * SplitSessionView - Split view for supervisor sessions
  *
- * WATCH-010: Watcher Split View UI
+ * WATCH-010: Supervisor Split View UI
  * WATCH-011: Cross-Pane Selection with Correlation IDs
- * WATCH-015: Watcher Session Header Indicator
+ * WATCH-015: Supervisor Session Header Indicator
  * WATCH-018: Extract Split View to Separate Component
  * VIEWNV-001: Unified Shift+Arrow Navigation
  * INPUT-001: Uses centralized input handling with LOW priority
  *
  * Features:
- * - Two vertical panes (parent left, watcher right)
+ * - Two vertical panes (subordinate left, supervisor right)
  * - Left/Right arrows switch active pane
  * - Shift+Left/Right navigates between sessions (VIEWNV-001)
  * - Tab toggles turn-select mode in active pane
  * - Up/Down navigate turns when in select mode (via VirtualList)
- * - Enter on selected parent turn pre-fills input with "Discuss Selected" context
- * - Input area always sends to watcher session
- * - WATCH-011: Cross-pane highlighting shows correlation between parent/watcher turns
- * - WATCH-015: Header shows watcher info, model capabilities, token usage, and context fill
+ * - Enter on selected subordinate turn pre-fills input with "Discuss Selected" context
+ * - Input area always sends to supervisor session
+ * - WATCH-011: Cross-pane highlighting shows correlation between subordinate/supervisor turns
+ * - WATCH-015: Header shows supervisor info, model capabilities, token usage, and context fill
  */
 
 import React, { useCallback, useMemo } from 'react';
@@ -28,7 +28,7 @@ import { SelectionSeparatorBar } from './SelectionSeparatorBar';
 import { SessionHeader } from './SessionHeader';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 import { useTurnSelection } from '../hooks/useTurnSelection';
-import { useWatcherHeaderInfo } from '../hooks/useWatcherHeaderInfo';
+import { useSupervisorHeaderInfo } from '../hooks/useSupervisorHeaderInfo';
 import { useFspecStore } from '../store/fspecStore';
 import {
   getSelectionSeparatorType,
@@ -47,12 +47,12 @@ import type { TokenTracker } from '../utils/sessionHeaderUtils';
 import { useInputCompat, InputPriority } from '../input/index';
 
 interface SplitSessionViewProps {
-  /** Current watcher session ID - used to compute watcher header info */
+  /** Current supervisor session ID - used to compute supervisor header info */
   sessionId: string;
-  parentSessionName: string;
+  subordinateSessionName: string;
   terminalWidth: number;
-  parentConversation: ConversationLine[];
-  watcherConversation: ConversationLine[];
+  subordinateConversation: ConversationLine[];
+  supervisorConversation: ConversationLine[];
   /** Current input value */
   inputValue: string;
   /** Callback when input value changes */
@@ -89,10 +89,10 @@ interface SplitSessionViewProps {
 
 export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   sessionId,
-  parentSessionName,
+  subordinateSessionName,
   terminalWidth,
-  parentConversation,
-  watcherConversation,
+  subordinateConversation,
+  supervisorConversation,
   inputValue,
   onInputChange,
   onSubmit,
@@ -113,8 +113,8 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 }) => {
   const { height: terminalHeight } = useTerminalSize();
 
-  // Get watcher header info (slug, instance number) from session ID
-  const watcherHeaderInfo = useWatcherHeaderInfo(sessionId);
+  // Get supervisor header info (slug, instance number) from session ID
+  const supervisorHeaderInfo = useSupervisorHeaderInfo(sessionId);
 
   // VIEWNV-001: Session navigation hook
   const showCreateSessionDialog = useShowCreateSessionDialog();
@@ -136,50 +136,50 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   const handleInputChangeWithSlash = slashCommand.handleInputChange;
 
   // Pane state
-  const [activePane, setActivePane] = React.useState<'parent' | 'watcher'>(
-    'watcher'
+  const [activePane, setActivePane] = React.useState<'subordinate' | 'supervisor'>(
+    'supervisor'
   );
 
   // Turn selection state (separate for each pane)
-  const parentSelection = useTurnSelection();
-  const watcherSelection = useTurnSelection();
+  const subordinateSelection = useTurnSelection();
+  const supervisorSelection = useTurnSelection();
 
   // Get current select mode for active pane
   const activeSelectMode =
-    activePane === 'parent'
-      ? parentSelection.isSelectMode
-      : watcherSelection.isSelectMode;
+    activePane === 'subordinate'
+      ? subordinateSelection.isSelectMode
+      : supervisorSelection.isSelectMode;
 
-  // WATCH-011: Build correlation maps between parent and watcher turns
-  const { parentToWatcherTurns, watcherToParentTurns } = useMemo(
-    () => buildCorrelationMaps(parentConversation, watcherConversation),
-    [parentConversation, watcherConversation]
+  // WATCH-011: Build correlation maps between subordinate and supervisor turns
+  const { subordinateToSupervisorTurns, supervisorToSubordinateTurns } = useMemo(
+    () => buildCorrelationMaps(subordinateConversation, supervisorConversation),
+    [subordinateConversation, supervisorConversation]
   );
 
   // WATCH-011: Compute cross-pane highlighted turns based on selection
   const crossPaneHighlightedTurns = useMemo(() => {
     const highlighted = new Set<number>();
 
-    if (activePane === 'parent' && parentSelection.isSelectMode) {
-      // Parent pane is active with selection - highlight correlated watcher turns
-      const selectedIndex = parentSelection.selectionRef.current.selectedIndex;
-      const selectedLine = parentConversation[selectedIndex];
+    if (activePane === 'subordinate' && subordinateSelection.isSelectMode) {
+      // Parent pane is active with selection - highlight correlated supervisor turns
+      const selectedIndex = subordinateSelection.selectionRef.current.selectedIndex;
+      const selectedLine = subordinateConversation[selectedIndex];
       if (selectedLine) {
-        const parentTurn = selectedLine.messageIndex;
-        const watcherTurns = parentToWatcherTurns.get(parentTurn);
-        if (watcherTurns) {
-          watcherTurns.forEach(t => highlighted.add(t));
+        const subordinateTurn = selectedLine.messageIndex;
+        const supervisorTurns = subordinateToSupervisorTurns.get(subordinateTurn);
+        if (supervisorTurns) {
+          supervisorTurns.forEach(t => highlighted.add(t));
         }
       }
-    } else if (activePane === 'watcher' && watcherSelection.isSelectMode) {
-      // Watcher pane is active with selection - highlight correlated parent turns
-      const selectedIndex = watcherSelection.selectionRef.current.selectedIndex;
-      const selectedLine = watcherConversation[selectedIndex];
+    } else if (activePane === 'supervisor' && supervisorSelection.isSelectMode) {
+      // Supervisor pane is active with selection - highlight correlated subordinate turns
+      const selectedIndex = supervisorSelection.selectionRef.current.selectedIndex;
+      const selectedLine = supervisorConversation[selectedIndex];
       if (selectedLine) {
-        const watcherTurn = selectedLine.messageIndex;
-        const parentTurns = watcherToParentTurns.get(watcherTurn);
-        if (parentTurns) {
-          parentTurns.forEach(t => highlighted.add(t));
+        const supervisorTurn = selectedLine.messageIndex;
+        const subordinateTurns = supervisorToSubordinateTurns.get(supervisorTurn);
+        if (subordinateTurns) {
+          subordinateTurns.forEach(t => highlighted.add(t));
         }
       }
     }
@@ -187,14 +187,14 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     return highlighted;
   }, [
     activePane,
-    parentSelection.isSelectMode,
-    watcherSelection.isSelectMode,
-    parentSelection.selectionRef,
-    watcherSelection.selectionRef,
-    parentConversation,
-    watcherConversation,
-    parentToWatcherTurns,
-    watcherToParentTurns,
+    subordinateSelection.isSelectMode,
+    supervisorSelection.isSelectMode,
+    subordinateSelection.selectionRef,
+    supervisorSelection.selectionRef,
+    subordinateConversation,
+    supervisorConversation,
+    subordinateToSupervisorTurns,
+    supervisorToSubordinateTurns,
   ]);
 
   // Handle keyboard input with LOW priority (view navigation)
@@ -238,45 +238,45 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
       // Left/Right arrows switch panes (only when NOT in select mode and NOT shift)
       if (!activeSelectMode) {
         if (key.leftArrow && !key.shift) {
-          setActivePane('parent');
+          setActivePane('subordinate');
           return true;
         }
         if (key.rightArrow && !key.shift) {
-          setActivePane('watcher');
+          setActivePane('supervisor');
           return true;
         }
       }
 
       // Tab toggles turn-select mode in active pane
       if (key.tab) {
-        if (activePane === 'parent') {
-          parentSelection.toggleSelectMode();
+        if (activePane === 'subordinate') {
+          subordinateSelection.toggleSelectMode();
         } else {
-          watcherSelection.toggleSelectMode();
+          supervisorSelection.toggleSelectMode();
         }
         return true;
       }
 
       // Escape exits select mode
       if (key.escape && activeSelectMode) {
-        if (activePane === 'parent') {
-          parentSelection.exitSelectMode();
+        if (activePane === 'subordinate') {
+          subordinateSelection.exitSelectMode();
         } else {
-          watcherSelection.exitSelectMode();
+          supervisorSelection.exitSelectMode();
         }
         return true;
       }
 
-      // Enter in parent pane select mode: "Discuss Selected" - pre-fill input
-      if (key.return && activePane === 'parent' && parentSelection.isSelectMode) {
-        const selectedIndex = parentSelection.selectionRef.current.selectedIndex;
-        const selectedLine = parentConversation[selectedIndex];
+      // Enter in subordinate pane select mode: "Discuss Selected" - pre-fill input
+      if (key.return && activePane === 'subordinate' && subordinateSelection.isSelectMode) {
+        const selectedIndex = subordinateSelection.selectionRef.current.selectedIndex;
+        const selectedLine = subordinateConversation[selectedIndex];
 
         if (selectedLine) {
           const messageIndex = selectedLine.messageIndex;
           const turnNumber = messageIndex + 1; // 1-indexed for display
           const turnContent = getFirstContentOfTurn(
-            parentConversation,
+            subordinateConversation,
             messageIndex
           );
 
@@ -286,24 +286,24 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
               turnContent
             );
             onInputChange(prefill);
-            parentSelection.exitSelectMode();
+            subordinateSelection.exitSelectMode();
           }
         }
         return true;
       }
 
-      // WATCH-016: Enter in watcher pane select mode: Open TurnContentModal
+      // WATCH-016: Enter in supervisor pane select mode: Open TurnContentModal
       if (
         key.return &&
-        activePane === 'watcher' &&
-        watcherSelection.isSelectMode
+        activePane === 'supervisor' &&
+        supervisorSelection.isSelectMode
       ) {
-        const selectedIndex = watcherSelection.selectionRef.current.selectedIndex;
-        const selectedLine = watcherConversation[selectedIndex];
+        const selectedIndex = supervisorSelection.selectionRef.current.selectedIndex;
+        const selectedLine = supervisorConversation[selectedIndex];
 
         if (selectedLine && onOpenTurnContent) {
           // Collect all content lines for this turn to build full content
-          const fullContent = watcherConversation
+          const fullContent = supervisorConversation
             .filter(
               line =>
                 line.messageIndex === selectedLine.messageIndex &&
@@ -344,8 +344,8 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         selectedIndex: number
       ) => {
         const paneActive = isParentPane
-          ? activePane === 'parent'
-          : activePane === 'watcher';
+          ? activePane === 'subordinate'
+          : activePane === 'supervisor';
 
         // WATCH-011: Check if this line's turn should be cross-pane highlighted
         // Cross-pane highlight applies to the INACTIVE pane
@@ -381,12 +381,12 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 
         // Content line with role-based coloring
         // WATCH-011: Cross-pane highlighted lines get cyan color
-        // WATCH-012: Watcher role gets magenta color
+        // WATCH-012: Supervisor role gets magenta color
         const baseColor = isCrossPaneHighlighted
           ? 'cyan'
           : line.role === 'user'
             ? 'green'
-            : line.role === 'watcher'
+            : line.role === 'supervisor'
               ? 'magenta'
               : line.isThinking
                 ? 'yellow'
@@ -413,7 +413,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 
   return (
     <Box flexDirection="column" flexGrow={1} overflow="hidden">
-      {/* WATCH-015: Shared session header with watcher info */}
+      {/* WATCH-015: Shared session header with supervisor info */}
       <SessionHeader
         modelId={modelId}
         hasReasoning={displayReasoning}
@@ -424,15 +424,15 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         tokenUsage={tokenUsage}
         rustTokens={rustTokens}
         contextFillPercentage={contextFillPercentage}
-        watcherInfo={watcherHeaderInfo ? {
-          slug: watcherHeaderInfo.slug,
-          instanceNumber: watcherHeaderInfo.instanceNumber,
+        supervisorInfo={supervisorHeaderInfo ? {
+          slug: supervisorHeaderInfo.slug,
+          instanceNumber: supervisorHeaderInfo.instanceNumber,
         } : undefined}
       />
 
       {/* Split panes container */}
       <Box flexDirection="row" flexGrow={1} overflow="hidden">
-        {/* Left pane: Parent conversation */}
+        {/* Left pane: Subordinate conversation */}
         <Box
           flexDirection="column"
           flexGrow={1}
@@ -446,73 +446,73 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         >
           {/* Pane header */}
           <Box height={1} paddingX={1} overflow="hidden">
-            <Text bold dimColor={activePane !== 'parent'} wrap="truncate">
-              {activePane === 'parent' ? '> ' : '  '}PARENT
-              {parentSelection.isSelectMode ? ' [SELECT]' : ''}
-              {' '}({getContentLineCount(parentConversation)})
+            <Text bold dimColor={activePane !== 'subordinate'} wrap="truncate">
+              {activePane === 'subordinate' ? '> ' : '  '}PARENT
+              {subordinateSelection.isSelectMode ? ' [SELECT]' : ''}
+              {' '}({getContentLineCount(subordinateConversation)})
             </Text>
           </Box>
           {/* Pane content */}
           <Box flexGrow={1} flexBasis={0} overflow="hidden">
             <VirtualList
-              items={parentConversation}
+              items={subordinateConversation}
               renderItem={renderConversationItem(
                 true,
-                parentSelection.isSelectMode,
-                parentConversation,
+                subordinateSelection.isSelectMode,
+                subordinateConversation,
                 crossPaneHighlightedTurns
               )}
-              keyExtractor={(_line, index) => `parent-${index}`}
-              emptyMessage="No parent conversation"
+              keyExtractor={(_line, index) => `subordinate-${index}`}
+              emptyMessage="No subordinate conversation"
               showScrollbar={true}
-              isFocused={activePane === 'parent' && !isLoading}
+              isFocused={activePane === 'subordinate' && !isLoading}
               scrollToEnd={true}
-              selectionMode={parentSelection.isSelectMode ? 'item' : 'scroll'}
+              selectionMode={subordinateSelection.isSelectMode ? 'item' : 'scroll'}
               groupBy={
-                parentSelection.isSelectMode
+                subordinateSelection.isSelectMode
                   ? line => line.messageIndex
                   : undefined
               }
-              groupPaddingBefore={parentSelection.isSelectMode ? 1 : 0}
-              selectionRef={parentSelection.selectionRef}
+              groupPaddingBefore={subordinateSelection.isSelectMode ? 1 : 0}
+              selectionRef={subordinateSelection.selectionRef}
               fixedHeight={virtualListHeight}
             />
           </Box>
         </Box>
 
-        {/* Right pane: Watcher conversation */}
+        {/* Right pane: Supervisor conversation */}
         <Box flexDirection="column" flexGrow={1} flexBasis={0} overflow="hidden">
           {/* Pane header */}
           <Box height={1} paddingX={1} overflow="hidden">
-            <Text bold dimColor={activePane !== 'watcher'} wrap="truncate">
-              {activePane === 'watcher' ? '> ' : '  '}WATCHER
-              {watcherSelection.isSelectMode ? ' [SELECT]' : ''}
-              {' '}({getContentLineCount(watcherConversation)})
+            <Text bold dimColor={activePane !== 'supervisor'} wrap="truncate">
+              {activePane === 'supervisor' ? '> ' : '  '}[SUPERVISOR]
+              {supervisorSelection.isSelectMode ? ' [SELECT]' : ''}
+              {' '}({getContentLineCount(supervisorConversation)})
             </Text>
           </Box>
           {/* Pane content */}
           <Box flexGrow={1} flexBasis={0} overflow="hidden">
             <VirtualList
-              items={watcherConversation}
+              items={supervisorConversation}
               renderItem={renderConversationItem(
                 false,
-                watcherSelection.isSelectMode,
-                watcherConversation,
+                supervisorSelection.isSelectMode,
+                supervisorConversation,
                 crossPaneHighlightedTurns
               )}
-              keyExtractor={(_line, index) => `watcher-${index}`}
-              emptyMessage="Start chatting with your watcher..."
+              keyExtractor={(_line, index) => `supervisor-${index}`}
+              emptyMessage="Start chatting with your supervisor..."
               showScrollbar={true}
-              isFocused={activePane === 'watcher' && !isLoading}
+              isFocused={activePane === 'supervisor' && !isLoading}
               scrollToEnd={true}
-              selectionMode={watcherSelection.isSelectMode ? 'item' : 'scroll'}
+              selectionMode={supervisorSelection.isSelectMode ? 'item' : 'scroll'}
               groupBy={
-                watcherSelection.isSelectMode
+                supervisorSelection.isSelectMode
                   ? line => line.messageIndex
                   : undefined
               }
-              groupPaddingBefore={watcherSelection.isSelectMode ? 1 : 0}
-              selectionRef={watcherSelection.selectionRef}
+              groupPaddingBefore={supervisorSelection.isSelectMode ? 1 : 0}
+              selectionRef={supervisorSelection.selectionRef}
               fixedHeight={virtualListHeight}
             />
           </Box>

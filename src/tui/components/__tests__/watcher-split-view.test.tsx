@@ -1,7 +1,7 @@
 /**
  * Feature: spec/features/watcher-split-view-ui.feature
  *
- * Tests for Watcher Split View UI (WATCH-010)
+ * Tests for Supervisor Split View UI (WATCH-010)
  *
  * NOTE: These tests verify the core logic that will be implemented in AgentView.tsx.
  * The logic functions here MUST match the implementation.
@@ -12,14 +12,14 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock the codelet-napi module
-const mockSessionGetParent = vi.fn();
+const mockSessionGetSubordinate = vi.fn();
 const mockSessionGetMergedOutput = vi.fn();
 const mockSessionGetRole = vi.fn();
 const mockSessionGetStatus = vi.fn();
 const mockSessionSendInput = vi.fn();
 
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionGetParent: mockSessionGetParent,
+  sessionGetSubordinate: mockSessionGetSubordinate,
   sessionGetMergedOutput: mockSessionGetMergedOutput,
   sessionGetRole: mockSessionGetRole,
   sessionGetStatus: mockSessionGetStatus,
@@ -47,37 +47,37 @@ interface ConversationLine {
   turnIndex?: number;
 }
 
-type ActivePane = 'parent' | 'watcher';
+type ActivePane = 'subordinate' | 'supervisor';
 
 // Split view state - MUST match AgentView.tsx state shape
 interface SplitViewState {
-  isWatcherSession: boolean;
+  isSupervisorSession: boolean;
   activePane: ActivePane;
-  parentSessionId: string | null;
-  parentSessionName: string;
-  parentConversation: ConversationLine[];
-  watcherConversation: ConversationLine[];
+  subordinateSessionId: string | null;
+  subordinateSessionName: string;
+  subordinateConversation: ConversationLine[];
+  supervisorConversation: ConversationLine[];
   isTurnSelectMode: boolean;
   selectedTurnIndex: number;
 }
 
-// Function to detect if session is a watcher
-const isWatcherSession = (sessionId: string): boolean => {
-  const parentId = mockSessionGetParent(sessionId);
-  return parentId !== null;
+// Function to detect if session is a supervisor
+const isSupervisorSession = (sessionId: string): boolean => {
+  const subordinateId = mockSessionGetSubordinate(sessionId);
+  return subordinateId !== null;
 };
 
-// Function to get parent session info
-const getParentSessionInfo = (
-  watcherSessionId: string
-): { parentId: string; parentName: string } | null => {
-  const parentId = mockSessionGetParent(watcherSessionId);
-  if (!parentId) return null;
+// Function to get subordinate session info
+const getSubordinateSessionInfo = (
+  supervisorSessionId: string
+): { subordinateId: string; subordinateName: string } | null => {
+  const subordinateId = mockSessionGetSubordinate(supervisorSessionId);
+  if (!subordinateId) return null;
 
-  const role = mockSessionGetRole(watcherSessionId);
+  const role = mockSessionGetRole(supervisorSessionId);
   return {
-    parentId,
-    parentName: role?.description || 'Parent Session',
+    subordinateId,
+    subordinateName: role?.brief || 'Subordinate Session',
   };
 };
 
@@ -87,9 +87,9 @@ const switchActivePane = (
   direction: 'left' | 'right'
 ): ActivePane => {
   if (direction === 'left') {
-    return 'parent';
+    return 'subordinate';
   } else {
-    return 'watcher';
+    return 'supervisor';
   }
 };
 
@@ -117,24 +117,25 @@ const generateDiscussSelectedPrefill = (
   turnContent: string
 ): string => {
   const preview = turnContent.slice(0, 50) + (turnContent.length > 50 ? '...' : '');
-  return `Regarding turn ${turnIndex} in parent session:\n\`\`\`\n${preview}\n\`\`\`\n`;
+  return `Regarding turn ${turnIndex} in subordinate session:\n\`\`\`\n${preview}\n\`\`\`\n`;
 };
 
-// Function to format header for watcher session
-const formatWatcherHeader = (roleName: string, parentName: string): string => {
-  return `[WATCHER] ${roleName} (watching: ${parentName})`;
+// Function to format header for supervisor session
+// WATCH-024: [WATCHER] → [SUPERVISOR]
+const formatSupervisorHeader = (roleName: string, subordinateName: string): string => {
+  return `[SUPERVISOR] ${roleName} (watching: ${subordinateName})`;
 };
 
-describe('Feature: Watcher Split View UI', () => {
+describe('Feature: Supervisor Split View UI', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('Scenario: Split view renders when viewing a watcher session', () => {
-    it('should render split view for watcher sessions', () => {
-      // @step Given a parent session "Main Dev Session" exists with conversation history
-      const parentSessionId = 'parent-session-123';
-      const parentConversation: ConversationLine[] = [
+  describe('Scenario: Split view renders when viewing a supervisor session', () => {
+    it('should render split view for supervisor sessions', () => {
+      // @step Given a subordinate session "Main Dev Session" exists with conversation history
+      const subordinateSessionId = 'subordinate-session-123';
+      const subordinateConversation: ConversationLine[] = [
         { role: 'user', content: 'Hello', turnIndex: 0 },
         { role: 'assistant', content: 'Hi there!', turnIndex: 1 },
       ];
@@ -143,123 +144,122 @@ describe('Feature: Watcher Split View UI', () => {
         { type: 'Text', text: 'Hi there!' },
       ]);
 
-      // @step And a watcher session "Security Reviewer" is watching "Main Dev Session"
-      const watcherSessionId = 'watcher-session-456';
-      mockSessionGetParent.mockReturnValue(parentSessionId);
+      // @step And a supervisor session "Security Reviewer" is watching "Main Dev Session"
+      const supervisorSessionId = 'supervisor-session-456';
+      mockSessionGetSubordinate.mockReturnValue(subordinateSessionId);
       mockSessionGetRole.mockReturnValue({
         name: 'Security Reviewer',
-        description: 'Main Dev Session',
-        authority: 'supervisor',
+        brief: 'Main Dev Session',
       });
 
-      // @step When I switch to the watcher session "Security Reviewer"
-      const parentInfo = getParentSessionInfo(watcherSessionId);
-      expect(parentInfo).not.toBeNull();
-      expect(parentInfo?.parentId).toBe(parentSessionId);
+      // @step When I switch to the supervisor session "Security Reviewer"
+      const subordinateInfo = getSubordinateSessionInfo(supervisorSessionId);
+      expect(subordinateInfo).not.toBeNull();
+      expect(subordinateInfo?.subordinateId).toBe(subordinateSessionId);
 
       // @step Then the view renders with two vertical panes
       const state: SplitViewState = {
-        isWatcherSession: isWatcherSession(watcherSessionId),
-        activePane: 'watcher',
-        parentSessionId: parentInfo!.parentId,
-        parentSessionName: parentInfo!.parentName,
-        parentConversation,
-        watcherConversation: [],
+        isSupervisorSession: isSupervisorSession(supervisorSessionId),
+        activePane: 'supervisor',
+        subordinateSessionId: subordinateInfo!.subordinateId,
+        subordinateSessionName: subordinateInfo!.subordinateName,
+        subordinateConversation,
+        supervisorConversation: [],
         isTurnSelectMode: false,
         selectedTurnIndex: 0,
       };
-      expect(state.isWatcherSession).toBe(true);
+      expect(state.isSupervisorSession).toBe(true);
 
-      // @step And the left pane shows the parent conversation from "Main Dev Session"
-      expect(state.parentConversation).toHaveLength(2);
-      expect(state.parentSessionId).toBe(parentSessionId);
+      // @step And the left pane shows the subordinate conversation from "Main Dev Session"
+      expect(state.subordinateConversation).toHaveLength(2);
+      expect(state.subordinateSessionId).toBe(subordinateSessionId);
 
-      // @step And the right pane shows the watcher conversation
-      expect(state.watcherConversation).toBeDefined();
-      expect(state.activePane).toBe('watcher');
+      // @step And the right pane shows the supervisor conversation
+      expect(state.supervisorConversation).toBeDefined();
+      expect(state.activePane).toBe('supervisor');
 
-      // @step And the header shows "[WATCHER] Security Reviewer (watching: Main Dev Session)"
-      const header = formatWatcherHeader('Security Reviewer', 'Main Dev Session');
-      expect(header).toBe('[WATCHER] Security Reviewer (watching: Main Dev Session)');
+      // @step And the header shows "[SUPERVISOR] Security Reviewer (watching: Main Dev Session)"
+      const header = formatSupervisorHeader('Security Reviewer', 'Main Dev Session');
+      expect(header).toBe('[SUPERVISOR] Security Reviewer (watching: Main Dev Session)');
     });
   });
 
-  describe('Scenario: Switch active pane to watcher with right arrow', () => {
-    it('should switch to watcher pane when pressing right arrow', () => {
-      // @step Given I am viewing the watcher split view
-      let state: SplitViewState = {
-        isWatcherSession: true,
-        activePane: 'parent',
-        parentSessionId: 'parent-123',
-        parentSessionName: 'Main Dev Session',
-        parentConversation: [],
-        watcherConversation: [],
+  describe('Scenario: Switch active pane to supervisor with right arrow', () => {
+    it('should switch to supervisor pane when pressing right arrow', () => {
+      // @step Given I am viewing the supervisor split view
+      const state: SplitViewState = {
+        isSupervisorSession: true,
+        activePane: 'subordinate',
+        subordinateSessionId: 'subordinate-123',
+        subordinateSessionName: 'Main Dev Session',
+        subordinateConversation: [],
+        supervisorConversation: [],
         isTurnSelectMode: false,
         selectedTurnIndex: 0,
       };
 
-      // @step And the left (parent) pane is currently active
-      expect(state.activePane).toBe('parent');
+      // @step And the left (subordinate) pane is currently active
+      expect(state.activePane).toBe('subordinate');
 
       // @step When I press the Right arrow key
       state.activePane = switchActivePane(state.activePane, 'right');
 
-      // @step Then the right (watcher) pane becomes active
-      expect(state.activePane).toBe('watcher');
+      // @step Then the right (supervisor) pane becomes active
+      expect(state.activePane).toBe('supervisor');
 
-      // @step And the watcher pane has bright styling
-      // (verified in UI by checking activePane === 'watcher' applies bright styling)
-      expect(state.activePane).toBe('watcher');
+      // @step And the supervisor pane has bright styling
+      // (verified in UI by checking activePane === 'supervisor' applies bright styling)
+      expect(state.activePane).toBe('supervisor');
 
-      // @step And the parent pane has dimmed styling
-      // (verified in UI by checking activePane !== 'parent' applies dimmed styling)
-      expect(state.activePane).not.toBe('parent');
+      // @step And the subordinate pane has dimmed styling
+      // (verified in UI by checking activePane !== 'subordinate' applies dimmed styling)
+      expect(state.activePane).not.toBe('subordinate');
     });
   });
 
-  describe('Scenario: Switch active pane to parent with left arrow', () => {
-    it('should switch to parent pane when pressing left arrow', () => {
-      // @step Given I am viewing the watcher split view
-      let state: SplitViewState = {
-        isWatcherSession: true,
-        activePane: 'watcher',
-        parentSessionId: 'parent-123',
-        parentSessionName: 'Main Dev Session',
-        parentConversation: [],
-        watcherConversation: [],
+  describe('Scenario: Switch active pane to subordinate with left arrow', () => {
+    it('should switch to subordinate pane when pressing left arrow', () => {
+      // @step Given I am viewing the supervisor split view
+      const state: SplitViewState = {
+        isSupervisorSession: true,
+        activePane: 'supervisor',
+        subordinateSessionId: 'subordinate-123',
+        subordinateSessionName: 'Main Dev Session',
+        subordinateConversation: [],
+        supervisorConversation: [],
         isTurnSelectMode: false,
         selectedTurnIndex: 0,
       };
 
-      // @step And the right (watcher) pane is currently active
-      expect(state.activePane).toBe('watcher');
+      // @step And the right (supervisor) pane is currently active
+      expect(state.activePane).toBe('supervisor');
 
       // @step When I press the Left arrow key
       state.activePane = switchActivePane(state.activePane, 'left');
 
-      // @step Then the left (parent) pane becomes active
-      expect(state.activePane).toBe('parent');
+      // @step Then the left (subordinate) pane becomes active
+      expect(state.activePane).toBe('subordinate');
 
-      // @step And the parent pane has bright styling
-      // (verified in UI by checking activePane === 'parent' applies bright styling)
-      expect(state.activePane).toBe('parent');
+      // @step And the subordinate pane has bright styling
+      // (verified in UI by checking activePane === 'subordinate' applies bright styling)
+      expect(state.activePane).toBe('subordinate');
 
-      // @step And the watcher pane has dimmed styling
-      // (verified in UI by checking activePane !== 'watcher' applies dimmed styling)
-      expect(state.activePane).not.toBe('watcher');
+      // @step And the supervisor pane has dimmed styling
+      // (verified in UI by checking activePane !== 'supervisor' applies dimmed styling)
+      expect(state.activePane).not.toBe('supervisor');
     });
   });
 
   describe('Scenario: Toggle turn-select mode with Tab', () => {
     it('should enable turn-select mode when Tab is pressed', () => {
-      // @step Given I am viewing the watcher split view
-      let state: SplitViewState = {
-        isWatcherSession: true,
-        activePane: 'watcher',
-        parentSessionId: 'parent-123',
-        parentSessionName: 'Main Dev Session',
-        parentConversation: [],
-        watcherConversation: [
+      // @step Given I am viewing the supervisor split view
+      const state: SplitViewState = {
+        isSupervisorSession: true,
+        activePane: 'supervisor',
+        subordinateSessionId: 'subordinate-123',
+        subordinateSessionName: 'Main Dev Session',
+        subordinateConversation: [],
+        supervisorConversation: [
           { role: 'user', content: 'Check this code', turnIndex: 0 },
           { role: 'assistant', content: 'I will analyze...', turnIndex: 1 },
         ],
@@ -267,8 +267,8 @@ describe('Feature: Watcher Split View UI', () => {
         selectedTurnIndex: 0,
       };
 
-      // @step And the right (watcher) pane is currently active
-      expect(state.activePane).toBe('watcher');
+      // @step And the right (supervisor) pane is currently active
+      expect(state.activePane).toBe('supervisor');
 
       // @step When I press the Tab key
       state.isTurnSelectMode = toggleTurnSelectMode(state.isTurnSelectMode);
@@ -276,22 +276,22 @@ describe('Feature: Watcher Split View UI', () => {
       // @step Then turn-select mode is enabled
       expect(state.isTurnSelectMode).toBe(true);
 
-      // @step And a selection highlight appears in the watcher pane
-      // (verified in UI by checking isTurnSelectMode && activePane === 'watcher' shows highlight)
+      // @step And a selection highlight appears in the supervisor pane
+      // (verified in UI by checking isTurnSelectMode && activePane === 'supervisor' shows highlight)
       expect(state.selectedTurnIndex).toBe(0);
     });
   });
 
   describe('Scenario: Navigate turns with Up/Down in select mode', () => {
     it('should navigate between turns with arrow keys', () => {
-      // @step Given I am viewing the watcher split view
-      let state: SplitViewState = {
-        isWatcherSession: true,
-        activePane: 'watcher',
-        parentSessionId: 'parent-123',
-        parentSessionName: 'Main Dev Session',
-        parentConversation: [],
-        watcherConversation: [
+      // @step Given I am viewing the supervisor split view
+      const state: SplitViewState = {
+        isSupervisorSession: true,
+        activePane: 'supervisor',
+        subordinateSessionId: 'subordinate-123',
+        subordinateSessionName: 'Main Dev Session',
+        subordinateConversation: [],
+        supervisorConversation: [
           { role: 'user', content: 'Turn 0', turnIndex: 0 },
           { role: 'assistant', content: 'Turn 1', turnIndex: 1 },
           { role: 'user', content: 'Turn 2', turnIndex: 2 },
@@ -300,20 +300,20 @@ describe('Feature: Watcher Split View UI', () => {
         selectedTurnIndex: 0,
       };
 
-      // @step And the right (watcher) pane is currently active
-      expect(state.activePane).toBe('watcher');
+      // @step And the right (supervisor) pane is currently active
+      expect(state.activePane).toBe('supervisor');
 
       // @step And turn-select mode is enabled
       expect(state.isTurnSelectMode).toBe(true);
 
-      // @step And multiple turns exist in the watcher pane
-      expect(state.watcherConversation.length).toBeGreaterThan(1);
+      // @step And multiple turns exist in the supervisor pane
+      expect(state.supervisorConversation.length).toBeGreaterThan(1);
 
       // @step When I press the Down arrow key
       state.selectedTurnIndex = navigateTurn(
         state.selectedTurnIndex,
         'down',
-        state.watcherConversation.length - 1
+        state.supervisorConversation.length - 1
       );
 
       // @step Then the selection moves to the next turn
@@ -323,7 +323,7 @@ describe('Feature: Watcher Split View UI', () => {
       state.selectedTurnIndex = navigateTurn(
         state.selectedTurnIndex,
         'up',
-        state.watcherConversation.length - 1
+        state.supervisorConversation.length - 1
       );
 
       // @step Then the selection moves to the previous turn
@@ -331,34 +331,34 @@ describe('Feature: Watcher Split View UI', () => {
     });
   });
 
-  describe('Scenario: Discuss selected message from parent pane', () => {
-    it('should pre-fill input with context from selected parent message', () => {
-      // @step Given I am viewing the watcher split view
-      let state: SplitViewState = {
-        isWatcherSession: true,
-        activePane: 'parent',
-        parentSessionId: 'parent-123',
-        parentSessionName: 'Main Dev Session',
-        parentConversation: [
+  describe('Scenario: Discuss selected message from subordinate pane', () => {
+    it('should pre-fill input with context from selected subordinate message', () => {
+      // @step Given I am viewing the supervisor split view
+      const state: SplitViewState = {
+        isSupervisorSession: true,
+        activePane: 'subordinate',
+        subordinateSessionId: 'subordinate-123',
+        subordinateSessionName: 'Main Dev Session',
+        subordinateConversation: [
           { role: 'user', content: 'Hello', turnIndex: 0 },
           { role: 'assistant', content: 'Hi there!', turnIndex: 1 },
           { role: 'user', content: 'Write a login function', turnIndex: 2 },
           { role: 'assistant', content: 'Here is the code...', turnIndex: 3 },
         ],
-        watcherConversation: [],
+        supervisorConversation: [],
         isTurnSelectMode: true,
         selectedTurnIndex: 2,
       };
 
-      // @step And the left (parent) pane is currently active
-      expect(state.activePane).toBe('parent');
+      // @step And the left (subordinate) pane is currently active
+      expect(state.activePane).toBe('subordinate');
 
       // @step And turn-select mode is enabled
       expect(state.isTurnSelectMode).toBe(true);
 
       // @step And I have selected turn 3 with content "Write a login function"
       // Note: Turn 3 in Gherkin refers to 0-indexed turn 2
-      const selectedTurn = state.parentConversation[state.selectedTurnIndex];
+      const selectedTurn = state.subordinateConversation[state.selectedTurnIndex];
       expect(selectedTurn.content).toBe('Write a login function');
 
       // @step When I press the Enter key
@@ -370,86 +370,85 @@ describe('Feature: Watcher Split View UI', () => {
       // @step Then the input is pre-filled with context from the selected turn
       expect(prefill).toContain('Write a login function');
 
-      // @step And the pre-fill includes "Regarding turn 3 in parent session:"
-      expect(prefill).toContain('Regarding turn 3 in parent session:');
+      // @step And the pre-fill includes "Regarding turn 3 in subordinate session:"
+      expect(prefill).toContain('Regarding turn 3 in subordinate session:');
     });
   });
 
-  describe('Scenario: Input always sends to watcher session', () => {
-    it('should send input only to watcher session', () => {
-      // @step Given I am viewing the watcher split view
-      const watcherSessionId = 'watcher-456';
-      const parentSessionId = 'parent-123';
+  describe('Scenario: Input always sends to supervisor session', () => {
+    it('should send input only to supervisor session', () => {
+      // @step Given I am viewing the supervisor split view
+      const supervisorSessionId = 'supervisor-456';
+      const subordinateSessionId = 'subordinate-123';
 
-      let state: SplitViewState = {
-        isWatcherSession: true,
-        activePane: 'watcher',
-        parentSessionId,
-        parentSessionName: 'Main Dev Session',
-        parentConversation: [],
-        watcherConversation: [],
+      const state: SplitViewState = {
+        isSupervisorSession: true,
+        activePane: 'supervisor',
+        subordinateSessionId,
+        subordinateSessionName: 'Main Dev Session',
+        subordinateConversation: [],
+        supervisorConversation: [],
         isTurnSelectMode: false,
         selectedTurnIndex: 0,
       };
 
-      // @step And the watcher session is "Security Reviewer"
+      // @step And the supervisor session is "Security Reviewer"
       mockSessionGetRole.mockReturnValue({
         name: 'Security Reviewer',
-        description: 'Reviews security issues',
-        authority: 'supervisor',
+        brief: 'Reviews security issues',
       });
 
       // @step When I type "Also check for XSS vulnerabilities" in the input
       const inputMessage = 'Also check for XSS vulnerabilities';
 
       // @step And I press Enter to send
-      // In implementation: sessionSendInput(watcherSessionId, message)
-      mockSessionSendInput(watcherSessionId, inputMessage);
+      // In implementation: sessionSendInput(supervisorSessionId, message)
+      mockSessionSendInput(supervisorSessionId, inputMessage);
 
-      // @step Then the message is sent to the watcher session
+      // @step Then the message is sent to the supervisor session
       expect(mockSessionSendInput).toHaveBeenCalledWith(
-        watcherSessionId,
+        supervisorSessionId,
         inputMessage
       );
 
-      // @step And the message is not sent to the parent session
+      // @step And the message is not sent to the subordinate session
       expect(mockSessionSendInput).not.toHaveBeenCalledWith(
-        parentSessionId,
+        subordinateSessionId,
         expect.any(String)
       );
     });
   });
 
   describe('Scenario: Regular session shows normal single-pane view', () => {
-    it('should show single-pane view for non-watcher sessions', () => {
+    it('should show single-pane view for non-supervisor sessions', () => {
       // @step Given a regular session "Dev Session" exists
       const sessionId = 'regular-session-789';
 
-      // @step And the session has no parent (not a watcher)
-      mockSessionGetParent.mockReturnValue(null);
+      // @step And the session has no subordinate (not a supervisor)
+      mockSessionGetSubordinate.mockReturnValue(null);
 
       // @step When I switch to "Dev Session"
-      const isWatcher = isWatcherSession(sessionId);
-      const parentInfo = getParentSessionInfo(sessionId);
+      const isSupervisor = isSupervisorSession(sessionId);
+      const subordinateInfo = getSubordinateSessionInfo(sessionId);
 
       // @step Then the normal single-pane AgentView renders
-      expect(isWatcher).toBe(false);
-      expect(parentInfo).toBeNull();
+      expect(isSupervisor).toBe(false);
+      expect(subordinateInfo).toBeNull();
 
       // @step And no split view is shown
-      // (verified in UI by checking isWatcherSession === false renders single pane)
+      // (verified in UI by checking isSupervisorSession === false renders single pane)
       const state: SplitViewState = {
-        isWatcherSession: false,
-        activePane: 'watcher',
-        parentSessionId: null,
-        parentSessionName: '',
-        parentConversation: [],
-        watcherConversation: [],
+        isSupervisorSession: false,
+        activePane: 'supervisor',
+        subordinateSessionId: null,
+        subordinateSessionName: '',
+        subordinateConversation: [],
+        supervisorConversation: [],
         isTurnSelectMode: false,
         selectedTurnIndex: 0,
       };
-      expect(state.isWatcherSession).toBe(false);
-      expect(state.parentSessionId).toBeNull();
+      expect(state.isSupervisorSession).toBe(false);
+      expect(state.subordinateSessionId).toBeNull();
     });
   });
 });

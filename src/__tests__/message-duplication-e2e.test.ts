@@ -111,16 +111,16 @@ describe('Message Duplication Bug Investigation', () => {
   });
 
   /**
-   * Test 1: Count WatcherInput chunks per bridge message
+   * Test 1: Count SupervisorInput chunks per bridge message
    *
    * When a message comes from the bridge (Telegram), it goes through:
    * 1. Bridge -> watcher_input channel
    * 2. agent_loop receives from watcher_input
-   * 3. agent_loop emits WatcherInput chunk
+   * 3. agent_loop emits SupervisorInput chunk
    *
-   * If we see multiple WatcherInput chunks for one message, duplication is in Rust.
+   * If we see multiple SupervisorInput chunks for one message, duplication is in Rust.
    */
-  it('should emit exactly ONE WatcherInput chunk per bridge message', async () => {
+  it('should emit exactly ONE SupervisorInput chunk per bridge message', async () => {
     const { sessionManagerCreateWithId, sessionManagerDestroy } = await import(
       '@sengac/codelet-napi'
     );
@@ -149,24 +149,24 @@ describe('Message Duplication Bug Investigation', () => {
     // Simulate a bridge message using GlobalSessionStreamManager
     // This mimics what happens when watcher_input is received
     const testMessage = `Test message ${Date.now()}`;
-    const watcherInputChunk: StreamChunk = {
-      type: 'WatcherInput',
-      text: `[WATCHER: bridge | Authority: Peer | Session: bridge] ${testMessage}`,
+    const supervisorInputChunk: StreamChunk = {
+      type: 'SupervisorInput',
+      text: `[SUPERVISOR: bridge | Session: bridge] ${testMessage}`,
     };
 
     // Simulate the chunk being emitted (this is what agent_loop does)
-    manager.simulateChunk(sessionId, watcherInputChunk);
+    manager.simulateChunk(sessionId, supervisorInputChunk);
 
     // Wait for processing
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Count WatcherInput chunks for this session
-    const watcherInputChunks = receivedChunks.filter(
-      rc => rc.sessionId === sessionId && rc.chunk.type === 'WatcherInput'
+    // Count SupervisorInput chunks for this session
+    const supervisorInputChunks = receivedChunks.filter(
+      rc => rc.sessionId === sessionId && rc.chunk.type === 'SupervisorInput'
     );
 
     console.log(
-      `[TEST] Received ${watcherInputChunks.length} WatcherInput chunk(s)`
+      `[TEST] Received ${supervisorInputChunks.length} SupervisorInput chunk(s)`
     );
     console.log(
       `[TEST] All chunks:`,
@@ -177,8 +177,8 @@ describe('Message Duplication Bug Investigation', () => {
     );
 
     // CRITICAL ASSERTION: Should be exactly 1
-    expect(watcherInputChunks.length).toBe(1);
-    expect(watcherInputChunks[0].chunk.text).toContain(testMessage);
+    expect(supervisorInputChunks.length).toBe(1);
+    expect(supervisorInputChunks[0].chunk.text).toContain(testMessage);
   });
 
   /**
@@ -301,8 +301,8 @@ describe('Message Duplication Bug Investigation', () => {
 
     for (const msg of messages) {
       const chunk: StreamChunk = {
-        type: 'WatcherInput',
-        text: `[WATCHER: test | Authority: Peer | Session: test] ${msg}`,
+        type: 'SupervisorInput',
+        text: `[SUPERVISOR: test | Session: test] ${msg}`,
       };
       manager.simulateChunk(sessionId, chunk);
     }

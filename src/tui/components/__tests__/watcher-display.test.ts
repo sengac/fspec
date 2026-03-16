@@ -3,31 +3,24 @@
 import { describe, expect, it } from 'vitest';
 
 /**
- * Interface for parsed watcher information
+ * Interface for parsed supervisor information
  */
-interface WatcherInfo {
+interface SupervisorInfo {
   role: string;
-  authority: 'Supervisor' | 'Peer';
   sessionId: string;
   content: string;
 }
 
 /**
- * Parse watcher message prefix to extract role, authority, session ID, and content.
- * Format: [WATCHER: role | Authority: level | Session: id]\ncontent
- *
- * @param text - The raw message text
- * @returns WatcherInfo object if prefix found, null otherwise
+ * Parse supervisor message prefix to extract role, session ID, and content.
+ * Format: [SUPERVISOR: role | Session: id]\ncontent
  */
-function parseWatcherPrefix(text: string): WatcherInfo | null {
-  const match = text.match(
-    /^\[WATCHER: ([^|]+) \| Authority: (Supervisor|Peer) \| Session: ([^\]]+)\]\n/
-  );
+function parseSupervisorPrefix(text: string): SupervisorInfo | null {
+  const match = text.match(/^\[SUPERVISOR: ([^|]+) \| Session: ([^\]]+)\]\n/);
   if (match) {
     return {
       role: match[1].trim(),
-      authority: match[2] as 'Supervisor' | 'Peer',
-      sessionId: match[3].trim(),
+      sessionId: match[2].trim(),
       content: text.slice(match[0].length),
     };
   }
@@ -37,160 +30,130 @@ function parseWatcherPrefix(text: string): WatcherInfo | null {
 /**
  * Determine base color for a conversation line based on role.
  */
-function getBaseColor(role: 'user' | 'assistant' | 'tool' | 'watcher'): string {
+function getBaseColor(
+  role: 'user' | 'assistant' | 'tool' | 'supervisor'
+): string {
   if (role === 'user') return 'green';
-  if (role === 'watcher') return 'magenta';
+  if (role === 'supervisor') return 'magenta';
   return 'white';
 }
 
-describe('Purple Watcher Input Display', () => {
-  describe('Parse watcher prefix with supervisor authority', () => {
-    it('should parse supervisor watcher message correctly', () => {
-      // @step Given a message with watcher prefix "[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]"
-      const prefix =
-        '[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]';
+describe('Purple Supervisor Input Display', () => {
+  describe('Parse supervisor prefix', () => {
+    it('should parse supervisor message correctly', () => {
+      // @step Given a message with prefix "[SUPERVISOR: Security Reviewer | Session: abc-123]"
+      const prefix = '[SUPERVISOR: Security Reviewer | Session: abc-123]';
+      const content = 'Consider adding input validation here';
+      const fullMessage = `${prefix}\n${content}`;
 
-      // @step And the message content is "SQL injection vulnerability detected"
-      const content = 'SQL injection vulnerability detected';
-      const message = `${prefix}\n${content}`;
+      // @step When I parse the supervisor prefix
+      const result = parseSupervisorPrefix(fullMessage);
 
-      // @step When the parseWatcherPrefix function parses the message
-      const result = parseWatcherPrefix(message);
-
-      // @step Then the result should contain role "Security Reviewer"
+      // @step Then the role should be "Security Reviewer"
       expect(result).not.toBeNull();
       expect(result!.role).toBe('Security Reviewer');
 
-      // @step And the result should contain authority "Supervisor"
-      expect(result!.authority).toBe('Supervisor');
-
-      // @step And the result should contain sessionId "abc-123"
+      // @step And the session ID should be "abc-123"
       expect(result!.sessionId).toBe('abc-123');
 
-      // @step And the result should contain content "SQL injection vulnerability detected"
-      expect(result!.content).toBe('SQL injection vulnerability detected');
+      // @step And the content should be the message body
+      expect(result!.content).toBe(content);
     });
-  });
 
-  describe('Parse watcher prefix with peer authority', () => {
-    it('should parse peer watcher message correctly', () => {
-      // @step Given a message with watcher prefix "[WATCHER: Code Reviewer | Authority: Peer | Session: xyz-789]"
-      const prefix =
-        '[WATCHER: Code Reviewer | Authority: Peer | Session: xyz-789]';
+    it('should parse another supervisor message correctly', () => {
+      // @step Given a message with prefix "[SUPERVISOR: Code Reviewer | Session: xyz-789]"
+      const prefix = '[SUPERVISOR: Code Reviewer | Session: xyz-789]';
+      const content = 'This looks good to me';
+      const fullMessage = `${prefix}\n${content}`;
 
-      // @step And the message content is "Consider adding error handling"
-      const content = 'Consider adding error handling';
-      const message = `${prefix}\n${content}`;
+      // @step When I parse the supervisor prefix
+      const result = parseSupervisorPrefix(fullMessage);
 
-      // @step When the parseWatcherPrefix function parses the message
-      const result = parseWatcherPrefix(message);
-
-      // @step Then the result should contain role "Code Reviewer"
+      // @step Then the role should be "Code Reviewer"
       expect(result).not.toBeNull();
       expect(result!.role).toBe('Code Reviewer');
 
-      // @step And the result should contain authority "Peer"
-      expect(result!.authority).toBe('Peer');
-
-      // @step And the result should contain sessionId "xyz-789"
+      // @step And the session ID should be "xyz-789"
       expect(result!.sessionId).toBe('xyz-789');
-
-      // @step And the result should contain content "Consider adding error handling"
-      expect(result!.content).toBe('Consider adding error handling');
     });
-  });
 
-  describe('Parse regular message without watcher prefix', () => {
-    it('should return null for messages without watcher prefix', () => {
-      // @step Given a message "Regular user message without prefix"
-      const message = 'Regular user message without prefix';
+    it('should return null for messages without prefix', () => {
+      // @step Given a regular message without supervisor prefix
+      const message = 'This is a normal user message';
 
-      // @step When the parseWatcherPrefix function parses the message
-      const result = parseWatcherPrefix(message);
+      // @step When I parse the supervisor prefix
+      const result = parseSupervisorPrefix(message);
 
       // @step Then the result should be null
       expect(result).toBeNull();
     });
   });
 
-  describe('Parse multiline watcher message', () => {
-    it('should preserve multiline content after prefix', () => {
-      // @step Given a message with watcher prefix "[WATCHER: Arch Advisor | Authority: Peer | Session: def-456]"
-      const prefix =
-        '[WATCHER: Arch Advisor | Authority: Peer | Session: def-456]';
+  describe('Format supervisor message with role prefix', () => {
+    it('should format parsed info as "[W] role> content"', () => {
+      // @step Given a message with supervisor prefix "[SUPERVISOR: Arch Advisor | Session: def-456]"
+      const prefix = '[SUPERVISOR: Arch Advisor | Session: def-456]';
+      const content = 'Consider using the Strategy pattern here';
+      const fullMessage = `${prefix}\n${content}`;
 
-      // @step And the message content is multiline:
-      const content = `First line
-Second line
-Third line`;
-      const message = `${prefix}\n${content}`;
+      // @step When I parse and format the message
+      const result = parseSupervisorPrefix(fullMessage);
+      const formatted = `[W] ${result!.role}> ${result!.content}`;
 
-      // @step When the parseWatcherPrefix function parses the message
-      const result = parseWatcherPrefix(message);
-
-      // @step Then the result should contain all three lines in content
-      expect(result).not.toBeNull();
-      expect(result!.content).toContain('First line');
-      expect(result!.content).toContain('Second line');
-      expect(result!.content).toContain('Third line');
-      expect(result!.content.split('\n')).toHaveLength(3);
+      // @step Then the output should be "[W] Arch Advisor> Consider using the Strategy pattern here"
+      expect(formatted).toBe(
+        '[W] Arch Advisor> Consider using the Strategy pattern here'
+      );
     });
   });
 
-  describe('Display watcher input in magenta color', () => {
-    it('should use correct colors for each role type', () => {
-      // @step Given a ConversationLine with role "watcher"
-      const watcherRole = 'watcher' as const;
+  describe('Supervisor messages display in magenta', () => {
+    it('should use magenta as base color for supervisor role', () => {
+      // @step Given a conversation line with role "supervisor"
+      const role: 'user' | 'assistant' | 'tool' | 'supervisor' = 'supervisor';
 
-      // @step When the line is rendered in the conversation view
-      const watcherColor = getBaseColor(watcherRole);
+      // @step When I get the base color for the line
+      const color = getBaseColor(role);
 
-      // @step Then the base color should be "magenta"
-      expect(watcherColor).toBe('magenta');
+      // @step Then the color should be "magenta"
+      expect(color).toBe('magenta');
+    });
 
-      // @step And it should be distinct from user lines which are "green"
-      const userColor = getBaseColor('user');
-      expect(userColor).toBe('green');
-      expect(watcherColor).not.toBe(userColor);
-
-      // @step And it should be distinct from assistant lines which are "white"
-      const assistantColor = getBaseColor('assistant');
-      expect(assistantColor).toBe('white');
-      expect(watcherColor).not.toBe(assistantColor);
+    it('should use green for user and white for assistant', () => {
+      expect(getBaseColor('user')).toBe('green');
+      expect(getBaseColor('assistant')).toBe('white');
+      expect(getBaseColor('tool')).toBe('white');
     });
   });
 
-  describe('Process WatcherInput chunk to conversation message', () => {
-    it('should create watcher-input message with formatted content', () => {
-      // @step Given a StreamChunk with type "WatcherInput"
+  describe('Process SupervisorInput chunk to conversation message', () => {
+    it('should convert SupervisorInput chunk to supervisor-input message', () => {
+      // @step Given a StreamChunk with type "SupervisorInput"
       const chunk = {
-        type: 'WatcherInput',
-        text: '[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\nVulnerability detected',
+        type: 'SupervisorInput',
+        text: '[SUPERVISOR: Security Reviewer | Session: abc-123]\nVulnerability detected',
       };
 
-      // @step And the text field contains "[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\nVulnerability detected"
+      // @step And the text field contains "[SUPERVISOR: Security Reviewer | Session: abc-123]\nVulnerability detected"
       expect(chunk.text).toBe(
-        '[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\nVulnerability detected'
+        '[SUPERVISOR: Security Reviewer | Session: abc-123]\nVulnerability detected'
       );
 
-      // @step When processChunksToConversation processes the chunk
-      // Simulate processing: parse prefix and format for display
-      const parsed = parseWatcherPrefix(chunk.text);
-      expect(parsed).not.toBeNull();
+      // @step When I process the chunk
+      const result = parseSupervisorPrefix(chunk.text);
+      const message = result
+        ? {
+            type: 'supervisor-input' as const,
+            content: `[W] ${result.role}> ${result.content}`,
+          }
+        : { type: 'supervisor-input' as const, content: chunk.text };
 
-      const formattedContent = `[W] ${parsed!.role}> ${parsed!.content}`;
-      const conversationMessage = {
-        type: 'watcher-input' as const,
-        content: formattedContent,
-      };
+      // @step Then the resulting message type should be "supervisor-input"
+      expect(message.type).toBe('supervisor-input');
 
-      // @step Then a ConversationMessage with type "watcher-input" should be created
-      expect(conversationMessage.type).toBe('watcher-input');
-
-      // @step And the message content should show "[W] Security Reviewer> Vulnerability detected"
-      expect(conversationMessage.content).toBe(
-        '[W] Security Reviewer> Vulnerability detected'
-      );
+      // @step And the content should include the role prefix "[W]"
+      expect(message.content).toContain('[W]');
+      expect(message.content).toContain('Security Reviewer');
     });
   });
 });

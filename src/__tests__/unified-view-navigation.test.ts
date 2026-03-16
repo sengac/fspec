@@ -13,7 +13,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetFirst: vi.fn(),
   sessionClearActive: vi.fn(),
   sessionManagerCreateWithId: vi.fn(),
-  sessionGetParent: vi.fn(),
+  sessionGetSubordinate: vi.fn(),
 }));
 
 import {
@@ -22,7 +22,7 @@ import {
   sessionGetFirst,
   sessionClearActive,
   sessionManagerCreateWithId,
-  sessionGetParent,
+  sessionGetSubordinate,
 } from '@sengac/codelet-napi';
 
 import {
@@ -243,16 +243,16 @@ describe('Feature: Unified Shift+Arrow Navigation', () => {
   // Backward Compatibility Scenario
   // ===========================================
 
-  describe('Scenario: /parent command still works alongside Shift+Left navigation', () => {
-    it('should return parent session ID via sessionGetParent', () => {
-      // @step Given I am viewing a watcher
-      vi.mocked(sessionGetParent).mockReturnValue('session-a');
+  describe('Scenario: sessionGetSubordinate returns subordinate session ID for supervisors', () => {
+    it('should return subordinate session ID via sessionGetSubordinate', () => {
+      // @step Given I am viewing a supervisor session
+      vi.mocked(sessionGetSubordinate).mockReturnValue('session-a');
 
-      // @step When I use /parent command
-      const parentId = sessionGetParent('watcher-w1');
+      // @step When I query the subordinate
+      const subordinateId = sessionGetSubordinate('supervisor-w1');
 
-      // @step Then I should get the parent session ID
-      expect(parentId).toBe('session-a');
+      // @step Then I should get the subordinate session ID
+      expect(subordinateId).toBe('session-a');
     });
   });
 

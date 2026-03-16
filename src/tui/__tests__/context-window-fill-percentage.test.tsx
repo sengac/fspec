@@ -130,8 +130,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),
   // VIEWNV-001: Navigation functions for session/watcher navigation
-  sessionGetParent: vi.fn().mockReturnValue(null),
-  sessionGetWatchers: vi.fn().mockReturnValue([]),
+  sessionGetSubordinate: vi.fn().mockReturnValue(null),
+  sessionGetSupervisors: vi.fn().mockReturnValue([]),
 }));
 
 // Mock Dialog to render children without position="absolute"

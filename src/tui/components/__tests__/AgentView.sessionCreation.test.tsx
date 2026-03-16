@@ -13,7 +13,7 @@ import { useSessionStore } from '../../store/sessionStore';
 vi.mock('@sengac/codelet-napi', () => ({
   sessionGetMergedOutput: vi.fn(() => []),
   sessionManagerList: vi.fn(() => []),
-  sessionGetParent: vi.fn(() => null),
+  sessionGetSubordinate: vi.fn(() => null),
   sessionGetPendingInput: vi.fn(() => ''),
 }));
 

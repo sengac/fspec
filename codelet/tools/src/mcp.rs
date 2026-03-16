@@ -1701,7 +1701,7 @@ mod tests {
             "new tool should appear",
         );
 
-        // @step And the handler should inject a notification message into the session via watcher_input_tx
+        // @step And the handler should inject a notification message into the session via supervisor_input_tx
         let msg = "[MCP:github] Server tools list changed — refreshed 2 tools".to_string();
         injection_tx
             .send(McpInjection::Notification(msg.clone()))
@@ -1739,7 +1739,7 @@ mod tests {
         let (response_tx, response_rx) =
             tokio::sync::oneshot::channel::<Result<CreateMessageResult, String>>();
 
-        // @step And the handler should inject the sampling request into the session via watcher_input_tx with the oneshot sender
+        // @step And the handler should inject the sampling request into the session via supervisor_input_tx with the oneshot sender
         // Build a minimal CreateMessageRequestParams for the test
         let params = CreateMessageRequestParams::new(vec![], 500);
 

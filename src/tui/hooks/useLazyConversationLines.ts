@@ -78,7 +78,7 @@ const LAZY_MODE_THRESHOLD = 50; // Messages
  *
  * @param messages - Conversation messages
  * @param maxWidth - Maximum line width for wrapping
- * @param isWatcherView - Whether this is a watcher view (affects width calculation)
+ * @param isWatcherView - Whether this is a supervisor view (affects width calculation)
  * @returns LazyConversationLinesResult with lineCount and accessor functions
  */
 export function useLazyConversationLines(

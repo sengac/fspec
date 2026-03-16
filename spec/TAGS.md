@@ -228,6 +228,7 @@ Tags that categorize features by functional area.
 | `@statistics` | Statistical analysis |
 | `@status-display` | Status display in user interface |
 | `@strategy-detection` | Strategy detection and selection for reverse ACDD workflows |
+| `@supervisor` | Supervisor/subordinate session management |
 | `@system-reminders` | System reminder and anti-drift pattern features |
 | `@tag-management` | TAGS.md Operations |
 | `@test-coverage` | Test coverage tracking and validation features |
@@ -860,7 +861,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-03-05T05:56:06.428Z_
+_Last updated: 2026-03-15T10:15:45.292Z_
 
 **Update Command**: `fspec tag-stats`
 

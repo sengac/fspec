@@ -28,10 +28,10 @@ pub struct NapiToolCall {
     pub success: bool,
 }
 
-/// BRIDGE-007: Image data for watcher input (from Telegram bridge)
+/// BRIDGE-007: Image data for supervisor input (from Telegram bridge)
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct WatcherInputImage {
+pub struct SupervisorInputImage {
     /// Base64-encoded image data
     pub data: String,
     /// Media type (e.g., "image/jpeg", "image/png")
@@ -165,11 +165,11 @@ pub struct ContextFillInfo {
     pub context_window: f64,
 }
 
-/// Watcher pending injection information (WATCH-020)
-/// Sent when auto_inject=false and watcher detects an [INTERJECT] block
+/// Supervisor pending injection information (WATCH-020)
+/// Sent when auto_inject=false and supervisor detects an [INTERJECT] block
 #[napi(object)]
 #[derive(Debug, Clone)]
-pub struct WatcherPendingInjectionInfo {
+pub struct SupervisorPendingInjectionInfo {
     /// Whether this is an urgent injection
     pub urgent: bool,
     /// The message content that would be injected
@@ -229,7 +229,7 @@ pub enum StreamChunk {
         /// Correlation ID for cross-pane selection highlighting (WATCH-011)
         #[napi(js_name = "correlationId")]
         correlation_id: Option<String>,
-        /// IDs of observed parent chunks that triggered this watcher response (WATCH-011)
+        /// IDs of observed subordinate chunks that triggered this supervisor response (WATCH-011)
         #[napi(js_name = "observedCorrelationIds")]
         observed_correlation_ids: Option<Vec<String>>,
     },
@@ -316,19 +316,19 @@ pub enum StreamChunk {
         text: String,
     },
 
-    /// Watcher input message (WATCH-006: for watcher injection into parent session)
+    /// Supervisor input message (WATCH-006: for supervisor injection into subordinate session)
     /// BRIDGE-007: Extended to support optional images from Telegram bridge
-    WatcherInput {
+    SupervisorInput {
         text: String,
         /// Optional images for multimodal input (BRIDGE-007)
         #[napi(js_name = "images")]
-        images: Option<Vec<WatcherInputImage>>,
+        images: Option<Vec<SupervisorInputImage>>,
     },
 
-    /// Watcher pending injection - when auto_inject=false (WATCH-020)
-    WatcherPendingInjection {
-        #[napi(js_name = "watcherPendingInjection")]
-        watcher_pending_injection: WatcherPendingInjectionInfo,
+    /// Supervisor pending injection - when auto_inject=false (WATCH-020)
+    SupervisorPendingInjection {
+        #[napi(js_name = "supervisorPendingInjection")]
+        supervisor_pending_injection: SupervisorPendingInjectionInfo,
     },
 
     /// UX-002: Compaction completed with structured result data
@@ -449,15 +449,15 @@ impl StreamChunk {
         Self::UserInput { text }
     }
 
-    /// Watcher input message (WATCH-006: for watcher injection into parent session)
+    /// Supervisor input message (WATCH-006: for supervisor injection into subordinate session)
     /// BRIDGE-007: Extended to support optional images
-    pub fn watcher_input(formatted_message: String) -> Self {
-        Self::WatcherInput { text: formatted_message, images: None }
+    pub fn supervisor_input(formatted_message: String) -> Self {
+        Self::SupervisorInput { text: formatted_message, images: None }
     }
     
-    /// Watcher input message with images (BRIDGE-007)
-    pub fn watcher_input_with_images(formatted_message: String, images: Vec<WatcherInputImage>) -> Self {
-        Self::WatcherInput { 
+    /// Supervisor input message with images (BRIDGE-007)
+    pub fn supervisor_input_with_images(formatted_message: String, images: Vec<SupervisorInputImage>) -> Self {
+        Self::SupervisorInput { 
             text: formatted_message, 
             images: if images.is_empty() { None } else { Some(images) }
         }
@@ -477,7 +477,7 @@ impl StreamChunk {
         self
     }
 
-    /// Set observed correlation IDs for watcher response chunks (WATCH-011)
+    /// Set observed correlation IDs for supervisor response chunks (WATCH-011)
     pub fn with_observed_correlation_ids(mut self, ids: Vec<String>) -> Self {
         match &mut self {
             Self::Text { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
@@ -491,10 +491,10 @@ impl StreamChunk {
         self
     }
 
-    /// Watcher pending injection - when auto_inject=false (WATCH-020)
-    pub fn watcher_pending_injection(urgent: bool, content: String) -> Self {
-        Self::WatcherPendingInjection {
-            watcher_pending_injection: WatcherPendingInjectionInfo { urgent, content },
+    /// Supervisor pending injection - when auto_inject=false (WATCH-020)
+    pub fn supervisor_pending_injection(urgent: bool, content: String) -> Self {
+        Self::SupervisorPendingInjection {
+            supervisor_pending_injection: SupervisorPendingInjectionInfo { urgent, content },
         }
     }
 
@@ -627,9 +627,9 @@ impl StreamChunk {
                 "type": "userInput",
                 "text": text,
             }),
-            Self::WatcherInput { text, images } => {
+            Self::SupervisorInput { text, images } => {
                 let mut obj = json!({
-                    "type": "watcherInput",
+                    "type": "supervisorInput",
                     "text": text,
                 });
                 if let Some(imgs) = images {
@@ -640,11 +640,11 @@ impl StreamChunk {
                 }
                 obj
             },
-            Self::WatcherPendingInjection { watcher_pending_injection } => json!({
-                "type": "watcherPendingInjection",
-                "watcherPendingInjection": {
-                    "urgent": watcher_pending_injection.urgent,
-                    "content": watcher_pending_injection.content,
+            Self::SupervisorPendingInjection { supervisor_pending_injection } => json!({
+                "type": "supervisorPendingInjection",
+                "supervisorPendingInjection": {
+                    "urgent": supervisor_pending_injection.urgent,
+                    "content": supervisor_pending_injection.content,
                 },
             }),
             Self::CompactionComplete { compaction_result } => json!({

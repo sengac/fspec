@@ -3,7 +3,7 @@
  *
  * Tests for Auto-inject Toggle in Watcher Creation Dialog (WATCH-021)
  *
- * These tests verify the auto-inject toggle functionality in WatcherCreateView.
+ * These tests verify the auto-inject toggle functionality in SupervisorCreateView.
  * Tests follow the pattern of extracting logic functions that mirror the component's
  * behavior for unit testing without full React/Ink rendering.
  */
@@ -11,11 +11,11 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock the codelet-napi module
-const mockSessionCreateWatcher = vi.fn();
+const mockSessionCreateSupervisor = vi.fn();
 const mockSessionSetRole = vi.fn();
 
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionCreateWatcher: mockSessionCreateWatcher,
+  sessionCreateSupervisor: mockSessionCreateSupervisor,
   sessionSetRole: mockSessionSetRole,
   persistenceSetDataDirectory: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),
@@ -33,24 +33,21 @@ vi.mock('@sengac/codelet-napi', () => ({
 }));
 
 // =============================================================================
-// Type definitions that MUST match WatcherCreateView.tsx after WATCH-021 changes
+// Type definitions that MUST match SupervisorCreateView.tsx after WATCH-021 changes
 // =============================================================================
 
-// Current FocusField type (to be updated in implementation)
-// type FocusField = 'name' | 'authority' | 'model' | 'brief' | 'create';
+// FocusField type — MUST match SupervisorCreateView.tsx
+type FocusField = 'name' | 'model' | 'brief' | 'autoInject' | 'create';
 
-// New FocusField type WITH autoInject (WATCH-021)
-type FocusField = 'name' | 'authority' | 'model' | 'brief' | 'autoInject' | 'create';
-
-// Focus order constant - WATCH-021: autoInject added between brief and create
-const FOCUS_ORDER: FocusField[] = ['name', 'authority', 'model', 'brief', 'autoInject', 'create'];
+// Focus order constant — MUST match SupervisorCreateView.tsx FOCUS_ORDER
+const FOCUS_ORDER: FocusField[] = ['name', 'model', 'brief', 'autoInject', 'create'];
 
 // =============================================================================
-// Helper functions that mirror WatcherCreateView logic
+// Helper functions that mirror SupervisorCreateView logic
 // =============================================================================
 
 /**
- * Focus cycling logic - matches cycleFocusForward in WatcherCreateView.tsx
+ * Focus cycling logic - matches cycleFocusForward in SupervisorCreateView.tsx
  */
 const cycleFocusForward = (currentField: FocusField): FocusField => {
   const currentIndex = FOCUS_ORDER.indexOf(currentField);
@@ -58,7 +55,7 @@ const cycleFocusForward = (currentField: FocusField): FocusField => {
 };
 
 /**
- * Focus cycling logic - matches cycleFocusBackward in WatcherCreateView.tsx
+ * Focus cycling logic - matches cycleFocusBackward in SupervisorCreateView.tsx
  */
 const cycleFocusBackward = (currentField: FocusField): FocusField => {
   const currentIndex = FOCUS_ORDER.indexOf(currentField);
@@ -66,14 +63,14 @@ const cycleFocusBackward = (currentField: FocusField): FocusField => {
 };
 
 /**
- * Auto-inject toggle logic - matches keyboard handler in WatcherCreateView.tsx
+ * Auto-inject toggle logic - matches keyboard handler in SupervisorCreateView.tsx
  */
 const toggleAutoInject = (current: boolean): boolean => {
   return !current;
 };
 
 /**
- * Format auto-inject display - matches render logic in WatcherCreateView.tsx
+ * Format auto-inject display - matches render logic in SupervisorCreateView.tsx
  */
 const formatAutoInjectDisplay = (enabled: boolean, focused: boolean): {
   text: string;
@@ -88,22 +85,22 @@ const formatAutoInjectDisplay = (enabled: boolean, focused: boolean): {
 };
 
 /**
- * onCreate callback signature - MUST match WatcherCreateViewProps.onCreate after WATCH-021
+ * onCreate callback signature - MUST match SupervisorCreateViewProps.onCreate
+ * WATCH-024: authority parameter removed — brief provides all behavioral instruction
  */
 type OnCreateCallback = (
   name: string,
-  authority: 'peer' | 'supervisor',
   model: string,
   brief: string,
   autoInject: boolean
 ) => void;
 
 /**
- * Form state type - matches useState declarations in WatcherCreateView.tsx
+ * Form state type - matches useState declarations in SupervisorCreateView.tsx
+ * WATCH-024: authority field removed
  */
-interface WatcherCreateState {
+interface SupervisorCreateState {
   name: string;
-  authority: 'peer' | 'supervisor';
   selectedModelIndex: number;
   brief: string;
   autoInject: boolean;
@@ -121,10 +118,9 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
 
   describe('Scenario: Auto-inject defaults to enabled', () => {
     it('should default autoInject to true when dialog opens', () => {
-      // @step Given the user opens the watcher creation dialog
-      const initialState: WatcherCreateState = {
+      // @step Given the user opens the supervisor creation dialog
+      const initialState: SupervisorCreateState = {
         name: '',
-        authority: 'peer',
         selectedModelIndex: 0,
         brief: '',
         autoInject: true, // WATCH-021: Default is enabled
@@ -141,10 +137,9 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
 
   describe('Scenario: User disables auto-inject with arrow keys', () => {
     it('should toggle autoInject when Left/Right arrow is pressed', () => {
-      // @step Given the watcher creation dialog is open
-      let state: WatcherCreateState = {
+      // @step Given the supervisor creation dialog is open
+      let state: SupervisorCreateState = {
         name: '',
-        authority: 'peer',
         selectedModelIndex: 0,
         brief: '',
         autoInject: true,
@@ -184,7 +179,7 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
 
   describe('Scenario: Tab navigation includes auto-inject field', () => {
     it('should cycle focus through autoInject field between brief and create', () => {
-      // @step Given the watcher creation dialog is open
+      // @step Given the supervisor creation dialog is open
       let focusField: FocusField = 'name';
 
       // @step And the Brief field is focused
@@ -229,10 +224,9 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
 
   describe('Scenario: Auto-inject field shows focus styling and hint', () => {
     it('should show cyan label and blue highlight when focused', () => {
-      // @step Given the watcher creation dialog is open
-      const state: WatcherCreateState = {
+      // @step Given the supervisor creation dialog is open
+      const state: SupervisorCreateState = {
         name: '',
-        authority: 'peer',
         selectedModelIndex: 0,
         brief: '',
         autoInject: true,
@@ -261,12 +255,11 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
     });
   });
 
-  describe('Scenario: Creating watcher passes auto-inject setting', () => {
+  describe('Scenario: Creating supervisor passes auto-inject setting', () => {
     it('should call onCreate with autoInject=false when disabled', () => {
-      // @step Given the watcher creation dialog is open
-      const state: WatcherCreateState = {
+      // @step Given the supervisor creation dialog is open
+      const state: SupervisorCreateState = {
         name: 'Code Reviewer',
-        authority: 'peer',
         selectedModelIndex: 0,
         brief: 'Watch for bugs',
         autoInject: true,
@@ -280,12 +273,10 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
       const disabledState = { ...state, autoInject: false };
       expect(disabledState.autoInject).toBe(false);
 
-      // @step When the user presses Enter to create the watcher
-      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
+      // @step When the user presses Enter to create the supervisor
       const mockOnCreate = vi.fn<Parameters<OnCreateCallback>, void>();
       mockOnCreate(
         disabledState.name.trim(),
-        disabledState.authority,
         'anthropic/claude-sonnet-4-20250514', // selectedModel with provider prefix
         disabledState.brief.trim(),
         disabledState.autoInject
@@ -294,7 +285,6 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
       // @step Then onCreate should be called with autoInject set to false
       expect(mockOnCreate).toHaveBeenCalledWith(
         'Code Reviewer',
-        'peer',
         'anthropic/claude-sonnet-4-20250514',
         'Watch for bugs',
         false
@@ -302,20 +292,17 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
     });
 
     it('should call onCreate with autoInject=true when enabled', () => {
-      const state: WatcherCreateState = {
+      const state: SupervisorCreateState = {
         name: 'Security Reviewer',
-        authority: 'supervisor',
         selectedModelIndex: 0,
         brief: '',
         autoInject: true,
         focusField: 'create',
       };
 
-      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
       const mockOnCreate = vi.fn<Parameters<OnCreateCallback>, void>();
       mockOnCreate(
         state.name.trim(),
-        state.authority,
         'anthropic/claude-sonnet-4-20250514',
         state.brief.trim(),
         state.autoInject
@@ -323,7 +310,6 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
 
       expect(mockOnCreate).toHaveBeenCalledWith(
         'Security Reviewer',
-        'supervisor',
         'anthropic/claude-sonnet-4-20250514',
         '',
         true
@@ -331,46 +317,43 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
     });
   });
 
-  describe('Integration: handleWatcherCreate passes autoInject to NAPI', () => {
+  describe('Integration: handleSupervisorCreate passes autoInject to NAPI', () => {
     /**
-     * This test verifies the integration contract between WatcherCreateView and AgentView.
-     * The handleWatcherCreate callback must pass autoInject to sessionSetRole.
+     * This test verifies the integration contract between SupervisorCreateView and AgentView.
+     * The handleSupervisorCreate callback must pass autoInject to sessionSetRole.
      */
-    it('should pass autoInject to sessionSetRole via handleWatcherCreate', async () => {
+    it('should pass autoInject to sessionSetRole via handleSupervisorCreate', async () => {
       // Setup mock returns
-      mockSessionCreateWatcher.mockResolvedValue('new-watcher-id');
+      mockSessionCreateSupervisor.mockResolvedValue('new-supervisor-id');
       mockSessionSetRole.mockReturnValue(undefined);
 
-      // Simulate what AgentView.handleWatcherCreate does with WATCH-021 changes
-      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
-      const handleWatcherCreate = async (
+      // Simulate what AgentView.handleSupervisorCreate does
+      // WATCH-024: authority parameter removed, brief provides all behavioral instruction
+      const handleSupervisorCreate = async (
         name: string,
-        authority: 'peer' | 'supervisor',
         model: string,
         brief: string,
         autoInject: boolean
       ): Promise<void> => {
-        const watcherId = await mockSessionCreateWatcher(
-          'parent-session-id',
+        const supervisorId = await mockSessionCreateSupervisor(
+          'subordinate-session-id',
           model,
           '/project',
           name
         );
 
-        // WATCH-021: Pass autoInject to sessionSetRole
+        // WATCH-024: sessionSetRole now takes (id, name, brief, autoInject) — no authority
         mockSessionSetRole(
-          watcherId,
+          supervisorId,
           name,
           brief || null,
-          authority,
-          autoInject // NEW: 5th parameter
+          autoInject
         );
       };
 
-      // Execute - model now includes provider prefix
-      await handleWatcherCreate(
+      // Execute
+      await handleSupervisorCreate(
         'Test Reviewer',
-        'peer',
         'anthropic/claude-sonnet-4-20250514',
         'Test brief',
         false // autoInject disabled
@@ -378,10 +361,9 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
 
       // Verify sessionSetRole was called with autoInject=false
       expect(mockSessionSetRole).toHaveBeenCalledWith(
-        'new-watcher-id',
+        'new-supervisor-id',
         'Test Reviewer',
         'Test brief',
-        'peer',
         false
       );
     });
@@ -421,10 +403,9 @@ describe('Unit Tests: Auto-inject toggle helpers', () => {
   });
 
   describe('FOCUS_ORDER constant', () => {
-    it('should have 6 fields in correct order', () => {
+    it('should have 5 fields in correct order', () => {
       expect(FOCUS_ORDER).toEqual([
         'name',
-        'authority',
         'model',
         'brief',
         'autoInject',
@@ -432,15 +413,14 @@ describe('Unit Tests: Auto-inject toggle helpers', () => {
       ]);
     });
 
-    it('should have autoInject at index 4', () => {
-      expect(FOCUS_ORDER[4]).toBe('autoInject');
+    it('should have autoInject at index 3', () => {
+      expect(FOCUS_ORDER[3]).toBe('autoInject');
     });
   });
 
   describe('cycleFocusForward', () => {
     it('should cycle through all fields', () => {
       let field: FocusField = 'name';
-      field = cycleFocusForward(field); // authority
       field = cycleFocusForward(field); // model
       field = cycleFocusForward(field); // brief
       field = cycleFocusForward(field); // autoInject

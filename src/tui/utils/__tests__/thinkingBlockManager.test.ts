@@ -98,15 +98,15 @@ describe('Feature: Thinking Block Manager', () => {
       expect(result).toBe(-1);
     });
 
-    it('should return -1 when watcher-input comes after streaming thinking block', () => {
-      // @step Given a streaming thinking block followed by watcher input
+    it('should return -1 when supervisor-input comes after streaming thinking block', () => {
+      // @step Given a streaming thinking block followed by supervisor input
       const messages: ConversationMessage[] = [
         {
           type: 'thinking',
           content: '[Thinking]\nOld thought',
           isStreaming: true,
         },
-        { type: 'watcher-input', content: '[W] system> Update' },
+        { type: 'supervisor-input', content: '[W] system> Update' },
       ];
 
       // @step When I find the active thinking block
@@ -198,11 +198,11 @@ describe('Feature: Thinking Block Manager', () => {
       expect(messages[2].isStreaming).toBe(true);
     });
 
-    it('should create new block when watcher-input follows streaming thinking', () => {
-      // @step Given a streaming thinking block followed by watcher input
+    it('should create new block when supervisor-input follows streaming thinking', () => {
+      // @step Given a streaming thinking block followed by supervisor input
       const messages: ConversationMessage[] = [
         { type: 'thinking', content: '[Thinking]\nOld', isStreaming: true },
-        { type: 'watcher-input', content: '[W] system> Update' },
+        { type: 'supervisor-input', content: '[W] system> Update' },
       ];
 
       // @step When I append new thinking content
@@ -401,11 +401,11 @@ describe('Feature: Thinking Block Manager', () => {
       expect(messages[2].content).toBe('[Thinking]\nNew thought');
     });
 
-    it('should create new block after watcher-input (new turn)', () => {
-      // @step Given a thinking block followed by watcher input
+    it('should create new block after supervisor-input (new turn)', () => {
+      // @step Given a thinking block followed by supervisor input
       const messages: ConversationMessage[] = [
         { type: 'thinking', content: '[Thinking]\nOld', isStreaming: true },
-        { type: 'watcher-input', content: '[W] system> Update' },
+        { type: 'supervisor-input', content: '[W] system> Update' },
       ];
 
       // @step When I append thinking in bulk mode

@@ -165,8 +165,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   // AGENT-021: Debug enabled state from Rust
   sessionGetDebugEnabled: vi.fn().mockReturnValue(false),
   // VIEWNV-001: Navigation functions for session/watcher navigation
-  sessionGetParent: vi.fn().mockReturnValue(null),
-  sessionGetWatchers: vi.fn().mockReturnValue([]),
+  sessionGetSubordinate: vi.fn().mockReturnValue(null),
+  sessionGetSupervisors: vi.fn().mockReturnValue([]),
 }));
 
 // Mock Dialog to render children without position="absolute" which breaks ink-testing-library

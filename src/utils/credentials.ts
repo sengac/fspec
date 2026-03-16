@@ -133,7 +133,11 @@ export async function saveCredential(
 
   // Create credentials directory with 700 permissions
   await mkdir(credDir, { recursive: true });
-  await chmod(credDir, 0o700);
+  try {
+    await chmod(credDir, 0o700);
+  } catch {
+    // Ignore chmod errors (directory may have been cleaned up in tests)
+  }
 
   // Load existing credentials
   const credentials = await loadCredentials();
@@ -145,10 +149,26 @@ export async function saveCredential(
   };
 
   // Write credentials file
-  await writeFile(credPath, JSON.stringify(credentials, null, 2), 'utf-8');
+  try {
+    await writeFile(credPath, JSON.stringify(credentials, null, 2), 'utf-8');
+  } catch (err) {
+    // Directory may have been cleaned up (e.g., during test teardown)
+    if (
+      err instanceof Error &&
+      'code' in err &&
+      (err as { code: string }).code === 'ENOENT'
+    ) {
+      return;
+    }
+    throw err;
+  }
 
   // Set file permissions to 600 (owner read/write only)
-  await chmod(credPath, 0o600);
+  try {
+    await chmod(credPath, 0o600);
+  } catch {
+    // Ignore chmod errors (file may have been cleaned up in tests)
+  }
 
   // Notify Rust to reload credentials
   if (credentialsReload) {

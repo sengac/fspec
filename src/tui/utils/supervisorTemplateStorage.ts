@@ -1,10 +1,10 @@
 /**
- * Watcher Template Storage Utilities
+ * Supervisor Template Storage Utilities
  *
- * Handles persistence of watcher templates to user-level storage.
- * Part of WATCH-023: Watcher Templates and Improved Creation UX
+ * Handles persistence of supervisor templates to user-level storage.
+ * Part of WATCH-023: Supervisor Templates and Improved Creation UX
  *
- * @see spec/features/watcher-templates.feature
+ * @see spec/features/supervisor-templates.feature
  */
 
 import { join } from 'path';
@@ -13,15 +13,15 @@ import { readFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { getFspecUserDir } from '../../utils/config';
 import type {
-  WatcherTemplate,
-  WatcherInstance,
-  WatcherListItem,
-} from '../types/watcherTemplate';
+  SupervisorTemplate,
+  SupervisorInstance,
+  SupervisorListItem,
+} from '../types/supervisorTemplate';
 
-const TEMPLATES_FILENAME = 'watcher-templates.json';
+const TEMPLATES_FILENAME = 'supervisor-templates.json';
 
 /**
- * Get the path to the watcher templates file.
+ * Get the path to the supervisor templates file.
  */
 export function getTemplatesPath(): string {
   return join(getFspecUserDir(), TEMPLATES_FILENAME);
@@ -45,24 +45,24 @@ export function generateSlug(name: string): string {
 }
 
 /**
- * Load watcher templates from user storage.
+ * Load supervisor templates from user storage.
  * Returns empty array if file doesn't exist or is invalid.
  */
-export async function loadWatcherTemplates(): Promise<WatcherTemplate[]> {
+export async function loadSupervisorTemplates(): Promise<SupervisorTemplate[]> {
   const templatePath = getTemplatesPath();
   try {
     const content = await readFile(templatePath, 'utf-8');
-    return JSON.parse(content) as WatcherTemplate[];
+    return JSON.parse(content) as SupervisorTemplate[];
   } catch {
     return [];
   }
 }
 
 /**
- * Save watcher templates to user storage.
+ * Save supervisor templates to user storage.
  * Creates the directory if it doesn't exist.
  */
-export function saveWatcherTemplates(templates: WatcherTemplate[]): void {
+export function saveSupervisorTemplates(templates: SupervisorTemplate[]): void {
   const userDir = getFspecUserDir();
   mkdirSync(userDir, { recursive: true });
   const templatePath = getTemplatesPath();
@@ -74,8 +74,8 @@ export function saveWatcherTemplates(templates: WatcherTemplate[]): void {
  */
 export async function findTemplateBySlug(
   slug: string
-): Promise<WatcherTemplate | undefined> {
-  const templates = await loadWatcherTemplates();
+): Promise<SupervisorTemplate | undefined> {
+  const templates = await loadSupervisorTemplates();
   return templates.find(t => t.slug === slug);
 }
 
@@ -85,17 +85,15 @@ export async function findTemplateBySlug(
 export function createTemplate(
   name: string,
   modelId: string,
-  authority: 'peer' | 'supervisor',
   brief: string,
   autoInject: boolean
-): WatcherTemplate {
+): SupervisorTemplate {
   const now = new Date().toISOString();
   return {
     id: randomUUID(),
     name,
     slug: generateSlug(name),
     modelId,
-    authority,
     brief,
     autoInject,
     createdAt: now,
@@ -107,14 +105,11 @@ export function createTemplate(
  * Update an existing template (updates timestamp and regenerates slug if name changed).
  */
 export function updateTemplate(
-  template: WatcherTemplate,
+  template: SupervisorTemplate,
   updates: Partial<
-    Pick<
-      WatcherTemplate,
-      'name' | 'modelId' | 'authority' | 'brief' | 'autoInject'
-    >
+    Pick<SupervisorTemplate, 'name' | 'modelId' | 'brief' | 'autoInject'>
   >
-): WatcherTemplate {
+): SupervisorTemplate {
   const newName = updates.name ?? template.name;
   return {
     ...template,
@@ -129,12 +124,12 @@ export function updateTemplate(
  * Templates are sorted alphabetically. Instances appear under expanded templates.
  * Follows the same pattern as buildFlatModelList() in AgentView.tsx.
  */
-export function buildFlatWatcherList(
-  templates: WatcherTemplate[],
-  instances: WatcherInstance[],
+export function buildFlatSupervisorList(
+  templates: SupervisorTemplate[],
+  instances: SupervisorInstance[],
   expandedTemplates: Set<string>
-): WatcherListItem[] {
-  const items: WatcherListItem[] = [];
+): SupervisorListItem[] {
+  const items: SupervisorListItem[] = [];
 
   // Sort templates alphabetically
   const sortedTemplates = [...templates].sort((a, b) =>
@@ -173,23 +168,21 @@ export function buildFlatWatcherList(
  * Used for type-to-filter search in the template list.
  */
 export function filterTemplates(
-  templates: WatcherTemplate[],
+  templates: SupervisorTemplate[],
   query: string
-): WatcherTemplate[] {
+): SupervisorTemplate[] {
   if (!query.trim()) return templates;
   const lowerQuery = query.toLowerCase();
   return templates.filter(t => t.name.toLowerCase().includes(lowerQuery));
 }
 
 /**
- * Format template display string with authority and instance count.
+ * Format template display string with instance count.
  */
 export function formatTemplateDisplay(
-  template: WatcherTemplate,
+  template: SupervisorTemplate,
   instanceCount: number
 ): string {
-  const authorityDisplay =
-    template.authority === 'supervisor' ? 'Supervisor' : 'Peer';
   const badge = instanceCount > 0 ? ` [${instanceCount} active]` : '';
-  return `${template.name} (${authorityDisplay})${badge}`;
+  return `${template.name}${badge}`;
 }

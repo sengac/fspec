@@ -1822,13 +1822,6 @@ export declare function sessionClearObservedCorrelationIds(
 ): void;
 
 /**
- * Clear the role for a session (WATCH-004)
- *
- * Returns the session to a regular (non-watcher) state.
- */
-export declare function sessionClearRole(sessionId: string): void;
-
-/**
  * Manually trigger context compaction for a background session (NAPI-009 + NAPI-005)
  *
  * Uses in-view DAG construction flow. Sets compaction_in_progress
@@ -1844,14 +1837,14 @@ export declare function sessionCompact(
 ): Promise<CompactionResult>;
 
 /**
- * Create a watcher session for a parent session (WATCH-007)
+ * Create a supervisor session for a parent session (WATCH-007)
  *
  * Creates a new session that watches the specified parent session.
- * The watcher is registered in WatchGraph and immediately starts observing
+ * The watcher is registered in ChainOfCommand and immediately starts observing
  * the parent's output stream via broadcast subscription.
- * WATCH-019: Now spawns watcher_agent_loop instead of regular agent_loop.
+ * WATCH-019: Now spawns supervisor_agent_loop instead of regular agent_loop.
  */
-export declare function sessionCreateWatcher(
+export declare function sessionCreateSupervisor(
   parentId: string,
   model: string,
   project: string,
@@ -1970,13 +1963,6 @@ export declare function sessionGetModel(sessionId: string): SessionModel;
 export declare function sessionGetNext(): string | null;
 
 /**
- * Get the parent session ID for a watcher (WATCH-007)
- *
- * Returns the parent session ID if the session is a watcher, None otherwise.
- */
-export declare function sessionGetParent(sessionId: string): string | null;
-
-/**
  * Get pause state for a session (PAUSE-001)
  *
  * Returns the current pause state if the session is paused, null otherwise.
@@ -2005,14 +1991,28 @@ export declare function sessionGetPrev(): string | null;
 /**
  * Get the role for a session (WATCH-004)
  *
- * Returns None for regular sessions, role info for watcher sessions.
+ * Returns None for regular sessions, role info for supervisor sessions.
  */
 export declare function sessionGetRole(
   sessionId: string
-): SessionRoleInfo | null;
+): SupervisorRoleInfo | null;
 
 /** Get session status */
 export declare function sessionGetStatus(sessionId: string): string;
+
+/**
+ * Get the parent session ID for a watcher (WATCH-007)
+ *
+ * Returns the parent session ID if the session is a watcher, None otherwise.
+ */
+export declare function sessionGetSubordinate(sessionId: string): string | null;
+
+/**
+ * Get all supervisor session IDs for a parent session (WATCH-007)
+ *
+ * Returns a list of session IDs that are watching the specified parent.
+ */
+export declare function sessionGetSupervisors(sessionId: string): Array<string>;
 
 /** Get cached token counts for a background session */
 export declare function sessionGetTokens(sessionId: string): SessionTokens;
@@ -2029,13 +2029,6 @@ export declare function sessionGetTurnDetails(
   sessionId: string,
   turnIndex: number
 ): Promise<NapiTurnDetails | null>;
-
-/**
- * Get all watcher session IDs for a parent session (WATCH-007)
- *
- * Returns a list of session IDs that are watching the specified parent.
- */
-export declare function sessionGetWatchers(sessionId: string): Array<string>;
 
 /**
  * TUI-059: Get work unit context for a session
@@ -2227,16 +2220,6 @@ export interface SessionResultJs {
   baseCommit: string;
 }
 
-/** Session role info returned to TypeScript (WATCH-004) */
-export interface SessionRoleInfo {
-  /** Role name (e.g., "code-reviewer", "supervisor") */
-  name: string;
-  /** Optional description */
-  description?: string;
-  /** Authority level ("peer" or "supervisor") */
-  authority: string;
-}
-
 /**
  * Send fspec command result back to Rust (CODE-009)
  *
@@ -2348,13 +2331,13 @@ export declare function sessionSetModelProfile(
 ): Promise<void>;
 
 /**
- * Set pending observed correlation IDs for a watcher session (WATCH-011)
+ * Set pending observed correlation IDs for a supervisor session (WATCH-011)
  *
  * When processing observations, call this before sending the evaluation prompt.
  * All subsequent output chunks from this session will be tagged with these IDs
  * (in observed_correlation_ids field) until session_clear_observed_correlation_ids is called.
  *
- * This enables cross-pane highlighting: when viewing a watcher session in split view,
+ * This enables cross-pane highlighting: when viewing a supervisor session in split view,
  * selecting a watcher turn shows which parent turns it was responding to.
  */
 export declare function sessionSetObservedCorrelationIds(
@@ -2376,14 +2359,12 @@ export declare function sessionSetPendingInput(
 /**
  * Set the role for a session (WATCH-004)
  *
- * Used to mark a session as a watcher with a specific role and authority level.
- * Authority must be "peer" or "supervisor" (case-insensitive).
+ * Used to mark a session as a supervisor with a specific role and brief.
  */
 export declare function sessionSetRole(
   sessionId: string,
   roleName: string,
-  roleDescription: string | undefined | null,
-  authority: string,
+  roleBrief?: string | undefined | null,
   autoInject?: boolean | undefined | null
 ): void;
 
@@ -2510,7 +2491,7 @@ export type StreamChunk =
   | {
       type: 'Text';
       text: string /** Correlation ID for cross-pane selection highlighting (WATCH-011) */;
-      correlationId?: string /** IDs of observed parent chunks that triggered this watcher response (WATCH-011) */;
+      correlationId?: string /** IDs of observed subordinate chunks that triggered this supervisor response (WATCH-011) */;
       observedCorrelationIds?: Array<string>;
     }
   | {
@@ -2550,13 +2531,13 @@ export type StreamChunk =
   | { type: 'Error'; error: string }
   | { type: 'UserInput'; text: string }
   | {
-      type: 'WatcherInput';
+      type: 'SupervisorInput';
       text: string /** Optional images for multimodal input (BRIDGE-007) */;
-      images?: Array<WatcherInputImage>;
+      images?: Array<SupervisorInputImage>;
     }
   | {
-      type: 'WatcherPendingInjection';
-      watcherPendingInjection: WatcherPendingInjectionInfo;
+      type: 'SupervisorPendingInjection';
+      supervisorPendingInjection: SupervisorPendingInjectionInfo;
     }
   | { type: 'CompactionComplete'; compactionResult: CompactionResult }
   | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
@@ -2567,6 +2548,33 @@ export type StreamChunk =
       isIsolated: boolean /** Path to the worktree (if isolated) */;
       worktreePath?: string;
     };
+
+/** BRIDGE-007: Image data for supervisor input (from Telegram bridge) */
+export interface SupervisorInputImage {
+  /** Base64-encoded image data */
+  data: string;
+  /** Media type (e.g., "image/jpeg", "image/png") */
+  mediaType: string;
+}
+
+/**
+ * Supervisor pending injection information (WATCH-020)
+ * Sent when auto_inject=false and supervisor detects an [INTERJECT] block
+ */
+export interface SupervisorPendingInjectionInfo {
+  /** Whether this is an urgent injection */
+  urgent: boolean;
+  /** The message content that would be injected */
+  content: string;
+}
+
+/** Session role info returned to TypeScript (WATCH-004) */
+export interface SupervisorRoleInfo {
+  /** Role name (e.g., "code-reviewer", "supervisor") */
+  name: string;
+  /** Optional brief describing what this role does */
+  brief?: string;
+}
 
 /** Simple test function to verify callback pattern works from TypeScript */
 export declare function testCallback(
@@ -2641,33 +2649,6 @@ export interface ToolResultInfo {
   toolCallId: string;
   content: string;
   isError: boolean;
-}
-
-/**
- * Inject a watcher message into the parent session (WATCH-007)
- *
- * Formats the message with the watcher's role prefix and queues it
- * on the parent session via receive_watcher_input().
- */
-export declare function watcherInject(watcherId: string, message: string): void;
-
-/** BRIDGE-007: Image data for watcher input (from Telegram bridge) */
-export interface WatcherInputImage {
-  /** Base64-encoded image data */
-  data: string;
-  /** Media type (e.g., "image/jpeg", "image/png") */
-  mediaType: string;
-}
-
-/**
- * Watcher pending injection information (WATCH-020)
- * Sent when auto_inject=false and watcher detects an [INTERJECT] block
- */
-export interface WatcherPendingInjectionInfo {
-  /** Whether this is an urgent injection */
-  urgent: boolean;
-  /** The message content that would be injected */
-  content: string;
 }
 
 /** Result of creating a worktree */

@@ -77,7 +77,7 @@ mod tests {
         );
     }
 
-    // Note: Watcher session testing removed as it requires SessionRole setup
+    // Note: Watcher session testing removed as it requires SupervisorRole setup
     // The regular session test above covers the same validation logic
 
     #[tokio::test]

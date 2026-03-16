@@ -1,23 +1,22 @@
 /**
- * WatcherCreateView - Full-screen form view for creating a new watcher session
+ * SupervisorCreateView - Full-screen form view for creating a new supervisor session
  *
- * WATCH-009: Watcher Creation Dialog UI
+ * WATCH-009: Supervisor Creation Dialog UI
  * WATCH-021: Auto-inject toggle added
  * INPUT-001: Uses centralized input handling with CRITICAL priority
  *
  * This component follows the architecture design from WATCH-001:
  * - Full-screen form overlay (similar to /resume and /search modes)
  * - Role Name input field (required)
- * - Authority selector (Peer | Supervisor)
  * - Model selector (populated from available provider models)
  * - Brief textarea (watching instructions)
  * - Auto-inject toggle (WATCH-021)
  *
  * Keyboard Navigation:
  * - Tab: Cycle focus between fields
- * - ←/→: Toggle Authority or Auto-inject when focused
  * - ↑/↓: Navigate Model selection when focused
- * - Enter: Create watcher (when valid)
+ * - ←/→: Toggle Auto-inject when focused
+ * - Enter: Create supervisor (when valid)
  * - Esc: Cancel and return to overlay
  */
 
@@ -25,38 +24,36 @@ import React, { useState, useCallback } from 'react';
 import { Box, Text } from 'ink';
 import { useInputCompat, InputPriority } from '../input/index';
 
-// Focus field type for cycling - WATCH-021: Added 'autoInject'
-type FocusField = 'name' | 'authority' | 'model' | 'brief' | 'autoInject' | 'create';
+// Focus field type for cycling
+type FocusField = 'name' | 'model' | 'brief' | 'autoInject' | 'create';
 
 // Focus order constant - single source of truth for tab cycling
-// WATCH-021: autoInject is between brief and create
-const FOCUS_ORDER: FocusField[] = ['name', 'authority', 'model', 'brief', 'autoInject', 'create'];
+const FOCUS_ORDER: FocusField[] = ['name', 'model', 'brief', 'autoInject', 'create'];
 
-interface WatcherCreateViewProps {
-  /** Current model of the parent session (default for new watcher) */
+interface SupervisorCreateViewProps {
+  /** Current model of the parent session (default for new supervisor) */
   currentModel: string;
   /** Available models to choose from */
   availableModels: string[];
   /** Terminal dimensions */
   terminalWidth: number;
   terminalHeight: number;
-  /** Callback when watcher is created - WATCH-021: Added autoInject parameter */
-  onCreate: (name: string, authority: 'peer' | 'supervisor', model: string, brief: string, autoInject: boolean) => void;
+  /** Callback when supervisor is created */
+  onCreate: (name: string, model: string, brief: string, autoInject: boolean) => void;
   /** Callback when creation is cancelled */
   onCancel: () => void;
 }
 
-export function WatcherCreateView({
+export function SupervisorCreateView({
   currentModel,
   availableModels,
   terminalWidth,
   terminalHeight,
   onCreate,
   onCancel,
-}: WatcherCreateViewProps): React.ReactElement {
+}: SupervisorCreateViewProps): React.ReactElement {
   // Form state
   const [name, setName] = useState('');
-  const [authority, setAuthority] = useState<'peer' | 'supervisor'>('peer');
   const [selectedModelIndex, setSelectedModelIndex] = useState(() => {
     const idx = availableModels.indexOf(currentModel);
     return idx >= 0 ? idx : 0;
@@ -77,18 +74,18 @@ export function WatcherCreateView({
     setFocusField(FOCUS_ORDER[(currentIndex - 1 + FOCUS_ORDER.length) % FOCUS_ORDER.length]);
   }, [focusField]);
 
-  // Handle create action - WATCH-021: Pass autoInject to onCreate
+  // Handle create action
   const handleCreate = useCallback(() => {
     if (!name.trim()) return; // Name is required
     const selectedModel = availableModels[selectedModelIndex] || currentModel;
-    onCreate(name.trim(), authority, selectedModel, brief.trim(), autoInject);
-  }, [name, authority, selectedModelIndex, availableModels, currentModel, brief, autoInject, onCreate]);
+    onCreate(name.trim(), selectedModel, brief.trim(), autoInject);
+  }, [name, selectedModelIndex, availableModels, currentModel, brief, autoInject, onCreate]);
 
   // Keyboard input handling with CRITICAL priority (full-screen form)
   useInputCompat({
-    id: 'watcher-create-view',
+    id: 'supervisor-create-view',
     priority: InputPriority.CRITICAL,
-    description: 'Watcher creation form keyboard navigation',
+    description: 'Supervisor creation form keyboard navigation',
     handler: (input, key) => {
       // Escape always cancels
       if (key.escape) {
@@ -106,7 +103,7 @@ export function WatcherCreateView({
         return true;
       }
 
-      // Enter creates watcher (from any field, if name is valid)
+      // Enter creates supervisor (from any field, if name is valid)
       if (key.return) {
         handleCreate();
         return true;
@@ -123,13 +120,6 @@ export function WatcherCreateView({
           }
           break;
 
-        case 'authority':
-          // Left/Right toggles authority
-          if (key.leftArrow || key.rightArrow) {
-            setAuthority(prev => (prev === 'peer' ? 'supervisor' : 'peer'));
-          }
-          break;
-
         case 'model':
           // Up/Down navigates model selection
           if (key.upArrow) {
@@ -140,7 +130,7 @@ export function WatcherCreateView({
           break;
 
         case 'brief':
-          // Text input for brief field (multiline - Enter adds newline when focused here)
+          // Text input for brief field
           if (key.backspace || key.delete) {
             setBrief(prev => prev.slice(0, -1));
           } else if (input && !key.ctrl && !key.meta) {
@@ -157,8 +147,7 @@ export function WatcherCreateView({
           break;
 
         case 'create':
-          // Enter on create button triggers creation
-          // (already handled above)
+          // Enter on create button triggers creation (already handled above)
           break;
       }
 
@@ -184,7 +173,7 @@ export function WatcherCreateView({
         <Box flexDirection="column" padding={2} flexGrow={1}>
           {/* Header */}
           <Box marginBottom={1} borderStyle="single" borderBottom borderLeft={false} borderRight={false} borderTop={false}>
-            <Text bold color="magenta">Create New Watcher</Text>
+            <Text bold color="magenta">Create New Supervisor</Text>
           </Box>
 
           {/* Role Name field */}
@@ -206,31 +195,6 @@ export function WatcherCreateView({
                 ⚠ Role name is required
               </Text>
             )}
-          </Box>
-
-          {/* Authority selector */}
-          <Box marginBottom={1} flexDirection="column">
-            <Text color={focusField === 'authority' ? 'cyan' : 'white'}>
-              Authority:
-            </Text>
-            <Box>
-              <Text
-                backgroundColor={focusField === 'authority' && authority === 'peer' ? 'blue' : undefined}
-                color={authority === 'peer' ? 'green' : 'gray'}
-              >
-                [{authority === 'peer' ? '●' : ' '}] Peer
-              </Text>
-              <Text> </Text>
-              <Text
-                backgroundColor={focusField === 'authority' && authority === 'supervisor' ? 'blue' : undefined}
-                color={authority === 'supervisor' ? 'yellow' : 'gray'}
-              >
-                [{authority === 'supervisor' ? '●' : ' '}] Supervisor
-              </Text>
-              {focusField === 'authority' && (
-                <Text dimColor> (←/→ to toggle)</Text>
-              )}
-            </Box>
           </Box>
 
           {/* Model selector */}
@@ -294,7 +258,7 @@ export function WatcherCreateView({
               color={focusField === 'create' ? 'white' : (isNameValid ? 'green' : 'red')}
               bold={focusField === 'create'}
             >
-              {focusField === 'create' ? '[ Create Watcher ]' : '  Create Watcher  '}
+              {focusField === 'create' ? '[ Create Supervisor ]' : '  Create Supervisor  '}
             </Text>
             {!isNameValid && (
               <Text color="red" dimColor> (name required)</Text>

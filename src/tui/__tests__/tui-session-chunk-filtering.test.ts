@@ -102,16 +102,16 @@ describe('Feature: TUI session chunk filtering', () => {
       const bridgeSessionId = 'session-main';
 
       // @step When the bridge sends input to session "session-main"
-      // Bridge input comes through as WatcherInput chunk with session_id
-      const watcherInputChunk: StreamChunk = {
-        type: 'WatcherInput',
+      // Bridge input comes through as SupervisorInput chunk with session_id
+      const supervisorInputChunk: StreamChunk = {
+        type: 'SupervisorInput',
         text: 'Hello from bridge',
         authorName: 'BridgeUser',
       };
-      injectTestChunk(bridgeSessionId, watcherInputChunk);
+      injectTestChunk(bridgeSessionId, supervisorInputChunk);
 
       // @step Then the TUI should display the bridge input
-      expect(displayedChunks).toContainEqual(watcherInputChunk);
+      expect(displayedChunks).toContainEqual(supervisorInputChunk);
 
       // @step And the TUI should display the LLM response chunks
       const llmResponseChunk: StreamChunk = {

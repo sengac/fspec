@@ -72,9 +72,9 @@ function estimateLineCount(msg: ConversationMessage, maxWidth: number): number {
 
   // Add prefix width for first line
   const isThinking = msg.type === 'thinking';
-  const isWatcher = msg.type === 'watcher-input';
+  const isSupervisor = msg.type === 'supervisor-input';
   const prefixWidth =
-    isThinking || isWatcher
+    isThinking || isSupervisor
       ? 0
       : msg.type === 'user-input'
         ? 5 // "You: "

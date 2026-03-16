@@ -45,7 +45,7 @@ const THINKING_PREFIX = '[Thinking]\n';
 export interface AppendThinkingOptions {
   /** Correlation ID for cross-pane selection highlighting */
   correlationId?: string;
-  /** Parent chunk IDs this turn was observing */
+  /** Subordinate chunk IDs this supervisor turn was observing */
   observedCorrelationIds?: string[];
 }
 
@@ -57,7 +57,7 @@ export interface AppendThinkingOptions {
  * Find the currently active (streaming) thinking block.
  * Returns the index, or -1 if no active thinking block exists.
  *
- * IMPORTANT: A thinking block is NOT active if there are user/watcher
+ * IMPORTANT: A thinking block is NOT active if there are user/supervisor
  * messages after it - that means we've moved to a new turn.
  *
  * @param messages - Conversation messages array
@@ -75,10 +75,10 @@ export function findActiveThinkingBlock(
   }
 
   // Check if there are any turn-boundary messages after this thinking block
-  // User/watcher input marks a new turn, so this thinking block is stale
+  // User/supervisor input marks a new turn, so this thinking block is stale
   for (let i = lastStreamingThinking + 1; i < messages.length; i++) {
     const msg = messages[i];
-    if (msg.type === 'user-input' || msg.type === 'watcher-input') {
+    if (msg.type === 'user-input' || msg.type === 'supervisor-input') {
       return -1;
     }
   }
@@ -93,7 +93,7 @@ export function findActiveThinkingBlock(
  *
  * This is used for bulk processing where we don't have streaming markers.
  *
- * IMPORTANT: A thinking block is NOT appendable if there are user/watcher
+ * IMPORTANT: A thinking block is NOT appendable if there are user/supervisor
  * messages after it - that means we've moved to a new turn.
  *
  * @param messages - Conversation messages array
@@ -109,10 +109,10 @@ export function findAppendableThinkingBlock(
   }
 
   // Check if there are any turn-boundary messages after this thinking block
-  // User/watcher input marks a new turn, so this thinking block is stale
+  // User/supervisor input marks a new turn, so this thinking block is stale
   for (let i = lastThinkingIdx + 1; i < messages.length; i++) {
     const msg = messages[i];
-    if (msg.type === 'user-input' || msg.type === 'watcher-input') {
+    if (msg.type === 'user-input' || msg.type === 'supervisor-input') {
       return -1;
     }
   }

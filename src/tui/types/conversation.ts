@@ -11,7 +11,7 @@ export type MessageType =
   | 'thinking' // Extended thinking/reasoning content
   | 'tool-call' // Tool invocation (header + result)
   | 'status' // Status messages (interrupted, errors, etc.)
-  | 'watcher-input'; // WATCH-012: Watcher injection message displayed in purple
+  | 'supervisor-input'; // WATCH-012: Watcher injection message displayed in purple
 
 // Conversation message type for display
 // SOLID: type field provides semantic meaning, role is derived for display
@@ -24,14 +24,14 @@ export interface ConversationMessage {
   toolCallId?: string; // For tool-call messages, links header to result
   /** WATCH-011: Correlation ID for cross-pane selection highlighting */
   correlationId?: string;
-  /** WATCH-011: Parent chunk IDs this watcher turn was observing when it responded */
+  /** WATCH-011: Subordinate chunk IDs this supervisor turn was observing when it responded */
   observedCorrelationIds?: string[];
 }
 
 // Line type for VirtualList (flattened from messages)
 // Each line represents ONE visual line in the terminal
 export interface ConversationLine {
-  role: 'user' | 'assistant' | 'tool' | 'watcher'; // WATCH-012: Added 'watcher' for purple display
+  role: 'user' | 'assistant' | 'tool' | 'supervisor'; // WATCH-012: Added 'supervisor' for purple display
   content: string;
   messageIndex: number;
   isSeparator?: boolean; // TUI-042: Empty line used as turn separator
@@ -39,6 +39,6 @@ export interface ConversationLine {
   isError?: boolean; // Tool result with isError=true (stderr output)
   /** WATCH-011: Correlation ID for cross-pane selection highlighting */
   correlationId?: string;
-  /** WATCH-011: Parent chunk IDs this watcher turn was observing when it responded */
+  /** WATCH-011: Subordinate chunk IDs this supervisor turn was observing when it responded */
   observedCorrelationIds?: string[];
 }

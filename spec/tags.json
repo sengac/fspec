@@ -842,6 +842,10 @@
           "description": "Strategy detection and selection for reverse ACDD workflows"
         },
         {
+          "name": "@supervisor",
+          "description": "Supervisor/subordinate session management"
+        },
+        {
           "name": "@system-reminders",
           "description": "System reminder and anti-drift pattern features"
         },
@@ -2474,7 +2478,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-03-05T05:56:06.428Z",
+    "lastUpdated": "2026-03-15T10:15:45.292Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

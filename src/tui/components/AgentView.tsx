@@ -28,7 +28,7 @@ import { Box, Text, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
-import { WatcherCreateView } from './WatcherCreateView';
+import { SupervisorCreateView } from './SupervisorCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
 
@@ -90,14 +90,14 @@ import {
   // TUI-068: session destroy REMOVED - use destroySession from sessionService
   sessionSetPendingInput,
   sessionGetPendingInput,
-  // WATCH-008: Watcher management NAPI functions
-  sessionGetWatchers,
+  // WATCH-008: Supervisor management NAPI functions
+  sessionGetSupervisors,
   sessionGetRole,
   sessionSetRole,
-  // WATCH-009: Watcher creation NAPI function
-  sessionCreateWatcher,
-  // WATCH-010: Watcher split view NAPI function
-  sessionGetParent,
+  // WATCH-009: Supervisor creation NAPI function
+  sessionCreateSupervisor,
+  // WATCH-010: Supervisor split view NAPI function
+  sessionGetSubordinate,
   // WATCH-011: Cross-pane correlation ID functions
   sessionSetObservedCorrelationIds,
   sessionClearObservedCorrelationIds,
@@ -113,7 +113,7 @@ import {
   blocklistLoad,
   blocklistInit,
   // REFAC-008: sessionSendFspecResult removed - handled by GlobalSessionStreamManager
-  type SessionRoleInfo,
+  type SupervisorRoleInfo,
 } from '@sengac/codelet-napi';
 import {
   detectThinkingLevel,
@@ -129,17 +129,17 @@ import {
 } from '../utils/model-selection';
 import {
   findTemplateBySlug,
-  loadWatcherTemplates,
-  saveWatcherTemplates,
+  loadSupervisorTemplates,
+  saveSupervisorTemplates,
   createTemplate,
   updateTemplate,
-} from '../utils/watcherTemplateStorage';
+} from '../utils/supervisorTemplateStorage';
 import type {
-  WatcherTemplate,
-  WatcherInstance,
-} from '../types/watcherTemplate';
-import { WatcherTemplateList } from './WatcherTemplateList';
-import { WatcherTemplateForm } from './WatcherTemplateForm';
+  SupervisorTemplate,
+  SupervisorInstance,
+} from '../types/supervisorTemplate';
+import { SupervisorTemplateList } from './SupervisorTemplateList';
+import { SupervisorTemplateForm } from './SupervisorTemplateForm';
 import { BlocklistListView, type BlocklistRule } from './BlocklistListView';
 import { SessionHeader } from './SessionHeader';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
@@ -149,7 +149,6 @@ import { useWorkUnitContext } from '../hooks/useWorkUnitContext';
 import { useDefaultThinkingLevel } from '../hooks/useDefaultThinkingLevel';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
-import { NotificationDialog } from '../../components/NotificationDialog';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { ThinkingLevelDialog } from './ThinkingLevelDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
@@ -157,7 +156,7 @@ import { handleMergeWorktree } from '../handlers/mergeWorktreeHandler';
 import { handlePersistentSessionStateChange } from '../handlers/persistentSessionStateHandler';
 import type { ActionPrompt } from '../types/actionPrompt';
 import {
-  parseWatcherPrefix,
+  parseSupervisorPrefix,
   extractToolArgsDisplay,
   processStreamingChunk,
   type PendingToolCallInfo,
@@ -265,11 +264,11 @@ interface MergedSession extends SessionManifest {
   backgroundStatus: 'running' | 'idle' | null; // null = persisted-only
 }
 
-// WATCH-008: Watcher information for management overlay
-interface WatcherInfo {
+// WATCH-008: Supervisor information for management overlay
+interface SupervisorInfo {
   id: string;
   name: string;
-  role: SessionRoleInfo | null;
+  role: SupervisorRoleInfo | null;
   status: 'idle' | 'running';
 }
 
@@ -324,14 +323,14 @@ const processChunksToConversation = (
         correlationId,
         observedCorrelationIds,
       });
-    } else if (chunk.type === 'WatcherInput' && chunk.text) {
-      // WATCH-012: Handle watcher input messages - parse prefix and format for display
-      const watcherInfo = parseWatcherPrefix(chunk.text);
-      if (watcherInfo) {
+    } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+      // WATCH-012: Handle supervisor input messages - parse prefix and format for display
+      const supervisorInfo = parseSupervisorPrefix(chunk.text);
+      if (supervisorInfo) {
         // Format content with role prefix (no emoji)
-        const formattedContent = `[W] ${watcherInfo.role}> ${watcherInfo.content}`;
+        const formattedContent = `[W] ${supervisorInfo.role}> ${supervisorInfo.content}`;
         messages.push({
-          type: 'watcher-input',
+          type: 'supervisor-input',
           content: formattedContent,
           correlationId,
           observedCorrelationIds,
@@ -339,7 +338,7 @@ const processChunksToConversation = (
       } else {
         // Fallback: if parsing fails, display raw message
         messages.push({
-          type: 'watcher-input',
+          type: 'supervisor-input',
           content: chunk.text,
           correlationId,
           observedCorrelationIds,
@@ -973,7 +972,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     workUnitId,
   });
 
-  // BRIDGE-013: Persistent chunk handler for bridge/watcher input display.
+  // BRIDGE-013: Persistent chunk handler for bridge/supervisor input display.
   // Always registered when viewing a session. Skips when handleSubmit's handler
   // is active (sessionCleanupRef.current set) to avoid duplicate updates.
   // TUI-066: Also handles SessionStateChange with Cleared state from bridge /clear
@@ -1103,24 +1102,24 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-040: Delete session dialog state
   const [showSessionDeleteDialog, setShowSessionDeleteDialog] = useState(false);
 
-  // WATCH-008: Watcher management overlay state
-  const [isWatcherMode, setIsWatcherMode] = useState(false);
-  // TUI-050: Trigger state for watcher mode initialization (avoids TDZ with handleWatcherMode)
-  const [triggerWatcherModeInit, setTriggerWatcherModeInit] = useState(false);
-  const [watcherList, setWatcherList] = useState<WatcherInfo[]>([]);
-  const [watcherIndex, setWatcherIndex] = useState(0);
-  const [watcherScrollOffset, setWatcherScrollOffset] = useState(0);
-  const [_showWatcherDeleteDialog, setShowWatcherDeleteDialog] =
+  // WATCH-008: Supervisor management overlay state
+  const [isSupervisorMode, setIsSupervisorMode] = useState(false);
+  // TUI-050: Trigger state for supervisor mode initialization (avoids TDZ with handleSupervisorMode)
+  const [triggerSupervisorModeInit, setTriggerSupervisorModeInit] = useState(false);
+  const [supervisorList, setSupervisorList] = useState<SupervisorInfo[]>([]);
+  const [supervisorIndex, setSupervisorIndex] = useState(0);
+  const [supervisorScrollOffset, setSupervisorScrollOffset] = useState(0);
+  const [_showSupervisorDeleteDialog, setShowSupervisorDeleteDialog] =
     useState(false);
-  const [isWatcherEditMode, setIsWatcherEditMode] = useState(false);
-  const [watcherEditValue, setWatcherEditValue] = useState('');
-  // WATCH-009: Watcher creation view state
-  const [isWatcherCreateMode, setIsWatcherCreateMode] = useState(false);
-  // WATCH-023: Watcher template management state
-  const [watcherTemplates, setWatcherTemplates] = useState<WatcherTemplate[]>(
+  const [isSupervisorEditMode, setIsSupervisorEditMode] = useState(false);
+  const [supervisorEditValue, setSupervisorEditValue] = useState('');
+  // WATCH-009: Supervisor creation view state
+  const [isSupervisorCreateMode, setIsSupervisorCreateMode] = useState(false);
+  // WATCH-023: Supervisor template management state
+  const [supervisorTemplates, setSupervisorTemplates] = useState<SupervisorTemplate[]>(
     []
   );
-  const [watcherInstances, setWatcherInstances] = useState<WatcherInstance[]>(
+  const [supervisorInstances, setSupervisorInstances] = useState<SupervisorInstance[]>(
     []
   );
   const [isTemplateFormMode, setIsTemplateFormMode] = useState(false);
@@ -1128,39 +1127,36 @@ export const AgentView: React.FC<AgentViewProps> = ({
     'create'
   );
   const [editingTemplate, setEditingTemplate] = useState<
-    WatcherTemplate | undefined
+    SupervisorTemplate | undefined
   >(undefined);
   const [showTemplateDeleteDialog, setShowTemplateDeleteDialog] =
     useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<{
-    template: WatcherTemplate;
-    instances: WatcherInstance[];
+    template: SupervisorTemplate;
+    instances: SupervisorInstance[];
   } | null>(null);
-  const [instanceToKill, setInstanceToKill] = useState<WatcherInstance | null>(
+  const [instanceToKill, setInstanceToKill] = useState<SupervisorInstance | null>(
     null
   );
   const [showInstanceKillDialog, setShowInstanceKillDialog] = useState(false);
-  // WATCH-023: Watcher notification/error dialog state
-  const [watcherNotification, setWatcherNotification] = useState<string | null>(
-    null
-  );
-  const [watcherError, setWatcherError] = useState<string | null>(null);
-  // WATCH-010: Watcher split view state
-  const [isWatcherSessionView, setIsWatcherSessionView] = useState(false);
-  const [activePane, setActivePane] = useState<'parent' | 'watcher'>('watcher');
-  const [_parentSessionId, setParentSessionId] = useState<string | null>(null);
-  const [parentSessionName, setParentSessionName] = useState<string>('');
-  const [parentConversation, setParentConversation] = useState<
+  // WATCH-023: Supervisor error dialog state
+  const [supervisorError, setSupervisorError] = useState<string | null>(null);
+  // WATCH-010: Supervisor split view state
+  const [isSupervisorSessionView, setIsSupervisorSessionView] = useState(false);
+  const [activePane, setActivePane] = useState<'subordinate' | 'supervisor'>('supervisor');
+  const [_subordinateSessionId, setSubordinateSessionId] = useState<string | null>(null);
+  const [subordinateSessionName, setSubordinateSessionName] = useState<string>('');
+  const [subordinateConversation, setSubordinateConversation] = useState<
     ConversationLine[]
   >([]);
   const [isSplitViewSelectMode, setIsSplitViewSelectMode] = useState(false);
   const [splitViewSelectedIndex, setSplitViewSelectedIndex] = useState(0);
-  // WATCH-016: Modal state for watcher pane turn viewing
-  const [showWatcherTurnModal, setShowWatcherTurnModal] = useState(false);
-  const [watcherTurnModalContent, setWatcherTurnModalContent] =
+  // WATCH-016: Modal state for supervisor pane turn viewing
+  const [showSupervisorTurnModal, setShowSupervisorTurnModal] = useState(false);
+  const [supervisorTurnModalContent, setSupervisorTurnModalContent] =
     useState<string>('');
-  const [watcherTurnModalRole, setWatcherTurnModalRole] = useState<
-    'user' | 'assistant' | 'watcher'
+  const [supervisorTurnModalRole, setSupervisorTurnModalRole] = useState<
+    'user' | 'assistant' | 'supervisor'
   >('assistant');
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
@@ -1187,8 +1183,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, BLOCK-004: add blocklist)
     disabled:
       isResumeMode ||
-      isWatcherMode ||
-      isWatcherEditMode ||
+      isSupervisorMode ||
+      isSupervisorEditMode ||
       isBlocklistMode ||
       showModelSelector ||
       showSettingsTab ||
@@ -1318,23 +1314,23 @@ export const AgentView: React.FC<AgentViewProps> = ({
     contextWindow: displayContextWindow,
   } = rustModelInfo;
 
-  // VIEWNV-001: Calculate session number (1-based index of current session in list of parent sessions)
+  // VIEWNV-001: Calculate session number (1-based index of current session in list of subordinate sessions)
   // This helps users identify which session they're in when switching with Shift+Left/Right
   const sessionNumber = useMemo(() => {
     if (!currentSessionId) {
       return undefined;
     }
 
-    // Get all sessions and filter to parent sessions only (exclude watchers)
+    // Get all sessions and filter to subordinate sessions only (exclude supervisors)
     const allSessions = sessionManagerList();
-    const parentSessions = allSessions.filter(session => {
-      // A session is a parent if it has no parent itself
-      const parent = sessionGetParent(session.id);
-      return !parent;
+    const subordinateSessions = allSessions.filter(session => {
+      // A session is a subordinate (not a supervisor) if it has no subordinate itself
+      const subordinate = sessionGetSubordinate(session.id);
+      return !subordinate;
     });
 
     // Find current session's position (1-based)
-    const index = parentSessions.findIndex(s => s.id === currentSessionId);
+    const index = subordinateSessions.findIndex(s => s.id === currentSessionId);
     return index >= 0 ? index + 1 : undefined;
   }, [currentSessionId]);
 
@@ -1414,7 +1410,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     isStreaming: boolean;
     isThinking: boolean; // SOLID: Include isThinking in cache key for proper invalidation
     terminalWidth: number;
-    isWatcherView: boolean; // WATCH-010: Include watcher view state since it affects line width
+    isSupervisorView: boolean; // WATCH-010: Include supervisor view state since it affects line width
     lines: ConversationLine[];
   }
   const lineCacheRef = useRef<Map<number, CachedMessageLines>>(new Map());
@@ -1439,8 +1435,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // Disable popup when other overlays/modes are active (BLOCK-004: add blocklist)
     disabled:
       isResumeMode ||
-      isWatcherMode ||
-      isWatcherEditMode ||
+      isSupervisorMode ||
+      isSupervisorEditMode ||
       isBlocklistMode ||
       showModelSelector ||
       showSettingsTab ||
@@ -1478,65 +1474,65 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, [isResumeMode]);
 
-  // WATCH-008: Watcher management overlay - calculate visible height for scroll logic
-  const watcherVisibleHeight = Math.max(
+  // WATCH-008: Supervisor management overlay - calculate visible height for scroll logic
+  const supervisorVisibleHeight = Math.max(
     1,
     Math.floor((terminalHeight - 6) / 2)
-  ); // 2 lines per watcher
+  ); // 2 lines per supervisor
 
-  // WATCH-008: Keep selected watcher visible by adjusting scroll offset
+  // WATCH-008: Keep selected supervisor visible by adjusting scroll offset
   useEffect(() => {
-    if (!isWatcherMode) return;
-    if (watcherIndex < watcherScrollOffset) {
-      setWatcherScrollOffset(watcherIndex);
-    } else if (watcherIndex >= watcherScrollOffset + watcherVisibleHeight) {
-      setWatcherScrollOffset(watcherIndex - watcherVisibleHeight + 1);
+    if (!isSupervisorMode) return;
+    if (supervisorIndex < supervisorScrollOffset) {
+      setSupervisorScrollOffset(supervisorIndex);
+    } else if (supervisorIndex >= supervisorScrollOffset + supervisorVisibleHeight) {
+      setSupervisorScrollOffset(supervisorIndex - supervisorVisibleHeight + 1);
     }
-  }, [watcherIndex, watcherScrollOffset, watcherVisibleHeight, isWatcherMode]);
+  }, [supervisorIndex, supervisorScrollOffset, supervisorVisibleHeight, isSupervisorMode]);
 
-  // WATCH-010: Detect if current session is a watcher and setup split view
+  // WATCH-010: Detect if current session is a supervisor and setup split view
   useEffect(() => {
     if (!currentSessionId) {
-      setIsWatcherSessionView(false);
-      setParentSessionId(null);
-      setParentSessionName('');
-      setParentConversation([]);
+      setIsSupervisorSessionView(false);
+      setSubordinateSessionId(null);
+      setSubordinateSessionName('');
+      setSubordinateConversation([]);
       return;
     }
 
     try {
-      const parentId = sessionGetParent(currentSessionId);
+      const subordinateId = sessionGetSubordinate(currentSessionId);
 
-      if (parentId) {
-        // This is a watcher session - enable split view
-        setIsWatcherSessionView(true);
-        setParentSessionId(parentId);
+      if (subordinateId) {
+        // This is a supervisor session - enable split view
+        setIsSupervisorSessionView(true);
+        setSubordinateSessionId(subordinateId);
 
-        // Get parent session name from session list
+        // Get subordinate session name from session list
         const sessions = sessionManagerList();
-        const parentSession = sessions.find(s => s.id === parentId);
-        setParentSessionName(parentSession?.name || 'Parent Session');
+        const subordinateSession = sessions.find(s => s.id === subordinateId);
+        setSubordinateSessionName(subordinateSession?.name || 'Subordinate Session');
 
-        // Load parent session conversation
-        const parentChunks = sessionGetMergedOutput(parentId);
-        const parentMessages = processChunksToConversation(
-          parentChunks,
+        // Load subordinate session conversation
+        const subordinateChunks = sessionGetMergedOutput(subordinateId);
+        const subordinateMessages = processChunksToConversation(
+          subordinateChunks,
           formatToolHeader,
           formatCollapsedOutput
         );
 
         // Convert ConversationMessage[] to ConversationLine[] for display
-        const parentPaneWidth = calculatePaneWidth(terminalWidth, 'split');
-        const parentLines = messagesToLines(parentMessages, parentPaneWidth);
-        setParentConversation(parentLines);
+        const subordinatePaneWidth = calculatePaneWidth(terminalWidth, 'split');
+        const subordinateLines = messagesToLines(subordinateMessages, subordinatePaneWidth);
+        setSubordinateConversation(subordinateLines);
 
-        // BRIDGE-012: Subscribe to parent session for live updates via GlobalSessionStreamManager
+        // BRIDGE-012: Subscribe to subordinate session for live updates via GlobalSessionStreamManager
         // This uses the global callback architecture - no per-session NAPI attach/detach
-        const unregisterParentHandler = attachToSession(
-          parentId,
+        const unregisterSubordinateHandler = attachToSession(
+          subordinateId,
           (chunk: StreamChunk) => {
             if (chunk) {
-              const updatedChunks = sessionGetMergedOutput(parentId);
+              const updatedChunks = sessionGetMergedOutput(subordinateId);
               const updatedMessages = processChunksToConversation(
                 updatedChunks,
                 formatToolHeader,
@@ -1550,7 +1546,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
                 updatedMessages,
                 updatedPaneWidth
               );
-              setParentConversation(updatedLines);
+              setSubordinateConversation(updatedLines);
             }
           }
         );
@@ -1558,18 +1554,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Cleanup: unregister handler when effect re-runs or component unmounts
         // BRIDGE-012: Handler cleanup only - global callback stays registered
         return () => {
-          unregisterParentHandler();
+          unregisterSubordinateHandler();
         };
       } else {
-        // Not a watcher session - disable split view
-        setIsWatcherSessionView(false);
-        setParentSessionId(null);
-        setParentSessionName('');
-        setParentConversation([]);
+        // Not a supervisor session - disable split view
+        setIsSupervisorSessionView(false);
+        setSubordinateSessionId(null);
+        setSubordinateSessionName('');
+        setSubordinateConversation([]);
       }
     } catch {
-      // Error checking parent - not a watcher
-      setIsWatcherSessionView(false);
+      // Error checking subordinate - not a supervisor
+      setIsSupervisorSessionView(false);
     }
   }, [currentSessionId]);
 
@@ -1844,18 +1840,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
       return;
     }
 
-    // WATCH-023: Handle /watcher spawn <slug> command - quick spawn from template
-    if (userMessage.startsWith('/watcher spawn ')) {
+    // WATCH-023: Handle /supervisor spawn <slug> command - quick spawn from template
+    if (userMessage.startsWith('/supervisor spawn ')) {
       setInputValue('');
-      const slug = userMessage.slice('/watcher spawn '.length).trim();
+      const slug = userMessage.slice('/supervisor spawn '.length).trim();
 
       if (!slug) {
-        setWatcherError('Usage: /watcher spawn <slug>');
+        setSupervisorError('Usage: /supervisor spawn <slug>');
         return;
       }
 
       if (!currentSessionId) {
-        setWatcherError('No active session. Start a session first.');
+        setSupervisorError('No active session. Start a session first.');
         return;
       }
 
@@ -1865,12 +1861,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
           const template = await findTemplateBySlug(slug);
 
           if (!template) {
-            setWatcherError(`No template found with slug: ${slug}`);
+            setSupervisorError(`No template found with slug: ${slug}`);
             return;
           }
 
-          // Create watcher from template
-          const watcherId = await sessionCreateWatcher(
+          // Create supervisor from template
+          const supervisorId = await sessionCreateSupervisor(
             currentSessionId,
             template.modelId,
             currentProjectRef.current,
@@ -1879,29 +1875,24 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
           // Set role with template settings
           sessionSetRole(
-            watcherId,
+            supervisorId,
             template.name,
             template.brief || null,
-            template.authority,
             template.autoInject
-          );
-
-          setWatcherNotification(
-            `Spawned watcher "${template.name}" from template`
           );
         } catch (err) {
           const errorMessage =
-            err instanceof Error ? err.message : 'Failed to spawn watcher';
-          setWatcherError(`Spawn failed: ${errorMessage}`);
+            err instanceof Error ? err.message : 'Failed to spawn supervisor';
+          setSupervisorError(`Spawn failed: ${errorMessage}`);
         }
       })();
       return;
     }
 
-    // WATCH-008: Handle /watcher command - show watcher management overlay
-    if (userMessage === '/watcher') {
+    // WATCH-008: Handle /supervisor command - show supervisor management overlay
+    if (userMessage === '/supervisor') {
       setInputValue('');
-      void handleWatcherMode();
+      void handleSupervisorMode();
       return;
     }
 
@@ -1909,75 +1900,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
     if (userMessage === '/blocklist') {
       setInputValue('');
       void handleBlocklistMode();
-      return;
-    }
-
-    // WATCH-014: Handle /parent command - switch to parent session from watcher
-    if (userMessage === '/parent') {
-      setInputValue('');
-
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: 'No active session. Start a session first.',
-          },
-        ]);
-        return;
-      }
-
-      const parentId = sessionGetParent(currentSessionId);
-
-      if (!parentId) {
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content:
-              'This session has no parent. /parent only works from watcher sessions.',
-          },
-        ]);
-        return;
-      }
-
-      try {
-        // Look up parent session name for status message
-        const sessions = sessionManagerList();
-        const parentSession = sessions.find(s => s.id === parentId);
-        const _parentName = parentSession?.name || parentId;
-
-        // REFAC-008: Cleanup current handler before switching
-        cleanupCurrentSessionHandler();
-
-        // Switch to parent session (atomic state transition via store)
-        activateSession(parentId);
-
-        // GIT-029: Apply any pending isolation state that arrived before activation
-        applyPendingIsolationState(parentId);
-
-        // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
-        sessionCleanupRef.current = attachToSession(
-          parentId,
-          (chunk: StreamChunk) => {
-            handleStreamChunk(chunk);
-          }
-        );
-
-        // Get buffered output and display
-        const mergedChunks = sessionGetMergedOutput(parentId);
-        const restoredMessages = processChunksToConversation(
-          mergedChunks,
-          formatToolHeader,
-          formatCollapsedOutput
-        );
-        setConversation(restoredMessages);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to switch to parent';
-        // Show error dialog instead of adding to conversation
-        setWatcherError(`Switch failed: ${errorMessage}`);
-      }
       return;
     }
 
@@ -2807,22 +2729,22 @@ export const AgentView: React.FC<AgentViewProps> = ({
               });
               // NAPI-009: Reject the promise on error
               reject(new Error(chunk.error));
-            } else if (chunk.type === 'WatcherInput' && chunk.text) {
-              // BRIDGE-006: Handle watcher/bridge input messages during streaming
-              const watcherInfo = parseWatcherPrefix(chunk.text);
+            } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+              // BRIDGE-006: Handle supervisor/bridge input messages during streaming
+              const supervisorInfo = parseSupervisorPrefix(chunk.text);
               setConversation(prev => {
-                if (watcherInfo) {
+                if (supervisorInfo) {
                   // Format content with role prefix (no emoji)
-                  const formattedContent = `[W] ${watcherInfo.role}> ${watcherInfo.content}`;
+                  const formattedContent = `[W] ${supervisorInfo.role}> ${supervisorInfo.content}`;
                   return [
                     ...prev,
-                    { type: 'watcher-input', content: formattedContent },
+                    { type: 'supervisor-input', content: formattedContent },
                   ];
                 } else {
                   // Fallback: if parsing fails, display raw message
                   return [
                     ...prev,
-                    { type: 'watcher-input', content: chunk.text! },
+                    { type: 'supervisor-input', content: chunk.text! },
                   ];
                 }
               });
@@ -2833,29 +2755,29 @@ export const AgentView: React.FC<AgentViewProps> = ({
         );
       });
 
-      // WATCH-011: Set observed correlation IDs for watcher sessions
-      // When a watcher sends input, tag its response with the parent chunks it has observed
-      let isWatcherSession = false;
+      // WATCH-011: Set observed correlation IDs for supervisor sessions
+      // When a supervisor sends input, tag its response with the subordinate chunks it has observed
+      let isSupervisorSession = false;
       if (activeSessionId) {
         try {
-          const parentId = sessionGetParent(activeSessionId);
-          if (parentId) {
-            isWatcherSession = true;
-            // Get parent's buffered output and extract correlation IDs
-            const parentChunks = sessionGetMergedOutput(parentId);
-            const correlationIds = parentChunks
+          const subordinateId = sessionGetSubordinate(activeSessionId);
+          if (subordinateId) {
+            isSupervisorSession = true;
+            // Get subordinate's buffered output and extract correlation IDs
+            const subordinateChunks = sessionGetMergedOutput(subordinateId);
+            const correlationIds = subordinateChunks
               .filter((chunk: StreamChunk) => chunk.correlationId)
               .map((chunk: StreamChunk) => chunk.correlationId as string);
 
             if (correlationIds.length > 0) {
-              // Tag watcher's response chunks with the observed parent chunk IDs
+              // Tag supervisor's response chunks with the observed subordinate chunk IDs
               sessionSetObservedCorrelationIds(activeSessionId, correlationIds);
             }
           }
         } catch (err) {
-          // Failed to get parent session or set correlation IDs - indicates session hierarchy issues
+          // Failed to get subordinate session or set correlation IDs - indicates session hierarchy issues
           logger.error(
-            'Failed to process watcher session parent relationship:',
+            'Failed to process supervisor session subordinate relationship:',
             err
           );
         }
@@ -2879,7 +2801,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
       cleanupCurrentSessionHandler();
 
       // WATCH-011: Clear observed correlation IDs after response completes
-      if (isWatcherSession && activeSessionId) {
+      if (isSupervisorSession && activeSessionId) {
         try {
           sessionClearObservedCorrelationIds(activeSessionId);
         } catch (err) {
@@ -3050,39 +2972,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // Handle /watcher command - trigger initialization (avoiding TDZ with handleWatcherMode)
-      if (userMessage === '/watcher') {
+      // Handle /supervisor command - trigger initialization (avoiding TDZ with handleSupervisorMode)
+      if (userMessage === '/supervisor') {
         setInputValue('');
-        setTriggerWatcherModeInit(true); // Will trigger useEffect to call handleWatcherMode
-        return;
-      }
-
-      // Handle /parent command
-      if (userMessage === '/parent') {
-        setInputValue('');
-        if (!currentSessionId) {
-          setConversation(prev => [
-            ...prev,
-            {
-              type: 'status',
-              content: 'No active session. Start a session first.',
-            },
-          ]);
-          return;
-        }
-        const parentId = sessionGetParent(currentSessionId);
-        if (!parentId) {
-          setConversation(prev => [
-            ...prev,
-            {
-              type: 'status',
-              content:
-                'This session has no parent. /parent only works from watcher sessions.',
-            },
-          ]);
-          return;
-        }
-        // Handle parent session switching...
+        setTriggerSupervisorModeInit(true); // Will trigger useEffect to call handleSupervisorMode
         return;
       }
 
@@ -3670,20 +3563,20 @@ export const AgentView: React.FC<AgentViewProps> = ({
         ...prev,
         { type: 'user-input', content: chunk.text! },
       ]);
-    } else if (chunk.type === 'WatcherInput' && chunk.text) {
-      // WATCH-012: Handle watcher/bridge input messages - parse prefix and format for display
-      const watcherInfo = parseWatcherPrefix(chunk.text);
+    } else if (chunk.type === 'SupervisorInput' && chunk.text) {
+      // WATCH-012: Handle supervisor/bridge input messages - parse prefix and format for display
+      const supervisorInfo = parseSupervisorPrefix(chunk.text);
       setConversation(prev => {
-        if (watcherInfo) {
+        if (supervisorInfo) {
           // Format content with role prefix (no emoji)
-          const formattedContent = `[W] ${watcherInfo.role}> ${watcherInfo.content}`;
+          const formattedContent = `[W] ${supervisorInfo.role}> ${supervisorInfo.content}`;
           return [
             ...prev,
-            { type: 'watcher-input', content: formattedContent },
+            { type: 'supervisor-input', content: formattedContent },
           ];
         } else {
           // Fallback: if parsing fails, display raw message
-          return [...prev, { type: 'watcher-input', content: chunk.text! }];
+          return [...prev, { type: 'supervisor-input', content: chunk.text! }];
         }
       });
     }
@@ -4205,8 +4098,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, []);
 
-  // WATCH-008: Enter watcher mode (show watcher management overlay)
-  const handleWatcherMode = useCallback(async () => {
+  // WATCH-008: Enter supervisor mode (show supervisor management overlay)
+  const handleSupervisorMode = useCallback(async () => {
     if (!currentSessionId) {
       setConversation(prev => [
         ...prev,
@@ -4220,27 +4113,27 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
     try {
       // WATCH-023: Load templates from storage
-      const templates = await loadWatcherTemplates();
-      setWatcherTemplates(templates);
+      const templates = await loadSupervisorTemplates();
+      setSupervisorTemplates(templates);
 
-      // Get watchers for current session and map to instances
-      const watcherIds = sessionGetWatchers(currentSessionId);
+      // Get supervisors for current session and map to instances
+      const supervisorIds = sessionGetSupervisors(currentSessionId);
 
-      // Build watcher info list (for backwards compatibility) and instances
-      const watchers: WatcherInfo[] = [];
-      const instances: WatcherInstance[] = [];
+      // Build supervisor info list (for backwards compatibility) and instances
+      const supervisors: SupervisorInfo[] = [];
+      const instances: SupervisorInstance[] = [];
 
-      for (const id of watcherIds) {
+      for (const id of supervisorIds) {
         const role = sessionGetRole(id);
         const status = sessionGetStatus(id);
-        watchers.push({
+        supervisors.push({
           id,
-          name: role?.name || 'Unnamed Watcher',
+          name: role?.name || 'Unnamed Supervisor',
           role,
           status: status === 'running' ? 'running' : 'idle',
         });
 
-        // WATCH-023: Map watchers to template instances
+        // WATCH-023: Map supervisors to template instances
         // Find matching template by name (templates store the "role name")
         const matchingTemplate = templates.find(t => t.name === role?.name);
         if (matchingTemplate) {
@@ -4252,15 +4145,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
         }
       }
 
-      setWatcherList(watchers);
-      setWatcherInstances(instances);
-      setWatcherIndex(0);
-      setWatcherScrollOffset(0);
-      setIsWatcherMode(true);
+      setSupervisorList(supervisors);
+      setSupervisorInstances(instances);
+      setSupervisorIndex(0);
+      setSupervisorScrollOffset(0);
+      setIsSupervisorMode(true);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to list watchers';
-      setWatcherError(`Watcher list failed: ${errorMessage}`);
+        err instanceof Error ? err.message : 'Failed to list supervisors';
+      setSupervisorError(`Supervisor list failed: ${errorMessage}`);
     }
   }, [currentSessionId]);
 
@@ -4317,45 +4210,45 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, [triggerResumeModeInit, handleResumeMode]);
 
-  // TUI-050: Trigger useEffect for watcher mode initialization (called from handleSubmitWithCommand)
+  // TUI-050: Trigger useEffect for supervisor mode initialization (called from handleSubmitWithCommand)
   useEffect(() => {
-    if (triggerWatcherModeInit) {
-      setTriggerWatcherModeInit(false);
-      void handleWatcherMode();
+    if (triggerSupervisorModeInit) {
+      setTriggerSupervisorModeInit(false);
+      void handleSupervisorMode();
     }
-  }, [triggerWatcherModeInit, handleWatcherMode]);
+  }, [triggerSupervisorModeInit, handleSupervisorMode]);
 
-  // WATCH-008: Select watcher and switch to it
-  const _handleWatcherSelect = useCallback(async () => {
-    if (watcherList.length === 0 || watcherIndex >= watcherList.length) {
+  // WATCH-008: Select supervisor and switch to it
+  const _handleSupervisorSelect = useCallback(async () => {
+    if (supervisorList.length === 0 || supervisorIndex >= supervisorList.length) {
       return;
     }
 
-    const selectedWatcher = watcherList[watcherIndex];
+    const selectedSupervisor = supervisorList[supervisorIndex];
 
     try {
-      // REFAC-008: Cleanup previous handler before switching to watcher session
+      // REFAC-008: Cleanup previous handler before switching to supervisor session
       cleanupCurrentSessionHandler();
 
-      // Switch to the watcher session (atomic transition via store)
-      activateSession(selectedWatcher.id);
+      // Switch to the supervisor session (atomic transition via store)
+      activateSession(selectedSupervisor.id);
 
       // GIT-029: Apply any pending isolation state that arrived before activation
-      applyPendingIsolationState(selectedWatcher.id);
+      applyPendingIsolationState(selectedSupervisor.id);
 
-      setIsWatcherMode(false);
-      setWatcherList([]);
+      setIsSupervisorMode(false);
+      setSupervisorList([]);
 
       // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
       sessionCleanupRef.current = attachToSession(
-        selectedWatcher.id,
+        selectedSupervisor.id,
         (chunk: StreamChunk) => {
           handleStreamChunk(chunk);
         }
       );
 
       // Get buffered output and display
-      const mergedChunks = sessionGetMergedOutput(selectedWatcher.id);
+      const mergedChunks = sessionGetMergedOutput(selectedSupervisor.id);
       const restoredMessages = processChunksToConversation(
         mergedChunks,
         formatToolHeader,
@@ -4364,12 +4257,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
       setConversation(restoredMessages);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to switch to watcher';
-      setWatcherError(`Switch failed: ${errorMessage}`);
+        err instanceof Error ? err.message : 'Failed to switch to supervisor';
+      setSupervisorError(`Switch failed: ${errorMessage}`);
     }
   }, [
-    watcherList,
-    watcherIndex,
+    supervisorList,
+    supervisorIndex,
     handleStreamChunk,
     formatToolHeader,
     formatCollapsedOutput,
@@ -4377,91 +4270,88 @@ export const AgentView: React.FC<AgentViewProps> = ({
     activateSession,
   ]);
 
-  // WATCH-008: Delete selected watcher
-  const _handleWatcherDelete = useCallback(async () => {
-    if (watcherList.length === 0 || watcherIndex >= watcherList.length) {
+  // WATCH-008: Delete selected supervisor
+  const _handleSupervisorDelete = useCallback(async () => {
+    if (supervisorList.length === 0 || supervisorIndex >= supervisorList.length) {
       return;
     }
 
-    const selectedWatcher = watcherList[watcherIndex];
+    const selectedSupervisor = supervisorList[supervisorIndex];
 
     try {
-      // Destroy the watcher session
+      // Destroy the supervisor session
       // TUI-068: Use destroySession from sessionService
-      await destroySession(selectedWatcher.id);
+      await destroySession(selectedSupervisor.id);
 
       // Remove from list
-      const newList = watcherList.filter((_, i) => i !== watcherIndex);
-      setWatcherList(newList);
+      const newList = supervisorList.filter((_, i) => i !== supervisorIndex);
+      setSupervisorList(newList);
 
       // Adjust selection index if needed
-      if (watcherIndex >= newList.length && newList.length > 0) {
-        setWatcherIndex(newList.length - 1);
+      if (supervisorIndex >= newList.length && newList.length > 0) {
+        setSupervisorIndex(newList.length - 1);
       }
 
-      setShowWatcherDeleteDialog(false);
+      setShowSupervisorDeleteDialog(false);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete watcher';
-      setWatcherError(`Delete failed: ${errorMessage}`);
-      setShowWatcherDeleteDialog(false);
+        err instanceof Error ? err.message : 'Failed to delete supervisor';
+      setSupervisorError(`Delete failed: ${errorMessage}`);
+      setShowSupervisorDeleteDialog(false);
     }
-  }, [watcherList, watcherIndex]);
+  }, [supervisorList, supervisorIndex]);
 
-  // WATCH-009: Create a new watcher session
-  const handleWatcherCreate = useCallback(
+  // WATCH-009: Create a new supervisor session
+  const handleSupervisorCreate = useCallback(
     async (
       name: string,
-      authority: 'peer' | 'supervisor',
       model: string,
       brief: string,
-      autoInject: boolean // WATCH-021: Added autoInject parameter
+      autoInject: boolean
     ) => {
       if (!currentSessionId || !name.trim()) {
         return;
       }
 
       try {
-        // Create the watcher session using NAPI
-        const watcherId = await sessionCreateWatcher(
+        // Create the supervisor session using NAPI
+        const supervisorId = await sessionCreateSupervisor(
           currentSessionId,
           model,
           currentProjectRef.current,
           name.trim()
         );
 
-        // Set the role information (name, brief, authority, autoInject)
-        // WATCH-021: Pass autoInject to sessionSetRole
+        // Set the role information (name, brief, autoInject)
         sessionSetRole(
-          watcherId,
+          supervisorId,
           name.trim(),
           brief.trim() || null,
-          authority,
           autoInject
         );
 
-        // Refresh the watcher list by re-calling handleWatcherMode
-        await handleWatcherMode();
+        // Refresh the supervisor list by re-calling handleSupervisorMode
+        await handleSupervisorMode();
 
         // Close the creation view
-        setIsWatcherCreateMode(false);
+        setIsSupervisorCreateMode(false);
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'Failed to create watcher';
-        setWatcherError(`Watcher creation failed: ${errorMessage}`);
-        setIsWatcherCreateMode(false);
+          err instanceof Error ? err.message : 'Failed to create supervisor';
+        setSupervisorError(`Supervisor creation failed: ${errorMessage}`);
+        setIsSupervisorCreateMode(false);
       }
     },
-    [currentSessionId, handleWatcherMode]
+    [currentSessionId, handleSupervisorMode]
   );
 
-  // WATCH-023: Spawn watcher from template
+  // WATCH-023: Spawn supervisor from template
   const handleTemplateSpawn = useCallback(
-    async (template: WatcherTemplate) => {
+    async (template: SupervisorTemplate) => {
       if (!currentSessionId) return;
 
       try {
-        const watcherId = await sessionCreateWatcher(
+        const supervisorId = await sessionCreateSupervisor(
           currentSessionId,
           template.modelId,
           currentProjectRef.current,
@@ -4469,43 +4359,38 @@ export const AgentView: React.FC<AgentViewProps> = ({
         );
 
         sessionSetRole(
-          watcherId,
+          supervisorId,
           template.name,
           template.brief || null,
-          template.authority,
           template.autoInject
         );
 
-        setWatcherNotification(
-          `Spawned watcher "${template.name}" from template`
-        );
-
-        // Refresh the watcher list
-        await handleWatcherMode();
+        // Refresh the supervisor list
+        await handleSupervisorMode();
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'Failed to spawn watcher';
-        setWatcherError(`Spawn failed: ${errorMessage}`);
+          err instanceof Error ? err.message : 'Failed to spawn supervisor';
+        setSupervisorError(`Spawn failed: ${errorMessage}`);
       }
     },
-    [currentSessionId, handleWatcherMode]
+    [currentSessionId, handleSupervisorMode]
   );
 
-  // WATCH-023: Open existing watcher instance
+  // WATCH-023: Open existing supervisor instance
   const handleInstanceOpen = useCallback(
-    async (instance: WatcherInstance) => {
+    async (instance: SupervisorInstance) => {
       try {
-        // REFAC-008: Cleanup previous handler before switching to watcher instance
+        // REFAC-008: Cleanup previous handler before switching to supervisor instance
         cleanupCurrentSessionHandler();
 
-        // Switch to watcher instance session (atomic transition via store)
+        // Switch to supervisor instance session (atomic transition via store)
         activateSession(instance.sessionId);
 
         // GIT-029: Apply any pending isolation state that arrived before activation
         applyPendingIsolationState(instance.sessionId);
 
-        setIsWatcherMode(false);
-        setWatcherList([]);
+        setIsSupervisorMode(false);
+        setSupervisorList([]);
 
         // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
         sessionCleanupRef.current = attachToSession(
@@ -4524,12 +4409,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
         setConversation(restoredMessages);
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'Failed to switch to watcher';
-        setWatcherError(`Switch failed: ${errorMessage}`);
+          err instanceof Error ? err.message : 'Failed to switch to supervisor';
+        setSupervisorError(`Switch failed: ${errorMessage}`);
       }
     },
     [
-      watcherTemplates,
+      supervisorTemplates,
       handleStreamChunk,
       formatToolHeader,
       formatCollapsedOutput,
@@ -4538,7 +4423,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   );
 
   // WATCH-023: Edit template
-  const handleTemplateEdit = useCallback((template: WatcherTemplate) => {
+  const handleTemplateEdit = useCallback((template: SupervisorTemplate) => {
     setEditingTemplate(template);
     setTemplateFormMode('edit');
     setIsTemplateFormMode(true);
@@ -4546,7 +4431,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
   // WATCH-023: Delete template (shows confirmation dialog)
   const handleTemplateDelete = useCallback(
-    (template: WatcherTemplate, instances: WatcherInstance[]) => {
+    (template: SupervisorTemplate, instances: SupervisorInstance[]) => {
       setTemplateToDelete({ template, instances });
       setShowTemplateDeleteDialog(true);
     },
@@ -4573,30 +4458,26 @@ export const AgentView: React.FC<AgentViewProps> = ({
       }
 
       // Delete template from storage
-      const updatedTemplates = watcherTemplates.filter(
+      const updatedTemplates = supervisorTemplates.filter(
         t => t.id !== templateToDelete.template.id
       );
-      saveWatcherTemplates(updatedTemplates);
-      setWatcherTemplates(updatedTemplates);
+      saveSupervisorTemplates(updatedTemplates);
+      setSupervisorTemplates(updatedTemplates);
 
-      setWatcherNotification(
-        `Deleted template "${templateToDelete.template.name}"`
-      );
-
-      // Refresh the watcher list
-      await handleWatcherMode();
+      // Refresh the supervisor list
+      await handleSupervisorMode();
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to delete template';
-      setWatcherError(`Delete failed: ${errorMessage}`);
+      setSupervisorError(`Delete failed: ${errorMessage}`);
     } finally {
       setShowTemplateDeleteDialog(false);
       setTemplateToDelete(null);
     }
-  }, [templateToDelete, watcherTemplates, handleWatcherMode]);
+  }, [templateToDelete, supervisorTemplates, handleSupervisorMode]);
 
-  // WATCH-023: Kill watcher instance (shows confirmation dialog)
-  const handleInstanceKill = useCallback((instance: WatcherInstance) => {
+  // WATCH-023: Kill supervisor instance (shows confirmation dialog)
+  const handleInstanceKill = useCallback((instance: SupervisorInstance) => {
     setInstanceToKill(instance);
     setShowInstanceKillDialog(true);
   }, []);
@@ -4609,19 +4490,17 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // TUI-068: Use destroySession from sessionService
       await destroySession(instanceToKill.sessionId);
 
-      setWatcherNotification('Killed watcher instance');
-
-      // Refresh the watcher list
-      await handleWatcherMode();
+      // Refresh the supervisor list
+      await handleSupervisorMode();
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to kill instance';
-      setWatcherError(`Kill failed: ${errorMessage}`);
+      setSupervisorError(`Kill failed: ${errorMessage}`);
     } finally {
       setShowInstanceKillDialog(false);
       setInstanceToKill(null);
     }
-  }, [instanceToKill, handleWatcherMode]);
+  }, [instanceToKill, handleSupervisorMode]);
 
   // WATCH-023: Create new template
   const handleTemplateCreateNew = useCallback(() => {
@@ -4634,24 +4513,22 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const handleTemplateSave = useCallback(
     async (
       name: string,
-      authority: 'peer' | 'supervisor',
       modelId: string,
       brief: string,
       autoInject: boolean
     ) => {
       try {
-        let updatedTemplates: WatcherTemplate[];
+        let updatedTemplates: SupervisorTemplate[];
 
         if (templateFormMode === 'edit' && editingTemplate) {
           // Update existing template
           const updated = updateTemplate(editingTemplate, {
             name,
-            authority,
             modelId,
             brief,
             autoInject,
           });
-          updatedTemplates = watcherTemplates.map(t =>
+          updatedTemplates = supervisorTemplates.map(t =>
             t.id === updated.id ? updated : t
           );
         } else {
@@ -4659,31 +4536,24 @@ export const AgentView: React.FC<AgentViewProps> = ({
           const newTemplate = createTemplate(
             name,
             modelId,
-            authority,
             brief,
             autoInject
           );
-          updatedTemplates = [...watcherTemplates, newTemplate];
+          updatedTemplates = [...supervisorTemplates, newTemplate];
         }
 
-        saveWatcherTemplates(updatedTemplates);
-        setWatcherTemplates(updatedTemplates);
-
-        setWatcherNotification(
-          templateFormMode === 'edit'
-            ? `Updated template "${name}"`
-            : `Created template "${name}"`
-        );
+        saveSupervisorTemplates(updatedTemplates);
+        setSupervisorTemplates(updatedTemplates);
 
         setIsTemplateFormMode(false);
         setEditingTemplate(undefined);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to save template';
-        setWatcherError(`Save failed: ${errorMessage}`);
+        setSupervisorError(`Save failed: ${errorMessage}`);
       }
     },
-    [templateFormMode, editingTemplate, watcherTemplates]
+    [templateFormMode, editingTemplate, supervisorTemplates]
   );
 
   // WATCH-023: Cancel template form
@@ -5193,15 +5063,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // TUI-050: Handle Enter for slash commands even if palette wasn't shown yet
       // (e.g., user types "/debug" and presses Enter before palette could render)
-      // IMPORTANT: Only do this when NOT in another mode (resume, watcher, etc.)
+      // IMPORTANT: Only do this when NOT in another mode (resume, supervisor, etc.)
       // Otherwise Enter gets incorrectly captured when user is selecting from a list
       if (
         key.return &&
         inputValue.startsWith('/') &&
         inputValue.trim().length > 1 &&
         !isResumeMode &&
-        !isWatcherMode &&
-        !isWatcherEditMode &&
+        !isSupervisorMode &&
+        !isSupervisorEditMode &&
         !showModelSelector &&
         !showSettingsTab
       ) {
@@ -5245,28 +5115,28 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return true;
       }
 
-      // WATCH-023: Watcher mode - WatcherTemplateList handles its own input
-      if (isWatcherMode) {
+      // WATCH-023: Supervisor mode - SupervisorTemplateList handles its own input
+      if (isSupervisorMode) {
         // Dialogs handle their own input via useInput
         if (showTemplateDeleteDialog || showInstanceKillDialog) {
           return true;
         }
-        // Let WatcherTemplateList handle all other input
+        // Let SupervisorTemplateList handle all other input
         return true;
       }
 
-      // WATCH-008: Watcher edit mode keyboard handling
-      if (isWatcherEditMode) {
+      // WATCH-008: Supervisor edit mode keyboard handling
+      if (isSupervisorEditMode) {
         if (key.escape) {
-          setIsWatcherEditMode(false);
-          setWatcherEditValue('');
+          setIsSupervisorEditMode(false);
+          setSupervisorEditValue('');
           return true;
         }
         if (key.return) {
           // Save the edited name and persist to backend
-          if (watcherEditValue.trim()) {
-            const selectedWatcher = watcherList[watcherIndex];
-            if (selectedWatcher) {
+          if (supervisorEditValue.trim()) {
+            const selectedSupervisor = supervisorList[supervisorIndex];
+            if (selectedSupervisor) {
               // Persist to backend via NAPI - only update local state on success
               try {
                 // WATCH-021: Pass null for autoInject - defaults to true.
@@ -5274,24 +5144,23 @@ export const AgentView: React.FC<AgentViewProps> = ({
                 // For now, editing only changes the name. To preserve auto_inject,
                 // we'd need to extend sessionGetRole to return the current value.
                 sessionSetRole(
-                  selectedWatcher.id,
-                  watcherEditValue.trim(),
-                  selectedWatcher.role?.description || null,
-                  selectedWatcher.role?.authority || 'peer',
-                  null // Defaults to true - see note above
+                  selectedSupervisor.id,
+                  supervisorEditValue.trim(),
+                  selectedSupervisor.role?.brief || null,
+                  null // Defaults to true
                 );
                 // Update local state ONLY if backend save succeeded
-                const updatedList = [...watcherList];
-                updatedList[watcherIndex] = {
-                  ...updatedList[watcherIndex],
-                  name: watcherEditValue.trim(),
+                const updatedList = [...supervisorList];
+                updatedList[supervisorIndex] = {
+                  ...updatedList[supervisorIndex],
+                  name: supervisorEditValue.trim(),
                 };
-                setWatcherList(updatedList);
+                setSupervisorList(updatedList);
               } catch (err) {
                 const errorMessage =
                   err instanceof Error
                     ? err.message
-                    : 'Failed to save watcher name';
+                    : 'Failed to save supervisor name';
                 setConversation(prev => [
                   ...prev,
                   { type: 'status', content: `Edit failed: ${errorMessage}` },
@@ -5300,12 +5169,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
               }
             }
           }
-          setIsWatcherEditMode(false);
-          setWatcherEditValue('');
+          setIsSupervisorEditMode(false);
+          setSupervisorEditValue('');
           return true;
         }
         if (key.backspace || key.delete) {
-          setWatcherEditValue(prev => prev.slice(0, -1));
+          setSupervisorEditValue(prev => prev.slice(0, -1));
           return true;
         }
         // Accept printable characters for editing
@@ -5317,29 +5186,29 @@ export const AgentView: React.FC<AgentViewProps> = ({
           })
           .join('');
         if (clean) {
-          setWatcherEditValue(prev => prev + clean);
+          setSupervisorEditValue(prev => prev + clean);
         }
         return true;
       }
 
-      // WATCH-010: Split view keyboard handling for watcher sessions
-      if (isWatcherSessionView && !displayIsLoading) {
+      // WATCH-010: Split view keyboard handling for supervisor sessions
+      if (isSupervisorSessionView && !displayIsLoading) {
         // Tab toggles turn-select mode
         if (key.tab && !key.shift) {
           setIsSplitViewSelectMode(prev => !prev);
           return true;
         }
 
-        // Left arrow switches to parent pane
+        // Left arrow switches to subordinate pane
         if (key.leftArrow && !key.shift) {
-          setActivePane('parent');
+          setActivePane('subordinate');
           setSplitViewSelectedIndex(0); // Reset selection when switching panes
           return true;
         }
 
-        // Right arrow switches to watcher pane
+        // Right arrow switches to supervisor pane
         if (key.rightArrow && !key.shift) {
-          setActivePane('watcher');
+          setActivePane('supervisor');
           setSplitViewSelectedIndex(0); // Reset selection when switching panes
           return true;
         }
@@ -5347,7 +5216,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Up/Down navigation in select mode
         if (isSplitViewSelectMode) {
           const targetConversation =
-            activePane === 'parent' ? parentConversation : conversation;
+            activePane === 'subordinate' ? subordinateConversation : conversation;
           const maxIndex = Math.max(0, targetConversation.length - 1);
 
           if (key.upArrow) {
@@ -5360,14 +5229,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
           }
 
           // Enter key for "Discuss Selected" - pre-fill input with context
-          if (key.return && activePane === 'parent') {
-            const selectedLine = parentConversation[splitViewSelectedIndex];
+          if (key.return && activePane === 'subordinate') {
+            const selectedLine = subordinateConversation[splitViewSelectedIndex];
             if (selectedLine) {
               const turnNum = splitViewSelectedIndex + 1;
               const preview =
                 selectedLine.content.slice(0, 100) +
                 (selectedLine.content.length > 100 ? '...' : '');
-              const prefill = `Regarding turn ${turnNum} in parent session:\n\`\`\`\n${preview}\n\`\`\`\n`;
+              const prefill = `Regarding turn ${turnNum} in subordinate session:\n\`\`\`\n${preview}\n\`\`\`\n`;
               setInputValue(prefill);
               setIsSplitViewSelectMode(false);
             }
@@ -5417,10 +5286,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
       }
 
       // VIEWNV-001: Shift+Left/Right for unified session navigation
-      // Skip when in watcher view - SplitSessionView handles its own navigation
+      // Skip when in supervisor view - SplitSessionView handles its own navigation
       // Uses sessionNavigation hook which determines correct target based on position in tree
       // Check escape sequences first, then Ink key detection
-      if (!isWatcherSessionView) {
+      if (!isSupervisorSessionView) {
         const isShiftLeft =
           input.includes('[1;2D') ||
           input.includes('\x1b[1;2D') ||
@@ -5441,16 +5310,16 @@ export const AgentView: React.FC<AgentViewProps> = ({
       }
 
       // TUI-045: Esc key handling with priority order:
-      // 1) Close exit confirmation modal, 2) Close watcher turn modal, 3) Close turn modal, 4) Disable select mode, 5) Interrupt loading, 6) Clear input, 7) Show exit confirmation or exit
+      // 1) Close exit confirmation modal, 2) Close supervisor turn modal, 3) Close turn modal, 4) Disable select mode, 5) Interrupt loading, 6) Clear input, 7) Show exit confirmation or exit
       if (key.escape) {
         // Priority 1: Close exit confirmation modal (TUI-046)
         if (showExitConfirmation) {
           setShowExitConfirmation(false);
           return true;
         }
-        // Priority 2: Close watcher turn modal (WATCH-016)
-        if (showWatcherTurnModal) {
-          setShowWatcherTurnModal(false);
+        // Priority 2: Close supervisor turn modal (WATCH-016)
+        if (showSupervisorTurnModal) {
+          setShowSupervisorTurnModal(false);
           return true;
         }
         // Priority 3: Close turn modal
@@ -5511,11 +5380,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // Only recompute lines for messages that changed, reuse cached lines for unchanged messages
   // PERF-003: Uses deferredConversation to prioritize user input over streaming updates
   // TUI-045: Removed expansion logic - modal now handles full content viewing
-  // WATCH-010: Use half width when in split view mode (watcher session)
+  // WATCH-010: Use half width when in split view mode (supervisor session)
   const conversationLines = useMemo((): ConversationLine[] => {
     // Calculate max width based on whether we're in split view or full view
     // Uses shared calculatePaneWidth utility for consistent width calculation
-    const maxWidth = isWatcherSessionView
+    const maxWidth = isSupervisorSessionView
       ? calculatePaneWidth(terminalWidth, 'split')
       : calculatePaneWidth(terminalWidth, 'full');
     const lines: ConversationLine[] = [];
@@ -5536,14 +5405,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Check cache for this message
       const cached = cache.get(msgIndex);
       const isThinking = msg.type === 'thinking';
-      // WATCH-010: Include isWatcherSessionView in cache check since width depends on it
+      // WATCH-010: Include isSupervisorSessionView in cache check since width depends on it
       if (
         cached &&
         cached.content === effectiveContent &&
         cached.isStreaming === msg.isStreaming &&
         cached.isThinking === isThinking &&
         cached.terminalWidth === terminalWidth &&
-        cached.isWatcherView === isWatcherSessionView
+        cached.isSupervisorView === isSupervisorSessionView
       ) {
         // Cache hit - reuse cached lines
         lines.push(...cached.lines);
@@ -5559,7 +5428,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
           isStreaming: msg.isStreaming ?? false,
           isThinking,
           terminalWidth,
-          isWatcherView: isWatcherSessionView,
+          isSupervisorView: isSupervisorSessionView,
           lines: messageLines,
         });
         lines.push(...messageLines);
@@ -5574,7 +5443,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
 
     return lines;
-  }, [deferredConversation, terminalWidth, isWatcherSessionView]);
+  }, [deferredConversation, terminalWidth, isSupervisorSessionView]);
 
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
@@ -5907,8 +5776,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     );
   }
 
-  // WATCH-009: Watcher creation view (full-screen form)
-  if (isWatcherCreateMode) {
+  // WATCH-009: Supervisor creation view (full-screen form)
+  if (isSupervisorCreateMode) {
     // Build list of available model IDs from providerSections
     // WATCH-023 FIX: Include provider prefix so Rust can parse "provider/model"
     const availableModelIds: string[] = providerSections.flatMap(section =>
@@ -5921,15 +5790,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
         : '';
 
     return (
-      <WatcherCreateView
+      <SupervisorCreateView
         currentModel={currentModelId}
         availableModels={
           availableModelIds.length > 0 ? availableModelIds : [currentModelId]
         }
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
-        onCreate={handleWatcherCreate}
-        onCancel={() => setIsWatcherCreateMode(false)}
+        onCreate={handleSupervisorCreate}
+        onCancel={() => setIsSupervisorCreateMode(false)}
       />
     );
   }
@@ -5947,7 +5816,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         : '';
 
     return (
-      <WatcherTemplateForm
+      <SupervisorTemplateForm
         mode={templateFormMode}
         template={editingTemplate}
         currentModel={currentModelId}
@@ -5978,13 +5847,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
     );
   }
 
-  // WATCH-023: Watcher template management overlay (replaces old WATCH-008 overlay)
-  if (isWatcherMode) {
+  // WATCH-023: Supervisor template management overlay (replaces old WATCH-008 overlay)
+  if (isSupervisorMode) {
     return (
       <>
-        <WatcherTemplateList
-          templates={watcherTemplates}
-          instances={watcherInstances}
+        <SupervisorTemplateList
+          templates={supervisorTemplates}
+          instances={supervisorInstances}
           terminalWidth={terminalWidth}
           terminalHeight={terminalHeight}
           onSpawn={handleTemplateSpawn}
@@ -5994,8 +5863,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
           onKillInstance={handleInstanceKill}
           onCreateNew={handleTemplateCreateNew}
           onClose={() => {
-            setIsWatcherMode(false);
-            setWatcherList([]);
+            setIsSupervisorMode(false);
+            setSupervisorList([]);
           }}
         />
         {/* Template delete confirmation dialog */}
@@ -6004,7 +5873,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
             message={`Delete template "${templateToDelete.template.name}"?`}
             description={
               templateToDelete.instances.length > 0
-                ? `This will kill ${templateToDelete.instances.length} active watcher${templateToDelete.instances.length !== 1 ? 's' : ''}.`
+                ? `This will kill ${templateToDelete.instances.length} active supervisor${templateToDelete.instances.length !== 1 ? 's' : ''}.`
                 : undefined
             }
             options={['Delete', 'Cancel']}
@@ -6025,7 +5894,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         {/* Instance kill confirmation dialog */}
         {showInstanceKillDialog && instanceToKill && (
           <ThreeButtonDialog
-            message="Kill this watcher instance?"
+            message="Kill this supervisor instance?"
             options={['Kill', 'Cancel']}
             onSelect={(index: number) => {
               if (index === 0) {
@@ -6060,37 +5929,37 @@ export const AgentView: React.FC<AgentViewProps> = ({
     );
   }
 
-  // WATCH-010: Watcher split view - shows parent conversation on left, watcher conversation on right
+  // WATCH-010: Supervisor split view - shows subordinate conversation on left, supervisor conversation on right
   // WATCH-018: Extracted to separate SplitSessionView component for isolation and debugging
   // WATCH-015: Pass model info and token stats to SplitSessionView for full header display
-  // WATCH-016: Added onOpenTurnContent callback for opening TurnContentModal from watcher pane
-  if (isWatcherSessionView) {
-    // WATCH-016: Handler for opening turn content modal from watcher pane
-    const handleOpenWatcherTurnContent = (
+  // WATCH-016: Added onOpenTurnContent callback for opening TurnContentModal from supervisor pane
+  if (isSupervisorSessionView) {
+    // WATCH-016: Handler for opening turn content modal from supervisor pane
+    const handleOpenSupervisorTurnContent = (
       messageIndex: number,
       content: string
     ) => {
-      // Determine role from conversation (default to assistant for watcher responses)
+      // Determine role from conversation (default to assistant for supervisor responses)
       const turnLines = conversationLines.filter(
         line => line.messageIndex === messageIndex
       );
       const role =
         turnLines.length > 0
-          ? (turnLines[0].role as 'user' | 'assistant' | 'watcher')
+          ? (turnLines[0].role as 'user' | 'assistant' | 'supervisor')
           : 'assistant';
-      setWatcherTurnModalContent(content);
-      setWatcherTurnModalRole(role);
-      setShowWatcherTurnModal(true);
+      setSupervisorTurnModalContent(content);
+      setSupervisorTurnModalRole(role);
+      setShowSupervisorTurnModal(true);
     };
 
     return (
       <>
         <SplitSessionView
           sessionId={currentSessionId}
-          parentSessionName={parentSessionName}
+          subordinateSessionName={subordinateSessionName}
           terminalWidth={terminalWidth}
-          parentConversation={parentConversation}
-          watcherConversation={conversationLines}
+          subordinateConversation={subordinateConversation}
+          supervisorConversation={conversationLines}
           inputValue={inputValue}
           onInputChange={setInputValue}
           onSubmit={handleSubmit}
@@ -6103,7 +5972,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
           rustTokens={rustTokens}
           contextFillPercentage={contextFillPercentage}
           isTurnSelectMode={isTurnSelectMode}
-          onOpenTurnContent={handleOpenWatcherTurnContent}
+          onOpenTurnContent={handleOpenSupervisorTurnContent}
           // VIEWNV-001: Navigation callbacks for Shift+Arrow handling
           onNavigate={async (targetSessionId: string) => {
             // Save pending input to current session before switching
@@ -6129,14 +5998,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
             onExit();
           }}
         />
-        {/* WATCH-016: Turn content modal for watcher pane */}
-        {showWatcherTurnModal && (
+        {/* WATCH-016: Turn content modal for supervisor pane */}
+        {showSupervisorTurnModal && (
           <TurnContentModal
-            content={watcherTurnModalContent}
-            role={watcherTurnModalRole}
+            content={supervisorTurnModalContent}
+            role={supervisorTurnModalRole}
             terminalWidth={terminalWidth}
             terminalHeight={terminalHeight}
-            isFocused={showWatcherTurnModal}
+            isFocused={showSupervisorTurnModal}
           />
         )}
       </>
@@ -6296,11 +6165,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
             }
 
             // Default rendering for non-diff content
-            // Tool output is white (not yellow), user input is green, watcher input is magenta (WATCH-012)
+            // Tool output is white (not yellow), user input is green, supervisor input is magenta (WATCH-012)
             const baseColor =
               line.role === 'user'
                 ? 'green'
-                : line.role === 'watcher'
+                : line.role === 'supervisor'
                   ? 'magenta'
                   : 'white';
             return (
@@ -6490,21 +6359,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
         />
       )}
 
-      {/* WATCH-023: Watcher notification dialog */}
-      {watcherNotification && (
-        <NotificationDialog
-          message={watcherNotification}
-          type="success"
-          autoDismissMs={2000}
-          onClose={() => setWatcherNotification(null)}
-        />
-      )}
-
-      {/* WATCH-023: Watcher error dialog */}
-      {watcherError && (
+      {/* WATCH-023: Supervisor error dialog */}
+      {supervisorError && (
         <ErrorDialog
-          message={watcherError}
-          onClose={() => setWatcherError(null)}
+          message={supervisorError}
+          onClose={() => setSupervisorError(null)}
         />
       )}
 
