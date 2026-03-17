@@ -342,9 +342,14 @@ impl OpenAIProvider {
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
             .tool(RequestUserInputTool::new(session_id)); // TOOL-017: HITL tool
 
-        // Set preamble if provided
-        if let Some(p) = preamble {
-            agent_builder = agent_builder.preamble(p);
+        // BUG-120: Always set a system prompt with fspec guidance.
+        // When a role is provided, it is appended after fspec guidance.
+        // Uses the same transform as OpenAISystemPromptFacade for consistency.
+        {
+            use codelet_tools::facade::prepend_fspec_guidance;
+            let preamble_text = preamble.unwrap_or("");
+            let effective_preamble = prepend_fspec_guidance(preamble_text);
+            agent_builder = agent_builder.preamble(&effective_preamble);
         }
 
         agent_builder.build()

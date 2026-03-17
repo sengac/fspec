@@ -1,8 +1,9 @@
 /**
  * Feature: spec/features/role-dialog.feature
+ * Feature: spec/features/role-dialog-remove-button.feature
  *
  * This test file validates the TUI /role dialog acceptance criteria
- * defined in the feature file. Scenarios map directly to Gherkin scenarios.
+ * defined in the feature files. Scenarios map directly to Gherkin scenarios.
  *
  * Tests the RoleDialog component:
  * - Opening dialog with empty or pre-populated text area
@@ -11,6 +12,7 @@
  * - Empty text area submission clears the role
  * - Multi-line editing with Enter for newlines
  * - Left/right arrow navigation between OK and Cancel buttons
+ * - TUI-082: Remove button (3rd button) when editing existing role
  */
 
 import React from 'react';
@@ -330,8 +332,10 @@ describe('Feature: Role management — /role TUI dialog', () => {
       stdin.write('new-role');
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // @step And I press Tab twice to move focus to Cancel
+      // @step And I press Tab three times to move focus to Cancel (OK → Remove → Cancel)
       stdin.write('\t'); // → OK
+      await new Promise(resolve => setTimeout(resolve, 50));
+      stdin.write('\t'); // → Remove (TUI-082)
       await new Promise(resolve => setTimeout(resolve, 50));
       stdin.write('\t'); // → Cancel
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -460,6 +464,211 @@ describe('Feature: Role management — /role TUI dialog', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       expect(onSubmit).toHaveBeenCalledWith('Line one\nLine two');
+
+      unmount();
+    });
+  });
+
+  // ============================================================
+  // TUI-082: Remove button scenarios
+  // Feature: spec/features/role-dialog-remove-button.feature
+  // ============================================================
+
+  describe('Scenario: Remove button appears when editing an existing role', () => {
+    it('should show 3 buttons (OK, Remove, Cancel) when initialRole is set', async () => {
+      const onSubmit = vi.fn();
+      const onClose = vi.fn();
+
+      // @step Given a session exists with role "security reviewer"
+      // @step When the user opens the /role dialog
+      const { lastFrame, unmount } = render(
+        <RoleDialog
+          initialRole="security reviewer"
+          onSubmit={onSubmit}
+          onClose={onClose}
+        />
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then the dialog shows 3 buttons: OK, Remove, and Cancel
+      const output = lastFrame() || '';
+      expect(output).toContain('OK');
+      expect(output).toContain('Remove');
+      expect(output).toContain('Cancel');
+
+      // @step And the Remove button is styled in red
+      // (visual styling verified by presence — ink-testing-library strips ANSI)
+
+      unmount();
+    });
+  });
+
+  describe('Scenario: Remove button is hidden when creating a new role', () => {
+    it('should show 2 buttons (OK, Cancel) when no initialRole', async () => {
+      const onSubmit = vi.fn();
+      const onClose = vi.fn();
+
+      // @step Given a session exists with no role
+      // @step When the user opens the /role dialog
+      const { lastFrame, unmount } = render(
+        <RoleDialog
+          onSubmit={onSubmit}
+          onClose={onClose}
+        />
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then the dialog shows 2 buttons: OK and Cancel
+      const output = lastFrame() || '';
+      expect(output).toContain('OK');
+      expect(output).toContain('Cancel');
+
+      // @step And no Remove button is visible
+      expect(output).not.toContain('Remove');
+
+      unmount();
+    });
+  });
+
+  describe('Scenario: Pressing Remove clears the role and closes the dialog', () => {
+    it('should clear the role when Remove is pressed', async () => {
+      const onSubmit = vi.fn();
+      const onClose = vi.fn();
+
+      // @step Given a session exists with role "security reviewer"
+      // @step And the user has opened the /role dialog
+      const { stdin, unmount } = render(
+        <RoleDialog
+          initialRole="security reviewer"
+          onSubmit={onSubmit}
+          onClose={onClose}
+        />
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step When the user navigates to the Remove button and presses Enter
+      stdin.write('\t'); // textarea → OK
+      await new Promise(resolve => setTimeout(resolve, 50));
+      stdin.write('\t'); // OK → Remove
+      await new Promise(resolve => setTimeout(resolve, 50));
+      stdin.write('\r'); // Enter on Remove
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then the role should be cleared
+      expect(onSubmit).toHaveBeenCalledWith('');
+
+      // @step And the dialog should close
+      // (onSubmit was called, which triggers parent to close dialog)
+
+      // @step And the RoleBanner should not be visible
+      // (parent responsibility — verified by onSubmit('') being called)
+
+      unmount();
+    });
+  });
+
+  describe('Scenario: Tab cycles through all three buttons when Remove is visible', () => {
+    it('should cycle: textarea → OK → Remove → Cancel → textarea', async () => {
+      const onSubmit = vi.fn();
+      const onClose = vi.fn();
+
+      // @step Given a session exists with role "architect"
+      // @step And the user has opened the /role dialog
+      const { stdin, lastFrame, unmount } = render(
+        <RoleDialog
+          initialRole="architect"
+          onSubmit={onSubmit}
+          onClose={onClose}
+        />
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step When the user presses Tab from the textarea
+      stdin.write('\t');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then focus moves to OK
+      // (OK button should be highlighted — we verify by pressing right to reach Remove)
+
+      // @step When the user presses Tab again
+      stdin.write('\t');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then focus moves to Remove
+      // Verify by pressing Enter — should call onSubmit('')
+      // But first let's continue the cycle
+
+      // @step When the user presses Tab again
+      stdin.write('\t');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then focus moves to Cancel
+
+      // @step When the user presses Tab again
+      stdin.write('\t');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then focus returns to the textarea
+      // Verify: typing should add to text area
+      stdin.write('z');
+      await new Promise(resolve => setTimeout(resolve, 50));
+      const output = lastFrame() || '';
+      expect(output).toContain('z');
+
+      unmount();
+    });
+  });
+
+  describe('Scenario: Left/right arrows navigate between all visible buttons', () => {
+    it('should navigate OK → Remove → Cancel with arrows', async () => {
+      const onSubmit = vi.fn();
+      const onClose = vi.fn();
+
+      // @step Given a session exists with role "architect"
+      // @step And the user has opened the /role dialog
+      // @step And focus is on the OK button
+      const { stdin, unmount } = render(
+        <RoleDialog
+          initialRole="architect"
+          onSubmit={onSubmit}
+          onClose={onClose}
+        />
+      );
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Tab to OK button first
+      stdin.write('\t');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step When the user presses the right arrow key
+      stdin.write('\x1b[C'); // right arrow
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then focus moves to Remove
+      // Verify by pressing Enter — Remove calls onSubmit('')
+      // But first let's continue testing navigation
+
+      // @step When the user presses the right arrow key
+      stdin.write('\x1b[C'); // right arrow
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then focus moves to Cancel
+
+      // @step When the user presses the left arrow key
+      stdin.write('\x1b[D'); // left arrow
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // @step Then focus moves to Remove
+      // Verify: pressing Enter should call onSubmit('') for Remove
+      stdin.write('\r');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      expect(onSubmit).toHaveBeenCalledWith('');
 
       unmount();
     });

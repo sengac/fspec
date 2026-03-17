@@ -31,6 +31,7 @@ import { TurnContentModal } from './TurnContentModal';
 import { SlashCommandPalette } from './SlashCommandPalette';
 
 import { FileSearchPopup } from './FileSearchPopup';
+import { RoleBanner } from './RoleBanner';
 import { ProviderSettingsScreen } from './ProviderSettingsScreen';
 import { ModelSelectorScreen } from './ModelSelectorScreen';
 import {
@@ -4993,6 +4994,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
         compactionReduction={compactionReduction}
         sessionNumber={sessionNumber}
         isIsolated={isIsolated}
+      />
+
+      {/* TUI-081: Display active role below SessionHeader */}
+      <RoleBanner roleText={(() => {
+        if (!currentSessionId) { return null; }
+        try {
+          const role = sessionGetRole(currentSessionId);
+          return role?.name ?? null;
+        } catch {
+          return null;
+        }
+      })()}
       />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}

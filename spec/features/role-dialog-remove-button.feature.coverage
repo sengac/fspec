@@ -1,0 +1,171 @@
+{
+  "scenarios": [
+    {
+      "name": "Remove button appears when editing an existing role",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/RoleDialog.test.tsx",
+          "lines": "474-502",
+          "implMappings": [
+            {
+              "file": "src/components/RoleDialog.tsx",
+              "lines": [
+                49,
+                50,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove button is hidden when creating a new role",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/RoleDialog.test.tsx",
+          "lines": "504-527",
+          "implMappings": [
+            {
+              "file": "src/components/RoleDialog.tsx",
+              "lines": [
+                49,
+                50,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing Remove clears the role and closes the dialog",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/RoleDialog.test.tsx",
+          "lines": "529-572",
+          "implMappings": [
+            {
+              "file": "src/components/RoleDialog.tsx",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab cycles through all three buttons when Remove is visible",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/RoleDialog.test.tsx",
+          "lines": "574-623",
+          "implMappings": [
+            {
+              "file": "src/components/RoleDialog.tsx",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left/right arrows navigate between all visible buttons",
+      "testMappings": [
+        {
+          "file": "src/components/__tests__/RoleDialog.test.tsx",
+          "lines": "625-674",
+          "implMappings": [
+            {
+              "file": "src/components/RoleDialog.tsx",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/components/__tests__/RoleDialog.test.tsx"
+    ],
+    "implFiles": [
+      "src/components/RoleDialog.tsx"
+    ],
+    "totalLinesCovered": 272
+  }
+}

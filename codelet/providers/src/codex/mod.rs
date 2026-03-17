@@ -392,10 +392,16 @@ impl CodexProvider {
 
         // The Codex backend API REQUIRES non-empty `instructions` in every
         // Responses API request.  The rig layer maps preamble → instructions,
-        // so we must ALWAYS set a preamble.  Use the caller's value if given,
-        // otherwise fall back to the official Codex base instructions.
-        let effective_preamble = preamble.unwrap_or(CODEX_BASE_INSTRUCTIONS);
-        agent_builder = agent_builder.preamble(effective_preamble);
+        // so we must ALWAYS set a preamble.  Base instructions are always
+        // included; when a role is provided (BUG-120), it is appended after
+        // the base instructions so the model retains its reasoning config.
+        let effective_preamble = match preamble {
+            Some(role) if !role.trim().is_empty() => {
+                format!("{CODEX_BASE_INSTRUCTIONS}\n\n{role}")
+            }
+            _ => CODEX_BASE_INSTRUCTIONS.to_string(),
+        };
+        agent_builder = agent_builder.preamble(&effective_preamble);
 
         // The Codex backend API REQUIRES `store: false` in the request body.
         // Omitting it or setting it to true returns 400:

@@ -1,0 +1,127 @@
+{
+  "scenarios": [
+    {
+      "name": "Role is passed as preamble to create_rig_agent",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/role_preamble_injection_test.rs",
+          "lines": "38-128",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                3835,
+                3836,
+                3837,
+                3838,
+                3839,
+                3840
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No role results in None preamble",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/role_preamble_injection_test.rs",
+          "lines": "138-185",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                3835,
+                3836,
+                3837,
+                3838,
+                3839,
+                3840
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cleared role reverts to None preamble",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/role_preamble_injection_test.rs",
+          "lines": "194-250",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                3835,
+                3836,
+                3837,
+                3838,
+                3839,
+                3840
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Role change takes effect on next turn",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/role_preamble_injection_test.rs",
+          "lines": "258-313",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                3835,
+                3836,
+                3837,
+                3838,
+                3839,
+                3840
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Spawned subordinate with role has preamble set on first turn",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/role_preamble_injection_test.rs",
+          "lines": "322-380",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_manager_handler.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/role_preamble_injection_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs",
+      "codelet/napi/src/agent_manager_handler.rs"
+    ],
+    "totalLinesCovered": 341
+  }
+}

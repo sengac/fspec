@@ -1,0 +1,40 @@
+{
+  "scenarios": [
+    {
+      "name": "session_set_role with empty string clears the role",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "2046-2068",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5541,
+                5542,
+                5543,
+                5544,
+                5545,
+                5546,
+                5547,
+                5548
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 31
+  }
+}

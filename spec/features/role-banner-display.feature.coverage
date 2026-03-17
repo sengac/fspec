@@ -1,0 +1,148 @@
+{
+  "scenarios": [
+    {
+      "name": "RoleBanner shows active role text",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/RoleBanner.test.tsx",
+          "lines": "22-42",
+          "implMappings": [
+            {
+              "file": "src/tui/components/RoleBanner.tsx",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RoleBanner hidden when no role set",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/RoleBanner.test.tsx",
+          "lines": "48-80",
+          "implMappings": [
+            {
+              "file": "src/tui/components/RoleBanner.tsx",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RoleBanner appears after setting role via /role dialog",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/RoleBanner.test.tsx",
+          "lines": "86-103",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4998,
+                4999,
+                5000,
+                5001,
+                5002,
+                5003,
+                5004,
+                5005,
+                5006,
+                5007,
+                5008,
+                5009,
+                5010
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Long role text is truncated",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/RoleBanner.test.tsx",
+          "lines": "109-127",
+          "implMappings": [
+            {
+              "file": "src/tui/components/RoleBanner.tsx",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/RoleBanner.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/RoleBanner.tsx",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 158
+  }
+}

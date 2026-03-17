@@ -2,14 +2,16 @@
  * RoleDialog - Modal dialog for editing session role (system prompt overlay)
  *
  * AMGR-012: Allows users to set/edit/clear a role via /role command.
+ * TUI-082: Remove button for quick role clearing when editing existing role.
  * Uses the base Dialog component and useMultiLineInput hook.
  *
  * Features:
  * - Multi-line text area (6 visible lines) for role text
  * - Pre-populated with current role if one exists
- * - Tab cycles focus: textarea → OK → Cancel → textarea
+ * - Tab cycles focus: textarea → OK → [Remove] → Cancel → textarea
+ * - Remove button only shown when editing an existing role (red styling)
  * - Enter inserts newline in textarea, activates button when focused
- * - Left/right arrows navigate between OK and Cancel buttons
+ * - Left/right arrows navigate between visible buttons
  * - ESC cancels (handled by base Dialog)
  * - Empty submission clears the role
  *
@@ -22,7 +24,7 @@ import { Dialog } from './Dialog';
 import { useMultiLineInput } from '../tui/hooks/useMultiLineInput';
 import { useInputCompat, InputPriority } from '../tui/input/index';
 
-type FocusArea = 'textarea' | 'ok' | 'cancel';
+type FocusArea = 'textarea' | 'ok' | 'remove' | 'cancel';
 
 export interface RoleDialogProps {
   /** Initial role text (pre-populated in textarea) */
@@ -42,13 +44,15 @@ export const RoleDialog: React.FC<RoleDialogProps> = ({
 }) => {
   const [focus, setFocus] = useState<FocusArea>('textarea');
 
+  // TUI-082: Show Remove button only when editing an existing role
+  const showRemove = initialRole.length > 0;
+
   const {
-    lines,
-    cursorRow,
-    cursorCol,
     visibleLines,
     scrollOffset,
     value,
+    cursorRow,
+    cursorCol,
     moveCursorLeft,
     moveCursorRight,
     moveCursorUp,
@@ -67,17 +71,47 @@ export const RoleDialog: React.FC<RoleDialogProps> = ({
     maxVisibleLines: VISIBLE_LINES,
   });
 
+  // TUI-082: Build ordered list of buttons for tab/arrow navigation
+  const buttonOrder: FocusArea[] = showRemove
+    ? ['ok', 'remove', 'cancel']
+    : ['ok', 'cancel'];
+
+  const nextButton = (current: FocusArea): FocusArea => {
+    const idx = buttonOrder.indexOf(current);
+    if (idx === -1 || idx === buttonOrder.length - 1) {
+      return 'textarea';
+    }
+    return buttonOrder[idx + 1];
+  };
+
+  const nextButtonRight = (current: FocusArea): FocusArea => {
+    const idx = buttonOrder.indexOf(current);
+    if (idx < buttonOrder.length - 1) {
+      return buttonOrder[idx + 1];
+    }
+    return current;
+  };
+
+  const prevButtonLeft = (current: FocusArea): FocusArea => {
+    const idx = buttonOrder.indexOf(current);
+    if (idx > 0) {
+      return buttonOrder[idx - 1];
+    }
+    return current;
+  };
+
   useInputCompat({
     id: 'role-dialog-input',
     priority: InputPriority.CRITICAL,
     isActive: true,
     handler: (input, key) => {
-      // Tab cycles focus: textarea → ok → cancel → textarea
+      // Tab cycles focus: textarea → ok → [remove] → cancel → textarea
       if (key.tab) {
         setFocus(prev => {
-          if (prev === 'textarea') { return 'ok'; }
-          if (prev === 'ok') { return 'cancel'; }
-          return 'textarea';
+          if (prev === 'textarea') {
+            return 'ok';
+          }
+          return nextButton(prev);
         });
         return true;
       }
@@ -170,19 +204,22 @@ export const RoleDialog: React.FC<RoleDialogProps> = ({
         return true; // Consume all input when textarea focused
       }
 
-      // Button row focus handling
-      if (focus === 'ok' || focus === 'cancel') {
+      // Button row focus handling — works for ok, remove, and cancel
+      if (focus === 'ok' || focus === 'remove' || focus === 'cancel') {
         if (key.leftArrow) {
-          setFocus('ok');
+          setFocus(prevButtonLeft(focus));
           return true;
         }
         if (key.rightArrow) {
-          setFocus('cancel');
+          setFocus(nextButtonRight(focus));
           return true;
         }
         if (key.return) {
           if (focus === 'ok') {
             onSubmit(value);
+          } else if (focus === 'remove') {
+            // TUI-082: Remove = submit empty string to clear role
+            onSubmit('');
           } else {
             onClose();
           }
@@ -251,7 +288,7 @@ export const RoleDialog: React.FC<RoleDialogProps> = ({
           ))}
         </Box>
 
-        {/* OK / Cancel Buttons */}
+        {/* OK / [Remove] / Cancel Buttons */}
         <Box marginTop={1} justifyContent="center">
           <Box marginX={1}>
             <Text
@@ -262,6 +299,18 @@ export const RoleDialog: React.FC<RoleDialogProps> = ({
               {' '}OK{' '}
             </Text>
           </Box>
+          {/* TUI-082: Remove button — only visible when editing existing role */}
+          {showRemove && (
+            <Box marginX={1}>
+              <Text
+                backgroundColor={focus === 'remove' ? 'red' : undefined}
+                color={focus === 'remove' ? 'white' : 'red'}
+                bold={focus === 'remove'}
+              >
+                {' '}Remove{' '}
+              </Text>
+            </Box>
+          )}
           <Box marginX={1}>
             <Text
               backgroundColor={focus === 'cancel' ? 'blue' : undefined}

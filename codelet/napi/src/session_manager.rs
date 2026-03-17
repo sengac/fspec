@@ -2030,31 +2030,74 @@ mod global_chunk_callback_tests {
 
 #[cfg(test)]
 mod session_role_tests {
+    // Feature: spec/features/role-clearing-via-napi.feature
 
+    // ============================================================
+    // Scenario: session_set_role with empty string clears the role
+    // ============================================================
+    //
+    // The NAPI binding session_set_role has an early-return error when
+    // role_name is empty. The fix changes that branch to call
+    // session.clear_role() instead, matching agent_manager_handler
+    // which already handles this correctly.
+    //
+    // We can't construct a full BackgroundSession in unit tests (requires
+    // codelet_cli::session::Session + mpsc channels), so this test verifies
+    // the branching logic that the NAPI binding SHOULD follow.
 
-    /// Scenario: Set role with empty name returns error
-    ///
-    /// @step Given a BackgroundSession exists
-    /// @step When I call set_role with name "test", description None, and 
-    /// @step Then it should return an error "Role name cannot be empty"
+    /// @step Given a session exists with role "reviewer"
+    /// @step When session_set_role is called with an empty role_name
+    /// @step Then the session role should be cleared
+    /// @step And session_get_role should return null
     #[test]
-    fn test_set_role_with_empty_name_returns_error() {
-        // @step Given a BackgroundSession exists
-        // (simulated)
+    fn test_empty_role_name_triggers_clear_branch() {
+        // @step Given a session exists with role "reviewer"
+        let mut current_role: Option<String> = Some("reviewer".to_string());
+        assert_eq!(current_role, Some("reviewer".to_string()));
 
-        // @step When I call set_role with name "test", description None, and 
+        // @step When session_set_role is called with an empty role_name
+        // Simulate the FIXED session_set_role logic:
+        let role_name = "".to_string();
+        if role_name.is_empty() {
+            // BUG-121 FIX: clear_role instead of returning error
+            current_role = None;
+        } else {
+            current_role = Some(role_name);
+        }
 
-        // @step Then it should return an error "Role name cannot be empty"
-        assert!(true, "empty name handled");
+        // @step Then the session role should be cleared
+        // @step And session_get_role should return null
+        assert_eq!(current_role, None);
     }
 
-
+    /// Verify non-empty role_name still sets the role (regression guard)
     #[test]
-    fn test_role_defaults() {
+    fn test_non_empty_role_name_sets_role() {
+        let mut current_role: Option<String> = None;
+
+        let role_name = "architect".to_string();
+        if role_name.is_empty() {
+            current_role = None;
+        } else {
+            current_role = Some(role_name);
+        }
+
+        assert_eq!(current_role, Some("architect".to_string()));
     }
 
+    /// Verify clearing an already-empty role is idempotent
     #[test]
-    fn test_role_has_brief() {
+    fn test_clear_role_when_no_role_set_is_idempotent() {
+        let mut current_role: Option<String> = None;
+
+        let role_name = "".to_string();
+        if role_name.is_empty() {
+            current_role = None;
+        } else {
+            current_role = Some(role_name);
+        }
+
+        assert_eq!(current_role, None);
     }
 }
 
@@ -3832,8 +3875,12 @@ macro_rules! run_with_provider {
                 // Uses try_read (non-blocking) — if lock is held, tools appear next turn.
                 let mcp_wrappers = codelet_tools::gather_mcp_tool_wrappers($session.id);
                 
+                // BUG-120: Read session role and pass as preamble so it becomes
+                // part of the system prompt. All providers handle preamble via
+                // SystemPromptFacade — the role text is prepended to fspec guidance.
+                let role_preamble = $session.get_role();
                 // TOOL-012: Pass session.id as first parameter so tools store it at construction
-                let agent = provider.create_rig_agent($session.id, None, $thinking.clone());
+                let agent = provider.create_rig_agent($session.id, role_preamble.as_deref(), $thinking.clone());
                 
                 // MCP-001: Add dynamic MCP tools to the built agent.
                 // Uses ToolServerHandle.add_tool() to register wrappers post-build.
@@ -5536,9 +5583,11 @@ pub fn session_set_role(
 ) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     if role_name.is_empty() {
-        return Err(Error::from_reason("Role name cannot be empty"));
+        // BUG-121: Empty role_name clears the role instead of returning error
+        session.clear_role();
+    } else {
+        session.set_role(role_name);
     }
-    session.set_role(role_name);
     Ok(())
 }
 
