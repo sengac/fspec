@@ -133,6 +133,7 @@ mod tests {
             query: "   ".to_string(), // whitespace-only
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -194,7 +195,7 @@ mod tests {
 
         // @step And the system prompt does not describe any code paths
         let scope = args.scope.unwrap_or_default();
-        let prompt = build_system_prompt(&scope);
+        let prompt = build_system_prompt(&scope, false);
         assert!(
             !prompt.contains("YOUR CODE SCOPE"),
             "no code scope section when scope is empty"
@@ -217,7 +218,7 @@ mod tests {
         let scope = vec!["src/".to_string()];
 
         // @step When the sub-agent is constructed
-        let prompt = build_system_prompt(&scope);
+        let prompt = build_system_prompt(&scope, false);
 
         // @step Then the system prompt describes SessionSearch for session history exploration
         assert!(
@@ -249,7 +250,7 @@ mod tests {
 
     #[test]
     fn test_system_prompt_without_code_scope() {
-        let prompt = build_system_prompt(&[]);
+        let prompt = build_system_prompt(&[], false);
         assert!(prompt.contains("SessionSearch"));
         assert!(
             !prompt.contains("YOUR CODE SCOPE"),
@@ -268,7 +269,7 @@ mod tests {
             "src/middleware/".to_string(),
             "spec/features/".to_string(),
         ];
-        let prompt = build_system_prompt(&scope);
+        let prompt = build_system_prompt(&scope, false);
         assert!(prompt.contains("src/auth/"));
         assert!(prompt.contains("src/middleware/"));
         assert!(prompt.contains("spec/features/"));
@@ -385,7 +386,7 @@ mod tests {
         let cd = captured_depth.clone();
 
         // @step When the parent agent calls DeepSearch with query "How is authentication handled?" and scope ["src/auth/"]
-        let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth, _max_rec| {
             cc.fetch_add(1, Ordering::SeqCst);
             *cq.lock().unwrap() = query.clone();
             *cs.lock().unwrap() = scope.clone();
@@ -400,6 +401,7 @@ mod tests {
             query: "How is authentication handled?".to_string(),
             scope: Some(vec!["src/auth/".to_string()]),
             max_depth: Some(10),
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -453,7 +455,7 @@ mod tests {
         let cd = captured_depth.clone();
 
         // @step When the parent agent calls DeepSearch with query "Find all sessions where we discussed compaction strategy" and no scope
-        let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth, _max_rec| {
             *cs.lock().unwrap() = scope.clone();
             cd.store(max_depth, Ordering::SeqCst);
             Box::pin(async move {
@@ -466,6 +468,7 @@ mod tests {
             query: "Find all sessions where we discussed compaction strategy".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -507,6 +510,7 @@ mod tests {
             query: "test query".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         // @step Then the sub-agent executes via provider-specific mode and call() remains async
@@ -547,7 +551,7 @@ mod tests {
 
         // @step When the DeepSearch tool creates a ProviderManager
         // (simulated: handler returns error as if provider creation failed)
-        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth, _max_rec| {
             Box::pin(async move {
                 Err("Sub-agent failed: model rate limited".to_string())
             })
@@ -558,6 +562,7 @@ mod tests {
             query: "test".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         // @step Then the ProviderManager reads credentials from the existing environment variables
@@ -609,7 +614,7 @@ mod tests {
         assert!(tools.contains(&"SessionSearch"));
 
         // @step And the sub-agent can use Read and Grep on "src/auth/" to correlate code with session discussion
-        let prompt = build_system_prompt(&scope);
+        let prompt = build_system_prompt(&scope, false);
         assert!(
             prompt.contains("src/auth/"),
             "prompt should contain scope path"
@@ -642,7 +647,7 @@ mod tests {
 
         // @step When the parent agent calls DeepSearch with scope ["codelet/tools/src/read.rs"]
         let scope = vec!["codelet/tools/src/read.rs".to_string()];
-        let prompt = build_system_prompt(&scope);
+        let prompt = build_system_prompt(&scope, false);
 
         // @step Then the sub-agent's system prompt describes only "codelet/tools/src/read.rs" as in scope
         assert!(prompt.contains("codelet/tools/src/read.rs"));
@@ -676,7 +681,7 @@ mod tests {
         let cd = captured_depth.clone();
 
         // @step When the parent agent calls DeepSearch with scope ["src/"] and max_depth 5
-        let handler: DeepSearchHandler = Arc::new(move |_q, _s, max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |_q, _s, max_depth, _max_rec| {
             cd.store(max_depth, Ordering::SeqCst);
             Box::pin(async { Ok("partial answer".to_string()) })
         });
@@ -686,6 +691,7 @@ mod tests {
             query: "Search in src".to_string(),
             scope: Some(vec!["src/".to_string()]),
             max_depth: Some(5),
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -716,7 +722,7 @@ mod tests {
         let session_id = Uuid::new_v4();
         assert!(!has_deep_search_handler(session_id));
 
-        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d| {
+        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d, _r| {
             Box::pin(async { Ok("ok".to_string()) })
         });
         set_deep_search_handler(session_id, Some(handler));
@@ -737,7 +743,7 @@ mod tests {
         let id1 = Uuid::new_v4();
         let id2 = Uuid::new_v4();
 
-        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d| {
+        let handler: DeepSearchHandler = Arc::new(|_q, _s, _d, _r| {
             Box::pin(async { Ok("ok".to_string()) })
         });
         set_deep_search_handler(id1, Some(handler.clone()));
@@ -800,7 +806,7 @@ mod tests {
         let cm = captured_model.clone();
 
         // @step When the DeepSearch handler is registered for the session
-        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth, _max_rec| {
             // The closure captures provider/model from the parent session
             *cp.lock().unwrap() = parent_provider.clone();
             *cm.lock().unwrap() = parent_model.clone();
@@ -812,6 +818,7 @@ mod tests {
             query: "test query".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -859,7 +866,7 @@ mod tests {
         let cm = captured_model.clone();
 
         // @step When the DeepSearch handler is registered for the session
-        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth, _max_rec| {
             *cp.lock().unwrap() = parent_provider.clone();
             *cm.lock().unwrap() = parent_model.clone();
             Box::pin(async { Ok("openai answer".to_string()) })
@@ -870,6 +877,7 @@ mod tests {
             query: "test query".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -916,7 +924,7 @@ mod tests {
         let cm = captured_model.clone();
 
         // @step When the DeepSearch handler is registered for the session
-        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth, _max_rec| {
             *cp.lock().unwrap() = parent_provider.clone();
             *cm.lock().unwrap() = parent_model.clone();
             Box::pin(async { Ok("codex answer".to_string()) })
@@ -927,6 +935,7 @@ mod tests {
             query: "test query".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -970,7 +979,7 @@ mod tests {
         let cm = captured_model.clone();
 
         // @step When the DeepSearch handler is registered for the session
-        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth, _max_rec| {
             *cp.lock().unwrap() = parent_provider.clone();
             *cm.lock().unwrap() = parent_model.clone();
             Box::pin(async { Ok("zai answer".to_string()) })
@@ -981,6 +990,7 @@ mod tests {
             query: "test query".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
 
         let result = tool.call(args).await;
@@ -1028,7 +1038,7 @@ mod tests {
         let model_id = Some("claude-sonnet-4-20250514".to_string());
 
         // @step When the DeepSearch sub-agent builds a ProviderManager
-        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth| {
+        let handler: DeepSearchHandler = Arc::new(move |_query, _scope, _max_depth, _max_rec| {
             // In real code, these would be passed to
             // ProviderManager::with_provider_and_model(provider_name, model_id)
             *cp.lock().unwrap() = provider_name.clone();
@@ -1041,6 +1051,7 @@ mod tests {
             query: "test".to_string(),
             scope: None,
             max_depth: None,
+            max_recursion_depth: None,
         };
         let result = tool.call(args).await;
         assert!(result.is_ok());

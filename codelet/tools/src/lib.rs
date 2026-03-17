@@ -146,7 +146,8 @@ pub use inject_summary::{
 };
 pub use deep_search::{
     DeepSearchTool, DeepSearchArgs, DeepSearchHandler,
-    DEFAULT_DEEP_SEARCH_MAX_DEPTH, SUB_AGENT_TOOL_NAMES, SUB_AGENT_TOOL_COUNT,
+    DEFAULT_DEEP_SEARCH_MAX_DEPTH, DEFAULT_MAX_RECURSION_DEPTH,
+    SUB_AGENT_TOOL_NAMES, SUB_AGENT_TOOL_COUNT,
     build_system_prompt, sub_agent_tool_names,
     set_deep_search_handler, has_deep_search_handler, clear_all_deep_search_handlers,
 };

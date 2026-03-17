@@ -1,30 +1,35 @@
 //! DeepSearch handler — creates ephemeral sub-agent for scoped corpus analysis
 //!
 //! Feature: spec/features/deep-search.feature
+//! Feature: spec/features/recursive-deepsearch.feature
 //!
 //! This handler implements the actual deep search logic:
 //! 1. Creates an ephemeral session_id (Uuid::new_v4())
 //! 2. Registers a SessionSearch handler for the ephemeral session
-//! 3. Builds a system prompt describing the scope
-//! 4. Builds a rig agent with read-only tools and provider-aware request config
-//! 5. Executes query with provider-specific mode (Codex streams internally)
-//! 6. Cleans up the SessionSearch handler (guaranteed via drop guard)
-//! 7. Returns the final answer string
+//! 3. RLM-002: Optionally registers a DeepSearch handler for recursive children
+//! 4. Builds a system prompt describing the scope (with recursion strategy if enabled)
+//! 5. Builds a rig agent with read-only tools and provider-aware request config
+//!    (plus DeepSearch tool if recursion is enabled at this depth)
+//! 6. Executes query with provider-specific mode (Codex/Z.AI stream internally)
+//! 7. Cleans up all handlers (guaranteed via drop guards)
+//! 8. Returns the final answer string
 //!
-//! IMPORTANT: The tool list here (7 read-only tools) MUST stay in sync with
+//! IMPORTANT: The base tool list (7 read-only tools) MUST stay in sync with
 //! `codelet_tools::SUB_AGENT_TOOL_NAMES` and `codelet_tools::sub_agent_tool_names()`.
-//! If you add or remove a tool below, update the constant in
-//! `codelet/tools/src/deep_search/mod.rs` as well.
+//! When recursion is enabled, DeepSearch is added as the 8th tool at runtime.
 
+use std::future::Future;
 use std::path::Path;
+use std::pin::Pin;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
 
 use crate::deep_search_provider_config::request_config_for_provider;
 use codelet_tools::{
     AstGrepTool, BashTool, GlobTool, GrepTool, LsTool, ReadTool,
-    SessionSearchTool, SUB_AGENT_TOOL_COUNT, build_system_prompt,
-    set_session_search_handler,
+    SessionSearchTool, DeepSearchTool, SUB_AGENT_TOOL_COUNT,
+    build_system_prompt, set_session_search_handler,
+    set_deep_search_handler,
 };
 use codelet_core::RigAgent;
 use futures::Stream;
@@ -43,6 +48,45 @@ impl Drop for SessionSearchCleanup {
     }
 }
 
+/// Drop guard that ensures the ephemeral DeepSearch handler is always
+/// cleaned up for recursive child sessions.
+struct DeepSearchCleanup(Uuid);
+
+impl Drop for DeepSearchCleanup {
+    fn drop(&mut self) {
+        set_deep_search_handler(self.0, None);
+    }
+}
+
+/// Owned-types wrapper for recursive calls from handler closures.
+/// The handler closure captures owned Strings; this forwards to the
+/// reference-based `execute_deep_search` without lifetime issues.
+/// Returns an explicitly `Send` future for the handler type signature.
+fn execute_deep_search_owned(
+    project_path: std::path::PathBuf,
+    query: String,
+    scope: Option<Vec<String>>,
+    max_depth: usize,
+    provider_name: String,
+    model_id: Option<String>,
+    depth: usize,
+    max_recursion_depth: usize,
+) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>> {
+    Box::pin(async move {
+        execute_deep_search(
+            &project_path,
+            &query,
+            scope.as_deref(),
+            max_depth,
+            &provider_name,
+            model_id.as_deref(),
+            depth,
+            max_recursion_depth,
+        )
+        .await
+    })
+}
+
 /// Execute a deep search by spawning an ephemeral sub-agent.
 ///
 /// This is called from the DeepSearch handler registered in session_manager.
@@ -52,6 +96,10 @@ impl Drop for SessionSearchCleanup {
 /// BUG-102: The sub-agent inherits the parent session's provider and model
 /// via `provider_name` and `model_id`. This ensures the sub-agent uses the
 /// same LLM as the parent session, avoiding "Model is required" errors.
+///
+/// RLM-002: Accepts `depth` and `max_recursion_depth` to support recursive
+/// self-invocation. When `depth < max_recursion_depth`, the sub-agent gets
+/// a DeepSearch tool configured at `depth + 1`.
 pub async fn execute_deep_search(
     project_path: &Path,
     query: &str,
@@ -59,6 +107,8 @@ pub async fn execute_deep_search(
     max_depth: usize,
     provider_name: &str,
     model_id: Option<&str>,
+    depth: usize,
+    max_recursion_depth: usize,
 ) -> Result<String, String> {
     // 1. Create ephemeral session_id — NOT shared with parent
     let ephemeral_session_id = Uuid::new_v4();
@@ -72,13 +122,46 @@ pub async fn execute_deep_search(
     set_session_search_handler(ephemeral_session_id, Some(session_search_handler));
 
     // Drop guard ensures cleanup even if build_and_run_agent panics
-    let _cleanup = SessionSearchCleanup(ephemeral_session_id);
+    let _ss_cleanup = SessionSearchCleanup(ephemeral_session_id);
 
-    // 3. Build system prompt with scope description
+    // RLM-002: Determine if this sub-agent can recurse further
+    let can_recurse = depth < max_recursion_depth;
+
+    // RLM-002: If recursion enabled, register a DeepSearch handler for the
+    // child so IT can spawn its own recursive sub-agents at depth + 1.
+    let _ds_cleanup = if can_recurse {
+        let child_project_path = project_path.to_path_buf();
+        let child_provider = provider_name.to_string();
+        let child_model = model_id.map(|s| s.to_string());
+        let child_depth = depth + 1;
+
+        let child_handler: codelet_tools::DeepSearchHandler =
+            Arc::new(move |query, scope, max_depth, max_recursion_depth| {
+                let path = child_project_path.clone();
+                let provider = child_provider.clone();
+                let model = child_model.clone();
+                execute_deep_search_owned(
+                    path,
+                    query,
+                    scope,
+                    max_depth,
+                    provider,
+                    model,
+                    child_depth,
+                    max_recursion_depth,
+                )
+            });
+        set_deep_search_handler(ephemeral_session_id, Some(child_handler));
+        Some(DeepSearchCleanup(ephemeral_session_id))
+    } else {
+        None
+    };
+
+    // 3. Build system prompt with scope description and recursion awareness
     let scope_vec = scope.unwrap_or_default();
-    let system_prompt = build_system_prompt(scope_vec);
+    let system_prompt = build_system_prompt(scope_vec, can_recurse);
 
-    // 4. Build rig agent with read-only tools and run to completion
+    // 4. Build rig agent with read-only tools (+ DeepSearch if recursion enabled)
     build_and_run_agent(
         ephemeral_session_id,
         &system_prompt,
@@ -86,18 +169,34 @@ pub async fn execute_deep_search(
         max_depth,
         provider_name,
         model_id,
+        can_recurse,
     ).await
 
-    // 5. Cleanup: _cleanup dropped here (or on panic), removing the handler
+    // 5. Cleanup: drop guards dropped here (or on panic), removing handlers
 }
 
 /// Macro to build an agent with the standard 7 read-only tools and run it.
+/// When `can_recurse` is true, adds DeepSearch as the 8th tool.
 ///
 /// Each provider returns a different generic `Agent<T>` type, so we can't
 /// return them from a match arm. This macro avoids duplicating the tool
 /// chain + RigAgent wrapping for each provider.
+macro_rules! run_agent {
+    ($agent:expr, $max_depth:expr, $query:expr, $provider_name:expr) => {{
+        let rig_agent = RigAgent::new($agent, $max_depth);
+        if provider_uses_streaming_execution($provider_name) {
+            collect_final_response_from_stream(rig_agent.prompt_streaming($query).await).await
+        } else {
+            rig_agent
+                .prompt($query)
+                .await
+                .map_err(|e| format!("DeepSearch sub-agent failed: {e}"))
+        }
+    }};
+}
+
 macro_rules! build_and_run {
-    ($provider:expr, $request_config:expr, $session_id:expr, $query:expr, $max_depth:expr, $provider_name:expr) => {{
+    ($provider:expr, $request_config:expr, $session_id:expr, $query:expr, $max_depth:expr, $provider_name:expr, $can_recurse:expr) => {{
         let request_config = $request_config;
         let mut agent_builder = $provider
             .client()
@@ -112,24 +211,32 @@ macro_rules! build_and_run {
             agent_builder = agent_builder.additional_params(additional_params);
         }
 
-        let agent = agent_builder
-            .tool(ReadTool::new($session_id))
-            .tool(GrepTool::new($session_id))
-            .tool(AstGrepTool::new($session_id))
-            .tool(GlobTool::new($session_id))
-            .tool(LsTool::new($session_id))
-            .tool(BashTool::new($session_id))
-            .tool(SessionSearchTool::new($session_id))
-            .build();
-
-        let rig_agent = RigAgent::new(agent, $max_depth);
-        if provider_uses_streaming_execution($provider_name) {
-            collect_final_response_from_stream(rig_agent.prompt_streaming($query).await).await
+        // RLM-002: Conditionally include DeepSearch tool when recursion is enabled.
+        // When can_recurse is true, the agent gets 8 tools (base 7 + DeepSearch).
+        // When false, it gets the standard 7 read-only tools.
+        if $can_recurse {
+            let agent = agent_builder
+                .tool(ReadTool::new($session_id))
+                .tool(GrepTool::new($session_id))
+                .tool(AstGrepTool::new($session_id))
+                .tool(GlobTool::new($session_id))
+                .tool(LsTool::new($session_id))
+                .tool(BashTool::new($session_id))
+                .tool(SessionSearchTool::new($session_id))
+                .tool(DeepSearchTool::new($session_id))
+                .build();
+            run_agent!(agent, $max_depth, $query, $provider_name)
         } else {
-            rig_agent
-                .prompt($query)
-                .await
-                .map_err(|e| format!("DeepSearch sub-agent failed: {e}"))
+            let agent = agent_builder
+                .tool(ReadTool::new($session_id))
+                .tool(GrepTool::new($session_id))
+                .tool(AstGrepTool::new($session_id))
+                .tool(GlobTool::new($session_id))
+                .tool(LsTool::new($session_id))
+                .tool(BashTool::new($session_id))
+                .tool(SessionSearchTool::new($session_id))
+                .build();
+            run_agent!(agent, $max_depth, $query, $provider_name)
         }
     }};
 }
@@ -171,9 +278,9 @@ where
 /// the parent session's provider and model selection, avoiding the need for
 /// `select_model()` and the "Model is required" error.
 ///
-/// Adds exactly `SUB_AGENT_TOOL_COUNT` tools (7): Read, Grep, AstGrep, Glob,
-/// Ls, Bash, SessionSearch. This must stay in sync with
-/// `codelet_tools::SUB_AGENT_TOOL_NAMES`.
+/// Adds `SUB_AGENT_TOOL_COUNT` tools (7) in the base case: Read, Grep, AstGrep,
+/// Glob, Ls, Bash, SessionSearch. When `can_recurse` is true, adds DeepSearch
+/// as the 8th tool for recursive self-invocation (RLM-002).
 async fn build_and_run_agent(
     session_id: Uuid,
     system_prompt: &str,
@@ -181,10 +288,11 @@ async fn build_and_run_agent(
     max_depth: usize,
     provider_name: &str,
     model_id: Option<&str>,
+    can_recurse: bool,
 ) -> Result<String, String> {
-    // Compile-time assertion: if SUB_AGENT_TOOL_COUNT changes, this reminds
-    // the developer to verify the tool list below still matches.
-    const _: () = assert!(SUB_AGENT_TOOL_COUNT == 7, "tool count changed — update build_and_run_agent tool list");
+    // Compile-time assertion: base tool count must be 7.
+    // When can_recurse, we add DeepSearch as the 8th tool at runtime.
+    const _: () = assert!(SUB_AGENT_TOOL_COUNT == 7, "base tool count changed — update build_and_run_agent tool list");
 
     // BUG-102: Create ProviderManager with the parent session's provider and model.
     // Uses with_provider_and_model() which sets selected_model directly without
@@ -208,7 +316,7 @@ async fn build_and_run_agent(
                 provider.is_oauth_mode(),
             )
             .map_err(|e| format!("Failed to build Claude DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
         }
         "openai" => {
             let provider = manager.get_openai()
@@ -220,7 +328,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build OpenAI DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
         }
         "gemini" => {
             let provider = manager.get_gemini()
@@ -232,7 +340,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build Gemini DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
         }
         "codex" => {
             let provider = manager.get_codex()
@@ -244,7 +352,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build Codex DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
         }
         "zai" => {
             let provider = manager.get_zai()
@@ -256,7 +364,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build Z.AI DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
         }
         _ => {
             Err(format!(

@@ -19,6 +19,10 @@
 #[allow(clippy::unwrap_used, clippy::expect_used)]
 mod tests;
 
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
+mod recursive_tests;
+
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -35,6 +39,11 @@ use crate::ToolError;
 /// Default maximum depth for the sub-agent's tool call rounds.
 /// Bounded at 50 to prevent runaway sub-agents (not usize::MAX).
 pub const DEFAULT_DEEP_SEARCH_MAX_DEPTH: usize = 50;
+
+/// Default maximum recursion depth for DeepSearch self-invocation.
+/// Controls how many nested DeepSearch levels are allowed (depth 0, 1, 2).
+/// A value of 2 means: parent (depth 0) → child (depth 1) → grandchild (depth 2, base case).
+pub const DEFAULT_MAX_RECURSION_DEPTH: usize = 2;
 
 /// Canonical list of tool names the sub-agent gets.
 ///
@@ -72,11 +81,17 @@ pub struct DeepSearchArgs {
     /// Prevents runaway sub-agents.
     #[serde(default)]
     pub max_depth: Option<usize>,
+
+    /// Maximum recursion depth for nested DeepSearch calls (default: 2).
+    /// Controls how many levels of DeepSearch-within-DeepSearch are allowed.
+    /// Separate from max_depth which controls tool-call rounds per agent.
+    #[serde(default)]
+    pub max_recursion_depth: Option<usize>,
 }
 
 /// Handler function type for deep search execution.
-/// Takes query, optional scope, and max_depth. Returns a future resolving to the
-/// synthesized answer.
+/// Takes query, optional scope, max_depth, and max_recursion_depth. Returns a
+/// future resolving to the synthesized answer.
 ///
 /// The handler is registered by session_manager before the agent run. It captures:
 /// - project_path: for creating the ephemeral SessionSearch handler
@@ -99,6 +114,7 @@ pub type DeepSearchHandler = Arc<
     dyn Fn(
             String,
             Option<Vec<String>>,
+            usize,
             usize,
         ) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>>
         + Send
@@ -143,6 +159,7 @@ async fn execute_deep_search(
     query: String,
     scope: Option<Vec<String>>,
     max_depth: usize,
+    max_recursion_depth: usize,
 ) -> Result<String, String> {
     let handler = match DEEP_SEARCH_HANDLERS.read() {
         Ok(guard) => guard.get(&session_id).cloned(),
@@ -152,7 +169,7 @@ async fn execute_deep_search(
     };
 
     match handler {
-        Some(h) => h(query, scope, max_depth).await,
+        Some(h) => h(query, scope, max_depth, max_recursion_depth).await,
         None => Err(format!(
             "Deep search handler not configured for session {session_id} — \
              DeepSearchTool requires session context"
@@ -170,7 +187,9 @@ pub fn clear_all_deep_search_handlers() {
 /// Build the system prompt for the ephemeral sub-agent.
 ///
 /// Describes available tools, code scope (if any), and search strategy.
-pub fn build_system_prompt(scope: &[String]) -> String {
+/// When `can_recurse` is true, includes DeepSearch in the tool list and
+/// teaches the RLM decompose-delegate-aggregate strategy.
+pub fn build_system_prompt(scope: &[String], can_recurse: bool) -> String {
     let scope_section = if scope.is_empty() {
         "No code scope specified. Use SessionSearch to explore session history only.".to_string()
     } else {
@@ -186,6 +205,33 @@ pub fn build_system_prompt(scope: &[String]) -> String {
         )
     };
 
+    let deep_search_tool_section = if can_recurse {
+        "\n- DeepSearch: Spawn a recursive sub-agent for sub-problems. \
+         DeepSearch with no scope is a lightweight one-shot LLM call for reasoning. \
+         DeepSearch with scope spawns a full sub-agent with its own tools for exploration."
+    } else {
+        ""
+    };
+
+    let recursion_strategy = if can_recurse {
+        "\n\n\
+         RECURSIVE DECOMPOSITION STRATEGY (decompose → delegate → aggregate):\n\
+         When a question is too complex or the scope too large for a single pass:\n\
+         1. DECOMPOSE: Break the question into independent sub-questions. Use Bash \
+         with python3 -c to programmatically split file lists or data into chunks \
+         (e.g. `find src/ -name '*.rs' | python3 -c 'import sys; files=sys.stdin.read().split(); \
+         n=len(files)//3; [print(chr(10).join(files[i:i+n])) for i in range(0,len(files),n)]'`).\n\
+         2. DELEGATE: Use DeepSearch for each sub-question or chunk with narrowed scope. \
+         Each DeepSearch call spawns a sub-agent that can itself recurse further.\n\
+         3. AGGREGATE: Combine sub-answers into a coherent final answer.\n\n\
+         Use DeepSearch WITHOUT scope for lightweight reasoning sub-tasks (acts as a plain LLM call).\n\
+         Use DeepSearch WITH scope to explore specific directories or files.\n\
+         Use Bash to orchestrate: enumerate files, split into chunks, then call DeepSearch per chunk.\n\
+         Prefer narrow scopes over broad ones to keep sub-agents focused."
+    } else {
+        ""
+    };
+
     format!(
         "You are a research assistant tasked with answering a query by exploring a scoped \
          corpus of files and session history. You have access to tools for reading files, \
@@ -199,7 +245,7 @@ pub fn build_system_prompt(scope: &[String]) -> String {
          - Ls: List directory contents\n\
          - Bash: Execute shell commands for data processing\n\
          - SessionSearch: Search and view session conversation history \
-           (use recent/search/show actions)\n\n\
+           (use recent/search/show actions){deep_search_tool_section}\n\n\
          STRATEGY:\n\
          1. Start by understanding the scope — use Grep or Glob to find relevant files\n\
          2. Read targeted sections, not entire files\n\
@@ -211,7 +257,7 @@ pub fn build_system_prompt(scope: &[String]) -> String {
          - Do NOT try to read all files at once — explore strategically\n\
          - Use Grep/AstGrep to narrow down before reading\n\
          - Your answer should directly address the original query\n\
-         - If the answer is not in scope, say so explicitly"
+         - If the answer is not in scope, say so explicitly{recursion_strategy}"
     )
 }
 
@@ -282,6 +328,11 @@ impl Tool for DeepSearchTool {
                         "type": ["integer", "null"],
                         "description": "Maximum tool call depth before stopping (default: 50). Prevents runaway sub-agents.",
                         "minimum": 1
+                    },
+                    "max_recursion_depth": {
+                        "type": ["integer", "null"],
+                        "description": "Maximum recursion depth for nested DeepSearch calls (default: 2). Controls how many levels of DeepSearch-within-DeepSearch are allowed.",
+                        "minimum": 0
                     }
                 },
                 "required": ["query"]
@@ -299,13 +350,22 @@ impl Tool for DeepSearchTool {
         }
 
         let max_depth = args.max_depth.unwrap_or(DEFAULT_DEEP_SEARCH_MAX_DEPTH);
+        let max_recursion_depth = args
+            .max_recursion_depth
+            .unwrap_or(DEFAULT_MAX_RECURSION_DEPTH);
 
         // Dispatch to registered handler (async — sub-agent makes LLM API calls)
-        execute_deep_search(self.session_id, args.query, args.scope, max_depth)
-            .await
-            .map_err(|e| ToolError::Execution {
-                tool: "DeepSearch",
-                message: e,
-            })
+        execute_deep_search(
+            self.session_id,
+            args.query,
+            args.scope,
+            max_depth,
+            max_recursion_depth,
+        )
+        .await
+        .map_err(|e| ToolError::Execution {
+            tool: "DeepSearch",
+            message: e,
+        })
     }
 }

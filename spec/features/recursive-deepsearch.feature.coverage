@@ -1,0 +1,778 @@
+{
+  "scenarios": [
+    {
+      "name": "Sub-agent includes DeepSearchTool when below max recursion depth",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "26-43",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sub-agent excludes DeepSearchTool at max recursion depth (base case)",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "49-69",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default max recursion depth is 2",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "75-93",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/deep_search/mod.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recursive child delegates to grandchild with incremented depth",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "100-124",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Grandchild at max depth cannot recurse further",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "130-155",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recursive child registers its own handlers with ephemeral UUID",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "161-190",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handler cleanup chain fires at each recursion level",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "196-234",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "max_recursion_depth and max_depth are independent controls",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "240-258",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/deep_search/mod.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System prompt teaches RLM decomposition strategy when recursion enabled",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "264-301",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/deep_search/mod.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System prompt omits DeepSearch at max recursion depth",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "307-334",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/deep_search/mod.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recursive children work with all providers",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "340-384",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recursive decomposition over a large codebase",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "390-433",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recursive decomposition over session history",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/deep_search/recursive_tests.rs",
+          "lines": "439-480",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/deep_search_handler.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/deep_search/recursive_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/deep_search_handler.rs",
+      "codelet/tools/src/deep_search/mod.rs"
+    ],
+    "totalLinesCovered": 1330
+  }
+}

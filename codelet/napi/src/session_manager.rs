@@ -4301,7 +4301,7 @@ async fn agent_loop(
             let deep_search_project_path = std::path::PathBuf::from(&session.project);
             let deep_search_provider = inner_session.current_provider_name().to_string();
             let deep_search_model = inner_session.current_model_id().map(|s| s.to_string());
-            let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(move |query, scope, max_depth| {
+            let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(move |query, scope, max_depth, max_recursion_depth| {
                 let path = deep_search_project_path.clone();
                 let provider = deep_search_provider.clone();
                 let model = deep_search_model.clone();
@@ -4313,6 +4313,8 @@ async fn agent_loop(
                         max_depth,
                         &provider,
                         model.as_deref(),
+                        0, // RLM-002: Parent session starts at depth 0
+                        max_recursion_depth,
                     ).await
                 })
             });
