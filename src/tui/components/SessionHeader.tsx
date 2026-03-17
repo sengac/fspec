@@ -8,11 +8,12 @@
  *
  * Normal mode (with session number and work unit):
  *   #1 (AUTH-001: implementing): claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
- *   ─────────────────────────────────────────────────────────────────
  *
  * Supervisor mode:
  *   Supervisor: security-reviewer #1 | #2: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
- *   ──────────────────────────────────────────────────────────────────────────────────────────
+ *
+ * NOTE: The bottom border separator is rendered by AgentView AFTER the RoleBanner,
+ * so the visual order is: header → role banner (if any) → separator → conversation.
  *
  * Badge Colors:
  *   - [R] = magenta (reasoning)
@@ -214,15 +215,6 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
           </Text>
         </Box>
       </Box>
-      {/* Bottom border separator */}
-      <Box
-        width="100%"
-        borderStyle="single"
-        borderBottom
-        borderTop={false}
-        borderLeft={false}
-        borderRight={false}
-      />
     </Box>
   );
 };

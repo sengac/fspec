@@ -151,7 +151,7 @@ describe('Feature: Unified Shift+Arrow Navigation', () => {
 
   describe('Scenario: Shift+Left from first watcher returns to parent session', () => {
     it('should return to parent session (Rust determines this)', () => {
-      // @step Given I am viewing a watcher in SplitSessionView
+      // @step Given I am viewing a subordinate session
       // @step And it is the first watcher
       // Rust returns parent session ID
       vi.mocked(sessionGetPrev).mockReturnValue('session-a');

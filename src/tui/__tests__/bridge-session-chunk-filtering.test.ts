@@ -171,7 +171,7 @@ describe('Feature: Bridge session chunk filtering', () => {
 
       // @step And the bridge should relay all chunks with session_id "session-x"
       expect(relayedChunks).toHaveLength(3);
-      expect(relayedChunks[0].type).toBe('SupervisorInput');
+      expect(relayedChunks[0].type).toBe('IncomingMessage');
       expect(relayedChunks[1].type).toBe('Thinking');
       expect(relayedChunks[2].type).toBe('TextDelta');
 

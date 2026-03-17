@@ -953,7 +953,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toContain('100000');
 
       // @step And error message should be shown
-      expect(lastFrame()).toContain('Compaction failed');
+      expect(lastFrame()).toContain('Compaction Failed');
     });
   });
 

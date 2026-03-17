@@ -201,9 +201,6 @@ interface StreamChunk {
   tokens?: TokenTracker;
   contextFill?: { fillPercentage: number };
   error?: string;
-  // WATCH-011: Correlation IDs for cross-pane selection highlighting
-  correlationId?: string;
-  observedCorrelationIds?: string[];
   // Compaction result for CompactionComplete chunks
   compactionResult?: {
     compressionRatio: number;
@@ -283,16 +280,10 @@ const processChunksToConversation = (
   const pendingToolCalls = new Map<string, PendingToolCallInfo>();
 
   for (const chunk of chunks) {
-    // WATCH-011: Extract correlation fields from chunk
-    const correlationId = chunk.correlationId;
-    const observedCorrelationIds = chunk.observedCorrelationIds;
-
     if (chunk.type === 'UserInput' && chunk.text) {
       messages.push({
         type: 'user-input',
         content: chunk.text,
-        correlationId,
-        observedCorrelationIds,
       });
     } else if (chunk.type === 'IncomingMessage' && chunk.text) {
       // WATCH-012: Handle supervisor input messages - parse prefix and format for display
@@ -303,16 +294,12 @@ const processChunksToConversation = (
         messages.push({
           type: 'supervisor-input',
           content: formattedContent,
-          correlationId,
-          observedCorrelationIds,
         });
       } else {
         // Fallback: if parsing fails, display raw message
         messages.push({
           type: 'supervisor-input',
           content: chunk.text,
-          correlationId,
-          observedCorrelationIds,
         });
       }
     } else if (chunk.type === 'Text' && chunk.text) {
@@ -320,33 +307,15 @@ const processChunksToConversation = (
       const lastIdx = messages.findLastIndex(m => m.type === 'assistant-text');
       if (lastIdx >= 0 && messages[lastIdx].isStreaming) {
         messages[lastIdx].content += chunk.text;
-        // WATCH-011: Don't overwrite correlation ID if already set (keep first chunk's ID)
-        // But DO merge observed correlation IDs from all chunks in this turn
-        if (observedCorrelationIds && observedCorrelationIds.length > 0) {
-          if (!messages[lastIdx].observedCorrelationIds) {
-            messages[lastIdx].observedCorrelationIds = [];
-          }
-          // Add unique IDs only
-          for (const id of observedCorrelationIds) {
-            if (!messages[lastIdx].observedCorrelationIds!.includes(id)) {
-              messages[lastIdx].observedCorrelationIds!.push(id);
-            }
-          }
-        }
       } else {
         messages.push({
           type: 'assistant-text',
           content: chunk.text,
           isStreaming: true,
-          correlationId,
-          observedCorrelationIds,
         });
       }
     } else if (chunk.type === 'Thinking' && chunk.thinking) {
-      appendThinkingBulk(messages, chunk.thinking, {
-        correlationId,
-        observedCorrelationIds,
-      });
+      appendThinkingBulk(messages, chunk.thinking);
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
       // Finalize any active thinking block before tool call
       finalizeThinkingBlock(messages);
@@ -387,8 +356,6 @@ const processChunksToConversation = (
         type: 'tool-call',
         content: formatToolHeaderFn(toolCall.name, argsDisplay),
         toolCallId: toolCall.id,
-        correlationId,
-        observedCorrelationIds,
       });
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
       const result = chunk.toolResult;
@@ -454,8 +421,6 @@ const processChunksToConversation = (
         type: 'assistant-text',
         content: '',
         isStreaming: true,
-        correlationId,
-        observedCorrelationIds,
       });
     } else if (chunk.type === 'Done') {
       // Remove empty streaming messages and finalize
@@ -492,16 +457,12 @@ const processChunksToConversation = (
       messages.push({
         type: 'status',
         content: '⚠ Interrupted',
-        correlationId,
-        observedCorrelationIds,
       });
     } else if (chunk.type === 'UserNotification') {
       // NAPI-010: User-facing notification - display in conversation
       messages.push({
         type: 'status',
         content: chunk.message,
-        correlationId,
-        observedCorrelationIds,
       });
     }
     // NAPI-010: SessionStateChange is intentionally NOT handled here
@@ -5006,6 +4967,16 @@ export const AgentView: React.FC<AgentViewProps> = ({
           return null;
         }
       })()}
+      />
+
+      {/* Bottom border separator - below header and role banner, above conversation */}
+      <Box
+        width="100%"
+        borderStyle="single"
+        borderBottom
+        borderTop={false}
+        borderLeft={false}
+        borderRight={false}
       />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}

@@ -39,15 +39,7 @@ const THINKING_PREFIX = '[Thinking]\n';
 // Types
 // =============================================================================
 
-/**
- * Options for appending thinking content
- */
-export interface AppendThinkingOptions {
-  /** Correlation ID for cross-pane selection highlighting */
-  correlationId?: string;
-  /** Subordinate chunk IDs this supervisor turn was observing */
-  observedCorrelationIds?: string[];
-}
+// (No types needed after TUI-083 removed correlation fields)
 
 // =============================================================================
 // Core Functions
@@ -142,13 +134,11 @@ export function findAppendableThinkingBlock(
  *
  * @param messages - Conversation messages array (mutated in place)
  * @param content - Thinking content to append
- * @param options - Optional correlation IDs
  * @returns The messages array (same reference)
  */
 export function appendThinking(
   messages: ConversationMessage[],
-  content: string,
-  options: AppendThinkingOptions = {}
+  content: string
 ): ConversationMessage[] {
   if (!content) {
     return messages;
@@ -167,18 +157,6 @@ export function appendThinking(
       ...existing,
       content: `${THINKING_PREFIX}${existingContent}${content}`,
     };
-
-    // Update correlation IDs if provided
-    if (options.correlationId && !messages[activeIdx].correlationId) {
-      messages[activeIdx].correlationId = options.correlationId;
-    }
-    if (
-      options.observedCorrelationIds &&
-      !messages[activeIdx].observedCorrelationIds
-    ) {
-      messages[activeIdx].observedCorrelationIds =
-        options.observedCorrelationIds;
-    }
   } else {
     // Create new thinking block
     // Insert before streaming assistant message if one exists
@@ -190,8 +168,6 @@ export function appendThinking(
       type: 'thinking',
       content: `${THINKING_PREFIX}${content}`,
       isStreaming: true,
-      correlationId: options.correlationId,
-      observedCorrelationIds: options.observedCorrelationIds,
     };
 
     if (streamingIdx >= 0) {
@@ -239,13 +215,11 @@ export function finalizeThinkingBlock(
  *
  * @param messages - Conversation messages array (mutated in place)
  * @param content - Thinking content to append
- * @param options - Optional correlation IDs
  * @returns The messages array (same reference)
  */
 export function appendThinkingBulk(
   messages: ConversationMessage[],
-  content: string,
-  options: AppendThinkingOptions = {}
+  content: string
 ): ConversationMessage[] {
   if (!content) {
     return messages;
@@ -264,26 +238,12 @@ export function appendThinkingBulk(
       ...existing,
       content: `${THINKING_PREFIX}${existingContent}${content}`,
     };
-
-    // Update correlation IDs if provided
-    if (options.correlationId && !messages[appendableIdx].correlationId) {
-      messages[appendableIdx].correlationId = options.correlationId;
-    }
-    if (
-      options.observedCorrelationIds &&
-      !messages[appendableIdx].observedCorrelationIds
-    ) {
-      messages[appendableIdx].observedCorrelationIds =
-        options.observedCorrelationIds;
-    }
   } else {
     // Create new thinking block (non-streaming for bulk)
     const newThinking: ConversationMessage = {
       type: 'thinking',
       content: `${THINKING_PREFIX}${content}`,
       isStreaming: false, // Bulk processing doesn't use streaming markers
-      correlationId: options.correlationId,
-      observedCorrelationIds: options.observedCorrelationIds,
     };
 
     messages.push(newThinking);
@@ -307,20 +267,18 @@ export function appendThinkingBulk(
  *
  * @param prev - Previous conversation state
  * @param content - Thinking content to append
- * @param options - Optional correlation IDs
  * @returns New conversation array
  */
 export function createThinkingUpdate(
   prev: ConversationMessage[],
-  content: string,
-  options: AppendThinkingOptions = {}
+  content: string
 ): ConversationMessage[] {
   if (!content) {
     return prev;
   }
 
   const updated = [...prev];
-  return appendThinking(updated, content, options);
+  return appendThinking(updated, content);
 }
 
 /**

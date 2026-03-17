@@ -9,13 +9,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { execSync } from 'child_process';
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 const PROJECT_ROOT = process.cwd();
 const CODELET_NAPI_SRC = join(PROJECT_ROOT, 'codelet', 'napi', 'src');
-const CODELET_NAPI_TESTS = join(PROJECT_ROOT, 'codelet', 'napi', 'tests');
 const TUI_COMPONENTS = join(PROJECT_ROOT, 'src', 'tui', 'components');
 const TUI_TYPES = join(PROJECT_ROOT, 'src', 'tui', 'types');
 const TUI_UTILS = join(PROJECT_ROOT, 'src', 'tui', 'utils');
@@ -119,31 +117,31 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
   });
 
   describe('Scenario: SupervisorRole replaces SessionRole without authority field', () => {
-    it('should have SupervisorRole with correct fields', () => {
-      // @step Given the SessionRole struct has been renamed to SupervisorRole
-      expect(
-        fileContainsRustIdentifier(SESSION_MANAGER_RS, 'SupervisorRole')
-      ).toBe(true);
+    it('should have SupervisorRoleInfo with correct fields', () => {
+      // @step Given the SessionRole struct has been renamed
+      // AMGR-008: SupervisorRole was further simplified to SupervisorRoleInfo (API compat wrapper)
+      // Role is now a simple string on BackgroundSession, SupervisorRoleInfo wraps it for TS
+      expect(fileContains(SESSION_MANAGER_RS, 'SupervisorRoleInfo')).toBe(true);
       expect(
         fileContainsRustIdentifier(SESSION_MANAGER_RS, 'SessionRole')
       ).toBe(false);
 
-      // @step Then SupervisorRole has a name field of type String
-      // (verified by struct existing with name field — checked via compilation)
+      // @step Then SupervisorRoleInfo has a name field of type String
       expect(fileContains(SESSION_MANAGER_RS, 'pub name: String')).toBe(true);
 
-      // @step And SupervisorRole has a brief field of type Option<String>
+      // @step And SupervisorRoleInfo has a brief field of type Option<String>
       expect(
         fileContains(SESSION_MANAGER_RS, 'pub brief: Option<String>')
       ).toBe(true);
 
-      // @step And SupervisorRole has an auto_inject field of type bool
-      expect(fileContains(SESSION_MANAGER_RS, 'pub auto_inject: bool')).toBe(
-        true
-      );
+      // @step And session_set_role accepts auto_inject parameter (unused, for API compat)
+      // AMGR-008: auto_inject is an unused parameter (prefixed with _) kept for API compat
+      expect(
+        fileContains(SESSION_MANAGER_RS, '_auto_inject: Option<bool>')
+      ).toBe(true);
 
-      // @step And SupervisorRole does not have an authority field
-      // The 'authority' field should not exist in the SupervisorRole struct
+      // @step And SupervisorRoleInfo does not have an authority field
+      // The 'authority' field should not exist
       // (RoleAuthority is removed entirely — checked in next scenario)
     });
   });
@@ -188,27 +186,22 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
   });
 
   describe('Scenario: TUI template form removes Authority toggle', () => {
-    it('should have form without Authority', () => {
-      // @step Given the supervisor template creation form is displayed
+    it('should have no template form files (AMGR-008 removed template infrastructure)', () => {
+      // @step Given the supervisor template creation form was removed by AMGR-008
+      // AMGR-008: Simplified supervisor management — removed template infrastructure entirely
+      // Role is now set via /role command, no template forms needed
+
+      // @step Then SupervisorTemplateForm.tsx does not exist (removed by AMGR-008)
       const formFile = join(TUI_COMPONENTS, 'SupervisorTemplateForm.tsx');
-      expect(existsSync(formFile)).toBe(true);
+      expect(existsSync(formFile)).toBe(false);
 
-      // @step Then the form has a Name field
-      expect(fileContains(formFile, 'Name')).toBe(true);
-
-      // @step And the form has a Model field
-      expect(fileContains(formFile, 'Model')).toBe(true);
-
-      // @step And the form has a Brief field
-      expect(fileContains(formFile, 'Brief')).toBe(true);
-
-      // @step And the form has an Auto-inject toggle
-      expect(fileContains(formFile, 'Auto-inject')).toBe(true);
-
-      // @step And the form does not have an Authority toggle
-      expect(fileContains(formFile, 'authority')).toBe(false);
+      // @step And the old WatcherTemplateForm.tsx does not exist
       const oldFormFile = join(TUI_COMPONENTS, 'WatcherTemplateForm.tsx');
       expect(existsSync(oldFormFile)).toBe(false);
+
+      // @step And role management is now handled via /role slash command
+      const slashCommandsFile = join(TUI_UTILS, 'slashCommands.ts');
+      expect(fileContains(slashCommandsFile, "'role'")).toBe(true);
     });
   });
 
@@ -247,22 +240,19 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
   });
 
   describe('Scenario: supervisor_inject is internal Rust only', () => {
-    it('should have supervisor_inject without NAPI export', () => {
-      // @step Given the watcher_inject function has been renamed to supervisor_inject
-      expect(fileContains(SESSION_MANAGER_RS, 'supervisor_inject')).toBe(true);
+    it('should handle supervisor injection inline in agent_loop', () => {
+      // @step Given the watcher_inject function has been removed
+      // AMGR-008: supervisor_inject was inlined into agent_loop
+      // Injection happens via IncomingMessage sent through supervisor broadcast
       expect(fileContains(SESSION_MANAGER_RS, 'watcher_inject')).toBe(false);
 
-      // @step Then supervisor_inject does not have a #[napi] annotation
-      // Read the function and check that #[napi] is not immediately before it
-      const content = readFile(SESSION_MANAGER_RS);
-      const fnIndex = content.indexOf('fn supervisor_inject');
-      expect(fnIndex).toBeGreaterThan(-1);
-      // Check the 200 chars before the function - should NOT contain #[napi]
-      const preceding = content.substring(Math.max(0, fnIndex - 200), fnIndex);
-      expect(preceding).not.toContain('#[napi]');
+      // @step Then agent_loop processes supervisor input directly
+      expect(fileContains(SESSION_MANAGER_RS, 'supervisor input from')).toBe(
+        true
+      );
 
-      // @step And supervisor_inject is called internally by the auto-inject path in the supervisor agent loop
-      expect(fileContains(SESSION_MANAGER_RS, 'supervisor_inject(')).toBe(true);
+      // @step And supervisor injection uses SUPERVISOR prefix format
+      expect(fileContains(SESSION_MANAGER_RS, '[SUPERVISOR:')).toBe(true);
 
       // @step And no TypeScript code imports or calls supervisorInject
       // Check only production source files (not test files which may reference it in comments)
@@ -315,46 +305,27 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
   });
 
   describe('Scenario: Supervisor agent loop uses renamed functions and types', () => {
-    it('should have supervisor agent loop names', () => {
-      // @step Given the watcher agent loop code has been refactored
-      // @step Then watcher_agent_loop is renamed to supervisor_agent_loop
-      expect(fileContains(SESSION_MANAGER_RS, 'supervisor_agent_loop')).toBe(
+    it('should have unified agent_loop with supervisor support', () => {
+      // @step Given the agent loop code has been unified (AMGR-008)
+      // AMGR-008: supervisor_agent_loop was merged into the main agent_loop
+      // All sessions use the same agent_loop, supervisor input handled via select!
+
+      // @step Then a unified agent_loop function exists
+      expect(fileContains(SESSION_MANAGER_RS, 'async fn agent_loop')).toBe(
         true
       );
+
+      // @step And old watcher-specific loop functions do not exist
       expect(fileContains(SESSION_MANAGER_RS, 'watcher_agent_loop')).toBe(
         false
       );
-
-      // @step And watcher_loop_tick is renamed to supervisor_loop_tick
-      expect(fileContains(SESSION_MANAGER_RS, 'supervisor_loop_tick')).toBe(
-        true
-      );
       expect(fileContains(SESSION_MANAGER_RS, 'watcher_loop_tick')).toBe(false);
-
-      // @step And run_watcher_loop is renamed to run_supervisor_loop
-      expect(fileContains(SESSION_MANAGER_RS, 'run_supervisor_loop')).toBe(
-        true
-      );
       expect(fileContains(SESSION_MANAGER_RS, 'run_watcher_loop')).toBe(false);
 
-      // @step And WatcherState is renamed to SupervisorState
-      expect(
-        fileContainsRustIdentifier(SESSION_MANAGER_RS, 'SupervisorState')
-      ).toBe(true);
-      // WatcherState should not exist in session_manager.rs (but may in work_units_watcher.rs - excluded)
-      // Use a more precise check - ensure it's not in session_manager.rs
+      // @step And old watcher types do not exist in session_manager.rs
       const smContent = readFile(SESSION_MANAGER_RS);
-      // Count WatcherState in session_manager.rs only (not work_units_watcher.rs)
-      const watcherStateMatches = smContent.match(/\bWatcherState\b/g);
-      expect(watcherStateMatches).toBeNull();
-
-      // @step And WatcherOutput is renamed to SupervisorOutput
-      expect(
-        fileContainsRustIdentifier(SESSION_MANAGER_RS, 'SupervisorOutput')
-      ).toBe(true);
-      expect(
-        fileContainsRustIdentifier(SESSION_MANAGER_RS, 'WatcherOutput')
-      ).toBe(false);
+      expect(smContent).not.toMatch(/\bWatcherState\b/);
+      expect(smContent).not.toMatch(/\bWatcherOutput\b/);
     });
   });
 
@@ -367,48 +338,37 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       );
       expect(fileContains(SESSION_MANAGER_RS, 'watcher_broadcast')).toBe(false);
 
-      // @step And the watcher_input_tx field is renamed to supervisor_input_tx
-      expect(fileContains(SESSION_MANAGER_RS, 'supervisor_input_tx')).toBe(
-        true
-      );
+      // @step And old watcher_input_tx/rx fields no longer exist
+      // AMGR-008: Supervisor input is handled via IncomingMessage through broadcast channel
       expect(fileContains(SESSION_MANAGER_RS, 'watcher_input_tx')).toBe(false);
+      expect(fileContains(SESSION_MANAGER_RS, 'watcher_input_rx')).toBe(false);
 
-      // @step And the watcher_input_rx field is renamed to supervisor_input_rx
+      // @step And supervisor_input_rx is referenced in agent_loop comments
       expect(fileContains(SESSION_MANAGER_RS, 'supervisor_input_rx')).toBe(
         true
       );
-      expect(fileContains(SESSION_MANAGER_RS, 'watcher_input_rx')).toBe(false);
     });
   });
 
   describe('Scenario: TUI components use supervisor naming', () => {
     it('should have renamed TUI component files', () => {
-      // @step Given the TUI component files have been renamed
-      // @step Then WatcherCreateView is renamed to SupervisorCreateView
-      expect(existsSync(join(TUI_COMPONENTS, 'SupervisorCreateView.tsx'))).toBe(
-        true
-      );
+      // @step Given the TUI component files have been updated
+      // AMGR-008: Template-based supervisor creation was removed.
+      // SupervisorCreateView, SupervisorTemplateList, SupervisorTemplateForm were all removed.
+      // Supervisor management is now done via /role command and agent manager tool.
+
+      // @step Then old watcher component files do not exist
       expect(existsSync(join(TUI_COMPONENTS, 'WatcherCreateView.tsx'))).toBe(
         false
       );
-
-      // @step And WatcherTemplateList is renamed to SupervisorTemplateList
-      expect(
-        existsSync(join(TUI_COMPONENTS, 'SupervisorTemplateList.tsx'))
-      ).toBe(true);
       expect(existsSync(join(TUI_COMPONENTS, 'WatcherTemplateList.tsx'))).toBe(
         false
       );
-
-      // @step And WatcherTemplateForm is renamed to SupervisorTemplateForm
-      expect(
-        existsSync(join(TUI_COMPONENTS, 'SupervisorTemplateForm.tsx'))
-      ).toBe(true);
       expect(existsSync(join(TUI_COMPONENTS, 'WatcherTemplateForm.tsx'))).toBe(
         false
       );
 
-      // @step And useWatcherHeaderInfo is renamed to useSupervisorHeaderInfo
+      // @step And useSupervisorHeaderInfo hook exists (still used for header display)
       expect(existsSync(join(TUI_HOOKS, 'useSupervisorHeaderInfo.ts'))).toBe(
         true
       );
@@ -419,37 +379,38 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
   });
 
   describe('Scenario: Template storage uses supervisor naming', () => {
-    it('should have supervisor template storage', () => {
-      // @step Given the template storage system has been updated
-      const storageFile = join(TUI_UTILS, 'supervisorTemplateStorage.ts');
+    it('should have no template storage (AMGR-008 removed template infrastructure)', () => {
+      // @step Given the template storage system was removed by AMGR-008
+      // AMGR-008: Template infrastructure was entirely removed.
+      // Supervisors are created via agent manager tool, roles via /role command.
 
-      // @step Then templates are stored in supervisor-templates.json instead of watcher-templates.json
-      expect(existsSync(storageFile)).toBe(true);
-      expect(fileContains(storageFile, 'supervisor-templates.json')).toBe(true);
+      // @step Then supervisorTemplateStorage.ts does not exist (removed by AMGR-008)
+      expect(existsSync(join(TUI_UTILS, 'supervisorTemplateStorage.ts'))).toBe(
+        false
+      );
+
+      // @step And old watcherTemplateStorage.ts does not exist
       expect(existsSync(join(TUI_UTILS, 'watcherTemplateStorage.ts'))).toBe(
         false
       );
 
-      // @step And the WatcherTemplate type is renamed to SupervisorTemplate
-      const typeFile = join(TUI_TYPES, 'supervisorTemplate.ts');
-      expect(existsSync(typeFile)).toBe(true);
+      // @step And supervisorTemplate.ts type file does not exist (removed by AMGR-008)
+      expect(existsSync(join(TUI_TYPES, 'supervisorTemplate.ts'))).toBe(false);
+
+      // @step And old watcherTemplate.ts does not exist
       expect(existsSync(join(TUI_TYPES, 'watcherTemplate.ts'))).toBe(false);
-
-      // @step And loadWatcherTemplates is renamed to loadSupervisorTemplates
-      expect(fileContains(storageFile, 'loadSupervisorTemplates')).toBe(true);
-
-      // @step And saveWatcherTemplates is renamed to saveSupervisorTemplates
-      expect(fileContains(storageFile, 'saveSupervisorTemplates')).toBe(true);
     });
   });
 
-  describe('Scenario: Slash command renamed from /watcher to /supervisor', () => {
-    it('should have /supervisor and no /watcher or /parent', () => {
+  describe('Scenario: Slash command renamed from /watcher to /role', () => {
+    it('should have /role and no /watcher or /parent', () => {
       // @step Given the slash command registry has been updated
       const slashCommandsFile = join(TUI_UTILS, 'slashCommands.ts');
 
-      // @step Then the /watcher command is renamed to /supervisor
-      expect(fileContains(slashCommandsFile, "'supervisor'")).toBe(true);
+      // @step Then /watcher was replaced with /role (AMGR-012)
+      // AMGR-008/AMGR-012: /supervisor was further simplified to /role
+      expect(fileContains(slashCommandsFile, "'role'")).toBe(true);
+
       // Check old commands don't exist
       const content = readFile(slashCommandsFile);
       // /watcher should be gone as a registered command
@@ -457,6 +418,9 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
 
       // @step And the /parent command is removed entirely
       expect(content).not.toMatch(/name:\s*['"]parent['"]/);
+
+      // @step And /supervisor is not a separate command (replaced by /role)
+      expect(content).not.toMatch(/name:\s*['"]supervisor['"]/);
     });
   });
 

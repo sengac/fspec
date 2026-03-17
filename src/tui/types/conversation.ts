@@ -22,10 +22,6 @@ export interface ConversationMessage {
   isStreaming?: boolean;
   isError?: boolean; // Tool result with isError=true (stderr output)
   toolCallId?: string; // For tool-call messages, links header to result
-  /** WATCH-011: Correlation ID for cross-pane selection highlighting */
-  correlationId?: string;
-  /** WATCH-011: Subordinate chunk IDs this supervisor turn was observing when it responded */
-  observedCorrelationIds?: string[];
 }
 
 // Line type for VirtualList (flattened from messages)
@@ -37,8 +33,4 @@ export interface ConversationLine {
   isSeparator?: boolean; // TUI-042: Empty line used as turn separator
   isThinking?: boolean; // Thinking content (for yellow rendering)
   isError?: boolean; // Tool result with isError=true (stderr output)
-  /** WATCH-011: Correlation ID for cross-pane selection highlighting */
-  correlationId?: string;
-  /** WATCH-011: Subordinate chunk IDs this supervisor turn was observing when it responded */
-  observedCorrelationIds?: string[];
 }

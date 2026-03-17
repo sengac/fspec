@@ -7,8 +7,8 @@
  *
  * Layout when active:
  *   #1 (AUTH-001: implementing): claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
- *   ───────────────────────────────────────────────────────────────────────────────
  *   Role: You are a security reviewer. Analyze code for vulnerabilities...
+ *   ───────────────────────────────────────────────────────────────────────────────
  *   [conversation area]
  *
  * Layout when inactive:

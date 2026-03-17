@@ -225,52 +225,28 @@ export function processChunksToMessages(
     ctx.pendingToolCalls ?? new Map<string, PendingToolCallInfo>();
 
   for (const chunk of chunks) {
-    // Extract correlation fields
-    const correlationId = chunk.correlationId;
-    const observedCorrelationIds = chunk.observedCorrelationIds;
-
     if (chunk.type === 'UserInput' && chunk.text) {
       messages.push({
         type: 'user-input',
         content: chunk.text,
-        correlationId,
-        observedCorrelationIds,
       });
     } else if (chunk.type === 'IncomingMessage' && chunk.text) {
       const msg = processSupervisorInputChunk(chunk.text);
-      msg.correlationId = correlationId;
-      msg.observedCorrelationIds = observedCorrelationIds;
       messages.push(msg);
     } else if (chunk.type === 'Text' && chunk.text) {
       // Find last assistant-text message to append to, or create new one
       const lastIdx = messages.findLastIndex(m => m.type === 'assistant-text');
       if (lastIdx >= 0 && messages[lastIdx].isStreaming) {
         messages[lastIdx].content += chunk.text;
-        // Merge observed correlation IDs
-        if (observedCorrelationIds && observedCorrelationIds.length > 0) {
-          if (!messages[lastIdx].observedCorrelationIds) {
-            messages[lastIdx].observedCorrelationIds = [];
-          }
-          for (const id of observedCorrelationIds) {
-            if (!messages[lastIdx].observedCorrelationIds!.includes(id)) {
-              messages[lastIdx].observedCorrelationIds!.push(id);
-            }
-          }
-        }
       } else {
         messages.push({
           type: 'assistant-text',
           content: chunk.text,
           isStreaming: true,
-          correlationId,
-          observedCorrelationIds,
         });
       }
     } else if (chunk.type === 'Thinking' && chunk.thinking) {
-      appendThinkingBulk(messages, chunk.thinking, {
-        correlationId,
-        observedCorrelationIds,
-      });
+      appendThinkingBulk(messages, chunk.thinking);
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
       // Finalize any active thinking block before tool call
       finalizeThinkingBlock(messages);
@@ -310,8 +286,6 @@ export function processChunksToMessages(
         type: 'tool-call',
         content: ctx.formatToolHeader(toolCall.name, argsDisplay),
         toolCallId: toolCall.id,
-        correlationId,
-        observedCorrelationIds,
       });
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
       const result = chunk.toolResult;
@@ -341,8 +315,6 @@ export function processChunksToMessages(
         type: 'assistant-text',
         content: '',
         isStreaming: true,
-        correlationId,
-        observedCorrelationIds,
       });
     } else if (chunk.type === 'Done') {
       // Remove empty streaming messages and finalize

@@ -310,50 +310,6 @@ describe('Feature: Thinking Block Manager', () => {
     });
   });
 
-  describe('Scenario: Correlation ID propagation', () => {
-    it('should set correlation ID on new thinking block', () => {
-      // @step Given an empty conversation
-      const messages: ConversationMessage[] = [];
-
-      // @step When I append thinking with correlation ID
-      appendThinking(messages, 'Thought', { correlationId: 'corr-123' });
-
-      // @step Then the thinking block should have the correlation ID
-      expect(messages[0].correlationId).toBe('corr-123');
-    });
-
-    it('should set correlation ID on first append to block', () => {
-      // @step Given an active thinking block without correlation ID
-      const messages: ConversationMessage[] = [
-        { type: 'thinking', content: '[Thinking]\nFirst', isStreaming: true },
-      ];
-
-      // @step When I append with correlation ID
-      appendThinking(messages, ' more', { correlationId: 'corr-456' });
-
-      // @step Then the correlation ID should be set
-      expect(messages[0].correlationId).toBe('corr-456');
-    });
-
-    it('should not overwrite existing correlation ID', () => {
-      // @step Given an active thinking block with correlation ID
-      const messages: ConversationMessage[] = [
-        {
-          type: 'thinking',
-          content: '[Thinking]\nFirst',
-          isStreaming: true,
-          correlationId: 'original',
-        },
-      ];
-
-      // @step When I append with different correlation ID
-      appendThinking(messages, ' more', { correlationId: 'new' });
-
-      // @step Then the original correlation ID should be preserved
-      expect(messages[0].correlationId).toBe('original');
-    });
-  });
-
   describe('Scenario: Bulk processing (non-streaming)', () => {
     it('should append to last thinking in same turn', () => {
       // @step Given a thinking block in current turn (no tool call after it)

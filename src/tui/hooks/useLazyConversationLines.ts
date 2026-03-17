@@ -78,19 +78,16 @@ const LAZY_MODE_THRESHOLD = 50; // Messages
  *
  * @param messages - Conversation messages
  * @param maxWidth - Maximum line width for wrapping
- * @param isSupervisorView - Whether this is a supervisor view (affects width calculation)
  * @returns LazyConversationLinesResult with lineCount and accessor functions
  */
 export function useLazyConversationLines(
   messages: ConversationMessage[],
-  maxWidth: number,
-  isSupervisorView: boolean = false
+  maxWidth: number
 ): LazyConversationLinesResult {
   // Track previous values for incremental updates
   const indexRef = useRef<LazyLineIndex | null>(null);
   const prevMessagesRef = useRef<ConversationMessage[]>([]);
   const prevMaxWidthRef = useRef<number>(maxWidth);
-  const prevSupervisorViewRef = useRef<boolean>(isSupervisorView);
 
   // Determine if lazy mode should be active
   const isLazyMode = messages.length >= LAZY_MODE_THRESHOLD;
@@ -100,12 +97,10 @@ export function useLazyConversationLines(
   const lineCount = useMemo(() => {
     const prevMessages = prevMessagesRef.current;
     const prevMaxWidth = prevMaxWidthRef.current;
-    const prevSupervisorView = prevSupervisorViewRef.current;
 
     // Store new values
     prevMessagesRef.current = messages;
     prevMaxWidthRef.current = maxWidth;
-    prevSupervisorViewRef.current = isSupervisorView;
 
     if (!isLazyMode) {
       // Small conversation - don't use lazy index
@@ -118,10 +113,9 @@ export function useLazyConversationLines(
 
     // Check if we need to rebuild
     const widthChanged = maxWidth !== prevMaxWidth;
-    const supervisorViewChanged = isSupervisorView !== prevSupervisorView;
     const messagesChanged = messages !== prevMessages;
 
-    if (!index || widthChanged || supervisorViewChanged) {
+    if (!index || widthChanged) {
       // Full rebuild needed
       if (index) {
         index.dispose();
@@ -148,7 +142,7 @@ export function useLazyConversationLines(
     }
 
     return index.length;
-  }, [messages, maxWidth, isSupervisorView, isLazyMode]);
+  }, [messages, maxWidth, isLazyMode]);
 
   // Get lines in range - stable callback
   const getLines = useCallback(

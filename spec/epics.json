@@ -474,7 +474,8 @@
         "BUG-120",
         "TUI-081",
         "TUI-082",
-        "BUG-121"
+        "BUG-121",
+        "TUI-083"
       ]
     },
     "hierarchical-compaction": {
