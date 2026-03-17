@@ -134,6 +134,14 @@ impl Tool for SessionSearchTool {
                     "max_turns": {
                         "type": ["integer", "null"],
                         "description": "Maximum turns to include from the end (show action)"
+                    },
+                    "start_turn": {
+                        "type": ["integer", "null"],
+                        "description": "Start of turn range (inclusive, 0-based) to restrict results (optional for 'show' and 'search' actions)"
+                    },
+                    "end_turn": {
+                        "type": ["integer", "null"],
+                        "description": "End of turn range (inclusive, 0-based) to restrict results (optional for 'show' and 'search' actions)"
                     }
                 },
                 "required": ["action_type"]

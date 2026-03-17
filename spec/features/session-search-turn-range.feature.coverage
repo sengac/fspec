@@ -1,0 +1,441 @@
+{
+  "scenarios": [
+    {
+      "name": "Show returns only turns within specified range",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1286-1303",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show with start_turn only returns from that turn to end",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1305-1320",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show with end_turn only returns from beginning to that turn",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1322-1337",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show with start_turn beyond session length returns empty",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1339-1345",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show with inverted range returns empty",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1347-1358",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show applies turn range before max_turns",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1360-1380",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show applies turn range before user_only",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1382-1401",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search restricts matches to turn range",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1412-1439",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search context_turns can extend outside turn range",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1441-1472",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_search_handler.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show action deserializes with turn range parameters",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1286-1316",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/session_search/types.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search action deserializes with turn range parameters",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1318-1346",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/session_search/types.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tool definition includes turn range parameters in schema",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_search_handler.rs",
+          "lines": "1412-1441",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/session_search/mod.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/session_search_handler.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_search_handler.rs",
+      "codelet/tools/src/session_search/types.rs",
+      "codelet/tools/src/session_search/mod.rs"
+    ],
+    "totalLinesCovered": 491
+  }
+}

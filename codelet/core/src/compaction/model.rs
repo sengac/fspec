@@ -320,3 +320,124 @@ pub enum StructuralAnnotation {
     },
 }
 
+// ==========================================
+// DAG NODE METADATA (CMPCT-017)
+// ==========================================
+
+/// Wrap DAG content in system-reminder compaction-dag markers.
+///
+/// The resulting message content will be:
+/// ```text
+/// <system-reminder>
+/// <!-- type:compaction-dag -->
+/// {dag_content}
+/// </system-reminder>
+/// ```
+///
+/// This is the single canonical wrapping function. Used by both
+/// `inject_summary_handler::on_injected` (napi) and
+/// `compaction_dag::force_inject_fallback_dag` (cli).
+pub fn wrap_dag_content(content: &str) -> String {
+    format!(
+        "<system-reminder>\n<!-- type:compaction-dag -->\n{}\n</system-reminder>",
+        content
+    )
+}
+
+/// Depth level of a DAG summary node.
+///
+/// Maps to the hierarchical compaction model:
+/// - D0 (Detailed): Granular recent work — exact files, errors, decisions
+/// - D1 (Arc): Current work state — promoted from D0 on re-compaction
+/// - D2 (Durable): Architecture decisions, milestones that survive many compactions
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DagDepth {
+    /// Detailed — recent work, most granular
+    D0,
+    /// Arc — current work state, promoted from D0
+    D1,
+    /// Durable — architecture decisions, milestones
+    D2,
+}
+
+/// Structured metadata for a parsed `<dag-node>` block.
+///
+/// Extracted from the agent's DAG content after inject_summary.
+/// Provides provenance turn ranges and depth classification for
+/// downstream features (scoped queries, incremental condensation,
+/// convergence watchdog, file propagation).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct DagNodeMeta {
+    /// Depth level (D0/D1/D2)
+    pub depth: DagDepth,
+    /// Start of the turn range this node summarizes (inclusive, 0-based)
+    pub turn_start: usize,
+    /// End of the turn range this node summarizes (inclusive, 0-based)
+    pub turn_end: usize,
+    /// Short human-readable label for the node
+    pub label: String,
+}
+
+/// Parse `<dag-node>` blocks from DAG content and extract structured metadata.
+///
+/// Uses regex to match XML-like `<dag-node depth="Dx" turns="N-M" label="...">` blocks.
+/// Invalid or malformed nodes are silently skipped. If `message_count` is provided,
+/// `turn_end` values exceeding `message_count - 1` are clamped.
+///
+/// Returns nodes sorted by `turn_start` ascending.
+pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<DagNodeMeta> {
+    use once_cell::sync::Lazy;
+    use regex::Regex;
+
+    // Compiled once, reused across all calls
+    static DAG_NODE_RE: Lazy<Regex> = Lazy::new(|| {
+        Regex::new(r#"<dag-node\s+depth="(D[012])"\s+turns="(\d+)-(\d+)"\s+label="([^"]+)">"#)
+            .unwrap_or_else(|_| Regex::new("^$").expect("infallible fallback regex"))
+    });
+
+    let max_turn = message_count.map(|c| if c > 0 { c - 1 } else { 0 });
+
+    let mut nodes: Vec<DagNodeMeta> = DAG_NODE_RE
+        .captures_iter(dag_content)
+        .filter_map(|cap| {
+            let depth = match &cap[1] {
+                "D0" => DagDepth::D0,
+                "D1" => DagDepth::D1,
+                "D2" => DagDepth::D2,
+                _ => return None, // unreachable given regex, but defensive
+            };
+
+            let turn_start: usize = cap[2].parse().ok()?;
+            let mut turn_end: usize = cap[3].parse().ok()?;
+
+            // Clamp turn_end to message count if provided
+            if let Some(max) = max_turn {
+                if turn_end > max {
+                    turn_end = max;
+                }
+            }
+
+            Some(DagNodeMeta {
+                depth,
+                turn_start,
+                turn_end,
+                label: cap[4].to_string(),
+            })
+        })
+        .collect();
+
+    // Check for overlapping turn ranges and log warnings
+    nodes.sort_by_key(|n| n.turn_start);
+    for i in 1..nodes.len() {
+        if nodes[i].turn_start <= nodes[i - 1].turn_end {
+            tracing::warn!(
+                "DAG node overlap — '{}' (turns {}-{}) overlaps with '{}' (turns {}-{})",
+                nodes[i].label, nodes[i].turn_start, nodes[i].turn_end,
+                nodes[i - 1].label, nodes[i - 1].turn_start, nodes[i - 1].turn_end,
+            );
+        }
+    }
+
+    nodes
+}
+

@@ -29,8 +29,17 @@ mod annotation_detector_tests {
     include!("__tests__/annotation_detector.test.rs");
 }
 
+#[cfg(test)]
+mod dag_node_parsing_tests {
+    include!("__tests__/dag_node_parsing.test.rs");
+}
+
 // Re-export public types from model
-pub use model::{ConversationTurn, FileOp, StructuralAnnotation, TokenTracker, ToolCall, ToolResult};
+pub use model::{ConversationTurn, DagDepth, DagNodeMeta, FileOp, StructuralAnnotation, TokenTracker, ToolCall, ToolResult};
+
+// Re-export dag-node parser and DAG content wrapper
+pub use model::parse_dag_nodes;
+pub use model::wrap_dag_content;
 
 // Re-export trimmer
 pub use trimmer::Trimmer;

@@ -14,6 +14,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::SystemTime;
 use tracing::debug;
 
+// Re-export compaction DAG items for backward compatibility.
+// External code importing from `interactive_helpers::` continues to work.
+pub use crate::compaction_dag::{
+    COMPACTION_ESCALATION_MESSAGE, COMPACTION_INSTRUCTION_FRESH,
+    COMPACTION_INSTRUCTION_INCREMENTAL, detect_existing_dag,
+    extract_partial_dag_nodes, force_inject_fallback_dag,
+};
+
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
 ///
 /// This follows the TypeScript implementation in compaction.ts:100-141
@@ -234,34 +242,6 @@ pub fn reset_session_to_reminders(session: &mut Session) -> (usize, usize) {
     counts
 }
 
-/// Compaction system instruction injected after context clear.
-///
-/// This is the message that guides the agent through DAG construction.
-/// Must be concise (<500 tokens) since it consumes context during rebuild.
-///
-/// Research: ACON (Kang et al., KAIST/Microsoft, arXiv:2510.00615) —
-/// compression guidelines embedded in system instructions yield 26-54%
-/// peak token reduction while maintaining task performance.
-pub const COMPACTION_SYSTEM_INSTRUCTION: &str = "\
-Your context window was getting full. Your conversation history has been \
-preserved on disk and is fully searchable via SessionSearch. Build a \
-hierarchical summary DAG of your session:
-
-1. Search strategically (not linearly):
-   - SessionSearch(show, max_turns: 10) for recent context
-   - SessionSearch(search, query: \"error|failed|fix\") for error resolutions
-   - SessionSearch(search, query: \"decision|chose|architecture\") for decisions
-   - SessionSearch(search, query: \"TODO|blocker|question\") for open items
-
-2. Write a structured summary with depth levels:
-   - D2 (Durable): Architecture decisions, milestones still in effect
-   - D1 (Arc): What was attempted, outcomes, current work state
-   - D0 (Detailed): Exact files, decisions, errors from recent work
-   - Include [SessionSearch: turns X-Y] references for future drilldown
-
-3. Call inject_summary(content) with your complete DAG to pin it and \
-continue working.";
-
 /// Execute in-view DAG construction compaction.
 ///
 /// Replaces the legacy batch LLM compaction. New flow:
@@ -283,6 +263,11 @@ pub async fn execute_compaction(
     compaction_in_progress: Arc<AtomicBool>,
     last_user_message: Option<&str>,
 ) -> Result<()> {
+    use crate::compaction_dag::{
+        COMPACTION_INSTRUCTION_FRESH, COMPACTION_INSTRUCTION_INCREMENTAL,
+        detect_existing_dag,
+    };
+
     debug!(
         "[execute_compaction] In-view DAG flow — messages_len={}",
         session.messages.len()
@@ -291,6 +276,10 @@ pub async fn execute_compaction(
     // Step 1: Set compaction_in_progress flag BEFORE clearing
     // This enables Layer 0 trimming in SessionSearch
     compaction_in_progress.store(true, Ordering::SeqCst);
+
+    // Step 1.5 (CMPCT-019): Detect existing DAG BEFORE clearing messages
+    // This must happen before reset_session_to_reminders which clears everything
+    let existing_dag = detect_existing_dag(&session.messages);
 
     // Step 2-3: Partition, clear, restore system reminders, clear turns
     let (reminder_count, compactable_count) = reset_session_to_reminders(session);
@@ -301,13 +290,30 @@ pub async fn execute_compaction(
         compactable_count
     );
 
-    // Step 4: Inject compaction system instruction as user message
+    // Step 4: Select instruction variant based on existing DAG presence (CMPCT-019)
+    let base_instruction = match existing_dag {
+        Some((dag_content, max_turn_end)) => {
+            let next_turn = max_turn_end.saturating_add(1);
+            debug!(
+                "[execute_compaction] INCREMENTAL mode — max_turn_end={}, searching from turn {}",
+                max_turn_end, next_turn
+            );
+            COMPACTION_INSTRUCTION_INCREMENTAL
+                .replace("{existing_dag_content}", &dag_content)
+                .replace("{last_compacted_turn}", &next_turn.to_string())
+        }
+        None => {
+            debug!("[execute_compaction] FRESH mode — no existing DAG found");
+            COMPACTION_INSTRUCTION_FRESH.to_string()
+        }
+    };
+
     // When last_user_message is present, append it so the agent knows what to resume
     let instruction = match last_user_message {
         Some(prompt) => format!(
-            "{COMPACTION_SYSTEM_INSTRUCTION}\n\nAfter building the DAG and calling inject_summary, resume working on:\n{prompt}"
+            "{base_instruction}\n\nAfter building the DAG and calling inject_summary, resume working on:\n{prompt}"
         ),
-        None => COMPACTION_SYSTEM_INSTRUCTION.to_string(),
+        None => base_instruction,
     };
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text(&instruction)),

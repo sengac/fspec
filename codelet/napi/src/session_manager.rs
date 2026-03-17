@@ -3951,15 +3951,29 @@ async fn agent_loop(
     // polling it. Without this guard, the closed channel returns None immediately
     // every iteration, causing tokio::select! to resolve instantly → CPU busy-loop.
     let mut mcp_channel_open = true;
+
+    // CMPCT-020: Compaction convergence watchdog state
+    let mut compaction_watchdog_attempts: usize = 0;
+    let mut compaction_retry_input: Option<String> = None;
     
     loop {
+        // CMPCT-020: Check for compaction watchdog retry input before waiting for user input
+        let input_to_process: Option<InputWithImages> = if let Some(retry_text) = compaction_retry_input.take() {
+            tracing::info!("[AGENT-LOOP] Compaction watchdog: retrying with escalation input");
+            Some(InputWithImages {
+                text: retry_text,
+                thinking_config: None,
+                images: None,
+            })
+        } else {
+
         // WATCH-019: Use tokio::select! to wait on both user input and supervisor input
         // Lock the supervisor_input_rx to use in select
         let mut supervisor_rx = session.incoming_message_rx.lock().await;
         
         // Use biased to prefer user input over supervisor/MCP input
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
-        let input_to_process: Option<InputWithImages> = tokio::select! {
+        let input_to_process_inner: Option<InputWithImages> = tokio::select! {
             biased;
             
             // User input takes priority
@@ -4070,6 +4084,10 @@ async fn agent_loop(
         
         // Drop the lock before processing to avoid holding it during agent execution
         drop(supervisor_rx);
+        
+        input_to_process_inner
+
+        }; // end CMPCT-020 if/else
         
         // If we got input to process, run the agent
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
@@ -4566,15 +4584,16 @@ async fn agent_loop(
             persist_pending_annotations(&session.id, &mut inner_session);
 
             // Apply pending DAG content from inject_summary (deferred because handler can't lock session.inner)
-            if crate::inject_summary_handler::apply_pending_dag(
+            if let Some(dag_nodes) = crate::inject_summary_handler::apply_pending_dag(
                 &mut inner_session,
                 &session.pending_dag_content,
             ) {
                 tracing::info!(
-                    "[AGENT-LOOP] Applied pending DAG for session {} — messages_len={}, tokens={}",
+                    "[AGENT-LOOP] Applied pending DAG for session {} — messages_len={}, tokens={}, dag_nodes={}",
                     session.id,
                     inner_session.messages.len(),
                     inner_session.token_tracker.input_tokens,
+                    dag_nodes.len(),
                 );
 
                 // CompactionComplete was already emitted by emit_post_injection_events
@@ -4584,13 +4603,99 @@ async fn agent_loop(
                 session.set_compaction_progress(None);
             }
 
-            // Unconditionally clear compaction_in_progress (safety net for agent failures)
-            let was_compacting = session.compaction_in_progress.swap(false, Ordering::SeqCst);
-            
-            if was_compacting {
-                session.set_compaction_progress(None);
-                if session.get_status() != SessionStatus::Idle {
+            // CMPCT-020: Compaction convergence watchdog
+            // Check if compaction was in progress but agent failed to call inject_summary.
+            // The flag is still true if inject_summary was never called during the stream.
+            let was_compacting = session.compaction_in_progress.load(Ordering::Acquire);
+            let has_pending_dag = session.pending_dag_content
+                .lock()
+                .map(|guard| guard.is_some())
+                .unwrap_or(false);
+
+            if was_compacting && !has_pending_dag {
+                // Agent failed to produce a DAG. Apply convergence escalation.
+                // compaction_watchdog_attempts tracks how many times we've tried.
+                compaction_watchdog_attempts += 1;
+                tracing::warn!(
+                    "[AGENT-LOOP] Compaction watchdog: agent failed to call inject_summary (attempt {})",
+                    compaction_watchdog_attempts
+                );
+
+                if compaction_watchdog_attempts == 1 {
+                    // Level 2: Inject escalation message and retry
+                    tracing::warn!("[AGENT-LOOP] Compaction watchdog: Level 2 — injecting escalation message");
+                    inner_session.messages.push(rig::message::Message::User {
+                        content: rig::OneOrMany::one(rig::message::UserContent::text(
+                            codelet_cli::interactive_helpers::COMPACTION_ESCALATION_MESSAGE,
+                        )),
+                    });
+
+                    // Set up retry: inject a synthetic input so the loop runs another stream
+                    compaction_retry_input = Some("Continue".to_string());
+
+                    // Don't clear the flag — we're still in compaction mode
+                    // Skip the safety net below and go back to loop top
+                } else {
+                    // Level 3: Force-inject fallback DAG
+                    tracing::warn!("[AGENT-LOOP] Compaction watchdog: Level 3 — force-injecting fallback DAG");
+
+                    // Extract any partial dag-nodes from recent messages
+                    let partial_nodes = codelet_cli::interactive_helpers::extract_partial_dag_nodes(
+                        &inner_session.messages,
+                    );
+
+                    let fallback_dag = if !partial_nodes.is_empty() {
+                        tracing::info!(
+                            "[AGENT-LOOP] Found {} partial dag-node blocks, assembling",
+                            partial_nodes.len()
+                        );
+                        partial_nodes.join("\n\n")
+                    } else {
+                        let last_turn = inner_session.messages.len().saturating_sub(1);
+                        tracing::info!(
+                            "[AGENT-LOOP] No partial dag-nodes found, creating minimal fallback (turns 0-{})",
+                            last_turn
+                        );
+                        format!(
+                            r#"<dag-node depth="D1" turns="0-{}" label="Auto-recovered: compaction timeout">
+Session was auto-compacted due to convergence timeout.
+Use SessionSearch to recover context.
+</dag-node>"#,
+                            last_turn
+                        )
+                    };
+
+                    codelet_cli::interactive_helpers::force_inject_fallback_dag(
+                        &mut inner_session,
+                        &session.compaction_in_progress,
+                        &fallback_dag,
+                    );
+
+                    compaction_watchdog_attempts = 0;
+                    compaction_retry_input = None;
+
+                    // Emit CompactionComplete for the force-inject
                     session.set_status(SessionStatus::Idle);
+                    session.set_compaction_progress(None);
+                }
+            } else {
+                // Normal path: either not compacting, or inject_summary succeeded
+                if was_compacting || has_pending_dag {
+                    // Reset watchdog on success
+                    compaction_watchdog_attempts = 0;
+                }
+            }
+
+            // Unconditionally clear compaction_in_progress (safety net for agent failures)
+            // CMPCT-020: Skip if watchdog retry is pending (we need the flag to stay true)
+            if compaction_retry_input.is_none() {
+                let was_compacting = session.compaction_in_progress.swap(false, Ordering::SeqCst);
+                
+                if was_compacting {
+                    session.set_compaction_progress(None);
+                    if session.get_status() != SessionStatus::Idle {
+                        session.set_status(SessionStatus::Idle);
+                    }
                 }
             }
 

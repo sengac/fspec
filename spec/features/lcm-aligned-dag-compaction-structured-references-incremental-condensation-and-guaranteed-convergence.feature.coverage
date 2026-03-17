@@ -1,0 +1,72 @@
+{
+  "scenarios": [
+    {
+      "name": "Compaction instruction guides agent to write structured dag-node blocks",
+      "testMappings": []
+    },
+    {
+      "name": "Engine parses dag-node blocks and extracts turn ranges from injected DAG",
+      "testMappings": []
+    },
+    {
+      "name": "Agent drills down into a DAG node via scoped SessionSearch",
+      "testMappings": []
+    },
+    {
+      "name": "SessionSearch show action supports optional start_turn and end_turn parameters",
+      "testMappings": []
+    },
+    {
+      "name": "SessionSearch search action supports optional start_turn and end_turn scope",
+      "testMappings": []
+    },
+    {
+      "name": "First compaction uses fresh instruction to build DAG from scratch",
+      "testMappings": []
+    },
+    {
+      "name": "Subsequent compaction uses incremental instruction to extend existing DAG",
+      "testMappings": []
+    },
+    {
+      "name": "Agent extends DAG with new D0 nodes and promotes old D0 to D1",
+      "testMappings": []
+    },
+    {
+      "name": "Level 2 escalation fires after 5 turns without inject_summary",
+      "testMappings": []
+    },
+    {
+      "name": "Level 3 deterministic fallback fires after 7 turns without inject_summary",
+      "testMappings": []
+    },
+    {
+      "name": "Level 3 deterministic fallback requires no LLM call",
+      "testMappings": []
+    },
+    {
+      "name": "Normal DAG construction completes before watchdog triggers",
+      "testMappings": []
+    },
+    {
+      "name": "Engine appends dag-files block when agent omits file references",
+      "testMappings": []
+    },
+    {
+      "name": "Agent-provided dag-files block is preserved without engine override",
+      "testMappings": []
+    },
+    {
+      "name": "File references propagate through multiple compaction cycles",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 15,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

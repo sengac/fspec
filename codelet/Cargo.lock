@@ -538,6 +538,7 @@ dependencies = [
  "dotenvy",
  "futures",
  "lopdf",
+ "once_cell",
  "predicates",
  "regex",
  "rig-core",

@@ -165,6 +165,8 @@ async fn test_search_no_matches() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -215,6 +217,8 @@ async fn test_show_nonexistent_session() {
                 session_id: Some("00000000-0000-0000-0000-000000000000".to_string()),
                 user_only: None,
                 max_turns: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -500,6 +504,8 @@ async fn test_search_by_keyword_across_all_content() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -593,6 +599,8 @@ async fn test_search_with_context_turns() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -670,6 +678,8 @@ async fn test_search_defaults_to_current_project() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -761,6 +771,8 @@ async fn test_search_across_all_projects() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -832,6 +844,8 @@ async fn test_search_with_relative_time_filter() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -900,6 +914,8 @@ async fn test_search_with_absolute_time_filter() {
                 last_days: None,
                 after: Some("2026-03-01T00:00:00Z".to_string()),
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -987,6 +1003,8 @@ async fn test_search_uses_ripgrep_regex() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1064,6 +1082,8 @@ async fn test_search_defaults_to_limit_20() {
                 last_days: None,
                 after: None,
                 before: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1129,6 +1149,8 @@ async fn test_show_current_session_by_default() {
                 session_id: None,
                 user_only: None,
                 max_turns: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1188,6 +1210,8 @@ async fn test_show_session_with_current_keyword() {
                 session_id: Some("current".to_string()),
                 user_only: None,
                 max_turns: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1250,6 +1274,8 @@ async fn test_show_specific_session_by_uuid() {
                 session_id: Some(target_uuid.to_string()),
                 user_only: None,
                 max_turns: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1304,6 +1330,8 @@ async fn test_show_session_resolves_blob_references() {
                 session_id: Some("blob-sess".to_string()),
                 user_only: None,
                 max_turns: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1363,6 +1391,8 @@ async fn test_show_session_truncates_long_messages() {
                 session_id: Some("long-sess".to_string()),
                 user_only: None,
                 max_turns: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1426,6 +1456,8 @@ async fn test_show_session_with_user_only_filter() {
                 session_id: None,
                 user_only: Some(true),
                 max_turns: None,
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await
@@ -1485,6 +1517,8 @@ async fn test_show_session_with_max_turns_limit() {
                 session_id: None,
                 user_only: None,
                 max_turns: Some(10),
+                start_turn: None,
+                end_turn: None,
             },
         })
         .await

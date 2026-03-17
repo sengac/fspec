@@ -45,6 +45,12 @@ pub enum SessionSearchAction {
         /// Only search sessions updated before this ISO timestamp
         #[serde(default)]
         before: Option<String>,
+        /// Start of turn range (inclusive, 0-based) to restrict search results
+        #[serde(default)]
+        start_turn: Option<usize>,
+        /// End of turn range (inclusive, 0-based) to restrict search results
+        #[serde(default)]
+        end_turn: Option<usize>,
     },
     /// Show a specific session's full conversation
     Show {
@@ -57,6 +63,12 @@ pub enum SessionSearchAction {
         /// Maximum number of turns to include (from the end)
         #[serde(default)]
         max_turns: Option<usize>,
+        /// Start of turn range (inclusive, 0-based) to restrict results
+        #[serde(default)]
+        start_turn: Option<usize>,
+        /// End of turn range (inclusive, 0-based) to restrict results
+        #[serde(default)]
+        end_turn: Option<usize>,
     },
 }
 
@@ -360,5 +372,89 @@ mod tests {
         assert_eq!(DEFAULT_RECENT_COUNT, 10);
         assert_eq!(DEFAULT_SEARCH_LIMIT, 20);
         assert_eq!(USER_MESSAGE_PREVIEW_LEN, 200);
+    }
+
+    // ========================================================================
+    // CMPCT-018: Turn range parameter deserialization tests
+    // Feature: spec/features/session-search-turn-range.feature
+    // ========================================================================
+
+    // @step Given a JSON payload with action_type "show" and start_turn 10 and end_turn 20
+    // @step When the payload is deserialized into SessionSearchArgs
+    // @step Then the Show variant contains start_turn=10 and end_turn=20
+    #[test]
+    fn test_show_action_deserializes_with_turn_range() {
+        let json = r#"{"action_type": "show", "session_id": "current", "start_turn": 10, "end_turn": 20}"#;
+        let args: SessionSearchArgs = serde_json::from_str(json).unwrap();
+        match args.action {
+            SessionSearchAction::Show {
+                session_id,
+                start_turn,
+                end_turn,
+                ..
+            } => {
+                assert_eq!(session_id, Some("current".to_string()));
+                assert_eq!(start_turn, Some(10));
+                assert_eq!(end_turn, Some(20));
+            }
+            _ => panic!("Expected Show action"),
+        }
+    }
+
+    // @step Given a JSON payload with action_type "search" and query "test" and start_turn 0 and end_turn 50
+    // @step When the payload is deserialized into SessionSearchArgs
+    // @step Then the Search variant contains start_turn=0 and end_turn=50
+    #[test]
+    fn test_search_action_deserializes_with_turn_range() {
+        let json = r#"{"action_type": "search", "query": "test", "start_turn": 0, "end_turn": 50}"#;
+        let args: SessionSearchArgs = serde_json::from_str(json).unwrap();
+        match args.action {
+            SessionSearchAction::Search {
+                query,
+                start_turn,
+                end_turn,
+                ..
+            } => {
+                assert_eq!(query, "test");
+                assert_eq!(start_turn, Some(0));
+                assert_eq!(end_turn, Some(50));
+            }
+            _ => panic!("Expected Search action"),
+        }
+    }
+
+    // Verify turn range fields default to None when omitted
+    #[test]
+    fn test_show_action_defaults_turn_range_to_none() {
+        let json = r#"{"action_type": "show"}"#;
+        let args: SessionSearchArgs = serde_json::from_str(json).unwrap();
+        match args.action {
+            SessionSearchAction::Show {
+                start_turn,
+                end_turn,
+                ..
+            } => {
+                assert!(start_turn.is_none());
+                assert!(end_turn.is_none());
+            }
+            _ => panic!("Expected Show action"),
+        }
+    }
+
+    #[test]
+    fn test_search_action_defaults_turn_range_to_none() {
+        let json = r#"{"action_type": "search", "query": "test"}"#;
+        let args: SessionSearchArgs = serde_json::from_str(json).unwrap();
+        match args.action {
+            SessionSearchAction::Search {
+                start_turn,
+                end_turn,
+                ..
+            } => {
+                assert!(start_turn.is_none());
+                assert!(end_turn.is_none());
+            }
+            _ => panic!("Expected Search action"),
+        }
     }
 }

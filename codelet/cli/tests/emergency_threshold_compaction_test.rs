@@ -193,7 +193,7 @@ async fn test_slash_compact_uses_in_view_dag_flow() {
 
     // @step And no last_user_message is embedded because compaction was agent-initiated
     let last_text = extract_user_text(session.messages.last().unwrap());
-    // With None passed for last_user_message, the instruction is the base COMPACTION_SYSTEM_INSTRUCTION
+    // With None passed for last_user_message, the instruction is the base COMPACTION_INSTRUCTION_FRESH
     assert!(
         last_text.contains("SessionSearch"),
         "Should contain compaction instruction"

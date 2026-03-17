@@ -197,14 +197,14 @@ fn test_apply_pending_dag_full_cycle() {
 
     // @step And a pending_dag with wrapped DAG content
     let pending_dag = Arc::new(std::sync::Mutex::new(Some(
-        inject_summary_handler::wrap_dag_content("# D2: Architecture\n- JWT auth"),
+        codelet_core::compaction::wrap_dag_content("# D2: Architecture\n- JWT auth"),
     )));
 
     // @step When apply_pending_dag is called
-    let applied = inject_summary_handler::apply_pending_dag(&mut session, &pending_dag);
+    let result = inject_summary_handler::apply_pending_dag(&mut session, &pending_dag);
 
-    // @step Then it should return true
-    assert!(applied, "Should return true when DAG was applied");
+    // @step Then it should return Some (DAG was applied)
+    assert!(result.is_some(), "Should return Some when DAG was applied");
 
     // @step And session should have 5 system reminders + 1 DAG = 6 messages
     assert_eq!(
@@ -240,7 +240,7 @@ fn test_apply_pending_dag_no_content() {
 
     let applied = inject_summary_handler::apply_pending_dag(&mut session, &pending_dag);
 
-    assert!(!applied, "Should return false when no pending DAG");
+    assert!(applied.is_none(), "Should return None when no pending DAG");
     assert_eq!(session.messages.len(), original_count, "Messages should be unchanged");
 }
 
@@ -266,11 +266,11 @@ fn test_apply_pending_dag_resets_tracker() {
     session.token_tracker.output_tokens = 10_000;
 
     let pending_dag = Arc::new(std::sync::Mutex::new(Some(
-        inject_summary_handler::wrap_dag_content("# Summary"),
+        codelet_core::compaction::wrap_dag_content("# Summary"),
     )));
 
     let applied = inject_summary_handler::apply_pending_dag(&mut session, &pending_dag);
-    assert!(applied);
+    assert!(applied.is_some());
 
     // Turns should be cleared
     assert!(session.turns.is_empty(), "turns should be empty after injection");
