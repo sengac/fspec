@@ -130,6 +130,10 @@ console.log('Feature file is valid');
 
 ## Testing Requirements
 
+> **📖 For the complete testing guide — runners, fixtures, patterns, and examples — see [TESTING.md](TESTING.md).**
+
+### Critical Rules
+
 - **Use Vitest exclusively** - NEVER use Jest
 - **Write ALL tests in TypeScript** - NEVER create standalone JavaScript test files
 - **NEVER write external JavaScript files for testing** - All tests must be TypeScript files running through Vitest
@@ -138,37 +142,48 @@ console.log('Feature file is valid');
 - Write meaningful tests that verify actual functionality
 - No trivial tests like `expect(true).toBe(true)`
 - **Test Coverage:** All new code must have corresponding unit tests
-- **Mock Patterns:** Use Vitest mocks, avoid actual file system in unit tests
 - **Type Safety:** No `any` types allowed in tests - use proper type assertions
 
-### Test File Requirements:
+### Test Philosophy: Integration First, Mocks Last
+
+- **Prefer integration tests** that use real filesystems (OS temp dirs), real stores, and real NAPI calls
+- **Redirect, don't intercept** — control inputs (`process.env.HOME`, temp directories) rather than mocking code paths
+- **Use `vi.fn()` only for callback event sinks** (onChange, onSubmit) — never for module replacement
+- **Use `memfs`** only for command-layer tests that need the full write→read→modify→write cycle with file locking
+- **Reuse shared helpers** from `src/test-helpers/` — never duplicate filesystem setup logic
+
+### Test File Requirements
 
 - ❌ **NEVER** create `test.mjs`, `test.js`, or any external JavaScript test files
 - ❌ **NEVER** run tests with `node test.js` or `node test.mjs`
 - ✅ **ALWAYS** create `.test.ts` or `.spec.ts` files
 - ✅ **ALWAYS** run tests through `npm test` using Vitest
 - ✅ **ALWAYS** import and test TypeScript modules directly in TypeScript test files
+- ✅ **ALWAYS** use helpers from `src/test-helpers/` for temp dirs, file ops, and fixtures
 
-### Test Naming Convention:
+### Test Naming Convention
 
 ```typescript
 // Test file: src/commands/__tests__/validate.test.ts
 
+/**
+ * Feature: spec/features/gherkin-validation.feature
+ */
 describe('Feature: Gherkin Syntax Validation', () => {
   describe('Scenario: Validate single feature file with valid syntax', () => {
     it('should exit with code 0 and display success message', async () => {
-      // Given I have a feature file with valid syntax
+      // @step Given I have a feature file with valid syntax
       const tmpDir = await setupTempDirectory();
       const featureFile = join(tmpDir, 'spec/features/test.feature');
       await writeFile(featureFile, validGherkinContent);
 
-      // When I run `fspec validate spec/features/test.feature`
+      // @step When I run `fspec validate spec/features/test.feature`
       const result = await validate({ file: featureFile, cwd: tmpDir });
 
-      // Then the command should exit with code 0
+      // @step Then the command should exit with code 0
       expect(result.exitCode).toBe(0);
 
-      // And the output should display success message
+      // @step And the output should display success message
       expect(result.valid).toBe(true);
     });
   });
@@ -191,7 +206,7 @@ describe('Feature: Gherkin Syntax Validation', () => {
 - **Gherkin Parser**: @cucumber/gherkin for official Gherkin validation
 - **Mermaid Validation**: mermaid.parse() with jsdom for diagram syntax validation
 - **Formatting**: Custom AST-based formatter using @cucumber/gherkin
-- **Testing**: Vitest with globals enabled
+- **Testing**: Vitest (unit/integration), ink-testing-library (TUI components), @microsoft/tui-test (terminal E2E) — see [TESTING.md](TESTING.md)
 - **File Operations**: fs/promises (Node.js built-in)
 - **Globbing**: tinyglobby for file pattern matching
 - **Output**: chalk for colored CLI output
