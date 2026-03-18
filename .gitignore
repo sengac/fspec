@@ -86,3 +86,8 @@ test-tmp-*/
 
 .fspec/
 dist/sea/
+
+# tui-test traces, snapshots, and cache (E2E terminal testing)
+tui-traces/
+tui-snapshots/
+.tui-test/
