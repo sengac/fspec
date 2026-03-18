@@ -1044,6 +1044,107 @@ command: "add-tag-to-feature", args: {"_": ["spec/features/user-login.feature", 
 command: "board"
 ```
 
+---
+
+## Scaling Work with Parallelization Tools
+
+Three tools work together to scale beyond single-threaded development:
+
+- **SessionSearch** — Cross-session memory. Search and read any session's conversation history.
+- **DeepSearch** — Ephemeral read-only sub-agents for exploring large codebases or session histories.
+- **AgentManager** — Persistent subordinate agent sessions for parallel work with full tool access.
+
+### When to Use Each
+
+| Tool | Use When | Persistence |
+|------|----------|-------------|
+| **SessionSearch** | Recall decisions, pull context from another agent, find past sessions | Reads existing data |
+| **DeepSearch** | Answer research questions requiring many file reads or session searches | Ephemeral (no persistence) |
+| **AgentManager** | Parallel workers doing real work — writing code, running tests, reviewing | Full session (searchable) |
+
+### SessionSearch — Cross-Session Memory
+
+```
+# Discover recent sessions
+SessionSearch(action='recent', count=5)
+
+# Search across all session content (messages, tool calls, responses)
+SessionSearch(action='search', query='authentication', last_hours=24)
+
+# Load a specific session's conversation
+SessionSearch(action='show', session_id='<uuid>', max_turns=20)
+
+# Load current session (default when no session_id)
+SessionSearch(action='show')
+
+# Scoped search within turn range
+SessionSearch(action='show', session_id='<uuid>', start_turn=50, end_turn=80)
+```
+
+**Key pattern**: Subordinates use SessionSearch to PULL context from their supervisor.
+
+### DeepSearch — Ephemeral Research Sub-Agents
+
+Read-only sub-agent with Read, Grep, AstGrep, Glob, Ls, Bash, SessionSearch. Returns a text answer.
+
+```
+# Research a directory
+DeepSearch(query='How is authentication handled?', scope=['src/auth/'])
+
+# Research session history only (no code scope)
+DeepSearch(query='What was decided about the database schema?')
+
+# Narrow to a single file
+DeepSearch(query='Explain error handling', scope=['src/commands/validate.ts'])
+```
+
+DeepSearch is **recursive** — sub-agents can spawn children for divide-and-conquer over large corpora.
+
+### AgentManager — Parallel Worker Sessions
+
+Spawn subordinate agents with full tool access (Read, Write, Edit, Bash, etc.).
+
+```
+# Spawn with a role
+AgentManager(action='spawn', role='You are a security reviewer.')
+# Returns: { session_id: '<uuid>' }
+
+# Send a task
+AgentManager(action='message', session_id='<worker-id>',
+  message='Review src/auth/ for vulnerabilities and report back')
+
+# Send with context from another session
+AgentManager(action='message', session_id='<worker-id>',
+  message='Continue this work',
+  context=[{session_id: '<other-session>', start_turn: 0, end_turn: 20}])
+
+# Check status
+AgentManager(action='list')
+AgentManager(action='get_status', session_id='<worker-id>')
+
+# Set/change role on any session
+AgentManager(action='set_role', session_id='<session-id>', role='Performance engineer')
+
+# Close when done
+AgentManager(action='close', session_id='<worker-id>')
+```
+
+### Parallelization Patterns
+
+**Parallel Research**: Use DeepSearch before Example Mapping to explore unfamiliar codebases.
+
+**Parallel Workers**: Spawn subordinates for independent tasks (security review, test writing, docs).
+
+**Cross-Session Context**: Workers use SessionSearch to read supervisor context. Use message with context array to share specific turns.
+
+**Rules**:
+- Subordinates start idle — always send a task after spawning
+- Only the spawner can close a subordinate
+- Messages queue (capacity 16), don't interrupt generation
+- Workers inherit the supervisor's model
+- DeepSearch is read-only — use AgentManager for write access
+- Always close workers when done
+
 </system-reminder>
 "#;
 
@@ -1239,5 +1340,16 @@ mod tests {
         assert!(guidance.contains("import-example-map"));
         assert!(guidance.contains("export-work-units"));
         assert!(guidance.contains("export-dependencies"));
+    }
+
+    #[test]
+    fn test_guidance_contains_parallelization_tools() {
+        let guidance = get_fspec_workflow_guidance();
+        assert!(guidance.contains("SessionSearch"));
+        assert!(guidance.contains("DeepSearch"));
+        assert!(guidance.contains("AgentManager"));
+        assert!(guidance.contains("Parallelization"));
+        assert!(guidance.contains("spawn"));
+        assert!(guidance.contains("subordinate"));
     }
 }

@@ -23,6 +23,7 @@ import { getAcddWorkflowExampleSection } from './slashCommandSections/acddWorkfl
 import { getMonitoringProgressSection } from './slashCommandSections/monitoringProgress';
 import { getAcddPrinciplesSection } from './slashCommandSections/acddPrinciples';
 import { getCoverageTrackingSection } from './slashCommandSections/coverageTracking';
+import { getParallelizationSection } from './slashCommandSections/parallelization';
 import { getReadyToStartSection } from './slashCommandSections/readyToStart';
 
 /**
@@ -52,6 +53,7 @@ export function getCompleteWorkflowDocumentation(): string {
     getToolConfigurationSection(),
     getCriticalRulesSection(),
     getAcddWorkflowExampleSection(),
+    getParallelizationSection(),
     getCoverageTrackingSection(),
     getMonitoringProgressSection(),
     getAcddPrinciplesSection(),
