@@ -123,6 +123,17 @@ export interface InputTransitionProps extends MultiLineInputProps {
    * so the user can type a text response.
    */
   hitlFreeformActive?: boolean;
+
+  /**
+   * TOOL-018: Whether the user selected "Other..." and is in freeform text entry mode.
+   * When true for a question WITH options, shows MultiLineInput instead of option list.
+   */
+  hitlOtherActive?: boolean;
+
+  /**
+   * TOOL-018: Whether to show the empty input hint after submitting blank text in Other mode.
+   */
+  hitlShowEmptyHint?: boolean;
 }
 
 /**
@@ -165,6 +176,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   hitlQuestionIndex = 0,
   hitlSelectedOption = 0,
   hitlFreeformActive = false,
+  hitlOtherActive = false,
+  hitlShowEmptyHint = false,
 }) => {
   // All useState hooks grouped together
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>(
@@ -377,8 +390,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     const currentQuestion = hitlRequest.questions[hitlQuestionIndex] ?? hitlRequest.questions[0];
     const hasOptions = currentQuestion.options && currentQuestion.options.length > 0;
 
-    // Freeform question: show header + MultiLineInput for text capture
-    if (!hasOptions && hitlFreeformActive) {
+    // Freeform question OR "Other..." freeform mode: show header + MultiLineInput
+    if ((!hasOptions && hitlFreeformActive) || (hasOptions && hitlOtherActive)) {
       return (
         <Box flexDirection="column">
           <Text>
@@ -389,8 +402,15 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
             <Text bold>{currentQuestion.header}</Text>
             <Text>: </Text>
             <Text>{currentQuestion.question}</Text>
-            <Text dimColor> (Enter Submit | Esc Cancel)</Text>
+            <Text dimColor>
+              {hitlOtherActive
+                ? ' (Enter Submit | Esc Back to options)'
+                : ' (Enter Submit | Esc Cancel)'}
+            </Text>
           </Text>
+          {hitlShowEmptyHint && (
+            <Text color="yellow">  ⚠ Please type a response or press Esc to go back</Text>
+          )}
           <MultiLineInput
             value={value}
             onChange={onChange}
@@ -404,7 +424,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       );
     }
 
-    // Options question: show options list with selection indicators
+    // Options question: show options list with selection indicators + virtual "Other..."
     return (
       <Text>
         <Text color="magenta">⏸ </Text>
@@ -427,6 +447,13 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
                 {'\n'}
               </Text>
             ))}
+            <Text key="other-option">
+              <Text color={hitlSelectedOption === currentQuestion.options.length ? 'green' : 'white'}>
+                {hitlSelectedOption === currentQuestion.options.length ? ' ● ' : ' ○ '}
+              </Text>
+              <Text dimColor italic>Other...</Text>
+              {'\n'}
+            </Text>
           </Text>
         )}
         <Text dimColor>
