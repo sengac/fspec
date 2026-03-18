@@ -1,6 +1,5 @@
 @BUG-102
 Feature: DeepSearch sub-agent applies provider-specific request configuration
-
   """
   DeepSearch must keep its read-only tool set, but it cannot use a one-size-fits-all
   request builder. Provider-specific request shaping is required so the ephemeral

@@ -1,6 +1,5 @@
 @AMGR-014
 Feature: Spawned subordinate sessions not searchable — no persistence manifest created
-
   """
   handle_spawn creates a SessionManifest via with_provider() before create_session_with_id(). Manifest ID overridden to match subordinate UUID. Provider extracted from model string split on '/'.
   """
@@ -21,7 +20,6 @@ Feature: Spawned subordinate sessions not searchable — no persistence manifest
   #   3. Persistence manifest creation fails (e.g. disk full). Spawn still succeeds but logs a warning. Session works for the current run but history won't survive restart
   #
   # ========================================
-
   Background: User Story
     As a AI agent operator
     I want to search the conversation history of spawned subordinate sessions
@@ -34,13 +32,11 @@ Feature: Spawned subordinate sessions not searchable — no persistence manifest
     Then the manifest provider field is "anthropic"
     Then the manifest is created before create_session_with_id is called
 
-
   Scenario: Subordinate messages are searchable via SessionSearch
     Given a spawned subordinate session with a persistence manifest
     When the subordinate processes a message and produces a response
     Then the subordinate session appears in SessionSearch recent results for the project
     Then the subordinate's messages are found via SessionSearch search action
-
 
   Scenario: Spawn succeeds even when persistence manifest creation fails
     Given a parent session with model "anthropic/claude-opus-4-6"
@@ -48,4 +44,3 @@ Feature: Spawned subordinate sessions not searchable — no persistence manifest
     Then the subordinate session is still created successfully
     Given the persistence layer will fail to save the manifest
     Then a warning is logged about the persistence failure
-

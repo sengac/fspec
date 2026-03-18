@@ -2,15 +2,14 @@
 @tui
 @PROV-008
 Feature: Refactor Model Selection Architecture for DRY/SOLID Compliance
-
   """
   SERVICES:
   - profileEnvironmentService.ts: Configures environment variables for profile-based models
   - modelSelectionService.ts: Orchestrates model selection across session, store, and persistence layers
-  
+
   DELETION:
   - handleSelectModel callback removed from AgentView.tsx (deprecated, unused)
-  
+
   INTEGRATION:
   - Services called from AgentView.tsx handleModelSelect
   - Uses NAPI sessionSetModel/sessionSetModelProfile for Rust session updates
@@ -38,7 +37,6 @@ Feature: Refactor Model Selection Architecture for DRY/SOLID Compliance
   #   6. Developer calls selectModel and selection is persisted to config file
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have model selection logic extracted into proper services
@@ -50,19 +48,16 @@ Feature: Refactor Model Selection Architecture for DRY/SOLID Compliance
     Then the TypeScript project compiles without errors
     And no code references handleSelectModel
 
-
   Scenario: Persist model selection to config file
     Given a model selection for provider "anthropic" model "claude-sonnet-4"
     When selectModel completes successfully
     Then writeConfig should be called with lastUsedModel "anthropic/claude-sonnet-4"
-
 
   Scenario: Configure environment variables for profile-based model
     Given a profile config with baseUrl "http://192.168.0.50:8888" and apiKey "test-api-key"
     When configureProfileEnvironment is called with the profile config
     Then OPENAI_BASE_URL should be set to "http://192.168.0.50:8888"
     And OPENAI_API_KEY should be set to "test-api-key"
-
 
   Scenario: Select cloud provider model with active session
     Given an active session with id "session-123"
@@ -72,14 +67,12 @@ Feature: Refactor Model Selection Architecture for DRY/SOLID Compliance
     And the model store should be updated
     And the selection should be persisted to config
 
-
   Scenario: Select profile-based model with active session
     Given an active session with id "session-123"
     And a model selection with profileConfig containing baseUrl and apiKey
     When selectModel is called with the session and selection
     Then configureProfileEnvironment should be called with the profileConfig
     And sessionSetModelProfile should be called instead of sessionSetModel
-
 
   Scenario: Select model without active session
     Given no active session exists
@@ -88,4 +81,3 @@ Feature: Refactor Model Selection Architecture for DRY/SOLID Compliance
     Then neither sessionSetModel nor sessionSetModelProfile should be called
     And the model store should be updated for later session sync
     And the selection should be persisted to config
-

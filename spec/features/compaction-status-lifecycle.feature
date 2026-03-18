@@ -1,6 +1,5 @@
 @CMPCT-003
 Feature: Compaction completion incorrectly sets status to Idle while agent loop is still running
-
   """
   Rust side: stream_loop.rs emits CompactionStarted/Complete/Continuing. NAPI BackgroundOutput::emit() translates to status changes. Agent loop in session_manager.rs calls apply_pending_dag() after stream completes. JS side: AgentView.tsx handles SessionStateChange and CompactionComplete chunks via useCompaction hook.
   """
@@ -25,7 +24,6 @@ Feature: Compaction completion incorrectly sets status to Idle while agent loop 
   #   3. No DAG pending: agent responds normally without compaction. Done→Idle. No CompactionComplete emitted from agent_loop (apply_pending_dag returns false)
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to see accurate status indicators during compaction

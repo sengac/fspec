@@ -1,15 +1,14 @@
 @EXT-016
 Feature: Oversized image pixel dimensions still crash agent loop — EXT-014 only validated byte size, not pixel dimension limit
-
   """
   Create a shared image_dimensions module in codelet/tools/src/ with functions: extract_png_dimensions(bytes) -> Option<(u32,u32)> and extract_jpeg_dimensions(bytes) -> Option<(u32,u32)> — reusable by both Read tool and parse_tool_result_content
   For parse_tool_result_content in rig-core patch: decode first 32 bytes of base64 (about 24 raw bytes), enough to read PNG IHDR or detect JPEG SOI marker — then scan for SOF if JPEG. This minimal decode avoids decoding the entire image.
   Three validation layers (defense-in-depth): Layer 1: Read tool (has raw bytes, most informative error). Layer 2: parse_tool_result_content (has base64, safety net for all tools). Layer 3: stream_loop user images (has base64 from bridge).
   Provider pixel limits (verified from official docs):
-    Z.AI (GLM-4V): 6000×6000px — strictest hard limit (aisharenet.com GLM-4V-Flash docs)
-    Claude (Anthropic): 8000×8000px (platform.claude.com/docs/en/build-with-claude/vision)
-    OpenAI (GPT-5.4): 6000px max dimension in "original" detail (developers.openai.com/api/docs/guides/images-vision)
-    Gemini: No documented pixel hard reject limit (auto-tiles)
+  Z.AI (GLM-4V): 6000×6000px — strictest hard limit (aisharenet.com GLM-4V-Flash docs)
+  Claude (Anthropic): 8000×8000px (platform.claude.com/docs/en/build-with-claude/vision)
+  OpenAI (GPT-5.4): 6000px max dimension in "original" detail (developers.openai.com/api/docs/guides/images-vision)
+  Gemini: No documented pixel hard reject limit (auto-tiles)
   Universal safe limit: 5999px (just under the strictest provider limit of 6000px)
   """
 
@@ -43,13 +42,13 @@ Feature: Oversized image pixel dimensions still crash agent loop — EXT-014 onl
   #   OpenAI: developers.openai.com/api/docs/guides/images-vision
   #
   # ========================================
-
   Background: User Story
     As a AI agent user
     I want to have oversized images rejected before they enter conversation history
     So that my session never gets irrecoverably broken by a single bad image
 
-  @read-tool @png
+  @read-tool
+  @png
   Scenario: Read tool rejects PNG image exceeding pixel dimension limit
     Given I have a PNG image file at "/tmp/full-page-screenshot.png"
     And the image has dimensions 800x15000 pixels
@@ -61,7 +60,8 @@ Feature: Oversized image pixel dimensions still crash agent loop — EXT-014 onl
     And the error message should suggest resizing the image
     And no image data should enter the conversation history
 
-  @read-tool @happy-path
+  @read-tool
+  @happy-path
   Scenario: Read tool accepts image within pixel dimension limit
     Given I have a PNG image file at "/tmp/viewport-screenshot.png"
     And the image has dimensions 1920x1080 pixels
@@ -70,7 +70,8 @@ Feature: Oversized image pixel dimensions still crash agent loop — EXT-014 onl
     Then the tool should return ReadOutput::Image with base64-encoded data
     And the image media type should be "image/png"
 
-  @safety-net @parse-tool-result
+  @safety-net
+  @parse-tool-result
   Scenario: parse_tool_result_content rejects oversized image from any tool
     Given a tool has returned base64-encoded image data
     And the image has dimensions 10000x5000 pixels
@@ -79,7 +80,8 @@ Feature: Oversized image pixel dimensions still crash agent loop — EXT-014 onl
     And the error text should indicate the image exceeds dimension limits
     And no ToolResultContent::Image should be emitted
 
-  @user-input @jpeg
+  @user-input
+  @jpeg
   Scenario: User-pasted JPEG image exceeding dimensions is rejected
     Given a user pastes a JPEG image via the TUI bridge
     And the image has dimensions 9000x6000 pixels

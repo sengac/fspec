@@ -1,6 +1,5 @@
 @BUG-116
 Feature: Codex facade maps request_user_input to HITL tool
-
   """
   Follow the existing facade pattern: HitlToolFacade trait + InternalHitlParams in traits.rs, CodexRequestUserInputFacade in codex.rs, HitlToolFacadeWrapper in wrapper.rs
   The wrapper calls execute_hitl() directly (not through RequestUserInputTool) — the wrapper IS the rig::tool::Tool, there's no inner tool to delegate to
@@ -29,7 +28,6 @@ Feature: Codex facade maps request_user_input to HITL tool
   #   7. Codex model calls request_user_input with question without options (freeform only) → facade passes through → handler returns freeform answer → wrapper returns JSON response
   #
   # ========================================
-
   Background: User Story
     As a Codex LLM agent
     I want to call request_user_input with the Codex-native schema

@@ -1,6 +1,5 @@
 @BUG-119
 Feature: BoardView loadData stability
-
   """
   Changes span 3 files: fspecStore.ts (in-flight guard + error handling), globalStreamListener.ts (JS debounce), BoardView.tsx (remove redundant loadData after moves)
   """
@@ -25,7 +24,6 @@ Feature: BoardView loadData stability
   #   5. Real errors like permission denied or disk full still show the ErrorView — only lock contention is silenced
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to see a stable BoardView without flickering when work-units.json changes externally

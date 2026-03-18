@@ -3,7 +3,6 @@
 @authentication
 @PROV-021
 Feature: Anthropic OAuth browser callback server and CSRF state validation
-
   """
   New file: codelet/providers/src/claude_oauth_server.rs — Hyper-based HTTP server for Anthropic browser OAuth flow. Routes: GET / (form page with authorize URL and code paste input), POST /submit (receives code, validates state, exchanges tokens), GET /cancel (abort flow), 404 for everything else. Mirrors codex_oauth_server.rs architecture.
   New file: codelet/providers/src/claude_auth.rs — Claude auth persistence module (mirrors codex_auth.rs). ClaudeAuthJson struct with access_token, refresh_token, expires (ms timestamp). write_claude_auth() and read_claude_auth() functions. Path: ~/.config/codelet/claude_auth.json (not ~/.codex/ which is Codex-specific).
@@ -41,7 +40,6 @@ Feature: Anthropic OAuth browser callback server and CSRF state validation
   #   2. The open crate is already available in providers/Cargo.toml from PROV-013 (Codex server uses it).
   #
   # ========================================
-
   Background: User Story
     As a user with a Claude Max/Pro subscription
     I want to complete browser-based OAuth login with code paste

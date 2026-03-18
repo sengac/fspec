@@ -5,7 +5,6 @@
 @tools
 @BUG-111
 Feature: Codex grep_files facade does not map include or limit params
-
   """
   The underlying GrepTool::execute() already supports glob filtering via a 'glob' param (grep.rs line 221). The fix is a plumbing issue: InternalSearchParams::Grep needs include/limit fields, the facade needs to extract them, and the wrapper needs to pass 'include' as 'glob' to GrepTool.execute().
   """
@@ -30,7 +29,6 @@ Feature: Codex grep_files facade does not map include or limit params
   #   4. ZAI and Gemini grep facades continue to work with include=None and limit=None (non-breaking change)
   #
   # ========================================
-
   Background: User Story
     As a Codex model
     I want to filter grep_files results by file type using the include param and cap results with limit

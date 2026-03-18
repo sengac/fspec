@@ -1,6 +1,5 @@
 @AMGR-008
 Feature: Remove old supervisor infrastructure
-
   """
   session_manager.rs is the main file (~7000 lines). Removal targets are spread across: supervisor_agent_loop fn (~100 lines at ~L5710), ObservationBuffer struct/impl (~100 lines at ~L383), evaluate_and_maybe_inject (~100 lines at ~L570), SupervisorRole/SupervisorInput structs (~100 lines at ~L259), format_supervisor_input (~30 lines at ~L360), NAPI functions session_create_supervisor/supervisor_inject (~100 lines at ~L6920), and supervisor-specific tests (~500 lines at ~L2770+)
   TUI removal targets: src/tui/components/SupervisorTemplateList.tsx, src/tui/components/SupervisorCreateView.tsx, src/tui/components/SupervisorTemplateForm.tsx, src/tui/types/supervisorTemplate.ts, src/tui/utils/supervisorTemplateStorage.ts. In AgentView.tsx: remove imports and /supervisor command handler. In slashCommands.ts: remove supervisor entry.
@@ -32,7 +31,6 @@ Feature: Remove old supervisor infrastructure
   #   6. Regular agent_loop sessions (non-supervisor) continue to work identically — creating a normal session, sending a prompt, receiving streaming response all unchanged
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to remove old supervisor infrastructure code

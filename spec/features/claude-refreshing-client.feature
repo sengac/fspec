@@ -3,7 +3,6 @@
 @authentication
 @PROV-023
 Feature: Anthropic token refresh client and resilient request auth
-
   """
   New file: codelet/providers/src/claude_refreshing_client.rs — Implements RefreshingClaudeClient struct that wraps reqwest::Client and implements rig's HttpClientExt trait. Contains ClaudeTokenState struct with access_token, refresh_token, token_endpoint_base, and expires_at (Instant). Arc<tokio::sync::RwLock<ClaudeTokenState>> for shared mutable state. ClaudeTokenMode enum: OAuth{token_state} and ApiKey. ~200 lines, mirrors codex/refreshing_client.rs structure.
   Key structural difference from Codex RefreshingClient: Claude's RefreshingClaudeClient is SIMPLER — no URL rewriting needed (rig AnthropicExt::build_uri does ?beta=true), no extra headers like ChatGPT-Account-Id or originator. Only handles Authorization: Bearer header replacement and token refresh. Static headers (anthropic-beta, anthropic-version, user-agent, x-app) remain set at rig client build time.
@@ -46,7 +45,6 @@ Feature: Anthropic token refresh client and resilient request auth
   #   2. Reuses from PROV-020 (claude_oauth.rs): refresh_access_token_at(), ClaudeTokenResponse. Reuses from PROV-021 (claude_auth.rs): write_claude_auth(), ClaudeAuthJson, calculate_expiry(). No new crate dependencies.
   #
   # ========================================
-
   Background: User Story
     As a developer using Claude with OAuth subscription
     I want to have my Claude API requests automatically refresh expired tokens and route with correct auth headers

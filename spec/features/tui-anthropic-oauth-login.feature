@@ -1,6 +1,5 @@
 @PROV-025
 Feature: TUI provider settings UX for Anthropic subscription connect and disconnect
-
   """
   PROVIDER_REGISTRY in provider-config.ts: change Anthropic entry authType from 'api-key' to 'oauth'. The isOAuthProvider() function then returns true for both 'codex' and 'anthropic'. All existing OAuth flow plumbing (nav items, expanded options, 'e'/'d' key handlers) will activate for Anthropic.
   useProviderSettingsState.ts reload() — for each OAuth provider, check tokens: Codex uses sync codexOauthGetTokens(), Anthropic uses async claudeOauthGetTokens(). Add a provider-keyed dispatch: if provider is 'anthropic', await the Claude async check. Add new NAPI imports: claudeOauthBrowserLogin, claudeOauthHeadlessStart, claudeOauthHeadlessComplete, claudeOauthGetTokens, claudeOauthClearTokens.
@@ -43,7 +42,6 @@ Feature: TUI provider settings UX for Anthropic subscription connect and disconn
   #   2. Changing Anthropic authType to 'oauth' does not break existing API key functionality — isOAuthProvider affects only TUI login options and 'e'/'d' key behavior, not the underlying credential resolution in Rust
   #
   # ========================================
-
   Background: User Story
     As a user with a Claude Max/Pro subscription
     I want to connect and disconnect my Anthropic subscription from the TUI provider settings

@@ -1,6 +1,5 @@
 @TUI-081
 Feature: Role banner display in AgentView
-
   """
   New RoleBanner component at src/tui/components/RoleBanner.tsx — reads role from sessionGetRole NAPI binding, renders conditionally below SessionHeader in AgentView.
   RoleBanner integrated into AgentView.tsx between SessionHeader and conversation VirtualList — role state refreshed via existing refreshRustState polling cycle.
@@ -23,7 +22,6 @@ Feature: Role banner display in AgentView
   #   4. Very long role text → truncated with ellipsis
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to see my active role displayed in the AgentView header area

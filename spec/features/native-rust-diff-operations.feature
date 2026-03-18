@@ -1,6 +1,5 @@
 @GIT-040
 Feature: Replace diff-worker.ts with native Rust NAPI diff operations
-
   """
   Rust side: Add get_checkpoint_file_diff(dir, filepath, checkpoint_ref) to codelet-git/src/diff.rs. Use gix to resolve the ref, read blob content from both commits (checkpoint tree and HEAD tree), then use similar::TextDiff to generate unified diff.
   NAPI side: Add #[napi] pub fn get_checkpoint_file_diff(dir, filepath, checkpoint_ref) to codelet/napi/src/git.rs, wrapping the new Rust function.
@@ -33,13 +32,13 @@ Feature: Replace diff-worker.ts with native Rust NAPI diff operations
   #   7. User views diff of a very large file (>20,000 lines) → diff is truncated with '[File truncated]' message
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have diff operations run natively in Rust via NAPI
     So that the SEA binary works without external diff-worker.js and no git CLI dependency remains
 
-  @rust @napi
+  @rust
+  @napi
   Scenario: Working directory diff via NAPI returns unified diff
     Given a git repository with a tracked file that has uncommitted changes
     When the NAPI getFileDiff function is called with the repository path and file path
@@ -47,34 +46,39 @@ Feature: Replace diff-worker.ts with native Rust NAPI diff operations
     And the diff header contains line count information
     And the result is identical in format to the previous TypeScript implementation
 
-  @rust @napi
+  @rust
+  @napi
   Scenario: Checkpoint file diff via NAPI returns restore preview
     Given a git repository with a ghost checkpoint containing a different version of a file
     When the NAPI getCheckpointFileDiff function is called with the repository path, file path, and checkpoint ref
     Then it returns a unified diff comparing HEAD content to checkpoint content
     And the diff shows what will change when the checkpoint is restored
 
-  @rust @napi
+  @rust
+  @napi
   Scenario: Checkpoint diff for file not in checkpoint returns deletion message
     Given a git repository with a ghost checkpoint
     And a file that exists in HEAD but not in the checkpoint
     When the NAPI getCheckpointFileDiff function is called for that file
     Then it returns a message containing "Will be deleted on restore"
 
-  @rust @napi
+  @rust
+  @napi
   Scenario: Binary file diff returns binary indicator
     Given a git repository with a binary file that has uncommitted changes
     When the NAPI getFileDiff function is called for the binary file
     Then it returns "[Binary file - no diff available]"
 
-  @rust @napi
+  @rust
+  @napi
   Scenario: Large diff is truncated at 20000 lines
     Given a git repository with a file that produces more than 20000 diff lines
     When the NAPI getFileDiff function is called for that file
     Then the diff output contains no more than 20000 content lines
     And the output ends with a "[File truncated" message
 
-  @tui @integration
+  @tui
+  @integration
   Scenario: FileDiffViewer uses direct NAPI call instead of worker thread
     Given the FileDiffViewer component is mounted with a list of changed files
     When a file is selected for diff viewing
@@ -82,7 +86,8 @@ Feature: Replace diff-worker.ts with native Rust NAPI diff operations
     And no Worker instance is created
     And the parsed diff lines are displayed with colored +/- indicators
 
-  @tui @integration
+  @tui
+  @integration
   Scenario: CheckpointViewer uses direct NAPI call instead of worker thread
     Given the CheckpointViewer component is mounted with checkpoint data
     When a checkpoint file is selected for diff viewing
@@ -90,7 +95,8 @@ Feature: Replace diff-worker.ts with native Rust NAPI diff operations
     And no Worker instance is created
     And the restore preview is displayed with colored +/- indicators
 
-  @sea @integration
+  @sea
+  @integration
   @build
   Scenario: Build pipeline does not include esbuild diff-worker step
     Given the package.json build script

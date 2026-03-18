@@ -1,6 +1,5 @@
 @EXT-012
 Feature: AI-Optimized DOM Element Location for WebMCP Browser Control
-
   """
   Scanning script runs via chrome.scripting.executeScript in ISOLATED world (shares DOM, not JS). Uses TreeWalker for O(n) traversal. Generates unique CSS selectors using id, data attributes, nth-child fallback. Results returned as JSON via InjectionResult.
   Changes required in 3 files: (1) browser-tools.ts — add browser_scan_page handler, (2) mcp-server.mjs — add tool definition to NATIVE_TOOLS, (3) webmcp-skill.md — document the new tool for AI agents.
@@ -31,7 +30,6 @@ Feature: AI-Optimized DOM Element Location for WebMCP Browser Control
   #   8. Scan on a new tab with no URL (about:blank) returns an empty elements array with page metadata only
   #
   # ========================================
-
   Background: User Story
     As a AI assistant
     I want to scan a web page for interactive elements and receive a structured, indexed representation

@@ -1,6 +1,5 @@
 @CMPCT-008
 Feature: inject_summary Tool Definition and Schema
-
   """
   File: codelet/tools/src/inject_summary.rs — contains InjectSummaryTool struct, InjectSummaryArgs, InjectSummaryResult, InjectSummaryHandler type alias, global handler registry, set/has/execute/clear functions
   Follows exact pattern of fspec_handler.rs and session_search/handler.rs — per-session Arc<dyn Fn + Send + Sync> stored in global Lazy<RwLock<HashMap<Uuid, Handler>>>
@@ -32,7 +31,6 @@ Feature: inject_summary Tool Definition and Schema
   #   6. Tool definition() returns JSON schema with content as required string property and description explaining DAG pinning
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to call inject_summary to pin a hierarchical DAG summary as persistent system-level content

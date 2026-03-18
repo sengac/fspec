@@ -1,7 +1,6 @@
 @done
 @WATCH-024
 Feature: Refactor watcher terminology to supervisor/subordinate with ChainOfCommand graph
-
   """
   Rust scope: 13 files — session_manager.rs (~200+ occurrences, primary), types.rs (StreamChunk variants), navigation.rs (WatchGraph usage), 5 test files. Do NOT touch work_units_watcher.rs or lib.rs (filesystem watcher, different concept).
   TypeScript scope: ~69 files — 8 core components (WatcherCreateView, WatcherTemplateList, WatcherTemplateForm, SplitSessionView, SessionHeader, AgentView, TurnContentModal, BoardView), 7 utils, 4 hooks, 2 store files, 2 types files, ~30 test files, and ~10 non-TUI TypeScript files
@@ -60,7 +59,6 @@ Feature: Refactor watcher terminology to supervisor/subordinate with ChainOfComm
   #   A: Yes, auto-generated from #[napi] macros. Rust renames will auto-update it on build. Do not manually edit.
   #
   # ========================================
-
   Background: User Story
     As a developer working on the codelet codebase
     I want to see consistent supervisor/subordinate terminology throughout the watcher system instead of parent/watcher

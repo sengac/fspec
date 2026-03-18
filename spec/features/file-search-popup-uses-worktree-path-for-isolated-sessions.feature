@@ -29,7 +29,6 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
   #   6. WORKTREE STATE: AI modifies package.json in worktree → popup finds it in worktree (reflects worktree state)
   #
   # ========================================
-
   Background: User Story
     As a user typing @ to search for files
     I want the search to use the same directory where the AI operates
@@ -38,7 +37,6 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
   # ========================================
   # ISOLATED SESSION SCENARIOS
   # ========================================
-
   @isolated
   @file-search
   Scenario: File search in isolated session finds files AI created in worktree
@@ -71,7 +69,6 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
   # ========================================
   # NON-ISOLATED SESSION SCENARIOS
   # ========================================
-
   @non-isolated
   @file-search
   Scenario: File search in non-isolated session searches project root
@@ -85,7 +82,6 @@ Feature: File Search Popup Uses Worktree Path for Isolated Sessions
   # ========================================
   # FALLBACK SCENARIOS
   # ========================================
-
   @no-session
   @file-search
   Scenario: File search before session creation uses project root fallback

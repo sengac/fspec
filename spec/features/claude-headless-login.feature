@@ -1,7 +1,6 @@
 @codex-oauth
 @PROV-022
 Feature: Anthropic device auth flow for headless login
-
   """
   New file: codelet/providers/src/claude_headless_login.rs — Simple async function that orchestrates: generate PKCE → invoke code-entry callback with authorize URL → validate state → exchange code → persist tokens. ~80-100 lines. No HTTP server, no hyper dependency, no port binding.
   ClaudeHeadlessLoginConfig struct mirrors DeviceAuthConfig pattern from Codex PROV-014: token_endpoint_base (wiremock or production), timeout_ms, pkce (optional injection for tests), code_entry_fn (async callback that receives authorize URL and returns code#state string). Tests inject short timeouts and mock callbacks.
@@ -37,7 +36,6 @@ Feature: Anthropic device auth flow for headless login
   #   2. Anthropic does not expose device authorization endpoints like OpenAI (no /deviceauth/usercode, no /deviceauth/token). The headless flow is a standard OAuth authorization code flow but with manual code paste instead of browser redirect — exactly matching opencode's anthropic auth plugin behavior.
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet in a headless environment
     I want to authenticate with my Claude Pro/Max subscription without a browser

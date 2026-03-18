@@ -3,7 +3,6 @@
 @browser-control
 @EXT-015
 Feature: Element-targeted screenshots via selector or @ref
-
   """
   Uses client-side OffscreenCanvas crop (not Chrome's undocumented ImageDetails.rect parameter) for stability
   Reuses resolveRefSelector() for @ref→CSS+frameId, executeScript for scrollIntoView+getBoundingClientRect, drawImage crop pattern from tiling code
@@ -32,14 +31,12 @@ Feature: Element-targeted screenshots via selector or @ref
   #   7. On 2x Retina display, element at CSS rect (100,200,300,150) → crop uses device pixels (200,400,600,300) from the captured PNG
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to screenshot a specific element on a page by selector or @ref
     So that I get a focused image of just the element I care about instead of the full viewport
 
   # Rule: When selector is omitted, browser_screenshot must behave identically to today (full viewport capture)
-
   Scenario: Full viewport screenshot when selector is omitted (backward compatible)
     Given the agent has an active MCP connection to the extension
     And the active tab displays a page with viewport 640x480
@@ -48,7 +45,6 @@ Feature: Element-targeted screenshots via selector or @ref
     And the behaviour is identical to the pre-selector implementation
 
   # Rule: When selector is provided, the element must be scrolled into view before capture
-
   Scenario: Element screenshot via @ref scrolls into view and crops
     Given the agent has an active MCP connection to the extension
     And the agent has run browser_scan_page to populate refs
@@ -60,7 +56,6 @@ Feature: Element-targeted screenshots via selector or @ref
     And the result contains a JPEG image of the cropped element
 
   # Rule: Both CSS selectors and @ref identifiers must be accepted
-
   Scenario: Element screenshot via CSS selector
     Given the agent has an active MCP connection to the extension
     And the active tab has an element matching "#hero-image"
@@ -70,7 +65,6 @@ Feature: Element-targeted screenshots via selector or @ref
     And the result contains a JPEG image of the cropped element
 
   # Rule: @ref not found returns descriptive error
-
   Scenario: Error when @ref is not found
     Given the agent has an active MCP connection to the extension
     And no scan state exists for the active tab
@@ -78,7 +72,6 @@ Feature: Element-targeted screenshots via selector or @ref
     Then the result is an error with message "Ref @e3 not found. Run browser_scan_page first to scan the page."
 
   # Rule: If the element has zero visible dimensions, return an error rather than an empty image
-
   Scenario: Error when element has zero visible dimensions
     Given the agent has an active MCP connection to the extension
     And the active tab has an element matching ".hidden-el" with display:none
@@ -86,7 +79,6 @@ Feature: Element-targeted screenshots via selector or @ref
     Then the result is an error with message "Element has no visible dimensions"
 
   # Rule: Elements inside iframes must be supported via existing frame-aware ref resolution
-
   Scenario: Element screenshot in iframe via frame-aware @ref
     Given the agent has an active MCP connection to the extension
     And the agent has run browser_scan_page which scanned iframes
@@ -98,7 +90,6 @@ Feature: Element-targeted screenshots via selector or @ref
     And the result contains a JPEG image of the cropped element
 
   # Rule: The crop must account for device pixel ratio
-
   Scenario: DPR scaling applies device pixel ratio to crop coordinates
     Given the agent has an active MCP connection to the extension
     And the device has a pixel ratio of 2 (Retina display)
@@ -108,7 +99,6 @@ Feature: Element-targeted screenshots via selector or @ref
     And the result contains a JPEG image of the correctly scaled crop
 
   # Rule: The cropped image must pass through the existing resize/JPEG/tile pipeline
-
   Scenario: Cropped element image passes through resize and tile pipeline
     Given the agent has an active MCP connection to the extension
     And the active tab has a very large element producing an image exceeding 1568px on the long edge

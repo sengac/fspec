@@ -1,7 +1,6 @@
 @done
 @PROV-034
 Feature: Filter models.dev catalog to only show models available in Codex subscription
-
   """
   Create a codex-models.json config file (or equivalent data source) in the provider config directory that lists the Codex-supported model slugs. This file is read by modelInitializationService.ts during extractCodexSection() to filter the models.dev catalog. When Codex OAuth is active, only models whose slug matches (or is prefixed by) an entry in this allowlist pass through to the Codex (ChatGPT) section.
   The initial allowlist should be seeded from the research analysis of the openai/codex repository (see attached codex-model-catalog-research.md). The 12 model slugs from codex-rs/core/models.json become the baseline: gpt-5.3-codex, gpt-5.2-codex, gpt-5.1-codex-max, gpt-5.1-codex, gpt-5.2, gpt-5.1, gpt-5-codex, gpt-5, gpt-oss-120b, gpt-oss-20b, gpt-5.1-codex-mini, gpt-5-codex-mini. These should also carry priority and visibility metadata from the Codex catalog.
@@ -24,7 +23,6 @@ Feature: Filter models.dev catalog to only show models available in Codex subscr
   #   3. OpenAI releases a new model 'gpt-6-codex' and adds it to the Codex /models endpoint. Without a code release, the allowlist config is updated to include gpt-6-codex, and the model appears in the selector on next startup.
   #
   # ========================================
-
   Background: User Story
     As a user with a Codex subscription
     I want to see only models my subscription can actually use in the model selector

@@ -1,6 +1,5 @@
 @PROV-026
 Feature: Anthropic provider routing and model availability with subscription auth
-
   """
   claude_auth.rs: Add read_claude_auth_sync() using std::fs (not tokio::fs) for use in sync contexts (credentials.rs, manager.rs). Follows same pattern as Codex's read_codex_auth() which is already sync.
   credentials.rs (providers): Add has_claude_auth() that calls read_claude_auth_sync() to check for OAuth tokens — exactly mirrors has_codex_auth(). Include in claude_available: std::env::var(ANTHROPIC_API_KEY).is_ok() || std::env::var(CLAUDE_CODE_OAUTH_TOKEN).is_ok() || has_claude_auth()
@@ -38,7 +37,6 @@ Feature: Anthropic provider routing and model availability with subscription aut
   #   2. NAPI .node binary already exports claudeOauthGetTokens (from PROV-024 build). index.d.ts already declares it.
   #
   # ========================================
-
   Background: User Story
     As a user with Claude Max/Pro subscription
     I want to see and use Claude models after OAuth login

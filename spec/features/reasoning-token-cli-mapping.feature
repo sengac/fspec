@@ -1,13 +1,14 @@
 @done
-@RIG-012 @wip @rust-layer
+@RIG-012
+@wip
+@rust-layer
 Feature: Reasoning token mapping in CLI TokenInfo
-
   """
   Data flow: TokenDisplayUpdate.reasoning_tokens → TokenInfo.reasoning_tokens (via From trait)
   Also: ApiTokenUsage.reasoning_tokens → TokenInfo (via from_usage factory)
   """
 
-  Background:
+  Background: 
     Given a developer using extended thinking models
     And the model returns reasoning tokens in its Usage response
 

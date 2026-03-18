@@ -1,6 +1,5 @@
 @LOCATE-004
 Feature: DOM Scanning Core — browser_scan_page Tool
-
   """
   Two-file implementation: (1) scanPageDOM injected function lives in browser-tools.ts as the browser_scan_page handler — it uses chrome.scripting.executeScript() ISOLATED world to inject a TreeWalker-based scanning function. (2) Ref assignment and tree formatting happen in the service worker handler after the injected function returns raw element data. The handler stores refs via setTabScanState() from ref-state.ts (LOCATE-003). The injected function must be serializable (no closures over external state) since it runs in page context.
   """
@@ -41,7 +40,6 @@ Feature: DOM Scanning Core — browser_scan_page Tool
   #   13. Selector ranking: element with data-testid='email' gets selector [data-testid="email"]; element with only id='email-input' gets #email-input; element with no id gets attribute combo like input[type="email"][name="email"]
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to scan the active tab's DOM for interactive elements and structural context

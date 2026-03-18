@@ -2,7 +2,6 @@
 @agent-manager
 @AMGR-012
 Feature: Role management — set_role AgentManager action
-
   """
   set_role action dispatched in agent_manager handler — calls session_set_role(session_id, role_name, None, None) NAPI binding; empty role calls session_clear_role or sets empty
   """
@@ -25,7 +24,6 @@ Feature: Role management — set_role AgentManager action
   #   6. Agent calls list → sessions with roles show role field in their entries
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to set or edit a role on any session via the AgentManager set_role action

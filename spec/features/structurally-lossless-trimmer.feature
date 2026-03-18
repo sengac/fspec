@@ -1,6 +1,5 @@
 @CMPCT-006
 Feature: Layer 0 — Structurally Lossless Trimmer Module
-
   """
   Trimmer struct lives in codelet/core/src/compaction/trimmer.rs. Input type is StoredMessage from codelet/napi/src/persistence/types.rs with fields: role (String), content (String), metadata (HashMap<String, Value>). Tool information is in metadata. Output is transformed content String.
   Trimmer must be re-exported via codelet/core/src/compaction/mod.rs with pub mod trimmer and pub use trimmer::Trimmer. Consumed by CMPCT-010 SessionSearch trimming integration.
@@ -37,7 +36,6 @@ Feature: Layer 0 — Structurally Lossless Trimmer Module
   #   10. Message with role=user and no tool metadata → passed through with zero transformation
   #
   # ========================================
-
   Background: User Story
     As a agent performing DAG construction
     I want to receive structurally lossless trimmed tool outputs from SessionSearch

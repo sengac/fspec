@@ -1,6 +1,6 @@
-@PROV-018 @PROV-033
+@PROV-018
+@PROV-033
 Feature: Codex Model Selector Integration — All OpenAI Cloud Models in Codex Section When OAuth Active
-
   """
   PROV-033 FIX: When Codex OAuth tokens exist, extractCodexSection() must move ALL models
   from the OpenAI cloud provider into the synthetic 'Codex (ChatGPT)' section. The previous
@@ -43,7 +43,6 @@ Feature: Codex Model Selector Integration — All OpenAI Cloud Models in Codex S
   #      providerId 'codex' and routes through Codex OAuth.
   #
   # ========================================
-
   Background: User Story
     As a user with a ChatGPT Pro/Plus subscription
     I want ALL OpenAI cloud models to appear in the Codex (ChatGPT) section when I have OAuth tokens

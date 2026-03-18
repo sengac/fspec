@@ -1,6 +1,5 @@
 @AMGR-001
 Feature: SessionSearch Tool — Native Rust session history search replacing bash/Python scripts
-
   """
   Session search reuses codelet/napi/src/persistence/ (MessageStore, HistoryStore, BlobStore) — all the Python logic from session-search.sh has Rust equivalents except the streaming chunk reassembly which needs porting
   Tool lives in codelet/tools/src/session_search/ as a module. Action dispatch pattern follows Bridge tool (codelet/tools/src/bridge.rs). Tool is wired into all providers' create_rig_agent().
@@ -41,14 +40,12 @@ Feature: SessionSearch Tool — Native Rust session history search replacing bas
   #   A: Split. SessionSearch is its own tool (AMGR-001). Agent orchestration (spawn/close/list/message/DeepSearch) becomes a separate future card.
   #
   # ========================================
-
   Background: User Story
     As a AI agent running in codelet
     I want to search session history through a native tool call with three actions — recent (discover sessions), search (ripgrep keyword match with context), and show (load full conversation)
     So that I can recover context from previous sessions without relying on external bash/Python scripts, and the same API can be used internally for compaction
 
   # --- recent action ---
-
   Scenario: List recent sessions for discovery
     Given the persistence layer contains multiple sessions for the current project
     When the agent calls SessionSearch with action "recent" and count 5
@@ -62,7 +59,6 @@ Feature: SessionSearch Tool — Native Rust session history search replacing bas
     Then the result contains 10 sessions
 
   # --- search action ---
-
   Scenario: Search by keyword across all session content
     Given the persistence layer contains sessions with messages mentioning "RLM-001" in user inputs, assistant responses, and tool calls
     When the agent calls SessionSearch with action "search" and query "RLM-001"
@@ -115,7 +111,6 @@ Feature: SessionSearch Tool — Native Rust session history search replacing bas
     And the result is a valid structured response, not an error
 
   # --- show action ---
-
   Scenario: Show current session by default
     Given the agent is running in a session
     When the agent calls SessionSearch with action "show" and no session_id
@@ -165,7 +160,6 @@ Feature: SessionSearch Tool — Native Rust session history search replacing bas
     Then the tool returns an error indicating the session was not found
 
   # --- structural ---
-
   Scenario: SessionSearch output is structured JSON
     Given the persistence layer contains sessions
     When any SessionSearch action is called

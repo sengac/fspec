@@ -1,6 +1,5 @@
 @TUI-078
 Feature: Native text selection while preserving mouse scroll wheel in VirtualList
-
   """
   Architecture notes:
   - Timer ref (reEnableMouseRef) must be a MutableRefObject<ReturnType<typeof setTimeout> | null> to track pending re-enable timeout
@@ -36,7 +35,6 @@ Feature: Native text selection while preserving mouse scroll wheel in VirtualLis
   #   7. User navigates away from conversation view while timer is pending → timer is cleared, mouse tracking disabled cleanly
   #
   # ========================================
-
   Background: User Story
     As a TUI user reading AI output
     I want to click and drag to select text in the conversation view
@@ -69,7 +67,8 @@ Feature: Native text selection while preserving mouse scroll wheel in VirtualLis
     Then mouse tracking should be re-enabled (?1000h)
     And the user should be able to scroll with the mouse wheel again
 
-  @timer @button-release
+  @timer
+  @button-release
   Scenario: Button release immediately re-enables mouse tracking
     Given the TUI is showing the conversation view
     And the user has clicked to select text
@@ -79,7 +78,8 @@ Feature: Native text selection while preserving mouse scroll wheel in VirtualLis
     And any pending timer should be cleared
     And the user should be able to scroll with the mouse wheel right away
 
-  @timer @debounce
+  @timer
+  @debounce
   Scenario: Rapid clicks extend selection mode (debounce behavior)
     Given the TUI is showing the conversation view
     And mouse tracking is enabled (?1000h)

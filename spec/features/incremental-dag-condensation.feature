@@ -1,6 +1,5 @@
 @CMPCT-019
 Feature: Incremental DAG Condensation
-
   """
   Only file modified: codelet/cli/src/interactive_helpers.rs — add detect_existing_dag(), split instruction constants, update execute_compaction()
   Reuses parse_dag_nodes from codelet-core (CMPCT-017) to extract max turn_end from existing DAG
@@ -32,7 +31,6 @@ Feature: Incremental DAG Condensation
   #   8. COMPACTION_SYSTEM_INSTRUCTION constant is removed after split (replaced by FRESH and INCREMENTAL)
   #
   # ========================================
-
   Background: User Story
     As a compaction engine
     I want to use incremental DAG condensation when re-compacting a session that already has a DAG summary

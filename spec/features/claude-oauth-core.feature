@@ -1,6 +1,5 @@
 @PROV-020
 Feature: Claude OAuth core flow for Anthropic subscriptions
-
   """
   New file: codelet/providers/src/claude_oauth.rs — Anthropic OAuth core module, mirrors codex_oauth.rs structure. Constants, PKCE, authorize URL, code exchange, token refresh, header building, tool name prefixing, URL rewriting. All pure functions + async HTTP calls. Re-uses existing sha2/base64/rand crates.
   Key structural difference from Codex OAuth: Anthropic token endpoint uses JSON body (Content-Type: application/json) not form-encoded. Also no id_token in response — just access_token, refresh_token, expires_in. No JWT account_id extraction needed.
@@ -40,7 +39,6 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
   #   2. We use the same CLIENT_ID (9d1c250a-e61b-44d9-88ed-5944d1962f5e) as opencode-anthropic-auth plugin — this is a well-known public OAuth client ID for Claude CLI tools
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to use Anthropic OAuth core primitives to build Claude subscription authentication
@@ -140,10 +138,10 @@ Feature: Claude OAuth core flow for Anthropic subscriptions
     And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
     And the anthropic-beta header should contain "prompt-caching-2024-07-31"
 
-  @core
   # Architecture: mcp_ prefixing is a parity reference — codelet uses native tools
   # (not MCP), so prefixing is not applied in the production request path. These
   # functions exist for parity verification against opencode and future MCP support.
+  @core
   Scenario: Tool names prefixed with mcp_ in OAuth mode
     Given a tool named "Bash"
     When the tool name is prefixed for OAuth mode

@@ -1,6 +1,5 @@
 @CMPCT-009
 Feature: inject_summary NAPI Handler and Agent Loop Registration
-
   """
   File: codelet/napi/src/inject_summary_handler.rs — contains create_handler() returning InjectSummaryHandler closure. Captures Arc<Mutex<Session>> and context_window u64. Uses codelet_cli::session::system_reminders::partition_for_compaction and codelet_common::token_estimator::count_tokens.
   Registration follows the exact pattern of SessionSearch handler registration at session_manager.rs:5363-5368. Cleanup follows pattern at session_manager.rs:5575-5578. Handler needs session.inner.clone() and provider_manager.context_window() captured at registration time.
@@ -34,7 +33,6 @@ Feature: inject_summary NAPI Handler and Agent Loop Registration
   #   6. Handler registered at session_manager.rs ~line 5368, immediately after SessionSearch handler registration. Cleaned up at ~line 5576 alongside other handlers.
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to call inject_summary to pin a DAG summary as persistent context

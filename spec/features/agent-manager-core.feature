@@ -1,6 +1,5 @@
 @AMGR-009
 Feature: Core AgentManager tool — spawn, list, get_status, close
-
   """
   Tool module at codelet/tools/src/agent_manager/ with mod.rs (AgentManagerTool struct + Tool impl), handler.rs (static HashMap + set/execute), types.rs (serde-tagged AgentManagerAction enum + result types)
   Handler closure created in codelet-napi/src/agent_manager_handler.rs with access to SessionManager for session creation, destruction, ChainOfCommand, and status queries. Registered/deregistered in agent_loop() like session_search_handler.
@@ -35,7 +34,6 @@ Feature: Core AgentManager tool — spawn, list, get_status, close
   #   8. Agent calls AgentManager(action='invalid_action') — returns { error: true, code: 'invalid_parameter', message: 'Unknown action: invalid_action' }.
   #
   # ========================================
-
   Background: User Story
     As a AI agent running in codelet
     I want to spawn subordinate sessions, list all sessions, get session status, and close subordinates via a single AgentManager tool
@@ -74,7 +72,8 @@ Feature: Core AgentManager tool — spawn, list, get_status, close
     When I call AgentManager with action "get_status" and the subordinate's session_id
     Then I should receive a JSON response with session_id, role, status, model, spawner_id, subordinate_ids, and pending_messages
 
-  @get_status @error
+  @get_status
+  @error
   Scenario: Get status of a nonexistent session
     Given I am an agent with a registered AgentManager handler
     When I call AgentManager with action "get_status" and session_id "nonexistent-uuid"
@@ -89,7 +88,8 @@ Feature: Core AgentManager tool — spawn, list, get_status, close
     And the subordinate session should no longer exist
     And the ChainOfCommand should have no record of the closed subordinate
 
-  @close @error
+  @close
+  @error
   Scenario: Close session without spawner permission
     Given I am an agent with a registered AgentManager handler
     And another agent has spawned a subordinate session
@@ -97,7 +97,8 @@ Feature: Core AgentManager tool — spawn, list, get_status, close
     Then I should receive an error response with code "permission_denied"
     And the subordinate session should still exist
 
-  @spawn @list
+  @spawn
+  @list
   Scenario: Spawn multiple subordinates and list them
     Given I am an agent with a registered AgentManager handler
     When I call AgentManager with action "spawn" 3 times

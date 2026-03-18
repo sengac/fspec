@@ -1,6 +1,5 @@
 @GIT-039
 Feature: isomorphic-git not fully removed - still used in production and test code
-
   """
   Replaces isomorphic-git with gitoxide NAPI-RS bindings from @sengac/codelet-napi. Adds resolveRef, gitInit, gitAdd, gitCommit, gitSetConfig to codelet/git Rust crate and codelet/napi NAPI bindings. Removes obsolete stash loading from fspecStore.ts (ghost commits replaced stashes). Updates CheckpointViewer.tsx to use NAPI resolveRef. Migrates universal-test-setup.ts to NAPI bindings for git repo initialization.
   """
@@ -25,7 +24,6 @@ Feature: isomorphic-git not fully removed - still used in production and test co
   #   4. After npm uninstall isomorphic-git, npm run build succeeds and npm test passes with no missing module errors
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to remove all isomorphic-git usage from the codebase
@@ -37,20 +35,17 @@ Feature: isomorphic-git not fully removed - still used in production and test co
     Then CheckpointViewer has no isomorphic-git imports
     Then all 3 resolveRef calls use the NAPI binding from @sengac/codelet-napi
 
-
   Scenario: Obsolete stash loading removed from fspecStore
     Given fspecStore.ts imports isomorphic-git for loadStashes using git.log on refs/stash
     When the obsolete stash loading code is removed
     Then fspecStore.ts has no isomorphic-git imports
     Then the stashes state property and loadStashes action are removed from the store
 
-
   Scenario: Test infrastructure uses NAPI bindings for git operations
     Given universal-test-setup.ts uses isomorphic-git for git.init, git.add, git.commit, and git.setConfig
     When NAPI bindings for gitInit, gitAdd, gitCommit, and gitSetConfig are added and test helpers are updated
     Then no test file imports isomorphic-git
     Then all tests that set up git repositories use NAPI bindings
-
 
   Scenario: isomorphic-git dependency completely removed
     Given isomorphic-git is listed in package.json dependencies
@@ -60,4 +55,3 @@ Feature: isomorphic-git not fully removed - still used in production and test co
     Then npm test passes with no missing module errors
     Then grep finds zero isomorphic-git references in src directory
     Then the build script does not reference isomorphic-git
-

@@ -1,22 +1,21 @@
 @TUI-076
 Feature: Consolidate provider types
-
   """
   Architecture Context (see spec/attachments/TUI-076/implementation-guide.md for details):
 
   TUI-034 introduced ModelSelection for hierarchical model selector.
   PROV-007 added profileName/profileConfig for local server support.
-  
+
   Current duplication:
   - ModelSelection: only in AgentView.tsx (line 248)
   - ProviderSection: DUPLICATED in AgentView.tsx (line 267) AND provider.ts (line 18)
   - ModelSelectorItem: only in AgentView.tsx (line 286)
-  
+
   Target: All types consolidated in src/tui/types/provider.ts.
-  
+
   Type compatibility: profileConfig uses inline type in AgentView but ProfileConfig
   import in provider.ts - these are structurally identical (TypeScript structural typing).
-  
+
   ModelSelectorItem depends on NapiModelInfo from @sengac/codelet-napi, which is
   already imported in provider.ts.
   """
@@ -51,7 +50,6 @@ Feature: Consolidate provider types
   #   - NapiModelInfo import already exists in provider.ts (verified)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have model selection types consolidated in src/tui/types/provider.ts
@@ -63,14 +61,12 @@ Feature: Consolidate provider types
     Then ModelSelection is exported from src/tui/types/provider.ts
     And ModelSelection is NOT defined in AgentView.tsx
 
-
   Scenario: ModelSelectorItem type exported from provider.ts
     Given the types/provider.ts file exists
     When I check for ModelSelectorItem type definition
     Then ModelSelectorItem is exported from src/tui/types/provider.ts
     And ModelSelectorItem is NOT defined in AgentView.tsx
     And NapiModelInfo is imported in provider.ts for ModelSelectorItem dependency
-
 
   Scenario: AgentView imports types from provider.ts
     Given types are consolidated in types/provider.ts
@@ -79,11 +75,9 @@ Feature: Consolidate provider types
     And AgentView imports ModelSelectorItem from ../types/provider
     And AgentView imports ProviderSection from ../types/provider
 
-
   Scenario: Build and tests pass after consolidation
     Given types are consolidated in types/provider.ts
     When I run the build and test commands
     Then npm run build succeeds with no TypeScript errors
     And AgentView.tsx imports types from ../types/provider
     And npm test passes for all existing tests
-

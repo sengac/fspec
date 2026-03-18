@@ -3,7 +3,6 @@
 @tools
 @MCP-001
 Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
-
   """
   ConnectMCP tool uses rmcp crate (same as Codex) for MCP JSON-RPC 2.0 over stdio transport (TokioChildProcess) and Streamable HTTP transport (StreamableHttpClientTransport). Protocol version: 2025-11-25
   MCP lifecycle per connection: spawn/connect → initialize handshake (protocolVersion, capabilities, clientInfo/serverInfo) → notifications/initialized → tools/list → cache tools on session. MCP spec 2025-11-25 section: Lifecycle
@@ -49,7 +48,6 @@ Feature: Dynamic MCP: Tool-Driven MCP Integration via ConnectMCP
   #   8. ConnectMCP with timeout: 5 → server doesn't respond within 5s → process killed, structured timeout error returned
   #
   # ========================================
-
   Background: User Story
     Given the agent has a ConnectMCP tool available in its tool list
     And the session has a watcher_input_tx channel for message injection

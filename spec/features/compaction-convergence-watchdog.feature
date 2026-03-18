@@ -1,6 +1,5 @@
 @CMPCT-020
 Feature: Compaction Convergence Watchdog
-
   """
   New functions in codelet/cli/src/interactive_helpers.rs: COMPACTION_ESCALATION_MESSAGE constant, force_inject_fallback_dag(), extract_partial_dag_nodes()
   Watchdog retry logic in codelet/napi/src/session_manager.rs agent_loop — after run_with_provider check compaction_in_progress and retry with escalation
@@ -21,7 +20,6 @@ Feature: Compaction Convergence Watchdog
   #   7. Force-inject uses reset_session_to_reminders + inject DAG directly into session.messages
   #
   # ========================================
-
   Background: User Story
     As a compaction engine
     I want to guarantee compaction convergence with a watchdog that escalates when the agent fails to call inject_summary

@@ -1,6 +1,5 @@
 @PROV-038
 Feature: Codex provider token tracking shows 0 input tokens — Responses API streaming never emits Usage events
-
   """
   Fix is in rig-core patched Responses API streaming (codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs). When response.completed contains usage data, yield RawStreamingChoice::Usage before FinalResponse. Mirrors what Chat Completions API and Anthropic providers already do.
   """
@@ -22,7 +21,6 @@ Feature: Codex provider token tracking shows 0 input tokens — Responses API st
   #   4. Stream yields text deltas followed by Usage then FinalResponse — stream_loop processes Usage event and updates streaming_display before FinalResponse arrives
   #
   # ========================================
-
   Background: User Story
     As a developer using Codex provider
     I want to see accurate input/output token counts during streaming
@@ -37,7 +35,6 @@ Feature: Codex provider token tracking shows 0 input tokens — Responses API st
     And the Usage event should have cache_read_input_tokens 200 and reasoning_tokens 300
     And the Usage event should be yielded before the FinalResponse
 
-
   Scenario: Streaming without usage in response.completed skips Usage event
     Given a Responses API streaming session receives text deltas
     When the streaming response is processed
@@ -45,11 +42,9 @@ Feature: Codex provider token tracking shows 0 input tokens — Responses API st
     And the response.completed event contains no usage data
     And only the FinalResponse should be yielded with zero usage values
 
-
   Scenario: Streaming with usage but no input_tokens_details handles missing optional fields
     Given a Responses API streaming session receives text deltas
     When the streaming response is processed
     Then a RawStreamingChoice::Usage event should be yielded with input_tokens 5000
     And the response.completed event contains usage with input_tokens 5000, output_tokens 2000, total_tokens 7000 but no input_tokens_details
     And the Usage event should have cache_read_input_tokens None and reasoning_tokens 0
-

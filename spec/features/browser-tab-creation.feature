@@ -1,6 +1,5 @@
 @EXT-011
 Feature: Add browser_create_tab tool to fspec Browser Agent Chrome Extension
-
   """
   Uses chrome.tabs.create() API. Chromium C++ implementation: TabsCreateFunction in chrome/browser/extensions/api/tabs/tabs_api.h. API schema: chrome/common/extensions/api/tabs.json. Helper: ExtensionTabUtil::OpenTab in chrome/browser/extensions/extension_tab_util.h.
   Changes in 2 files only: extension/src/background/browser-tools.ts (handler + interface) and extension/host/lib/mcp-server.mjs (NATIVE_TOOLS entry). Plus docs: extension/webmcp-skill.md.
@@ -27,7 +26,6 @@ Feature: Add browser_create_tab tool to fspec Browser Agent Chrome Extension
   #   5. Tool appears in tools/list response as 12th native tool alongside existing 11
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to create a new browser tab, optionally navigating to a URL
@@ -75,4 +73,3 @@ Feature: Add browser_create_tab tool to fspec Browser Agent Chrome Extension
     Given the webmcp-skill.md documentation file
     Then the documentation should reference browser_create_tab with its parameters and return value
     And the tool count should be updated from 11 to 12
-

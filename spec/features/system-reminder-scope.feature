@@ -1,6 +1,5 @@
 @REMIND-016
 Feature: Elevate system-reminder priority handling for Codex and all agents
-
   """
   Codex ContextualUserFragmentDefinition pattern: Each fragment has a start_marker and end_marker (e.g., '<environment_context>' / '</environment_context>'). Fragment matching is case-insensitive. This pattern is used in contextual_user_message.rs with a central CONTEXTUAL_USER_FRAGMENTS registry. For fspec, the <!-- type:scope --> HTML comment inside <system-reminder> tags serves the same purpose but in a simpler format compatible with all agent platforms.
   Implementation location: src/utils/system-reminder.ts is the central module. The wrapInSystemReminder() function currently takes only content:string. It needs to accept an optional scope:SystemReminderScope parameter. All callers (50+ files) will need updating. The scope types should be: 'environment' | 'work-unit-context' | 'workflow-guardrail' | 'fspecWorkflow' | 'claudeMd' | 'estimation' | 'coverage' | 'tool-output'.
@@ -34,7 +33,6 @@ Feature: Elevate system-reminder priority handling for Codex and all agents
   #   8. getStatusChangeReminder() produces reminders with scope 'workflow-guardrail', getMissingEstimateReminder() uses scope 'estimation', show-work-unit uses scope 'work-unit-context'
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to have deterministic, scope-keyed system-reminder priority handling with supersedence rules

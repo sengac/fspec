@@ -1,6 +1,5 @@
 @TUI-074
 Feature: Create ProviderSettingsScreen component
-
   """
   ProviderSettingsScreen composes useProviderSettingsState hook with useInput keyboard handler and ProviderSettingsPanel presentation component - follows orchestrator pattern established by ModelSelectorScreen (TUI-073)
   Hook mode types must be mapped to panel mode types: edit-api-key→edit-api-key, create-profile/edit-profile→profile-form, delete-profile→delete-confirm, list→list
@@ -37,7 +36,6 @@ Feature: Create ProviderSettingsScreen component
   #   10. User presses Enter on provider item → toggleProviderExpansion called, provider expands
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to use ProviderSettingsScreen as an orchestrator component
@@ -46,21 +44,23 @@ Feature: Create ProviderSettingsScreen component
   # ========================================
   # LIST MODE - NAVIGATION & CALLBACKS
   # ========================================
-
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Switch to model selector with Tab key
     Given ProviderSettingsScreen is rendered in list mode
     When the user presses the Tab key
     Then the onSwitchToModels callback is invoked
 
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Close screen with Escape when no filter is active
     Given ProviderSettingsScreen is rendered in list mode
     And no filter is active
     When the user presses the Escape key
     Then the onClose callback is invoked
 
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Clear filter with Escape when filter is active
     Given ProviderSettingsScreen is rendered in list mode
     And a filter "anth" is active
@@ -68,35 +68,40 @@ Feature: Create ProviderSettingsScreen component
     Then the filter is cleared
     And the onClose callback is NOT invoked
 
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Navigate down in provider list
     Given ProviderSettingsScreen is rendered in list mode
     And the selected index is 0
     When the user presses the Down arrow key
     Then the selected index increments to 1
 
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Enter filter mode with slash key
     Given ProviderSettingsScreen is rendered in list mode
     When the user presses the "/" key
     Then isFilterMode becomes true
     And the filter input is active
 
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Expand provider section with Enter
     Given ProviderSettingsScreen is rendered in list mode
     And the selection is on a provider item
     When the user presses the Enter key
     Then toggleProviderExpansion is called
 
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Test connection with t key
     Given ProviderSettingsScreen is rendered in list mode
     And the selection is on a provider item
     When the user presses the "t" key
     Then testConnection is called for the provider
 
-  @keyboard @list-mode
+  @keyboard
+  @list-mode
   Scenario: Refresh providers with r key
     Given ProviderSettingsScreen is rendered in list mode
     When the user presses the "r" key
@@ -105,15 +110,16 @@ Feature: Create ProviderSettingsScreen component
   # ========================================
   # DELETE CONFIRMATION MODE
   # ========================================
-
-  @keyboard @delete-mode
+  @keyboard
+  @delete-mode
   Scenario: Confirm profile deletion with y key
     Given ProviderSettingsScreen is in delete-profile mode for profile "my-server"
     When the user presses the "y" key
     Then removeProfile is called with the profile name
     And mode returns to list
 
-  @keyboard @delete-mode
+  @keyboard
+  @delete-mode
   Scenario: Cancel profile deletion with n key
     Given ProviderSettingsScreen is in delete-profile mode for profile "my-server"
     When the user presses the "n" key
@@ -123,8 +129,8 @@ Feature: Create ProviderSettingsScreen component
   # ========================================
   # API KEY EDIT MODE
   # ========================================
-
-  @keyboard @api-key-mode
+  @keyboard
+  @api-key-mode
   Scenario: Save API key with Enter
     Given ProviderSettingsScreen is in edit-api-key mode
     And the editing API key is "sk-12345"
@@ -132,7 +138,8 @@ Feature: Create ProviderSettingsScreen component
     Then saveApiKey is called with the key value
     And mode returns to list
 
-  @keyboard @api-key-mode
+  @keyboard
+  @api-key-mode
   Scenario: Cancel API key edit with Escape
     Given ProviderSettingsScreen is in edit-api-key mode
     And the editing API key is "sk-12345"
@@ -143,15 +150,16 @@ Feature: Create ProviderSettingsScreen component
   # ========================================
   # PROFILE FORM MODE
   # ========================================
-
-  @keyboard @profile-form-mode
+  @keyboard
+  @profile-form-mode
   Scenario: Navigate to next field with Tab
     Given ProviderSettingsScreen is in create-profile mode
     And formFieldIndex is 0
     When the user presses the Tab key
     Then formFieldIndex increments to 1
 
-  @keyboard @profile-form-mode
+  @keyboard
+  @profile-form-mode
   Scenario: Cancel profile form with Escape
     Given ProviderSettingsScreen is in create-profile mode
     When the user presses the Escape key
@@ -161,8 +169,8 @@ Feature: Create ProviderSettingsScreen component
   # ========================================
   # FILTER MODE
   # ========================================
-
-  @keyboard @filter-mode
+  @keyboard
+  @filter-mode
   Scenario: Exit filter mode keeping filter with Enter
     Given ProviderSettingsScreen is in filter mode
     And the filter is "anth"
@@ -170,7 +178,8 @@ Feature: Create ProviderSettingsScreen component
     Then isFilterMode becomes false
     And the filter remains "anth"
 
-  @keyboard @filter-mode
+  @keyboard
+  @filter-mode
   Scenario: Clear filter and exit filter mode with Escape
     Given ProviderSettingsScreen is in filter mode
     And the filter is "anth"
@@ -181,7 +190,6 @@ Feature: Create ProviderSettingsScreen component
   # ========================================
   # COMPONENT STRUCTURE
   # ========================================
-
   @structure
   Scenario: ProviderSettingsScreen uses useProviderSettingsState hook
     Given ProviderSettingsScreen component is implemented

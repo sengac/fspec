@@ -1,6 +1,5 @@
 @BUG-112
 Feature: Codex view_image tool
-
   """
   Uses the FileToolFacade pattern — CodexViewImageFacade maps Codex-native view_image params
   to InternalFileParams::Read, which delegates to ReadTool's existing image validation logic
@@ -33,13 +32,13 @@ Feature: Codex view_image tool
   #   8. Facade registered in Codex agent → tool appears in agent's tool list as view_image
   #
   # ========================================
-
   Background: User Story
     As a Codex model
     I want to call view_image to view local image files
     So that I can view images the same way as the native Codex CLI
 
-  @tool @codex
+  @tool
+  @codex
   Scenario: CodexViewImageFacade maps view_image path to InternalFileParams::Read
     Given a CodexViewImageFacade instance
     When the Codex model calls view_image with path "/tmp/screenshot.png"
@@ -47,25 +46,29 @@ Feature: Codex view_image tool
     And the facade tool name is "view_image"
     And the facade provider is "codex"
 
-  @tool @codex
+  @tool
+  @codex
   Scenario: CodexViewImageFacade accepts detail param for compatibility
     Given a CodexViewImageFacade instance
     When the Codex model calls view_image with path and detail "original"
     Then the facade maps to InternalFileParams::Read ignoring the detail param
 
-  @tool @codex
+  @tool
+  @codex
   Scenario: CodexViewImageFacade rejects missing path
     Given a CodexViewImageFacade instance
     When view_image is called with no path parameter
     Then the facade returns a validation error for tool "view_image" mentioning "path"
 
-  @tool @codex
+  @tool
+  @codex
   Scenario: CodexViewImageFacade rejects empty path
     Given a CodexViewImageFacade instance
     When view_image is called with an empty path
     Then the facade returns an error
 
-  @tool @codex
+  @tool
+  @codex
   Scenario: Tool definition matches Codex CLI spec
     Given a CodexViewImageFacade instance
     When the tool definition is requested

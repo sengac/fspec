@@ -1,6 +1,5 @@
 @BUG-108
 Feature: Codex shell_command facade ignores workdir and timeout_ms params
-
   """
   Uses the existing codex.rs patterns — add fields to InternalBashParams::Execute, update map_params, update BashToolFacadeWrapper::call match arm
   timeout_ms is stored in the params for future use but not enforced in BashTool yet — BashTool does not currently support per-command timeouts
@@ -27,7 +26,6 @@ Feature: Codex shell_command facade ignores workdir and timeout_ms params
   #   5. Codex model sends {command:'pwd', workdir:'/tmp'} but session isolation effective_cwd is /worktree/abc → BashTool uses /worktree/abc (isolation wins)
   #
   # ========================================
-
   Background: User Story
     As a Codex model (GPT-5.1-codex)
     I want to send shell_command with workdir and timeout_ms parameters

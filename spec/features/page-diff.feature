@@ -1,6 +1,5 @@
 @LOCATE-006
 Feature: Page Diff Tool — browser_diff_page
-
   """
   Myers diff algorithm implemented in separate module (myers-diff.ts) — ~80 lines, pure function, no Chrome dependencies
   Handler registered in browser-tools.ts alongside existing browser_scan_page — reuses resolveTabId, scripting.executeScript, scanPageDOM, formatAccessibilityTree
@@ -34,7 +33,6 @@ Feature: Page Diff Tool — browser_diff_page
   #   1. Diff always runs the scanner with the same parameters (interactive=true, no scope) as the default browser_scan_page to ensure comparable trees
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to see what changed on the page since the last scan

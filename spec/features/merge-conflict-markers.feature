@@ -2,7 +2,6 @@
 @gitoxide-integration
 @BUG-098
 Feature: Merge conflict markers never written to worktree files — LLM told to resolve markers that don't exist
-
   """
   Implementation uses the `diffy` crate for three-way merge (diffy::merge). Add `diffy = "1"` to codelet/git/Cargo.toml. The `similar` crate already present only supports two-way diff — not three-way merge with conflict markers.
   New function `write_conflict_markers()` in session_result.rs: takes base/session/main content for each conflicting file, runs diffy::merge(), writes result to worktree file. Called BEFORE returning ConflictError in apply_session_changes().
@@ -32,7 +31,6 @@ Feature: Merge conflict markers never written to worktree files — LLM told to 
   #   6. After conflict markers are written, LLM reads the file, sees <<<<<<< markers, resolves them, saves, runs /merge-worktree again → second merge succeeds
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to merge worktree changes when conflicts exist

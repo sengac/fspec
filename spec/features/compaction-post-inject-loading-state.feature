@@ -1,7 +1,6 @@
 @done
 @CMPCT-015
 Feature: After inject_summary ends compaction, isLoading not set while agent loop continues running
-
   """
   Uses Rust-side approach: on_injected callback emits SessionStateChange(Running) before CompactionComplete
   JS-side: CompactionComplete handler must call refreshRustState() after endCompaction() so isLoading reflects current Rust status
@@ -24,7 +23,6 @@ Feature: After inject_summary ends compaction, isLoading not set while agent loo
   #   3. Agent fails to call inject_summary (error or interruption) → Done fires → compaction_in_progress still true → status stays Running (from CompactionContinuing) → agent_loop cleanup clears flag and sets Idle
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to see the Thinking indicator with Esc-to-stop after compaction completes but the agent loop is still running
@@ -53,4 +51,3 @@ Feature: After inject_summary ends compaction, isLoading not set while agent loo
     When the agent_loop cleanup runs after the stream completes
     Then compaction_in_progress must be unconditionally cleared to false
     And the session status must be set to Idle since no DAG is pending
-

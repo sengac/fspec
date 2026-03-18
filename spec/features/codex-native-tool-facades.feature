@@ -1,7 +1,11 @@
-@done @BUG-107
-@TOOL-015 @tools @facade-pattern @codelet @provider-abstraction
+@done
+@BUG-107
+@TOOL-015
+@tools
+@facade-pattern
+@codelet
+@provider-abstraction
 Feature: Codex-Native Tool Facades - Map Tools to Codex CLI Tool Schemas
-
   """
   Create codelet/tools/src/facade/codex.rs with CodexShellCommandFacade, CodexReadFileFacade,
   CodexListDirFacade, and CodexGrepFilesFacade. Follow existing pattern from zai.rs and file_ops.rs.
@@ -32,7 +36,6 @@ Feature: Codex-Native Tool Facades - Map Tools to Codex CLI Tool Schemas
   #   4. Codex model calls grep_files with {pattern: 'TODO', include: '*.rs', path: '/src'} → CodexGrepFilesFacade maps to InternalSearchParams::Grep{pattern: 'TODO', path: Some('/src')} → GrepTool executes
   #
   # ========================================
-
   Background: User Story
     As a Codex provider user
     I want to use Codex-native tool names and schemas when the agent makes tool calls

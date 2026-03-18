@@ -1,6 +1,5 @@
 @CMPCT-014
 Feature: Esc to stop does not interrupt compaction — isCompacting state bypasses interrupt handler
-
   """
   Fix is in AgentView.tsx Priority 5 Esc handler: change condition from `displayIsLoading && currentSessionId` to `(displayIsLoading || compaction.state.isActive) && currentSessionId`
   """
@@ -21,7 +20,6 @@ Feature: Esc to stop does not interrupt compaction — isCompacting state bypass
   #   4. Neither compaction nor loading active, user presses Esc with text in input → input clears (existing behavior unchanged)
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to press Esc during compaction to stop the agent

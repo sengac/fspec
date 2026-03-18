@@ -1,6 +1,5 @@
 @TOOL-018
 Feature: HITL Freeform 'Other' Option for Predefined Choices
-
   """
   Changes are entirely in the TUI layer — InputTransition rendering and useHitlInput hook. No changes to the Rust request_user_input.rs tool definition, HitlRequest/HitlResponse types, NAPI bindings, or tool schema. The 'Other...' is a virtual UI-only option.
   useHitlInput hook needs a new state: isOtherActive (boolean). When true, the current question renders MultiLineInput instead of the option list. Escape while isOtherActive sets it back to false (returns to option list). Enter on the 'Other...' option index sets isOtherActive to true.
@@ -28,7 +27,6 @@ Feature: HITL Freeform 'Other' Option for Predefined Choices
   #   5. Question has no options (freeform-only) — no 'Other...' is appended because the entire question is already freeform — behavior unchanged from current implementation
   #
   # ========================================
-
   Background: User Story
     As a developer using the HITL input modal
     I want to provide a custom freeform response when none of the predefined options match my intent

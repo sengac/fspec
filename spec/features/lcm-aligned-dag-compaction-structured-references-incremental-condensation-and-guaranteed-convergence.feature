@@ -1,7 +1,6 @@
 @done
 @CMPCT-016
 Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Condensation, and Guaranteed Convergence
-
   """
   Reuse resolve_turns_context() and resolve_query_context() from codelet/napi/src/agent_manager/agent_manager_handler.rs — these already resolve turn ranges/queries against persisted messages using the same persistence layer as SessionSearch. Extract into shared utility.
   Watchdog retry logic in codelet/napi/src/session_manager.rs agent_loop — after each run_with_provider call during compaction, checks compaction_in_progress. Attempt 1: normal stream. Attempt 2: inject COMPACTION_ESCALATION_MESSAGE, run another stream. Attempt 3: call force_inject_fallback_dag() which extracts partial dag-nodes or creates minimal fallback, resets session to reminders, and clears compaction_in_progress.
@@ -46,7 +45,6 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
   #   A: Deferred. Soft threshold early warning is out of scope for this card — focus on Gaps 1 (structured refs), 2 (incremental condensation), 3 (convergence), 4 (scoped search via SessionSearch), and 5 (file tracking).
   #
   # ========================================
-
   Background: User Story
     As a AI coding agent
     I want to have my compaction DAG summaries contain structured, machine-readable references to source turns that can be automatically resolved
@@ -55,7 +53,6 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
   # ========================================
   # Gap 1: Structured DAG References
   # ========================================
-
   @structured-references
   Scenario: Compaction instruction guides agent to write structured dag-node blocks
     Given a session has exceeded the compaction threshold
@@ -97,7 +94,6 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
   # ========================================
   # Gap 2: Incremental Condensation
   # ========================================
-
   @incremental-condensation
   Scenario: First compaction uses fresh instruction to build DAG from scratch
     Given a session has no existing compaction-dag system reminder
@@ -128,7 +124,6 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
   # ========================================
   # Gap 3: Guaranteed Convergence
   # ========================================
-
   @convergence
   Scenario: Level 2 escalation fires after first failed stream attempt
     Given compaction has been triggered and the agent is building a DAG
@@ -166,7 +161,6 @@ Feature: LCM-Aligned DAG Compaction — Structured References, Incremental Conde
   # ========================================
   # Gap 5: File ID Propagation Through DAG
   # ========================================
-
   @file-tracking
   Scenario: Engine appends dag-files block when agent omits file references
     Given the compacted turns contain FileModification annotations for src/auth.rs and src/middleware.rs

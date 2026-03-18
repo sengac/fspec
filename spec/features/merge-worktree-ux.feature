@@ -2,117 +2,116 @@
 @tui
 @GIT-037
 Feature: Merge worktree UX: confirmation summary with press-enter-to-close and conflict guidance
-
   """
   Generic 'action prompt' mechanism threaded through the component stack:
 
-1. ActionPrompt interface:
-   interface ActionPrompt { message: string; onConfirm: () => void | Promise<void> }
-   Note: onConfirm may be async (e.g. destroySession). The handler must await it.
+  1. ActionPrompt interface:
+  interface ActionPrompt { message: string; onConfirm: () => void | Promise<void> }
+  Note: onConfirm may be async (e.g. destroySession). The handler must await it.
 
-2. AgentView state:
-   const [actionPrompt, setActionPrompt] = useState<ActionPrompt | null>(null)
-   Passes actionPrompt + setActionPrompt to both InputTransition and the merge handler context.
+  2. AgentView state:
+  const [actionPrompt, setActionPrompt] = useState<ActionPrompt | null>(null)
+  Passes actionPrompt + setActionPrompt to both InputTransition and the merge handler context.
 
-3. InputTransition new prop:
-   actionPrompt?: ActionPrompt | null
-   Also receives: clearActionPrompt: () => void (bound to setActionPrompt(null) in AgentView)
+  3. InputTransition new prop:
+  actionPrompt?: ActionPrompt | null
+  Also receives: clearActionPrompt: () => void (bound to setActionPrompt(null) in AgentView)
 
-4. InputTransition rendering (when actionPrompt is set):
-   <Text color='green'>✓ {actionPrompt.message}</Text> <Text dimColor>(Press Enter or Esc to close)</Text>
+  4. InputTransition rendering (when actionPrompt is set):
+  <Text color='green'>✓ {actionPrompt.message}</Text> <Text dimColor>(Press Enter or Esc to close)</Text>
 
-5. InputTransition keyboard handler (useInputCompat, priority MEDIUM):
-   Enter or Escape → await actionPrompt.onConfirm(), then clearActionPrompt()
-   All other keys → consumed (blocked)
-   The auto-clear ensures the prompt is always cleaned up, whether onConfirm unmounts the component or not. Future callers that don't unmount get correct behavior for free.
+  5. InputTransition keyboard handler (useInputCompat, priority MEDIUM):
+  Enter or Escape → await actionPrompt.onConfirm(), then clearActionPrompt()
+  All other keys → consumed (blocked)
+  The auto-clear ensures the prompt is always cleaned up, whether onConfirm unmounts the component or not. Future callers that don't unmount get correct behavior for free.
 
-6. MultiLineInput does NOT need changes — InputTransition short-circuits rendering before reaching MultiLineInput when actionPrompt is active (same pattern as isPaused).
+  6. MultiLineInput does NOT need changes — InputTransition short-circuits rendering before reaching MultiLineInput when actionPrompt is active (same pattern as isPaused).
 
-7. Rendering priority (early return order in InputTransition):
-   isPaused && pauseInfo → existing pause rendering
-   actionPrompt → NEW action prompt rendering
-   animationPhase === 'loading' → existing loading/compaction
-   ... rest of existing animation phases
-   isPaused takes precedence over actionPrompt. In practice they should never overlap (no tool calls during slash commands), but the ordering is safe if they do.
+  7. Rendering priority (early return order in InputTransition):
+  isPaused && pauseInfo → existing pause rendering
+  actionPrompt → NEW action prompt rendering
+  animationPhase === 'loading' → existing loading/compaction
+  ... rest of existing animation phases
+  isPaused takes precedence over actionPrompt. In practice they should never overlap (no tool calls during slash commands), but the ordering is safe if they do.
   mergeWorktreeHandler.ts changes:
 
-Current flow (lines 90-98):
+  Current flow (lines 90-98):
   addStatusMessage(ctx, `✓ Merged: ...`);
   ctx.cleanupCurrentSessionHandler();
   await destroySession(ctx.currentSessionId);
   ctx.onExit();
 
-New flow:
+  New flow:
   // Show rich file-by-file summary first
   addStatusMessage(ctx, buildMergeSummary(mergeResult));
   // Don't exit. Set action prompt instead.
   ctx.setActionPrompt({
-    message: 'Merge complete — Press Enter to close session',
-    onConfirm: async () => {
-      ctx.cleanupCurrentSessionHandler();
-      await destroySession(ctx.currentSessionId);
-      ctx.onExit();
-    }
+  message: 'Merge complete — Press Enter to close session',
+  onConfirm: async () => {
+  ctx.cleanupCurrentSessionHandler();
+  await destroySession(ctx.currentSessionId);
+  ctx.onExit();
+  }
   });
 
-MergeWorktreeContext gains:
+  MergeWorktreeContext gains:
   setActionPrompt: (prompt: ActionPrompt | null) => void
 
-AgentView passes its setActionPrompt state setter through the handler context.
+  AgentView passes its setActionPrompt state setter through the handler context.
 
-Conflict path is unchanged — shows error message, no action prompt, session stays open.
+  Conflict path is unchanged — shows error message, no action prompt, session stays open.
   Rich merge summary format (added to conversation before action prompt):
 
-✓ Merge successful
+  ✓ Merge successful
 
   Modified (3):
-    src/auth/login.ts
-    src/auth/register.ts
-    src/utils/helpers.ts
+  src/auth/login.ts
+  src/auth/register.ts
+  src/utils/helpers.ts
 
   Added (1):
-    src/auth/types.ts
+  src/auth/types.ts
 
   Deleted (0)
 
-Conflict summary format:
+  Conflict summary format:
 
-⚠ Merge conflicts detected
+  ⚠ Merge conflicts detected
 
   Conflicting files:
-    src/auth/login.ts
-    src/utils/helpers.ts
+  src/auth/login.ts
+  src/utils/helpers.ts
 
   These files were modified in both this session and the main worktree.
   Resolve the conflicts, then run /merge-worktree again.
 
-Data sources: MergeResultJs.filesModified/Added/Deleted for success.
+  Data sources: MergeResultJs.filesModified/Added/Deleted for success.
 
-Conflict file parsing: The Rust error format uses Debug trait on Vec<String>: 'Conflict detected: ["file1.ts", "file2.ts"] have been modified in both session and main worktree'. Parse with best-effort regex to extract file paths. If parsing fails (e.g. Rust format changes), fall back to displaying the raw error.message — this is a known coupling with Rust's thiserror/Debug output and graceful degradation is acceptable.
+  Conflict file parsing: The Rust error format uses Debug trait on Vec<String>: 'Conflict detected: ["file1.ts", "file2.ts"] have been modified in both session and main worktree'. Parse with best-effort regex to extract file paths. If parsing fails (e.g. Rust format changes), fall back to displaying the raw error.message — this is a known coupling with Rust's thiserror/Debug output and graceful degradation is acceptable.
   InputTransition.tsx changes:
 
-New props:
+  New props:
   actionPrompt?: { message: string; onConfirm: () => void | Promise<void> } | null
   clearActionPrompt?: () => void
 
-Rendering priority (early return order, BEFORE loading/animation phases):
+  Rendering priority (early return order, BEFORE loading/animation phases):
   1. isPaused && pauseInfo → existing pause rendering (unchanged)
   2. actionPrompt → NEW action prompt rendering (green message + dimColor hint)
   3. animationPhase === 'loading' → existing loading/compaction (unchanged)
   4. ... rest of existing animation phases (unchanged)
 
-Keyboard handler: Register via useInputCompat when actionPrompt is active, priority MEDIUM.
+  Keyboard handler: Register via useInputCompat when actionPrompt is active, priority MEDIUM.
   Enter or Escape → await actionPrompt.onConfirm(), then clearActionPrompt()
   All other keys → consumed (blocked), return true
 
-The handler must guard against double-invocation (user presses Enter twice fast). Use a local ref isClosing to prevent re-entry:
+  The handler must guard against double-invocation (user presses Enter twice fast). Use a local ref isClosing to prevent re-entry:
   const isClosingRef = useRef(false);
   if (isClosingRef.current) return true;
   isClosingRef.current = true;
   await actionPrompt.onConfirm();
   clearActionPrompt?.();
 
-Note: The await in the keyboard handler requires the handler function to be async. useInputCompat's handler type supports this — same pattern as other async handlers in the codebase.
+  Note: The await in the keyboard handler requires the handler function to be async. useInputCompat's handler type supports this — same pattern as other async handlers in the codebase.
   """
 
   # ========================================
@@ -139,7 +138,6 @@ Note: The await in the keyboard handler requires the handler function to be asyn
   #   6. User runs /merge-worktree → worktree was already cleaned up by another process → sees 'Merge failed: Worktree not found' → session stays open, input stays normal — no action prompt shown
   #
   # ========================================
-
   Background: User Story
     As a developer using an isolated session
     I want to see a clear summary of what was merged and confirm before the session closes

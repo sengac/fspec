@@ -1,6 +1,5 @@
 @BUG-105
 Feature: Codex tool-calling facade omits apply_patch and falls back to shell patching
-
   """
   The apply_patch tool is implemented as a standalone rig::tool::Tool struct (not through facade traits) since it has no equivalent in other providers. It takes a single 'patch' string parameter, parses the Codex freeform format, then delegates to internal file operations (create, edit, delete). It lives in codelet/tools/src/apply_patch.rs.
   """
@@ -29,7 +28,6 @@ Feature: Codex tool-calling facade omits apply_patch and falls back to shell pat
   #   6. Agent calls apply_patch with Update File but context lines don't match → apply_patch returns an error describing the mismatch
   #
   # ========================================
-
   Background: User Story
     As a developer using Codex provider
     I want to edit files through the Codex-backed agent

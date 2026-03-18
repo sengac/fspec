@@ -2,7 +2,6 @@
 @browser-control
 @LOCATE-009
 Feature: Iframe-Aware DOM Scanning
-
   """
   Multi-phase scan: (1) getAllFrames discovers frames, (2) main frame scanPageDOM detects <iframe> elements and records their position/depth, (3) per-frame executeScript with frameIds runs scanPageDOM in each iframe, (4) service worker merges results — main frame tree + iframe subtrees spliced at the correct positions. Refs assigned per-frame with f{frameId}e{N} prefix for non-main frames. RefEntry gains frameId field so click/fill targets the right frame.
   getAllFrames() returns MORE fields than documented in research: per Chromium IDL (web_navigation.json), each frame object includes: errorOccurred (boolean), processId (integer), frameId (integer), parentFrameId (integer), url (string), documentId (string), parentDocumentId (string, optional), documentLifecycle (enum: prerender/active/cached/pending_deletion), frameType (enum: outermost_frame/fenced_frame/sub_frame). The documentId and frameType fields are particularly useful — documentId enables precise correlation with InjectionResult.documentId, and frameType distinguishes sub_frame from the main frame without relying on frameId===0.
@@ -35,7 +34,6 @@ Feature: Iframe-Aware DOM Scanning
   #   6. Sandboxed iframe with sandbox='allow-same-origin' (no allow-scripts): executeScript in ISOLATED world still succeeds — scanPageDOM runs and returns elements. The iframe appears in tree with its content. The sandbox attribute only blocks MAIN world scripts, not extension content scripts.
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to scan and interact with elements inside iframes

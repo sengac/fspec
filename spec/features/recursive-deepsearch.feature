@@ -1,7 +1,6 @@
 @done
 @RLM-002
 Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned system prompt
-
   """
   DeepSearchTool struct gets a depth field. The handler chain passes depth through: parent handler registration (depth=0) → execute_deep_search(depth) → build_and_run_agent conditionally adds DeepSearchTool::new(session_id).with_depth(depth+1) when depth < max_recursion_depth.
   Recursive children register their own DeepSearch handler (wrapping execute_deep_search with depth+1) so their sub-agents can also invoke DeepSearch. Cleanup chain: each level's drop guard removes its own handlers.
@@ -31,7 +30,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   #   5. Parent agent calls DeepSearch(query='Find all sessions where we discussed compaction'). Depth=0 sub-agent uses SessionSearch to find 5 sessions, then calls DeepSearch(query='What was decided about compaction in session X?') for each — each child uses SessionSearch(show) to read the session and returns a summary. Parent aggregates into a timeline.
   #
   # ========================================
-
   Background: User Story
     As a developer using DeepSearch
     I want to have DeepSearch recursively spawn sub-agents to decompose and explore large corpora
@@ -40,7 +38,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # Self-Recursion: Tool Set
   # -------------------------------------------------------
-
   Scenario: Sub-agent includes DeepSearchTool when below max recursion depth
     Given a DeepSearch call at depth 0 with max_recursion_depth 2
     When the sub-agent is constructed
@@ -61,7 +58,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # Self-Recursion: Depth Propagation
   # -------------------------------------------------------
-
   Scenario: Recursive child delegates to grandchild with incremented depth
     Given a DeepSearch sub-agent at depth 0 with max_recursion_depth 2
     When the sub-agent calls DeepSearch with query "Analyze login flow" and scope ["src/auth/login.rs"]
@@ -78,7 +74,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # Self-Recursion: Handler Registration and Cleanup
   # -------------------------------------------------------
-
   Scenario: Recursive child registers its own handlers with ephemeral UUID
     Given a DeepSearch sub-agent at depth 0 is about to call DeepSearch
     When the child sub-agent is constructed at depth 1
@@ -96,7 +91,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # Self-Recursion: max_recursion_depth vs max_depth
   # -------------------------------------------------------
-
   Scenario: max_recursion_depth and max_depth are independent controls
     Given a DeepSearch call with max_depth 50 and max_recursion_depth 2
     When the sub-agent is constructed
@@ -106,7 +100,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # System Prompt: Decompose-Delegate-Aggregate Strategy
   # -------------------------------------------------------
-
   Scenario: System prompt teaches RLM decomposition strategy when recursion enabled
     Given a DeepSearch sub-agent at depth 0 with max_recursion_depth 2
     When the system prompt is built
@@ -124,7 +117,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # Provider Compatibility
   # -------------------------------------------------------
-
   Scenario: Recursive children work with all providers
     Given a parent session using any of claude, openai, gemini, codex, or zai
     When a recursive DeepSearch child is spawned
@@ -134,7 +126,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # End-to-End: Divide and Conquer Over Code
   # -------------------------------------------------------
-
   Scenario: Recursive decomposition over a large codebase
     Given a parent agent calls DeepSearch with query "How does auth work?" and scope ["src/"]
     When the depth-0 sub-agent explores the scope
@@ -145,7 +136,6 @@ Feature: Make DeepSearch truly recursive with self-invocation and RLM-aligned sy
   # -------------------------------------------------------
   # End-to-End: Divide and Conquer Over Session History
   # -------------------------------------------------------
-
   Scenario: Recursive decomposition over session history
     Given a parent agent calls DeepSearch with query "Find all sessions where we discussed compaction"
     When the depth-0 sub-agent uses SessionSearch to find matching sessions

@@ -1,7 +1,6 @@
 @done
 @BUG-097
 Feature: Profile-based model selection not restored on session startup
-
   """
   Broken code in modelInitializationService.ts lines 318-325 uses split('/'). Replace with parseModelString() and findSectionForPersistedModel() from model-selection.ts
   """
@@ -21,7 +20,6 @@ Feature: Profile-based model selection not restored on session startup
   #   3. User selects Qwen via local vLLM, closes fspec, reopens → should see Qwen selected, not fallback to first model
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec's AI agent
     I want to have my profile-based model selection remembered across sessions
@@ -30,7 +28,6 @@ Feature: Profile-based model selection not restored on session startup
   # ----------------------------------------
   # PROFILE MODEL RESTORATION
   # ----------------------------------------
-
   Scenario: Restore persisted profile-based model on new session
     Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "openai:work-vllm/Qwen/Qwen3-80B"
     And I have a profile "work-vllm" configured for "openai" provider

@@ -3,7 +3,6 @@
 @tui
 @PROV-035
 Feature: Replace OAuth status echo with actionable Logout line in Provider Settings
-
   """
   No new types, modes, or components needed. Changes are confined to: label text in buildNavItems(), Enter handler in listModeHandler, footer string in getFooterHints(), and optional color tweak in ProviderSettingsPanel renderer. The SettingsNavItem type, HookMode, PanelMode, disconnect-oauth confirmation dialog, and deleteConfirmModeHandler all remain unchanged.
   """
@@ -31,12 +30,10 @@ Feature: Replace OAuth status echo with actionable Logout line in Provider Setti
   #   7. OAuth provider without tokens (not logged in) has no oauth-status row — only login options shown
   #
   # ========================================
-
   Background: User Story
     Given the Provider Settings TUI is open
 
   # --- OAuth status label ---
-
   Scenario: Expanding Anthropic with OAuth shows logout line
     Given Anthropic has valid OAuth tokens connected
     When I expand the Anthropic provider
@@ -48,7 +45,6 @@ Feature: Replace OAuth status echo with actionable Logout line in Provider Setti
     Then I see "Logout from OAuth [ChatGPT]" as a child item
 
   # --- Enter triggers disconnect ---
-
   Scenario: Enter on logout line triggers disconnect confirmation
     Given Anthropic has valid OAuth tokens connected
     And I have the cursor on "Logout from OAuth [Claude]"
@@ -56,7 +52,6 @@ Feature: Replace OAuth status echo with actionable Logout line in Provider Setti
     Then a confirmation dialog appears: "Disconnect Claude OAuth? (y/n)"
 
   # --- Backward compat: 'd' still works ---
-
   Scenario: Pressing 'd' on logout line triggers disconnect confirmation
     Given Anthropic has valid OAuth tokens connected
     And I have the cursor on "Logout from OAuth [Claude]"
@@ -64,14 +59,12 @@ Feature: Replace OAuth status echo with actionable Logout line in Provider Setti
     Then a confirmation dialog appears: "Disconnect Claude OAuth? (y/n)"
 
   # --- Footer hint ---
-
   Scenario: Footer shows Enter logout hint when logout line is selected
     Given Anthropic has valid OAuth tokens connected
     And I have the cursor on "Logout from OAuth [Claude]"
     Then the footer shows "Enter: logout · / filter · Tab: Switch to models · Esc: close"
 
   # --- Negative cases: no change ---
-
   Scenario: Non-OAuth provider has no logout line when expanded
     Given Google Gemini has an API key configured
     When I expand the Google Gemini provider

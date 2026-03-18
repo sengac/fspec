@@ -1,6 +1,5 @@
 @PROV-019
 Feature: Codex OAuth Integration Broken - Token Expiry, Provider Settings UX, and Session Routing Failures
-
   """
   Rust: mod.rs passes Some(0) to force immediate refresh, refreshing_client.rs handles token lifecycle. TS: listModeHandler.ts and ProviderSettingsView.tsx route 'e' key for OAuth providers. useProviderSettingsState.ts builds provider status display.
   """
@@ -24,7 +23,6 @@ Feature: Codex OAuth Integration Broken - Token Expiry, Provider Settings UX, an
   #   5. User presses 'd' on Codex provider with OAuth tokens — tokens are cleared and provider shows '(not configured)'
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to use Codex OAuth integration without 401 errors, API key UX confusion, or missing status indicators
@@ -36,18 +34,15 @@ Feature: Codex OAuth Integration Broken - Token Expiry, Provider Settings UX, an
     Then the browser OAuth login flow starts
     Then the API key editor form is not shown
 
-
   Scenario: Edit key on non-OAuth provider shows API key editor
     Given a non-OAuth provider like Anthropic is selected in provider settings
     When the user presses 'e'
     Then the API key editor form is shown
 
-
   Scenario: Codex provider with OAuth tokens shows connected status
     Given the Codex provider has valid OAuth tokens stored
     When the provider settings list is rendered
     Then the Codex row displays a checkmark with 'OAuth' and '[ChatGPT]' source
-
 
   Scenario: Delete on Codex provider disconnects OAuth
     Given the Codex provider has OAuth tokens stored
@@ -55,4 +50,3 @@ Feature: Codex OAuth Integration Broken - Token Expiry, Provider Settings UX, an
     Then the OAuth tokens are cleared from storage
     Given the Codex provider is selected in provider settings
     Then the provider shows '(not configured)' status
-

@@ -2,7 +2,6 @@
 @tui-component
 @TUI-072
 Feature: Create useModelSelectorState hook
-
   """
   Hook follows useProviderSettingsState pattern. Uses useState for all state, useCallback for operations, useMemo for computed values (flatItems, filteredFlatItems). Loads models from NAPI (modelsListAll for cloud, modelsListLocalOpenai for profiles). Types from src/tui/types/provider.ts. Provider ID mappings: anthropic↔claude, google↔gemini. Model persistence via buildModelString/parseModelString from model-selection.ts.
   """
@@ -43,7 +42,6 @@ Feature: Create useModelSelectorState hook
   #   10. When filter changes and results exist, selection jumps to first item in filteredFlatItems and scrollOffset resets to 0
   #
   # ========================================
-
   Background: User Story
     As a TUI developer
     I want to use a dedicated useModelSelectorState hook
@@ -52,7 +50,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # INITIALIZATION AND LOADING
   # ============================================================================
-
   Scenario: Hook initializes with loading state and loads cloud models
     Given I render a component using useModelSelectorState
     When the hook initializes
@@ -79,7 +76,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # FLAT LIST COMPUTATION
   # ============================================================================
-
   Scenario: flatItems is built from providerSections and expandedProviders
     Given a useModelSelectorState hook with loaded models
     And providerSections contains Anthropic with 3 models and OpenAI with 2 models
@@ -106,7 +102,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # SECTION EXPANSION
   # ============================================================================
-
   Scenario: Toggle section expansion adds provider to expanded set
     Given a useModelSelectorState hook with collapsed Anthropic section
     And expandedProviders does not contain "anthropic"
@@ -124,7 +119,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # NAVIGATION
   # ============================================================================
-
   Scenario: Navigate down from section header to first model
     Given a useModelSelectorState hook with an expanded section
     And selectedSectionIdx is 0 and selectedModelIdx is -1
@@ -175,7 +169,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # SCROLL MANAGEMENT
   # ============================================================================
-
   Scenario: Auto-scroll keeps selection visible when moving down
     Given a useModelSelectorState hook with 20 items
     And visibleHeight is 10 and scrollOffset is 0
@@ -198,7 +191,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # FILTER BEHAVIOR
   # ============================================================================
-
   Scenario: Filter change resets selection to first result
     Given a useModelSelectorState hook with multiple providers
     And selection is at section 2 model 3
@@ -215,7 +207,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # REFRESH MODELS
   # ============================================================================
-
   Scenario: Refresh models updates cache and reloads all models
     Given a useModelSelectorState hook with loaded models
     When I call refreshModels
@@ -228,7 +219,6 @@ Feature: Create useModelSelectorState hook
   # ============================================================================
   # MODEL SELECTION
   # ============================================================================
-
   Scenario: Select cloud provider model returns complete ModelSelection
     Given a useModelSelectorState hook with loaded models
     And Anthropic section has claude-sonnet-4 model

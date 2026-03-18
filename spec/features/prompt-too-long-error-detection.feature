@@ -5,7 +5,6 @@
 @compaction
 @PROV-010
 Feature: False positive prompt-too-long detection triggers empty compaction on Opus 4.6
-
   """
   Fix is_prompt_too_long_error() in codelet/cli/src/interactive/stream_loop.rs to exclude thinking budget errors
   Add guard in error handler (~line 1173) to verify compactable turns exist before triggering compaction
@@ -30,7 +29,6 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
   #   5. API returns 'invalid_request_error: budget_tokens' error (any config error mentioning tokens) → error is NOT classified as prompt-too-long → error propagates to user
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have accurate prompt-too-long error detection
@@ -39,7 +37,6 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
   # ========================================
   # Bug Fix 1: False Positive Detection
   # ========================================
-
   @unit
   Scenario: Thinking budget configuration error is not classified as prompt-too-long
     Given an error message containing "invalid_request_error"
@@ -58,7 +55,6 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
   # ========================================
   # Bug Fix 2: Empty Turn History Guard
   # ========================================
-
   @integration
   Scenario: Prompt too long with zero conversation turns does not trigger compaction
     Given a session with only system prompt messages
@@ -80,7 +76,6 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
   # ========================================
   # Regression: Ensure legitimate errors still detected
   # ========================================
-
   @unit
   Scenario: Actual prompt too long error is correctly detected
     Given an error message "prompt is too long"
@@ -116,7 +111,6 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
   # ========================================
   # Edge Cases
   # ========================================
-
   @unit
   Scenario: Error message with both budget_tokens and context_length is NOT classified as prompt-too-long
     Given an error message containing "invalid_request_error"
@@ -124,8 +118,8 @@ Feature: False positive prompt-too-long detection triggers empty compaction on O
     And the error message contains "context_length"
     When the error is checked by is_prompt_too_long_error
     Then the function should return false
-    # budget_tokens exclusion takes precedence
 
+    # budget_tokens exclusion takes precedence
   @integration
   Scenario: Configuration error propagates to user with clear message
     Given a session with any number of conversation turns

@@ -1,6 +1,5 @@
 @BUG-099
 Feature: Re-merge after conflict resolution enters infinite loop — detect_conflicts() re-detects resolved files as conflicting
-
   """
   The root cause is that fspec has no equivalent of `git add` to mark a conflict as resolved. Real git uses the index (staging area) — once you `git add` a conflicted file, git stops flagging it. fspec's merge system is stateless: every /merge-worktree call re-detects conflicts from scratch by comparing worktree vs base vs main. The fix adds statefulness via .fspec-pending-conflicts.
   Flow change in apply_session_changes(): (1) Check .fspec-pending-conflicts → if exists, partition into resolved/pending. (2) If any still_pending → return ConflictError with just those files (no marker regeneration). (3) If all resolved → delete state file, exclude resolved files from detect_conflicts (they've been user-accepted), merge remaining changes normally, copy resolved worktree content directly to main.
@@ -38,7 +37,6 @@ Feature: Re-merge after conflict resolution enters infinite loop — detect_conf
   #   8. Re-merge with unresolved markers produces DOUBLE-NESTED corruption: current code feeds marker-containing worktree as 'session' to three_way_merge, which wraps markers in NEW markers. Fix prevents this by checking state file BEFORE detect_conflicts runs.
   #
   # ========================================
-
   Background: User Story
     As a LLM agent
     I want to resolve merge conflict markers and re-run /merge-worktree

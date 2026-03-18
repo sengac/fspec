@@ -1,6 +1,5 @@
 @PROV-015
 Feature: NAPI Bindings for Codex OAuth Flows
-
   """
   New file: codelet/napi/src/codex_oauth.rs — All 4 NAPI functions in one module. Imports browser_oauth_login from codelet_providers::codex::codex_oauth_server, device_auth_login/DeviceAuthConfig from codex_device_auth, refresh_access_token from codex_oauth, and read_codex_auth from codex_auth.
   NapiCodexTokens #[napi(object)] struct maps 1:1 to CodexTokens. NapiDeviceAuthStartResult #[napi(object)] struct with user_code: String and verification_url: String — returned synchronously before polling begins. A separate async function handles the polling and returns NapiCodexTokens.
@@ -33,7 +32,6 @@ Feature: NAPI Bindings for Codex OAuth Flows
   #   8. Token refresh fails (invalid refresh_token): codex_oauth_refresh_token() Promise rejects with error describing the failure status
   #
   # ========================================
-
   Background: User Story
     As a TUI developer
     I want to call Codex OAuth flows from TypeScript via NAPI bindings

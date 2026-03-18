@@ -5,7 +5,6 @@
 @tui
 @TUI-075
 Feature: Integrate screen components into AgentView
-
   """
   ModelSelectorScreen manages its own state via useModelSelectorState hook
   ProviderSettingsScreen manages its own state via useProviderSettingsState hook
@@ -41,7 +40,6 @@ Feature: Integrate screen components into AgentView
   #   8. User never opens /model command → models are never loaded → no wasted API calls
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to integrate ModelSelectorScreen and ProviderSettingsScreen into AgentView

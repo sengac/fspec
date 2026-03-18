@@ -1,6 +1,5 @@
 @BRIDGE-018
 Feature: Relay endpoint command flow through bridge WebSocket
-
   """
   Pure refactoring of relay-endpoint.ts command handler (lines 224-245): replace executeCommand() call with WebSocket send of translated InboundMessage. Delete relay-command-executor.ts. Add command fields to FspecInboundMessage in relay-types.ts. Remove unused CommandResult/CommandResponseMessage types. Update tests to verify: (1) command translated to InboundMessage and sent to codelet WS, (2) commandResponse from codelet forwarded to relay, (3) command for unknown session dropped. Tests for timeout/error are now Rust-side (BRIDGE-017).
   """
@@ -27,7 +26,6 @@ Feature: Relay endpoint command flow through bridge WebSocket
   #   5. relay-command-executor.ts file no longer exists on disk after implementation
   #
   # ========================================
-
   Background: User Story
     As a relay endpoint
     I want to forward command messages through the codelet bridge WebSocket to bridge_relay.rs
@@ -36,7 +34,6 @@ Feature: Relay endpoint command flow through bridge WebSocket
   # ========================================
   # Command Translation (relay → codelet WS)
   # ========================================
-
   @happy-path
   Scenario: Translate relay command message to InboundMessage and forward to codelet WebSocket
     Given the relay endpoint is authenticated and running
@@ -49,7 +46,6 @@ Feature: Relay endpoint command flow through bridge WebSocket
   # ========================================
   # Unknown Session Handling for Commands
   # ========================================
-
   @error
   Scenario: Drop command message for unknown session
     Given the relay endpoint is authenticated and running
@@ -62,7 +58,6 @@ Feature: Relay endpoint command flow through bridge WebSocket
   # ========================================
   # commandResponse Passthrough (codelet → relay)
   # ========================================
-
   @happy-path
   Scenario: Forward commandResponse from codelet to relay unchanged
     Given the relay endpoint is authenticated and running
@@ -75,7 +70,6 @@ Feature: Relay endpoint command flow through bridge WebSocket
   # ========================================
   # Architecture Constraints
   # ========================================
-
   @architecture
   Scenario: No bridge TypeScript files import fspecCallback
     Given the relay endpoint refactoring is complete

@@ -1,6 +1,5 @@
 @CMPCT-021
 Feature: File ID Propagation Through DAG
-
   """
   Engine-side: build_dag_files_block in inject_summary_handler.rs, auto-append to DAG in apply_pending_dag after agent content stored
   Agent-side: Update COMPACTION_INSTRUCTION_INCREMENTAL in interactive_helpers.rs to mention preserving/updating <dag-files> section
@@ -29,7 +28,6 @@ Feature: File ID Propagation Through DAG
   #   6. Parse existing <dag-files> block from DAG content → extracts list of (path, operation) tuples correctly
   #
   # ========================================
-
   Background: User Story
     As a AI coding agent
     I want to have file references (paths I modified) propagate through DAG compaction cycles
@@ -37,10 +35,10 @@ Feature: File ID Propagation Through DAG
 
   Scenario: Engine appends dag-files block when agent omits it
     Given a session with FileModification annotations for 3 files
-      | path           | operation |
-      | src/auth.rs    | Created   |
-      | src/db.rs      | Modified  |
-      | src/old.rs     | Deleted   |
+      | path        | operation |
+      | src/auth.rs | Created   |
+      | src/db.rs   | Modified  |
+      | src/old.rs  | Deleted   |
     And the agent's DAG content does not contain a dag-files block
     When apply_pending_dag processes the agent's DAG content
     Then the stored DAG should have a dag-files block appended
@@ -56,13 +54,13 @@ Feature: File ID Propagation Through DAG
 
   Scenario: Merge existing dag-files with new annotations across compactions
     Given an existing dag-files block with entries
-      | path      | operation |
-      | a.rs      | Created   |
-      | b.rs      | Modified  |
+      | path | operation |
+      | a.rs | Created   |
+      | b.rs | Modified  |
     And new FileModification annotations
-      | path      | operation |
-      | a.rs      | Modified  |
-      | c.rs      | Created   |
+      | path | operation |
+      | a.rs | Modified  |
+      | c.rs | Created   |
     When build_dag_files_block merges existing entries with new annotations
     Then the merged result should contain 3 file entries
     And "a.rs" should have operation "Modified" overriding "Created"
@@ -84,9 +82,9 @@ Feature: File ID Propagation Through DAG
 
   Scenario: Parse dag-files block from existing DAG content
     Given a DAG content string containing a dag-files block with entries
-      | path             | operation |
-      | src/handler.rs   | Created   |
-      | src/types.rs     | Modified  |
+      | path           | operation |
+      | src/handler.rs | Created   |
+      | src/types.rs   | Modified  |
     When the dag-files block is parsed
     Then it should extract 2 file entries
     And "src/handler.rs" should be parsed as Created
@@ -99,9 +97,9 @@ Feature: File ID Propagation Through DAG
 
   Scenario: dag-files block format uses deterministic path ordering
     Given FileModification annotations in non-alphabetical order
-      | path      | operation |
-      | z.rs      | Created   |
-      | a.rs      | Modified  |
-      | m.rs      | Created   |
+      | path | operation |
+      | z.rs | Created   |
+      | a.rs | Modified  |
+      | m.rs | Created   |
     When build_dag_files_block generates the block
     Then the entries should appear in alphabetical order: a.rs, m.rs, z.rs

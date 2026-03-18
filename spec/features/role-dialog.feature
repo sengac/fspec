@@ -2,7 +2,6 @@
 @tui-component
 @AMGR-012
 Feature: Role dialog — /role TUI command for session role management
-
   """
   RoleDialog component at src/components/RoleDialog.tsx — wraps base Dialog, uses useMultiLineInput hook for text editing, implements Tab-based focus cycling (textarea → OK → Cancel → textarea)
   /role slash command integrated in AgentView.tsx following /thinking pattern — checks currentSessionId, opens dialog or shows status message
@@ -31,7 +30,6 @@ Feature: Role dialog — /role TUI command for session role management
   #   7. In the dialog text area: cursor is visible, Enter creates newline, arrow keys navigate, backspace deletes — standard multi-line editing using useMultiLineInput hook
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to set or edit a role on any session via a /role TUI dialog

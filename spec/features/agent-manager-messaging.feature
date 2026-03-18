@@ -1,7 +1,6 @@
 @done
 @AMGR-010
 Feature: Agent messaging — plain, bidirectional, any-to-any
-
   """
   Add Message variant to AgentManagerAction enum in types.rs: Message { session_id: String, message: String }. Add MessageDelivered variant to AgentManagerResult.
   Handler implementation in agent_manager_handler.rs: Message action looks up target session by ID from SessionManager, calls session.receive_incoming_message() with IncomingMessage { source_session_id, role_name, message, images: None }. Uses try_send which returns TrySendError::Full for channel-full case.
@@ -33,13 +32,13 @@ Feature: Agent messaging — plain, bidirectional, any-to-any
   #   7. Target session receives message while idle — message appears as next input and triggers agent processing with formatted sender info
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to send plain text messages to other agent sessions
     So that agents can coordinate work, delegate tasks, and report results back
 
-  @message @spawn
+  @message
+  @spawn
   Scenario: Supervisor sends task to subordinate
     Given a supervisor session has spawned a subordinate session
     When the supervisor calls AgentManager with action "message", session_id of subordinate, and message "Analyze auth.rs for security issues"
@@ -47,14 +46,16 @@ Feature: Agent messaging — plain, bidirectional, any-to-any
     And the response should contain "session_id" matching the subordinate's ID
     And the subordinate's incoming message channel should contain the message
 
-  @message @spawn
+  @message
+  @spawn
   Scenario: Subordinate reports results to supervisor
     Given a supervisor session has spawned a subordinate session
     When the subordinate calls AgentManager with action "message", session_id of supervisor, and message "Found 2 SQL injection vulnerabilities"
     Then the response should contain "delivered" as true
     And the response should contain "session_id" matching the supervisor's ID
 
-  @message @error
+  @message
+  @error
   Scenario: Message to nonexistent session returns error
     Given a session with AgentManager available
     When the agent calls AgentManager with action "message", session_id "nonexistent-uuid", and message "hello"
@@ -62,7 +63,8 @@ Feature: Agent messaging — plain, bidirectional, any-to-any
     And the response should contain "code" as "session_not_found"
     And the response should contain a "message" string
 
-  @message @capacity
+  @message
+  @capacity
   Scenario: Channel full returns delivery failed error
     Given a target session with its incoming message channel full at capacity 16
     When the agent calls AgentManager with action "message" to the target session
@@ -70,28 +72,32 @@ Feature: Agent messaging — plain, bidirectional, any-to-any
     And the response should contain "code" as "delivery_failed"
     And the response should contain a "message" string
 
-  @message @peer
+  @message
+  @peer
   Scenario: Peer-to-peer messaging between subordinates
     Given a supervisor has spawned two subordinate sessions A and B
     When subordinate A calls AgentManager with action "message" to subordinate B with message "coordinate on task X"
     Then the response should contain "delivered" as true
     And subordinate B's incoming message channel should contain the message from A
 
-  @message @validation
+  @message
+  @validation
   Scenario: Missing session_id returns invalid parameter error
     Given a session with AgentManager available
     When the agent calls AgentManager with action "message" without a session_id
     Then the response should contain "error" as true
     And the response should contain "code" as "invalid_parameter"
 
-  @message @validation
+  @message
+  @validation
   Scenario: Missing message text returns invalid parameter error
     Given a session with AgentManager available
     When the agent calls AgentManager with action "message" with session_id but without message text
     Then the response should contain "error" as true
     And the response should contain "code" as "invalid_parameter"
 
-  @message @format
+  @message
+  @format
   Scenario: Delivered message includes sender identity
     Given a supervisor session with role "security-reviewer" has spawned a subordinate
     When the supervisor sends a message "Check for XSS" to the subordinate
@@ -99,20 +105,23 @@ Feature: Agent messaging — plain, bidirectional, any-to-any
     And the IncomingMessage should have role_name "security-reviewer"
     And the IncomingMessage should have the message text "Check for XSS"
 
-  @message @format
+  @message
+  @format
   Scenario: Sender without role delivers empty role name
     Given a supervisor session with no role has spawned a subordinate
     When the supervisor sends a message "Do analysis" to the subordinate
     Then the IncomingMessage should have role_name as empty string
 
-  @message @self
+  @message
+  @self
   Scenario: Self-messaging is allowed
     Given a session with AgentManager available
     When the agent calls AgentManager with action "message" targeting its own session_id with message "note to self"
     Then the response should contain "delivered" as true
     And the session's incoming message channel should contain the self-addressed message
 
-  @message @integration
+  @message
+  @integration
   Scenario: Message action is dispatched through AgentManagerAction enum
     Given the AgentManagerAction enum includes a Message variant with session_id and message fields
     When a message action is deserialized from JSON input

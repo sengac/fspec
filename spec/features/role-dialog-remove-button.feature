@@ -1,6 +1,5 @@
 @TUI-082
 Feature: Remove Role button on RoleBanner for quick role clearing
-
   """
   Modify RoleDialog.tsx to accept a showRemove prop (true when initialRole is non-empty). Add 'remove' to FocusArea type. Tab cycle and arrow navigation updated to include 'remove' when visible. Remove button calls onSubmit('') to trigger the BUG-121-fixed clear path.
   """
@@ -29,7 +28,6 @@ Feature: Remove Role button on RoleBanner for quick role clearing
   #   A: No confirmation dialog. Instead, add a 'Remove' button as a third button in the /role dialog between OK and Cancel. The Remove button only appears when an existing role is set.
   #
   # ========================================
-
   Background: User Story
     As a user with an active session role
     I want to remove the role via a Remove button in the /role dialog

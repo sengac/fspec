@@ -1,7 +1,6 @@
 @wip
 @CMPCT-011
 Feature: Per-Turn Structural Annotation Detection
-
   """
   annotation_detector module in codelet/core/src/compaction/annotation_detector.rs provides
   zero-cost inline detection of structural annotations from per-turn tool call metadata.

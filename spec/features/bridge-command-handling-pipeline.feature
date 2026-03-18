@@ -1,6 +1,5 @@
 @BRIDGE-017
 Feature: Command handling pipeline in bridge_relay.rs
-
   """
   Changes span 4 files across 2 crates: (1) bridge_relay.rs: add CommandEmitter type, extend spawn_relay_task/relay_loop/connect_and_relay/handle_inbound_message with command_emitter + pending_commands params, add command handling in MSG_TYPE_COMMAND match arm, modify outbound loop to intercept fspecCommandResult/fspecCommandRequest chunks. (2) bridge_handler.rs: extend BridgeSessionContext + set_bridge_session_context with command_emitter. (3) lib.rs: export CommandEmitter. (4) session_manager.rs: create command_emitter closure using session.handle_output(StreamChunk::fspec_command_request(...)), pass to set_bridge_session_context. Uses Arc<Mutex<HashMap<String, (String, String)>>> for pending_commands (key=tool_call_id, value=(request_id, command_name)), created per-connection.
   """
@@ -30,13 +29,13 @@ Feature: Command handling pipeline in bridge_relay.rs
   #   6. FspecCommandResult with toolCallId xyz arrives but xyz is NOT in pending_commands (e.g., it was for a different session's LLM fspec call) → bridge_relay.rs silently skips it without crashing
   #
   # ========================================
-
   Background: User Story
     As a bridge endpoint
     I want to send fspec commands via the bridge WebSocket and receive results back
     So that remote clients can execute fspec CLI operations through the established session pipeline
 
-  @inbound @happy-path
+  @inbound
+  @happy-path
   Scenario: Handle command InboundMessage by emitting FspecCommandRequest
     Given a bridge relay is connected with a command_emitter configured
     And a pending_commands map is initialized for the connection
@@ -45,7 +44,8 @@ Feature: Command handling pipeline in bridge_relay.rs
     And the pending_commands map should contain a mapping from the tool_call_id to request_id "r1" and command "board"
     And the command_emitter should be called with command "board", args_json "{}", a project_root from current_dir, and the generated tool_call_id
 
-  @inbound @graceful-degradation
+  @inbound
+  @graceful-degradation
   Scenario: Handle command InboundMessage without command_emitter configured
     Given a bridge relay is connected without a command_emitter
     When the relay receives an InboundMessage with type "command", request_id "r2", command "board", and args_json "{}"
@@ -53,7 +53,8 @@ Feature: Command handling pipeline in bridge_relay.rs
     And the handler should return Ok without crashing
     And a warning should be logged about no command emitter being configured
 
-  @outbound @interception
+  @outbound
+  @interception
   Scenario: Intercept FspecCommandResult chunk and send commandResponse
     Given a bridge relay has a pending command with tool_call_id "abc-123" mapped to request_id "r1" and command "board"
     When a FspecCommandResult chunk with toolCallId "abc-123", success true, and data containing results arrives on the broadcast channel
@@ -62,25 +63,27 @@ Feature: Command handling pipeline in bridge_relay.rs
     And the commandResponse data should contain command "board", success true, and the result value
     And the FspecCommandResult chunk should NOT be forwarded as a regular "chunk" message
 
-  @outbound @filtering
+  @outbound
+  @filtering
   Scenario: Skip FspecCommandRequest chunks on broadcast channel
     Given a bridge relay is connected and processing outbound chunks
     When a FspecCommandRequest chunk with type "fspecCommandRequest" arrives on the broadcast channel
     Then the chunk should be silently skipped
     And no OutboundMessage should be sent to the WebSocket for this chunk
 
-  @outbound @backward-compatibility
+  @outbound
+  @backward-compatibility
   Scenario: Forward regular text chunks unchanged
     Given a bridge relay is connected and processing outbound chunks
     When a regular text chunk with type "text" arrives on the broadcast channel
     Then an OutboundMessage with type "chunk" and request_id None should be sent to the WebSocket
     And the chunk data should be forwarded without modification
 
-  @outbound @edge-case
+  @outbound
+  @edge-case
   Scenario: Skip FspecCommandResult with unknown tool_call_id
     Given a bridge relay has an empty pending_commands map
     When a FspecCommandResult chunk with toolCallId "xyz-unknown" arrives on the broadcast channel
     Then no commandResponse should be sent
     And the chunk should be silently skipped without crashing
     And the FspecCommandResult should NOT be forwarded as a regular chunk
-

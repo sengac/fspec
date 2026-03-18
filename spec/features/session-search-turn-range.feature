@@ -1,6 +1,5 @@
 @CMPCT-018
 Feature: SessionSearch Scoped Turn Range Queries
-
   """
   Uses existing SessionSearch types, handler, and persistence infrastructure — extends, doesn't replace
   Files: types.rs (add fields), mod.rs (schema), session_search_handler.rs (filter logic + pass-through in create_handler)
@@ -35,7 +34,6 @@ Feature: SessionSearch Scoped Turn Range Queries
   #   12. Tool definition schema includes start_turn and end_turn as optional integer parameters
   #
   # ========================================
-
   Background: User Story
     As a AI coding agent
     I want to filter SessionSearch results by turn range

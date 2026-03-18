@@ -1,6 +1,5 @@
 @LOCATE-003
 Feature: Ref State Management Module
-
   """
   Pure TypeScript module at extension/src/background/ref-state.ts. Uses Map<number, TabScanState> as internal state. No chrome.storage — in-memory only for sub-millisecond reads. Service worker restart clears state naturally (correct behavior — stale refs should require re-scan). Wire into existing browser-events.ts via import + clearTabScanState calls in onUpdated and onRemoved handlers.
   """
@@ -28,7 +27,6 @@ Feature: Ref State Management Module
   #   6. getTabScanState(999) for a tab that was never scanned returns undefined (not an error)
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to have scan state persisted per-tab in the service worker

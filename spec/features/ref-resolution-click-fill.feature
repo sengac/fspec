@@ -1,6 +1,5 @@
 @LOCATE-005
 Feature: Ref Resolution in Click and Fill Tools
-
   """
   Add resolveRef import from ./ref-state at top of browser-tools.ts. Ref resolution is a ~10-line prefix check at the top of each handler, after resolveTabId. Direct import is appropriate since ref-state is an internal extension module.
   """
@@ -27,7 +26,6 @@ Feature: Ref Resolution in Click and Fill Tools
   #   7. Click with 'div@e1' (@ in middle) → treated as raw CSS selector, NOT as a ref
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to use @ref shortcuts in browser_click_element and browser_fill_form

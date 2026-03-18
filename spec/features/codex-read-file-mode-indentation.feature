@@ -1,6 +1,5 @@
 @BUG-109
 Feature: Codex read_file facade missing mode and indentation params
-
   """
   Add InternalIndentationParams struct to traits.rs with all 5 optional fields
   Use extract_optional_string for mode, extract_optional_uint/extract_optional_bool for indentation sub-fields, matching existing param_extract patterns
@@ -30,7 +29,6 @@ Feature: Codex read_file facade missing mode and indentation params
   #   6. Codex model sends read_file with indentation={include_siblings: true, include_header: true, max_lines: 100} — all booleans and integers correctly extracted
   #
   # ========================================
-
   Background: User Story
     As a Codex model
     I want to use mode and indentation parameters in read_file

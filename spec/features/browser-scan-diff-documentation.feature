@@ -1,6 +1,5 @@
 @LOCATE-008
 Feature: MCP Tool Definitions & Skill Documentation
-
   """
   Files: extension/webmcp-skill.md (main skill doc), extension/host/lib/mcp-server.mjs (NATIVE_TOOLS), extension/inject-webmcp-tools-skill.md (injection skill). MCP server already has tool definitions. Primary change is documentation updates to webmcp-skill.md.
   """
@@ -28,7 +27,6 @@ Feature: MCP Tool Definitions & Skill Documentation
   #   6. Troubleshooting includes: Ref not found error with suggestion to re-scan after page navigation
   #
   # ========================================
-
   Background: User Story
     As a AI agent developer
     I want to have accurate skill documentation for the browser scan, diff, and ref tools
@@ -40,18 +38,15 @@ Feature: MCP Tool Definitions & Skill Documentation
     Then it should state 14 native browser control tools
     And browser_scan_page and browser_diff_page should be listed in the Native Browser Control Tools section
 
-
   Scenario: Click and fill tools document ref syntax
     Given the webmcp-skill.md file exists
     When I read the browser_click_element and browser_fill_form documentation
     Then the selector parameter should mention accepting @ref syntax from browser_scan_page
 
-
   Scenario: Common workflows include scan-interact-verify pattern
     Given the webmcp-skill.md file exists
     When I read the Common Workflows section
     Then it should include a workflow showing navigate, scan, fill, click, diff, and re-scan steps
-
 
   Scenario: Ref lifecycle documentation
     Given the webmcp-skill.md file exists
@@ -59,22 +54,18 @@ Feature: MCP Tool Definitions & Skill Documentation
     Then it should explain that refs are assigned by browser_scan_page and are ephemeral
     And it should state that refs are invalidated on page navigation
 
-
   Scenario: MCP server NATIVE_TOOLS includes scan and diff tools
     Given the mcp-server.mjs file exists
     When I inspect the NATIVE_TOOLS array
     Then it should contain browser_scan_page with tabId, interactive, and selector properties
     And it should contain browser_diff_page with tabId property
 
-
   Scenario: Troubleshooting covers ref-related errors
     Given the webmcp-skill.md file exists
     When I read the Troubleshooting section
     Then it should include guidance for ref not found errors suggesting to re-scan
 
-
   Scenario: Inject skill file has no stale references
     Given the inject-webmcp-tools-skill.md file exists
     When I search for old extension name references
     Then no references to old tool names or old extension names should be found
-

@@ -1,6 +1,5 @@
 @CMPCT-007
 Feature: Structural Annotation Data Model
-
   """
   Both enums live in codelet/core/src/compaction/model.rs alongside existing TokenTracker, ConversationTurn, ToolCall, ToolResult
   Consumer: CMPCT-011 (per-turn annotation detector) will attach StructuralAnnotation to persisted messages. Agent sees annotations via SessionSearch metadata during DAG construction.
@@ -30,7 +29,6 @@ Feature: Structural Annotation Data Model
   #   7. codelet_core::compaction::StructuralAnnotation and codelet_core::compaction::FileOp are accessible via mod.rs re-exports
   #
   # ========================================
-
   Background: User Story
     As a compaction system
     I want to annotate conversation turns with structural metadata

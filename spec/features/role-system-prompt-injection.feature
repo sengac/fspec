@@ -1,6 +1,5 @@
 @BUG-120
 Feature: Role injection into LLM system prompt
-
   """
   Fix is in run_with_provider! macro: read session.get_role() and pass it as the preamble parameter
   to create_rig_agent(). Each provider handles preamble differently:
@@ -33,7 +32,6 @@ Feature: Role injection into LLM system prompt
   #   5. Supervisor spawns subordinate with role='test-writer' → subordinate's first agent turn uses role as preamble
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have my /role and set_role role text actually affect the LLM's behavior

@@ -1,7 +1,6 @@
 @done
 @LOCATE-007
 Feature: Advanced Interactivity Heuristics
-
   """
   Heuristics are implemented in two places: (1) the testable helper module dom-scanner-helpers.ts exports named functions for unit testing, (2) the scanPageDOM function in scan-page-dom.ts has inlined copies of the same logic since it runs in page context via chrome.scripting.executeScript(). A new file dom-scanner-heuristics.ts holds the exported helper functions to keep dom-scanner-helpers.ts under 300 lines. The bounding box propagation (heuristic 2) replaces the existing shouldClaimChildren with a post-processing pass using getBoundingClientRect containment. The filterDynamicClasses function is used during selector generation for stable hashing, not during interactivity detection.
   """
@@ -32,7 +31,6 @@ Feature: Advanced Interactivity Heuristics
   #   9. 60px element not an icon: <span class='close-btn' style='width:60px;height:60px'>✕</span> → NOT detected as icon-size (exceeds 50px max), falls through to normal heuristics
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to scan pages with advanced interactivity heuristics that handle edge cases in modern web UIs

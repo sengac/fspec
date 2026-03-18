@@ -1,7 +1,6 @@
 @done
 @CMPCT-012
 Feature: Emergency Threshold Compaction Safety Net
-
   """
   CMPCT-011 created annotation_detector module (codelet/core/src/compaction/annotation_detector.rs) with detect_annotations(), ToolCallInfo, and TurnContext — all pub, tested, ready to call. When rewriting stream_loop's compaction trigger, also wire per-turn annotation detection: after each completed turn, call detect_annotations() with the turn's tool calls, serialize resulting Vec<StructuralAnnotation> into the persisted message metadata (StoredMessage.metadata HashMap). This is required by CMPCT-011 rules [7],[9],[10] but the wiring naturally belongs here since stream_loop.rs is being modified anyway.
   CMPCT-011 provides execute_compaction_legacy() as the named swap target. The stream_loop currently calls execute_compaction_legacy() in two places (pre-prompt compaction ~line 464, post-loop compaction ~line 1530). Replace both with execute_compaction(session, compaction_in_progress_flag) and thread the Arc<AtomicBool> through the run_agent_stream call chain. Also update repl_loop.rs /compact command to use the new flow.
@@ -37,7 +36,6 @@ Feature: Emergency Threshold Compaction Safety Net
   #   6. Post-loop compaction retry: old flow re-sent prompt via prompt_streaming_with_history_and_hook. New flow: after execute_compaction succeeds, the compaction system instruction is already in session.messages as the last user message — the retry just needs to call prompt_streaming_with_history_and_hook with an empty/synthetic continuation, OR skip the retry entirely since execute_compaction already set up the agent to resume.
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to have emergency compaction use the in-view DAG construction flow instead of batch LLM pipeline

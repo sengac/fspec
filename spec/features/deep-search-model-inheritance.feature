@@ -1,6 +1,5 @@
 @BUG-102
 Feature: DeepSearch tool fails with 'Model is required' configuration error
-
   """
   The deep_search_handler.rs comment says 'v1: Claude-only' but the fix should be provider-agnostic using with_provider_and_model() which works for any provider
   Changes needed: (1) deep_search_handler::execute_deep_search() takes provider_name + model_id params, (2) build_and_run_agent() uses with_provider_and_model() + dynamic provider getter, (3) session_manager handler closure captures provider/model from parent session inner lock, (4) DeepSearchHandler type signature adds provider_name + model_id params

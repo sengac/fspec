@@ -1,13 +1,14 @@
 @done
-@RIG-012 @wip @napi-layer
+@RIG-012
+@wip
+@napi-layer
 Feature: Reasoning token NAPI bridge
-
   """
   Data flow: TokenInfo.reasoning_tokens → StreamEvent::Tokens → NAPI TokenTracker.reasoning_tokens → JavaScript
   Also: BackgroundSession caches reasoning tokens for sync access
   """
 
-  Background:
+  Background: 
     Given a developer using extended thinking models
     And the model returns reasoning tokens in its Usage response
 

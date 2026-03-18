@@ -1,7 +1,6 @@
 @done
 @TUI-080
 Feature: Remove dead split view — subordinates use their own session view now
-
   """
   Pure code deletion — remove SplitSessionView.tsx, correlationMapping.ts, all split-view state and rendering from AgentView.tsx, and related dead test files. Shared utils keep their functionality but get stale comments cleaned.
   """
@@ -27,7 +26,6 @@ Feature: Remove dead split view — subordinates use their own session view now
   #   3. npm run build produces zero TypeScript errors and npm test shows no test failures
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to remove dead split view code
@@ -41,12 +39,10 @@ Feature: Remove dead split view — subordinates use their own session view now
     Then grep -r 'SplitSessionView' src/ returns zero hits
     Then grep -r 'isSplitView' src/ returns zero hits
 
-
   Scenario: Dead split-view test files are removed
     Given the test directory contains watcher-split-view.test.tsx, cross-pane-correlation.test.tsx, discuss-selected.test.tsx, and SplitSessionView.workUnitLogic.test.ts
     When I remove the dead split view code
     Then none of those test files exist in the repository
-
 
   Scenario: Build and tests pass after removal
     Given the dead split view code has been removed
@@ -54,4 +50,3 @@ Feature: Remove dead split view — subordinates use their own session view now
     Then there are zero TypeScript compilation errors
     When I run npm test
     Then all remaining tests pass with no failures
-

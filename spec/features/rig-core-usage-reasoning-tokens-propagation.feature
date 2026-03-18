@@ -1,6 +1,5 @@
 @RIG-011
 Feature: rig-core Usage Reasoning Tokens Propagation
-
   """
   Key files: codelet/patches/rig-core/src/completion/request.rs (Usage struct),
   codelet/patches/rig-core/src/providers/openai/responses_api/mod.rs (Responses API conversion + OutputTokensDetails),
@@ -15,7 +14,6 @@ Feature: rig-core Usage Reasoning Tokens Propagation
     So that downstream consumers can track reasoning token consumption accurately
 
   # ----- Layer 1: rig-core completion::Usage struct -----
-
   Scenario: rig-core Usage struct includes reasoning_tokens field
     Given the rig-core completion Usage struct is defined
     When I inspect the Usage struct fields
@@ -47,7 +45,6 @@ Feature: rig-core Usage Reasoning Tokens Propagation
     Then the result should have reasoning_tokens None
 
   # ----- Layer 2: OpenAI Responses API → completion::Usage -----
-
   Scenario: OpenAI Responses API non-streaming propagates reasoning tokens into Usage
     Given an OpenAI Responses API CompletionResponse with output_tokens_details.reasoning_tokens of 1500
     When the response is converted to completion::CompletionResponse via TryFrom
@@ -69,7 +66,6 @@ Feature: rig-core Usage Reasoning Tokens Propagation
     Then the returned Usage should have cache_read_input_tokens Some(5000)
 
   # ----- Layer 2b: OpenAI Completions API → completion::Usage -----
-
   Scenario: OpenAI Completions API Usage struct includes completion_tokens_details
     Given the OpenAI Completions API Usage struct is defined
     When I inspect the Usage struct fields

@@ -1,6 +1,5 @@
 @PROV-028
 Feature: OAuth TUI broken flows — Claude browser auth stuck, Codex empty expansion, parent card housekeeping
-
   """
   BUG 1 fix: claude_oauth_server.rs:118 — change open::that(&auth_url) to open::that(format!("http://localhost:{port}/")). BUG 2 fix: useProviderSettingsState.ts buildNavItems() — when OAuth provider has tokens, show oauth-status + re-login items. BUG 3 fix: ProviderSettingsPanel.tsx — ensure status text renders inside wrap=truncate when expanded. BUG 7 fix: ProviderSettingsPanel.tsx:403-408 — wrap code input in width-constrained Box. BUG 8 fix: oauthModeHandler.ts — add 'c' for clipboard copy and 'o' for browser open keybinds.
   """
@@ -27,7 +26,6 @@ Feature: OAuth TUI broken flows — Claude browser auth stuck, Codex empty expan
   #   6. PROV-012 parent with all 8 children done → advance through workflow to done status
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to complete OAuth login flows for both Claude and Codex providers without encountering broken UI or dead-end states

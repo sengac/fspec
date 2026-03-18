@@ -4,7 +4,6 @@
 @streaming
 @BUG-104
 Feature: DeepSearch Codex sub-agent still fails because Responses API requires stream=true
-
   """
   DeepSearch currently runs through codelet/napi/src/deep_search_handler.rs using RigAgent::prompt(), while Codex Responses API forces request.stream = Some(true) only in codelet/patches/rig-core/src/providers/openai/responses_api/streaming.rs.
   Low-risk implementation should preserve BUG-102 provider/model inheritance and provider-specific request shaping, while collecting any Codex-required streaming execution internally and still returning a final String result.
@@ -33,7 +32,6 @@ Feature: DeepSearch Codex sub-agent still fails because Responses API requires s
   #   1. Use the lowest-risk fix first: keep non-Codex providers on the current execution path, and route Codex through an internal streaming collection path that consumes the stream to completion and returns the same final synthesized string contract. Generalize later only if the abstraction stays simple and safe.
   #
   # ========================================
-
   Background: User Story
     As a developer using DeepSearch with Codex-backed sessions
     I want to invoke DeepSearch and receive a final synthesized answer without transport-mode errors

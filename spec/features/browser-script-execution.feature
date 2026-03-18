@@ -1,6 +1,5 @@
 @EXT-010
 Feature: browser_execute_script returns null — eval() blocked by CSP in extension isolated world
-
   """
   Replace eval()-based execution in browser-tools.ts with chrome.userScripts.execute() using USER_SCRIPT world. Add ChromeUserScriptsForTools interface to deps. Call configureWorld() in service-worker.ts on startup. Add userScripts permission to manifest.json.
   """
@@ -26,7 +25,6 @@ Feature: browser_execute_script returns null — eval() blocked by CSP in extens
   #   6. manifest.json includes userScripts permission
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to execute arbitrary JavaScript in a browser tab via browser_execute_script

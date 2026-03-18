@@ -1,7 +1,6 @@
 @done
 @CMPCT-010
 Feature: SessionSearch Trimming Integration
-
   """
   Modify codelet/napi/src/session_search_handler.rs: extend create_handler() to accept Arc<AtomicBool>, add conditional trimming in handle_show() and handle_search() after resolve_message_content() calls
   Modify codelet/napi/src/session_manager.rs: add compaction_in_progress: Arc<AtomicBool> field to BackgroundSession (alongside compaction_progress), pass to create_handler() at line 5365
@@ -35,7 +34,6 @@ Feature: SessionSearch Trimming Integration
   #   7. BackgroundSession is created. compaction_in_progress field is Arc<AtomicBool> initialized to false. All SessionSearch calls return untrimmed content.
   #
   # ========================================
-
   Background: User Story
     As an agent performing DAG construction
     I want to receive trimmed SessionSearch results when compaction is in progress

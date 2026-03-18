@@ -1,6 +1,5 @@
 @TOOL-017
 Feature: Request User Input HITL Tool
-
   """
   Create codelet/tools/src/request_user_input.rs following the InjectSummaryTool pattern: HitlHandler type alias (Arc<dyn Fn(Uuid, HitlRequest) -> Result<HitlResponse, String> + Send + Sync>), global HITL_HANDLERS: RwLock<HashMap<Uuid, HitlHandler>>, pub fn set_hitl_handler/has_hitl_handler/execute_hitl/clear_all_hitl_handlers, and RequestUserInputTool implementing rig::tool::Tool
   HitlRequest contains: questions: Vec<HitlQuestion>. HitlQuestion contains: id: String, header: String, question: String, options: Option<Vec<HitlOption>>. HitlOption contains: label: String, description: String. HitlResponse is an enum: Answered { answers: HashMap<String, HitlAnswer> } | Cancelled. HitlAnswer contains: selected: Vec<String>, other: Option<String>.
@@ -35,7 +34,6 @@ Feature: Request User Input HITL Tool
   #   9. set_hitl_handler registers handler for session → has_hitl_handler returns true → clear_all_hitl_handlers removes all → has_hitl_handler returns false
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to request structured input from the user mid-conversation

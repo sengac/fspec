@@ -1,7 +1,6 @@
 @done
 @BUG-110
 Feature: Codex list_dir facade missing offset and limit pagination params
-
   """
   Facades map Codex list_dir params to InternalLsParams::List with offset, limit, depth. LsToolFacadeWrapper applies pagination. Follows same pattern as read_file mode/indentation.
   """
@@ -25,7 +24,6 @@ Feature: Codex list_dir facade missing offset and limit pagination params
   #   5. CodexListDirFacade maps depth 3 to InternalLsParams with depth=Some(3)
   #
   # ========================================
-
   Background: User Story
     As a Codex model
     I want to paginate directory listings with offset and limit parameters
@@ -37,12 +35,10 @@ Feature: Codex list_dir facade missing offset and limit pagination params
     Then the facade maps to InternalLsParams::List with path "/src" offset 5 and limit 10
     Then depth is None
 
-
   Scenario: CodexListDirFacade backward compatible without optional params
     Given a CodexListDirFacade instance
     When the Codex model calls list_dir with only dir_path "/src"
     Then the facade maps to InternalLsParams::List with offset None limit None and depth None
-
 
   Scenario: CodexListDirFacade schema includes offset limit and depth properties
     Given a CodexListDirFacade instance
@@ -52,16 +48,13 @@ Feature: Codex list_dir facade missing offset and limit pagination params
     Then the schema has a "depth" property of type "integer"
     Then only "dir_path" is in the required array
 
-
   Scenario: CodexListDirFacade maps depth to InternalLsParams
     Given a CodexListDirFacade instance
     When the Codex model calls list_dir with dir_path "/src" and depth 3
     Then the facade maps to InternalLsParams::List with path "/src" and depth 3
     Then offset is None and limit is None
 
-
   Scenario: Other facades provide None for offset limit and depth
     Given a ZAIListDirFacade instance
     When the ZAI model calls list_dir with path "/src"
     Then the facade maps to InternalLsParams::List with offset None limit None and depth None
-

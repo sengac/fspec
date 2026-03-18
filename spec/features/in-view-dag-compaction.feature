@@ -1,7 +1,6 @@
 @wip
 @CMPCT-011
 Feature: In-View DAG Construction Compaction Flow
-
   """
   execute_compaction() in interactive_helpers.rs lines 170-303 is rewritten in-place. The new flow: (1) set compaction_in_progress=true on BackgroundSession, (2) call clear_history(), (3) inject compaction system instruction as Message::User, (4) return Ok with a sentinel indicating 'agent takes over'. The old LLM prompt creation, turn conversion, compactor.compact(), and kept-turns reconstruction are all removed.
   stream_loop.rs post-turn logic: After each completed turn, call annotation_detector::detect(turn_tool_calls, previous_turn_state) to get Vec<StructuralAnnotation>. Annotations are serialized into the persisted message metadata via persist_assistant_message(). The stream_loop already tracks tool calls — annotations piggyback on existing data flow.
@@ -48,7 +47,6 @@ Feature: In-View DAG Construction Compaction Flow
   #   A: The inject_summary handler (CMPCT-009) should clear the flag. This is per the CMPCT-009 description: 'handler will be extended to clear that flag after injection completes'. This ensures the flag is cleared atomically with the injection — no window where flag is true but DAG is already pinned. We'll modify the CMPCT-009 handler to accept the Arc<AtomicBool> and clear it.
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to have my context compacted via in-view DAG construction instead of batch LLM calls
@@ -82,7 +80,8 @@ Feature: In-View DAG Construction Compaction Flow
     And the instruction should tell the agent to call inject_summary with the complete DAG
     And the instruction should be concise and under 500 tokens
 
-  @compaction-flow @integration
+  @compaction-flow
+  @integration
   Scenario: Agent builds DAG via SessionSearch and calls inject_summary
     Given a session where compaction system instruction has been injected
     And compaction_in_progress flag is true
@@ -92,7 +91,8 @@ Feature: In-View DAG Construction Compaction Flow
     And the agent can call inject_summary with the DAG content
     And after inject_summary the context contains only system reminders and the pinned DAG
 
-  @compaction-flow @integration
+  @compaction-flow
+  @integration
   Scenario: inject_summary handler clears compaction_in_progress flag
     Given a session with compaction_in_progress flag set to true
     When the agent calls inject_summary with DAG content

@@ -1,6 +1,5 @@
 @EXT-014
 Feature: Oversized images from Read tool crash the agent loop — pre-validate image size before sending to LLM
-
   """
   Validation goes in ReadTool::call() in codelet/tools/src/read.rs, in the FileType::Image branch, after base64 encoding but before constructing ReadOutput::Image
   Use a new ToolError::ImageSizeLimit variant (or reuse ToolError::Validation) with a human-readable error message — the error appears as a text tool result, never as image data in the conversation
@@ -26,7 +25,6 @@ Feature: Oversized images from Read tool crash the agent loop — pre-validate i
   #   5. Agent reads oversized image, gets error, tries again with different approach (e.g., bash to resize) → agent loop does NOT break, subsequent API calls succeed
   #
   # ========================================
-
   Background: User Story
     As a LLM agent
     I want to read image files without crashing the agent loop

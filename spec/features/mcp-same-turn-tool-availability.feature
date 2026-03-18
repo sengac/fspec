@@ -1,7 +1,6 @@
 @done
 @MCP-002
 Feature: MCP tools not available in same turn as ConnectMCP call
-
   """
   Uses existing ToolServerHandle.add_tool() and remove_tool() APIs — store handle in McpSessionState via set_tool_server_handle()
   ToolServerHandle is Clone (wraps Sender<ToolServerRequest>) — safe to store as Option<ToolServerHandle> in McpSessionState
@@ -28,7 +27,6 @@ Feature: MCP tools not available in same turn as ConnectMCP call
   #   5. Tools connected in previous turns still work alongside newly connected same-turn tools
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to use MCP tools immediately after connecting to an MCP server in the same turn

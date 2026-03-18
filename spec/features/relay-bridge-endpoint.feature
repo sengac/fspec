@@ -3,7 +3,6 @@
 @bridge
 @BRIDGE-015
 Feature: Platform-Agnostic Relay Bridge Endpoint
-
   """
   Standalone TypeScript file at bridge/relay-endpoint.ts with two WebSocket connections: (1) relay-client WS that connects TO the relay server, (2) local WS server that accepts codelet BridgeTool connections.
 
@@ -67,7 +66,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   #  13. Two codelets connect with different session_ids → relay input routed to correct codelet WS
   #
   # ========================================
-
   Background: User Story
     As a fspec instance
     I want to connect to a platform-agnostic relay server
@@ -76,7 +74,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Authentication & Connection
   # ========================================
-
   @happy-path
   Scenario: Successful authentication with relay server
     Given the relay endpoint is configured with RELAY_URL, RELAY_CHANNEL_ID, and RELAY_API_KEY
@@ -107,7 +104,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Session Connection (codelet BridgeTool)
   # ========================================
-
   @happy-path
   Scenario: Codelet BridgeTool establishes session connection
     Given the relay endpoint is authenticated and running
@@ -129,7 +125,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Input Translation (relay → fspec)
   # ========================================
-
   @happy-path
   Scenario: Translate relay input message to fspec format
     Given the relay endpoint is authenticated and a codelet session is connected
@@ -141,7 +136,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Session Control Translation (relay → fspec)
   # ========================================
-
   @happy-path
   Scenario: Translate relay sessionControl to fspec control format
     Given the relay endpoint is authenticated and a codelet session is connected
@@ -153,7 +147,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Unknown Session Handling
   # ========================================
-
   @error
   Scenario: Drop messages for unknown session
     Given the relay endpoint is authenticated
@@ -166,7 +159,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Command Execution (relay → bridge WS → Rust → StreamChunk → fspecCallback → relay)
   # ========================================
-
   @happy-path
   Scenario: Execute fspec command via StreamChunk pipeline and return result
     Given the relay endpoint is authenticated and a codelet session is connected
@@ -202,7 +194,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Chunk Passthrough (fspec → relay)
   # ========================================
-
   @happy-path
   Scenario: Forward StreamChunk from codelet to relay without transformation
     Given the relay endpoint is authenticated and a codelet session is connected
@@ -221,7 +212,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Reconnection
   # ========================================
-
   @resilience
   Scenario: Reconnect to relay after connection drops
     Given the relay endpoint is authenticated and operating normally
@@ -234,7 +224,6 @@ Feature: Platform-Agnostic Relay Bridge Endpoint
   # ========================================
   # Heartbeat
   # ========================================
-
   @happy-path
   Scenario: Send periodic heartbeat to relay
     Given the relay endpoint is authenticated

@@ -1,6 +1,9 @@
-@PROV-031 @tui @model-selector @providers @bug-fix
+@PROV-031
+@tui
+@model-selector
+@providers
+@bug-fix
 Feature: Model Screen — stale profile sections from non-OpenAI providers, footer text, unreachable section filtering
-
   """
   Fix 1 — loadProfileSections() guard (modelInitializationService.ts ~line 247). Replace the loop over
   SUPPORTED_PROVIDERS with a loop over ['openai'] only. This is the single correct fix — prevent bad data
@@ -35,7 +38,6 @@ Feature: Model Screen — stale profile sections from non-OpenAI providers, foot
   #   5. Model screen header shows 'Select Model (76 models)' — counts only selectable model items, not section header rows. Before this fix it showed '(27 items)' mixing section headers with model rows.
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to open the model selector screen

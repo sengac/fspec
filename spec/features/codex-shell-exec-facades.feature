@@ -1,6 +1,5 @@
 @BUG-114
 Feature: Codex facade maps shell and exec_command to unified exec tool
-
   """
   Follow the existing CodexShellCommandFacade pattern in codex.rs — ExecToolFacade struct with definition() returning ToolDefinition with JSON schema, and map_params() using param_extract helpers
   The ExecToolFacadeWrapper and InternalExecParams are already implemented in TOOL-016 — this card only creates the two facade structs and registers them in the provider
@@ -30,7 +29,6 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
   #   7. Both shell and exec_command facades are registered in Codex create_rig_agent using ExecToolFacadeWrapper and appear in the agent's tool list
   #
   # ========================================
-
   Background: User Story
     As a Codex LLM
     I want to call shell and exec_command tools with Codex-native schemas
@@ -39,7 +37,6 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
   # ==============================
   # shell facade
   # ==============================
-
   @shell
   Scenario: CodexShellFacade maps shell command array to InternalExecParams::Run
     Given a CodexShellFacade instance
@@ -64,13 +61,15 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And timeout_secs is None
     And yield_time_ms is None
 
-  @shell @validation
+  @shell
+  @validation
   Scenario: CodexShellFacade validates required command parameter
     Given a CodexShellFacade instance
     When the Codex model calls shell with missing command field
     Then the facade returns a validation error for tool "shell" mentioning "command"
 
-  @shell @schema
+  @shell
+  @schema
   Scenario: CodexShellFacade schema has additionalProperties false
     Given a CodexShellFacade instance
     When the tool definition schema is inspected
@@ -81,7 +80,6 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
   # ==============================
   # exec_command facade
   # ==============================
-
   @exec_command
   Scenario: CodexExecCommandFacade maps exec_command with PTY to InternalExecParams::Run
     Given a CodexExecCommandFacade instance
@@ -110,7 +108,8 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     And yield_time_ms is 10000
     And max_output_tokens is 4096
 
-  @exec_command @validation
+  @exec_command
+  @validation
   Scenario: CodexExecCommandFacade validates required cmd parameter
     Given a CodexExecCommandFacade instance
     When the Codex model calls exec_command with missing cmd field
@@ -123,7 +122,8 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
     Then the facade maps to InternalExecParams::Run with command "ls"
     And tty is false
 
-  @exec_command @schema
+  @exec_command
+  @schema
   Scenario: CodexExecCommandFacade schema has additionalProperties false
     Given a CodexExecCommandFacade instance
     When the tool definition schema is inspected
@@ -134,7 +134,6 @@ Feature: Codex facade maps shell and exec_command to unified exec tool
   # ==============================
   # Integration (verified via codex provider tests)
   # ==============================
-
   @integration
   Scenario: Both facades are registered in Codex create_rig_agent
     Given a CodexShellFacade and CodexExecCommandFacade instance

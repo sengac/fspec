@@ -4,7 +4,6 @@
 @tools
 @RLM-001
 Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
-
   """
   Tool is wired into all 5 providers' create_rig_agent() — same pattern as SessionSearch: import DeepSearchTool from codelet_tools, add .tool(DeepSearchTool::new(session_id)) to each provider's AgentBuilder chain. Verified locations: claude.rs:530, openai.rs:338, gemini.rs:172, codex/mod.rs:364, zai.rs:247.
   AMGR-001 (SessionSearch) provides the foundation for session history access. The implementation pattern: (1) Tool struct in codelet/tools/src/session_search/ with types.rs (SessionSearchAction enum, args, results), handler.rs (per-session handler storage via static RwLock<HashMap<Uuid, Handler>>), reassembly.rs (streaming chunk reconstruction). (2) Handler registered in session_manager.rs via set_session_search_handler(session_id, handler) before agent run, cleaned up after. (3) The handler closure captures project_path AND compaction_trimming: Arc<AtomicBool> — the compaction_trimming flag controls whether Layer 0 trimming (CMPCT-010) is applied to SessionSearch results during agent-controlled compaction. (4) inject_summary (CMPCT-008/009) follows the exact same handler pattern — InjectSummaryTool in codelet/tools/src/inject_summary.rs with set_inject_summary_handler/has_inject_summary_handler. DeepSearch should follow this same module pattern for its tool structure but does NOT need inject_summary (read-only sub-agent).
@@ -53,7 +52,8 @@ Feature: Deep Search Tool — Ephemeral Sub-Agent for Scoped Corpus Analysis
     And the sub-agent stops after 5 rounds of tool calls
     And the result includes the answer the sub-agent was able to produce within the depth limit
 
-  @depth-limit @default
+  @depth-limit
+  @default
   Scenario: Default max depth is 50
     Given no max_depth is specified in the DeepSearch call
     When the sub-agent is constructed

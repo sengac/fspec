@@ -1,6 +1,5 @@
 @EXT-013
 Feature: Screenshot crashes native messaging connection — image data exceeds Chrome 1MB port limit
-
   """
   Uses OffscreenCanvas and createImageBitmap for resize/conversion in service worker (no DOM needed)
   native-messaging.mjs must use separate constants for incoming vs outgoing message size limits
@@ -28,7 +27,6 @@ Feature: Screenshot crashes native messaging connection — image data exceeds C
   #   5. Native reader encounters oversized message (>64 MiB) → skips it and processes subsequent messages correctly
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to take screenshots of browser tabs without crashing the native messaging connection

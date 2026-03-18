@@ -1,6 +1,5 @@
 @BUG-115
 Feature: Codex facade maps write_stdin to unified exec tool
-
   """
   Follow the existing CodexExecCommandFacade pattern in codex.rs — ExecToolFacade struct with definition() returning ToolDefinition with JSON schema, and map_params() using param_extract helpers
   The ExecToolFacadeWrapper and InternalExecParams Write/Poll variants are already implemented in TOOL-016 — this card only creates the facade struct and registers it in the Codex provider
@@ -28,7 +27,6 @@ Feature: Codex facade maps write_stdin to unified exec tool
   #   6. write_stdin facade is registered via ExecToolFacadeWrapper in Codex create_rig_agent and appears in the agent tool list
   #
   # ========================================
-
   Background: User Story
     As a Codex LLM agent
     I want to call write_stdin to send input to a running PTY session
@@ -37,7 +35,6 @@ Feature: Codex facade maps write_stdin to unified exec tool
   # =========================================================================
   # Write action mapping (non-empty chars)
   # =========================================================================
-
   Scenario: CodexWriteStdinFacade maps non-empty chars to InternalExecParams::Write
     Given a CodexWriteStdinFacade instance
     When the Codex model calls write_stdin with session_id 4237 and chars "print(42)\n"
@@ -55,7 +52,6 @@ Feature: Codex facade maps write_stdin to unified exec tool
   # =========================================================================
   # Poll action mapping (empty or absent chars)
   # =========================================================================
-
   Scenario: CodexWriteStdinFacade maps empty chars to InternalExecParams::Poll
     Given a CodexWriteStdinFacade instance
     When the Codex model calls write_stdin with session_id 4237 and chars ""
@@ -71,7 +67,6 @@ Feature: Codex facade maps write_stdin to unified exec tool
   # =========================================================================
   # Session ID type conversion
   # =========================================================================
-
   Scenario: CodexWriteStdinFacade converts numeric session_id to string
     Given a CodexWriteStdinFacade instance
     When the Codex model calls write_stdin with session_id 99 and chars "hello"
@@ -80,7 +75,6 @@ Feature: Codex facade maps write_stdin to unified exec tool
   # =========================================================================
   # Validation
   # =========================================================================
-
   Scenario: CodexWriteStdinFacade validates required session_id parameter
     Given a CodexWriteStdinFacade instance
     When the Codex model calls write_stdin without session_id
@@ -94,7 +88,6 @@ Feature: Codex facade maps write_stdin to unified exec tool
   # =========================================================================
   # Schema
   # =========================================================================
-
   Scenario: CodexWriteStdinFacade schema has additionalProperties false
     Given a CodexWriteStdinFacade instance
     When the tool definition schema is inspected
@@ -106,7 +99,6 @@ Feature: Codex facade maps write_stdin to unified exec tool
   # =========================================================================
   # Registration
   # =========================================================================
-
   @integration
   Scenario: write_stdin facade is registered in Codex create_rig_agent
     Given a CodexWriteStdinFacade instance registered via ExecToolFacadeWrapper

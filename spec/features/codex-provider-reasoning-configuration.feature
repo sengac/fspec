@@ -3,7 +3,6 @@
 @llm-provider
 @PROV-037
 Feature: Codex Provider Reasoning Configuration
-
   """
   Key files: codelet/providers/src/codex/mod.rs (create_rig_agent + complete_with_tools),
   codelet/napi/src/thinking_config.rs (get_thinking_config),
@@ -41,7 +40,6 @@ Feature: Codex Provider Reasoning Configuration
   #   5. Wire request JSON includes reasoning, include, tool_choice, and parallel_tool_calls matching codex-rs format
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have the Codex provider send reasoning configuration in Responses API requests
@@ -50,7 +48,6 @@ Feature: Codex Provider Reasoning Configuration
   # -----------------------------------------------------------------------
   # Bug 1: get_thinking_config() has no codex/openai branch
   # -----------------------------------------------------------------------
-
   Scenario: get_thinking_config returns reasoning config for codex provider at High level
     Given I have the get_thinking_config function
     When I call get_thinking_config with provider "codex" and level High
@@ -86,7 +83,6 @@ Feature: Codex Provider Reasoning Configuration
   # -----------------------------------------------------------------------
   # Bug 2: create_rig_agent ignores _thinking_config parameter
   # -----------------------------------------------------------------------
-
   Scenario: create_rig_agent uses thinking_config to populate reasoning in additional_params
     Given I have a CodexProvider instance
     And I have a thinking_config with reasoning effort "high" and summary "auto"
@@ -106,7 +102,6 @@ Feature: Codex Provider Reasoning Configuration
   # -----------------------------------------------------------------------
   # Bug 3: complete_with_tools missing reasoning config
   # -----------------------------------------------------------------------
-
   Scenario: complete_with_tools includes reasoning config in additional_params
     Given I have a CodexProvider instance
     When I call complete_with_tools with messages and tools
@@ -118,7 +113,6 @@ Feature: Codex Provider Reasoning Configuration
   # -----------------------------------------------------------------------
   # Wire format matching codex-rs
   # -----------------------------------------------------------------------
-
   Scenario: Responses API request body matches codex-rs format
     Given I have a CodexProvider instance with reasoning configured
     When the request is serialized to JSON

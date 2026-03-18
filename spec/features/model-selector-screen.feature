@@ -209,4 +209,3 @@ Feature: Create ModelSelectorScreen component
     Given the ModelSelectorScreen is rendered with a currentModelId prop
     When models are loaded
     Then the section containing that model should be auto-expanded
-

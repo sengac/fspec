@@ -1,7 +1,6 @@
 @done
 @AMGR-011
 Feature: Message context resolution
-
   """
   Add optional context field to AgentManagerAction::Message variant: context: Option<Vec<ContextReference>>.
   Add ContextReference enum with three variants: Turns { session_id, turns }, TurnRange { session_id, start_turn, end_turn }, Query { session_id, query }.
@@ -37,7 +36,6 @@ Feature: Message context resolution
   #   7. Agent sends message without context (or context=[]) — behaves exactly like AMGR-010 plain text delivery, response has no context_resolved field
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to attach session history references when sending messages to other agents

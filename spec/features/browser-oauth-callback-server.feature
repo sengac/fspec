@@ -38,7 +38,6 @@ Feature: Browser OAuth HTTP Server for PKCE Callback
   #   6. Request to /cancel route: server aborts pending OAuth flow, returns cancel page, shuts down
   #
   # ========================================
-
   Background: User Story
     As a user with a ChatGPT Plus/Pro subscription
     I want to complete browser-based OAuth login via a local callback server

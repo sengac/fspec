@@ -1,6 +1,5 @@
 @RIG-011
 Feature: Debug Metadata and Reasoning Token Events
-
   """
   Key files: codelet/cli/src/interactive/stream_loop.rs (debug events + api.request model bug),
   codelet/cli/src/interactive/repl_loop.rs (metadata model bug),
@@ -13,7 +12,6 @@ Feature: Debug Metadata and Reasoning Token Events
     So that I can diagnose model behavior, understand costs, and trust the debug capture data
 
   # ----- Layer 4: Debug metadata model identity -----
-
   Scenario: Debug metadata records correct model identity in repl_loop
     Given a session with provider "codex" and model_id "gpt-5.3-codex"
     When debug capture session metadata is set via repl_loop
@@ -27,7 +25,6 @@ Feature: Debug Metadata and Reasoning Token Events
     And the event data should have provider "codex"
 
   # ----- Layer 5: Debug capture events include reasoning tokens -----
-
   Scenario: Debug capture includes reasoning tokens in aggregatedUsage
     Given a completed API response with a completion::Usage containing reasoning_tokens Some(5000)
     When the api.response.end event is captured in stream_loop
@@ -39,7 +36,6 @@ Feature: Debug Metadata and Reasoning Token Events
     Then the event data should include reasoningTokens 5000
 
   # ----- Layer 6: NAPI session_manager debug metadata -----
-
   Scenario: NAPI session_update_debug_metadata uses model_id
     Given a NAPI session with provider "codex" and selected_model_id "gpt-5.3-codex"
     When session_update_debug_metadata is called

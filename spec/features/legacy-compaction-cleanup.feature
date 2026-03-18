@@ -2,7 +2,6 @@
 @wip
 @CMPCT-013
 Feature: Legacy Batch LLM Compaction Cleanup
-
   """
   Remove the old batch LLM-based compaction infrastructure after the in-view DAG
   construction flow (CMPCT-011/012) is validated and stable. Pure deletion, zero
@@ -33,12 +32,12 @@ Feature: Legacy Batch LLM Compaction Cleanup
   #   11. cargo build with zero warnings, full test suite passes, zero dangling references
   #
   # ========================================
-
   Background: User Story
     Given the in-view DAG construction compaction flow from CMPCT-011 and CMPCT-012 is validated and stable
     And the legacy batch LLM compaction code has zero live callers in production
 
-  @core @deletion
+  @core
+  @deletion
   Scenario: Delete legacy compaction source files from core module
     Given the compaction module contains legacy files: anchor.rs, compactor.rs, selector.rs, deprecated.rs, metrics.rs
     And these files contain LLM-based detection, batch processing, retry logic, flaky heuristics, and turn selection
@@ -49,13 +48,15 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And deprecated.rs no longer exists in the compaction module
     And metrics.rs no longer exists in the compaction module
 
-  @core @deletion
+  @core
+  @deletion
   Scenario: Delete legacy LLM anchor detection test file
     Given the compaction __tests__ directory contains llm_anchor_detection.test.rs
     When the legacy test file is deleted
     Then llm_anchor_detection.test.rs no longer exists in the __tests__ directory
 
-  @core @module-registry
+  @core
+  @module-registry
   Scenario: Update mod.rs to remove deleted module declarations and re-exports
     Given mod.rs declares modules: selector, deprecated, compactor, anchor, metrics
     And mod.rs has a test module for llm_anchor_detection_tests
@@ -70,7 +71,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And mod.rs does not re-export any deleted types
     And mod.rs still declares mod trimmer, mod trimmer_base64, mod trimmer_metadata, mod annotation_detector, mod model
 
-  @core @preservation
+  @core
+  @preservation
   Scenario: Preserved modules remain intact and functional
     Given model.rs contains TokenTracker, ConversationTurn, ToolCall, ToolResult, StructuralAnnotation, FileOp
     And trimmer.rs, trimmer_base64.rs, trimmer_metadata.rs contain Layer 0 structurally lossless trimming
@@ -80,7 +82,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And trimmer functionality is unchanged
     And annotation_detector functionality is unchanged
 
-  @cli @deletion
+  @cli
+  @deletion
   Scenario: Remove execute_compaction_legacy from interactive_helpers.rs
     Given interactive_helpers.rs contains execute_compaction_legacy() which uses ContextCompactor
     And CMPCT-012 replaced all call sites with execute_compaction()
@@ -89,7 +92,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And interactive_helpers.rs does not import ContextCompactor or CompactionMetrics
     And the new execute_compaction function remains intact
 
-  @cli @deletion
+  @cli
+  @deletion
   Scenario: Remove compact_messages from Session
     Given Session in codelet/cli/src/session/mod.rs has a compact_messages() method
     And compact_messages() uses ContextCompactor and has zero production callers
@@ -97,7 +101,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     Then Session does not have a compact_messages method
     And Session does not import ContextCompactor
 
-  @napi @deletion
+  @napi
+  @deletion
   Scenario: Remove dead anchor infrastructure from NAPI layer
     Given session_manager.rs contains persist_anchor_point() with zero callers
     And session_manager.rs contains session_get_anchor_points() and session_restore_anchor_points()
@@ -110,7 +115,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And BackgroundSession no longer has an anchor_points field
     And NapiAnchorType and NapiAnchorPoint are removed from types.rs
 
-  @napi @preservation
+  @napi
+  @preservation
   Scenario: PersistedAnchorPoint remains for backward compatibility
     Given PersistedAnchorPoint in persistence/types.rs uses String for anchor_type
     And existing session manifests on disk may contain persisted anchor points
@@ -118,7 +124,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     Then PersistedAnchorPoint still exists in persistence/types.rs
     And existing persisted session manifests can still be deserialized
 
-  @test @deletion
+  @test
+  @deletion
   Scenario: Delete downstream test files that exclusively test deleted code
     Given test files exist that exclusively test deleted legacy code
     When the legacy test files are deleted
@@ -130,7 +137,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And codelet/napi/tests/compaction_to_anchor_flow_test.rs no longer exists
     And codelet/napi/tests/anchor_persistence_test.rs no longer exists
 
-  @test @update
+  @test
+  @update
   Scenario: Update test files that reference deleted types
     Given structural_annotation.test.rs contains tests for deprecated PreservationContext and BuildStatus
     And context_compaction_test.rs references TurnSelector and ContextCompactor
@@ -140,7 +148,8 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And no remaining test file imports deleted types
     And demo_compaction.rs example is removed or updated
 
-  @build @validation
+  @build
+  @validation
   Scenario: cargo build succeeds with zero warnings from deleted modules
     Given all legacy compaction source files and their dependents have been cleaned up
     When cargo build is run
@@ -148,14 +157,16 @@ Feature: Legacy Batch LLM Compaction Cleanup
     And there are no warnings about unused imports from deleted modules
     And there are no warnings about dead code in the compaction module
 
-  @build @validation
+  @build
+  @validation
   Scenario: Full project test suite passes with no regressions
     Given all legacy code has been removed and remaining tests updated
     When the full project test suite is run
     Then all tests pass
     And no test failures are caused by missing deleted types or functions
 
-  @validation @exhaustive
+  @validation
+  @exhaustive
   Scenario: Zero references to deleted types remain in source files
     Given the legacy cleanup is complete
     When the codebase is searched for references to deleted identifiers

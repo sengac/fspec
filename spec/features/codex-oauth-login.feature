@@ -1,6 +1,5 @@
 @PROV-011
 Feature: Codex OAuth Login Flow - Browser and Device Auth for ChatGPT Subscription
-
   """
   Rust implementation: codex_oauth.rs module alongside existing codex_auth.rs. PKCE using sha2+base64 crates (already in dependencies). HTTP server using hyper (lightweight, already used by rig). Browser open via open crate.
   CodexProvider::new() changes: Try read_codex_auth() first (existing path). If no credentials found, initiate OAuth flow. After successful OAuth, persist tokens and create provider with access_token as Bearer auth + endpoint rewrite.
@@ -39,7 +38,6 @@ Feature: Codex OAuth Login Flow - Browser and Device Auth for ChatGPT Subscripti
   #   2. We maintain backward compatibility with existing ~/.codex/auth.json format and Codex CLI keychain storage
   #
   # ========================================
-
   Background: User Story
     As a ChatGPT Plus/Pro subscriber
     I want to authenticate with my OpenAI account directly from codelet

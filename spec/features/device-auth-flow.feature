@@ -2,7 +2,6 @@
 @codex-oauth
 @PROV-014
 Feature: Device Auth Flow for Headless Environments
-
   """
   New file: codelet/providers/src/codex/codex_device_auth.rs - Implements the device authorization flow. Three new API functions: request_device_code() POSTs to usercode endpoint, poll_device_token() polls the token endpoint, and device_auth_login() orchestrates the full flow (request code → display → poll → exchange → persist). Returns Result<CodexTokens>.
   Reuses extract_account_id() from codex_oauth.rs for JWT parsing, write_codex_auth() from codex_auth.rs for persistence, and CodexTokens/CodexAuthJson structs. CANNOT reuse exchange_authorization_code() because it requires redirect_uri — needs a new exchange_device_code() function or pub(crate) post_to_token_endpoint().
@@ -42,7 +41,6 @@ Feature: Device Auth Flow for Headless Environments
   #   2. NAPI bindings for device auth will be done in PROV-015 (separate story). This story only implements the Rust core.
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet in a headless environment
     I want to authenticate with my ChatGPT subscription via device auth flow

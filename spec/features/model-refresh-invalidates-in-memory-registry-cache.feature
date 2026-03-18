@@ -1,6 +1,5 @@
 @MODEL-002
 Feature: Model refresh does not invalidate in-memory registry cache
-
   """
   REGISTRY_CACHE uses Mutex<Option<Arc<ModelRegistry>>> instead of OnceCell. models_refresh_cache() calls invalidate_registry_cache() after writing fresh data to disk. get_registry() lazily initializes on first call and returns cached Arc on subsequent calls.
   """
@@ -22,7 +21,6 @@ Feature: Model refresh does not invalidate in-memory registry cache
   #   3. First call to get_registry() initializes the cache, second call returns the cached value without re-parsing (lazy init preserved)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to refresh the model list in the TUI
@@ -45,4 +43,3 @@ Feature: Model refresh does not invalidate in-memory registry cache
     When get_registry is called for the first time
     Then it initializes the registry from the disk cache
     And a second call returns the same cached Arc without re-parsing
-

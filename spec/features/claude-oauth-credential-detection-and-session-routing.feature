@@ -1,6 +1,5 @@
 @PROV-026
 Feature: Claude OAuth Credential Detection and Session Routing
-
   """
   claude_auth.rs: read_claude_auth_sync() using std::fs for sync contexts (credentials.rs, manager.rs).
   credentials.rs: has_claude_auth() mirrors has_codex_auth() — checks claude_auth.json for OAuth tokens.

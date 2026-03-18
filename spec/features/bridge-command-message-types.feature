@@ -1,6 +1,5 @@
 @BRIDGE-016
 Feature: Extend Rust bridge message types for command support
-
   """
   Pure type extension in codelet/tools/src/bridge_relay.rs (InboundMessage) and codelet/tools/src/bridge.rs (OutboundMessage). No behavioral changes. Uses serde Optional fields with skip_serializing_if for backward-compatible JSON serialization.
   """
@@ -23,7 +22,6 @@ Feature: Extend Rust bridge message types for command support
   #   4. OutboundMessage with type chunk and request_id None serializes to JSON without any request_id field present
   #
   # ========================================
-
   Background: User Story
     As a bridge relay task
     I want to deserialize command InboundMessages and serialize commandResponse OutboundMessages
@@ -34,21 +32,17 @@ Feature: Extend Rust bridge message types for command support
     When the JSON is deserialized into an InboundMessage struct
     Then the request_id, command, and args_json fields should be populated with the JSON values
 
-
   Scenario: Backward compatible deserialization of input message without command fields
     Given a JSON string with type input and session_id but no request_id, command, or args_json fields
     When the JSON is deserialized into an InboundMessage struct
     Then the request_id, command, and args_json fields should all be None
-
 
   Scenario: Serialize OutboundMessage with request_id for commandResponse
     Given an OutboundMessage with type commandResponse and request_id set to a value
     When the OutboundMessage is serialized to JSON
     Then the JSON output should contain both the type and request_id fields
 
-
   Scenario: Serialize OutboundMessage without request_id for regular chunks
     Given an OutboundMessage with type chunk and request_id set to None
     When the OutboundMessage is serialized to JSON
     Then the JSON output should NOT contain a request_id field
-

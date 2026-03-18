@@ -1,6 +1,5 @@
 @BUG-103
 Feature: ANSI escape codes and TUI content leaking into Fspec tool call results
-
   """
   Modifies output.ts createCaptureContext() and fspec-callback.ts capture layers. Adds shared stripAnsi() to output.ts that handles all CSI/OSC/SGR sequences. Removes Layer 3 process.stdout.write override that captured TUI Ink renders concurrently. Propagates Commander configureOutput to all subcommands to capture help/errors without global stdout interception.
   """
@@ -23,7 +22,6 @@ Feature: ANSI escape codes and TUI content leaking into Fspec tool call results
   #   4. After fix: TUI Ink renders go to terminal normally, not captured into tool results
   #
   # ========================================
-
   Background: User Story
     As a LLM agent
     I want to receive clean text/JSON from fspec tool calls
@@ -34,18 +32,15 @@ Feature: ANSI escape codes and TUI content leaking into Fspec tool call results
     When a command calls output.log with chalk-formatted text containing SGR escape codes
     Then the captured stdout array should contain only plain text with no ANSI escape sequences
 
-
   Scenario: Capture context strips ANSI codes from output.error and output.warn
     Given a capture context is created via createCaptureContext
     When a command calls output.error and output.warn with chalk-formatted text
     Then the captured stderr array should contain only plain text with no ANSI escape sequences
 
-
   Scenario: Strip ANSI handles all CSI sequences not just SGR colors
     Given text containing CSI cursor movement, line erasure, and mouse tracking sequences
     When the text is passed through the stripAnsi function
     Then all CSI sequences including cursor up, erase line, next line, and mouse tracking are removed
-
 
   Scenario: Commander configureOutput propagated to subcommands
     Given a fresh Commander program with subcommands registered via createProgram
@@ -53,9 +48,7 @@ Feature: ANSI escape codes and TUI content leaking into Fspec tool call results
     Then all subcommands should also have their output configuration updated
     And subcommand help output should be captured by configureOutput not process.stdout.write
 
-
   Scenario: End-to-end fspec callback returns clean output
     Given a project with valid fspec structure
     When fspecCallback is called to execute a command
     Then the returned JSON string should not contain any ANSI escape sequences
-

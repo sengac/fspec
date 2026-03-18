@@ -1,6 +1,5 @@
 @CMPCT-017
 Feature: Structured DAG Node Format and Engine Parsing
-
   """
   Uses regex to parse <dag-node> blocks — no XML parser needed.
   DagNodeMeta and DagDepth structs go in codelet/core/src/compaction/model.rs alongside existing StructuralAnnotation.
@@ -16,7 +15,7 @@ Feature: Structured DAG Node Format and Engine Parsing
   @happy-path
   Scenario: Parse structured DAG with multiple depth levels
     Given the agent has written a DAG containing three dag-node blocks
-      | depth | turns | label                  |
+      | depth | turns | label                   |
       | D2    | 0-45  | Architecture Decisions  |
       | D1    | 46-82 | Auth Implementation Arc |
       | D0    | 83-95 | Fixing test failures    |
@@ -44,9 +43,9 @@ Feature: Structured DAG Node Format and Engine Parsing
   @edge-case
   Scenario: Skip dag-node with invalid depth value
     Given the agent has written two dag-node blocks
-      | depth | turns | label           |
-      | D2    | 0-45  | Valid node      |
-      | D3    | 46-80 | Invalid depth   |
+      | depth | turns | label         |
+      | D2    | 0-45  | Valid node    |
+      | D3    | 46-80 | Invalid depth |
     When the engine parses the DAG content after inject_summary
     Then it should extract 1 DagNodeMeta entry for the valid node
     And the invalid depth node should be skipped
@@ -62,9 +61,9 @@ Feature: Structured DAG Node Format and Engine Parsing
   @edge-case
   Scenario: Parse overlapping turn ranges with warning
     Given the agent has written two dag-node blocks with overlapping ranges
-      | depth | turns | label         |
-      | D2    | 0-50  | First range   |
-      | D1    | 30-80 | Second range  |
+      | depth | turns | label        |
+      | D2    | 0-50  | First range  |
+      | D1    | 30-80 | Second range |
     When the engine parses the DAG content after inject_summary
     Then it should extract 2 DagNodeMeta entries
     And the entries should be sorted by turn_start ascending

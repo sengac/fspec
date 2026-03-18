@@ -1,13 +1,14 @@
 @done
-@RIG-012 @wip @rust-layer
+@RIG-012
+@wip
+@rust-layer
 Feature: Reasoning token propagation in core streaming display
-
   """
   Data flow: ApiTokenUsage.reasoning_tokens → TokenDisplayUpdate.reasoning_tokens → StreamingTokenDisplay
   Also: Compaction TokenTracker must include reasoning_tokens in total_tokens()
   """
 
-  Background:
+  Background: 
     Given a developer using extended thinking models
     And the model returns reasoning tokens in its Usage response
 

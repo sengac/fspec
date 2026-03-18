@@ -1,6 +1,7 @@
-@GIT-038 @gitoxide-integration @isolated-sessions
+@GIT-038
+@gitoxide-integration
+@isolated-sessions
 Feature: Send merge conflict context to LLM for AI-assisted resolution
-
   """
   When /merge-worktree detects conflicts, send a user message to the Rust session
   (via the normal handleSubmit → sessionSendInput path) containing the conflict
@@ -16,7 +17,7 @@ Feature: Send merge conflict context to LLM for AI-assisted resolution
   - A useEffect fires handleSubmit() on the next render, which calls sessionSendInput
   - The Rust agent loop receives the conflict details as a normal user message
   - CRITICAL: persistenceAppendMessage only writes to disk — sessionSendInput is the
-    correct path to reach the live Rust session
+  correct path to reach the live Rust session
   """
 
   # ========================================
@@ -38,7 +39,6 @@ Feature: Send merge conflict context to LLM for AI-assisted resolution
   #   4. User runs /merge-worktree → non-conflict error → NO message sent to Rust session
   #
   # ========================================
-
   Background: User Story
     As a user in an isolated session
     I want to have the AI resolve merge conflicts when /merge-worktree detects them

@@ -1,6 +1,5 @@
 @EXT-009
 Feature: WebMCP dynamic tool registration not detected — polyfill libraries bypass navigator.modelContext
-
   """
   Layered discovery in webmcp-discovery.ts: Layer 1 navigator.modelContext (existing), Layer 2 WebMCP.prototype interception, Layer 3 post-load snapshot, Layer 4 ModelContextTesting (opportunistic). manifest.json run_at changed to document_start. Injector uses injectImmediately: true.
   """
@@ -30,7 +29,6 @@ Feature: WebMCP dynamic tool registration not detected — polyfill libraries by
   #   8. When ModelContextTesting is available, ontoolchange fires and listTools() catches tools registered before injection
   #
   # ========================================
-
   Background: User Story
     As a AI agent user
     I want to have WebMCP tools discovered regardless of how the page registers them

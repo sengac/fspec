@@ -1,19 +1,22 @@
 @done
-@MODEL-003 @providers @model-selection @cache @critical
+@MODEL-003
+@providers
+@model-selection
+@cache
+@critical
 Feature: Provider-specific model listing and refresh coverage gaps
-
   """
   Architecture:
   - models_list_for_provider must apply the same is_current_model() filter and
-    newest-first sort as models_list_all() — both public NAPI paths must behave
-    identically with respect to deprecated/stale model exclusion.
+  newest-first sort as models_list_all() — both public NAPI paths must behave
+  identically with respect to deprecated/stale model exclusion.
   - models_refresh_cache() must call invalidate_registry_cache() after updating
-    the disk cache. Tests must exercise this exact code path (not simulate it
-    manually) so removing the invalidation call causes a test failure.
+  the disk cache. Tests must exercise this exact code path (not simulate it
+  manually) so removing the invalidation call causes a test failure.
   - get_registry() must not hold the Mutex guard across async initialization.
-    The fix uses a two-phase approach: check under lock → release → initialize →
-    re-acquire and store (double-check for concurrent races). This keeps the hot
-    path (cached) fast while avoiding unnecessary lock hold time on the cold path.
+  The fix uses a two-phase approach: check under lock → release → initialize →
+  re-acquire and store (double-check for concurrent races). This keeps the hot
+  path (cached) fast while avoiding unnecessary lock hold time on the cold path.
   """
 
   Background: User Story

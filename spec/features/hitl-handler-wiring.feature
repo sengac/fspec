@@ -1,6 +1,5 @@
 @done
 Feature: HITL request_user_input handler wired via pause pattern
-
   """
   Rust: HITL handler closure follows pause pattern — set hitl_request state (RwLock<Option<HitlRequestState>>), set_status(Paused), wait_for_hitl_response (blocks on mpsc), on response clear state + set_status(Running). No StreamChunk emitted.
   NAPI: session_get_hitl_request(session_id) returns Option<NapiHitlRequestState> with questions array. session_send_hitl_response already exists for the response path. Remove HitlRequest StreamChunk variant and all GlobalSessionStreamManager intercept code.
@@ -33,14 +32,12 @@ Feature: HITL request_user_input handler wired via pause pattern
   #   7. Question without options (freeform only) renders text input area
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to use the request_user_input tool in a real TUI session
     So that the LLM can ask me structured questions mid-turn and receive my answers
 
   # === Rust: Handler closure + session state ===
-
   @BUG-118
   Scenario: HITL handler stores questions in session state and pauses
     Given a BackgroundSession with hitl_request state and hitl_response channel pair
@@ -79,7 +76,6 @@ Feature: HITL request_user_input handler wired via pause pattern
     And clear_hitl_request should remove the stored questions
 
   # === NAPI: Getter + response sender ===
-
   @BUG-118
   Scenario: NAPI getter returns HITL request when session is paused
     Given a session is paused with hitl_request state containing questions
@@ -102,7 +98,6 @@ Feature: HITL request_user_input handler wired via pause pattern
     And send the cancellation via the session hitl_response_tx channel
 
   # === TypeScript: State polling ===
-
   @BUG-118
   Scenario: useRustSessionState includes hitlRequest in snapshot when paused
     Given a session is paused and has HITL request state
@@ -117,8 +112,8 @@ Feature: HITL request_user_input handler wired via pause pattern
     Then snapshot.hitlRequest should be null
 
   # === TypeScript: Inline rendering ===
-
-  @integration @BUG-118
+  @integration
+  @BUG-118
   Scenario: InputTransition renders HITL question with options inline
     Given isPaused is true and hitlRequest contains a question with options
     When InputTransition renders
@@ -126,14 +121,16 @@ Feature: HITL request_user_input handler wired via pause pattern
     And it should show selectable options with selected and unselected indicators
     And it should show navigation hints for up down Enter and Esc
 
-  @integration @BUG-118
+  @integration
+  @BUG-118
   Scenario: InputTransition renders freeform-only HITL question
     Given isPaused is true and hitlRequest contains a question without options
     When InputTransition renders
     Then it should show the question text
     And it should show a text input area for freeform response
 
-  @integration @BUG-118
+  @integration
+  @BUG-118
   Scenario: Multi-step HITL advances through questions
     Given isPaused is true and hitlRequest contains 2 questions
     And the user is on question 1 of 2
@@ -142,8 +139,8 @@ Feature: HITL request_user_input handler wired via pause pattern
     And the first question answer should be stored
 
   # === TypeScript: Keyboard handling ===
-
-  @integration @BUG-118
+  @integration
+  @BUG-118
   Scenario: AgentView HITL keyboard handler navigates options
     Given a session is paused with HITL questions containing options
     When the user presses up arrow
@@ -151,14 +148,16 @@ Feature: HITL request_user_input handler wired via pause pattern
     When the user presses down arrow
     Then the selected option should move down
 
-  @integration @BUG-118
+  @integration
+  @BUG-118
   Scenario: AgentView HITL keyboard handler submits all answers
     Given a session is paused with HITL questions and all questions answered
     When the user presses Enter on the last question
     Then sessionSendHitlResponse should be called with all collected answers
     And cancelled should be false
 
-  @integration @BUG-118
+  @integration
+  @BUG-118
   Scenario: User cancels HITL with Escape
     Given a session is paused with HITL questions
     When the user presses Escape
@@ -166,7 +165,6 @@ Feature: HITL request_user_input handler wired via pause pattern
     And the handler should unblock and return Cancelled
 
   # === Cleanup: Remove wrong pattern ===
-
   @BUG-118
   Scenario: HitlRequest StreamChunk variant removed
     Given the codebase previously had a HitlRequest StreamChunk variant

@@ -1,6 +1,5 @@
 @PROV-024
 Feature: NAPI bindings for Anthropic OAuth subscription flows
-
   """
   New file: codelet/napi/src/claude_oauth.rs — All NAPI functions in one module. Imports claude_browser_oauth_login from claude_oauth_server, generate_pkce/build_authorize_url/parse_authorization_code/exchange_authorization_code/calculate_expiry from claude_oauth, refresh_access_token_at from claude_oauth, read_claude_auth/write_claude_auth/get_claude_auth_path from claude_auth. Mirrors codex_oauth.rs structure.
   NapiClaudeTokens #[napi(object)] struct maps to ClaudeAuthJson with access_token, refresh_token, expires (f64 for JS compatibility). NapiClaudeHeadlessStartResult #[napi(object)] with authorize_url (String) and pkce_verifier (String) — verifier returned to TS so it can be passed back to complete().
@@ -42,7 +41,6 @@ Feature: NAPI bindings for Anthropic OAuth subscription flows
   #   2. All Rust OAuth modules (claude_oauth.rs, claude_oauth_server.rs, claude_headless_login.rs, claude_auth.rs, claude_refreshing_client.rs) are already implemented and tested by PROV-020/021/022/023.
   #
   # ========================================
-
   Background: User Story
     As a TUI developer
     I want to call Claude OAuth flows from TypeScript via NAPI bindings

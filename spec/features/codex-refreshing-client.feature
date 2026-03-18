@@ -153,4 +153,3 @@ Feature: Codex Custom Fetch - Token Refresh and API Rewriting
     Then the token is immediately considered expired
     Given the access token may be expired
     Then the first API request triggers a token refresh before sending
-

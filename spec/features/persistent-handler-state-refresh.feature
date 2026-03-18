@@ -1,7 +1,6 @@
 @done
 @BUG-101
 Feature: Persistent chunk handler refreshes React state on session state changes
-
   """
   Fix is in persistentChunkHandler in AgentView.tsx — add refreshRustState call for all
   SessionStateChange events. The endCompaction guard still applies (only CompactionComplete
@@ -21,7 +20,6 @@ Feature: Persistent chunk handler refreshes React state on session state changes
   #   2. SessionStateChange(Running) arrives via persistentChunkHandler during /compact flow → refreshRustState called → isLoading=true shown correctly
   #
   # ========================================
-
   Background: User Story
     Given a user interacting with the AI agent in the TUI
 
