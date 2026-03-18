@@ -50,6 +50,25 @@ pub fn get_file_diff(dir: String, filepath: String) -> napi::Result<Option<Strin
         .map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
+/// Get unified diff for a single file between HEAD and a checkpoint commit
+///
+/// Shows what would change if the checkpoint were restored:
+/// HEAD content is shown as "old" (lines removed), checkpoint as "new" (lines added).
+///
+/// @param dir - Path to the repository root
+/// @param filepath - Path to the file (relative to repository root)
+/// @param checkpointRef - Full ref or SHA of the checkpoint commit
+/// @returns Unified diff string, or null if no changes
+#[napi]
+pub fn get_checkpoint_file_diff(
+    dir: String,
+    filepath: String,
+    checkpoint_ref: String,
+) -> napi::Result<Option<String>> {
+    codelet_git::get_checkpoint_file_diff(&dir, &filepath, &checkpoint_ref)
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
+}
+
 /// Get current branch name
 ///
 /// @param dir - Path to the repository root

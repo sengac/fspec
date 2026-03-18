@@ -4,16 +4,17 @@
  * Coverage:
  * - GIT-004: Interactive checkpoint viewer with diff and commit capabilities
  * - TUI-002: Checkpoint Viewer Three-Pane Layout
+ * - GIT-040: Replace diff-worker.ts with native Rust NAPI diff operations
  * - INPUT-001: Uses centralized input handling with HIGH priority
  */
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Text } from 'ink';
 import { VirtualList } from './VirtualList';
 import type { FileItem } from './FileDiffViewer';
-import { Worker } from 'worker_threads';
-import { parseDiff, DiffLine } from '../../git/diff-parser';
-import { getWorkerPath } from '../../git/worker-path';
+import { parseDiff } from '../../git/diff-parser';
+import type { DiffLine } from '../../git/diff-parser';
+import { getCheckpointFileDiff } from '../../git/diff';
 import { useFspecStore } from '../store/fspecStore';
 import { resolveRef } from '@sengac/codelet-napi';
 import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
@@ -78,10 +79,6 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
   // Checkpoint list and file list minimum width in characters (matches FileDiffViewer)
   const leftColumnMinWidth = 30;
   const fileListMinWidth = 30;
-
-  // Worker thread reference
-  const workerRef = useRef<Worker | null>(null);
-  const pendingRequestId = useRef<string | null>(null);
 
   // Track whether files are being loaded for the selected checkpoint
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
@@ -228,25 +225,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     }));
   }, [currentCheckpoint, selectedCheckpointIndex]);
 
-  // Initialize worker thread on mount
-  useEffect(() => {
-    const workerPath = getWorkerPath();
-
-    try {
-      workerRef.current = new Worker(workerPath);
-    } catch (error) {
-      // Worker initialization failed
-    }
-
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
-      }
-    };
-  }, []);
-
-  // Load git diff when selected file changes using worker thread
+  // Load git diff when selected file changes via direct NAPI call
   useEffect(() => {
     const selectedFile = files[selectedFileIndex];
 
@@ -256,69 +235,39 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
       return;
     }
 
-    if (!workerRef.current) {
-      setDiffContent('Worker thread not available');
+    if (!currentCheckpoint) {
+      setDiffContent('');
       setIsLoadingDiff(false);
       return;
     }
 
     setIsLoadingDiff(true);
 
-    const requestId = `${Date.now()}`;
-    pendingRequestId.current = requestId;
+    try {
+      const diff = getCheckpointFileDiff(
+        cwd,
+        selectedFile.path,
+        currentCheckpoint.stashRef
+      );
 
-    const worker = workerRef.current;
-
-    // Set up message handler for this request
-    const messageHandler = (response: {
-      id: string;
-      diff?: string;
-      error?: string;
-    }) => {
-      // Ignore responses from cancelled requests
-      if (response.id !== pendingRequestId.current) {
-        return;
+      // Truncate large diffs to prevent UX hangs
+      const MAX_DIFF_SIZE = 100000; // 100KB max
+      let finalDiff = diff || 'No changes to display';
+      if (finalDiff.length > MAX_DIFF_SIZE) {
+        const truncatedDiff = finalDiff.substring(0, MAX_DIFF_SIZE);
+        const linesShown = truncatedDiff.split('\n').length;
+        const totalLines = finalDiff.split('\n').length;
+        finalDiff =
+          truncatedDiff +
+          `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${finalDiff.length} chars)`;
       }
 
-      if (response.error) {
-        setDiffContent('Error loading diff');
-      } else {
-        const diffLength = response.diff?.length || 0;
-
-        // Truncate large diffs to prevent UX hangs
-        const MAX_DIFF_SIZE = 100000; // 100KB max
-        let finalDiff = response.diff || 'No changes to display';
-        if (diffLength > MAX_DIFF_SIZE) {
-          const truncatedDiff = response.diff!.substring(0, MAX_DIFF_SIZE);
-          const linesShown = truncatedDiff.split('\n').length;
-          const totalLines = response.diff!.split('\n').length;
-          finalDiff =
-            truncatedDiff +
-            `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${diffLength} chars)`;
-        }
-
-        setDiffContent(finalDiff);
-      }
-
+      setDiffContent(finalDiff);
+    } catch (error) {
+      setDiffContent('Error loading diff');
+    } finally {
       setIsLoadingDiff(false);
-      worker.off('message', messageHandler);
-    };
-
-    worker.on('message', messageHandler);
-
-    // Send request to worker with checkpointRef to compare checkpoint vs HEAD
-    worker.postMessage({
-      id: requestId,
-      cwd,
-      filepath: selectedFile.path,
-      checkpointRef: currentCheckpoint.stashRef, // Compare checkpoint file vs HEAD
-    });
-
-    // Cleanup function to cancel pending requests
-    return () => {
-      pendingRequestId.current = null;
-      worker.off('message', messageHandler);
-    };
+    }
   }, [selectedFileIndex, files, cwd, currentCheckpoint]);
 
   // Parse diff content into structured DiffLine objects

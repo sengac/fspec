@@ -130,8 +130,14 @@ pub fn start_work_units_watcher(
         move |res: std::result::Result<Vec<notify_debouncer_mini::DebouncedEvent>, notify::Error>| {
             match res {
                 Ok(events) => {
+                    // Only react to events that touch work-units.json itself.
+                    // The spec/ directory also contains lock files (.lock dirs)
+                    // created by proper-lockfile during reads. Without this filter,
+                    // loadData() → lock creation → watcher event → loadData() creates
+                    // an infinite feedback loop burning ~20% CPU while idle.
                     let relevant = events.iter().any(|e| {
                         matches!(e.kind, DebouncedEventKind::Any | DebouncedEventKind::AnyContinuous)
+                            && e.path.file_name().map_or(false, |name| name == "work-units.json")
                     });
                     
                     if relevant {

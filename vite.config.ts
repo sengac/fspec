@@ -74,7 +74,7 @@ export default defineConfig({
           { recursive: true }
         );
 
-        // Bundle git directory (includes diff-worker.js)
+        // Bundle git directory (diff-parser, status, etc.)
         cpSync(
           resolve(__dirname, 'src', 'git'),
           resolve(__dirname, 'dist', 'git'),

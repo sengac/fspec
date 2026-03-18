@@ -33,14 +33,6 @@
       "testMappings": []
     },
     {
-      "name": "Level 2 escalation fires after 5 turns without inject_summary",
-      "testMappings": []
-    },
-    {
-      "name": "Level 3 deterministic fallback fires after 7 turns without inject_summary",
-      "testMappings": []
-    },
-    {
       "name": "Level 3 deterministic fallback requires no LLM call",
       "testMappings": []
     },
@@ -58,6 +50,14 @@
     },
     {
       "name": "File references propagate through multiple compaction cycles",
+      "testMappings": []
+    },
+    {
+      "name": "Level 2 escalation fires after first failed stream attempt",
+      "testMappings": []
+    },
+    {
+      "name": "Level 3 deterministic fallback fires after two failed stream attempts",
       "testMappings": []
     }
   ],

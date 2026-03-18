@@ -700,6 +700,23 @@ export declare function getCheckpointDiffFiles(
 ): Array<string>;
 
 /**
+ * Get unified diff for a single file between HEAD and a checkpoint commit
+ *
+ * Shows what would change if the checkpoint were restored:
+ * HEAD content is shown as "old" (lines removed), checkpoint as "new" (lines added).
+ *
+ * @param dir - Path to the repository root
+ * @param filepath - Path to the file (relative to repository root)
+ * @param checkpointRef - Full ref or SHA of the checkpoint commit
+ * @returns Unified diff string, or null if no changes
+ */
+export declare function getCheckpointFileDiff(
+  dir: string,
+  filepath: string,
+  checkpointRef: string
+): string | null;
+
+/**
  * Get current branch name
  *
  * @param dir - Path to the repository root

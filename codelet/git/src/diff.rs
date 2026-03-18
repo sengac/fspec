@@ -93,6 +93,103 @@ fn get_head_file_content(repo: &gix::Repository, filepath: &str) -> Result<Strin
     Ok(content)
 }
 
+/// Get file content from an arbitrary commit ref
+fn get_ref_file_content(
+    repo: &gix::Repository,
+    commit_ref: &str,
+    filepath: &str,
+) -> Result<String> {
+    let commit_id = repo
+        .rev_parse_single(commit_ref.as_bytes())
+        .map_err(|e| GitError::Other(format!("Failed to resolve ref '{}': {}", commit_ref, e)))?;
+
+    let commit = repo
+        .find_object(commit_id)
+        .map_err(|e| GitError::Other(format!("Failed to find object '{}': {}", commit_ref, e)))?
+        .try_into_commit()
+        .map_err(|e| GitError::Other(format!("Not a commit '{}': {}", commit_ref, e)))?;
+
+    let tree = commit
+        .tree()
+        .map_err(|e| GitError::Other(format!("Failed to get tree for '{}': {}", commit_ref, e)))?;
+
+    let entry = tree
+        .find_entry(filepath)
+        .ok_or_else(|| GitError::FileNotFound(filepath.to_string()))?;
+
+    let object = entry.object().map_err(|e| GitError::ReadBlob {
+        path: filepath.to_string(),
+        source: e.into(),
+    })?;
+
+    let blob = object.into_blob();
+    let content = String::from_utf8_lossy(blob.data.as_ref()).to_string();
+
+    Ok(content)
+}
+
+/// Get unified diff for a single file between HEAD and a checkpoint commit
+///
+/// Shows what would change if the checkpoint were restored:
+/// HEAD content is shown as "old" (lines removed on restore),
+/// checkpoint content is shown as "new" (lines added on restore).
+///
+/// # Arguments
+/// * `dir` - Path to the repository root
+/// * `filepath` - Path to the file (relative to repository root)
+/// * `checkpoint_ref` - Full ref or SHA of the checkpoint commit
+///
+/// # Returns
+/// Unified diff string, or None if no changes
+pub fn get_checkpoint_file_diff(
+    dir: impl AsRef<Path>,
+    filepath: &str,
+    checkpoint_ref: &str,
+) -> Result<Option<String>> {
+    let repo = open_repo(dir.as_ref())?;
+
+    // Read file content from HEAD
+    let head_content = get_head_file_content(&repo, filepath);
+
+    // Read file content from checkpoint
+    let checkpoint_content = get_ref_file_content(&repo, checkpoint_ref, filepath);
+
+    match (&head_content, &checkpoint_content) {
+        // File not in checkpoint — restoring would delete it
+        (Ok(_), Err(_)) => {
+            Ok(Some("[File will be deleted on restore]".to_string()))
+        }
+        // File not in HEAD but exists in checkpoint — restoring would create it
+        (Err(_), Ok(cp_str)) => {
+            if is_binary_content(cp_str.as_bytes()) {
+                return Ok(Some("[Binary file - no diff available]".to_string()));
+            }
+            let diff = generate_unified_diff(filepath, "", cp_str);
+            Ok(Some(diff))
+        }
+        // File exists in neither — shouldn't happen, but handle gracefully
+        (Err(_), Err(_)) => {
+            Ok(Some("[File will be deleted on restore]".to_string()))
+        }
+        // File exists in both — compare contents
+        (Ok(head_str), Ok(cp_str)) => {
+            // Check for binary content
+            if is_binary_content(head_str.as_bytes()) || is_binary_content(cp_str.as_bytes()) {
+                return Ok(Some("[Binary file - no diff available]".to_string()));
+            }
+
+            // If contents are identical, no diff
+            if head_str == cp_str {
+                return Ok(Some("[No changes - file is identical]".to_string()));
+            }
+
+            // Generate unified diff: HEAD as old, checkpoint as new (restore preview)
+            let diff = generate_unified_diff(filepath, head_str, cp_str);
+            Ok(Some(diff))
+        }
+    }
+}
+
 /// Generate unified diff format from two strings
 fn generate_unified_diff(_filepath: &str, old_content: &str, new_content: &str) -> String {
     let diff = TextDiff::from_lines(old_content, new_content);

@@ -3,19 +3,21 @@
  *
  * Coverage:
  * - TUI-002: Checkpoint Viewer Three-Pane Layout
+ * - GIT-040: Replace diff-worker.ts with native Rust NAPI diff operations
  *
  * This component extracts the common file list + diff pane logic from
  * ChangedFilesViewer and CheckpointViewer to eliminate code duplication (DRY).
+ * Diffs are loaded via synchronous NAPI calls to the Rust gitoxide backend.
  */
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Text } from 'ink';
 import { VirtualList } from './VirtualList';
 import { useFspecStore } from '../store/fspecStore';
 import { logger } from '../../utils/logger';
-import { Worker } from 'worker_threads';
-import { parseDiff, DiffLine } from '../../git/diff-parser';
-import { getWorkerPath } from '../../git/worker-path';
+import { parseDiff } from '../../git/diff-parser';
+import type { DiffLine } from '../../git/diff-parser';
+import { getFileDiff } from '../../git/diff';
 
 export interface FileItem {
   path: string;
@@ -47,33 +49,7 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
 
   const cwd = useFspecStore(state => state.cwd);
 
-  // File list minimum width in characters
-  const fileListMinWidth = 30;
-
-  // Worker thread reference
-  const workerRef = useRef<Worker | null>(null);
-  const pendingRequestId = useRef<string | null>(null);
-  const componentId = useRef(`FileDiffViewer-${Date.now()}`);
-
-  // Initialize worker thread on mount
-  useEffect(() => {
-    const workerPath = getWorkerPath();
-
-    try {
-      workerRef.current = new Worker(workerPath);
-    } catch (error) {
-      logger.error(`[${componentId.current}] Failed to initialize worker: ${error}`);
-    }
-
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
-      }
-    };
-  }, []);
-
-  // Load git diff when selected file changes using worker thread
+  // Load git diff when selected file changes via direct NAPI call
   useEffect(() => {
     const selectedFile = files[selectedFileIndex];
 
@@ -90,61 +66,28 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
       return;
     }
 
-    if (!workerRef.current) {
-      setDiffContent('Worker thread not available');
-      setIsLoadingDiff(false);
-      return;
-    }
-
     setIsLoadingDiff(true);
 
-    const startTime = Date.now();
-    const requestId = `${Date.now()}`;
-    pendingRequestId.current = requestId;
+    try {
+      const diff = getFileDiff(cwd, selectedFile.path);
 
-    const worker = workerRef.current;
-
-    // Set up message handler for this request
-    const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
-      // Ignore responses from cancelled requests
-      if (response.id !== pendingRequestId.current) {
-        return;
+      // Truncate large diffs to prevent UX hangs
+      const MAX_DIFF_SIZE = 100000; // 100KB max
+      let finalDiff = diff || 'No changes to display';
+      if (finalDiff.length > MAX_DIFF_SIZE) {
+        const truncatedDiff = finalDiff.substring(0, MAX_DIFF_SIZE);
+        const linesShown = truncatedDiff.split('\n').length;
+        const totalLines = finalDiff.split('\n').length;
+        finalDiff = truncatedDiff + `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${finalDiff.length} chars)`;
       }
 
-      if (response.error) {
-        setDiffContent('Error loading diff');
-      } else {
-        const diffLength = response.diff?.length || 0;
-
-        // Truncate large diffs to prevent UX hangs
-        const MAX_DIFF_SIZE = 100000; // 100KB max
-        let finalDiff = response.diff || 'No changes to display';
-        if (diffLength > MAX_DIFF_SIZE) {
-          const truncatedDiff = response.diff!.substring(0, MAX_DIFF_SIZE);
-          const linesShown = truncatedDiff.split('\n').length;
-          const totalLines = response.diff!.split('\n').length;
-          finalDiff = truncatedDiff + `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${diffLength} chars)`;
-        }
-
-        setDiffContent(finalDiff);
-      }
-
+      setDiffContent(finalDiff);
+    } catch (error) {
+      logger.error(`Failed to load diff for ${selectedFile.path}: ${error}`);
+      setDiffContent('Error loading diff');
+    } finally {
       setIsLoadingDiff(false);
-      worker.off('message', messageHandler);
-    };
-
-    worker.on('message', messageHandler);
-    worker.postMessage({
-      id: requestId,
-      cwd,
-      filepath: selectedFile.path,
-    });
-
-    // Cleanup function to cancel pending requests
-    return () => {
-      pendingRequestId.current = null;
-      worker.off('message', messageHandler);
-    };
+    }
   }, [selectedFileIndex, files, cwd]);
 
   // Parse diff content into structured DiffLine objects

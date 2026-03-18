@@ -85,3 +85,4 @@ test-temp-*/
 test-tmp-*/
 
 .fspec/
+dist/sea/

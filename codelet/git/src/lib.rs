@@ -28,7 +28,7 @@ pub mod worktree;
 
 use std::path::Path;
 
-pub use diff::{get_file_diff, is_binary_file};
+pub use diff::{get_checkpoint_file_diff, get_file_diff, is_binary_file};
 pub use error::{GitError, Result};
 pub use isolated_session::IsolatedSessionInfo;
 pub use repo_ops::{git_add, git_commit, git_init, git_set_config, resolve_ref};
