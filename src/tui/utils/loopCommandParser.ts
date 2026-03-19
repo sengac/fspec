@@ -2,9 +2,9 @@
  * Parser for /loop slash command — deterministic interval extraction.
  * Converts natural language into cron expressions without LLM round-trip.
  *
- * Intervals are stored in seconds for sub-minute granularity.
- * The scheduler engine ticks every 30 seconds, so that is the
- * effective minimum resolution.
+ * Intervals are stored in seconds for sub-second granularity.
+ * Each loop entry spawns its own tokio task — no polling tick bottleneck.
+ * Minimum interval is 1 second (enforced at registration).
  *
  * SCHED-011: Loop Shorthand — Natural Language Schedule Creation
  */

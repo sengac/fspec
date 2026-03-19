@@ -510,7 +510,8 @@
       "title": "SCHED",
       "createdAt": "2026-03-18T11:04:34.984Z",
       "workUnits": [
-        "SCHED-012"
+        "SCHED-012",
+        "SCHED-013"
       ]
     }
   }

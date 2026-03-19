@@ -1124,8 +1124,9 @@ export declare function loopList(sessionId: string): Promise<string>;
 /**
  * Register a session-scoped loop with the Rust scheduler.
  *
- * The scheduler's 30-second tick will evaluate this entry and send_input
- * the prompt directly into the originating session when the interval elapses.
+ * SCHED-013: Spawns a per-entry tokio task that fires the prompt into
+ * the originating session at exactly the configured interval. The task
+ * checks session idle status before each firing (skip-when-busy policy).
  *
  * Must be async so NAPI-RS provides the Tokio runtime context — sync NAPI
  * functions don't have access to `tokio::runtime::Handle::try_current()`.

@@ -1,0 +1,442 @@
+{
+  "scenarios": [
+    {
+      "name": "Loop fires at exact sub-minute interval",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/loop_task_test.rs",
+          "lines": "58-106",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "lines": [
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Minimum interval is 1 second",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/loop_task_test.rs",
+          "lines": "112-150",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel aborts the spawned task immediately",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/loop_task_test.rs",
+          "lines": "156-195",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skip firing when session is busy",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/loop_task_test.rs",
+          "lines": "201-251",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "lines": [
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-terminate when session is destroyed",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/loop_task_test.rs",
+          "lines": "257-300",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cron engine tick is unaffected",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/loop_task_test.rs",
+          "lines": "310-348",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expired loop auto-terminates",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/loop_task_test.rs",
+          "lines": "354-408",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/loop_store.rs",
+              "lines": [
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/loop_task_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/scheduler/loop_store.rs",
+      "codelet/napi/src/scheduler/engine.rs"
+    ],
+    "totalLinesCovered": 630
+  }
+}

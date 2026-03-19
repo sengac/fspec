@@ -3,13 +3,14 @@
 //! Core timer loop that evaluates cron schedules every 30 seconds.
 //! Reads spec/schedules.json each tick, evaluates cron expressions
 //! with timezone support, and triggers jobs via stubs (SCHED-004/005).
-//! Also evaluates session-scoped /loop entries (SCHED-011).
+//!
+//! SCHED-013: Session-scoped /loop entries are no longer evaluated here.
+//! Each loop entry spawns its own tokio task in LoopStore (see loop_store.rs).
 
 use super::types::{EvaluationResult, ScheduleEntry, SchedulesFile};
 use super::state::{OverlapAction, SchedulerState};
 use super::job_log::{append_log_entry, JobLogEntry};
 use super::cron_utils::{self, MAX_SESSIONS};
-use super::loop_store::LoopStore;
 use super::trigger;
 use chrono::Utc;
 use std::path::Path;
@@ -192,9 +193,6 @@ pub async fn evaluate_and_run(
         }
     }
 
-    // Step 8: Evaluate session-scoped /loop entries (SCHED-011)
-    evaluate_and_fire_loops().await;
-
     Ok(())
 }
 
@@ -338,74 +336,4 @@ pub async fn trigger_catch_up_job(
     state: &SchedulerState,
 ) -> Result<(), anyhow::Error> {
     trigger::trigger_and_update(schedules_path, name, job_type, project_path, entry, state).await
-}
-
-/// SCHED-011: Evaluate session-scoped /loop entries and fire due prompts.
-///
-/// For each due loop entry, checks that the originating session is idle,
-/// then sends the prompt directly via `session.send_input()`. This runs
-/// the prompt in the SAME session that created the loop — not a new one.
-async fn evaluate_and_fire_loops() {
-    let store = LoopStore::instance();
-
-    // Fast path: skip if no loops registered
-    if store.is_empty().await {
-        return;
-    }
-
-    // Purge expired entries first
-    store.purge_expired().await;
-
-    let due = store.get_due().await;
-    if due.is_empty() {
-        return;
-    }
-
-    let sm = crate::session_manager::SessionManager::instance();
-
-    for entry in &due {
-        // Check that the session still exists and is idle
-        let session_id_str = entry.session_id.to_string();
-        let session = match sm.get_session(&session_id_str) {
-            Ok(s) => s,
-            Err(_) => {
-                // Session was destroyed — remove the loop
-                warn!(
-                    "Loop {}: session {} no longer exists, removing",
-                    entry.id, entry.session_id
-                );
-                store.cancel(&entry.id).await;
-                continue;
-            }
-        };
-
-        // Only fire if session is idle (skip policy — don't queue)
-        if session.get_status() != crate::session_manager::SessionStatus::Idle {
-            info!(
-                "Loop {}: session {} is busy, skipping this tick",
-                entry.id, entry.session_id
-            );
-            continue;
-        }
-
-        // Fire the prompt into the originating session
-        info!(
-            "Loop {} firing: prompt='{}' → session {}",
-            entry.id, entry.prompt, entry.session_id
-        );
-        match session.send_input(entry.prompt.clone(), None) {
-            Ok(()) => {
-                store.mark_executed(&entry.id).await;
-            }
-            Err(e) => {
-                error!(
-                    "Loop {}: failed to send prompt to session {}: {}",
-                    entry.id, entry.session_id, e
-                );
-            }
-        }
-
-        // Only fire one loop per session per tick to avoid flooding
-        break;
-    }
 }

@@ -2,7 +2,10 @@
 //!
 //! Core scheduler engine: a tokio task that evaluates cron schedules
 //! from `spec/schedules.json` every 30 seconds and triggers jobs.
-//! Also evaluates session-scoped /loop entries (SCHED-011).
+//!
+//! SCHED-013: Session-scoped /loop entries are now self-managed via
+//! per-entry spawned tokio tasks in LoopStore (decoupled from the
+//! engine's 30-second tick).
 
 pub mod agent_job;
 pub mod catch_up;

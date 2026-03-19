@@ -1,13 +1,19 @@
-//! Session-scoped loop store — SCHED-011
+//! Session-scoped loop store — SCHED-011 / SCHED-013
 //!
 //! In-memory store for `/loop` entries. These are ephemeral (not persisted),
-//! scoped to the session that created them, and evaluated by the scheduler
-//! engine on each 30-second tick. When due, the prompt is sent directly
-//! to the originating session via `session.send_input()`.
+//! scoped to the session that created them.
+//!
+//! SCHED-013: Each entry spawns its own tokio task that sleeps for exactly
+//! the configured interval and fires a callback. The LoopStore is now an
+//! active task manager — not a passive data store polled by the engine tick.
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
 use std::collections::HashMap;
+use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
 use tokio::sync::RwLock;
+use tokio::task::JoinHandle;
 use tracing::info;
 use uuid::Uuid;
 
@@ -23,23 +29,28 @@ pub struct LoopEntry {
     pub last_run_at: Option<DateTime<Utc>>,
 }
 
-impl LoopEntry {
-    /// Check if this loop's interval has elapsed and it should fire.
-    pub fn is_due(&self, now: DateTime<Utc>) -> bool {
-        if now >= self.expires_at {
-            return false;
-        }
-        let reference = self.last_run_at.unwrap_or(self.created_at);
-        let elapsed = now - reference;
-        let interval = Duration::seconds(self.interval_seconds as i64);
-        elapsed >= interval
-    }
+/// Idle-check callback type: given a session UUID, returns whether it is idle.
+pub type IdleCheckFn = Arc<
+    dyn Fn(Uuid) -> Pin<Box<dyn Future<Output = bool> + Send>> + Send + Sync + 'static,
+>;
+
+/// Shared inner state for LoopStore.
+///
+/// Extracted into its own struct so spawned tasks can hold an `Arc<Inner>`
+/// reference for self-removal on expiry — without raw pointers.
+struct Inner {
+    /// loop_id → LoopEntry
+    entries: RwLock<HashMap<String, LoopEntry>>,
+    /// loop_id → JoinHandle for the spawned task (SCHED-013)
+    handles: RwLock<HashMap<String, JoinHandle<()>>>,
 }
 
 /// Global loop store — all session-scoped loops across all sessions.
+///
+/// SCHED-013: Active task manager. Each entry is paired with a
+/// JoinHandle for its spawned tokio task.
 pub struct LoopStore {
-    /// loop_id → LoopEntry
-    entries: RwLock<HashMap<String, LoopEntry>>,
+    inner: Arc<Inner>,
 }
 
 static LOOP_STORE: std::sync::OnceLock<LoopStore> = std::sync::OnceLock::new();
@@ -47,8 +58,16 @@ static LOOP_STORE: std::sync::OnceLock<LoopStore> = std::sync::OnceLock::new();
 impl LoopStore {
     fn new() -> Self {
         Self {
-            entries: RwLock::new(HashMap::new()),
+            inner: Arc::new(Inner {
+                entries: RwLock::new(HashMap::new()),
+                handles: RwLock::new(HashMap::new()),
+            }),
         }
+    }
+
+    /// Create a non-singleton LoopStore for testing (SCHED-013).
+    pub fn new_local() -> Self {
+        Self::new()
     }
 
     /// Get the global singleton.
@@ -56,19 +75,15 @@ impl LoopStore {
         LOOP_STORE.get_or_init(LoopStore::new)
     }
 
-    /// Register a new loop entry.
-    pub async fn register(&self, entry: LoopEntry) {
-        info!(
-            "Loop registered: id={}, session={}, prompt='{}', interval={}s",
-            entry.id, entry.session_id, entry.prompt, entry.interval_seconds
-        );
-        self.entries.write().await.insert(entry.id.clone(), entry);
-    }
-
     /// Cancel a loop by ID. Returns true if it existed.
+    ///
+    /// SCHED-013: Also aborts the spawned JoinHandle if present.
     pub async fn cancel(&self, loop_id: &str) -> bool {
-        let removed = self.entries.write().await.remove(loop_id).is_some();
+        let removed = self.inner.entries.write().await.remove(loop_id).is_some();
         if removed {
+            if let Some(handle) = self.inner.handles.write().await.remove(loop_id) {
+                handle.abort();
+            }
             info!("Loop cancelled: id={}", loop_id);
         }
         removed
@@ -76,7 +91,8 @@ impl LoopStore {
 
     /// List all loops for a specific session.
     pub async fn list_for_session(&self, session_id: Uuid) -> Vec<LoopEntry> {
-        self.entries
+        self.inner
+            .entries
             .read()
             .await
             .values()
@@ -85,47 +101,31 @@ impl LoopStore {
             .collect()
     }
 
-    /// Get all loops that are due to fire, across all sessions.
-    /// Only returns entries whose session is currently idle.
-    pub async fn get_due(&self) -> Vec<LoopEntry> {
-        let now = Utc::now();
-        let entries = self.entries.read().await;
+    /// Remove all loops for a session (called on session destroy).
+    ///
+    /// SCHED-013: Also aborts all JoinHandles for that session.
+    pub async fn remove_for_session(&self, session_id: Uuid) -> usize {
+        let mut entries = self.inner.entries.write().await;
+        let removed_ids: Vec<String> = entries
+            .iter()
+            .filter(|(_, e)| e.session_id == session_id)
+            .map(|(id, _)| id.clone())
+            .collect();
+        for id in &removed_ids {
+            entries.remove(id);
+        }
+        drop(entries);
 
-        let mut due = Vec::new();
-        for entry in entries.values() {
-            if entry.is_due(now) {
-                due.push(entry.clone());
+        if !removed_ids.is_empty() {
+            let mut handles = self.inner.handles.write().await;
+            for id in &removed_ids {
+                if let Some(handle) = handles.remove(id) {
+                    handle.abort();
+                }
             }
         }
-        due
-    }
 
-    /// Mark a loop as just executed.
-    pub async fn mark_executed(&self, loop_id: &str) {
-        if let Some(entry) = self.entries.write().await.get_mut(loop_id) {
-            entry.last_run_at = Some(Utc::now());
-        }
-    }
-
-    /// Purge expired entries. Returns the count removed.
-    pub async fn purge_expired(&self) -> usize {
-        let now = Utc::now();
-        let mut entries = self.entries.write().await;
-        let before = entries.len();
-        entries.retain(|_, e| now < e.expires_at);
-        let purged = before - entries.len();
-        if purged > 0 {
-            info!("Purged {} expired loop(s)", purged);
-        }
-        purged
-    }
-
-    /// Remove all loops for a session (called on session destroy).
-    pub async fn remove_for_session(&self, session_id: Uuid) -> usize {
-        let mut entries = self.entries.write().await;
-        let before = entries.len();
-        entries.retain(|_, e| e.session_id != session_id);
-        let removed = before - entries.len();
+        let removed = removed_ids.len();
         if removed > 0 {
             info!(
                 "Removed {} loop(s) for destroyed session {}",
@@ -135,154 +135,146 @@ impl LoopStore {
         removed
     }
 
-    /// Check if the store has any entries at all (fast path for engine tick).
+    /// Check if the store has any entries at all (fast path).
     pub async fn is_empty(&self) -> bool {
-        self.entries.read().await.is_empty()
+        self.inner.entries.read().await.is_empty()
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use chrono::Duration;
+    /// Register a loop entry and spawn a tokio task that fires `on_fire`
+    /// every `entry.interval_seconds`. The task auto-terminates on expiry
+    /// and self-removes from the store.
+    pub async fn register_with_task(
+        &self,
+        entry: LoopEntry,
+        on_fire: Arc<dyn Fn(String) + Send + Sync + 'static>,
+    ) {
+        let idle_check: IdleCheckFn = Arc::new(|_session_id: Uuid| {
+            Box::pin(async { true })
+        });
+        self.register_with_task_and_idle_check(entry, on_fire, idle_check)
+            .await;
+    }
 
-    fn make_entry(id: &str, session: Uuid, interval_sec: u32) -> LoopEntry {
-        let now = Utc::now();
-        LoopEntry {
-            id: id.to_string(),
-            session_id: session,
-            prompt: format!("check {}", id),
-            interval_seconds: interval_sec,
-            created_at: now,
-            expires_at: now + Duration::days(3),
-            last_run_at: None,
+    /// Like `register_with_task` but validates interval >= 1 second first.
+    /// Returns Err if interval is < 1 second.
+    pub async fn try_register_with_task(
+        &self,
+        entry: LoopEntry,
+        on_fire: Arc<dyn Fn(String) + Send + Sync + 'static>,
+    ) -> Result<(), String> {
+        if entry.interval_seconds < 1 {
+            return Err(format!(
+                "Minimum loop interval is 1 second, got {}",
+                entry.interval_seconds
+            ));
         }
+        self.register_with_task(entry, on_fire).await;
+        Ok(())
     }
 
-    #[test]
-    fn test_is_due_never_run() {
-        let mut entry = make_entry("a", Uuid::new_v4(), 300);
-        // Created 6 minutes ago, never run, 5-minute (300s) interval → due
-        entry.created_at = Utc::now() - Duration::minutes(6);
-        assert!(entry.is_due(Utc::now()));
+    /// Like `register_with_task_and_idle_check` but validates interval >= 1
+    /// second first. Returns Err if interval is < 1 second.
+    ///
+    /// This is the recommended entry point for production callers (e.g. the
+    /// NAPI `loop_register` endpoint) — it enforces Rule[7] (minimum 1s
+    /// interval) before spawning any task.
+    pub async fn try_register_with_task_and_idle_check(
+        &self,
+        entry: LoopEntry,
+        on_fire: Arc<dyn Fn(String) + Send + Sync + 'static>,
+        idle_check: IdleCheckFn,
+    ) -> Result<(), String> {
+        if entry.interval_seconds < 1 {
+            return Err(format!(
+                "Minimum loop interval is 1 second, got {}",
+                entry.interval_seconds
+            ));
+        }
+        self.register_with_task_and_idle_check(entry, on_fire, idle_check)
+            .await;
+        Ok(())
     }
 
-    #[test]
-    fn test_is_due_not_yet() {
-        let entry = make_entry("b", Uuid::new_v4(), 300);
-        // Just created → not due
-        assert!(!entry.is_due(Utc::now()));
+    /// Register a loop entry with an idle-check gate. The spawned task
+    /// calls `idle_check(session_id)` before each firing; if the session
+    /// is not idle, the task skips that tick and retries after the next
+    /// interval.
+    ///
+    /// SCHED-013: Core implementation for per-entry spawned tasks.
+    pub async fn register_with_task_and_idle_check(
+        &self,
+        entry: LoopEntry,
+        on_fire: Arc<dyn Fn(String) + Send + Sync + 'static>,
+        idle_check: IdleCheckFn,
+    ) {
+        let loop_id = entry.id.clone();
+        let session_id = entry.session_id;
+        let prompt = entry.prompt.clone();
+        let interval_secs = entry.interval_seconds;
+        let expires_at = entry.expires_at;
+
+        info!(
+            "Loop registered (task): id={}, session={}, prompt='{}', interval={}s",
+            loop_id, session_id, prompt, interval_secs
+        );
+
+        // Store the entry
+        self.inner
+            .entries
+            .write()
+            .await
+            .insert(loop_id.clone(), entry);
+
+        // Clone the Arc<Inner> so the spawned task can self-remove on expiry
+        let inner = Arc::clone(&self.inner);
+        let loop_id_for_handle = loop_id.clone();
+
+        let handle = tokio::spawn(async move {
+            let interval = std::time::Duration::from_secs(interval_secs as u64);
+
+            loop {
+                tokio::time::sleep(interval).await;
+
+                // Check expiry after waking
+                if Utc::now() >= expires_at {
+                    info!("Loop {} expired, self-terminating", loop_id);
+                    inner.entries.write().await.remove(&loop_id);
+                    inner.handles.write().await.remove(&loop_id);
+                    return;
+                }
+
+                // Check if session is idle
+                if !idle_check(session_id).await {
+                    info!(
+                        "Loop {}: session {} is busy, skipping this tick",
+                        loop_id, session_id
+                    );
+                    continue;
+                }
+
+                // Fire the callback
+                on_fire(prompt.clone());
+
+                // Update last_run_at so loop_list() reports accurate timing
+                if let Some(entry) = inner.entries.write().await.get_mut(&loop_id) {
+                    entry.last_run_at = Some(Utc::now());
+                }
+            }
+        });
+
+        self.inner
+            .handles
+            .write()
+            .await
+            .insert(loop_id_for_handle, handle);
     }
 
-    #[test]
-    fn test_is_due_after_execution() {
-        let mut entry = make_entry("c", Uuid::new_v4(), 300);
-        entry.created_at = Utc::now() - Duration::minutes(20);
-        // Last ran 6 minutes ago → due (interval is 300s = 5 min)
-        entry.last_run_at = Some(Utc::now() - Duration::minutes(6));
-        assert!(entry.is_due(Utc::now()));
-    }
-
-    #[test]
-    fn test_is_due_recently_executed() {
-        let mut entry = make_entry("d", Uuid::new_v4(), 300);
-        entry.created_at = Utc::now() - Duration::minutes(20);
-        // Last ran 2 minutes ago → not due (interval is 300s = 5 min)
-        entry.last_run_at = Some(Utc::now() - Duration::minutes(2));
-        assert!(!entry.is_due(Utc::now()));
-    }
-
-    #[test]
-    fn test_is_due_sub_minute_interval() {
-        let mut entry = make_entry("f", Uuid::new_v4(), 5);
-        // Created 10 seconds ago, 5-second interval → due
-        entry.created_at = Utc::now() - Duration::seconds(10);
-        assert!(entry.is_due(Utc::now()));
-    }
-
-    #[test]
-    fn test_is_due_sub_minute_not_yet() {
-        let mut entry = make_entry("g", Uuid::new_v4(), 30);
-        // Created 10 seconds ago, 30-second interval → not due
-        entry.created_at = Utc::now() - Duration::seconds(10);
-        assert!(!entry.is_due(Utc::now()));
-    }
-
-    #[test]
-    fn test_is_due_expired() {
-        let mut entry = make_entry("e", Uuid::new_v4(), 300);
-        entry.created_at = Utc::now() - Duration::days(4);
-        entry.expires_at = Utc::now() - Duration::hours(1);
-        assert!(!entry.is_due(Utc::now()));
-    }
-
-    #[tokio::test]
-    async fn test_register_and_list() {
-        let store = LoopStore { entries: RwLock::new(HashMap::new()) };
-        let sid = Uuid::new_v4();
-        let other_sid = Uuid::new_v4();
-
-        store.register(make_entry("x1", sid, 300)).await;
-        store.register(make_entry("x2", sid, 600)).await;
-        store.register(make_entry("x3", other_sid, 900)).await;
-
-        let for_sid = store.list_for_session(sid).await;
-        assert_eq!(for_sid.len(), 2);
-
-        let for_other = store.list_for_session(other_sid).await;
-        assert_eq!(for_other.len(), 1);
-    }
-
-    #[tokio::test]
-    async fn test_cancel() {
-        let store = LoopStore { entries: RwLock::new(HashMap::new()) };
-        store.register(make_entry("y1", Uuid::new_v4(), 300)).await;
-
-        assert!(store.cancel("y1").await);
-        assert!(!store.cancel("y1").await); // Already gone
-        assert!(store.is_empty().await);
-    }
-
-    #[tokio::test]
-    async fn test_purge_expired() {
-        let store = LoopStore { entries: RwLock::new(HashMap::new()) };
-        let mut expired = make_entry("z1", Uuid::new_v4(), 300);
-        expired.expires_at = Utc::now() - Duration::hours(1);
-        store.register(expired).await;
-        store.register(make_entry("z2", Uuid::new_v4(), 300)).await;
-
-        let purged = store.purge_expired().await;
-        assert_eq!(purged, 1);
-        assert_eq!(store.entries.read().await.len(), 1);
-    }
-
-    #[tokio::test]
-    async fn test_remove_for_session() {
-        let store = LoopStore { entries: RwLock::new(HashMap::new()) };
-        let sid = Uuid::new_v4();
-        store.register(make_entry("w1", sid, 300)).await;
-        store.register(make_entry("w2", sid, 600)).await;
-        store.register(make_entry("w3", Uuid::new_v4(), 900)).await;
-
-        let removed = store.remove_for_session(sid).await;
-        assert_eq!(removed, 2);
-        assert_eq!(store.entries.read().await.len(), 1);
-    }
-
-    #[tokio::test]
-    async fn test_mark_executed() {
-        let store = LoopStore { entries: RwLock::new(HashMap::new()) };
-        let mut entry = make_entry("m1", Uuid::new_v4(), 300);
-        entry.created_at = Utc::now() - Duration::minutes(10);
-        store.register(entry).await;
-
-        // Should be due
-        assert_eq!(store.get_due().await.len(), 1);
-
-        // Mark executed
-        store.mark_executed("m1").await;
-
-        // Should no longer be due
-        assert_eq!(store.get_due().await.len(), 0);
+    /// Check if a loop entry has an active (non-finished) spawned task.
+    pub async fn has_active_task(&self, loop_id: &str) -> bool {
+        let handles = self.inner.handles.read().await;
+        match handles.get(loop_id) {
+            Some(handle) => !handle.is_finished(),
+            None => false,
+        }
     }
 }

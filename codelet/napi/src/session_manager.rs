@@ -2082,7 +2082,7 @@ mod session_role_tests {
     /// Verify non-empty role_name still sets the role (regression guard)
     #[test]
     fn test_non_empty_role_name_sets_role() {
-        let mut current_role: Option<String> = None;
+        let current_role: Option<String>;
 
         let role_name = "architect".to_string();
         if role_name.is_empty() {
@@ -2097,7 +2097,7 @@ mod session_role_tests {
     /// Verify clearing an already-empty role is idempotent
     #[test]
     fn test_clear_role_when_no_role_set_is_idempotent() {
-        let mut current_role: Option<String> = None;
+        let current_role: Option<String>;
 
         let role_name = "".to_string();
         if role_name.is_empty() {
@@ -5887,12 +5887,13 @@ pub fn session_schedule_name(session_id: String) -> Result<Option<String>> {
     Ok(name)
 }
 
-// === SCHED-011: Session-Scoped Loop NAPI Bindings ===
+// === SCHED-011 / SCHED-013: Session-Scoped Loop NAPI Bindings ===
 
 /// Register a session-scoped loop with the Rust scheduler.
 ///
-/// The scheduler's 30-second tick will evaluate this entry and send_input
-/// the prompt directly into the originating session when the interval elapses.
+/// SCHED-013: Spawns a per-entry tokio task that fires the prompt into
+/// the originating session at exactly the configured interval. The task
+/// checks session idle status before each firing (skip-when-busy policy).
 ///
 /// Must be async so NAPI-RS provides the Tokio runtime context — sync NAPI
 /// functions don't have access to `tokio::runtime::Handle::try_current()`.
@@ -5926,8 +5927,32 @@ pub async fn loop_register(
         last_run_at: None,
     };
 
-    // Can await directly since we're async
-    crate::scheduler::LoopStore::instance().register(entry).await;
+    // SCHED-013: Capture the session Arc for the on_fire and idle_check callbacks.
+    // The task fires the prompt into the SAME session that created the loop.
+    let session_for_fire = session.clone();
+    let on_fire: std::sync::Arc<dyn Fn(String) + Send + Sync + 'static> =
+        std::sync::Arc::new(move |prompt_text: String| {
+            if let Err(e) = session_for_fire.send_input(prompt_text, None) {
+                tracing::error!(
+                    "Loop fire failed for session {}: {}",
+                    uuid, e
+                );
+            }
+        });
+
+    let session_for_idle = session.clone();
+    let idle_check: crate::scheduler::loop_store::IdleCheckFn =
+        std::sync::Arc::new(move |_session_id: Uuid| {
+            let s = session_for_idle.clone();
+            Box::pin(async move {
+                s.get_status() == SessionStatus::Idle
+            })
+        });
+
+    crate::scheduler::LoopStore::instance()
+        .try_register_with_task_and_idle_check(entry, on_fire, idle_check)
+        .await
+        .map_err(|e| Error::from_reason(e))?;
 
     Ok(())
 }
