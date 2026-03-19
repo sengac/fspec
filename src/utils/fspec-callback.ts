@@ -374,6 +374,19 @@ args: {"tool": "perplexity", "query": "your research question"}
 | list-checkpoints | [workUnitId] | - | List checkpoints |
 | restore-checkpoint | [workUnitId, checkpointName] | - | Restore checkpoint |
 
+### Scheduling
+
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
+| add-schedule | - | name, cron, timezone, type, role, prompt, command, overlap | Add a scheduled job (agent or shell) |
+| list-schedules | - | json | List all configured schedules |
+| remove-schedule | [name] | - | Remove a schedule |
+| pause-schedule | [name] | - | Pause an active schedule |
+| resume-schedule | [name] | - | Resume a paused schedule |
+
+**Job types:** agent (AI agent session), shell (command execution)
+**Overlap policies:** skip (default), queue
+
 ---
 
 ## Notes
@@ -638,6 +651,130 @@ args: {"command": "add-rule"}
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
 | command | string | No | Get help for specific command |`,
+
+    'add-schedule': `## add-schedule
+
+Add a new scheduled job (agent or shell) to spec/schedules.json.
+
+### Tool Call
+\`\`\`
+command: "add-schedule"
+args: {"name": "nightly-review", "cron": "0 2 * * *", "timezone": "UTC", "type": "agent", "role": "Security reviewer", "prompt": "Review src/ for vulnerabilities"}
+\`\`\`
+
+### Args (all named options, not positional)
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| name | string | Yes | Schedule name (slug format, e.g., "nightly-review") |
+| cron | string | Yes | 5-field cron expression (e.g., "0 2 * * *") |
+| timezone | string | Yes | IANA timezone (e.g., "UTC", "America/New_York") |
+| type | string | Yes | Job type: "agent" or "shell" |
+| role | string | Agent only | Agent role/system prompt |
+| prompt | string | Agent only | Initial prompt for agent |
+| command | string | Shell only | Shell command to execute |
+| overlap | string | No | Overlap policy: "skip" (default) or "queue" |
+
+### Examples
+\`\`\`
+# Agent schedule (nightly code review)
+args: {"name": "nightly-review", "cron": "0 2 * * *", "timezone": "UTC", "type": "agent", "role": "Code reviewer", "prompt": "Review recent changes"}
+
+# Shell schedule (daily tests on weekdays)
+args: {"name": "daily-tests", "cron": "30 6 * * 1-5", "timezone": "America/New_York", "type": "shell", "command": "npm test"}
+\`\`\`
+
+### Returns
+\`\`\`json
+{
+  "success": true,
+  "schedule": {"name": "nightly-review", "cron": "0 2 * * *", "jobType": "agent", "status": "active", ...}
+}
+\`\`\``,
+
+    'list-schedules': `## list-schedules
+
+List all configured scheduled jobs from spec/schedules.json.
+
+### Tool Call
+\`\`\`
+command: "list-schedules"
+args: {}
+args: {"json": true}
+\`\`\`
+
+### Args (all optional)
+| Arg | Type | Description |
+|-----|------|-------------|
+| json | boolean | Output as JSON instead of table |
+
+### Returns
+\`\`\`json
+{
+  "schedules": [
+    {"name": "nightly-review", "cron": "0 2 * * *", "timezone": "UTC", "jobType": "agent", "status": "active", ...}
+  ],
+  "columns": ["name", "cron", "timezone", "type", "status", "lastRun", "nextRun"]
+}
+\`\`\``,
+
+    'remove-schedule': `## remove-schedule
+
+Permanently remove a scheduled job from spec/schedules.json.
+
+### Tool Call
+\`\`\`
+command: "remove-schedule"
+args: {"_": ["nightly-review"]}
+\`\`\`
+
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| _ | array | Yes | Positional args: [scheduleName] |
+
+### Notes
+- Removal is permanent (no undo)
+- Use pause-schedule for temporary disabling`,
+
+    'pause-schedule': `## pause-schedule
+
+Pause an active scheduled job. The schedule stays in spec/schedules.json but will not trigger until resumed.
+
+### Tool Call
+\`\`\`
+command: "pause-schedule"
+args: {"_": ["nightly-review"]}
+\`\`\`
+
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| _ | array | Yes | Positional args: [scheduleName] |
+
+### Notes
+- Non-destructive — configuration is preserved
+- Schedule must be currently active
+- Use resume-schedule to reactivate`,
+
+    'resume-schedule': `## resume-schedule
+
+Resume a paused scheduled job, setting its status back to "active".
+
+### Tool Call
+\`\`\`
+command: "resume-schedule"
+args: {"_": ["nightly-review"]}
+\`\`\`
+
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| _ | array | Yes | Positional args: [scheduleName] |
+
+### Notes
+- Schedule must be currently paused
+- Missed runs during pause are NOT retroactively executed
+- The schedule will trigger on its next matching cron time`,
   };
 
   return commandDocs[commandName] || null;

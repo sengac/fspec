@@ -1,0 +1,303 @@
+{
+  "scenarios": [
+    {
+      "name": "Skip policy prevents trigger when previous run is active",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "64-86",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Queue policy enqueues trigger when previous run is active",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "91-122",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default overlap policy is skip when not specified",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "127-147",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Queued job fires when previous run completes",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "152-195",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent job deferred when session limit reached",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "200-224",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell job executes regardless of session limit",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "229-249",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deferred job fires when a session slot opens",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "254-283",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Completion detection removes finished sessions from active_runs",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "288-312",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Only one deferred job spawns per tick",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "317-360",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Queue replaces duplicate entries for same schedule",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/overlap_session_limit_test.rs",
+          "lines": "365-393",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/state.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/overlap_session_limit_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/scheduler/state.rs",
+      "codelet/napi/src/scheduler/engine.rs"
+    ],
+    "totalLinesCovered": 420
+  }
+}

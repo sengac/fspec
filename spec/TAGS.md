@@ -38,6 +38,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@persistence` | Session persistence and storage functionality |
 | `@popup` | Extension popup UI scenarios |
 | `@providers` | Provider integration and LLM provider implementations |
+| `@scheduler` | Scheduling service infrastructure and schedule management |
 | `@session` | Session management and state tracking |
 | `@telegram` | Telegram bot and messaging platform integration |
 | `@templates` | Template generation and transformation system |
@@ -210,6 +211,7 @@ Tags that categorize features by functional area.
 | `@scalability` | Scalability and performance optimization features |
 | `@scenario-deduplication` | Scenario deduplication and refactoring detection features |
 | `@scenario-generation` | Features related to generating scenarios from example mapping |
+| `@schedule-management` | Schedule CRUD operations and lifecycle management |
 | `@schema-design` | Schema design and data structure definition |
 | `@screenshot` | Screenshot capture functionality for web pages |
 | `@security` | Security-related features and bug fixes |
@@ -869,7 +871,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-03-16T02:11:34.671Z_
+_Last updated: 2026-03-18T06:30:28.914Z_
 
 **Update Command**: `fspec tag-stats`
 

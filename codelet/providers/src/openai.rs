@@ -312,7 +312,7 @@ impl OpenAIProvider {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WebSearchTool, WriteTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool,
-            DeepSearchTool, RequestUserInputTool, AgentManagerTool,
+            DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool,
         };
         use rig::client::CompletionClient;
 
@@ -340,7 +340,8 @@ impl OpenAIProvider {
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
-            .tool(RequestUserInputTool::new(session_id)); // TOOL-017: HITL tool
+            .tool(RequestUserInputTool::new(session_id)) // TOOL-017: HITL tool
+            .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
 
         // BUG-120: Always set a system prompt with fspec guidance.
         // When a role is provided, it is appended after fspec guidance.

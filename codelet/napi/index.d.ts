@@ -1107,6 +1107,36 @@ export declare function listSessions(
  */
 export declare function listWorktrees(repoPath: string): Array<WorktreeInfoJs>;
 
+/**
+ * Cancel a session-scoped loop by ID.
+ *
+ * Must be async so NAPI-RS provides the Tokio runtime context.
+ */
+export declare function loopCancel(loopId: string): Promise<boolean>;
+
+/**
+ * List all loops for a specific session. Returns JSON array string.
+ *
+ * Must be async so NAPI-RS provides the Tokio runtime context.
+ */
+export declare function loopList(sessionId: string): Promise<string>;
+
+/**
+ * Register a session-scoped loop with the Rust scheduler.
+ *
+ * The scheduler's 30-second tick will evaluate this entry and send_input
+ * the prompt directly into the originating session when the interval elapses.
+ *
+ * Must be async so NAPI-RS provides the Tokio runtime context — sync NAPI
+ * functions don't have access to `tokio::runtime::Handle::try_current()`.
+ */
+export declare function loopRegister(
+  sessionId: string,
+  loopId: string,
+  prompt: string,
+  intervalSeconds: number
+): Promise<void>;
+
 /** Result of merging a session */
 export interface MergeResultJs {
   /** Session ID that was merged */
@@ -2089,6 +2119,9 @@ export declare function sessionInterrupt(sessionId: string): void;
  */
 export declare function sessionIsIsolated(sessionId: string): boolean | null;
 
+/** SCHED-004: Check if a session was spawned by the scheduler */
+export declare function sessionIsScheduled(sessionId: string): boolean;
+
 /** Create a new background session (generates new UUID) */
 export declare function sessionManagerCreate(
   model: string,
@@ -2225,6 +2258,9 @@ export interface SessionResultJs {
   /** The base commit the session was created from */
   baseCommit: string;
 }
+
+/** SCHED-004: Get the schedule name that triggered a session (if any) */
+export declare function sessionScheduleName(sessionId: string): string | null;
 
 /**
  * Send fspec command result back to Rust (CODE-009)

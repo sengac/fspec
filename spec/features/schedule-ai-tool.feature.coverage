@@ -1,0 +1,603 @@
+{
+  "scenarios": [
+    {
+      "name": "Add an agent-type schedule",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "179-214",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add a shell-type schedule",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "219-245",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List all schedules",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "251-279",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pause an active schedule",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "285-309",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resume a paused schedule",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "315-339",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove an existing schedule",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "345-365",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject invalid cron expression",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "373-403",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject duplicate schedule name",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "410-432",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject removal of nonexistent schedule",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "439-459",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                285,
+                286,
+                287
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Graceful error when no handler is registered",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "465-487",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/schedule/handler.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject invalid timezone",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "494-524",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject agent job missing required fields",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "531-563",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/schedule_handler.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ScheduleTool registered in all provider agent builders",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/schedule_tool_test.rs",
+          "lines": "563-675",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/claude.rs",
+              "lines": [
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/schedule_tool_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/schedule_handler.rs",
+      "codelet/tools/src/schedule/handler.rs",
+      "codelet/providers/src/claude.rs"
+    ],
+    "totalLinesCovered": 815
+  }
+}

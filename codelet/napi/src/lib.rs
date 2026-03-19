@@ -58,6 +58,9 @@ pub mod deep_search_handler;
 #[cfg(not(feature = "noop"))]
 pub mod agent_manager_handler;
 
+// SCHED-009: Schedule handler bridges tools layer to schedule persistence
+pub mod schedule_handler;
+
 #[cfg(not(feature = "noop"))]
 pub(crate) mod deep_search_provider_config;
 
@@ -69,6 +72,9 @@ pub mod credentials;
 
 // Test support module for integration tests
 pub mod test_support;
+
+// SCHED-003: Scheduler engine — works in both modes (pure Rust, no NAPI bindings)
+pub mod scheduler;
 
 pub use persistence::*;
 

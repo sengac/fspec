@@ -110,6 +110,10 @@
           "description": "Provider integration and LLM provider implementations"
         },
         {
+          "name": "@scheduler",
+          "description": "Scheduling service infrastructure and schedule management"
+        },
+        {
           "name": "@session",
           "description": "Session management and state tracking"
         },
@@ -768,6 +772,10 @@
         {
           "name": "@scenario-generation",
           "description": "Features related to generating scenarios from example mapping"
+        },
+        {
+          "name": "@schedule-management",
+          "description": "Schedule CRUD operations and lifecycle management"
         },
         {
           "name": "@schema-design",
@@ -2510,7 +2518,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-03-16T02:11:34.671Z",
+    "lastUpdated": "2026-03-18T06:30:28.914Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

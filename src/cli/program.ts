@@ -158,6 +158,15 @@ import { registerValidateTagsCommand } from '../commands/validate-tags';
 import { registerValidateWorkUnitsCommand } from '../commands/validate-work-units';
 import { registerWorkflowAutomationCommand } from '../commands/workflow-automation';
 
+// Schedule commands - SCHED-002
+import {
+  registerAddScheduleCommand,
+  registerRemoveScheduleCommand,
+  registerPauseScheduleCommand,
+  registerResumeScheduleCommand,
+  registerListSchedulesCommand,
+} from '../commands/schedule';
+
 /**
  * Create a new Commander.js program with all fspec commands registered.
  *
@@ -334,6 +343,13 @@ export function createProgram(): Command {
   registerValidateTagsCommand(program);
   registerValidateWorkUnitsCommand(program);
   registerWorkflowAutomationCommand(program);
+
+  // Schedule commands - SCHED-002
+  registerAddScheduleCommand(program);
+  registerRemoveScheduleCommand(program);
+  registerPauseScheduleCommand(program);
+  registerResumeScheduleCommand(program);
+  registerListSchedulesCommand(program);
 
   return program;
 }

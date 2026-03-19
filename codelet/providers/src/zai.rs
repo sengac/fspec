@@ -200,7 +200,7 @@ impl ZAIProvider {
             SearchToolFacadeWrapper, zai_bridge_tool, zai_fspec_tool, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
             ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
         };
-        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool, RequestUserInputTool, AgentManagerTool};
+        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool};
         use std::sync::Arc;
 
         // Create Z.AI/GLM-specific tool facades (PROV-004)
@@ -248,7 +248,8 @@ impl ZAIProvider {
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool
-            .tool(RequestUserInputTool::new(session_id)); // TOOL-017: HITL tool
+            .tool(RequestUserInputTool::new(session_id)) // TOOL-017: HITL tool
+            .tool(ScheduleTool::new(session_id)); // SCHED-009: Schedule AI tool
 
         // BUG-120: Always set a system prompt with fspec guidance.
         // When a role is provided, it is appended after fspec guidance.

@@ -60,6 +60,22 @@ export const SLASH_COMMANDS: SlashCommand[] = [
     name: 'merge-worktree',
     description: 'Merge worktree changes and close session',
   },
+
+  // SCHED-008: Schedule management
+  {
+    name: 'schedule',
+    description: 'Manage scheduled jobs (add, list, pause, resume, remove)',
+    syntax: 'add|list|pause|resume|remove [options]',
+    requiresSession: false,
+  },
+
+  // SCHED-011: Loop shorthand
+  {
+    name: 'loop',
+    description: 'Quick recurring schedule (session-scoped)',
+    syntax: '[interval] <prompt> | cancel <id> | list',
+    requiresSession: false,
+  },
 ];
 
 /**

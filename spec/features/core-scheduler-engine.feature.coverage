@@ -1,0 +1,590 @@
+{
+  "scenarios": [
+    {
+      "name": "Scheduler spawns on first session creation",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "80-105",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Schedule triggers when last run is older than previous cron time",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "111-140",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Schedule does not trigger when already run since last cron time",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "146-171",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Schedule with no last run triggers immediately",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "177-199",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paused schedule is skipped during evaluation",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "205-233",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Schedule respects configured timezone",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "239-261",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scheduler handles missing schedules file gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "267-286",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scheduler handles malformed JSON gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "292-316",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Job completion updates last run timestamp",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "322-351",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New schedule is picked up without restart",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "357-399",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent job type delegates to agent execution",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "405-432",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell job type delegates to shell execution",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scheduler_engine_test.rs",
+          "lines": "438-459",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/scheduler_engine_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/scheduler/engine.rs"
+    ],
+    "totalLinesCovered": 707
+  }
+}

@@ -2803,6 +2803,45 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
+      // SCHED-008: Handle /schedule command — manage scheduled jobs
+      if (userMessage === '/schedule' || userMessage.startsWith('/schedule ')) {
+        setInputValue('');
+
+        const { handleScheduleCommand } = await import(
+          '../services/schedule-service'
+        );
+        const cwd = process.cwd();
+        const result = await handleScheduleCommand(userMessage, cwd);
+
+        setConversation(prev => [
+          ...prev,
+          {
+            type: 'status',
+            content: result.message,
+          },
+        ]);
+        return;
+      }
+
+      // SCHED-011: Handle /loop command — session-scoped recurring loops
+      if (userMessage === '/loop' || userMessage.startsWith('/loop ')) {
+        setInputValue('');
+
+        const { handleLoopCommand } = await import(
+          '../services/loop-service'
+        );
+        const result = await handleLoopCommand(userMessage, currentSessionIdRef.current ?? null);
+
+        setConversation(prev => [
+          ...prev,
+          {
+            type: 'status',
+            content: result.message,
+          },
+        ]);
+        return;
+      }
+
       // For any unrecognized command, just clear input (user typed incomplete command)
       setInputValue('');
     },

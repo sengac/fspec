@@ -1,0 +1,448 @@
+{
+  "scenarios": [
+    {
+      "name": "Create loop with leading interval token",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "22-40",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create loop with default interval when none specified",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "43-56",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create loop with trailing interval clause",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "59-74",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Round sub-minute intervals up to one minute",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "77-92",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chain slash commands as loop prompts",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "95-115",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel an active loop by job ID",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "118-140",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List all active loops",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "143-164",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session-scoped schedules are lost on restart",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "167-184",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show usage help when no arguments provided",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "187-199",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Overlap policy defaults to skip",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "202-218",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Loop schedules count toward session limit",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/loop-service.test.ts",
+          "lines": "221-236",
+          "implMappings": [
+            {
+              "file": "src/tui/services/loop-service.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/loop-service.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/services/loop-service.ts"
+    ],
+    "totalLinesCovered": 451
+  }
+}

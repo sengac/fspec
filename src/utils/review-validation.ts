@@ -4,11 +4,40 @@
  */
 
 import type { WorkUnit } from '../types';
+import { isInCaptureMode } from './output';
 
 export interface ReviewValidationResult {
   passed: boolean;
   error?: string;
   systemReminder?: string;
+}
+
+/**
+ * Build the AST research error message based on execution context.
+ *
+ * When running in capture mode (invoked via NAPI callback from a codelet agent),
+ * the agent environment provides the AstGrep tool natively, so we direct the
+ * agent to use AstGrep. When running in CLI mode (direct `fspec` invocation),
+ * we direct the user to fspec's built-in `research --tool=ast` command.
+ *
+ * @returns Error message string with context-appropriate instructions
+ */
+function buildASTResearchErrorMessage(): string {
+  if (isInCaptureMode()) {
+    return (
+      'Cannot transition to testing - no AST research performed during discovery. ' +
+      'Use the AstGrep tool to analyze relevant code in the codebase. ' +
+      'Save output to file matching pattern: ast-research-<description>.json or ast-research-<description>.md. ' +
+      'Then attach: fspec add-attachment <work-unit-id> spec/attachments/<work-unit-id>/ast-research-<description>.{json|md}'
+    );
+  }
+  return (
+    'Cannot transition to testing - no AST research performed during discovery. ' +
+    'FIRST run: fspec research --tool=ast --help (to learn HOW to use the AST tool). ' +
+    'THEN use: fspec research --tool=ast --file <path> --operation <op> to analyze relevant code. ' +
+    'Save output to file matching pattern: ast-research-<description>.json or ast-research-<description>.md. ' +
+    'Then attach: fspec add-attachment <work-unit-id> spec/attachments/<work-unit-id>/ast-research-<description>.{json|md}'
+  );
 }
 
 /**
@@ -32,12 +61,7 @@ export function validateASTResearch(
   if (!hasASTResearch) {
     return {
       passed: false,
-      error:
-        'Cannot transition to testing - no AST research performed during discovery. ' +
-        'FIRST run: fspec research --tool=ast --help (to learn HOW to use the AST tool). ' +
-        'THEN use: fspec research --tool=ast --file <path> --operation <op> to analyze relevant code. ' +
-        'Save output to file matching pattern: ast-research-<description>.json or ast-research-<description>.md. ' +
-        'Then attach: fspec add-attachment <work-unit-id> spec/attachments/<work-unit-id>/ast-research-<description>.{json|md}',
+      error: buildASTResearchErrorMessage(),
     };
   }
 

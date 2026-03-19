@@ -36,6 +36,7 @@ pub mod page_fetcher;
 pub mod pdf;
 pub mod read;
 pub mod request_user_input;
+pub mod schedule;
 pub mod search_engine;
 pub mod tool_pause;
 pub mod tool_progress;
@@ -156,6 +157,11 @@ pub use request_user_input::{
     HitlHandler, HitlRequest, HitlResponse, HitlQuestion, HitlOption, HitlAnswer,
     set_hitl_handler, has_hitl_handler, execute_hitl, clear_all_hitl_handlers,
 };
+pub use schedule::{
+    ScheduleTool, ScheduleArgs, ScheduleHandler, ScheduleResult,
+    set_schedule_handler, has_schedule_handler, clear_all_schedule_handlers,
+};
+pub use schedule::types::ScheduleRequest;
 
 /// Tool definition for API requests
 #[derive(Debug, Clone, Serialize, Deserialize)]

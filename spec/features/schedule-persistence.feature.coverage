@@ -1,0 +1,594 @@
+{
+  "scenarios": [
+    {
+      "name": "Add an agent schedule with all required fields",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "43-75",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/add-schedule.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Add a shell command schedule",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "79-105",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/add-schedule.ts",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject schedule with invalid cron expression",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "109-145",
+          "implMappings": [
+            {
+              "file": "src/utils/validators/cron.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject schedule with invalid timezone",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "149-180",
+          "implMappings": [
+            {
+              "file": "src/utils/validators/timezone.ts",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject schedule with invalid name format",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "184-211",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/add-schedule.ts",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject duplicate schedule name",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "215-259",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/add-schedule.ts",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pause an active schedule",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "263-301",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/pause-schedule.ts",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resume a paused schedule",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "305-333",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/pause-schedule.ts",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove a schedule",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "337-370",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/remove-schedule.ts",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List all configured schedules",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "374-424",
+          "implMappings": [
+            {
+              "file": "src/commands/schedule/list-schedules.ts",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-create schedules file when missing",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "428-444",
+          "implMappings": [
+            {
+              "file": "src/utils/ensure-schedules-file.ts",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Update last run timestamp after execution",
+      "testMappings": [
+        {
+          "file": "src/commands/schedule/__tests__/schedule-persistence.test.ts",
+          "lines": "448-488",
+          "implMappings": [
+            {
+              "file": "src/types/schedule.ts",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/schedule/__tests__/schedule-persistence.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/schedule/add-schedule.ts",
+      "src/utils/validators/cron.ts",
+      "src/utils/validators/timezone.ts",
+      "src/commands/schedule/pause-schedule.ts",
+      "src/commands/schedule/remove-schedule.ts",
+      "src/commands/schedule/list-schedules.ts",
+      "src/utils/ensure-schedules-file.ts",
+      "src/types/schedule.ts"
+    ],
+    "totalLinesCovered": 792
+  }
+}

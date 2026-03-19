@@ -1,0 +1,361 @@
+{
+  "scenarios": [
+    {
+      "name": "Shell command executes successfully with exit code 0",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "68-112",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell command fails with non-zero exit code",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "117-159",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell job fails when command string is empty",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "164-214",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell job fails when shell config is missing entirely",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "219-265",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell command captures multi-line stdout",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "270-304",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell command captures stdout and stderr separately",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "309-354",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell job updates schedules.json timestamps after completion",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "359-401",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Engine routes shell job_type to trigger_shell_job",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "406-427",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/engine.rs",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell command runs in the configured project directory",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "432-477",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shell job with missing shell.command field fails gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/shell_job_test.rs",
+          "lines": "482-514",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/shell_job.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/shell_job_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/scheduler/shell_job.rs",
+      "codelet/napi/src/scheduler/engine.rs"
+    ],
+    "totalLinesCovered": 595
+  }
+}

@@ -584,6 +584,12 @@ pub struct BackgroundSession {
 
     /// Pre-compaction token count for accurate CompactionComplete metrics.
     pub pre_compaction_tokens: AtomicU32,
+
+    /// SCHED-004: Whether this session was spawned by the scheduler
+    pub schedule_triggered: AtomicBool,
+
+    /// SCHED-004: Name of the schedule that triggered this session (if any)
+    pub schedule_name: RwLock<Option<String>>,
 }
 
 impl BackgroundSession {
@@ -657,6 +663,9 @@ impl BackgroundSession {
             compaction_in_progress: Arc::new(AtomicBool::new(false)),
             pending_dag_content: Arc::new(std::sync::Mutex::new(None)),
             pre_compaction_tokens: AtomicU32::new(0),
+            // SCHED-004: Default to non-scheduled
+            schedule_triggered: AtomicBool::new(false),
+            schedule_name: RwLock::new(None),
         }
     }
 
@@ -3064,6 +3073,11 @@ pub struct SessionManager {
     chain_of_command: ChainOfCommand,
     /// Tracks the currently active (attached) session for navigation (VIEWNV-001)
     active_session_id: RwLock<Option<Uuid>>,
+    /// SCHED-003: Scheduler task handle for graceful shutdown
+    scheduler_handle: RwLock<Option<tokio::task::JoinHandle<()>>>,
+    /// SCHED-004: Default model string for scheduled session spawning
+    /// Set from NAPI on app initialization (first session creation).
+    default_model: RwLock<Option<String>>,
 }
 
 impl Default for SessionManager {
@@ -3079,7 +3093,85 @@ impl SessionManager {
             sessions: RwLock::new(IndexMap::new()),
             chain_of_command: ChainOfCommand::new(),
             active_session_id: RwLock::new(None),
+            scheduler_handle: RwLock::new(None),
+            default_model: RwLock::new(None),
         }
+    }
+
+    /// SCHED-004: Set the default model for scheduled session spawning.
+    ///
+    /// Called during session creation to track the most recently used model,
+    /// which the scheduler uses when spawning agent sessions.
+    pub fn set_default_model(&self, model: &str) {
+        if !model.is_empty() {
+            *self.default_model.write().expect("default_model lock poisoned") = Some(model.to_string());
+        }
+    }
+
+    /// SCHED-004: Get the default model string for scheduled session spawning.
+    pub fn get_default_model(&self) -> Option<String> {
+        self.default_model.read().expect("default_model lock poisoned").clone()
+    }
+
+    /// SCHED-006: Get the current number of sessions.
+    pub async fn session_count(&self) -> usize {
+        self.sessions.read().expect("sessions lock poisoned").len()
+    }
+
+    /// SCHED-006: Get all live session IDs for sweep detection.
+    pub async fn live_session_ids(&self) -> Vec<Uuid> {
+        self.sessions.read().expect("sessions lock poisoned").keys().copied().collect()
+    }
+
+    /// SCHED-006: Find a session by its schedule_name metadata.
+    pub async fn find_session_by_schedule_name(&self, schedule_name: &str) -> Option<Uuid> {
+        let sessions = self.sessions.read().expect("sessions lock poisoned");
+        for (id, session) in sessions.iter() {
+            let name = session.schedule_name.read().expect("schedule_name lock");
+            if name.as_deref() == Some(schedule_name) {
+                return Some(*id);
+            }
+        }
+        None
+    }
+
+    /// SCHED-004: Spawn a session triggered by the scheduler.
+    ///
+    /// Creates a new session, marks it with schedule metadata, sets role if
+    /// provided, and sends the initial prompt. Returns Ok(()) on success.
+    pub async fn spawn_scheduled_session(
+        &self,
+        id: &str,
+        model: &str,
+        project: &str,
+        name: &str,
+        schedule_name: &str,
+        role: Option<&str>,
+        prompt: &str,
+    ) -> Result<()> {
+        // Create the session (this handles limit checks, model resolution, etc.)
+        self.create_session_with_id(id, model, project, name).await?;
+
+        // Mark the session with schedule metadata
+        let uuid = Uuid::parse_str(id)
+            .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+        let sessions = self.sessions.read().expect("sessions lock poisoned");
+        if let Some(session) = sessions.get(&uuid) {
+            session.schedule_triggered.store(true, std::sync::atomic::Ordering::Relaxed);
+            *session.schedule_name.write().expect("schedule_name lock") = Some(schedule_name.to_string());
+
+            // Set role if provided
+            if let Some(role_str) = role {
+                if !role_str.is_empty() {
+                    session.set_role(role_str.to_string());
+                }
+            }
+
+            // Send initial prompt
+            session.send_input(prompt.to_string(), None)?;
+        }
+
+        Ok(())
     }
     
     /// Get singleton instance
@@ -3233,9 +3325,15 @@ impl SessionManager {
         // Store session
         self.sessions.write().expect("sessions lock poisoned").insert(uuid, session);
         
+        // SCHED-004: Track the model for scheduled session spawning
+        self.set_default_model(model);
+        
         // VIEWNV-001: Set newly created session as active for navigation purposes
         // This ensures Shift+Left/Right navigation works immediately after session creation
         self.set_active_session(uuid);
+        
+        // SCHED-003: Start scheduler if not already running and project has schedules
+        self.maybe_start_scheduler(project);
         
         // GIT-029: Emit IsolationStateChange chunk to sync UI with isolation state (non-isolated)
         if let Some(global_cb) = GLOBAL_CHUNK_CALLBACK.get() {
@@ -3462,6 +3560,49 @@ impl SessionManager {
         *self.active_session_id.read().expect("active_session lock poisoned")
     }
     
+    /// SCHED-003: Start the scheduler if not already running.
+    ///
+    /// Checks if `{project}/spec/schedules.json` exists and spawns the scheduler
+    /// task on first session creation. The scheduler runs for the lifetime of
+    /// the fspec process.
+    fn maybe_start_scheduler(&self, project: &str) {
+        let mut handle = self.scheduler_handle.write().expect("scheduler lock poisoned");
+        if handle.is_some() {
+            return; // Already running
+        }
+        
+        let schedules_path = std::path::Path::new(project).join("spec/schedules.json");
+        if schedules_path.exists() {
+            let rt = match tokio::runtime::Handle::try_current() {
+                Ok(h) => h,
+                Err(_) => {
+                    tracing::warn!("No Tokio runtime available for scheduler");
+                    return;
+                }
+            };
+            tracing::info!("Starting scheduler for project: {}", project);
+            let h = crate::scheduler::spawn_scheduler(project.to_string(), &rt);
+            *handle = Some(h);
+        }
+    }
+
+    /// SCHED-011: Ensure the scheduler is running (for /loop support).
+    ///
+    /// Unlike maybe_start_scheduler, this starts the scheduler unconditionally
+    /// since /loop entries don't require spec/schedules.json.
+    ///
+    /// Requires a Tokio runtime `Handle` because this may be called from
+    /// synchronous NAPI functions that don't have an implicit runtime context.
+    pub fn ensure_scheduler_running(&self, project: &str, rt: &tokio::runtime::Handle) {
+        let mut handle = self.scheduler_handle.write().expect("scheduler lock poisoned");
+        if handle.is_some() {
+            return;
+        }
+        tracing::info!("Starting scheduler for /loop support: {}", project);
+        let h = crate::scheduler::spawn_scheduler(project.to_string(), rt);
+        *handle = Some(h);
+    }
+    
     /// Get the next session after the active one (VIEWNV-001)
     ///
     /// Uses hierarchy-aware navigation:
@@ -3554,6 +3695,15 @@ impl SessionManager {
         if let Some(session) = session {
             // Interrupt to stop the agent loop
             session.interrupt();
+            // SCHED-011: Clean up session-scoped loops
+            let uuid_for_loops = uuid;
+            if let Ok(rt) = tokio::runtime::Handle::try_current() {
+                rt.spawn(async move {
+                    crate::scheduler::LoopStore::instance()
+                        .remove_for_session(uuid_for_loops)
+                        .await;
+                });
+            }
             // MCP-001: Clean up MCP session state (cancel connections, kill child processes)
             codelet_tools::cleanup_mcp_session(uuid);
             // Drop the input sender to signal the loop to exit
@@ -4378,6 +4528,14 @@ async fn agent_loop(
                 codelet_tools::set_inject_summary_handler(session.id, Some(inject_handler));
             }
 
+            // SCHED-009: Register schedule handler for AI-callable Schedule tool
+            {
+                let schedule_handler = crate::schedule_handler::create_handler(
+                    session.project.clone(),
+                );
+                codelet_tools::set_schedule_handler(session.id, Some(schedule_handler));
+            }
+
             // BRIDGE-001: Set up bridge handler and session context for WebSocket relay
             // The bridge handler needs to call async handle_bridge_action, so we use
             // the tokio runtime handle to block_on the async function from the sync handler.
@@ -4706,6 +4864,7 @@ Use SessionSearch to recover context.
             codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
             codelet_tools::set_agent_manager_handler(session.id, None); // AMGR-009: Cleanup
+            codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
             codelet_tools::set_bridge_handler(None);
             codelet_tools::remove_bridge_session_context(session.id);
@@ -5710,6 +5869,103 @@ pub fn session_get_role(session_id: String) -> Result<Option<SupervisorRoleInfo>
 }
 
 // session_clear_role removed — dead code with no consumers
+
+// === SCHED-004: Schedule Metadata NAPI Bindings ===
+
+/// SCHED-004: Check if a session was spawned by the scheduler
+#[napi]
+pub fn session_is_scheduled(session_id: String) -> Result<bool> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    Ok(session.schedule_triggered.load(std::sync::atomic::Ordering::Relaxed))
+}
+
+/// SCHED-004: Get the schedule name that triggered a session (if any)
+#[napi]
+pub fn session_schedule_name(session_id: String) -> Result<Option<String>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let name = session.schedule_name.read().expect("schedule_name lock").clone();
+    Ok(name)
+}
+
+// === SCHED-011: Session-Scoped Loop NAPI Bindings ===
+
+/// Register a session-scoped loop with the Rust scheduler.
+///
+/// The scheduler's 30-second tick will evaluate this entry and send_input
+/// the prompt directly into the originating session when the interval elapses.
+///
+/// Must be async so NAPI-RS provides the Tokio runtime context — sync NAPI
+/// functions don't have access to `tokio::runtime::Handle::try_current()`.
+#[napi]
+pub async fn loop_register(
+    session_id: String,
+    loop_id: String,
+    prompt: String,
+    interval_seconds: u32,
+) -> Result<()> {
+    let uuid = Uuid::parse_str(&session_id)
+        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+
+    // Get Tokio runtime handle — available because this is an async NAPI function
+    let rt = tokio::runtime::Handle::current();
+
+    // Ensure the scheduler is running (it may not be if no schedules.json exists)
+    let sm = SessionManager::instance();
+    let session = sm.get_session(&session_id)?;
+    let project = session.project.clone();
+    sm.ensure_scheduler_running(&project, &rt);
+
+    let now = chrono::Utc::now();
+    let entry = crate::scheduler::loop_store::LoopEntry {
+        id: loop_id,
+        session_id: uuid,
+        prompt,
+        interval_seconds,
+        created_at: now,
+        expires_at: now + chrono::Duration::days(3),
+        last_run_at: None,
+    };
+
+    // Can await directly since we're async
+    crate::scheduler::LoopStore::instance().register(entry).await;
+
+    Ok(())
+}
+
+/// Cancel a session-scoped loop by ID.
+///
+/// Must be async so NAPI-RS provides the Tokio runtime context.
+#[napi]
+pub async fn loop_cancel(loop_id: String) -> Result<bool> {
+    Ok(crate::scheduler::LoopStore::instance().cancel(&loop_id).await)
+}
+
+/// List all loops for a specific session. Returns JSON array string.
+///
+/// Must be async so NAPI-RS provides the Tokio runtime context.
+#[napi]
+pub async fn loop_list(session_id: String) -> Result<String> {
+    let uuid = Uuid::parse_str(&session_id)
+        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+
+    let entries = crate::scheduler::LoopStore::instance()
+        .list_for_session(uuid)
+        .await;
+    let json_entries: Vec<serde_json::Value> = entries
+        .iter()
+        .map(|e| {
+            serde_json::json!({
+                "id": e.id,
+                "prompt": e.prompt,
+                "intervalSeconds": e.interval_seconds,
+                "createdAt": e.created_at.to_rfc3339(),
+                "expiresAt": e.expires_at.to_rfc3339(),
+                "lastRunAt": e.last_run_at.map(|t| t.to_rfc3339()),
+            })
+        })
+        .collect();
+    Ok(serde_json::to_string(&json_entries).unwrap_or_else(|_| "[]".to_string()))
+}
 
 // === Supervisor Operations (WATCH-007) ===
 

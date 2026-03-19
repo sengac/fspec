@@ -1,0 +1,500 @@
+{
+  "scenarios": [
+    {
+      "name": "Spawn agent session with role and prompt",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "69-102",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Spawn agent session with prompt only (no role)",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "107-138",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent job fails when prompt is empty",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "143-181",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent job fails when agent config is missing entirely",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "186-231",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent job fails when prompt field is absent",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "236-274",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent job fails when session limit is reached",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "279-319",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Schedule-triggered session is marked with schedule metadata",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "324-355",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                3126,
+                3127,
+                3128,
+                3129,
+                3130,
+                3131,
+                3132,
+                3133,
+                3134,
+                3135,
+                3136,
+                3137,
+                3138,
+                3139,
+                3140,
+                3141,
+                3142,
+                3143,
+                3144,
+                3145,
+                3146,
+                3147,
+                3148,
+                3149,
+                3150,
+                3151,
+                3152,
+                3153,
+                3154,
+                3155,
+                3156
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI binding exposes schedule metadata for TUI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "360-382",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5813,
+                5814,
+                5815,
+                5816,
+                5817,
+                5818,
+                5819,
+                5820,
+                5821,
+                5822,
+                5823,
+                5824,
+                5825,
+                5826
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-scheduled session returns false for schedule queries",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "387-403",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                587,
+                588,
+                589,
+                590,
+                591,
+                592
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent session runs to natural completion",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "408-443",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default model is resolved at fire time from SessionManager",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "448-477",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                3108,
+                3109,
+                3110,
+                3111,
+                3112,
+                3113,
+                3114,
+                3115,
+                3116,
+                3117,
+                3118,
+                3119,
+                3120,
+                3121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agent job fails when no default model is configured",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/agent_job_test.rs",
+          "lines": "482-521",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/scheduler/agent_job.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/agent_job_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/scheduler/agent_job.rs",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 700
+  }
+}

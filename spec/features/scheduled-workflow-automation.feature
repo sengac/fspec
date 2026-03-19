@@ -198,17 +198,5 @@ Feature: Scheduled Workflow Automation
     And the failure is recorded in the session history
     And the failure is discoverable via SessionSearch
 
-  Scenario: Shell command failure sends bridge notification
-    Given fspec is running with an active shell schedule "daily-sync"
-    And a Telegram bridge is connected
-    When the scheduled shell command fails with exit code 1
-    Then a notification is sent via the Telegram bridge
-    And the notification contains the job name "daily-sync"
-    And the notification contains the exit code and stderr output
-
-  Scenario: Agent job completion sends bridge notification
-    Given fspec is running with an active agent schedule "nightly-review"
-    And a Telegram bridge is connected
-    When the scheduled agent session completes successfully
-    Then a notification is sent via the Telegram bridge
-    And the notification contains the job name "nightly-review" and completion status
+  # NOTE: Bridge notification scenarios removed — SCHED-010 was deleted.
+  # If bridge notifications are needed in the future, create a new child work unit.

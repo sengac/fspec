@@ -804,6 +804,67 @@ function displayWorkHelp(): void {
   console.log('      fspec cleanup-checkpoints AUTH-001 --keep-last 5');
   console.log('');
 
+  console.log(chalk.bold('SCHEDULING'));
+  console.log(
+    '  ' +
+      chalk.cyan('fspec add-schedule') +
+      '               Add a scheduled job'
+  );
+  console.log('    Options:');
+  console.log(
+    '      -n, --name <name>                Schedule name (slug format)'
+  );
+  console.log(
+    '      -c, --cron <expression>          Cron expression (5-field)'
+  );
+  console.log('      -z, --timezone <tz>              IANA timezone');
+  console.log(
+    '      -t, --type <type>                Job type: agent or shell'
+  );
+  console.log(
+    '      -r, --role <role>                Agent role (agent type only)'
+  );
+  console.log(
+    '      -p, --prompt <prompt>            Agent prompt (agent type only)'
+  );
+  console.log(
+    '      --command <command>               Shell command (shell type only)'
+  );
+  console.log(
+    '      -o, --overlap <policy>           Overlap policy: skip or queue (default: skip)'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-schedule -n nightly-review -c "0 2 * * *" -z UTC -t agent -r "Reviewer" -p "Review src/"'
+  );
+  console.log(
+    '      fspec add-schedule -n daily-tests -c "30 6 * * 1-5" -z America/New_York -t shell --command "npm test"'
+  );
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec list-schedules'));
+  console.log('    Description: List all configured scheduled jobs');
+  console.log('    Options:');
+  console.log('      --json                           Output as JSON');
+  console.log('    Examples:');
+  console.log('      fspec list-schedules');
+  console.log('      fspec list-schedules --json');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec remove-schedule <name>'));
+  console.log('    Description: Permanently remove a scheduled job');
+  console.log('    Examples:');
+  console.log('      fspec remove-schedule nightly-review');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec pause-schedule <name>'));
+  console.log('    Description: Pause an active schedule (non-destructive)');
+  console.log('    Examples:');
+  console.log('      fspec pause-schedule nightly-review');
+  console.log('');
+  console.log('  ' + chalk.cyan('fspec resume-schedule <name>'));
+  console.log('    Description: Resume a paused schedule');
+  console.log('    Examples:');
+  console.log('      fspec resume-schedule nightly-review');
+  console.log('');
+
   console.log(chalk.bold('STABLE INDICES & SOFT-DELETE'));
   console.log(
     '  Items (rules, examples, questions, architecture notes) use stable IDs that never shift.'
