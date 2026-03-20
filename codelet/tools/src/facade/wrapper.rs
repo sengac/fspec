@@ -9,6 +9,7 @@
 use super::traits::{
     BoxedFileToolFacade, BoxedToolFacade, InternalFileParams, InternalWebSearchParams,
 };
+use crate::pre_tool_hook::{pre_tool_hook_check, PreToolHookDecision};
 use crate::web_search::{WebSearchRequest, WebSearchResult, WebSearchTool};
 use crate::{EditTool, ReadTool, ToolError, WriteTool};
 use codelet_common::web_search::WebSearchAction;
@@ -22,15 +23,12 @@ use std::path::{Path, PathBuf};
 ///
 /// This enables provider-specific facades to be used with rig's agent builder
 /// while maintaining the facade's custom tool name, schema, and parameter mapping.
-/// TOOL-014: FacadeToolWrapper now requires session_id for worktree isolation.
-/// Even though web search doesn't use paths, the pattern is maintained for consistency.
 pub struct FacadeToolWrapper {
     /// The underlying facade providing name, schema, and param mapping
     facade: BoxedToolFacade,
     /// The base web search tool for actual execution
     base_tool: WebSearchTool,
-    /// Session ID for worktree isolation consistency (TOOL-014)
-    #[allow(dead_code)]
+    /// Session ID for pre-tool hook identification
     session_id: Uuid,
 }
 
@@ -39,11 +37,11 @@ pub struct FacadeToolWrapper {
 pub struct FacadeArgs(pub Value);
 
 impl FacadeToolWrapper {
-    /// Create a new wrapper for the given facade with session association.
+    /// Create a new wrapper for the given facade.
     ///
     /// # Arguments
     /// * `facade` - The provider-specific facade for schema/naming
-    /// * `session_id` - The session ID for consistency (TOOL-014)
+    /// * `session_id` - The session ID for pre-tool hook identification
     pub fn new(facade: BoxedToolFacade, session_id: Uuid) -> Self {
         Self {
             facade,
@@ -83,6 +81,9 @@ impl Tool for FacadeToolWrapper {
 
     /// Map provider params to internal format and execute the base tool
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
@@ -216,6 +217,9 @@ impl Tool for HitlToolFacadeWrapper {
 
     /// Map provider params to internal format and execute via execute_hitl
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
@@ -394,6 +398,9 @@ impl Tool for FileToolFacadeWrapper {
 
     /// Map provider params to internal format and execute the appropriate base tool
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
@@ -554,6 +561,24 @@ use crate::bash::BashArgs;
 use crate::stage_permissions::check_write_permission;
 use crate::BashTool;
 use uuid::Uuid;
+
+// ============================================================================
+// HOOK-013: Pre-tool-use lifecycle hook check helper
+// ============================================================================
+
+/// Run pre_tool_use hooks for a facade wrapper tool call.
+/// Returns Ok(()) if the tool should proceed, Err(ToolError) if denied.
+fn check_pre_tool_hook(session_id: Uuid, tool_name: &str, args: &Value) -> Result<(), ToolError> {
+    match pre_tool_hook_check(session_id, tool_name, args) {
+        Ok(PreToolHookDecision::Allow | PreToolHookDecision::Continue) => Ok(()),
+        Ok(PreToolHookDecision::Deny(reason)) | Err(reason) => {
+            Err(ToolError::Blocked {
+                tool: "pre_tool_use_hook",
+                message: reason,
+            })
+        }
+    }
+}
 
 // ============================================================================
 // BLOCK-006: Block Notification Helper
@@ -997,6 +1022,9 @@ impl Tool for FspecToolFacadeWrapper {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         use crate::fspec_handler::{execute_fspec_command_for_session, FspecRequest, has_fspec_handler_for_session};
 
         // Map provider-specific args to internal params via the facade
@@ -1110,6 +1138,9 @@ impl Tool for BashToolFacadeWrapper {
 
     /// Map provider params to internal format and execute the base tool
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
@@ -1233,6 +1264,9 @@ impl Tool for SearchToolFacadeWrapper {
 
     /// Map provider params to internal format and execute the appropriate base tool
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
@@ -1429,6 +1463,9 @@ impl Tool for LsToolFacadeWrapper {
 
     /// Map provider params to internal format and execute the base tool
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
@@ -1603,6 +1640,9 @@ impl Tool for BridgeToolFacadeWrapper {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
 
@@ -1805,6 +1845,9 @@ impl Tool for ExecToolFacadeWrapper {
 
     /// Map provider params to internal format and execute via UnifiedExecTool
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        check_pre_tool_hook(self.session_id, &self.name(), &args.0)?;
+
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 

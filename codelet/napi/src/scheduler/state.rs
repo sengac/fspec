@@ -35,6 +35,12 @@ pub struct DeferredJob {
     pub entry: ScheduleEntry,
 }
 
+impl Default for SchedulerState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SchedulerState {
     /// Create a new empty scheduler state.
     pub fn new() -> Self {

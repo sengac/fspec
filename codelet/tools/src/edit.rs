@@ -68,6 +68,18 @@ impl rig::tool::Tool for EditTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "Edit",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "Edit",
+                message: reason,
+            });
+        }
+
         // Validate and resolve path (handles worktree isolation for isolated sessions)
         let resolved_path = validate_and_resolve_path(self.session_id, &args.file_path, "edit")?;
         let file_path_str = resolved_path.to_string_lossy().to_string();

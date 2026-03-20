@@ -130,7 +130,7 @@ pub async fn graph_db_stats() -> Result<String, String> {
 
     // Count actual node rows per type from storage segments
     let mut node_types = serde_json::Map::new();
-    for (name, _nt) in &db.catalog().node_types {
+    for name in db.catalog().node_types.keys() {
         let count: usize = storage
             .node_segments
             .get(name.as_str())
@@ -142,7 +142,7 @@ pub async fn graph_db_stats() -> Result<String, String> {
 
     // Count actual edge rows per type from storage segments
     let mut edge_types = serde_json::Map::new();
-    for (name, _et) in &db.catalog().edge_types {
+    for name in db.catalog().edge_types.keys() {
         let count: usize = storage
             .edge_segments
             .get(name.as_str())

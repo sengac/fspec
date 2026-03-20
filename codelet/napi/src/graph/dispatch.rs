@@ -150,7 +150,7 @@ pub async fn dispatch_related(topic: &str, min_strength: Option<f32>, limit: Opt
                 arr.retain(|row| {
                     row.get("strength")
                         .and_then(|v| v.as_f64())
-                        .map_or(false, |s| s >= ms as f64)
+                        .is_some_and(|s| s >= ms as f64)
                 });
             }
             if let Some(lim) = limit {
@@ -188,22 +188,20 @@ pub async fn dispatch_decisions(domain: Option<&str>, status: Option<&str>, sinc
             if let Some(d) = domain {
                 arr.retain(|row| {
                     row.get("domain")
-                        .and_then(|v| v.as_str())
-                        .map_or(false, |v| v == d)
+                        .and_then(|v| v.as_str()) == Some(d)
                 });
             }
             if let Some(s) = status {
                 arr.retain(|row| {
                     row.get("status")
-                        .and_then(|v| v.as_str())
-                        .map_or(false, |v| v == s)
+                        .and_then(|v| v.as_str()) == Some(s)
                 });
             }
             if let Some(since_ts) = since {
                 arr.retain(|row| {
                     row.get("decidedAt")
                         .and_then(|v| v.as_str())
-                        .map_or(false, |v| v >= since_ts)
+                        .is_some_and(|v| v >= since_ts)
                 });
             }
             let count = arr.len();

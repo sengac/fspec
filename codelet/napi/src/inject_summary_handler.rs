@@ -271,9 +271,7 @@ pub fn apply_pending_dag(
         Err(_) => None,
     };
 
-    let Some(mut wrapped) = dag_content else {
-        return None;
-    };
+    let mut wrapped = dag_content?;
 
     // CMPCT-021: Auto-append <dag-files> block if agent omitted it.
     // Collect FileModification annotations from the session BEFORE clearing.

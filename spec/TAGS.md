@@ -12,6 +12,7 @@ Tags that identify which architectural component a feature belongs to.
 
 | Tag | Description |
 |-----|-------------|
+| `@agent-core` | Rust agent core components (session manager, lifecycle hooks, tool execution) |
 | `@agent-registry` | Agent registry and configuration management |
 | `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |
 | `@browser` | Browser automation and Chrome DevTools Protocol integration |
@@ -162,6 +163,7 @@ Tags that categorize features by functional area.
 | `@interactive-cli` | Interactive CLI features and TUI workflows |
 | `@kanban` | Kanban board and workflow management |
 | `@language-support` | Programming language support and integration |
+| `@lifecycle-hooks` | Lifecycle hook system for agent session events and CLI command events |
 | `@list` | List operations |
 | `@local-models` | Local LLM model support |
 | `@masked-display` | Masked display of sensitive data |
@@ -871,7 +873,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-03-18T06:30:28.914Z_
+_Last updated: 2026-03-20T02:56:40.602Z_
 
 **Update Command**: `fspec tag-stats`
 

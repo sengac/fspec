@@ -205,7 +205,7 @@ async fn test_dispatch_index_flushes_pending_entities() {
     );
 
     // @step When dispatch_index is called
-    let result = dispatch::dispatch_index(None).await;
+    let result = dispatch::dispatch_index(None, None, None).await;
 
     // @step Then the pending entities are loaded into the graph
     let parsed: serde_json::Value = serde_json::from_str(&result)

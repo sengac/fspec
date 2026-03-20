@@ -249,7 +249,7 @@ async fn test_dispatch_index_flushes_pending_and_returns_status() {
     extract_and_queue_from_tool_call("Write", &tool_args, "idx-session", 0);
 
     // @step When the index action is invoked
-    let result = dispatch::dispatch_index(None).await;
+    let result = dispatch::dispatch_index(None, None, None).await;
     let parsed: serde_json::Value = serde_json::from_str(&result).unwrap();
     assert_eq!(parsed["action"], "index");
 

@@ -215,18 +215,21 @@ pub struct BridgeResult {
 /// Allows AI agents to connect their sessions to external WebSocket endpoints.
 /// Uses handler mechanism similar to FspecTool for session context injection.
 #[derive(Clone, Debug)]
-pub struct BridgeTool;
+pub struct BridgeTool {
+    /// Session ID for pre_tool_use hook checks (HOOK-017)
+    pub session_id: Uuid,
+}
 
 impl Default for BridgeTool {
     fn default() -> Self {
-        Self
+        Self { session_id: Uuid::nil() }
     }
 }
 
 impl BridgeTool {
     /// Create a new BridgeTool instance
-    pub fn new() -> Self {
-        Self
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 }
 
@@ -290,6 +293,18 @@ impl Tool for BridgeTool {
     }
 
     async fn call(&self, _args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "Bridge",
+            &serde_json::to_value(&_args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "Bridge",
+                message: reason,
+            });
+        }
+
         // This tool requires session context via handler mechanism
         // Direct Tool::call is not supported - must use BridgeToolFacadeWrapper
         Err(ToolError::Execution {
@@ -766,7 +781,7 @@ mod tests {
         #[tokio::test]
         async fn test_bridge_tool_definition() {
             // @step Given a BridgeTool instance
-            let tool = BridgeTool::new();
+            let tool = BridgeTool::new(Uuid::new_v4());
 
             // @step When definition is called
             let def = tool.definition(String::new()).await;
@@ -785,7 +800,7 @@ mod tests {
         #[tokio::test]
         async fn test_bridge_tool_call_requires_session_context() {
             // @step Given a BridgeTool instance
-            let tool = BridgeTool::new();
+            let tool = BridgeTool::new(Uuid::new_v4());
 
             // @step When call is invoked directly
             let result = tool

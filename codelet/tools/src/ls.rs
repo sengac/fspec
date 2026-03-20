@@ -145,6 +145,18 @@ impl rig::tool::Tool for LsTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "Ls",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "Ls",
+                message: reason,
+            });
+        }
+
         // Validate and resolve path (handles worktree isolation for isolated sessions)
         let dir_path_input = args.path.as_deref().unwrap_or(".");
         let resolved_path = validate_and_resolve_path(self.session_id, dir_path_input, "ls")?;

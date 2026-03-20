@@ -41,6 +41,7 @@ pub mod schedule;
 pub mod search_engine;
 pub mod tool_pause;
 pub mod tool_progress;
+pub mod pre_tool_hook;
 pub mod truncation;
 pub mod validation;
 pub mod unified_exec;
@@ -123,6 +124,10 @@ pub use fspec_handler::{
     FspecHandler, FspecRequest as FspecHandlerRequest, FspecResult as FspecHandlerResult,
 };
 pub use fspec_workflow_guidance::{get_fspec_workflow_guidance, FSPEC_WORKFLOW_GUIDANCE};
+pub use pre_tool_hook::{
+    pre_tool_hook_check, register_pre_tool_hook, unregister_pre_tool_hook,
+    PreToolHookDecision, PreToolHookHandler,
+};
 pub use mcp::{
     cleanup_mcp_session, connect_http, connect_stdio, disconnect_mcp,
     gather_mcp_tool_registrations, gather_mcp_tool_wrappers, get_mcp_connections,

@@ -27,7 +27,7 @@ pub fn filter_by_min_strength(results: &[Value], min_strength: f64) -> Vec<Value
         .filter(|row| {
             row.get("strength")
                 .and_then(|v| v.as_f64())
-                .map_or(false, |s| s >= min_strength)
+                .is_some_and(|s| s >= min_strength)
         })
         .cloned()
         .collect()
@@ -39,8 +39,7 @@ pub fn filter_decisions_by_domain(results: &[Value], domain: &str) -> Vec<Value>
         .iter()
         .filter(|row| {
             row.get("domain")
-                .and_then(|v| v.as_str())
-                .map_or(false, |d| d == domain)
+                .and_then(|v| v.as_str()) == Some(domain)
         })
         .cloned()
         .collect()
@@ -52,8 +51,7 @@ pub fn filter_decisions_by_status(results: &[Value], status: &str) -> Vec<Value>
         .iter()
         .filter(|row| {
             row.get("status")
-                .and_then(|v| v.as_str())
-                .map_or(false, |s| s == status)
+                .and_then(|v| v.as_str()) == Some(status)
         })
         .cloned()
         .collect()

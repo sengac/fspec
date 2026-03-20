@@ -6,6 +6,7 @@
 pub mod compaction;
 pub mod compaction_hook;
 pub mod gemini_history_hook;
+pub mod lifecycle_hooks;
 pub mod message_estimator;
 pub mod rig_agent;
 pub mod streaming_display;

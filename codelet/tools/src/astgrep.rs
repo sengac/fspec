@@ -388,6 +388,18 @@ impl rig::tool::Tool for AstGrepTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "AstGrep",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "AstGrep",
+                message: reason,
+            });
+        }
+
         // TOOL-014: Validate and resolve path for worktree isolation
         let resolved_path = if let Some(ref path) = args.path {
             match validate_and_resolve_path(self.session_id, path, "ast_grep") {

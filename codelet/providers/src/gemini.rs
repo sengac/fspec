@@ -116,7 +116,6 @@ impl GeminiProvider {
 
         // Create Gemini-specific web search facades (TOOL-001)
         // These provide Gemini-native tool names and flat schemas
-        // TOOL-014: Pass session_id for consistency
         let google_web_search = FacadeToolWrapper::new(Arc::new(GeminiGoogleWebSearchFacade), session_id);
         let web_fetch = FacadeToolWrapper::new(Arc::new(GeminiWebFetchFacade), session_id);
 

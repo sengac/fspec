@@ -156,6 +156,18 @@ impl Tool for InjectSummaryTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            &self.name(),
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "inject_summary",
+                message: reason,
+            });
+        }
+
         let result = execute_inject_summary(self.session_id, args.content)
             .map_err(|e| ToolError::Execution {
                 tool: "inject_summary",

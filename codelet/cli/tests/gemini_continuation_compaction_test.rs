@@ -80,8 +80,11 @@ mod scenario_session_continues {
     #[test]
     fn test_session_continues_after_compaction_during_continuation() {
         // @step Given a session has accumulated 90% of the context window tokens
-        let mut token_tracker = TokenTracker::new();
-        token_tracker.input_tokens = 180_000; // 90% of 200K
+        let _token_tracker = {
+            let mut tt = TokenTracker::new();
+            tt.input_tokens = 180_000; // 90% of 200K
+            tt
+        };
         
         // @step And the Gemini model is processing a continuation request
         let continuation_text = "Processing request...";

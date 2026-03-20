@@ -169,7 +169,11 @@ pub fn detect_existing_dag(messages: &[Message]) -> Option<(String, usize)> {
 /// Compiled regex for extracting `<dag-node ...>...</dag-node>` blocks.
 static DAG_NODE_BLOCK_RE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"(?s)<dag-node\s[^>]*>.*?</dag-node>")
-        .unwrap_or_else(|_| Regex::new("^$").expect("infallible fallback regex"))
+        .unwrap_or_else(|_| {
+            // SAFETY: "^$" is a trivially valid regex — unwrap is infallible.
+            #[allow(clippy::expect_used)]
+            Regex::new("^$").expect("infallible fallback regex")
+        })
 });
 
 /// Extract partial `<dag-node>` blocks from assistant messages.

@@ -1,0 +1,62 @@
+{
+  "global": {
+    "timeout": 30,
+    "shell": "bash -c"
+  },
+  "hooks": {
+    "session_start": [
+      {
+        "name": "inject-project-standards",
+        "command": "spec/hooks/examples/on-session-start.sh",
+        "blocking": false,
+        "timeout": 10
+      }
+    ],
+    "session_end": [
+      {
+        "name": "log-session-end",
+        "command": "spec/hooks/examples/on-session-end.sh",
+        "blocking": false,
+        "timeout": 10
+      }
+    ],
+    "user_prompt_submit": [
+      {
+        "name": "policy-enforcement",
+        "command": "spec/hooks/examples/on-user-prompt.sh",
+        "blocking": true,
+        "timeout": 5
+      }
+    ],
+    "notification": [
+      {
+        "name": "log-notifications",
+        "command": "spec/hooks/examples/on-notification.sh",
+        "blocking": false,
+        "timeout": 5
+      }
+    ],
+    "pre_tool_use": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "command": "spec/hooks/examples/on-pre-tool-use.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "post_tool_use": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "command": "spec/hooks/examples/on-post-tool-use.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -142,6 +142,18 @@ impl Tool for AgentManagerTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            &self.name(),
+            &serde_json::to_value(&args.action).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "agent_manager",
+                message: reason,
+            });
+        }
+
         let result = execute_agent_manager(self.session_id, args.action);
 
         serde_json::to_string_pretty(&result).map_err(|e| ToolError::Execution {

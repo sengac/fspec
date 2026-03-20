@@ -338,6 +338,18 @@ impl Tool for RequestUserInputTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            &self.name(),
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "request_user_input",
+                message: reason,
+            });
+        }
+
         let request = HitlRequest {
             questions: args.questions,
         };

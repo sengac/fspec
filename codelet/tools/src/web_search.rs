@@ -2,7 +2,7 @@
 // Implements web search capabilities with Search, OpenPage, and FindInPage actions
 // Uses Chrome DevTools Protocol via rust-headless-chrome for full JavaScript support
 //
-// TOOL-014: Supports worktree isolation via session_id for isolated sessions.
+// TOOL-014: Requires session_id for worktree isolation and pre_tool_use hooks.
 
 use rig::{completion::ToolDefinition, tool::Tool};
 use serde::{Deserialize, Serialize};
@@ -243,8 +243,7 @@ where
 /// TOOL-014: Requires session_id for worktree isolation support.
 #[derive(Clone, Debug)]
 pub struct WebSearchTool {
-    /// Session ID for worktree isolation support
-    #[allow(dead_code)] // Reserved for future worktree isolation
+    /// Session ID for pre_tool_use hook identification and worktree isolation
     session_id: Uuid,
 }
 
@@ -328,10 +327,10 @@ pub struct WebSearchResult {
 }
 
 impl WebSearchTool {
-    /// Create a new WebSearchTool instance with session awareness
+    /// Create a new WebSearchTool instance with session awareness.
     ///
     /// # Arguments
-    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    /// * `session_id` - The session ID for pre_tool_use hooks and worktree isolation (TOOL-014)
     pub fn new(session_id: Uuid) -> Self {
         Self { session_id }
     }
@@ -449,6 +448,18 @@ impl Tool for WebSearchTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "WebSearch",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "web_search",
+                message: reason,
+            });
+        }
+
         // Implement web search functionality using Chrome
         // Return ToolError for validation failures, ChromeError converts via From impl
         let (success, message) = match &args.action {

@@ -128,7 +128,6 @@ impl GrepTool {
                         self.result.matches.push(MatchLine {
                             line_num: mat.line_number().unwrap_or(0),
                             content: line.trim_end().to_string(),
-                            is_context: false,
                         });
                     }
                 }
@@ -147,7 +146,6 @@ impl GrepTool {
                             self.result.matches.push(MatchLine {
                                 line_num: ctx.line_number().unwrap_or(0),
                                 content: line.trim_end().to_string(),
-                                is_context: true,
                             });
                         }
                     }
@@ -369,8 +367,6 @@ struct FileSearchResult {
 struct MatchLine {
     line_num: u64,
     content: String,
-    #[allow(dead_code)] // Reserved for future context line formatting
-    is_context: bool,
 }
 
 // rig::tool::Tool implementation
@@ -414,6 +410,18 @@ impl rig::tool::Tool for GrepTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "Grep",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "Grep",
+                message: reason,
+            });
+        }
+
         // Validate and resolve path (handles worktree isolation for isolated sessions)
         let resolved_path = if let Some(ref path) = args.path {
             match validate_and_resolve_path(self.session_id, path, "grep") {

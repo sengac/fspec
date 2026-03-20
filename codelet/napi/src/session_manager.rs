@@ -14,6 +14,14 @@ use crate::persistence::{
     MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent,
 };
 use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiTurnDetails, NapiToolCall, NapiFileModification};
+
+// HOOK-013: Agent lifecycle hooks — compiled config + engine functions
+use codelet_core::lifecycle_hooks::{
+    CompiledLifecycleHooks, HookContext, HookMessageLevel,
+    load_lifecycle_hooks,
+    run_session_start, run_session_end, run_user_prompt,
+    run_post_tool, run_pre_tool,
+};
 use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
 use codelet_cli::session::context_gathering::gather_environment_info;
 use codelet_common::debug_capture::{
@@ -29,6 +37,7 @@ use codelet_git::{
 use codelet_tools::{clear_bash_abort, request_bash_abort};
 use codelet_tools::McpInjection;
 use codelet_tools::tool_pause::{PauseKind, PauseRequest, PauseResponse, PauseState, set_pause_handler, PauseHandler};
+use codelet_tools::pre_tool_hook::{register_pre_tool_hook, unregister_pre_tool_hook, PreToolHookDecision, PreToolHookHandler};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use once_cell::sync::OnceCell;
@@ -257,7 +266,7 @@ pub fn parse_interjection(response: &str) -> Option<Interjection> {
 /// AMGR-008: Session role is now a simple string (was SupervisorRole struct)
 /// Role is stored as Option<String> on BackgroundSession.
 /// See BackgroundSession::set_role() and get_role().
-
+///
 /// Incoming message for injection into a session
 /// BRIDGE-007: Extended to support optional images from Telegram bridge
 /// AMGR-008: Renamed from IncomingMessage to IncomingMessage
@@ -590,6 +599,9 @@ pub struct BackgroundSession {
 
     /// SCHED-004: Name of the schedule that triggered this session (if any)
     pub schedule_name: RwLock<Option<String>>,
+
+    /// HOOK-013: Compiled lifecycle hooks (None = no agent hooks configured → zero overhead)
+    pub lifecycle_hooks: Option<Arc<CompiledLifecycleHooks>>,
 }
 
 impl BackgroundSession {
@@ -607,6 +619,7 @@ impl BackgroundSession {
         input_tx: mpsc::Sender<PromptInput>,
         worktree_path: Option<PathBuf>,
         base_commit: Option<String>,
+        lifecycle_hooks: Option<Arc<CompiledLifecycleHooks>>,
     ) -> Self {
         // Create supervisor input channel (WATCH-006)
         let (incoming_message_tx, incoming_message_rx) = mpsc::channel::<IncomingMessage>(16);
@@ -666,6 +679,8 @@ impl BackgroundSession {
             // SCHED-004: Default to non-scheduled
             schedule_triggered: AtomicBool::new(false),
             schedule_name: RwLock::new(None),
+            // HOOK-013: Lifecycle hooks (compiled once at session creation)
+            lifecycle_hooks,
         }
     }
 
@@ -677,6 +692,18 @@ impl BackgroundSession {
         self.worktree_path
             .clone()
             .unwrap_or_else(|| PathBuf::from(&self.project))
+    }
+
+    /// HOOK-013: Build a HookContext for lifecycle hook execution.
+    fn hook_context(&self) -> HookContext {
+        HookContext {
+            session_id: self.id.to_string(),
+            cwd: self.effective_cwd().to_string_lossy().to_string(),
+            transcript_path: format!(
+                "{}/.fspec/sessions/{}/transcript.json",
+                self.project, self.id
+            ),
+        }
     }
 
     /// GIT-034: Build isolation context for environment reminder injection
@@ -3139,6 +3166,7 @@ impl SessionManager {
     ///
     /// Creates a new session, marks it with schedule metadata, sets role if
     /// provided, and sends the initial prompt. Returns Ok(()) on success.
+    #[allow(clippy::too_many_arguments)]
     pub async fn spawn_scheduled_session(
         &self,
         id: &str,
@@ -3300,6 +3328,36 @@ impl SessionManager {
         // This provides the LLM with platform, architecture, shell, user, and working directory
         inner.inject_context_reminders();
 
+        // HOOK-013: Load and compile lifecycle hooks from two-level config hierarchy.
+        // user-level ~/.fspec/fspec-hooks.json + project-level spec/fspec-hooks.json
+        // Compiled once at session creation; not hot-reloaded during a session.
+        let lifecycle_hooks = match load_lifecycle_hooks(
+            Some(&project_path),
+            dirs::home_dir().as_deref(),
+        ) {
+            Ok(Some(compiled)) => {
+                tracing::info!(
+                    "[HOOK-013] Loaded lifecycle hooks for session {} (session_start={}, pre_tool_use={}, post_tool_use={}, user_prompt={}, session_end={}, notification={})",
+                    uuid,
+                    compiled.session_start.len(),
+                    compiled.pre_tool_use.len(),
+                    compiled.post_tool_use.len(),
+                    compiled.user_prompt_submit.len(),
+                    compiled.session_end.len(),
+                    compiled.notification.len(),
+                );
+                Some(Arc::new(compiled))
+            }
+            Ok(None) => {
+                tracing::debug!("[HOOK-013] No agent lifecycle hooks configured for session {}", uuid);
+                None
+            }
+            Err(e) => {
+                tracing::warn!("[HOOK-013] Failed to load lifecycle hooks: {} — continuing without hooks", e);
+                None
+            }
+        };
+
         let session = Arc::new(BackgroundSession::new(
             uuid,
             name.to_string(),
@@ -3310,7 +3368,43 @@ impl SessionManager {
             input_tx,
             None, // GIT-019: worktree_path (non-isolated by default)
             None, // GIT-019: base_commit (non-isolated by default)
+            lifecycle_hooks.clone(),
         ));
+
+        // HOOK-013: Register pre_tool_use hook handler for this session.
+        // The handler runs the lifecycle hook engine via block_in_place + block_on
+        // so it can be called synchronously from inside Tool::call().
+        if let Some(ref hooks) = lifecycle_hooks {
+            if !hooks.pre_tool_use.is_empty() {
+                let hooks_for_pre = hooks.clone();
+                let session_for_pre = session.clone();
+                let pre_handler: PreToolHookHandler = std::sync::Arc::new(move |_sid, tool_name, tool_input| {
+                    let ctx = session_for_pre.hook_context();
+                    let hooks = hooks_for_pre.clone();
+                    let name = tool_name.to_string();
+                    let input = tool_input.clone();
+                    // Run async hook engine from sync context (Tool::call is async but
+                    // the check function is sync — same pattern as pause_for_user/blocklist)
+                    let outcome = tokio::task::block_in_place(|| {
+                        tokio::runtime::Handle::current().block_on(
+                            run_pre_tool(&hooks, &ctx, &name, &input)
+                        )
+                    });
+                    // Convert outcome to decision
+                    match outcome.decision {
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Allow => PreToolHookDecision::Allow,
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Deny => {
+                            PreToolHookDecision::Deny(
+                                outcome.reason.unwrap_or_else(|| "Denied by pre_tool_use hook".to_string())
+                            )
+                        }
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Continue => PreToolHookDecision::Continue,
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Ask => PreToolHookDecision::Continue,
+                    }
+                });
+                register_pre_tool_hook(uuid, pre_handler);
+            }
+        }
         
         // MCP-001: Initialize MCP session state (injection channel + connection map).
         // The injection_rx is consumed by agent_loop to process server-initiated messages.
@@ -3487,6 +3581,22 @@ impl SessionManager {
         // Inject context reminders with isolation context
         inner.inject_context_reminders_with_isolation(Some(&isolation));
 
+        // HOOK-013: Load lifecycle hooks for isolated session too
+        let lifecycle_hooks = match load_lifecycle_hooks(
+            Some(&project_path),
+            dirs::home_dir().as_deref(),
+        ) {
+            Ok(Some(compiled)) => {
+                tracing::info!("[HOOK-013] Loaded lifecycle hooks for isolated session {}", uuid);
+                Some(Arc::new(compiled))
+            }
+            Ok(None) => None,
+            Err(e) => {
+                tracing::warn!("[HOOK-013] Failed to load lifecycle hooks for isolated session: {}", e);
+                None
+            }
+        };
+
         // GIT-028: Create BackgroundSession with worktree_path and base_commit populated
         let session = Arc::new(BackgroundSession::new(
             uuid,
@@ -3498,7 +3608,38 @@ impl SessionManager {
             input_tx,
             Some(worktree_path.clone()), // GIT-028: Isolated session worktree
             Some(base_commit.clone()),    // GIT-028: Base commit for isolation
+            lifecycle_hooks.clone(),
         ));
+
+        // HOOK-013: Register pre_tool_use hook handler for isolated session too
+        if let Some(ref hooks) = lifecycle_hooks {
+            if !hooks.pre_tool_use.is_empty() {
+                let hooks_for_pre = hooks.clone();
+                let session_for_pre = session.clone();
+                let pre_handler: PreToolHookHandler = std::sync::Arc::new(move |_sid, tool_name, tool_input| {
+                    let ctx = session_for_pre.hook_context();
+                    let hooks = hooks_for_pre.clone();
+                    let name = tool_name.to_string();
+                    let input = tool_input.clone();
+                    let outcome = tokio::task::block_in_place(|| {
+                        tokio::runtime::Handle::current().block_on(
+                            run_pre_tool(&hooks, &ctx, &name, &input)
+                        )
+                    });
+                    match outcome.decision {
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Allow => PreToolHookDecision::Allow,
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Deny => {
+                            PreToolHookDecision::Deny(
+                                outcome.reason.unwrap_or_else(|| "Denied by pre_tool_use hook".to_string())
+                            )
+                        }
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Continue => PreToolHookDecision::Continue,
+                        codelet_core::lifecycle_hooks::outcome::PreToolHookDecision::Ask => PreToolHookDecision::Continue,
+                    }
+                });
+                register_pre_tool_hook(uuid, pre_handler);
+            }
+        }
         
         // MCP-001: Initialize MCP session state for isolated sessions too.
         // The injection_rx is consumed by agent_loop to process server-initiated messages.
@@ -3706,6 +3847,8 @@ impl SessionManager {
             }
             // MCP-001: Clean up MCP session state (cancel connections, kill child processes)
             codelet_tools::cleanup_mcp_session(uuid);
+            // HOOK-013: Unregister pre_tool_use hook handler
+            unregister_pre_tool_hook(uuid);
             // Drop the input sender to signal the loop to exit
             // (happens automatically when session is dropped)
             Ok(())
@@ -4105,6 +4248,31 @@ async fn agent_loop(
     // CMPCT-020: Compaction convergence watchdog state
     let mut compaction_watchdog_attempts: usize = 0;
     let mut compaction_retry_input: Option<String> = None;
+
+    // HOOK-013: Fire session_start hooks
+    if let Some(ref hooks) = session.lifecycle_hooks {
+        let ctx = session.hook_context();
+        let outcome = run_session_start(hooks, &ctx, "startup").await;
+        // Inject additional context as system-reminder messages
+        if !outcome.additional_context.is_empty() {
+            let mut inner = session.inner.lock().await;
+            let combined_context = outcome.additional_context.join("\n");
+            inner.add_system_reminder(
+                codelet_cli::session::SystemReminderType::FspecWorkflow,
+                &combined_context,
+            );
+            drop(inner);
+        }
+        for msg in &outcome.messages {
+            if msg.level == HookMessageLevel::Warning || msg.level == HookMessageLevel::Error {
+                tracing::warn!("[HOOK-013] session_start hook: {}", msg.content);
+                session.handle_output(StreamChunk::user_notification(
+                    format!("Hook: {}", msg.content),
+                    NotificationSeverity::Warning,
+                ));
+            }
+        }
+    }
     
     loop {
         // CMPCT-020: Check for compaction watchdog retry input before waiting for user input
@@ -4137,6 +4305,11 @@ async fn agent_loop(
                     None => {
                         // Channel closed, exit loop
                         drop(supervisor_rx);
+                        // HOOK-013: Fire session_end hooks before exiting
+                        if let Some(ref hooks) = session.lifecycle_hooks {
+                            let ctx = session.hook_context();
+                            let _outcome = run_session_end(hooks, &ctx, "exit").await;
+                        }
                         break;
                     }
                 }
@@ -4249,6 +4422,41 @@ async fn agent_loop(
             // BRIDGE-007: Log if images are present
             if let Some(ref images) = input_with_images.images {
                 tracing::debug!("Session {} has {} image(s) attached", session.id, images.len());
+            }
+
+            // HOOK-013: Run user_prompt_submit hooks (can block the prompt)
+            if let Some(ref hooks) = session.lifecycle_hooks {
+                if !hooks.user_prompt_submit.is_empty() {
+                    let ctx = session.hook_context();
+                    let outcome = run_user_prompt(hooks, &ctx, input).await;
+                    // Surface hook warnings/errors
+                    for msg in &outcome.messages {
+                        if msg.level == HookMessageLevel::Warning || msg.level == HookMessageLevel::Error {
+                            tracing::warn!("[HOOK-013] user_prompt_submit hook: {}", msg.content);
+                        }
+                    }
+                    if !outcome.allow_prompt {
+                        let reason = outcome.block_reason.unwrap_or_else(|| "Blocked by hook".to_string());
+                        tracing::warn!("[HOOK-013] Prompt blocked: {}", reason);
+                        session.handle_output(StreamChunk::user_notification(
+                            format!("Prompt blocked: {}", reason),
+                            NotificationSeverity::Warning,
+                        ));
+                        session.set_status(SessionStatus::Idle);
+                        session.handle_output(StreamChunk::done());
+                        continue; // Skip this prompt, go back to waiting for input
+                    }
+                    // Inject additional context from the hook
+                    if !outcome.additional_context.is_empty() {
+                        let mut inner_session = session.inner.lock().await;
+                        let combined_context = outcome.additional_context.join("\n");
+                        inner_session.add_system_reminder(
+                            codelet_cli::session::SystemReminderType::FspecWorkflow,
+                            &combined_context,
+                        );
+                        drop(inner_session);
+                    }
+                }
             }
 
             // REFAC-007: Persist user message to Rust persistence layer
@@ -5016,6 +5224,46 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     tr.is_error,
                 ) {
                     tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
+                }
+
+                // HOOK-013: Run post_tool_use hooks (fire-and-forget with context injection)
+                if let Some(ref hooks) = self.session.lifecycle_hooks {
+                    if !hooks.post_tool_use.is_empty() {
+                        // Get the tool name from the last_tool_call cache (set during ToolCall event)
+                        let tool_name_for_hook = self.last_tool_call.lock()
+                            .ok()
+                            .and_then(|guard| guard.as_ref().map(|(name, _)| name.clone()));
+                        
+                        if let Some(tool_name) = tool_name_for_hook {
+                            let hooks_clone = hooks.clone();
+                            let ctx = self.session.hook_context();
+                            let tool_input = self.last_tool_call.lock()
+                                .ok()
+                                .and_then(|guard| guard.as_ref().map(|(_, input)| input.clone()))
+                                .unwrap_or(serde_json::Value::Null);
+                            let tool_response = tr.content.clone();
+                            let session_for_hook = self.session.clone();
+                            
+                            // Spawn async task for post_tool_use hooks
+                            tokio::spawn(async move {
+                                let outcome = run_post_tool(
+                                    &hooks_clone, &ctx, &tool_name, &tool_input, &tool_response,
+                                ).await;
+                                // Inject additional context as notifications
+                                for context_text in &outcome.additional_context {
+                                    session_for_hook.handle_output(StreamChunk::user_notification(
+                                        format!("Hook context: {}", context_text),
+                                        NotificationSeverity::Info,
+                                    ));
+                                }
+                                for msg in &outcome.messages {
+                                    if msg.level == HookMessageLevel::Warning || msg.level == HookMessageLevel::Error {
+                                        tracing::warn!("[HOOK-013] post_tool_use hook: {}", msg.content);
+                                    }
+                                }
+                            });
+                        }
+                    }
                 }
 
                 // KGRAPH: Extract graph entities from the completed tool call
@@ -6005,7 +6253,7 @@ pub async fn loop_register(
     crate::scheduler::LoopStore::instance()
         .try_register_with_task_and_idle_check(entry, on_fire, idle_check)
         .await
-        .map_err(|e| Error::from_reason(e))?;
+        .map_err(Error::from_reason)?;
 
     Ok(())
 }

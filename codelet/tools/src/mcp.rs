@@ -1003,6 +1003,18 @@ impl rig::tool::Tool for McpToolWrapper {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            &self.qualified_name,
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(crate::ToolError::Blocked {
+                tool: "mcp",
+                message: reason,
+            });
+        }
+
         let connections = get_mcp_connections(self.session_id).ok_or_else(|| {
             crate::ToolError::Execution {
                 tool: "mcp",
@@ -1210,6 +1222,18 @@ impl rig::tool::Tool for ConnectMcpTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "ConnectMCP",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(crate::ToolError::Blocked {
+                tool: "ConnectMCP",
+                message: reason,
+            });
+        }
+
         let (injection_tx, connections) =
             get_mcp_session_state(self.session_id).ok_or_else(|| {
                 crate::ToolError::Execution {

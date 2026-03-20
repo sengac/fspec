@@ -72,6 +72,7 @@ impl Drop for GraphSearchCleanup {
 /// The handler closure captures owned Strings; this forwards to the
 /// reference-based `execute_deep_search` without lifetime issues.
 /// Returns an explicitly `Send` future for the handler type signature.
+#[allow(clippy::too_many_arguments)]
 fn execute_deep_search_owned(
     project_path: std::path::PathBuf,
     query: String,
@@ -110,6 +111,7 @@ fn execute_deep_search_owned(
 /// RLM-002: Accepts `depth` and `max_recursion_depth` to support recursive
 /// self-invocation. When `depth < max_recursion_depth`, the sub-agent gets
 /// a DeepSearch tool configured at `depth + 1`.
+#[allow(clippy::too_many_arguments)]
 pub async fn execute_deep_search(
     project_path: &Path,
     query: &str,
@@ -346,6 +348,7 @@ where
 /// Adds `SUB_AGENT_TOOL_COUNT` tools (7) in the base case: Read, Grep, AstGrep,
 /// Glob, Ls, Bash, SessionSearch. When `can_recurse` is true, adds DeepSearch
 /// as the 8th tool for recursive self-invocation (RLM-002).
+#[allow(clippy::too_many_arguments)]
 async fn build_and_run_agent(
     session_id: Uuid,
     system_prompt: &str,

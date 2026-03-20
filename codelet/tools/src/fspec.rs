@@ -8,12 +8,14 @@ use super::error::ToolError;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct FspecTool {
-    // No stored callback - JS will provide it at call time
+    /// Session ID for pre_tool_use hook checks (HOOK-017)
+    #[serde(skip)]
+    pub session_id: uuid::Uuid,
 }
 
 impl FspecTool {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(session_id: uuid::Uuid) -> Self {
+        Self { session_id }
     }
 
     /// Execute fspec command via JS-provided callback (JS-controlled invocation).
@@ -37,7 +39,7 @@ impl FspecTool {
 
 impl Default for FspecTool {
     fn default() -> Self {
-        Self::new()
+        Self::new(uuid::Uuid::nil())
     }
 }
 
@@ -84,6 +86,18 @@ impl Tool for FspecTool {
     }
 
     async fn call(&self, _args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "Fspec",
+            &serde_json::to_value(&_args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "Fspec",
+                message: reason,
+            });
+        }
+
         // NO CLI FALLBACKS - JS-controlled invocation is required
         // The facade wrapper must provide the callback mechanism
         

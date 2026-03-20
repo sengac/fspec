@@ -98,6 +98,18 @@ impl rig::tool::Tool for ApplyPatchTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "ApplyPatch",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "ApplyPatch",
+                message: reason,
+            });
+        }
+
         let ops = parse_patch(&args.patch).map_err(|e| ToolError::Validation {
             tool: "apply_patch",
             message: e,

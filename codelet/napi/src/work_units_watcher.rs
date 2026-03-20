@@ -137,7 +137,7 @@ pub fn start_work_units_watcher(
                     // an infinite feedback loop burning ~20% CPU while idle.
                     let relevant = events.iter().any(|e| {
                         matches!(e.kind, DebouncedEventKind::Any | DebouncedEventKind::AnyContinuous)
-                            && e.path.file_name().map_or(false, |name| name == "work-units.json")
+                            && e.path.file_name().is_some_and(|name| name == "work-units.json")
                     });
                     
                     if relevant {

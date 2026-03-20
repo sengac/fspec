@@ -1054,6 +1054,18 @@ impl rig::tool::Tool for AstGrepRefactorTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "AstGrepRefactor",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "AstGrepRefactor",
+                message: reason,
+            });
+        }
+
         // TOOL-014: Validate and resolve source_file path for worktree isolation
         let resolved_source = match validate_and_resolve_path(self.session_id, &args.source_file, "ast_grep_refactor") {
             Ok(resolved) => resolved.to_string_lossy().to_string(),

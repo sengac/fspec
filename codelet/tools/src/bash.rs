@@ -616,6 +616,18 @@ impl rig::tool::Tool for BashTool {
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         use crate::tool_progress::emit_tool_progress;
 
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "Bash",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "Bash",
+                message: reason,
+            });
+        }
+
         if args.command.is_empty() {
             return Err(ToolError::Validation {
                 tool: "bash",

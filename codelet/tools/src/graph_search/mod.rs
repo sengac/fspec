@@ -129,6 +129,18 @@ impl Tool for GraphSearchTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-013: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            &self.name(),
+            &serde_json::json!({"action_type": format!("{:?}", args.action)}),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "graph_search",
+                message: reason,
+            });
+        }
+
         let result = execute_graph_search(self.session_id, args.action);
         Ok(result)
     }

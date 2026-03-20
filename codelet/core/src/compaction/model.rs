@@ -338,10 +338,7 @@ pub enum StructuralAnnotation {
 /// `inject_summary_handler::on_injected` (napi) and
 /// `compaction_dag::force_inject_fallback_dag` (cli).
 pub fn wrap_dag_content(content: &str) -> String {
-    format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n{}\n</system-reminder>",
-        content
-    )
+    format!("<system-reminder>\n<!-- type:compaction-dag -->\n{content}\n</system-reminder>")
 }
 
 /// Depth level of a DAG summary node.
@@ -392,7 +389,11 @@ pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<D
     // Compiled once, reused across all calls
     static DAG_NODE_RE: Lazy<Regex> = Lazy::new(|| {
         Regex::new(r#"<dag-node\s+depth="(D[012])"\s+turns="(\d+)-(\d+)"\s+label="([^"]+)">"#)
-            .unwrap_or_else(|_| Regex::new("^$").expect("infallible fallback regex"))
+            .unwrap_or_else(|_| {
+                // SAFETY: "^$" is a trivially valid regex — unwrap is infallible.
+                #[allow(clippy::expect_used)]
+                Regex::new("^$").expect("infallible fallback regex")
+            })
     });
 
     let max_turn = message_count.map(|c| if c > 0 { c - 1 } else { 0 });

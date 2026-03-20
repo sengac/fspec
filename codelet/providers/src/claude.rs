@@ -526,7 +526,7 @@ impl ClaudeProvider {
             .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(claude_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(claude_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade), session_id)) // TOOL-007, TOOL-014: Facade with session_id
+            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade), session_id)) // TOOL-007: Claude web search facade
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool

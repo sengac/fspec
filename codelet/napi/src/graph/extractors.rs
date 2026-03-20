@@ -204,9 +204,7 @@ fn infer_language(file_path: &str) -> Option<&'static str> {
 /// Convert a file path to a URL-safe slug.
 fn slugify_path(file_path: &str) -> String {
     file_path
-        .replace('/', "-")
-        .replace('\\', "-")
-        .replace('.', "-")
+        .replace(['/', '\\', '.'], "-")
 }
 
 /// Batch queue for graph entities.

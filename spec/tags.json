@@ -6,6 +6,10 @@
       "required": true,
       "tags": [
         {
+          "name": "@agent-core",
+          "description": "Rust agent core components (session manager, lifecycle hooks, tool execution)"
+        },
+        {
           "name": "@agent-registry",
           "description": "Agent registry and configuration management"
         },
@@ -576,6 +580,10 @@
         {
           "name": "@language-support",
           "description": "Programming language support and integration"
+        },
+        {
+          "name": "@lifecycle-hooks",
+          "description": "Lifecycle hook system for agent session events and CLI command events"
         },
         {
           "name": "@list",
@@ -2518,7 +2526,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-03-18T06:30:28.914Z",
+    "lastUpdated": "2026-03-20T02:56:40.602Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

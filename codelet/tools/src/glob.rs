@@ -88,6 +88,18 @@ impl rig::tool::Tool for GlobTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // HOOK-017: Run pre_tool_use hooks before execution
+        if let Err(reason) = crate::pre_tool_hook::pre_tool_hook_check(
+            self.session_id,
+            "Glob",
+            &serde_json::to_value(&args).unwrap_or_default(),
+        ) {
+            return Err(ToolError::Blocked {
+                tool: "Glob",
+                message: reason,
+            });
+        }
+
         // Validate and resolve path (handles worktree isolation for isolated sessions)
         let search_path_input = args.path.as_deref().unwrap_or(".");
         let resolved_path = validate_and_resolve_path(self.session_id, search_path_input, "glob")?;
