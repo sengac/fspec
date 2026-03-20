@@ -94,3 +94,9 @@ dist/sea/
 tui-traces/
 tui-snapshots/
 .tui-test/
+
+# Native binary modules (distributed separately, not in git)
+*.node
+vendor/nanograph/
+lib/libpdfium.dylib
+pdfium-mac-arm64.tgz
