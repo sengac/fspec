@@ -27,6 +27,7 @@ pub mod fspec_workflow_guidance;
 pub mod inject_summary;
 
 pub mod glob;
+pub mod graph_search;
 pub mod grep;
 pub mod image_dimensions;
 pub mod limits;
@@ -162,6 +163,11 @@ pub use schedule::{
     set_schedule_handler, has_schedule_handler, clear_all_schedule_handlers,
 };
 pub use schedule::types::ScheduleRequest;
+pub use graph_search::{
+    GraphSearchTool, GraphSearchHandler, GraphSearchAction, GraphSearchArgs,
+    set_graph_search_handler, has_graph_search_handler,
+    execute_graph_search, clear_all_graph_search_handlers,
+};
 
 /// Tool definition for API requests
 #[derive(Debug, Clone, Serialize, Deserialize)]

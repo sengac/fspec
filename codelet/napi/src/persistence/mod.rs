@@ -78,6 +78,9 @@ pub fn set_data_directory(dir: PathBuf) -> Result<(), String> {
     // Reset credential store so it reinitializes with the new directory
     crate::credentials::reset_credential_store();
 
+    // KGRAPH-002: Reset graph database so it reinitializes from the new directory
+    crate::graph::reset_graph_db();
+
     Ok(())
 }
 

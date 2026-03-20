@@ -311,7 +311,7 @@ impl OpenAIProvider {
         use codelet_tools::facade::{openai_bridge_tool, openai_fspec_tool};
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-            ReadTool, WebSearchTool, WriteTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool,
+            ReadTool, WebSearchTool, WriteTool, ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool,
             DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool,
         };
         use rig::client::CompletionClient;
@@ -337,6 +337,7 @@ impl OpenAIProvider {
             .tool(WebSearchTool::new(session_id)) // WEB-001, TOOL-014: WebSearchTool with session_id
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
+            .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool

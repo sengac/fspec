@@ -1,0 +1,143 @@
+// ═══════════════════════════════════════════════════════════════
+// FSPEC AGENT MEMORY GRAPH — NanoGraph Schema v1
+// ═══════════════════════════════════════════════════════════════
+
+// ── Core Knowledge Nodes ──────────────────────────────────────
+
+node Concept
+  @description("A named idea, technology, pattern, or domain term.")
+{
+    slug: String @key
+    name: String @unique
+    category: enum(
+      architecture, convention, decision, dependency,
+      domain_term, error_class, feature, library,
+      pattern, person, platform, process, technology, tool
+    )
+    summary: String
+    mentionCount: I32
+    firstSeen: DateTime
+    lastSeen: DateTime
+    confidence: enum(high, medium, low)
+    tags: [String]?
+}
+
+node Decision
+  @description("An explicit decision or conclusion from a session.")
+{
+    slug: String @key
+    title: String @unique
+    rationale: String
+    status: enum(active, proposed, reversed, superseded)
+    domain: enum(
+      architecture, convention, dependency, deployment,
+      design, implementation, process, testing
+    )
+    decidedAt: DateTime
+    createdAt: DateTime
+}
+
+node CodeEntity
+  @description("A file, function, class, or module.")
+{
+    slug: String @key
+    name: String
+    entityType: enum(
+      class, endpoint, file, function, module, package, schema, test
+    )
+    filePath: String?
+    language: String?
+    lastModified: DateTime?
+    createdAt: DateTime
+}
+
+node WorkUnit
+  @description("Mirror of an fspec work unit.")
+{
+    slug: String @key
+    title: String
+    status: enum(
+      backlog, blocked, done, implementing, specifying, testing, validating
+    )
+    workType: enum(bug, story, task)
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+// ── Session & Provenance Nodes ────────────────────────────────
+
+node Session
+  @description("An agent conversation session.")
+{
+    slug: String @key
+    projectPath: String?
+    startedAt: DateTime
+    lastIndexedAt: DateTime
+    turnCount: I32
+    indexedTurnCount: I32
+}
+
+node Turn
+  @description("A single turn (message) in a session.")
+{
+    slug: String @key
+    sessionSlug: String
+    turnIndex: I32
+    role: enum(assistant, user)
+    timestamp: DateTime
+    preview: String?
+}
+
+// ── Relationship Edges ────────────────────────────────────────
+
+edge Mentions: Turn -> Concept {
+    confidence: enum(high, medium, low)
+    extractedAt: DateTime
+}
+
+edge Discusses: Session -> Concept {
+    turnCount: I32
+    firstMention: DateTime
+    lastMention: DateTime
+}
+
+edge Decides: Turn -> Decision {
+    extractedAt: DateTime
+}
+
+edge Implements: CodeEntity -> Decision {
+    linkedAt: DateTime
+}
+
+edge Modifies: Turn -> CodeEntity {
+    operation: enum(created, modified, deleted, reviewed)
+    extractedAt: DateTime
+}
+
+edge RelatesTo: Concept -> Concept {
+    strength: F32
+    relationType: enum(
+      causes, composes, conflicts_with, depends_on,
+      extends, implements, similar_to, supersedes, uses
+    )
+    firstSeen: DateTime
+    lastSeen: DateTime
+    coOccurrenceCount: I32
+}
+
+edge Supersedes: Decision -> Decision {
+    supersededAt: DateTime
+    reason: String?
+}
+
+edge WorksOn: Session -> WorkUnit {
+    linkedAt: DateTime
+}
+
+edge References: Decision -> WorkUnit {
+    linkedAt: DateTime
+}
+
+edge ContainsTurn: Session -> Turn {
+    turnIndex: I32
+}

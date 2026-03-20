@@ -1,0 +1,3 @@
+[submodule "vendor/nanograph"]
+	path = vendor/nanograph
+	url = https://github.com/nanograph/nanograph

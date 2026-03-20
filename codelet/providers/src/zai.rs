@@ -200,7 +200,7 @@ impl ZAIProvider {
             SearchToolFacadeWrapper, zai_bridge_tool, zai_fspec_tool, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
             ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
         };
-        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool};
+        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool, DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool};
         use std::sync::Arc;
 
         // Create Z.AI/GLM-specific tool facades (PROV-004)
@@ -245,6 +245,7 @@ impl ZAIProvider {
             .tool(WebSearchTool::new(session_id)) // WEB-001, TOOL-014: WebSearchTool with session_id
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
+            .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool

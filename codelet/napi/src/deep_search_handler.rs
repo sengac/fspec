@@ -27,9 +27,9 @@ use std::sync::atomic::AtomicBool;
 use crate::deep_search_provider_config::request_config_for_provider;
 use codelet_tools::{
     AstGrepTool, BashTool, GlobTool, GrepTool, LsTool, ReadTool,
-    SessionSearchTool, DeepSearchTool, SUB_AGENT_TOOL_COUNT,
+    SessionSearchTool, DeepSearchTool, GraphSearchTool, SUB_AGENT_TOOL_COUNT,
     build_system_prompt, set_session_search_handler,
-    set_deep_search_handler,
+    set_deep_search_handler, set_graph_search_handler,
 };
 use codelet_core::RigAgent;
 use futures::Stream;
@@ -55,6 +55,16 @@ struct DeepSearchCleanup(Uuid);
 impl Drop for DeepSearchCleanup {
     fn drop(&mut self) {
         set_deep_search_handler(self.0, None);
+    }
+}
+
+/// Drop guard that ensures the ephemeral GraphSearch handler is always
+/// cleaned up, even if `build_and_run_agent` panics.
+struct GraphSearchCleanup(Uuid);
+
+impl Drop for GraphSearchCleanup {
+    fn drop(&mut self) {
+        set_graph_search_handler(self.0, None);
     }
 }
 
@@ -157,11 +167,46 @@ pub async fn execute_deep_search(
         None
     };
 
-    // 3. Build system prompt with scope description and recursion awareness
-    let scope_vec = scope.unwrap_or_default();
-    let system_prompt = build_system_prompt(scope_vec, can_recurse);
+    // KGRAPH-009: Register GraphSearch handler for ephemeral session when graph is available
+    let graph_available = crate::graph::is_graph_initialized();
+    let _gs_cleanup = if graph_available {
+        let gs_handler = crate::graph_search_handler::create_handler();
+        set_graph_search_handler(ephemeral_session_id, Some(gs_handler));
+        Some(GraphSearchCleanup(ephemeral_session_id))
+    } else {
+        None
+    };
 
-    // 4. Build rig agent with read-only tools (+ DeepSearch if recursion enabled)
+    // 3. Build system prompt with scope description and recursion awareness
+    //    KGRAPH-009: Inject graph context when graph has data
+    let scope_vec = scope.unwrap_or_default();
+    let mut system_prompt = build_system_prompt(scope_vec, can_recurse);
+
+    if graph_available {
+        // Query related concepts for the search query and inject as context.
+        // Use block_in_place to avoid holding nanograph's !Send futures across await
+        // boundaries (which causes recursion_limit overflow with Lance's complex types).
+        let graph_context = tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                match crate::graph::graph_db_query(
+                    include_str!("../schemas/graph-queries.gq"),
+                    "search_concepts",
+                    Some(&serde_json::json!({ "query": query })),
+                ).await {
+                    Ok(serde_json::Value::Array(concepts)) => {
+                        crate::graph::deepsearch_integration::build_graph_context(&concepts)
+                    }
+                    _ => None,
+                }
+            })
+        });
+
+        if let Some(context) = graph_context {
+            system_prompt.push_str(&context);
+        }
+    }
+
+    // 4. Build rig agent with read-only tools (+ DeepSearch if recursion enabled, + GraphSearch if available)
     build_and_run_agent(
         ephemeral_session_id,
         &system_prompt,
@@ -170,6 +215,7 @@ pub async fn execute_deep_search(
         provider_name,
         model_id,
         can_recurse,
+        graph_available,
     ).await
 
     // 5. Cleanup: drop guards dropped here (or on panic), removing handlers
@@ -196,7 +242,7 @@ macro_rules! run_agent {
 }
 
 macro_rules! build_and_run {
-    ($provider:expr, $request_config:expr, $session_id:expr, $query:expr, $max_depth:expr, $provider_name:expr, $can_recurse:expr) => {{
+    ($provider:expr, $request_config:expr, $session_id:expr, $query:expr, $max_depth:expr, $provider_name:expr, $can_recurse:expr, $graph_available:expr) => {{
         let request_config = $request_config;
         let mut agent_builder = $provider
             .client()
@@ -212,8 +258,9 @@ macro_rules! build_and_run {
         }
 
         // RLM-002: Conditionally include DeepSearch tool when recursion is enabled.
-        // When can_recurse is true, the agent gets 8 tools (base 7 + DeepSearch).
-        // When false, it gets the standard 7 read-only tools.
+        // KGRAPH-009: Conditionally include GraphSearch tool when graph is available.
+        // When can_recurse is true, the agent gets base + DeepSearch.
+        // When graph_available, GraphSearch is added via tool_server_handle post-build.
         if $can_recurse {
             let agent = agent_builder
                 .tool(ReadTool::new($session_id))
@@ -225,6 +272,15 @@ macro_rules! build_and_run {
                 .tool(SessionSearchTool::new($session_id))
                 .tool(DeepSearchTool::new($session_id))
                 .build();
+
+            // KGRAPH-009: Add GraphSearch tool dynamically when graph is available
+            if $graph_available {
+                let gs_tool = GraphSearchTool::new($session_id);
+                if let Err(e) = agent.tool_server_handle.add_tool(gs_tool).await {
+                    tracing::warn!("[KGRAPH] Failed to add GraphSearch to DeepSearch sub-agent: {e}");
+                }
+            }
+
             run_agent!(agent, $max_depth, $query, $provider_name)
         } else {
             let agent = agent_builder
@@ -236,6 +292,15 @@ macro_rules! build_and_run {
                 .tool(BashTool::new($session_id))
                 .tool(SessionSearchTool::new($session_id))
                 .build();
+
+            // KGRAPH-009: Add GraphSearch tool dynamically when graph is available
+            if $graph_available {
+                let gs_tool = GraphSearchTool::new($session_id);
+                if let Err(e) = agent.tool_server_handle.add_tool(gs_tool).await {
+                    tracing::warn!("[KGRAPH] Failed to add GraphSearch to DeepSearch sub-agent: {e}");
+                }
+            }
+
             run_agent!(agent, $max_depth, $query, $provider_name)
         }
     }};
@@ -289,9 +354,11 @@ async fn build_and_run_agent(
     provider_name: &str,
     model_id: Option<&str>,
     can_recurse: bool,
+    graph_available: bool,
 ) -> Result<String, String> {
     // Compile-time assertion: base tool count must be 7.
     // When can_recurse, we add DeepSearch as the 8th tool at runtime.
+    // KGRAPH-009: GraphSearch is added dynamically via tool_server_handle when graph is available.
     const _: () = assert!(SUB_AGENT_TOOL_COUNT == 7, "base tool count changed — update build_and_run_agent tool list");
 
     // BUG-102: Create ProviderManager with the parent session's provider and model.
@@ -316,7 +383,7 @@ async fn build_and_run_agent(
                 provider.is_oauth_mode(),
             )
             .map_err(|e| format!("Failed to build Claude DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "openai" => {
             let provider = manager.get_openai()
@@ -328,7 +395,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build OpenAI DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "gemini" => {
             let provider = manager.get_gemini()
@@ -340,7 +407,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build Gemini DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "codex" => {
             let provider = manager.get_codex()
@@ -352,7 +419,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build Codex DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "zai" => {
             let provider = manager.get_zai()
@@ -364,7 +431,7 @@ async fn build_and_run_agent(
                 false,
             )
             .map_err(|e| format!("Failed to build Z.AI DeepSearch config: {e}"))?;
-            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse)
+            build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         _ => {
             Err(format!(

@@ -4462,6 +4462,16 @@ async fn agent_loop(
             );
             codelet_tools::set_session_search_handler(session.id, Some(session_search_handler));
 
+            // KGRAPH-003/KGRAPH-012: Register GraphSearch handler with provider context
+            // for LLM-based concept extraction during index action
+            let graph_provider = inner_session.current_provider_name().to_string();
+            let graph_model = inner_session.current_model_id().map(|s| s.to_string());
+            let graph_search_handler = crate::graph_search_handler::create_handler_with_provider(
+                Some(graph_provider),
+                graph_model,
+            );
+            codelet_tools::set_graph_search_handler(session.id, Some(graph_search_handler));
+
             // RLM-001: Register DeepSearch handler for this session
             // BUG-102: Capture provider and model from current session so the
             // sub-agent inherits the same LLM configuration.
@@ -4861,6 +4871,7 @@ Use SessionSearch to recover context.
             // Clean up per-session handlers
             codelet_tools::set_fspec_handler_for_session(session.id, None);
             codelet_tools::set_session_search_handler(session.id, None);
+            codelet_tools::set_graph_search_handler(session.id, None); // KGRAPH-003: Cleanup
             codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
             codelet_tools::set_agent_manager_handler(session.id, None); // AMGR-009: Cleanup
@@ -4906,6 +4917,10 @@ struct BackgroundOutput {
     assistant_content: std::sync::Mutex<Vec<AssistantContent>>,
     /// REFAC-007: Current provider name for message envelope
     provider: String,
+    /// KGRAPH: Track last tool call name+args for graph entity extraction
+    last_tool_call: std::sync::Mutex<Option<(String, serde_json::Value)>>,
+    /// KGRAPH: Turn counter for graph entity extraction
+    turn_counter: std::sync::atomic::AtomicU32,
 }
 
 impl BackgroundOutput {
@@ -4914,6 +4929,8 @@ impl BackgroundOutput {
             session,
             assistant_content: std::sync::Mutex::new(Vec::new()),
             provider,
+            last_tool_call: std::sync::Mutex::new(None),
+            turn_counter: std::sync::atomic::AtomicU32::new(0),
         }
     }
     
@@ -4971,8 +4988,14 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 self.add_assistant_content(AssistantContent::ToolUse {
                     id: tc.id.clone(),
                     name: tc.name.clone(),
-                    input: input_value,
+                    input: input_value.clone(),
                 });
+
+                // KGRAPH: Capture tool call info for graph entity extraction on result
+                if let Ok(mut last) = self.last_tool_call.lock() {
+                    *last = Some((tc.name.clone(), input_value));
+                }
+
                 StreamChunk::tool_call(ToolCallInfo {
                     id: tc.id.clone(),
                     name: tc.name.clone(),
@@ -4993,6 +5016,22 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     tr.is_error,
                 ) {
                     tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
+                }
+
+                // KGRAPH: Extract graph entities from the completed tool call
+                if !tr.is_error {
+                    if let Ok(mut last) = self.last_tool_call.lock() {
+                        if let Some((tool_name, tool_args)) = last.take() {
+                            let turn_idx = self.turn_counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            let session_slug = self.session.id.to_string();
+                            crate::graph_search_handler::extract_and_queue_from_tool_call(
+                                &tool_name,
+                                &tool_args,
+                                &session_slug,
+                                turn_idx,
+                            );
+                        }
+                    }
                 }
                 
                 // CODE-009: FspecTool now uses fspec_handler (like pause_handler)
@@ -5055,6 +5094,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 if let Err(e) = persist_token_state(&self.session.id, input_tokens, output_tokens) {
                     tracing::error!("REFAC-007: Failed to persist token state: {}", e);
                 }
+
+                // KGRAPH: Flush any remaining entities in the queue to the graph DB
+                crate::graph_search_handler::flush_pending_entities();
                 
                 // Do NOT set Idle when compaction or pending DAG is active.
                 if crate::inject_summary_handler::should_idle_on_done(
@@ -5222,7 +5264,18 @@ pub fn session_manager_list() -> Vec<SessionInfo> {
 /// Destroy a background session
 #[napi]
 pub fn session_manager_destroy(session_id: String) -> Result<()> {
-    SessionManager::instance().destroy_session(&session_id)
+    let sm = SessionManager::instance();
+    sm.destroy_session(&session_id)?;
+
+    // KGRAPH-002: Close graph database when no sessions remain to avoid Lance corruption
+    let session_count = sm.sessions.read()
+        .map(|s| s.len())
+        .unwrap_or(0);
+    if session_count == 0 {
+        crate::graph::close_graph_db();
+    }
+
+    Ok(())
 }
 
 /// Set the global chunk callback for all sessions.

@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     clang \
     llvm \
     lld \
+    # Protocol Buffers compiler (build-time dep for Lance via prost-build)
+    protobuf-compiler \
     # Linux x86_64 cross-compilation (for ARM64 host building x64)
     gcc-x86-64-linux-gnu \
     g++-x86-64-linux-gnu \

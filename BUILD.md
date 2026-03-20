@@ -35,7 +35,24 @@ This document describes how to build the `codelet-napi` NAPI-RS binaries for all
    node --version  # Should be v20.x or higher
    ```
 
-3. **Docker Desktop** (for Linux and Windows builds)
+3. **Protocol Buffers compiler (`protoc`)** — build-time only
+   ```bash
+   # macOS
+   brew install protobuf
+
+   # Ubuntu/Debian
+   sudo apt install -y protobuf-compiler
+
+   # Verify
+   protoc --version  # libprotoc 3.x or higher
+   ```
+
+   `protoc` is required at **build time only** because the nanograph dependency
+   uses Lance, which uses `prost-build` to compile `.proto` schema files during
+   `cargo build`. The compiled fspec binary has **no runtime dependency** on
+   protobuf — all generated code is baked in at compile time.
+
+4. **Docker Desktop** (for Linux and Windows builds)
    - Download from https://www.docker.com/products/docker-desktop/
    - Ensure Docker is running before building
 

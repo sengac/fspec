@@ -306,7 +306,7 @@ impl CodexProvider {
     ) -> rig::agent::Agent<CodexResponsesModel> {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, WebSearchTool,
-            ConnectMcpTool, SessionSearchTool, InjectSummaryTool, DeepSearchTool,
+            ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool, DeepSearchTool,
             AgentManagerTool, ScheduleTool,
         };
         use codelet_tools::facade::{
@@ -385,6 +385,7 @@ impl CodexProvider {
             .tool(codex_bridge_tool(session_id))
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
+            .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
             .tool(InjectSummaryTool::new(session_id))
             .tool(DeepSearchTool::new(session_id)) // RLM-001: DeepSearch tool
             .tool(AgentManagerTool::new(session_id)) // AMGR-009: AgentManager tool

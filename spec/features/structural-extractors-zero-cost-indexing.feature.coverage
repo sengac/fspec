@@ -1,0 +1,251 @@
+{
+  "scenarios": [
+    {
+      "name": "File edit creates CodeEntity node",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/graph/extractors.rs",
+          "lines": "191-228",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/extractors.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fspec create-story produces WorkUnit node",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/graph/extractors.rs",
+          "lines": "233-260",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/extractors.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Batch queue flushes at threshold",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/graph/extractors.rs",
+          "lines": "265-293",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/extractors.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extractors silently skip when graph is unavailable",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_entity_pipeline_test.rs",
+          "lines": "42-65",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/entity_pipeline.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/graph/extractors.rs",
+      "codelet/napi/tests/graph_entity_pipeline_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/graph/extractors.rs",
+      "codelet/napi/src/graph/entity_pipeline.rs"
+    ],
+    "totalLinesCovered": 288
+  }
+}

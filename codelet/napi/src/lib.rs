@@ -73,6 +73,11 @@ pub mod credentials;
 // Test support module for integration tests
 pub mod test_support;
 
+// KGRAPH-002: Graph database module — nanograph integration
+// Works in both modes (pure Rust with optional NAPI bindings)
+pub mod graph;
+pub mod graph_search_handler;
+
 // SCHED-003: Scheduler engine — works in both modes (pure Rust, no NAPI bindings)
 pub mod scheduler;
 

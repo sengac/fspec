@@ -1,0 +1,353 @@
+{
+  "scenarios": [
+    {
+      "name": "Valid skills file is parsed with correct configuration",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "lines": "36-80",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/indexing.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing config fields fall back to defaults",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "lines": "85-127",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/indexing.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Incremental indexing processes only unindexed turns",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "lines": "132-144",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/indexing.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing skills file does not cause an error",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "lines": "149-160",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/indexing.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Index all scans sessions from persistence and extracts structural entities",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "lines": "37-105",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/session_scanner.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Index all skips fully indexed sessions",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "lines": "110-138",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/indexing.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Index current only flushes pending entity queue",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/graph_session_indexing_test.rs",
+          "lines": "143-179",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/dispatch.rs",
+              "lines": [
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/graph_session_indexing_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/graph/indexing.rs",
+      "codelet/napi/src/graph/session_scanner.rs",
+      "codelet/napi/src/graph/dispatch.rs"
+    ],
+    "totalLinesCovered": 471
+  }
+}

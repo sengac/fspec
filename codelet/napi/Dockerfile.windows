@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     clang \
     llvm \
     lld \
+    # Protocol Buffers compiler (build-time dep for Lance via prost-build)
+    protobuf-compiler \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Windows targets

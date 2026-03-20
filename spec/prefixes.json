@@ -379,6 +379,11 @@
       "prefix": "AMGR",
       "description": "Agent Manager tool — session search, agent orchestration, cross-agent communication",
       "createdAt": "2026-03-08T07:47:29.270Z"
+    },
+    "KGRAPH": {
+      "prefix": "KGRAPH",
+      "description": "Knowledge Graph — Nanograph-powered relational memory over agent session history",
+      "createdAt": "2026-03-19T02:42:03.243Z"
     }
   }
 }

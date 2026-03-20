@@ -511,7 +511,27 @@
       "createdAt": "2026-03-18T11:04:34.984Z",
       "workUnits": [
         "SCHED-012",
-        "SCHED-013"
+        "SCHED-013",
+        "SCHED-014"
+      ]
+    },
+    "knowledge-graph": {
+      "id": "knowledge-graph",
+      "title": "Nanograph-Powered Knowledge Graph",
+      "createdAt": "2026-03-19T02:42:16.022Z",
+      "description": "Embedded nanograph property graph database for building relational memory across all agent sessions. Enables concept extraction, decision tracking, and graph-based search over conversation history.",
+      "workUnits": [
+        "KGRAPH-001",
+        "KGRAPH-002",
+        "KGRAPH-003",
+        "KGRAPH-004",
+        "KGRAPH-005",
+        "KGRAPH-006",
+        "KGRAPH-007",
+        "KGRAPH-008",
+        "KGRAPH-009",
+        "KGRAPH-010",
+        "KGRAPH-012"
       ]
     }
   }
