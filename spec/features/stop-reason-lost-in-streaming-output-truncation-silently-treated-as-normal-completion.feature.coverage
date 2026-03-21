@@ -1,0 +1,285 @@
+{
+  "scenarios": [
+    {
+      "name": "Anthropic streaming propagates max_tokens stop_reason through FinalResponse",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "lines": "22-44",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                296,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                399,
+                428,
+                429,
+                430,
+                431,
+                432
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Truncated tool calls produce informative error identifying truncation as the cause",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "lines": "50-82",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/anthropic/streaming.rs",
+              "lines": [
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                583,
+                584,
+                585,
+                586,
+                587,
+                588,
+                589,
+                590,
+                591,
+                592
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Normal end_turn completion has no truncation warning and correct persistence",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "lines": "88-104",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI streaming propagates max_tokens stop_reason instead of hardcoding end_turn",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "lines": "110-130",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                3932,
+                3933,
+                3934,
+                3935,
+                3936,
+                3937,
+                3938,
+                3939,
+                3940,
+                3941,
+                3942,
+                3943,
+                3944,
+                3945,
+                3946,
+                3947,
+                3948,
+                3949,
+                3950,
+                3951,
+                3952,
+                3953,
+                3954,
+                3955,
+                3956,
+                3957,
+                3958,
+                3959,
+                3960,
+                3961,
+                3962,
+                3963,
+                3964,
+                3965,
+                3966,
+                3967,
+                3968,
+                3969,
+                3970,
+                3971
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI max_output_tokens reads runtime environment variable",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/stop_reason_propagation_test.rs",
+          "lines": "136-164",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/stop_reason_propagation_test.rs"
+    ],
+    "implFiles": [
+      "codelet/patches/rig-core/src/providers/anthropic/streaming.rs",
+      "codelet/patches/rig-core/src/agent/prompt_request/streaming.rs",
+      "codelet/napi/src/session_manager.rs",
+      "codelet/providers/src/manager.rs"
+    ],
+    "totalLinesCovered": 309
+  }
+}

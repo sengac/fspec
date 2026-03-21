@@ -613,9 +613,11 @@ pub fn persistence_store_message_envelope(
     let role = processed_envelope.message_type.clone();
 
     // Store the message with the full envelope as metadata
+    let envelope_json_str = serde_json::to_string(&processed_envelope)
+        .map_err(|e| Error::from_reason(format!("Failed to serialize envelope: {}", e)))?;
     let mut metadata_map: HashMap<String, serde_json::Value> =
-        serde_json::from_str(&serde_json::to_string(&processed_envelope).unwrap())
-            .map_err(|e| Error::from_reason(format!("Failed to serialize envelope: {}", e)))?;
+        serde_json::from_str(&envelope_json_str)
+            .map_err(|e| Error::from_reason(format!("Failed to deserialize envelope metadata: {}", e)))?;
 
     // Add the actual token count (calculated from original content before blob processing)
     // This will be used by store_with_metadata to set the correct token_count

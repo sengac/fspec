@@ -147,7 +147,8 @@ pub enum StreamEvent {
     /// Tool result
     ToolResult(ToolResultEvent),
     /// Stream completion
-    Done,
+    /// PROV-039: Carries the stop_reason from the provider (e.g., "end_turn", "max_tokens")
+    Done(Option<String>),
     /// Error occurred
     Error(String),
     /// Agent was interrupted
@@ -230,9 +231,16 @@ pub trait StreamOutput: Send + Sync {
     }
 
     /// Emit stream completion
+    /// PROV-039: Optionally carries the stop_reason from the provider
     #[inline]
     fn emit_done(&self) {
-        self.emit(StreamEvent::Done);
+        self.emit(StreamEvent::Done(None));
+    }
+
+    /// PROV-039: Emit stream completion with stop_reason
+    #[inline]
+    fn emit_done_with_stop_reason(&self, stop_reason: Option<String>) {
+        self.emit(StreamEvent::Done(stop_reason));
     }
 
     /// Emit error
@@ -387,8 +395,13 @@ impl StreamOutput for CliOutput {
                 }
                 std::io::stdout().flush().ok();
             }
-            StreamEvent::Done => {
-                // CLI doesn't need explicit done signal
+            StreamEvent::Done(ref stop_reason) => {
+                // PROV-039: Display truncation warning if stop_reason is max_tokens
+                if let Some(reason) = stop_reason {
+                    if reason == "max_tokens" {
+                        eprintln!("\r\n⚠️  Response truncated: model hit max_tokens output limit");
+                    }
+                }
             }
             StreamEvent::Error(error) => {
                 // Clean up error message and display in red

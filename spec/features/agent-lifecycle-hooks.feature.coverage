@@ -1958,12 +1958,68 @@
           ]
         }
       ]
+    },
+    {
+      "name": "pre_tool_use hook fires for BashTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for ReadTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for WriteTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for EditTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for LsTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for GlobTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for GrepTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for AstGrepTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for AstGrepRefactorTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for FspecTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for BridgeTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use hook fires for ApplyPatchTool",
+      "testMappings": []
+    },
+    {
+      "name": "pre_tool_use Allow handler lets native tool proceed",
+      "testMappings": []
+    },
+    {
+      "name": "No registered handler lets native tool proceed without overhead",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 42,
+    "totalScenarios": 56,
     "coveredScenarios": 42,
-    "coveragePercent": 100,
+    "coveragePercent": 75,
     "testFiles": [
       "codelet/core/tests/lifecycle_hooks_config_test.rs",
       "codelet/core/tests/lifecycle_hooks_engine_test.rs",

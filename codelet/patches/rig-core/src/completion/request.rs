@@ -268,6 +268,12 @@ pub struct CompletionResponse<T> {
 /// Primarily designed for streamed completion responses in streamed multi-turn, as otherwise it would be impossible to do.
 pub trait GetTokenUsage {
     fn token_usage(&self) -> Option<crate::completion::Usage>;
+
+    /// PROV-039: Get the stop_reason from the provider response.
+    /// Default implementation returns None — providers override as needed.
+    fn stop_reason(&self) -> Option<&str> {
+        None
+    }
 }
 
 impl GetTokenUsage for () {

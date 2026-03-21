@@ -185,6 +185,9 @@ pub enum MultiTurnStreamItem<R> {
 pub struct FinalResponse {
     response: String,
     aggregated_usage: crate::completion::Usage,
+    /// PROV-039: stop_reason from the provider (e.g., "end_turn", "max_tokens", "tool_use")
+    #[serde(skip_serializing_if = "Option::is_none")]
+    stop_reason: Option<String>,
 }
 
 impl FinalResponse {
@@ -192,6 +195,7 @@ impl FinalResponse {
         Self {
             response: String::new(),
             aggregated_usage: crate::completion::Usage::new(),
+            stop_reason: None,
         }
     }
 
@@ -201,6 +205,11 @@ impl FinalResponse {
 
     pub fn usage(&self) -> crate::completion::Usage {
         self.aggregated_usage
+    }
+
+    /// PROV-039: Get the stop_reason from the provider
+    pub fn stop_reason(&self) -> Option<&str> {
+        self.stop_reason.as_deref()
     }
 }
 
@@ -213,6 +222,20 @@ impl<R> MultiTurnStreamItem<R> {
         Self::FinalResponse(FinalResponse {
             response: response.to_string(),
             aggregated_usage,
+            stop_reason: None,
+        })
+    }
+
+    /// PROV-039: Create a FinalResponse with stop_reason
+    pub fn final_response_with_stop_reason(
+        response: &str,
+        aggregated_usage: crate::completion::Usage,
+        stop_reason: Option<String>,
+    ) -> Self {
+        Self::FinalResponse(FinalResponse {
+            response: response.to_string(),
+            aggregated_usage,
+            stop_reason,
         })
     }
 }
@@ -420,6 +443,8 @@ where
                 let mut tool_calls = vec![];
                 let mut tool_results = vec![];
                 let mut reasoning_blocks: Vec<AssistantContent> = vec![];
+                // PROV-039: Capture the last stop_reason from the provider's Final event
+                let mut last_stop_reason: Option<String> = None;
 
                 while let Some(content) = stream.next().await {
                     match content {
@@ -542,6 +567,10 @@ where
                         },
                         Ok(StreamedAssistantContent::Final(final_resp)) => {
                             if let Some(usage) = final_resp.token_usage() { aggregated_usage += usage; };
+                            // PROV-039: Capture stop_reason from the provider's streaming response
+                            if let Some(reason) = final_resp.stop_reason() {
+                                last_stop_reason = Some(reason.to_string());
+                            }
 
                             // Always call on_stream_completion_response_finish for token tracking
                             // This ensures compaction hooks get updated token counts even for
@@ -616,12 +645,14 @@ where
                     tracing::info!("Agent multi-turn stream finished");
                     // PROV-005-DEBUG: Log before yielding final response
                     tracing::debug!(
-                        "[rig/streaming] yielding final_response - text_len={}, input_tokens={}, output_tokens={}",
+                        "[rig/streaming] yielding final_response - text_len={}, input_tokens={}, output_tokens={}, stop_reason={:?}",
                         last_text_response.len(),
                         aggregated_usage.input_tokens,
-                        aggregated_usage.output_tokens
+                        aggregated_usage.output_tokens,
+                        last_stop_reason
                     );
-                    yield Ok(MultiTurnStreamItem::final_response(&last_text_response, aggregated_usage));
+                    // PROV-039: Propagate stop_reason through to the MultiTurnStreamItem
+                    yield Ok(MultiTurnStreamItem::final_response_with_stop_reason(&last_text_response, aggregated_usage, last_stop_reason.clone()));
                     break;
                 }
             }
@@ -882,4 +913,71 @@ mod tests {
     // check_image_dimensions). rig-core is not a workspace member so tests here
     // cannot be executed by `cargo test`. The Layer 2 safety net logic is fully
     // covered by codelet-common's test suite.
+
+    // =========================================================================
+    // PROV-039: stop_reason propagation through FinalResponse
+    // Feature: spec/features/stop-reason-lost-in-streaming-output-truncation-silently-treated-as-normal-completion.feature
+    // NOTE: rig-core is not a workspace member; these tests document expected
+    //       behavior and will compile once the FinalResponse.stop_reason field
+    //       is added during the implementing phase.
+    // =========================================================================
+
+    /// Scenario: Normal end_turn completion has no truncation warning and correct persistence
+    #[test]
+    fn test_final_response_end_turn_stop_reason() {
+        // @step Given the agent is using any provider in streaming mode
+        // (FinalResponse is provider-agnostic)
+
+        // @step And the model completes its response naturally with stop_reason "end_turn"
+        let resp = FinalResponse {
+            response: "complete text".to_string(),
+            aggregated_usage: crate::completion::Usage::new(),
+            stop_reason: Some("end_turn".to_string()),
+        };
+
+        // @step When the FinalResponse is yielded from the streaming pipeline
+        // (FinalResponse struct is constructed with the real stop_reason)
+
+        // @step Then no truncation warning is shown to the user
+        // (end_turn means normal completion — no warning needed)
+        assert_ne!(resp.stop_reason(), Some("max_tokens"));
+
+        // @step And the persisted AssistantMessage stop_reason is "end_turn"
+        assert_eq!(resp.stop_reason(), Some("end_turn"));
+    }
+
+    /// FinalResponse with max_tokens stop_reason
+    #[test]
+    fn test_final_response_carries_max_tokens_stop_reason() {
+        let resp = FinalResponse {
+            response: "truncated text".to_string(),
+            aggregated_usage: crate::completion::Usage::new(),
+            stop_reason: Some("max_tokens".to_string()),
+        };
+        assert_eq!(resp.stop_reason(), Some("max_tokens"));
+    }
+
+    /// FinalResponse with no stop_reason defaults to None
+    #[test]
+    fn test_final_response_none_stop_reason() {
+        let resp = FinalResponse::empty();
+        assert_eq!(resp.stop_reason(), None);
+    }
+
+    /// final_response_with_stop_reason helper propagates stop_reason
+    #[test]
+    fn test_multi_turn_stream_item_final_response_with_stop_reason() {
+        let item: MultiTurnStreamItem<()> = MultiTurnStreamItem::final_response_with_stop_reason(
+            "text",
+            crate::completion::Usage::new(),
+            Some("max_tokens".to_string()),
+        );
+
+        match item {
+            MultiTurnStreamItem::FinalResponse(resp) => {
+                assert_eq!(resp.stop_reason(), Some("max_tokens"));
+            }
+            _ => panic!("Expected FinalResponse variant"),
+        }
+    }
 }

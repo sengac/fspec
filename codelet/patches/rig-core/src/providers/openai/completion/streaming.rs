@@ -69,6 +69,9 @@ struct StreamingCompletionChunk {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct StreamingCompletionResponse {
     pub usage: Usage,
+    /// PROV-039: stop_reason captured from the streaming finish_reason
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stop_reason: Option<String>,
 }
 
 impl GetTokenUsage for StreamingCompletionResponse {
@@ -86,6 +89,11 @@ impl GetTokenUsage for StreamingCompletionResponse {
             usage.reasoning_tokens = Some(details.reasoning_tokens as u64);
         }
         Some(usage)
+    }
+
+    /// PROV-039: Return the captured stop_reason (mapped from OpenAI finish_reason)
+    fn stop_reason(&self) -> Option<&str> {
+        self.stop_reason.as_deref()
     }
 }
 
@@ -172,6 +180,8 @@ where
         let mut text_content = String::new();
         let mut final_tool_calls: Vec<completion::ToolCall> = Vec::new();
         let mut final_usage = None;
+        // PROV-039: Capture finish_reason from streaming chunks for stop_reason propagation
+        let mut captured_finish_reason: Option<String> = None;
 
         while let Some(event_result) = event_source.next().await {
             match event_result {
@@ -299,8 +309,19 @@ where
                     }
 
                     // Finish reason
-                    if let Some(finish_reason) = &choice.finish_reason && *finish_reason == FinishReason::ToolCalls {
-                        for (_idx, tool_call) in tool_calls.into_iter() {
+                    if let Some(finish_reason) = &choice.finish_reason {
+                        // PROV-039: Capture finish_reason for stop_reason propagation
+                        // Map OpenAI finish_reason to normalized stop_reason
+                        captured_finish_reason = Some(match finish_reason {
+                            FinishReason::Stop => "end_turn".to_string(),
+                            FinishReason::Length => "max_tokens".to_string(),
+                            FinishReason::ToolCalls => "tool_use".to_string(),
+                            FinishReason::ContentFilter => "content_filter".to_string(),
+                            FinishReason::Other(s) => s.clone(),
+                        });
+
+                        if *finish_reason == FinishReason::ToolCalls {
+                            for (_idx, tool_call) in tool_calls.into_iter() {
                             final_tool_calls.push(completion::ToolCall {
                                 id: tool_call.id.clone(),
                                 r#type: completion::ToolType::Function,
@@ -318,6 +339,7 @@ where
                             ));
                         }
                         tool_calls = HashMap::new();
+                        }
                     }
                 }
                 Err(crate::http_client::Error::StreamEnded) => {
@@ -353,7 +375,9 @@ where
         }
 
         yield Ok(RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
-            usage: final_usage
+            usage: final_usage,
+            // PROV-039: Propagate captured finish_reason through FinalResponse
+            stop_reason: captured_finish_reason,
         }));
     }.instrument(span);
 

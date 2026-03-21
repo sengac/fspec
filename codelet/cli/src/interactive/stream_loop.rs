@@ -678,6 +678,8 @@ where
 
     // Track assistant response content for adding to messages (CLI-008)
     let mut assistant_text = String::new();
+    // PROV-039: Track stop_reason from FinalResponse for truncation detection
+    let mut final_stop_reason: Option<String> = None;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
 
@@ -735,7 +737,8 @@ where
                 handle_final_response(&assistant_text, &mut session.messages)?;
             }
 
-            output.emit_done();
+            // PROV-039: Propagate stop_reason even on interruption
+            output.emit_done_with_stop_reason(final_stop_reason.take());
             break;
         }
 
@@ -896,6 +899,12 @@ where
                         "[stream_loop] FinalResponse received - checking compaction_needed state"
                     );
                     
+                    // PROV-039: Capture stop_reason from FinalResponse
+                    final_stop_reason = final_resp.stop_reason().map(String::from);
+                    if let Some(ref reason) = final_stop_reason {
+                        debug!("[stream_loop] FinalResponse stop_reason={}", reason);
+                    }
+
                     // Get usage from FinalResponse
                     let usage = final_resp.usage();
 
@@ -1116,7 +1125,8 @@ where
                                         
                                         // Clear tool progress callback before returning
                                         set_tool_progress_callback(None);
-                                        output.emit_done();
+                                        // PROV-039: Propagate stop_reason on Gemini continuation interrupt
+                                        output.emit_done_with_stop_reason(final_stop_reason.take());
                                         return Ok(());
                                     }
                                     
@@ -1367,7 +1377,8 @@ where
                                 
                                 // Normal continuation completion - clear callback and return
                                 set_tool_progress_callback(None);
-                                output.emit_done();
+                                // PROV-039: Propagate stop_reason on Gemini continuation completion
+                                output.emit_done_with_stop_reason(final_stop_reason.take());
                                 return Ok(());
                             }
                         }
@@ -1382,7 +1393,8 @@ where
                         &mut previous_turn_tool_infos,
                     );
 
-                    output.emit_done();
+                    // PROV-039: Emit done with stop_reason for truncation detection
+                    output.emit_done_with_stop_reason(final_stop_reason.take());
                     break;
                 }
                 Some(Err(e)) => {
@@ -1537,7 +1549,8 @@ where
                         &mut previous_turn_tool_infos,
                     );
 
-                    output.emit_done();
+                    // PROV-039: Propagate stop_reason on stream-ended (None) path
+                    output.emit_done_with_stop_reason(final_stop_reason.take());
                     break;
                 }
                 _ => {
@@ -1689,7 +1702,8 @@ where
                         if !retry_assistant_text.is_empty() {
                             handle_final_response(&retry_assistant_text, &mut session.messages)?;
                         }
-                        output.emit_done();
+                        // PROV-039: Propagate stop_reason even on retry-interrupt path
+                        output.emit_done_with_stop_reason(None);
                         break;
                     }
 
@@ -1757,6 +1771,9 @@ where
                             }
                         }
                         Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
+                            // PROV-039: Capture stop_reason from retry FinalResponse
+                            let retry_stop_reason = final_resp.stop_reason().map(String::from);
+
                             // Get usage from FinalResponse
                             let usage = final_resp.usage();
 
@@ -1795,7 +1812,8 @@ where
                             handle_final_response(&retry_assistant_text, &mut session.messages)?;
                             // Done is emitted here; CompactionComplete comes from
                             // agent_loop after apply_pending_dag succeeds.
-                            output.emit_done();
+                            // PROV-039: Propagate stop_reason from retry stream
+                            output.emit_done_with_stop_reason(retry_stop_reason);
                             break;
                         }
                         Some(Err(e)) => {
@@ -1808,7 +1826,9 @@ where
                             }
                             // Done is emitted here; CompactionComplete comes from
                             // agent_loop after apply_pending_dag succeeds.
-                            output.emit_done();
+                            // PROV-039: retry_stop_reason may not be set if stream ended
+                            // without FinalResponse — emit None (will default to end_turn)
+                            output.emit_done_with_stop_reason(None);
                             break;
                         }
                         _ => {}

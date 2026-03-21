@@ -45,7 +45,7 @@ impl StreamOutput for EventCapture {
             StreamEvent::CompactionComplete(_) => "CompactionComplete",
             StreamEvent::CompactionContinuing => "CompactionContinuing",
             StreamEvent::CompactionFailed { .. } => "CompactionFailed",
-            StreamEvent::Done => "Done",
+            StreamEvent::Done(_) => "Done",
             _ => return, // Only capture compaction-related events
         };
         self.events.lock().unwrap().push(name.to_string());
@@ -118,7 +118,7 @@ fn test_compaction_continuing_must_set_running_not_noop() {
 fn test_post_loop_compaction_event_sequence() {
     // @step Given an agent stream has just finished and emitted Done
     let capture = EventCapture::new();
-    capture.emit(StreamEvent::Done); // Original stream done
+    capture.emit(StreamEvent::Done(None)); // Original stream done
 
     // @step And the compaction hook detected that compaction is needed
     // (compaction_needed flag was set by CompactionHook)
@@ -148,7 +148,7 @@ fn test_post_loop_compaction_event_sequence() {
     // (retry stream runs — agent builds DAG, calls inject_summary)
 
     // @step When the retry stream finishes and emits Done
-    capture.emit(StreamEvent::Done); // Retry stream done
+    capture.emit(StreamEvent::Done(None)); // Retry stream done
 
     // @step And the agent_loop calls apply_pending_dag which returns true
     // Simulate agent_loop emitting CompactionComplete after DAG application
@@ -187,7 +187,7 @@ fn test_no_dag_pending_no_compaction_complete() {
     let capture = EventCapture::new();
 
     // @step When the stream emits Done
-    capture.emit(StreamEvent::Done);
+    capture.emit(StreamEvent::Done(None));
 
     // @step Then the session status should be Idle
     // (Done → Idle handled by BackgroundOutput::emit)
@@ -238,7 +238,7 @@ fn test_pre_prompt_compaction_event_sequence() {
     // (main stream runs — agent builds DAG)
 
     // @step When the main stream finishes and emits Done
-    capture.emit(StreamEvent::Done);
+    capture.emit(StreamEvent::Done(None));
 
     // @step And the agent_loop calls apply_pending_dag which returns true
     let dag_applied = true;

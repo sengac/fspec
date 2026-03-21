@@ -463,4 +463,50 @@ mod tests {
         assert_eq!(CONTEXT_WINDOW, DEFAULT_CONTEXT_WINDOW);
         assert_eq!(MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS);
     }
+
+    // =========================================================================
+    // PROV-039: OpenAI max_output_tokens must read runtime env var
+    // Feature: spec/features/stop-reason-lost-in-streaming-output-truncation-silently-treated-as-normal-completion.feature
+    // =========================================================================
+
+    /// Scenario: OpenAI max_output_tokens reads runtime environment variable
+    #[test]
+    #[serial_test::serial]
+    fn test_openai_provider_reads_max_output_tokens_env_var() {
+        // @step Given the OPENAI_MAX_OUTPUT_TOKENS environment variable is set to "16384"
+        std::env::set_var("OPENAI_MAX_OUTPUT_TOKENS", "16384");
+
+        // @step When an OpenAIProvider is created
+        let provider = OpenAIProvider::from_api_key_with_options(
+            "test-key",
+            "gpt-4o",
+            None,
+        ).unwrap();
+
+        // @step Then the instance max_output_tokens is 16384
+        assert_eq!(provider.max_output_tokens(), 16384);
+
+        // @step And the returned value is not the compile-time constant 4096
+        assert_ne!(provider.max_output_tokens(), DEFAULT_MAX_OUTPUT_TOKENS);
+
+        // Clean up
+        std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
+    }
+
+    /// Scenario: OpenAI max_output_tokens defaults when env var not set
+    #[test]
+    #[serial_test::serial]
+    fn test_openai_provider_default_max_output_tokens() {
+        // Ensure env var is not set
+        std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
+
+        let provider = OpenAIProvider::from_api_key_with_options(
+            "test-key",
+            "gpt-4o",
+            None,
+        ).unwrap();
+
+        // Should use default
+        assert_eq!(provider.max_output_tokens(), DEFAULT_MAX_OUTPUT_TOKENS);
+    }
 }

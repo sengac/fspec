@@ -542,10 +542,17 @@ impl ProviderManager {
     ///
     /// Returns the maximum output tokens for the currently selected provider.
     /// Used for calculating usable context in the optimized compaction algorithm.
+    /// PROV-039: Reads runtime env vars for OpenAI instead of compile-time constants.
     pub fn max_output_tokens(&self) -> usize {
         match self.current_provider {
             ProviderType::Claude => claude::MAX_OUTPUT_TOKENS,
-            ProviderType::OpenAI => openai::MAX_OUTPUT_TOKENS,
+            ProviderType::OpenAI => {
+                // PROV-039: Read OPENAI_MAX_OUTPUT_TOKENS env var at runtime
+                std::env::var("OPENAI_MAX_OUTPUT_TOKENS")
+                    .ok()
+                    .and_then(|v| v.parse().ok())
+                    .unwrap_or(openai::MAX_OUTPUT_TOKENS)
+            }
             ProviderType::Gemini => gemini::MAX_OUTPUT_TOKENS,
             ProviderType::Codex => codex::MAX_OUTPUT_TOKENS,
             ProviderType::ZAI => zai::MAX_OUTPUT_TOKENS,
@@ -586,5 +593,70 @@ impl ProviderManager {
             return Err(ProviderError::auth("zai", "ZAI_API_KEY or ZAI_PLAN_API_KEY not set"));
         };
         ZAIProvider::from_api_key_with_endpoint(&api_key, &model_id, is_plan)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // =========================================================================
+    // PROV-039: ProviderManager::max_output_tokens() must read runtime env var
+    // Feature: spec/features/stop-reason-lost-in-streaming-output-truncation-silently-treated-as-normal-completion.feature
+    // =========================================================================
+
+    /// Helper to create a ProviderManager for testing without real credentials
+    fn test_manager(provider: ProviderType) -> ProviderManager {
+        ProviderManager {
+            credentials: ProviderCredentials {
+                claude_available: false,
+                openai_available: false,
+                codex_available: false,
+                gemini_available: false,
+                zai_available: false,
+            },
+            current_provider: provider,
+            model_registry: None,
+            selected_model: None,
+        }
+    }
+
+    /// Scenario: OpenAI max_output_tokens reads runtime environment variable
+    ///
+    /// This test verifies the BUG: ProviderManager::max_output_tokens() returns
+    /// the compile-time constant for OpenAI, ignoring the runtime env var.
+    /// The fix should make it read the env var at runtime.
+    #[test]
+    #[serial_test::serial]
+    fn test_provider_manager_openai_max_output_tokens_reads_env_var() {
+        // @step Given the OPENAI_MAX_OUTPUT_TOKENS environment variable is set to "16384"
+        std::env::set_var("OPENAI_MAX_OUTPUT_TOKENS", "16384");
+
+        // @step When ProviderManager::max_output_tokens() is called for the OpenAI provider
+        let manager = test_manager(ProviderType::OpenAI);
+        let result = manager.max_output_tokens();
+
+        // @step Then the returned value is 16384
+        assert_eq!(result, 16384, "max_output_tokens should read OPENAI_MAX_OUTPUT_TOKENS env var");
+
+        // @step And the returned value is not the compile-time constant 4096
+        assert_ne!(result, 4096);
+
+        // Clean up
+        std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
+    }
+
+    /// Verify default when env var is not set
+    #[test]
+    #[serial_test::serial]
+    fn test_provider_manager_openai_max_output_tokens_default() {
+        // Ensure env var is not set
+        std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
+
+        let manager = test_manager(ProviderType::OpenAI);
+        let result = manager.max_output_tokens();
+
+        // Should return the default when no env var is set
+        assert_eq!(result, 4096);
     }
 }

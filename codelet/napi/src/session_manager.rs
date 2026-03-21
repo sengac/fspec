@@ -1129,18 +1129,22 @@ impl BackgroundSession {
 
     /// PERF-002: Get current compaction progress information
     pub(crate) fn get_compaction_progress(&self) -> Option<CompactionProgress> {
-        self.compaction_progress.read().unwrap().clone()
+        self.compaction_progress.read()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .clone()
     }
 
     /// PERF-002: Set compaction progress information
     pub(crate) fn set_compaction_progress(&self, progress: Option<CompactionProgress>) {
-        *self.compaction_progress.write().unwrap() = progress;
+        *self.compaction_progress.write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = progress;
     }
 
     /// PERF-002: Update compaction progress phase and counts
     pub fn update_compaction_progress(&self, phase: String, current: u32, total: u32) {
         let progress = CompactionProgress { phase, current, total };
-        *self.compaction_progress.write().unwrap() = Some(progress);
+        *self.compaction_progress.write()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(progress);
     }
 
     /// Set pending observed correlation IDs (WATCH-011)
@@ -3270,10 +3274,15 @@ impl SessionManager {
         // Cloud format: "openai/gpt-4" -> provider="openai", model="gpt-4"
         let (registry_provider, model_part) = if is_profile_model {
             // Profile format: extract provider from before the colon
-            let colon_idx = model.find(':').unwrap();
+            // Safety: is_profile_model guarantees ':' and '/' exist
+            let colon_idx = model.find(':').ok_or_else(|| {
+                Error::from_reason(format!("Invalid profile model string '{}': missing ':'", model))
+            })?;
             let provider = &model[..colon_idx];
             // Model is everything after the first slash
-            let slash_idx = model.find('/').unwrap();
+            let slash_idx = model.find('/').ok_or_else(|| {
+                Error::from_reason(format!("Invalid profile model string '{}': missing '/'", model))
+            })?;
             let model_id = &model[slash_idx + 1..];
             (provider, model_id)
         } else {
@@ -3513,10 +3522,15 @@ impl SessionManager {
         // Cloud format: "openai/gpt-4" -> provider="openai", model="gpt-4"
         let (registry_provider, model_part) = if is_profile_model {
             // Profile format: extract provider from before the colon
-            let colon_idx = model.find(':').unwrap();
+            // Safety: is_profile_model guarantees ':' and '/' exist
+            let colon_idx = model.find(':').ok_or_else(|| {
+                Error::from_reason(format!("Invalid profile model string '{}': missing ':'", model))
+            })?;
             let provider = &model[..colon_idx];
             // Model is everything after the first slash
-            let slash_idx = model.find('/').unwrap();
+            let slash_idx = model.find('/').ok_or_else(|| {
+                Error::from_reason(format!("Invalid profile model string '{}': missing '/'", model))
+            })?;
             let model_id = &model[slash_idx + 1..];
             (provider, model_id)
         } else {
@@ -3933,6 +3947,7 @@ fn persist_assistant_message_internal(
     session_id: &uuid::Uuid,
     provider: &str,
     content: Vec<AssistantContent>,
+    stop_reason: Option<String>,
 ) -> std::result::Result<(), String> {
     use chrono::Utc;
     use std::collections::HashMap;
@@ -3965,7 +3980,8 @@ fn persist_assistant_message_internal(
             id: None,
             model: None,
             content,
-            stop_reason: Some("end_turn".to_string()),
+            // PROV-039: Use the real stop_reason from the streaming pipeline
+            stop_reason: stop_reason.or_else(|| Some("end_turn".to_string())),
             usage: None,
         }),
         request_id: None,
@@ -4520,7 +4536,9 @@ async fn agent_loop(
                         None
                     } else {
                         // Use the actual model name for adaptive config
-                        let config_key = current_model.as_deref().unwrap();
+                        // Safety: is_adaptive_model is true only when current_model is Some
+                        let config_key = current_model.as_deref()
+                            .expect("current_model must be Some when is_adaptive_model is true");
                         match get_thinking_config(config_key.to_string(), effective_level) {
                             Ok(config_str) => {
                                 tracing::info!("Adaptive thinking model detected: {:?} (base={:?}, detected={:?}, force_off={}, config_key={})", 
@@ -5144,26 +5162,33 @@ impl BackgroundOutput {
     
     /// REFAC-007: Add an assistant content block
     fn add_assistant_content(&self, content: AssistantContent) {
-        let mut guard = self.assistant_content.lock().unwrap();
+        let mut guard = self.assistant_content.lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         guard.push(content);
     }
     
     /// REFAC-007: Take all accumulated content (clears the buffer)
     fn take_assistant_content(&self) -> Vec<AssistantContent> {
-        let mut guard = self.assistant_content.lock().unwrap();
+        let mut guard = self.assistant_content.lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         std::mem::take(&mut *guard)
     }
     
-    /// REFAC-007: Persist the accumulated assistant message
-    fn persist_assistant_message(&self) {
+    /// PROV-039: Persist the accumulated assistant message with optional stop_reason
+    fn persist_assistant_message_with_stop_reason(&self, stop_reason: Option<String>) {
         let content = self.take_assistant_content();
         if content.is_empty() {
             return;
         }
         
-        if let Err(e) = persist_assistant_message_internal(&self.session.id, &self.provider, content) {
+        if let Err(e) = persist_assistant_message_internal(&self.session.id, &self.provider, content, stop_reason) {
             tracing::error!("REFAC-007: Failed to persist assistant message: {}", e);
         }
+    }
+
+    /// REFAC-007: Persist the accumulated assistant message (no stop_reason — for error/interrupt paths)
+    fn persist_assistant_message(&self) {
+        self.persist_assistant_message_with_stop_reason(None);
     }
 }
 
@@ -5333,9 +5358,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 self.persist_assistant_message();
                 StreamChunk::interrupted(queued)
             }
-            StreamEvent::Done => {
-                // REFAC-007: Persist accumulated assistant message on completion
-                self.persist_assistant_message();
+            StreamEvent::Done(stop_reason) => {
+                // PROV-039: Persist accumulated assistant message with real stop_reason from provider
+                self.persist_assistant_message_with_stop_reason(stop_reason);
                 
                 // REFAC-007 Rule [31]: Persist token state on Done chunk
                 let (input_tokens, output_tokens, _reasoning_tokens) = self.session.get_tokens();
@@ -6052,8 +6077,12 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
 #[napi]
 pub fn session_get_model(session_id: String) -> Result<SessionModel> {
     let session = SessionManager::instance().get_session(&session_id)?;
-    let provider_id = session.provider_id.read().unwrap().clone();
-    let model_id = session.model_id.read().unwrap().clone();
+    let provider_id = session.provider_id.read()
+        .map_err(|e| Error::from_reason(format!("Failed to read provider_id: {}", e)))?
+        .clone();
+    let model_id = session.model_id.read()
+        .map_err(|e| Error::from_reason(format!("Failed to read model_id: {}", e)))?
+        .clone();
     Ok(SessionModel {
         provider_id,
         model_id,
