@@ -740,7 +740,7 @@ where
                                     && empty_or_none(&function.arguments)
                                 {
                                     let id = tool_call.id.clone().unwrap_or_default();
-                                    let name = function.name.clone().unwrap();
+                                    let name = function.name.clone().unwrap_or_default();
                                     calls.insert(tool_call.index, (id, name, String::new()));
                                 }
                                 // Continuation of tool call
@@ -831,7 +831,7 @@ where
             tool_calls
         };
 
-        span.record("gen_ai.output.messages", serde_json::to_string(&message).unwrap());
+        span.record("gen_ai.output.messages", serde_json::to_string(&message).unwrap_or_default());
 
         yield Ok(crate::streaming::RawStreamingChoice::FinalResponse(
             StreamingCompletionResponse { usage: final_usage.clone() }

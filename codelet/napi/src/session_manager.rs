@@ -3980,8 +3980,11 @@ fn persist_assistant_message_internal(
             id: None,
             model: None,
             content,
-            // PROV-039: Use the real stop_reason from the streaming pipeline
-            stop_reason: stop_reason.or_else(|| Some("end_turn".to_string())),
+            // PROV-039: Use the real stop_reason from the streaming pipeline.
+            // Use "unknown" instead of "end_turn" when stop_reason is None — this
+            // distinguishes "the API said it ended normally" from "we don't know
+            // why it ended" (e.g., Gemini before stop_reason was implemented).
+            stop_reason: stop_reason.or_else(|| Some("unknown".to_string())),
             usage: None,
         }),
         request_id: None,

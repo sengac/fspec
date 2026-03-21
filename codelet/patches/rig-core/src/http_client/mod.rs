@@ -97,6 +97,16 @@ pub fn with_bearer_auth(mut req: Builder, auth: &str) -> Result<Builder> {
     Ok(req)
 }
 
+/// Helper to extract error body text from a failed HTTP response.
+/// Returns the response body text if available, or a fallback message
+/// if the body cannot be read.
+async fn error_body_text(response: reqwest::Response) -> String {
+    response
+        .text()
+        .await
+        .unwrap_or_else(|_| "<failed to read error response body>".to_string())
+}
+
 /// A helper trait to make generic requests (both regular and SSE) possible.
 pub trait HttpClientExt: WasmCompatSend + WasmCompatSync {
     /// Send a HTTP request, get a response back (as bytes). Response must be able to be turned back into Bytes.
@@ -146,10 +156,9 @@ impl HttpClientExt for reqwest::Client {
         async move {
             let response = req.send().await.map_err(instance_error)?;
             if !response.status().is_success() {
-                return Err(Error::InvalidStatusCodeWithMessage(
-                    response.status(),
-                    response.text().await.unwrap(),
-                ));
+                let status = response.status();
+                let body = error_body_text(response).await;
+                return Err(Error::InvalidStatusCodeWithMessage(status, body));
             }
 
             let mut res = Response::builder().status(response.status());
@@ -191,10 +200,9 @@ impl HttpClientExt for reqwest::Client {
         async move {
             let response = req.send().await.map_err(instance_error)?;
             if !response.status().is_success() {
-                return Err(Error::InvalidStatusCodeWithMessage(
-                    response.status(),
-                    response.text().await.unwrap(),
-                ));
+                let status = response.status();
+                let body = error_body_text(response).await;
+                return Err(Error::InvalidStatusCodeWithMessage(status, body));
             }
 
             let mut res = Response::builder().status(response.status());
@@ -231,18 +239,18 @@ impl HttpClientExt for reqwest::Client {
             .headers(parts.headers)
             .body(body.into())
             .build()
-            .map_err(|x| Error::Instance(x.into()))
-            .unwrap();
+            .map_err(|x| Error::Instance(x.into()));
 
         let client = self.clone();
 
         async move {
+            let req = req?;
+
             let response: reqwest::Response = client.execute(req).await.map_err(instance_error)?;
             if !response.status().is_success() {
-                return Err(Error::InvalidStatusCodeWithMessage(
-                    response.status(),
-                    response.text().await.unwrap(),
-                ));
+                let status = response.status();
+                let body = error_body_text(response).await;
+                return Err(Error::InvalidStatusCodeWithMessage(status, body));
             }
 
             #[cfg(not(target_family = "wasm"))]
@@ -291,10 +299,9 @@ impl HttpClientExt for reqwest_middleware::ClientWithMiddleware {
         async move {
             let response = req.send().await.map_err(instance_error)?;
             if !response.status().is_success() {
-                return Err(Error::InvalidStatusCodeWithMessage(
-                    response.status(),
-                    response.text().await.unwrap(),
-                ));
+                let status = response.status();
+                let body = error_body_text(response).await;
+                return Err(Error::InvalidStatusCodeWithMessage(status, body));
             }
 
             let mut res = Response::builder().status(response.status());
@@ -336,10 +343,9 @@ impl HttpClientExt for reqwest_middleware::ClientWithMiddleware {
         async move {
             let response = req.send().await.map_err(instance_error)?;
             if !response.status().is_success() {
-                return Err(Error::InvalidStatusCodeWithMessage(
-                    response.status(),
-                    response.text().await.unwrap(),
-                ));
+                let status = response.status();
+                let body = error_body_text(response).await;
+                return Err(Error::InvalidStatusCodeWithMessage(status, body));
             }
 
             let mut res = Response::builder().status(response.status());
@@ -376,18 +382,18 @@ impl HttpClientExt for reqwest_middleware::ClientWithMiddleware {
             .headers(parts.headers)
             .body(body.into())
             .build()
-            .map_err(|x| Error::Instance(x.into()))
-            .unwrap();
+            .map_err(|x| Error::Instance(x.into()));
 
         let client = self.clone();
 
         async move {
+            let req = req?;
+
             let response: reqwest::Response = client.execute(req).await.map_err(instance_error)?;
             if !response.status().is_success() {
-                return Err(Error::InvalidStatusCodeWithMessage(
-                    response.status(),
-                    response.text().await.unwrap(),
-                ));
+                let status = response.status();
+                let body = error_body_text(response).await;
+                return Err(Error::InvalidStatusCodeWithMessage(status, body));
             }
 
             #[cfg(not(target_family = "wasm"))]

@@ -43,11 +43,11 @@ impl PauseControl {
     }
 
     pub fn pause(&self) {
-        self.paused_tx.send(true).unwrap();
+        let _ = self.paused_tx.send(true);
     }
 
     pub fn resume(&self) {
-        self.paused_tx.send(false).unwrap();
+        let _ = self.paused_tx.send(false);
     }
 
     pub fn is_paused(&self) -> bool {
@@ -478,7 +478,7 @@ where
                 println!("\nResult: {res}");
             }
             Ok(StreamedAssistantContent::Final(res)) => {
-                let json_res = serde_json::to_string_pretty(&res).unwrap();
+                let json_res = serde_json::to_string_pretty(&res).unwrap_or_default();
                 println!();
                 tracing::info!("Final result: {json_res}");
             }

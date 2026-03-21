@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{Level, enabled, info_span};
 use tracing_futures::Instrument;
 
-use super::completion::gemini_api_types::{ContentCandidate, Part, PartKind};
+use super::completion::gemini_api_types::{ContentCandidate, FinishReason, Part, PartKind};
 use super::completion::{CompletionModel, create_request_body};
 use crate::completion::{CompletionError, CompletionRequest, GetTokenUsage};
 use crate::http_client::HttpClientExt;
@@ -51,6 +51,9 @@ pub struct StreamGenerateContentResponse {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StreamingCompletionResponse {
     pub usage_metadata: PartialUsage,
+    /// PROV-039: stop_reason captured from the streaming finish_reason
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stop_reason: Option<String>,
 }
 
 impl GetTokenUsage for StreamingCompletionResponse {
@@ -64,6 +67,11 @@ impl GetTokenUsage for StreamingCompletionResponse {
             .unwrap_or(0);
         usage.input_tokens = self.usage_metadata.prompt_token_count as u64;
         Some(usage)
+    }
+
+    /// PROV-039: Return the captured stop_reason (mapped from Gemini finish_reason)
+    fn stop_reason(&self) -> Option<&str> {
+        self.stop_reason.as_deref()
     }
 }
 
@@ -118,6 +126,8 @@ where
 
         let stream = stream! {
             let mut final_usage = None;
+            // PROV-039: Capture finish_reason from streaming for stop_reason propagation
+            let mut captured_stop_reason: Option<String> = None;
             while let Some(event_result) = event_source.next().await {
                 match event_result {
                     Ok(Event::Open) => {
@@ -198,6 +208,21 @@ where
 
                         // Check if this is the final response
                         if choice.finish_reason.is_some() {
+                            // PROV-039: Map Gemini FinishReason to normalized stop_reason string
+                            captured_stop_reason = Some(match &choice.finish_reason {
+                                Some(FinishReason::Stop) => "end_turn".to_string(),
+                                Some(FinishReason::MaxTokens) => "max_tokens".to_string(),
+                                Some(FinishReason::Safety) => "content_filter".to_string(),
+                                Some(FinishReason::Recitation) => "content_filter".to_string(),
+                                Some(FinishReason::Language) => "content_filter".to_string(),
+                                Some(FinishReason::Blocklist) => "content_filter".to_string(),
+                                Some(FinishReason::ProhibitedContent) => "content_filter".to_string(),
+                                Some(FinishReason::Spii) => "content_filter".to_string(),
+                                Some(FinishReason::MalformedFunctionCall) => "end_turn".to_string(),
+                                Some(FinishReason::Other) => "unknown".to_string(),
+                                Some(FinishReason::FinishReasonUnspecified) => "unknown".to_string(),
+                                None => "end_turn".to_string(),
+                            });
                             let span = tracing::Span::current();
                             span.record_token_usage(&data.usage_metadata);
                             final_usage = data.usage_metadata;
@@ -219,7 +244,9 @@ where
             event_source.close();
 
             yield Ok(streaming::RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
-                usage_metadata: final_usage.unwrap_or_default()
+                usage_metadata: final_usage.unwrap_or_default(),
+                // PROV-039: Propagate captured stop_reason through FinalResponse
+                stop_reason: captured_stop_reason,
             }));
         }.instrument(span);
 
@@ -538,11 +565,94 @@ mod tests {
                 thoughts_token_count: None,
                 prompt_token_count: 75,
             },
+            stop_reason: None,
         };
 
         let token_usage = response.token_usage().unwrap();
         assert_eq!(token_usage.input_tokens, 75);
         assert_eq!(token_usage.output_tokens, 75);
         assert_eq!(token_usage.total_tokens, 150);
+    }
+
+    #[test]
+    fn test_streaming_completion_response_stop_reason_max_tokens() {
+        let response = StreamingCompletionResponse {
+            usage_metadata: PartialUsage {
+                total_token_count: 100,
+                cached_content_token_count: None,
+                candidates_token_count: Some(50),
+                thoughts_token_count: None,
+                prompt_token_count: 50,
+            },
+            stop_reason: Some("max_tokens".to_string()),
+        };
+
+        assert_eq!(response.stop_reason(), Some("max_tokens"));
+    }
+
+    #[test]
+    fn test_streaming_completion_response_stop_reason_end_turn() {
+        let response = StreamingCompletionResponse {
+            usage_metadata: PartialUsage {
+                total_token_count: 100,
+                cached_content_token_count: None,
+                candidates_token_count: Some(50),
+                thoughts_token_count: None,
+                prompt_token_count: 50,
+            },
+            stop_reason: Some("end_turn".to_string()),
+        };
+
+        assert_eq!(response.stop_reason(), Some("end_turn"));
+    }
+
+    #[test]
+    fn test_streaming_completion_response_stop_reason_none() {
+        let response = StreamingCompletionResponse {
+            usage_metadata: PartialUsage::default(),
+            stop_reason: None,
+        };
+
+        assert_eq!(response.stop_reason(), None);
+    }
+
+    #[test]
+    fn test_finish_reason_to_stop_reason_mapping() {
+        // Verify the mapping logic matches VTCode reference:
+        // "STOP" → "end_turn", "MAX_TOKENS" → "max_tokens", safety variants → "content_filter"
+        use super::super::completion::gemini_api_types::FinishReason;
+
+        let cases: Vec<(FinishReason, &str)> = vec![
+            (FinishReason::Stop, "end_turn"),
+            (FinishReason::MaxTokens, "max_tokens"),
+            (FinishReason::Safety, "content_filter"),
+            (FinishReason::Recitation, "content_filter"),
+            (FinishReason::Language, "content_filter"),
+            (FinishReason::Blocklist, "content_filter"),
+            (FinishReason::ProhibitedContent, "content_filter"),
+            (FinishReason::Spii, "content_filter"),
+            (FinishReason::MalformedFunctionCall, "end_turn"),
+            (FinishReason::Other, "unknown"),
+            (FinishReason::FinishReasonUnspecified, "unknown"),
+        ];
+
+        for (finish_reason, expected_stop_reason) in cases {
+            let mapped = match &finish_reason {
+                FinishReason::Stop => "end_turn",
+                FinishReason::MaxTokens => "max_tokens",
+                FinishReason::Safety
+                | FinishReason::Recitation
+                | FinishReason::Language
+                | FinishReason::Blocklist
+                | FinishReason::ProhibitedContent
+                | FinishReason::Spii => "content_filter",
+                FinishReason::MalformedFunctionCall => "end_turn",
+                FinishReason::Other | FinishReason::FinishReasonUnspecified => "unknown",
+            };
+            assert_eq!(
+                mapped, expected_stop_reason,
+                "FinishReason::{finish_reason:?} should map to '{expected_stop_reason}'"
+            );
+        }
     }
 }

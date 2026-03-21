@@ -488,9 +488,10 @@ where
             .client
             .post("/audio/transcriptions")?
             .body(body)
-            .unwrap();
+            .map_err(|e| TranscriptionError::ProviderError(e.to_string()))?;
 
-        let response = self.client.send_multipart::<Bytes>(req).await.unwrap();
+        let response = self.client.send_multipart::<Bytes>(req).await
+            .map_err(|e| TranscriptionError::ProviderError(e.to_string()))?;
 
         let status = response.status();
         let response_body = response.into_body().into_future().await?.to_vec();
@@ -616,7 +617,7 @@ where
                                         && empty_or_none(&function.arguments)
                                     {
                                         let id = tool_call.id.clone().unwrap_or_default();
-                                        let name = function.name.clone().unwrap();
+                                        let name = function.name.clone().unwrap_or_default();
                                         calls.insert(tool_call.index, (id, name, String::new()));
                                     }
                                     // Continuation
@@ -701,7 +702,7 @@ where
             tool_calls
         };
 
-        span.record("gen_ai.output.messages", serde_json::to_string(&vec![response_message]).unwrap());
+        span.record("gen_ai.output.messages", serde_json::to_string(&vec![response_message]).unwrap_or_default());
         span.record("gen_ai.usage.input_tokens", final_usage.prompt_tokens);
         span.record("gen_ai.usage.output_tokens", final_usage.total_tokens - final_usage.prompt_tokens);
 

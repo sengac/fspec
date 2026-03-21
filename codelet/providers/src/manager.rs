@@ -559,6 +559,25 @@ impl ProviderManager {
         }
     }
 
+    /// Test-only constructor that creates a ProviderManager without requiring credentials.
+    /// Exposed for workspace-level integration tests that need to call methods like
+    /// `max_output_tokens()` without a real provider backend.
+    #[doc(hidden)]
+    pub fn for_testing(provider: ProviderType) -> Self {
+        Self {
+            credentials: ProviderCredentials {
+                claude_available: false,
+                openai_available: false,
+                codex_available: false,
+                gemini_available: false,
+                zai_available: false,
+            },
+            current_provider: provider,
+            model_registry: None,
+            selected_model: None,
+        }
+    }
+
     /// Get Z.AI provider (if selected)
     ///
     /// Requires a model to be selected via select_model().

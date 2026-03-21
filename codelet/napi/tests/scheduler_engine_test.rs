@@ -145,13 +145,32 @@ async fn test_schedule_triggers_when_last_run_older_than_cron_time() {
 #[tokio::test]
 async fn test_schedule_does_not_trigger_when_recently_run() {
     // @step Given a schedule with cron expression "0 * * * *"
-    let thirty_secs_ago = (Utc::now() - Duration::seconds(30)).to_rfc3339();
+    // Set last_run_at to a time AFTER the most recent top-of-hour trigger.
+    // This guarantees last_run > prev_trigger regardless of when the test runs.
+    let now = Utc::now();
+    let current_minute = now.format("%M").to_string().parse::<u32>().unwrap();
+    let after_last_trigger = if current_minute == 0 {
+        // We're at minute 0 — the trigger is right now; set last_run to 1 second ago
+        // which is still after the previous hour's :00 trigger.
+        // But the current minute IS a trigger, so last_run must be AFTER now's :00.
+        // Use the current hour's :00:01
+        now.date_naive()
+            .and_hms_opt(now.format("%H").to_string().parse().unwrap(), 0, 1)
+            .unwrap()
+    } else {
+        // We're past minute 0 — last trigger was this hour's :00.
+        // Set last_run to this hour's :00 + 30 seconds (safely after the trigger).
+        now.date_naive()
+            .and_hms_opt(now.format("%H").to_string().parse().unwrap(), 0, 30)
+            .unwrap()
+    };
+    let last_run_str = DateTime::<Utc>::from_naive_utc_and_offset(after_last_trigger, Utc).to_rfc3339();
 
-    // @step And the schedule's last_run_at is 30 seconds ago
+    // @step And the schedule's last_run_at is after the most recent cron trigger
     let schedules = json!({
         "version": "1.0.0",
         "schedules": {
-            "hourly-job": make_active_schedule("0 * * * *", "shell", Some(&thirty_secs_ago))
+            "hourly-job": make_active_schedule("0 * * * *", "shell", Some(&last_run_str))
         }
     });
     let tmp = setup_project_with_schedules(schedules).await;
@@ -161,10 +180,10 @@ async fn test_schedule_does_not_trigger_when_recently_run() {
     let results = codelet_napi::scheduler::evaluate_schedules(project_path).await.unwrap();
 
     // @step Then the schedule should not trigger
-    // A schedule that ran 30 seconds ago should not re-trigger for an hourly cron
+    // A schedule that ran after the most recent cron trigger should not re-trigger
     assert!(
         results.iter().all(|r| r.name != "hourly-job" || !r.triggered),
-        "Schedule with last_run 30 seconds ago should not trigger for hourly cron"
+        "Schedule with last_run after most recent cron trigger should not trigger"
     );
 }
 

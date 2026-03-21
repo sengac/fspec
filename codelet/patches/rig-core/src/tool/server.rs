@@ -115,22 +115,16 @@ impl ToolServer {
             ToolServerRequestMessageKind::AddTool(tool) => {
                 self.static_tool_names.push(tool.name());
                 self.toolset.add_tool_boxed(tool);
-                callback_channel
-                    .send(ToolServerResponse::ToolAdded)
-                    .unwrap();
+                let _ = callback_channel.send(ToolServerResponse::ToolAdded);
             }
             ToolServerRequestMessageKind::AppendToolset(tools) => {
                 self.toolset.add_tools(tools);
-                callback_channel
-                    .send(ToolServerResponse::ToolAdded)
-                    .unwrap();
+                let _ = callback_channel.send(ToolServerResponse::ToolAdded);
             }
             ToolServerRequestMessageKind::RemoveTool { tool_name } => {
                 self.static_tool_names.retain(|x| *x != tool_name);
                 self.toolset.delete_tool(&tool_name);
-                callback_channel
-                    .send(ToolServerResponse::ToolDeleted)
-                    .unwrap();
+                let _ = callback_channel.send(ToolServerResponse::ToolDeleted);
             }
             ToolServerRequestMessageKind::CallTool { name, args } => {
                 match self.toolset.call(&name, args.clone()).await {
@@ -145,10 +139,16 @@ impl ToolServer {
                 }
             }
             ToolServerRequestMessageKind::GetToolDefs { prompt } => {
-                let res = self.get_tool_definitions(prompt).await.unwrap();
-                callback_channel
-                    .send(ToolServerResponse::ToolDefinitions(res))
-                    .unwrap();
+                match self.get_tool_definitions(prompt).await {
+                    Ok(res) => {
+                        let _ = callback_channel.send(ToolServerResponse::ToolDefinitions(res));
+                    }
+                    Err(err) => {
+                        let _ = callback_channel.send(ToolServerResponse::ToolError {
+                            error: err.to_string(),
+                        });
+                    }
+                }
             }
         }
     }
