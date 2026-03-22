@@ -1,0 +1,94 @@
+{
+  "scenarios": [
+    {
+      "name": "Extract Calls edge for cross-file function call via import",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "55-79",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Extract Calls edge for same-file function call",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "84-107",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Ignore method calls and builtins — no Calls edges for dotted expressions",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "112-134",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Extract TypeRef edges from function parameter and return types",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "139-172",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Detect orphan files with no incoming Imports edges",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "177-250",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Detect uncalled functions with no incoming Calls edges",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "255-326",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Detect unreferenced types with no incoming TypeRef edges",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "331-382",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Exclude test files from dead code results by default",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_dead_code_test.rs",
+          "lines": "387-443",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/ast_dead_code_test.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 361
+  }
+}

@@ -253,3 +253,86 @@ pub async fn dispatch_ast_index() -> String {
         }
     }
 }
+
+/// Detect dead code in the AST graph.
+///
+/// Uses nanograph `not { }` anti-join queries to find:
+/// - Orphan files: File nodes with no incoming Imports edges
+/// - Uncalled functions: Function nodes with no incoming Calls edges
+/// - Unreferenced types: Type nodes with no incoming TypeRef edges
+///
+/// Accepts optional `entity_type` filter ("File", "Function", "Type").
+/// Excludes test files and stub File nodes (no language) by default.
+pub async fn dispatch_ast_dead_code(
+    db: &GraphDatabase,
+    entity_type: Option<&str>,
+    limit: Option<usize>,
+) -> String {
+    let max_results = limit.unwrap_or(100);
+    let types_to_check: Vec<&str> = match entity_type {
+        Some(t) => vec![t],
+        None => vec!["File", "Function", "Type"],
+    };
+
+    let mut all_results = serde_json::Map::new();
+
+    for check_type in &types_to_check {
+        let query_name = match *check_type {
+            "File" => "orphan_files",
+            "Function" => "uncalled_functions",
+            "Type" => "unreferenced_types",
+            _ => continue,
+        };
+
+        match db.query_with_source(AST_QUERIES, query_name, None).await {
+            Ok(Value::Array(items)) => {
+                let filtered: Vec<Value> = items
+                    .into_iter()
+                    .filter(|item| {
+                        // For files: exclude test files and stubs (no language = external import)
+                        if *check_type == "File" {
+                            let is_test = item
+                                .get("isTest")
+                                .and_then(|v| v.as_bool())
+                                .unwrap_or(false);
+                            let has_language =
+                                item.get("language").and_then(|v| v.as_str()).is_some();
+                            !is_test && has_language
+                        } else {
+                            true
+                        }
+                    })
+                    .take(max_results)
+                    .collect();
+
+                all_results.insert(
+                    check_type.to_string(),
+                    serde_json::json!({
+                        "count": filtered.len(),
+                        "items": filtered,
+                    }),
+                );
+            }
+            Ok(_) => {
+                all_results.insert(
+                    check_type.to_string(),
+                    serde_json::json!({"count": 0, "items": []}),
+                );
+            }
+            Err(e) => {
+                warn!(query_name, error = %e, "Dead code query failed");
+                all_results.insert(
+                    check_type.to_string(),
+                    serde_json::json!({"error": e.to_string()}),
+                );
+            }
+        }
+    }
+
+    serde_json::json!({
+        "action": "ast_dead_code",
+        "entity_type": entity_type,
+        "results": all_results,
+    })
+    .to_string()
+}

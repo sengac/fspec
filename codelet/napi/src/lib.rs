@@ -255,6 +255,26 @@ mod logging {
                     .with(TypeScriptLayer)
                     .with(filter)
                     .try_init();
+
+                // Route panics through tracing instead of stderr.
+                // This ensures panics caught by catch_unwind (e.g. in AST
+                // extraction) are logged via the TypeScript log callback
+                // rather than leaking raw text to the console.
+                std::panic::set_hook(Box::new(|info| {
+                    let msg = if let Some(s) = info.payload().downcast_ref::<String>() {
+                        s.clone()
+                    } else if let Some(s) = info.payload().downcast_ref::<&str>() {
+                        (*s).to_string()
+                    } else {
+                        "unknown panic".to_string()
+                    };
+                    let location = info
+                        .location()
+                        .map(|l| format!(" at {}:{}:{}", l.file(), l.line(), l.column()))
+                        .unwrap_or_default();
+                    tracing::warn!("Rust panic caught{location}: {msg}");
+                }));
+
                 *initialized = true;
             }
         }

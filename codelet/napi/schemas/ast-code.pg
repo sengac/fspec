@@ -85,7 +85,7 @@ edge Extends: Type -> Type {
 }
 
 edge TypeRef: Function -> Type {
-    refKind: enum(param, return_type, field)
+    refKind: enum(param, return_type, field)?
 }
 
 edge DependsOn: File -> Dependency {

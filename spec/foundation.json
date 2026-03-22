@@ -876,8 +876,2128 @@
         "deleted": false,
         "createdAt": "2025-11-17T11:50:17.229Z",
         "description": "Verify tag registry"
+      },
+      {
+        "id": 79,
+        "type": "bounded_context",
+        "text": "Lifecycle Hooks & Quality Gates",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2026-03-22T20:27:57.965Z"
+      },
+      {
+        "id": 80,
+        "type": "bounded_context",
+        "text": "Git Checkpoints",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:02.514Z"
+      },
+      {
+        "id": 81,
+        "type": "bounded_context",
+        "text": "Reporting & Analytics",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:06.585Z"
+      },
+      {
+        "id": 82,
+        "type": "bounded_context",
+        "text": "Workflow Automation",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:10.561Z"
+      },
+      {
+        "id": 83,
+        "type": "bounded_context",
+        "text": "Reverse ACDD",
+        "color": null,
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:14.381Z"
+      },
+      {
+        "id": 84,
+        "type": "aggregate",
+        "text": "Estimate",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:25.356Z",
+        "description": "Story point estimation and re-estimation"
+      },
+      {
+        "id": 85,
+        "type": "aggregate",
+        "text": "Background",
+        "boundedContextId": 2,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:29.448Z",
+        "description": "Feature background section"
+      },
+      {
+        "id": 86,
+        "type": "aggregate",
+        "text": "UserStory",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:33.363Z",
+        "description": "Yellow card - user story definition"
+      },
+      {
+        "id": 87,
+        "type": "aggregate",
+        "text": "ArchitectureNote",
+        "boundedContextId": 3,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:37.293Z",
+        "description": "Work unit-level architecture notes"
+      },
+      {
+        "id": 88,
+        "type": "aggregate",
+        "text": "Aggregate",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:40.883Z",
+        "description": "Yellow sticky - domain aggregate"
+      },
+      {
+        "id": 89,
+        "type": "aggregate",
+        "text": "BoundedContext",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:45.256Z",
+        "description": "Boundary around related concepts"
+      },
+      {
+        "id": 90,
+        "type": "aggregate",
+        "text": "ExternalSystem",
+        "boundedContextId": 4,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:48.793Z",
+        "description": "External system integration point"
+      },
+      {
+        "id": 91,
+        "type": "aggregate",
+        "text": "GlobalHook",
+        "boundedContextId": 79,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:52.711Z",
+        "description": "Project-wide lifecycle hook"
+      },
+      {
+        "id": 92,
+        "type": "aggregate",
+        "text": "VirtualHook",
+        "boundedContextId": 79,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:28:58.149Z",
+        "description": "Work unit-scoped ephemeral hook"
+      },
+      {
+        "id": 93,
+        "type": "aggregate",
+        "text": "HookCondition",
+        "boundedContextId": 79,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:02.376Z",
+        "description": "Conditional filter for hook execution"
+      },
+      {
+        "id": 94,
+        "type": "aggregate",
+        "text": "HookConfig",
+        "boundedContextId": 79,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:05.996Z",
+        "description": "fspec-hooks.json configuration"
+      },
+      {
+        "id": 95,
+        "type": "aggregate",
+        "text": "Checkpoint",
+        "boundedContextId": 80,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:09.734Z",
+        "description": "Git ghost commit save point"
+      },
+      {
+        "id": 96,
+        "type": "aggregate",
+        "text": "CheckpointIndex",
+        "boundedContextId": 80,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:14.218Z",
+        "description": "Metadata index for checkpoints per work unit"
+      },
+      {
+        "id": 97,
+        "type": "aggregate",
+        "text": "ConflictDetection",
+        "boundedContextId": 80,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:18.656Z",
+        "description": "Detect conflicts before checkpoint restore"
+      },
+      {
+        "id": 98,
+        "type": "aggregate",
+        "text": "Metric",
+        "boundedContextId": 81,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:23.051Z",
+        "description": "Velocity and throughput measurements"
+      },
+      {
+        "id": 99,
+        "type": "aggregate",
+        "text": "IterationRecord",
+        "boundedContextId": 81,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:26.923Z",
+        "description": "Completed iteration tracking"
+      },
+      {
+        "id": 100,
+        "type": "aggregate",
+        "text": "EstimateAccuracy",
+        "boundedContextId": 81,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:31.130Z",
+        "description": "Estimation vs actual comparison"
+      },
+      {
+        "id": 101,
+        "type": "aggregate",
+        "text": "SummaryReport",
+        "boundedContextId": 81,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:35.084Z",
+        "description": "Project-wide summary report"
+      },
+      {
+        "id": 102,
+        "type": "aggregate",
+        "text": "WorkflowState",
+        "boundedContextId": 82,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:39.440Z",
+        "description": "ACDD state machine and transitions"
+      },
+      {
+        "id": 103,
+        "type": "aggregate",
+        "text": "ToolConfig",
+        "boundedContextId": 82,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:46.859Z",
+        "description": "Test and quality command configuration"
+      },
+      {
+        "id": 104,
+        "type": "aggregate",
+        "text": "TemporalValidation",
+        "boundedContextId": 82,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:51.215Z",
+        "description": "File timestamp vs state entry time enforcement"
+      },
+      {
+        "id": 105,
+        "type": "aggregate",
+        "text": "ReverseSession",
+        "boundedContextId": 83,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:55.286Z",
+        "description": "Multi-step reverse engineering session"
+      },
+      {
+        "id": 106,
+        "type": "aggregate",
+        "text": "GapAnalysis",
+        "boundedContextId": 83,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:29:59.403Z",
+        "description": "Spec, test, and coverage gap detection"
+      },
+      {
+        "id": 107,
+        "type": "aggregate",
+        "text": "Strategy",
+        "boundedContextId": 83,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:03.558Z",
+        "description": "Reverse strategy (A=Spec Gap, B=Test Gap, C=Coverage, D=Full)"
+      },
+      {
+        "id": 108,
+        "type": "aggregate",
+        "text": "StepComment",
+        "boundedContextId": 6,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:08.412Z",
+        "description": "@step annotation in test files"
+      },
+      {
+        "id": 109,
+        "type": "aggregate",
+        "text": "Attachment",
+        "boundedContextId": 1,
+        "color": "yellow",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:12.325Z",
+        "description": "File linked to work unit"
+      },
+      {
+        "id": 110,
+        "type": "event",
+        "text": "WorkUnitUpdated",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:16.605Z",
+        "description": "Work unit fields modified"
+      },
+      {
+        "id": 111,
+        "type": "event",
+        "text": "WorkUnitDeleted",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:20.756Z",
+        "description": "Work unit permanently removed"
+      },
+      {
+        "id": 112,
+        "type": "event",
+        "text": "WorkUnitPrioritized",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:25.408Z",
+        "description": "Work unit position changed in backlog"
+      },
+      {
+        "id": 113,
+        "type": "event",
+        "text": "WorkUnitEstimated",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:29.852Z",
+        "description": "Story points assigned or updated"
+      },
+      {
+        "id": 114,
+        "type": "event",
+        "text": "WorkUnitCompacted",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:34.699Z",
+        "description": "Soft-deleted items permanently removed"
+      },
+      {
+        "id": 115,
+        "type": "event",
+        "text": "WorkUnitRepaired",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:38.201Z",
+        "description": "State inconsistencies fixed"
+      },
+      {
+        "id": 116,
+        "type": "event",
+        "text": "EpicCreated",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:42.333Z",
+        "description": "New epic created with prefix"
+      },
+      {
+        "id": 117,
+        "type": "event",
+        "text": "EpicDeleted",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:46.090Z",
+        "description": "Epic removed from project"
+      },
+      {
+        "id": 118,
+        "type": "event",
+        "text": "PrefixCreated",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:50.057Z",
+        "description": "New work unit ID namespace created"
+      },
+      {
+        "id": 119,
+        "type": "event",
+        "text": "PrefixUpdated",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:54.592Z",
+        "description": "Prefix description changed"
+      },
+      {
+        "id": 120,
+        "type": "event",
+        "text": "DependencyRemoved",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:30:58.708Z",
+        "description": "Dependency relationship removed"
+      },
+      {
+        "id": 121,
+        "type": "event",
+        "text": "DependenciesCleared",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:03.042Z",
+        "description": "All dependencies removed from work unit"
+      },
+      {
+        "id": 122,
+        "type": "event",
+        "text": "AttachmentAdded",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:09.599Z",
+        "description": "File attached to work unit"
+      },
+      {
+        "id": 123,
+        "type": "event",
+        "text": "AttachmentRemoved",
+        "boundedContextId": 1,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:13.278Z",
+        "description": "File detached from work unit"
+      },
+      {
+        "id": 124,
+        "type": "command",
+        "text": "UpdateWorkUnit",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:18.464Z",
+        "description": "Modify work unit fields"
+      },
+      {
+        "id": 125,
+        "type": "command",
+        "text": "DeleteWorkUnit",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:23.120Z",
+        "description": "Permanently delete work unit"
+      },
+      {
+        "id": 126,
+        "type": "command",
+        "text": "PrioritizeWorkUnit",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:27.875Z",
+        "description": "Reorder work unit in backlog"
+      },
+      {
+        "id": 127,
+        "type": "command",
+        "text": "EstimateWorkUnit",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:32.240Z",
+        "description": "Assign or update story points"
+      },
+      {
+        "id": 128,
+        "type": "command",
+        "text": "CompactWorkUnit",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:36.978Z",
+        "description": "Permanently remove soft-deleted items"
+      },
+      {
+        "id": 129,
+        "type": "command",
+        "text": "RepairWorkUnits",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:45.235Z",
+        "description": "Fix state inconsistencies"
+      },
+      {
+        "id": 130,
+        "type": "command",
+        "text": "CreateEpic",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:50.656Z",
+        "description": "Create epic with prefix"
+      },
+      {
+        "id": 131,
+        "type": "command",
+        "text": "DeleteEpic",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:31:56.096Z",
+        "description": "Remove epic from project"
+      },
+      {
+        "id": 132,
+        "type": "command",
+        "text": "CreatePrefix",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:01.247Z",
+        "description": "Create work unit ID namespace"
+      },
+      {
+        "id": 133,
+        "type": "command",
+        "text": "UpdatePrefix",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:06.860Z",
+        "description": "Update prefix description"
+      },
+      {
+        "id": 134,
+        "type": "command",
+        "text": "RemoveDependency",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:12.898Z",
+        "description": "Remove dependency relationship"
+      },
+      {
+        "id": 135,
+        "type": "command",
+        "text": "ClearDependencies",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:17.877Z",
+        "description": "Remove all dependencies from work unit"
+      },
+      {
+        "id": 136,
+        "type": "command",
+        "text": "ValidateDependencies",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:23.156Z",
+        "description": "Check for cycles and orphans"
+      },
+      {
+        "id": 137,
+        "type": "command",
+        "text": "ExportDependencies",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:28.279Z",
+        "description": "Export dependency graph as mermaid or JSON"
+      },
+      {
+        "id": 138,
+        "type": "command",
+        "text": "AddAttachment",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:33.249Z",
+        "description": "Attach file to work unit"
+      },
+      {
+        "id": 139,
+        "type": "command",
+        "text": "RemoveAttachment",
+        "boundedContextId": 1,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:37.885Z",
+        "description": "Detach file from work unit"
+      },
+      {
+        "id": 140,
+        "type": "event",
+        "text": "ScenarioUpdated",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:43.785Z",
+        "description": "Scenario name changed"
+      },
+      {
+        "id": 141,
+        "type": "event",
+        "text": "ScenarioDeleted",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:49.355Z",
+        "description": "Scenario removed from feature"
+      },
+      {
+        "id": 142,
+        "type": "event",
+        "text": "StepAdded",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:53.926Z",
+        "description": "Given/When/Then step added to scenario"
+      },
+      {
+        "id": 143,
+        "type": "event",
+        "text": "StepUpdated",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:32:59.233Z",
+        "description": "Step text or keyword modified"
+      },
+      {
+        "id": 144,
+        "type": "event",
+        "text": "StepDeleted",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:04.842Z",
+        "description": "Step removed from scenario"
+      },
+      {
+        "id": 145,
+        "type": "event",
+        "text": "FeatureFormatted",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:10.123Z",
+        "description": "Feature file reformatted"
+      },
+      {
+        "id": 146,
+        "type": "event",
+        "text": "TagUpdated",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:16.316Z",
+        "description": "Tag description or category changed"
+      },
+      {
+        "id": 147,
+        "type": "event",
+        "text": "TagDeleted",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:21.643Z",
+        "description": "Tag removed from registry"
+      },
+      {
+        "id": 148,
+        "type": "event",
+        "text": "TagRenamed",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:26.606Z",
+        "description": "Tag bulk-renamed across all features"
+      },
+      {
+        "id": 149,
+        "type": "event",
+        "text": "FeatureTagAdded",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:32.114Z",
+        "description": "Tag added to feature file"
+      },
+      {
+        "id": 150,
+        "type": "event",
+        "text": "FeatureTagRemoved",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:36.644Z",
+        "description": "Tag removed from feature file"
+      },
+      {
+        "id": 151,
+        "type": "event",
+        "text": "ScenarioTagAdded",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:41.626Z",
+        "description": "Tag added to scenario"
+      },
+      {
+        "id": 152,
+        "type": "event",
+        "text": "ScenarioTagRemoved",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:46.751Z",
+        "description": "Tag removed from scenario"
+      },
+      {
+        "id": 153,
+        "type": "event",
+        "text": "BackgroundAdded",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:53.810Z",
+        "description": "Background section added to feature"
+      },
+      {
+        "id": 154,
+        "type": "event",
+        "text": "FeatureArchitectureAdded",
+        "boundedContextId": 2,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:33:59.370Z",
+        "description": "Architecture notes added to feature"
+      },
+      {
+        "id": 155,
+        "type": "command",
+        "text": "UpdateScenario",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:05.558Z",
+        "description": "Rename a scenario"
+      },
+      {
+        "id": 156,
+        "type": "command",
+        "text": "DeleteScenario",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:10.764Z",
+        "description": "Remove scenario from feature"
+      },
+      {
+        "id": 157,
+        "type": "command",
+        "text": "AddStep",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:15.980Z",
+        "description": "Add Given/When/Then step"
+      },
+      {
+        "id": 158,
+        "type": "command",
+        "text": "UpdateStep",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:22.099Z",
+        "description": "Modify step text or keyword"
+      },
+      {
+        "id": 159,
+        "type": "command",
+        "text": "DeleteStep",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:28.786Z",
+        "description": "Remove step from scenario"
+      },
+      {
+        "id": 160,
+        "type": "command",
+        "text": "FormatFeatures",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:33.481Z",
+        "description": "Auto-format Gherkin feature files"
+      },
+      {
+        "id": 161,
+        "type": "command",
+        "text": "AddBackground",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:37.452Z",
+        "description": "Add background section to feature"
+      },
+      {
+        "id": 162,
+        "type": "command",
+        "text": "AddFeatureArchitecture",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:42.745Z",
+        "description": "Add architecture notes to feature"
+      },
+      {
+        "id": 163,
+        "type": "command",
+        "text": "AddTagToFeature",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:48.576Z",
+        "description": "Tag a feature file"
+      },
+      {
+        "id": 164,
+        "type": "command",
+        "text": "RemoveTagFromFeature",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:54.230Z",
+        "description": "Remove tag from feature file"
+      },
+      {
+        "id": 165,
+        "type": "command",
+        "text": "AddTagToScenario",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:34:59.791Z",
+        "description": "Tag a specific scenario"
+      },
+      {
+        "id": 166,
+        "type": "command",
+        "text": "RemoveTagFromScenario",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:04.336Z",
+        "description": "Remove tag from scenario"
+      },
+      {
+        "id": 167,
+        "type": "command",
+        "text": "UpdateTag",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:09.619Z",
+        "description": "Modify tag description or category"
+      },
+      {
+        "id": 168,
+        "type": "command",
+        "text": "DeleteTag",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:14.832Z",
+        "description": "Remove tag from registry"
+      },
+      {
+        "id": 169,
+        "type": "command",
+        "text": "Retag",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:21.311Z",
+        "description": "Bulk rename tag across features"
+      },
+      {
+        "id": 170,
+        "type": "command",
+        "text": "DeleteFeaturesByTag",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:25.707Z",
+        "description": "Bulk delete features by tag"
+      },
+      {
+        "id": 171,
+        "type": "command",
+        "text": "DeleteScenariosByTag",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:29.809Z",
+        "description": "Bulk delete scenarios by tag"
+      },
+      {
+        "id": 172,
+        "type": "command",
+        "text": "SearchScenarios",
+        "boundedContextId": 2,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:35.647Z",
+        "description": "Search scenarios by query or regex"
+      },
+      {
+        "id": 173,
+        "type": "event",
+        "text": "UserStorySet",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:41.308Z",
+        "description": "Yellow card user story defined"
+      },
+      {
+        "id": 174,
+        "type": "event",
+        "text": "QuestionAnswered",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:46.174Z",
+        "description": "Red card resolved with answer"
+      },
+      {
+        "id": 175,
+        "type": "event",
+        "text": "RuleRemoved",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:52.970Z",
+        "description": "Business rule soft-deleted"
+      },
+      {
+        "id": 176,
+        "type": "event",
+        "text": "ExampleRemoved",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:35:58.320Z",
+        "description": "Concrete example soft-deleted"
+      },
+      {
+        "id": 177,
+        "type": "event",
+        "text": "QuestionRemoved",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:03.048Z",
+        "description": "Question soft-deleted"
+      },
+      {
+        "id": 178,
+        "type": "event",
+        "text": "AssumptionAdded",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:08.562Z",
+        "description": "Assumption captured from answered question"
+      },
+      {
+        "id": 179,
+        "type": "event",
+        "text": "ArchitectureNoteAdded",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:13.994Z",
+        "description": "Work unit architecture note captured"
+      },
+      {
+        "id": 180,
+        "type": "event",
+        "text": "ArchitectureNoteRemoved",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:18.652Z",
+        "description": "Architecture note soft-deleted"
+      },
+      {
+        "id": 181,
+        "type": "event",
+        "text": "ItemRestored",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:24.151Z",
+        "description": "Soft-deleted item restored"
+      },
+      {
+        "id": 182,
+        "type": "event",
+        "text": "ExampleMapExported",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:29.370Z",
+        "description": "Example map exported to JSON"
+      },
+      {
+        "id": 183,
+        "type": "event",
+        "text": "ExampleMapImported",
+        "boundedContextId": 3,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:34.180Z",
+        "description": "Example map imported from JSON"
+      },
+      {
+        "id": 184,
+        "type": "command",
+        "text": "SetUserStory",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:39.403Z",
+        "description": "Define yellow card user story"
+      },
+      {
+        "id": 185,
+        "type": "command",
+        "text": "AnswerQuestion",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:45.157Z",
+        "description": "Resolve red card with answer"
+      },
+      {
+        "id": 186,
+        "type": "command",
+        "text": "RemoveRule",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:52.863Z",
+        "description": "Soft-delete a business rule"
+      },
+      {
+        "id": 187,
+        "type": "command",
+        "text": "RemoveExample",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:36:58.097Z",
+        "description": "Soft-delete an example"
+      },
+      {
+        "id": 188,
+        "type": "command",
+        "text": "RemoveQuestion",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:03.457Z",
+        "description": "Soft-delete a question"
+      },
+      {
+        "id": 189,
+        "type": "command",
+        "text": "AddAssumption",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:08.945Z",
+        "description": "Capture project assumption"
+      },
+      {
+        "id": 190,
+        "type": "command",
+        "text": "AddArchitectureNote",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:14.770Z",
+        "description": "Add architecture note to work unit"
+      },
+      {
+        "id": 191,
+        "type": "command",
+        "text": "RemoveArchitectureNote",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:19.097Z",
+        "description": "Soft-delete architecture note"
+      },
+      {
+        "id": 192,
+        "type": "command",
+        "text": "RestoreItem",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:23.838Z",
+        "description": "Restore soft-deleted rule, example, question, or note"
+      },
+      {
+        "id": 193,
+        "type": "command",
+        "text": "ShowDeleted",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:28.744Z",
+        "description": "View soft-deleted items"
+      },
+      {
+        "id": 194,
+        "type": "command",
+        "text": "ExportExampleMap",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:35.330Z",
+        "description": "Export example map to JSON"
+      },
+      {
+        "id": 195,
+        "type": "command",
+        "text": "ImportExampleMap",
+        "boundedContextId": 3,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:40.335Z",
+        "description": "Import example map from JSON"
+      },
+      {
+        "id": 196,
+        "type": "event",
+        "text": "PolicyCaptured",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:46.179Z",
+        "description": "Policy sticky added to event storm"
+      },
+      {
+        "id": 197,
+        "type": "event",
+        "text": "AggregateCaptured",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:51.285Z",
+        "description": "Aggregate sticky added"
+      },
+      {
+        "id": 198,
+        "type": "event",
+        "text": "BoundedContextCaptured",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:37:56.424Z",
+        "description": "Bounded context boundary defined"
+      },
+      {
+        "id": 199,
+        "type": "event",
+        "text": "ExternalSystemCaptured",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:01.797Z",
+        "description": "External system integration identified"
+      },
+      {
+        "id": 200,
+        "type": "event",
+        "text": "ExampleMappingGeneratedFromEventStorm",
+        "boundedContextId": 4,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:09.386Z",
+        "description": "Example map cards generated from event storm data"
+      },
+      {
+        "id": 201,
+        "type": "command",
+        "text": "CapturePolicy",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:14.987Z",
+        "description": "Add reactive rule sticky"
+      },
+      {
+        "id": 202,
+        "type": "command",
+        "text": "CaptureAggregate",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:20.392Z",
+        "description": "Add domain aggregate sticky"
+      },
+      {
+        "id": 203,
+        "type": "command",
+        "text": "CaptureBoundedContext",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:26.564Z",
+        "description": "Define context boundary"
+      },
+      {
+        "id": 204,
+        "type": "command",
+        "text": "CaptureExternalSystem",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:30.760Z",
+        "description": "Identify external system dependency"
+      },
+      {
+        "id": 205,
+        "type": "command",
+        "text": "ShowEventStorm",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:36.557Z",
+        "description": "Display event storm visualization"
+      },
+      {
+        "id": 206,
+        "type": "command",
+        "text": "GenerateExampleMappingFromEventStorm",
+        "boundedContextId": 4,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:41.844Z",
+        "description": "Convert event storm to example map cards"
+      },
+      {
+        "id": 207,
+        "type": "event",
+        "text": "PersonaAdded",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:46.777Z",
+        "description": "New persona defined"
+      },
+      {
+        "id": 208,
+        "type": "event",
+        "text": "PersonaRemoved",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:38:52.664Z",
+        "description": "Persona removed from foundation"
+      },
+      {
+        "id": 209,
+        "type": "event",
+        "text": "CapabilityRemoved",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:01.217Z",
+        "description": "Capability removed from foundation"
+      },
+      {
+        "id": 210,
+        "type": "event",
+        "text": "DiagramDeleted",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:08.647Z",
+        "description": "Architecture diagram removed"
+      },
+      {
+        "id": 211,
+        "type": "event",
+        "text": "FoundationFinalized",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:13.809Z",
+        "description": "Draft foundation validated and committed"
+      },
+      {
+        "id": 212,
+        "type": "event",
+        "text": "TagsDerivedFromFoundation",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:19.960Z",
+        "description": "Component/feature tags auto-generated"
+      },
+      {
+        "id": 213,
+        "type": "event",
+        "text": "FoundationMdGenerated",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:25.734Z",
+        "description": "FOUNDATION.md regenerated"
+      },
+      {
+        "id": 214,
+        "type": "event",
+        "text": "TagsMdGenerated",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:31.179Z",
+        "description": "TAGS.md regenerated"
+      },
+      {
+        "id": 215,
+        "type": "event",
+        "text": "FoundationSchemaValidated",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:36.231Z",
+        "description": "Foundation JSON schema validation passed"
+      },
+      {
+        "id": 216,
+        "type": "event",
+        "text": "FoundationEventStormUpdated",
+        "boundedContextId": 5,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:41.333Z",
+        "description": "Big picture event storm modified"
+      },
+      {
+        "id": 217,
+        "type": "command",
+        "text": "UpdateFoundation",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:45.956Z",
+        "description": "Update foundation field"
+      },
+      {
+        "id": 218,
+        "type": "command",
+        "text": "AddPersona",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:51.029Z",
+        "description": "Define new user persona"
+      },
+      {
+        "id": 219,
+        "type": "command",
+        "text": "RemovePersona",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:39:55.911Z",
+        "description": "Remove persona from foundation"
+      },
+      {
+        "id": 220,
+        "type": "command",
+        "text": "RemoveCapability",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:00.610Z",
+        "description": "Remove capability from foundation"
+      },
+      {
+        "id": 221,
+        "type": "command",
+        "text": "DeleteDiagram",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:05.708Z",
+        "description": "Remove architecture diagram"
+      },
+      {
+        "id": 222,
+        "type": "command",
+        "text": "FinalizeFoundation",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:12.488Z",
+        "description": "Validate and commit foundation draft"
+      },
+      {
+        "id": 223,
+        "type": "command",
+        "text": "DeriveTagsFromFoundation",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:18.029Z",
+        "description": "Auto-generate tags from bounded contexts"
+      },
+      {
+        "id": 224,
+        "type": "command",
+        "text": "GenerateFoundationMd",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:23.705Z",
+        "description": "Regenerate FOUNDATION.md"
+      },
+      {
+        "id": 225,
+        "type": "command",
+        "text": "GenerateTagsMd",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:27.599Z",
+        "description": "Regenerate TAGS.md"
+      },
+      {
+        "id": 226,
+        "type": "command",
+        "text": "ValidateFoundationSchema",
+        "boundedContextId": 5,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:32.865Z",
+        "description": "Validate foundation.json against schema"
+      },
+      {
+        "id": 227,
+        "type": "event",
+        "text": "ImplementationLinked",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:38.834Z",
+        "description": "Implementation file linked to test/scenario"
+      },
+      {
+        "id": 228,
+        "type": "event",
+        "text": "CoverageUnlinked",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:44.175Z",
+        "description": "Test or implementation unlinked from scenario"
+      },
+      {
+        "id": 229,
+        "type": "event",
+        "text": "CoverageAudited",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:50.152Z",
+        "description": "Coverage files audited for consistency"
+      },
+      {
+        "id": 230,
+        "type": "event",
+        "text": "WorkUnitsValidated",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:54.824Z",
+        "description": "Work unit schema validation passed"
+      },
+      {
+        "id": 231,
+        "type": "event",
+        "text": "HooksValidated",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:40:59.910Z",
+        "description": "Hook configuration validated"
+      },
+      {
+        "id": 232,
+        "type": "event",
+        "text": "StepConsistencyValidated",
+        "boundedContextId": 6,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:05.582Z",
+        "description": "@step comments verified against Gherkin steps"
+      },
+      {
+        "id": 233,
+        "type": "command",
+        "text": "LinkImplementation",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:13.277Z",
+        "description": "Link implementation file to scenario coverage"
+      },
+      {
+        "id": 234,
+        "type": "command",
+        "text": "UnlinkCoverage",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:17.461Z",
+        "description": "Remove test or implementation link"
+      },
+      {
+        "id": 235,
+        "type": "command",
+        "text": "AuditCoverage",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:21.698Z",
+        "description": "Audit coverage files for consistency"
+      },
+      {
+        "id": 236,
+        "type": "command",
+        "text": "ShowCoverage",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:26.660Z",
+        "description": "Display coverage status"
+      },
+      {
+        "id": 237,
+        "type": "command",
+        "text": "ValidateWorkUnits",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:30.725Z",
+        "description": "Validate work units against schema"
+      },
+      {
+        "id": 238,
+        "type": "command",
+        "text": "ValidateHooks",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:35.344Z",
+        "description": "Validate hook configuration"
+      },
+      {
+        "id": 239,
+        "type": "command",
+        "text": "Check",
+        "boundedContextId": 6,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:40.543Z",
+        "description": "Run all validation checks at once"
+      },
+      {
+        "id": 240,
+        "type": "event",
+        "text": "HookAdded",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:45.875Z",
+        "description": "Global lifecycle hook configured"
+      },
+      {
+        "id": 241,
+        "type": "event",
+        "text": "HookRemoved",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:49.801Z",
+        "description": "Global lifecycle hook removed"
+      },
+      {
+        "id": 242,
+        "type": "event",
+        "text": "VirtualHookAdded",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:54.259Z",
+        "description": "Work unit-scoped hook added"
+      },
+      {
+        "id": 243,
+        "type": "event",
+        "text": "VirtualHookRemoved",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:41:58.718Z",
+        "description": "Work unit-scoped hook removed"
+      },
+      {
+        "id": 244,
+        "type": "event",
+        "text": "VirtualHooksCopied",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:02.781Z",
+        "description": "Virtual hooks copied between work units"
+      },
+      {
+        "id": 245,
+        "type": "event",
+        "text": "VirtualHooksCleared",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:10.423Z",
+        "description": "All virtual hooks removed from work unit"
+      },
+      {
+        "id": 246,
+        "type": "event",
+        "text": "HookExecuted",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:14.743Z",
+        "description": "Hook script ran successfully"
+      },
+      {
+        "id": 247,
+        "type": "event",
+        "text": "HookFailed",
+        "boundedContextId": 79,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:18.877Z",
+        "description": "Hook script failed or timed out"
+      },
+      {
+        "id": 248,
+        "type": "command",
+        "text": "AddHook",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:24.385Z",
+        "description": "Add global lifecycle hook"
+      },
+      {
+        "id": 249,
+        "type": "command",
+        "text": "RemoveHook",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:28.596Z",
+        "description": "Remove global lifecycle hook"
+      },
+      {
+        "id": 250,
+        "type": "command",
+        "text": "AddVirtualHook",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:33.807Z",
+        "description": "Add work unit-scoped hook"
+      },
+      {
+        "id": 251,
+        "type": "command",
+        "text": "RemoveVirtualHook",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:39.675Z",
+        "description": "Remove work unit-scoped hook"
+      },
+      {
+        "id": 252,
+        "type": "command",
+        "text": "CopyVirtualHooks",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:44.991Z",
+        "description": "Copy hooks between work units"
+      },
+      {
+        "id": 253,
+        "type": "command",
+        "text": "ClearVirtualHooks",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:49.336Z",
+        "description": "Remove all virtual hooks from work unit"
+      },
+      {
+        "id": 254,
+        "type": "command",
+        "text": "ListHooks",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:42:54.569Z",
+        "description": "List global lifecycle hooks"
+      },
+      {
+        "id": 255,
+        "type": "command",
+        "text": "ListVirtualHooks",
+        "boundedContextId": 79,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:00.892Z",
+        "description": "List virtual hooks for work unit"
+      },
+      {
+        "id": 256,
+        "type": "event",
+        "text": "CheckpointCreated",
+        "boundedContextId": 80,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:06.011Z",
+        "description": "Git ghost commit save point created"
+      },
+      {
+        "id": 257,
+        "type": "event",
+        "text": "CheckpointRestored",
+        "boundedContextId": 80,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:11.389Z",
+        "description": "Working tree restored to checkpoint state"
+      },
+      {
+        "id": 258,
+        "type": "event",
+        "text": "CheckpointsCleaned",
+        "boundedContextId": 80,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:16.711Z",
+        "description": "Old checkpoints removed"
+      },
+      {
+        "id": 259,
+        "type": "event",
+        "text": "ConflictsDetected",
+        "boundedContextId": 80,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:21.903Z",
+        "description": "File conflicts found before restore"
+      },
+      {
+        "id": 260,
+        "type": "event",
+        "text": "AutoCheckpointCreated",
+        "boundedContextId": 80,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:27.644Z",
+        "description": "Automatic checkpoint on status transition"
+      },
+      {
+        "id": 261,
+        "type": "command",
+        "text": "CreateCheckpoint",
+        "boundedContextId": 80,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:33.354Z",
+        "description": "Create manual checkpoint"
+      },
+      {
+        "id": 262,
+        "type": "command",
+        "text": "RestoreCheckpoint",
+        "boundedContextId": 80,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:38.832Z",
+        "description": "Restore working tree to checkpoint"
+      },
+      {
+        "id": 263,
+        "type": "command",
+        "text": "ListCheckpoints",
+        "boundedContextId": 80,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:43.743Z",
+        "description": "List checkpoints for work unit"
+      },
+      {
+        "id": 264,
+        "type": "command",
+        "text": "CleanupCheckpoints",
+        "boundedContextId": 80,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:49.285Z",
+        "description": "Remove old checkpoints keeping N most recent"
+      },
+      {
+        "id": 265,
+        "type": "event",
+        "text": "IterationRecorded",
+        "boundedContextId": 81,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:43:54.847Z",
+        "description": "Work unit iteration snapshot captured"
+      },
+      {
+        "id": 266,
+        "type": "event",
+        "text": "MetricsQueried",
+        "boundedContextId": 81,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:03.751Z",
+        "description": "Velocity/throughput metrics retrieved"
+      },
+      {
+        "id": 267,
+        "type": "event",
+        "text": "EstimateAccuracyCalculated",
+        "boundedContextId": 81,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:10.528Z",
+        "description": "Estimation accuracy report generated"
+      },
+      {
+        "id": 268,
+        "type": "event",
+        "text": "SummaryReportGenerated",
+        "boundedContextId": 81,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:16.185Z",
+        "description": "Project summary report created"
+      },
+      {
+        "id": 269,
+        "type": "command",
+        "text": "RecordIteration",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:21.869Z",
+        "description": "Capture iteration snapshot"
+      },
+      {
+        "id": 270,
+        "type": "command",
+        "text": "QueryMetrics",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:27.302Z",
+        "description": "Retrieve velocity and throughput data"
+      },
+      {
+        "id": 271,
+        "type": "command",
+        "text": "QueryEstimateAccuracy",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:32.776Z",
+        "description": "Calculate estimation accuracy"
+      },
+      {
+        "id": 272,
+        "type": "command",
+        "text": "GenerateSummaryReport",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:38.268Z",
+        "description": "Create comprehensive project report"
+      },
+      {
+        "id": 273,
+        "type": "command",
+        "text": "CompareImplementations",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:43.377Z",
+        "description": "Compare implementations by tag"
+      },
+      {
+        "id": 274,
+        "type": "command",
+        "text": "ShowTestPatterns",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:48.449Z",
+        "description": "Display test patterns by tag"
+      },
+      {
+        "id": 275,
+        "type": "command",
+        "text": "SearchImplementation",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:55.033Z",
+        "description": "Search implementation by function name"
+      },
+      {
+        "id": 276,
+        "type": "command",
+        "text": "QueryOrphans",
+        "boundedContextId": 81,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:44:59.653Z",
+        "description": "Find orphaned work units"
+      },
+      {
+        "id": 277,
+        "type": "event",
+        "text": "WorkflowAutoAdvanced",
+        "boundedContextId": 82,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:05.143Z",
+        "description": "Work unit automatically moved to next state"
+      },
+      {
+        "id": 278,
+        "type": "event",
+        "text": "ToolsConfigured",
+        "boundedContextId": 82,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:10.777Z",
+        "description": "Test and quality commands configured"
+      },
+      {
+        "id": 279,
+        "type": "event",
+        "text": "TemporalValidationPerformed",
+        "boundedContextId": 82,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:17.207Z",
+        "description": "File timestamps checked against state entry"
+      },
+      {
+        "id": 280,
+        "type": "command",
+        "text": "AutoAdvance",
+        "boundedContextId": 82,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:22.563Z",
+        "description": "Automatically advance ready work units"
+      },
+      {
+        "id": 281,
+        "type": "command",
+        "text": "ConfigureTools",
+        "boundedContextId": 82,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:27.140Z",
+        "description": "Set test and quality check commands"
+      },
+      {
+        "id": 282,
+        "type": "command",
+        "text": "ShowBoard",
+        "boundedContextId": 82,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:32.431Z",
+        "description": "Display Kanban board"
+      },
+      {
+        "id": 283,
+        "type": "command",
+        "text": "WorkflowAutomation",
+        "boundedContextId": 82,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:37.464Z",
+        "description": "Show workflow automation recommendations"
+      },
+      {
+        "id": 284,
+        "type": "event",
+        "text": "ReverseSessionStarted",
+        "boundedContextId": 83,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:43.072Z",
+        "description": "Reverse ACDD analysis initiated"
+      },
+      {
+        "id": 285,
+        "type": "event",
+        "text": "GapsDetected",
+        "boundedContextId": 83,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:47.733Z",
+        "description": "Spec, test, or coverage gaps found"
+      },
+      {
+        "id": 286,
+        "type": "event",
+        "text": "StrategySelected",
+        "boundedContextId": 83,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:52.826Z",
+        "description": "Reverse strategy chosen (A/B/C/D)"
+      },
+      {
+        "id": 287,
+        "type": "event",
+        "text": "ReverseCompleted",
+        "boundedContextId": 83,
+        "color": "orange",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:45:57.505Z",
+        "description": "Reverse ACDD process finished"
+      },
+      {
+        "id": 288,
+        "type": "command",
+        "text": "StartReverse",
+        "boundedContextId": 83,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:46:01.560Z",
+        "description": "Initiate reverse ACDD analysis"
+      },
+      {
+        "id": 289,
+        "type": "command",
+        "text": "ContinueReverse",
+        "boundedContextId": 83,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:46:06.213Z",
+        "description": "Continue multi-step reverse session"
+      },
+      {
+        "id": 290,
+        "type": "command",
+        "text": "CompleteReverse",
+        "boundedContextId": 83,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:46:10.347Z",
+        "description": "Finalize reverse ACDD session"
+      },
+      {
+        "id": 291,
+        "type": "command",
+        "text": "ShowReverseStatus",
+        "boundedContextId": 83,
+        "color": "blue",
+        "deleted": false,
+        "createdAt": "2026-03-22T20:46:16.988Z",
+        "description": "Check reverse session progress"
       }
     ],
-    "nextItemId": 79
+    "nextItemId": 292
   }
 }

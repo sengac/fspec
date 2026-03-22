@@ -10,6 +10,7 @@
 //! Uses `ignore::WalkBuilder` for `.gitignore`-aware file walking.
 //! All extracted entities are batched before loading.
 
+use std::collections::HashMap;
 use std::path::Path;
 
 use super::graph_entities::GraphEntity;
@@ -38,6 +39,10 @@ const SKIP_DIRS: &[&str] = &[
 /// Determines the language from the file extension and delegates
 /// to the appropriate extractor. Returns all entities (nodes + edges)
 /// for this file.
+///
+/// Panics from ast-grep or extractor code are caught via `catch_unwind`
+/// and converted to `Err`, so a malformed source file never crashes the
+/// indexing pipeline.
 pub fn extract_file(file_path: &Path, project_root: &Path) -> Result<Vec<GraphEntity>, String> {
     let ext = file_path
         .extension()
@@ -53,12 +58,36 @@ pub fn extract_file(file_path: &Path, project_root: &Path) -> Result<Vec<GraphEn
     let source = std::fs::read_to_string(file_path)
         .map_err(|e| format!("Failed to read {}: {e}", file_path.display()))?;
 
-    match ext {
+    // Wrap extraction in catch_unwind to turn panics (e.g. from ast-grep
+    // or byte-level string slicing on non-ASCII source) into Err values.
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match ext {
         "ts" | "tsx" | "js" | "jsx" | "mjs" | "mts" => {
             ast_ts_extractor::extract_typescript(&source, &rel_path)
         }
         "rs" => ast_rust_extractor::extract_rust(&source, &rel_path),
         _ => Ok(vec![]), // Unsupported language — skip
+    }));
+
+    match result {
+        Ok(inner) => inner,
+        Err(panic_payload) => {
+            let msg = panic_payload_to_string(&panic_payload);
+            Err(format!(
+                "AST extraction panicked for {}: {msg}",
+                file_path.display()
+            ))
+        }
+    }
+}
+
+/// Convert a `catch_unwind` panic payload into a human-readable string.
+fn panic_payload_to_string(payload: &Box<dyn std::any::Any + Send>) -> String {
+    if let Some(s) = payload.downcast_ref::<String>() {
+        s.clone()
+    } else if let Some(s) = payload.downcast_ref::<&str>() {
+        (*s).to_string()
+    } else {
+        "unknown panic".to_string()
     }
 }
 
@@ -113,5 +142,54 @@ pub fn walk_and_extract(project_root: &Path) -> Result<Vec<GraphEntity>, String>
         }
     }
 
-    Ok(all_entities)
+    Ok(deduplicate_entities(all_entities))
+}
+
+/// Deduplicate graph entities by `(node_type, slug)`.
+///
+/// When two Node entities share the same `(node_type, slug)` key, the one
+/// with **more properties** is kept (full File node wins over stub).
+/// Edge entities are never deduplicated — all edges are preserved.
+///
+/// This prevents `@unique` constraint violations in nanograph when the
+/// TypeScript import extractor creates stub File nodes for import targets
+/// that are also walked directly by the file walker.
+pub fn deduplicate_entities(entities: Vec<GraphEntity>) -> Vec<GraphEntity> {
+    // Track seen nodes by (node_type, slug) → index into deduped_nodes
+    let mut node_map: HashMap<(String, String), usize> = HashMap::new();
+    let mut deduped_nodes: Vec<GraphEntity> = Vec::new();
+    let mut edges: Vec<GraphEntity> = Vec::new();
+
+    for entity in entities {
+        match &entity {
+            GraphEntity::Node {
+                node_type,
+                slug,
+                properties,
+            } => {
+                let key = (node_type.clone(), slug.clone());
+                if let Some(&existing_idx) = node_map.get(&key) {
+                    // Keep the node with more properties (full > stub)
+                    if let GraphEntity::Node {
+                        properties: ref existing_props,
+                        ..
+                    } = deduped_nodes[existing_idx]
+                    {
+                        if properties.len() > existing_props.len() {
+                            deduped_nodes[existing_idx] = entity;
+                        }
+                    }
+                } else {
+                    node_map.insert(key, deduped_nodes.len());
+                    deduped_nodes.push(entity);
+                }
+            }
+            GraphEntity::Edge { .. } => {
+                edges.push(entity);
+            }
+        }
+    }
+
+    deduped_nodes.extend(edges);
+    deduped_nodes
 }

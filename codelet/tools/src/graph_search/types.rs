@@ -39,6 +39,15 @@ pub enum GraphSearchAction {
     /// and loads everything into the AST code graph.
     AstIndex,
 
+    /// Detect dead code: orphan files, uncalled functions, unreferenced types.
+    ///
+    /// Uses nanograph `not { }` anti-join queries on the AST graph.
+    /// Excludes test files and external stubs by default.
+    AstDeadCode {
+        entity_type: Option<String>,
+        limit: Option<usize>,
+    },
+
     // ── Learnings Graph Actions ──────────────────────────────────
 
     /// Search Learnings entities (learnings, decisions, conventions) by text/category.

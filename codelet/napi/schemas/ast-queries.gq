@@ -149,3 +149,33 @@ query type_referencing_functions($slug: String) {
     }
     return { $fn.slug, $fn.name }
 }
+
+// ── Dead Code Detection Queries ───────────────────────────────
+// Uses `not { }` anti-join to find nodes with no incoming edges.
+
+// Files with no incoming Imports edges (orphan files)
+query orphan_files() {
+    match {
+        $f: File
+        not { $other imports $f }
+    }
+    return { $f.slug, $f.path, $f.language, $f.lineCount, $f.isTest }
+}
+
+// Functions with no incoming Calls edges (uncalled functions)
+query uncalled_functions() {
+    match {
+        $fn: Function
+        not { $caller calls $fn }
+    }
+    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.lineStart, $fn.lineEnd }
+}
+
+// Types with no incoming TypeRef, Extends, or Implements edges
+query unreferenced_types() {
+    match {
+        $t: Type
+        not { $fn typeRef $t }
+    }
+    return { $t.slug, $t.name, $t.typeKind, $t.isPublic }
+}

@@ -79,6 +79,16 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
             graph::ast_dispatch::dispatch_ast_index().await
         }
 
+        GraphSearchAction::AstDeadCode { entity_type, limit } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_dead_code").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            graph::ast_dispatch::dispatch_ast_dead_code(
+                &db, entity_type.as_deref(), limit,
+            ).await
+        }
+
         // ── Learnings Graph Actions ──────────────────────────────
         GraphSearchAction::LearningsSearch { query, category, limit } => {
             let db = match get_graph_or_err(graph::registry::LEARNINGS_GRAPH, "learnings_search").await {
