@@ -384,6 +384,11 @@
       "prefix": "KGRAPH",
       "description": "Knowledge Graph — Nanograph-powered relational memory over agent session history",
       "createdAt": "2026-03-19T02:42:03.243Z"
+    },
+    "LCP": {
+      "prefix": "LCP",
+      "description": "Local Change Protocol — embedded file-level governance rules for high-risk code",
+      "createdAt": "2026-03-22T02:02:46.411Z"
     }
   }
 }

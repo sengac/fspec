@@ -288,6 +288,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ai-assisted` | Features using AI-driven analysis and interaction |
 | `@ai-driven` | AI-driven interactive and conversational commands |
 | `@ai-guidance` | Features that provide contextual guidance to AI agents |
+| `@anthropic` | Anthropic AI provider integration |
 | `@anti-drift` | Features that prevent AI drift and maintain workflow discipline |
 | `@append-mode` | AST refactor append mode |
 | `@ast` | Abstract Syntax Tree |
@@ -332,6 +333,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@content-deduplication` | Content-addressed deduplication |
 | `@content-type` | Content type classification for message persistence |
 | `@context` | Context preservation scenarios |
+| `@context-preservation` | Context preservation before retries near context window limits |
 | `@credential-resolution` | Credential resolution and priority chain |
 | `@credentials` | Credential storage and management features |
 | `@cross-compile` | Cross-compilation builds |
@@ -423,6 +425,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@no-logging` | Ensuring secrets are not logged |
 | `@non-isolated` | Non-isolated session scenarios |
 | `@ollama` | Ollama local provider |
+| `@openai` | OpenAI AI provider integration |
 | `@outbound` | Outbound message flow scenarios |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@package` | npm package configuration |
@@ -435,6 +438,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@plugin-system` | Plugin architecture and dynamic module loading |
 | `@prettier` | Prettier configuration and code formatting |
 | `@programmatic` | Programmatic API usage |
+| `@progressive-degradation` | Progressive degradation of reasoning effort on repeated exhaustion |
 | `@provider` | Provider-related functionality for LLM provider identification |
 | `@push` | Push notification functionality |
 | `@query-api` | Tree-sitter Query API features using S-expression pattern matching |
@@ -448,6 +452,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@resilience` | Error handling and graceful degradation features |
 | `@responsive` | Components that respond to viewport or terminal dimension changes |
 | `@restore` | Session restore scenarios |
+| `@retry-budget` | Retry budget limits for preventing infinite retry loops |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@rig` | Rig framework integration |
@@ -481,6 +486,8 @@ Tags for specific technical concerns or architectural patterns.
 | `@testing-framework` | Testing framework and infrastructure features |
 | `@text` | Text content type scenarios |
 | `@thinking` | Thinking content type scenarios |
+| `@thinking-exhaustion` | Thinking/reasoning token exhaustion detection and recovery |
+| `@thinking-preservation` | Preserving thinking content from exhausted attempts for retry context |
 | `@threading` | Message threading and lineage scenarios |
 | `@threshold` | Threshold boundary scenarios |
 | `@timeout` | Timeout handling and time limit scenarios |
@@ -873,7 +880,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-03-20T02:56:40.602Z_
+_Last updated: 2026-03-22T01:08:36.749Z_
 
 **Update Command**: `fspec tag-stats`
 

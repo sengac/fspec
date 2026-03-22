@@ -49,6 +49,16 @@ pub struct Session {
     /// Maps message index (assistant message) → annotations detected for that turn.
     /// Consumed by the persistence layer when writing StoredMessage metadata.
     pub annotations: std::collections::HashMap<usize, Vec<StructuralAnnotation>>,
+
+    /// PROV-041: Count of thinking exhaustion events across turns (not retries).
+    /// When this exceeds a threshold (3), the session-level reasoning effort is
+    /// progressively downgraded. Resets to 0 after each downgrade.
+    /// Persists across turns within the same session.
+    pub thinking_exhaustion_cross_turn_count: u32,
+
+    /// PROV-041: Current session-level thinking level for progressive degradation.
+    /// Starts at High and downgrades on repeated cross-turn exhaustion events.
+    pub session_thinking_level: codelet_tools::facade::ThinkingLevel,
 }
 
 impl Session {
@@ -72,6 +82,8 @@ impl Session {
             turns: Vec::new(),
             token_tracker: TokenTracker::default(),
             annotations: std::collections::HashMap::new(),
+            thinking_exhaustion_cross_turn_count: 0,
+            session_thinking_level: codelet_tools::facade::ThinkingLevel::High,
         })
     }
 
@@ -91,6 +103,8 @@ impl Session {
             turns: Vec::new(),
             token_tracker: TokenTracker::default(),
             annotations: std::collections::HashMap::new(),
+            thinking_exhaustion_cross_turn_count: 0,
+            session_thinking_level: codelet_tools::facade::ThinkingLevel::High,
         }
     }
 

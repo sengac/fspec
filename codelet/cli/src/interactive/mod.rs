@@ -18,6 +18,10 @@ pub use stream_loop::{
     build_user_content_with_images, is_image_content_error, is_prompt_too_long_error,
     is_truncated_tool_call_error, build_truncation_recovery_message,
     build_truncation_budget_exhausted_message, MAX_TRUNCATION_RETRIES,
+    is_thinking_exhaustion, build_thinking_exhaustion_recovery_message,
+    build_thinking_budget_exhausted_message, downgrade_thinking_level,
+    MAX_THINKING_EXHAUSTION_RETRIES, THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
+    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
     run_agent_stream, run_agent_stream_with_images, sanitize_image_content, BridgeImage,
 };
 

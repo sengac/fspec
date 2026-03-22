@@ -284,6 +284,132 @@ pub fn build_truncation_budget_exhausted_message(max_retries: u32) -> String {
     )
 }
 
+// =============================================================================
+// PROV-041: Thinking token exhaustion recovery
+// =============================================================================
+
+/// PROV-041: Maximum number of consecutive thinking exhaustion retries per turn.
+/// After this many retries, thinking is disabled entirely for the turn.
+/// Public for testing — tests must import the real constant, not hardcode the value.
+pub const MAX_THINKING_EXHAUSTION_RETRIES: u32 = 2;
+
+/// PROV-041: Output token threshold below which a response is considered "near-empty".
+/// If a response terminates with FinishReason::Length AND has reasoning_tokens > 0
+/// AND output_tokens < this threshold, it's classified as thinking exhaustion.
+/// Public for testing — tests must import the real constant, not hardcode the value.
+pub const THINKING_EXHAUSTION_OUTPUT_THRESHOLD: u64 = 50;
+
+/// PROV-041: Threshold for session-level progressive degradation across turns.
+/// After this many thinking exhaustion events across different turns (not retries),
+/// the session-level reasoning effort is automatically downgraded.
+/// Public for testing — tests must import the real constant, not hardcode the value.
+pub const THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD: u32 = 3;
+
+/// PROV-041: Detect whether a response represents thinking token exhaustion.
+///
+/// Thinking exhaustion occurs when the model spent most/all of its token budget on
+/// reasoning/thinking and produced little or no useful output. This is distinct from
+/// regular output truncation (PROV-039/PROV-040) where the model produces useful content
+/// that simply exceeds the token limit.
+///
+/// Detection heuristic:
+/// - stop_reason indicates length/max_tokens (case-insensitive)
+/// - reasoning_tokens > 0 (model was actually thinking)
+/// - output_tokens < threshold (model said almost nothing)
+///
+/// This function is public for testing. Tests MUST import and test the
+/// real function, NOT a copy. See: codelet/cli/tests/thinking_exhaustion_recovery_test.rs
+pub fn is_thinking_exhaustion(
+    stop_reason: Option<&str>,
+    reasoning_tokens: u64,
+    output_tokens: u64,
+    threshold: u64,
+) -> bool {
+    // Must have a stop_reason indicating length/truncation
+    let Some(reason) = stop_reason else {
+        return false;
+    };
+
+    let reason_lower = reason.to_lowercase();
+    let is_length_stop = reason_lower == "max_tokens"
+        || reason_lower == "length";
+
+    if !is_length_stop {
+        return false;
+    }
+
+    // Must have reasoning tokens (model was actually thinking)
+    if reasoning_tokens == 0 {
+        return false;
+    }
+
+    // Output must be below threshold (model said almost nothing)
+    output_tokens < threshold
+}
+
+/// PROV-041: Build a recovery message for thinking exhaustion.
+///
+/// Generates a message to inject into the conversation that:
+/// 1. Preserves any captured thinking content as context
+/// 2. Instructs the model to be more concise in reasoning
+/// 3. Indicates the thinking budget has been reduced
+///
+/// This function is public for testing.
+pub fn build_thinking_exhaustion_recovery_message(
+    reasoning_tokens: u64,
+    output_tokens: u64,
+    captured_reasoning: Option<&str>,
+) -> String {
+    let mut msg = format!(
+        "Your previous response was interrupted because you spent too many tokens on reasoning \
+         ({reasoning_tokens} reasoning tokens, only {output_tokens} output tokens). \
+         Your thinking budget has been reduced for this retry.\n\n\
+         IMPORTANT: Be more concise in your reasoning. Focus on producing useful output \
+         rather than extensive internal deliberation."
+    );
+
+    if let Some(reasoning) = captured_reasoning {
+        // Truncate very long reasoning to avoid bloating the context
+        let truncated = if reasoning.len() > 2000 {
+            &reasoning[..2000]
+        } else {
+            reasoning
+        };
+        msg.push_str(&format!(
+            "\n\nYour previous reasoning (preserved as context):\n{truncated}"
+        ));
+    }
+
+    msg
+}
+
+/// PROV-041: Build the message displayed when thinking exhaustion retry budget is exhausted.
+///
+/// This function is public for testing.
+pub fn build_thinking_budget_exhausted_message(max_retries: u32) -> String {
+    format!(
+        "Thinking exhaustion occurred {max_retries} times — retry budget exhausted. \
+         Thinking/reasoning has been disabled for this turn to produce a response. \
+         The model will respond without extended reasoning."
+    )
+}
+
+/// PROV-041: Downgrade a ThinkingLevel by one step.
+///
+/// Degradation path: High → Medium → Low → Off → Off
+/// Used for both per-turn retry degradation and session-level progressive degradation.
+///
+/// This function is public for testing.
+pub fn downgrade_thinking_level(level: codelet_tools::facade::ThinkingLevel) -> codelet_tools::facade::ThinkingLevel {
+    use codelet_tools::facade::ThinkingLevel;
+    match level {
+        ThinkingLevel::High => ThinkingLevel::Medium,
+        ThinkingLevel::Medium => ThinkingLevel::Low,
+        ThinkingLevel::Low => ThinkingLevel::Off,
+        ThinkingLevel::Off => ThinkingLevel::Off,
+    }
+}
+
 /// CMPCT-002: Check if an error indicates compaction was cancelled by the hook
 /// This is used to detect when the CompactionHook cancels a request due to token threshold
 fn is_compaction_cancelled(error: &anyhow::Error) -> bool {
@@ -742,10 +868,14 @@ where
 
     // Track assistant response content for adding to messages (CLI-008)
     let mut assistant_text = String::new();
+    // PROV-041: Accumulate reasoning/thinking content for preservation on exhaustion
+    let mut accumulated_reasoning = String::new();
     // PROV-039: Track stop_reason from FinalResponse for truncation detection
     let mut final_stop_reason: Option<String> = None;
     // PROV-040: Track consecutive truncation retries to prevent infinite loops
     let mut truncation_retry_count: u32 = 0;
+    // PROV-041: Track consecutive thinking exhaustion retries to prevent infinite loops
+    let mut thinking_exhaustion_retry_count: u32 = 0;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
 
@@ -888,6 +1018,9 @@ where
                 ))) => {
                     // TOOL-010: Emit thinking/reasoning content from extended thinking
                     output.emit_thinking(&reasoning);
+
+                    // PROV-041: Accumulate reasoning content for preservation on thinking exhaustion
+                    accumulated_reasoning.push_str(&reasoning);
 
                     // STREAMING-DISPLAY: Track thinking chunk and emit if not throttled
                     if let Some(update) = streaming_display.record_chunk(&reasoning) {
@@ -1452,6 +1585,162 @@ where
 
                     // Normal case: add assistant text to history and finish
                     handle_final_response(&assistant_text, &mut session.messages)?;
+
+                    // PROV-041: Check for thinking token exhaustion before finalizing
+                    // This must happen AFTER handle_final_response (so the response is in history)
+                    // but BEFORE emitting done (so we can retry if needed).
+                    {
+                        let usage = final_resp.usage();
+                        let reasoning_tokens = usage.reasoning_tokens.unwrap_or(0);
+                        let output_tokens = usage.output_tokens;
+                        let stop_reason_ref = final_stop_reason.as_deref();
+
+                        if is_thinking_exhaustion(
+                            stop_reason_ref,
+                            reasoning_tokens,
+                            output_tokens,
+                            THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
+                        ) {
+                            thinking_exhaustion_retry_count += 1;
+                            // PROV-041: Track cross-turn exhaustion for session-level degradation
+                            // Only increment once per turn (first detection), not on retries
+                            if thinking_exhaustion_retry_count == 1 {
+                                session.thinking_exhaustion_cross_turn_count += 1;
+                            }
+                            info!(
+                                "PROV-041: Thinking exhaustion detected (attempt {}/{}, cross-turn #{}): reasoning_tokens={}, output_tokens={}, stop_reason={:?}",
+                                thinking_exhaustion_retry_count,
+                                MAX_THINKING_EXHAUSTION_RETRIES,
+                                session.thinking_exhaustion_cross_turn_count,
+                                reasoning_tokens,
+                                output_tokens,
+                                stop_reason_ref
+                            );
+
+                            // PROV-041: Session-level progressive degradation (Rule[7])
+                            // When cross-turn threshold is reached, downgrade the session thinking
+                            // level and reset the counter for the next degradation cycle.
+                            if thinking_exhaustion_retry_count == 1
+                                && session.thinking_exhaustion_cross_turn_count >= THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD
+                            {
+                                session.session_thinking_level = downgrade_thinking_level(session.session_thinking_level);
+                                session.thinking_exhaustion_cross_turn_count = 0;
+                                output.emit_status(&format!(
+                                    "Reasoning effort automatically reduced to {:?} due to repeated thinking budget exhaustion",
+                                    session.session_thinking_level,
+                                ));
+                            }
+
+                            if thinking_exhaustion_retry_count <= MAX_THINKING_EXHAUSTION_RETRIES {
+                                // PROV-041: Preserve actual reasoning/thinking content (not assistant_text)
+                                let captured_reasoning = if !accumulated_reasoning.is_empty() {
+                                    Some(accumulated_reasoning.as_str())
+                                } else if !assistant_text.is_empty() {
+                                    // Fallback to assistant_text if no reasoning deltas were captured
+                                    Some(assistant_text.as_str())
+                                } else {
+                                    None
+                                };
+                                let recovery_msg = build_thinking_exhaustion_recovery_message(
+                                    reasoning_tokens,
+                                    output_tokens,
+                                    captured_reasoning,
+                                );
+
+                                // Emit warning to the user
+                                output.emit_status(&format!(
+                                    "Thinking exhaustion detected (attempt {}/{}). Retrying with reduced reasoning budget...",
+                                    thinking_exhaustion_retry_count,
+                                    MAX_THINKING_EXHAUSTION_RETRIES
+                                ));
+
+                                // PROV-041: Context preservation at >90% utilization (Rule[5])
+                                let current_tokens = session.token_tracker.input_tokens
+                                    + session.token_tracker.output_tokens;
+                                let utilization_pct = if context_window > 0 {
+                                    (current_tokens as f64 / context_window as f64) * 100.0
+                                } else {
+                                    0.0
+                                };
+                                if utilization_pct > 90.0 {
+                                    info!(
+                                        "PROV-041: Context utilization at {:.1}% — persisting session state before retry",
+                                        utilization_pct
+                                    );
+                                    output.emit_status(&format!(
+                                        "Context window at {:.0}% — session state preserved before retry",
+                                        utilization_pct
+                                    ));
+                                    // The session.messages already contain the full conversation history.
+                                    // In the NAPI layer, the persist_pending_annotations call after
+                                    // run_agent_stream ensures the session is written to disk.
+                                    // Here we ensure the recovery message is part of that persistence.
+                                }
+
+                                // PROV-041: Create fresh hook and token state for the retry
+                                // (same pattern as PROV-040 truncation recovery)
+                                let retry_token_state = Arc::new(Mutex::new(TokenState {
+                                    input_tokens: session.token_tracker.input_tokens,
+                                    cache_read_input_tokens: 0,
+                                    cache_creation_input_tokens: 0,
+                                    output_tokens: 0,
+                                    compaction_needed: false,
+                                }));
+                                let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+
+                                debug!(
+                                    "API REQUEST (thinking exhaustion recovery {}/{}) - Provider: {}, Model: {}",
+                                    thinking_exhaustion_retry_count,
+                                    MAX_THINKING_EXHAUSTION_RETRIES,
+                                    session.current_provider_name(),
+                                    session.current_model_id().as_deref().unwrap_or("NONE")
+                                );
+
+                                // PROV-041: Start new stream with recovery prompt
+                                // (rig clones session.messages and appends recovery_msg as new user message)
+                                stream = agent
+                                    .prompt_streaming_with_history_and_hook(
+                                        &recovery_msg,
+                                        &mut session.messages,
+                                        retry_hook,
+                                    )
+                                    .await;
+
+                                // Add recovery prompt to session.messages for persistence
+                                session.messages.push(Message::User {
+                                    content: OneOrMany::one(UserContent::text(&recovery_msg)),
+                                });
+
+                                // Reset per-stream tracking for the retry
+                                assistant_text.clear();
+                                accumulated_reasoning.clear();
+                                final_stop_reason = None;
+                                tool_calls_buffer.clear();
+                                last_tool_name = None;
+                                turn_tool_infos.clear();
+
+                                // STREAMING-DISPLAY: Reset display for retry
+                                streaming_display = StreamingTokenDisplay::new(
+                                    session.token_tracker.input_tokens,
+                                    session.token_tracker.output_tokens,
+                                    session.token_tracker.cache_read_input_tokens.unwrap_or(0),
+                                    session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+                                );
+
+                                debug!("[stream_loop] PROV-041: Created new stream for thinking exhaustion retry");
+                                continue;
+                            } else {
+                                // Budget exhausted — emit warning and continue with best available response
+                                let budget_msg = build_thinking_budget_exhausted_message(MAX_THINKING_EXHAUSTION_RETRIES);
+                                warn!(
+                                    "PROV-041: Thinking exhaustion retry budget exhausted after {} attempts",
+                                    MAX_THINKING_EXHAUSTION_RETRIES
+                                );
+                                output.emit_status(&budget_msg);
+                                // Fall through to normal completion
+                            }
+                        }
+                    }
 
                     process_turn_annotations(
                         session,

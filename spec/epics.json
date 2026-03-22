@@ -531,7 +531,51 @@
         "KGRAPH-008",
         "KGRAPH-009",
         "KGRAPH-010",
-        "KGRAPH-012"
+        "KGRAPH-012",
+        "KGRAPH-013",
+        "KGRAPH-014",
+        "KGRAPH-015",
+        "KGRAPH-016",
+        "KGRAPH-017",
+        "KGRAPH-018",
+        "KGRAPH-019",
+        "KGRAPH-020",
+        "KGRAPH-021",
+        "KGRAPH-022",
+        "KGRAPH-023",
+        "KGRAPH-024"
+      ]
+    },
+    "provider-resilience": {
+      "id": "provider-resilience",
+      "title": "Provider and stream loop resilience improvements",
+      "createdAt": "2026-03-22T01:55:35.125Z",
+      "workUnits": [
+        "PROV-043",
+        "PROV-044",
+        "PROV-045",
+        "PROV-046",
+        "PROV-047",
+        "PROV-048",
+        "PROV-049",
+        "PROV-050",
+        "PROV-042"
+      ]
+    },
+    "local-change-protocols": {
+      "id": "local-change-protocols",
+      "title": "Local Change Protocols",
+      "createdAt": "2026-03-22T02:03:00.918Z",
+      "description": "Embedded file-level governance rules that control how high-risk code may be changed. Inspired by Protocol-Driven Development (PDD) patterns. Classifies code by risk zones, embeds binding constraints directly in source files, and enforces them through hooks and validation.",
+      "workUnits": [
+        "LCP-001",
+        "LCP-002",
+        "LCP-003",
+        "LCP-004",
+        "LCP-005",
+        "LCP-006",
+        "LCP-007",
+        "LCP-008"
       ]
     }
   }

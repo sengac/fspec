@@ -1054,6 +1054,10 @@
           "description": "Features that provide contextual guidance to AI agents"
         },
         {
+          "name": "@anthropic",
+          "description": "Anthropic AI provider integration"
+        },
+        {
           "name": "@anti-drift",
           "description": "Features that prevent AI drift and maintain workflow discipline"
         },
@@ -1228,6 +1232,10 @@
         {
           "name": "@context",
           "description": "Context preservation scenarios"
+        },
+        {
+          "name": "@context-preservation",
+          "description": "Context preservation before retries near context window limits"
         },
         {
           "name": "@credential-resolution",
@@ -1594,6 +1602,10 @@
           "description": "Ollama local provider"
         },
         {
+          "name": "@openai",
+          "description": "OpenAI AI provider integration"
+        },
+        {
           "name": "@outbound",
           "description": "Outbound message flow scenarios"
         },
@@ -1640,6 +1652,10 @@
         {
           "name": "@programmatic",
           "description": "Programmatic API usage"
+        },
+        {
+          "name": "@progressive-degradation",
+          "description": "Progressive degradation of reasoning effort on repeated exhaustion"
         },
         {
           "name": "@provider",
@@ -1692,6 +1708,10 @@
         {
           "name": "@restore",
           "description": "Session restore scenarios"
+        },
+        {
+          "name": "@retry-budget",
+          "description": "Retry budget limits for preventing infinite retry loops"
         },
         {
           "name": "@reverse-engineering",
@@ -1824,6 +1844,14 @@
         {
           "name": "@thinking",
           "description": "Thinking content type scenarios"
+        },
+        {
+          "name": "@thinking-exhaustion",
+          "description": "Thinking/reasoning token exhaustion detection and recovery"
+        },
+        {
+          "name": "@thinking-preservation",
+          "description": "Preserving thinking content from exhausted attempts for retry context"
         },
         {
           "name": "@threading",
@@ -2526,7 +2554,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-03-20T02:56:40.602Z",
+    "lastUpdated": "2026-03-22T01:08:36.749Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
