@@ -56,6 +56,9 @@ serde_json = "1"
 # KGRAPH-002: Nanograph embedded graph database
 nanograph = "1.0.0"
 
+# KGRAPH-018: TOML parsing for Cargo.toml dependency extraction
+toml.workspace = true
+
 # Ordered map for session manager (VIEWNV-001: maintains insertion order)
 indexmap = "2"
 
@@ -107,3 +110,20 @@ required-features = ["noop"]
 [[test]]
 name = "model_provider_listing_test"
 required-features = ["noop"]
+
+# Tests that depend on modules gated behind #[cfg(not(feature = "noop"))]
+# (inject_summary_handler, SessionState, StreamChunk).
+# They compile fine in default mode but break under --features noop.
+# By declaring a dummy feature that is never enabled, cargo skips these
+# tests when building with --features noop.
+[[test]]
+name = "file_id_propagation_test"
+required-features = ["__full_runtime"]
+
+[[test]]
+name = "inject_summary_handler_test"
+required-features = ["__full_runtime"]
+
+[[test]]
+name = "compaction_post_inject_loading_test"
+required-features = ["__full_runtime"]

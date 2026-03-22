@@ -1,0 +1,92 @@
+// ═══════════════════════════════════════════════════════════════
+// FSPEC AST CODE GRAPH — NanoGraph Schema v1
+// ═══════════════════════════════════════════════════════════════
+
+// ── Source Code Structure Nodes ───────────────────────────────
+
+node File
+  @description("A source file in the project.")
+{
+    slug: String @key
+    path: String @unique
+    language: String?
+    lineCount: I32?
+    lastModified: DateTime?
+    isTest: Bool?
+}
+
+node Module
+  @description("A module, package, crate, or namespace.")
+{
+    slug: String @key
+    name: String
+    moduleType: enum(namespace, package, crate, module)
+    isPublic: Bool?
+}
+
+node Function
+  @description("A function, method, or arrow function.")
+{
+    slug: String @key
+    name: String
+    qualifiedName: String?
+    isAsync: Bool?
+    isPublic: Bool?
+    paramCount: I32?
+    lineStart: I32?
+    lineEnd: I32?
+}
+
+node Type
+  @description("A struct, class, interface, enum, trait, or type alias.")
+{
+    slug: String @key
+    name: String
+    typeKind: enum(struct_kind, class, interface, enum_kind, trait_kind, type_alias)
+    isGeneric: Bool?
+    isPublic: Bool?
+    fieldCount: I32?
+}
+
+node Dependency
+  @description("An external package dependency.")
+{
+    slug: String @key
+    name: String
+    version: String?
+    isDev: Bool?
+    source: enum(npm, crate, pip, go_module)?
+}
+
+// ── Structural Relationship Edges ─────────────────────────────
+
+edge Contains: File -> Function {
+    lineStart: I32?
+}
+
+edge ContainsType: File -> Type {
+    lineStart: I32?
+}
+
+edge Imports: File -> File {
+    importPath: String?
+    isTypeOnly: Bool?
+}
+
+edge Calls: Function -> Function {
+    callCount: I32?
+    isConditional: Bool?
+}
+
+edge Implements: Type -> Type {
+}
+
+edge Extends: Type -> Type {
+}
+
+edge TypeRef: Function -> Type {
+    refKind: enum(param, return_type, field)
+}
+
+edge DependsOn: File -> Dependency {
+}

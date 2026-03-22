@@ -1,0 +1,103 @@
+// ═══════════════════════════════════════════════════════════════
+// FSPEC LEARNINGS GRAPH — NanoGraph Queries v1
+// ═══════════════════════════════════════════════════════════════
+//
+// Queries for the Learnings graph (Residue methodology knowledge).
+// See learnings.pg for the schema definition.
+//
+// NOTE: Edge identifiers in nanograph queries use camelCase (lowercase start),
+// even though the schema declares them in PascalCase.
+// Schema: "edge RelatesTo" → Query: "relatesTo"
+
+// ── Entity Listing Queries ────────────────────────────────────
+// Used by LearningsSearch with client-side filtering.
+
+query all_learnings() {
+    match { $l: Learning }
+    return { $l.slug, $l.title, $l.content, $l.category, $l.confidence, $l.projectPath, $l.firstSeen, $l.lastSeen, $l.mentionCount }
+}
+
+query all_decisions() {
+    match { $d: Decision }
+    return { $d.slug, $d.title, $d.rationale, $d.status, $d.domain, $d.alternatives, $d.decidedAt }
+}
+
+query all_conventions() {
+    match { $c: Convention }
+    return { $c.slug, $c.title, $c.description, $c.enforcement, $c.scope, $c.language }
+}
+
+query all_explorations() {
+    match { $e: Exploration }
+    return { $e.slug, $e.title, $e.strategy, $e.outcome, $e.failureConstraint, $e.survivingStructure, $e.sessionSlug }
+}
+
+query all_code_patterns() {
+    match { $p: CodePattern }
+    return { $p.slug, $p.name, $p.description, $p.patternType, $p.exampleFile, $p.language, $p.usageCount }
+}
+
+// ── Relationship Queries ──────────────────────────────────────
+
+// Learning → Learning (outgoing RelatesTo)
+query learning_related($slug: String) {
+    match {
+        $l: Learning { slug: $slug }
+        $l relatesTo $related
+    }
+    return { $related.slug, $related.title, $related.category, $related.confidence }
+}
+
+// Exploration → Learning (outgoing Discovered)
+query exploration_discoveries($slug: String) {
+    match {
+        $e: Exploration { slug: $slug }
+        $e discovered $l
+    }
+    return { $l.slug, $l.title, $l.category }
+}
+
+// Exploration → Learning (outgoing Eliminates)
+query exploration_eliminations($slug: String) {
+    match {
+        $e: Exploration { slug: $slug }
+        $e eliminates $l
+    }
+    return { $l.slug, $l.title }
+}
+
+// Learning → Learning (outgoing Supersedes)
+query learning_supersedes($slug: String) {
+    match {
+        $l: Learning { slug: $slug }
+        $l supersedes $old
+    }
+    return { $old.slug, $old.title }
+}
+
+// Learning ← Learning (incoming Supersedes — what superseded this?)
+query learning_superseded_by($slug: String) {
+    match {
+        $l: Learning { slug: $slug }
+        $newer supersedes $l
+    }
+    return { $newer.slug, $newer.title }
+}
+
+// Convention → CodePattern (outgoing Applies)
+query convention_patterns($slug: String) {
+    match {
+        $c: Convention { slug: $slug }
+        $c applies $p
+    }
+    return { $p.slug, $p.name, $p.patternType }
+}
+
+// Learning ← Learning (incoming RelatesTo — what relates to this?)
+query learning_related_from($slug: String) {
+    match {
+        $l: Learning { slug: $slug }
+        $other relatesTo $l
+    }
+    return { $other.slug, $other.title, $other.category, $other.confidence }
+}

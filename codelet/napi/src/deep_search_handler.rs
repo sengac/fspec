@@ -170,7 +170,11 @@ pub async fn execute_deep_search(
     };
 
     // KGRAPH-009: Register GraphSearch handler for ephemeral session when graph is available
-    let graph_available = crate::graph::is_graph_initialized();
+    let graph_available = crate::graph::registry::is_graph_initialized(
+        crate::graph::registry::LEARNINGS_GRAPH,
+    ) || crate::graph::registry::is_graph_initialized(
+        crate::graph::registry::AST_CODE_GRAPH,
+    );
     let _gs_cleanup = if graph_available {
         let gs_handler = crate::graph_search_handler::create_handler();
         set_graph_search_handler(ephemeral_session_id, Some(gs_handler));
@@ -180,25 +184,37 @@ pub async fn execute_deep_search(
     };
 
     // 3. Build system prompt with scope description and recursion awareness
-    //    KGRAPH-009: Inject graph context when graph has data
+    //    KGRAPH-024: Inject learnings graph context when available
     let scope_vec = scope.unwrap_or_default();
     let mut system_prompt = build_system_prompt(scope_vec, can_recurse);
 
     if graph_available {
-        // Query related concepts for the search query and inject as context.
+        // Query related learnings for the search query and inject as context.
         // Use block_in_place to avoid holding nanograph's !Send futures across await
         // boundaries (which causes recursion_limit overflow with Lance's complex types).
         let graph_context = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
-                match crate::graph::graph_db_query(
-                    include_str!("../schemas/graph-queries.gq"),
-                    "search_concepts",
-                    Some(&serde_json::json!({ "query": query })),
+                match crate::graph::registry::get_graph(
+                    crate::graph::registry::LEARNINGS_GRAPH,
                 ).await {
-                    Ok(serde_json::Value::Array(concepts)) => {
-                        crate::graph::deepsearch_integration::build_graph_context(&concepts)
+                    Ok(db) => {
+                        let result = crate::graph::learnings_dispatch::dispatch_learnings_search(
+                            &db,
+                            &query,
+                            None,
+                            Some(10),
+                        ).await;
+                        // If we got results, format them as context
+                        if result.contains("\"count\":0") || result.contains("\"error\"") {
+                            None
+                        } else {
+                            Some(format!(
+                                "\n\n## Relevant Learnings from Knowledge Graph\n\n{}\n",
+                                result
+                            ))
+                        }
                     }
-                    _ => None,
+                    Err(_) => None,
                 }
             })
         });

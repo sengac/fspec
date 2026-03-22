@@ -4691,14 +4691,8 @@ async fn agent_loop(
             );
             codelet_tools::set_session_search_handler(session.id, Some(session_search_handler));
 
-            // KGRAPH-003/KGRAPH-012: Register GraphSearch handler with provider context
-            // for LLM-based concept extraction during index action
-            let graph_provider = inner_session.current_provider_name().to_string();
-            let graph_model = inner_session.current_model_id().map(|s| s.to_string());
-            let graph_search_handler = crate::graph_search_handler::create_handler_with_provider(
-                Some(graph_provider),
-                graph_model,
-            );
+            // KGRAPH-024: Register GraphSearch handler (dual-graph architecture — no provider context needed)
+            let graph_search_handler = crate::graph_search_handler::create_handler();
             codelet_tools::set_graph_search_handler(session.id, Some(graph_search_handler));
 
             // RLM-001: Register DeepSearch handler for this session
@@ -5146,10 +5140,8 @@ struct BackgroundOutput {
     assistant_content: std::sync::Mutex<Vec<AssistantContent>>,
     /// REFAC-007: Current provider name for message envelope
     provider: String,
-    /// KGRAPH: Track last tool call name+args for graph entity extraction
+    /// HOOK-013: Track last tool call name+args for post_tool_use hooks
     last_tool_call: std::sync::Mutex<Option<(String, serde_json::Value)>>,
-    /// KGRAPH: Turn counter for graph entity extraction
-    turn_counter: std::sync::atomic::AtomicU32,
 }
 
 impl BackgroundOutput {
@@ -5159,7 +5151,6 @@ impl BackgroundOutput {
             assistant_content: std::sync::Mutex::new(Vec::new()),
             provider,
             last_tool_call: std::sync::Mutex::new(None),
-            turn_counter: std::sync::atomic::AtomicU32::new(0),
         }
     }
     
@@ -5227,7 +5218,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     input: input_value.clone(),
                 });
 
-                // KGRAPH: Capture tool call info for graph entity extraction on result
+                // HOOK-013: Capture tool call info for post_tool_use hooks
                 if let Ok(mut last) = self.last_tool_call.lock() {
                     *last = Some((tc.name.clone(), input_value));
                 }
@@ -5294,22 +5285,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     }
                 }
 
-                // KGRAPH: Extract graph entities from the completed tool call
-                if !tr.is_error {
-                    if let Ok(mut last) = self.last_tool_call.lock() {
-                        if let Some((tool_name, tool_args)) = last.take() {
-                            let turn_idx = self.turn_counter.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                            let session_slug = self.session.id.to_string();
-                            crate::graph_search_handler::extract_and_queue_from_tool_call(
-                                &tool_name,
-                                &tool_args,
-                                &session_slug,
-                                turn_idx,
-                            );
-                        }
-                    }
-                }
-                
+                // (Old KGRAPH entity pipeline was here — removed in KGRAPH-024 dual-graph migration)
                 // CODE-009: FspecTool now uses fspec_handler (like pause_handler)
                 // The handler executes before the tool returns, so tool results
                 // contain actual command output, not __fspec_request__ markers.
@@ -5371,8 +5347,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     tracing::error!("REFAC-007: Failed to persist token state: {}", e);
                 }
 
-                // KGRAPH: Flush any remaining entities in the queue to the graph DB
-                crate::graph_search_handler::flush_pending_entities();
+                // (Old KGRAPH entity pipeline flush was here — removed in KGRAPH-024 dual-graph migration)
                 
                 // Do NOT set Idle when compaction or pending DAG is active.
                 if crate::inject_summary_handler::should_idle_on_done(

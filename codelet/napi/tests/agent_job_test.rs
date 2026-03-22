@@ -109,7 +109,7 @@ async fn test_spawn_agent_session_with_role_and_prompt() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider"),
+                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -156,7 +156,7 @@ async fn test_spawn_agent_session_prompt_only() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider"),
+                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -385,7 +385,7 @@ async fn test_schedule_metadata_set_on_session() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider"),
+                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -480,7 +480,7 @@ async fn test_agent_session_natural_completion() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider"),
+                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );
@@ -527,7 +527,7 @@ async fn test_default_model_resolved_at_fire_time() {
         Err(e) => {
             let msg = e.to_string();
             assert!(
-                msg.contains("spawn scheduled session") || msg.contains("provider"),
+                msg.contains("spawn scheduled session") || msg.contains("provider") || msg.contains("not available in noop"),
                 "Expected session creation error, got: {}",
                 msg
             );

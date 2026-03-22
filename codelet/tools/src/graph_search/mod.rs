@@ -1,7 +1,7 @@
 //! GraphSearch Tool — Definition & Entry Point
 //!
 //! Provides the `GraphSearchTool` struct that implements the Rig `Tool` trait.
-//! Follows the same pattern as `SessionSearchTool`.
+//! Supports the dual-graph architecture (AST + Learnings).
 
 mod handler;
 #[cfg(test)]
@@ -19,7 +19,7 @@ use rig::completion::ToolDefinition;
 use rig::tool::Tool;
 use uuid::Uuid;
 
-/// GraphSearch tool — queries the nanograph knowledge graph.
+/// GraphSearch tool — queries the dual-graph knowledge system.
 ///
 /// Each instance is bound to a session via `session_id`.
 /// The actual query execution is delegated to a handler registered
@@ -49,17 +49,22 @@ impl Tool for GraphSearchTool {
                 "properties": {
                     "action_type": {
                         "type": "string",
-                        "enum": ["search", "neighbors", "path", "related", "decisions", "history", "stats", "index"],
+                        "enum": ["ast_search", "ast_neighbors", "ast_stats", "learnings_search", "learnings_decisions", "learnings_stats", "learnings_related"],
                         "description": "The type of graph query to perform"
                     },
                     "query": {
                         "type": "string",
-                        "description": "Search query string (required for 'search' action)"
+                        "description": "Search query string (required for 'ast_search' and 'learnings_search')"
+                    },
+                    "entity_type": {
+                        "type": "string",
+                        "description": "Filter AST search by entity type (optional for 'ast_search')",
+                        "enum": ["Function", "File", "Type", "Dependency"]
                     },
                     "category": {
                         "type": "string",
-                        "description": "Filter by concept category (optional for 'search')",
-                        "enum": ["architecture", "convention", "decision", "dependency", "domain_term", "error_class", "feature", "library", "pattern", "person", "platform", "process", "technology", "tool"]
+                        "description": "Filter by learning category (optional for 'learnings_search')",
+                        "enum": ["convention", "pattern", "anti_pattern", "decision", "discovery", "constraint", "reformulation"]
                     },
                     "limit": {
                         "type": "integer",
@@ -68,59 +73,34 @@ impl Tool for GraphSearchTool {
                     },
                     "node_id": {
                         "type": "string",
-                        "description": "Node slug to explore (required for 'neighbors')"
+                        "description": "Node slug to explore (required for 'ast_neighbors')"
                     },
                     "depth": {
                         "type": "integer",
-                        "description": "Max traversal depth (optional for 'neighbors', default: 1)",
+                        "description": "Max traversal depth (optional for 'ast_neighbors', default: 1)",
                         "minimum": 1
                     },
                     "edge_types": {
                         "type": "array",
                         "items": { "type": "string" },
-                        "description": "Filter by edge types (optional for 'neighbors')"
-                    },
-                    "from": {
-                        "type": "string",
-                        "description": "Source node slug (required for 'path')"
-                    },
-                    "to": {
-                        "type": "string",
-                        "description": "Target node slug (required for 'path')"
-                    },
-                    "max_hops": {
-                        "type": "integer",
-                        "description": "Maximum path length (optional for 'path', default: 5)",
-                        "minimum": 1
+                        "description": "Filter by edge types (optional for 'ast_neighbors')"
                     },
                     "topic": {
                         "type": "string",
-                        "description": "Topic to find related concepts for (required for 'related')"
+                        "description": "Topic to find related learnings for (required for 'learnings_related')"
                     },
                     "min_strength": {
                         "type": "number",
-                        "description": "Minimum relationship strength (optional for 'related', 0.0-1.0)"
+                        "description": "Minimum relationship strength (optional for 'learnings_related', 0.0-1.0)"
                     },
                     "domain": {
                         "type": "string",
-                        "description": "Filter decisions by domain (optional for 'decisions')"
+                        "description": "Filter decisions by domain (optional for 'learnings_decisions')"
                     },
                     "status": {
                         "type": "string",
-                        "description": "Filter decisions by status (optional for 'decisions')",
+                        "description": "Filter decisions by status (optional for 'learnings_decisions')",
                         "enum": ["active", "proposed", "reversed", "superseded"]
-                    },
-                    "since": {
-                        "type": "string",
-                        "description": "ISO timestamp — only return decisions after this date (optional for 'decisions')"
-                    },
-                    "concept": {
-                        "type": "string",
-                        "description": "Concept slug to get history for (required for 'history')"
-                    },
-                    "scope": {
-                        "type": "string",
-                        "description": "Indexing scope — 'current' for current session, 'all' for all unindexed (optional for 'index')"
                     }
                 },
                 "required": ["action_type"]

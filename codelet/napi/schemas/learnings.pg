@@ -1,0 +1,112 @@
+// ═══════════════════════════════════════════════════════════════
+// FSPEC LEARNINGS GRAPH — NanoGraph Schema v1
+// ═══════════════════════════════════════════════════════════════
+// Follows the Residue methodology for structured exploration logging.
+// Global scope: shared across projects at ~/.fspec/graph/learnings.nano/
+
+// ── Core Knowledge Nodes ──────────────────────────────────────
+
+node Learning
+  @description("An accumulated piece of knowledge: convention, pattern, anti-pattern, decision, or discovery.")
+{
+    slug: String @key
+    title: String
+    content: String
+    category: enum(convention, pattern, anti_pattern, decision, discovery, constraint, reformulation)
+    confidence: enum(high, medium, low)
+    projectPath: String?
+    firstSeen: DateTime
+    lastSeen: DateTime
+    mentionCount: I32
+    tags: [String]?
+}
+
+node Exploration
+  @description("A structured exploration record following the Residue methodology.")
+{
+    slug: String @key
+    title: String
+    strategy: String
+    outcome: enum(success, partial, failure, abandoned)
+    failureConstraint: String?
+    survivingStructure: String?
+    sessionSlug: String?
+    turnRange: String?
+    createdAt: DateTime
+}
+
+node Convention
+  @description("An established rule or coding standard with enforcement level.")
+{
+    slug: String @key
+    title: String
+    description: String
+    enforcement: enum(mandatory, recommended, optional)
+    scope: enum(global, project, language)
+    language: String?
+    createdAt: DateTime
+    updatedAt: DateTime
+}
+
+node Decision
+  @description("An explicit decision with rationale and alternatives considered.")
+{
+    slug: String @key
+    title: String
+    rationale: String
+    status: enum(active, proposed, reversed, superseded)
+    domain: enum(architecture, convention, dependency, deployment, design, implementation, process, testing)
+    alternatives: String?
+    decidedAt: DateTime
+    createdAt: DateTime
+}
+
+node CodePattern
+  @description("A discovered code pattern with example files and usage context.")
+{
+    slug: String @key
+    name: String
+    description: String
+    patternType: enum(structural, behavioral, creational, idiom, anti_pattern)
+    exampleFile: String?
+    language: String?
+    firstSeen: DateTime
+    lastSeen: DateTime
+    usageCount: I32
+}
+
+// ── Relationship Edges ────────────────────────────────────────
+
+edge Discovered: Exploration -> Learning {
+    extractedAt: DateTime
+}
+
+edge Eliminates: Exploration -> Learning {
+    reason: String?
+    extractedAt: DateTime
+}
+
+edge Supersedes: Learning -> Learning {
+    supersededAt: DateTime
+    reason: String?
+}
+
+edge RelatesTo: Learning -> Learning {
+    strength: F32
+    relationType: enum(causes, composes, conflicts_with, depends_on, extends, implements, similar_to, supersedes, uses)
+    firstSeen: DateTime
+    lastSeen: DateTime
+}
+
+edge InformedBy: Exploration -> Exploration {
+    linkedAt: DateTime
+}
+
+edge Applies: Convention -> CodePattern {
+    linkedAt: DateTime
+}
+
+edge Contradicts: Learning -> Learning {
+    tensionDescription: String?
+    discoveredAt: DateTime
+}

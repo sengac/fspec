@@ -203,14 +203,28 @@ fn max_sessions() -> usize {
 
 /// Get the current count of live sessions from SessionManager.
 async fn get_session_count() -> usize {
-    let sm = crate::session_manager::SessionManager::instance();
-    sm.session_count().await
+    #[cfg(not(feature = "noop"))]
+    {
+        let sm = crate::session_manager::SessionManager::instance();
+        sm.session_count().await
+    }
+    #[cfg(feature = "noop")]
+    {
+        0
+    }
 }
 
 /// Get all live session IDs from SessionManager.
 async fn get_live_session_ids() -> Vec<uuid::Uuid> {
-    let sm = crate::session_manager::SessionManager::instance();
-    sm.live_session_ids().await
+    #[cfg(not(feature = "noop"))]
+    {
+        let sm = crate::session_manager::SessionManager::instance();
+        sm.live_session_ids().await
+    }
+    #[cfg(feature = "noop")]
+    {
+        Vec::new()
+    }
 }
 
 /// Evaluate all schedules and return which ones should trigger.

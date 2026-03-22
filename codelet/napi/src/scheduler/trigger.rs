@@ -127,9 +127,12 @@ async fn trigger_agent_job(
     project_path: &str,
     entry: &ScheduleEntry,
 ) -> Result<(), anyhow::Error> {
+    #[cfg(not(feature = "noop"))]
     let default_model = crate::session_manager::SessionManager::instance()
         .get_default_model()
         .unwrap_or_default();
+    #[cfg(feature = "noop")]
+    let default_model = String::new();
 
     super::agent_job::trigger_agent_job_from_entry(
         name,
@@ -159,6 +162,14 @@ async fn trigger_shell_job(
 
 /// Find the session ID for a recently-spawned scheduled session by schedule name.
 async fn find_scheduled_session_id(schedule_name: &str) -> Option<uuid::Uuid> {
-    let sm = crate::session_manager::SessionManager::instance();
-    sm.find_session_by_schedule_name(schedule_name).await
+    #[cfg(not(feature = "noop"))]
+    {
+        let sm = crate::session_manager::SessionManager::instance();
+        sm.find_session_by_schedule_name(schedule_name).await
+    }
+    #[cfg(feature = "noop")]
+    {
+        let _ = schedule_name;
+        None
+    }
 }

@@ -62,32 +62,41 @@ pub async fn trigger_agent_job(
     );
 
     // Access the global SessionManager to spawn the session
-    let session_manager = crate::session_manager::SessionManager::instance();
+    #[cfg(not(feature = "noop"))]
+    {
+        let session_manager = crate::session_manager::SessionManager::instance();
 
-    // Create the session
-    session_manager
-        .spawn_scheduled_session(
-            &session_id.to_string(),
-            default_model,
-            project_path,
-            &session_name,
-            name,
-            config.role.as_deref(),
-            &prompt,
-        )
-        .await
-        .map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to spawn scheduled session for '{}': {}",
+        // Create the session
+        session_manager
+            .spawn_scheduled_session(
+                &session_id.to_string(),
+                default_model,
+                project_path,
+                &session_name,
                 name,
-                e
+                config.role.as_deref(),
+                &prompt,
             )
-        })?;
+            .await
+            .map_err(|e| {
+                anyhow::anyhow!(
+                    "Failed to spawn scheduled session for '{}': {}",
+                    name,
+                    e
+                )
+            })?;
 
-    info!(
-        "Agent session spawned successfully: id={}, schedule={}",
-        session_id, name
-    );
+        info!(
+            "Agent session spawned successfully: schedule={}",
+            name
+        );
 
-    Ok(())
+        Ok(())
+    }
+
+    #[cfg(feature = "noop")]
+    {
+        let _ = (project_path, &session_name, &session_id, &prompt);
+        Err(anyhow::anyhow!("SessionManager not available in noop mode"))
+    }
 }

@@ -75,9 +75,12 @@ pub async fn run_catch_up(
 
             // Check session limit for agent jobs
             if schedule.job_type == "agent" {
+                #[cfg(not(feature = "noop"))]
                 let session_count = crate::session_manager::SessionManager::instance()
                     .session_count()
                     .await;
+                #[cfg(feature = "noop")]
+                let session_count: usize = 0;
                 if session_count >= MAX_SESSIONS {
                     state.defer(name, schedule).await;
                     info!("Catch-up for '{}' deferred (session limit)", name);

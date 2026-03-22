@@ -1,0 +1,151 @@
+// ═══════════════════════════════════════════════════════════════
+// FSPEC AST CODE GRAPH — NanoGraph Queries v1
+// ═══════════════════════════════════════════════════════════════
+//
+// NOTE: Edge identifiers in nanograph queries use camelCase (lowercase start),
+// even though the schema declares them in PascalCase.
+// Schema: "edge Contains" → Query: "contains"
+//
+// IMPORTANT:
+// - Variables are typed via `$v: Type` or implicitly typed by edge endpoints.
+// - Return clauses use `$var.prop` syntax — no field aliases, no literals.
+// - For reverse traversal, bind the DESTINATION first, then the source is
+//   resolved via CSC index (nanograph flips direction automatically).
+// - Edge type metadata is injected by the Rust dispatch layer.
+
+// ── Entity Listing Queries ────────────────────────────────────
+// Used by AstSearch with client-side filtering.
+
+query all_functions() {
+    match { $fn: Function }
+    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.paramCount, $fn.lineStart, $fn.lineEnd }
+}
+
+query all_files() {
+    match { $f: File }
+    return { $f.slug, $f.path, $f.language, $f.lineCount, $f.isTest }
+}
+
+query all_types() {
+    match { $t: Type }
+    return { $t.slug, $t.name, $t.typeKind, $t.isPublic }
+}
+
+query all_dependencies() {
+    match { $d: Dependency }
+    return { $d.slug, $d.name, $d.version, $d.isDev, $d.source }
+}
+
+// ── Neighbor Queries (per edge type) ──────────────────────────
+// Nanograph requires typed variables and explicit edge names.
+// We compose all-neighbors in Rust by calling multiple queries.
+
+// File → Function (outgoing Contains)
+query file_functions($slug: String) {
+    match {
+        $f: File { slug: $slug }
+        $f contains $fn
+    }
+    return { $fn.slug, $fn.name }
+}
+
+// File → Type (outgoing ContainsType)
+query file_types($slug: String) {
+    match {
+        $f: File { slug: $slug }
+        $f containsType $t
+    }
+    return { $t.slug, $t.name }
+}
+
+// File → File (outgoing Imports)
+query file_imports($slug: String) {
+    match {
+        $f: File { slug: $slug }
+        $f imports $target
+    }
+    return { $target.slug, $target.path }
+}
+
+// File → Dependency (outgoing DependsOn)
+query file_dependencies($slug: String) {
+    match {
+        $f: File { slug: $slug }
+        $f dependsOn $dep
+    }
+    return { $dep.slug, $dep.name }
+}
+
+// Function → Function (outgoing Calls)
+query function_calls($slug: String) {
+    match {
+        $fn: Function { slug: $slug }
+        $fn calls $target
+    }
+    return { $target.slug, $target.name }
+}
+
+// Function ← Function (incoming Calls — who calls this function)
+// Reverse traversal: bind destination ($fn) then resolve source ($caller)
+query function_callers($slug: String) {
+    match {
+        $fn: Function { slug: $slug }
+        $caller calls $fn
+    }
+    return { $caller.slug, $caller.name }
+}
+
+// Function → Type (outgoing TypeRef)
+query function_type_refs($slug: String) {
+    match {
+        $fn: Function { slug: $slug }
+        $fn typeRef $t
+    }
+    return { $t.slug, $t.name }
+}
+
+// Function ← File (incoming Contains — which file contains this function)
+// Reverse traversal: bind destination ($fn) then resolve source ($f)
+query function_container($slug: String) {
+    match {
+        $fn: Function { slug: $slug }
+        $f contains $fn
+    }
+    return { $f.slug, $f.path }
+}
+
+// Type ← File (incoming ContainsType — which file contains this type)
+query type_container($slug: String) {
+    match {
+        $t: Type { slug: $slug }
+        $f containsType $t
+    }
+    return { $f.slug, $f.path }
+}
+
+// Type → Type (outgoing Implements)
+query type_implements($slug: String) {
+    match {
+        $t: Type { slug: $slug }
+        $t implements $target
+    }
+    return { $target.slug, $target.name }
+}
+
+// Type → Type (outgoing Extends)
+query type_extends($slug: String) {
+    match {
+        $t: Type { slug: $slug }
+        $t extends $parent
+    }
+    return { $parent.slug, $parent.name }
+}
+
+// Type ← Function (incoming TypeRef — functions referencing this type)
+query type_referencing_functions($slug: String) {
+    match {
+        $t: Type { slug: $slug }
+        $fn typeRef $t
+    }
+    return { $fn.slug, $fn.name }
+}
