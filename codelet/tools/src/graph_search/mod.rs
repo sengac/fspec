@@ -49,7 +49,7 @@ impl Tool for GraphSearchTool {
                 "properties": {
                     "action_type": {
                         "type": "string",
-                        "enum": ["ast_search", "ast_neighbors", "ast_stats", "learnings_search", "learnings_decisions", "learnings_stats", "learnings_related"],
+                        "enum": ["ast_search", "ast_neighbors", "ast_stats", "ast_index", "learnings_search", "learnings_decisions", "learnings_stats", "learnings_related"],
                         "description": "The type of graph query to perform"
                     },
                     "query": {

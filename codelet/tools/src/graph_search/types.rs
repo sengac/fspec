@@ -32,6 +32,13 @@ pub enum GraphSearchAction {
     /// Get AST codebase statistics (node/edge type counts).
     AstStats,
 
+    /// Index the project codebase into the AST graph.
+    ///
+    /// Walks the project directory, extracts functions/types/imports via
+    /// ast-grep, extracts dependencies from Cargo.toml/package.json,
+    /// and loads everything into the AST code graph.
+    AstIndex,
+
     // ── Learnings Graph Actions ──────────────────────────────────
 
     /// Search Learnings entities (learnings, decisions, conventions) by text/category.

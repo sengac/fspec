@@ -75,6 +75,10 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
             graph::ast_dispatch::dispatch_ast_stats(&db).await
         }
 
+        GraphSearchAction::AstIndex => {
+            graph::ast_dispatch::dispatch_ast_index().await
+        }
+
         // ── Learnings Graph Actions ──────────────────────────────
         GraphSearchAction::LearningsSearch { query, category, limit } => {
             let db = match get_graph_or_err(graph::registry::LEARNINGS_GRAPH, "learnings_search").await {

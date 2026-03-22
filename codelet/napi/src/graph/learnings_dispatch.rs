@@ -1,8 +1,7 @@
 //! Learnings Graph Dispatch Functions
 //!
 //! Implements query dispatch logic for Learnings-specific GraphSearch actions.
-//! Routes queries to the Learnings graph database (separate from agent-memory
-//! and AST graphs).
+//! Routes queries to the Learnings graph database (dual-graph architecture).
 //!
 //! Each function takes a `GraphDatabase` reference and returns a JSON string.
 //! Follows the exact same pattern as `ast_dispatch.rs`.

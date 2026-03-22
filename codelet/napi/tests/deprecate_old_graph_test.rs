@@ -60,6 +60,11 @@ fn test_graphsearch_action_enum_only_ast_and_learnings_variants() {
         serde_json::from_str(r#"{"action_type":"learnings_related","topic":"test"}"#);
     assert!(learnings_related.is_ok(), "LearningsRelated should parse: {:?}", learnings_related.err());
 
+    // Verify AstIndex action also deserializes correctly (added post-migration)
+    let ast_index: Result<GraphSearchAction, _> =
+        serde_json::from_str(r#"{"action_type":"ast_index"}"#);
+    assert!(ast_index.is_ok(), "AstIndex should parse: {:?}", ast_index.err());
+
     // @step And the old agent-memory variants Search, Neighbors, Path, Related, Decisions, History, Stats, and Index should not exist
     for old_action_json in &old_actions {
         let result: Result<GraphSearchAction, _> = serde_json::from_str(old_action_json);

@@ -4,7 +4,8 @@
 //! Queries the Learnings graph for relevant decisions, failed explorations, and
 //! conventions, then formats them as structured text suitable for a system reminder.
 //!
-//! Used at session start (via session_start hook) and when spawning subordinates.
+//! Called by DeepSearch to inject learnings context into sub-agent prompts,
+//! and available for future session-start injection and subordinate spawning.
 //! Designed to be non-blocking — returns None if the graph is unavailable.
 
 use serde_json::Value;
@@ -21,7 +22,8 @@ const MAX_CONTEXT_CHARS: usize = 8000;
 /// Build learnings context using the global registry.
 ///
 /// Returns `None` if the Learnings graph is not initialized or has no
-/// relevant data. This is the entry point called from session_manager.
+/// relevant data. Called from DeepSearch to inject context into sub-agent
+/// system prompts. Also available for session-start and subordinate injection.
 pub async fn build_learnings_context(query: &str) -> Option<String> {
     if !super::registry::is_graph_initialized(super::registry::LEARNINGS_GRAPH) {
         return None;

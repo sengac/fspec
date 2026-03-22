@@ -9,8 +9,11 @@
 //! - Targets the Learnings graph (registry::LEARNINGS_GRAPH)
 //! - Uses Residue categories: Learning, Exploration, Constraint
 //!
-//! The pipeline accepts pre-computed LLM responses for testability.
-//! In production, callers invoke the LLM separately and pass the response.
+//! Production currently uses structural extraction (`extract_structural_learnings_from_dag`
+//! in mod.rs) for zero-cost extraction without LLM calls.
+//! This module provides the LLM-based extraction pipeline (`extract_learnings_from_text`)
+//! which produces richer results when an LLM is available. The pipeline accepts
+//! pre-computed LLM responses for testability.
 
 use chrono::Utc;
 use serde::Deserialize;

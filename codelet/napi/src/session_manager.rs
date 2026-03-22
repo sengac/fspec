@@ -4695,6 +4695,20 @@ async fn agent_loop(
             let graph_search_handler = crate::graph_search_handler::create_handler();
             codelet_tools::set_graph_search_handler(session.id, Some(graph_search_handler));
 
+            // KGRAPH-014: Populate AST graph at session start (background task).
+            // Walks the codebase, extracts functions/types/imports/dependencies via ast-grep,
+            // and loads into the AST code graph so GraphSearch has data to query.
+            // Uses spawn_blocking + block_on to avoid recursion_limit overflow from
+            // complex nanograph futures inside tokio::spawn.
+            std::thread::spawn(|| {
+                let rt = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build();
+                if let Ok(rt) = rt {
+                    rt.block_on(crate::graph::populate_ast_graph());
+                }
+            });
+
             // RLM-001: Register DeepSearch handler for this session
             // BUG-102: Capture provider and model from current session so the
             // sub-agent inherits the same LLM configuration.
@@ -4986,6 +5000,33 @@ async fn agent_loop(
                     inner_session.token_tracker.input_tokens,
                     dag_nodes.len(),
                 );
+
+                // KGRAPH-021: Extract learnings from the DAG summary at compaction boundary.
+                // This is a session boundary event — the right time to extract knowledge.
+                // Fire-and-forget on a background thread to not block the agent loop.
+                // Errors are logged via tracing (not silently swallowed).
+                {
+                    let dag_text: String = dag_nodes
+                        .iter()
+                        .map(|n| n.label.as_str())
+                        .collect::<Vec<_>>()
+                        .join("\n");
+                    std::thread::spawn(move || {
+                        let rt = tokio::runtime::Builder::new_current_thread()
+                            .enable_all()
+                            .build();
+                        match rt {
+                            Ok(rt) => {
+                                rt.block_on(crate::graph::extract_learnings_from_dag(&dag_text));
+                            }
+                            Err(e) => {
+                                tracing::warn!(
+                                    "[KGRAPH] Failed to create runtime for learnings extraction: {e}"
+                                );
+                            }
+                        }
+                    });
+                }
 
                 // CompactionComplete was already emitted by emit_post_injection_events
                 // during the stream (in on_injected). We only need to transition to Idle

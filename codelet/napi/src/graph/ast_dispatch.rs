@@ -1,7 +1,7 @@
 //! AST Graph Dispatch Functions
 //!
 //! Implements query dispatch logic for AST-specific GraphSearch actions.
-//! Routes queries to the AST graph database (separate from agent-memory graph).
+//! Routes queries to the AST code graph database (dual-graph architecture).
 //!
 //! Each function takes a `GraphDatabase` reference and returns a JSON string.
 
@@ -156,4 +156,100 @@ pub async fn dispatch_ast_neighbors(
 /// directly from storage segments.
 pub async fn dispatch_ast_stats(db: &GraphDatabase) -> String {
     format_graph_stats(db, "ast_stats")
+}
+
+/// Index (or re-index) the project codebase into the AST graph.
+///
+/// Walks the project directory, extracts functions/types/imports via ast-grep,
+/// extracts dependencies from Cargo.toml/package.json, and batch-loads
+/// everything into the AST code graph. Idempotent — uses nanograph upsert
+/// semantics so repeated calls are safe.
+pub async fn dispatch_ast_index() -> String {
+    let project_root = match std::env::current_dir() {
+        Ok(p) => p,
+        Err(e) => {
+            return serde_json::json!({
+                "action": "ast_index",
+                "error": format!("Failed to get current directory: {e}"),
+            })
+            .to_string();
+        }
+    };
+
+    let db = match super::registry::get_graph(super::registry::AST_CODE_GRAPH).await {
+        Ok(db) => db,
+        Err(e) => {
+            return serde_json::json!({
+                "action": "ast_index",
+                "error": e,
+            })
+            .to_string();
+        }
+    };
+
+    // Walk codebase and extract AST entities
+    let mut all_entities = match super::ast_pipeline::walk_and_extract(&project_root) {
+        Ok(entities) => entities,
+        Err(e) => {
+            return serde_json::json!({
+                "action": "ast_index",
+                "error": format!("AST extraction failed: {e}"),
+            })
+            .to_string();
+        }
+    };
+
+    // Extract dependencies from Cargo.toml
+    match super::ast_pipeline::cargo_dep_extractor::extract_cargo_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Cargo dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from package.json
+    match super::ast_pipeline::npm_dep_extractor::extract_npm_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("NPM dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    let entity_count = all_entities.len();
+    if entity_count == 0 {
+        return serde_json::json!({
+            "action": "ast_index",
+            "entities_loaded": 0,
+            "message": "No source files found to index",
+        })
+        .to_string();
+    }
+
+    // Batch-load into graph
+    match db.load_entities(&all_entities).await {
+        Ok(loaded) => {
+            tracing::info!(loaded, "AST index complete — entities loaded into graph");
+            // Return fresh stats after indexing
+            let stats = format_graph_stats(&db, "ast_index");
+            // Merge stats with load count
+            if let Ok(mut parsed) = serde_json::from_str::<serde_json::Value>(&stats) {
+                if let Some(obj) = parsed.as_object_mut() {
+                    obj.insert(
+                        "entities_loaded".to_string(),
+                        serde_json::Value::Number(loaded.into()),
+                    );
+                }
+                parsed.to_string()
+            } else {
+                stats
+            }
+        }
+        Err(e) => {
+            serde_json::json!({
+                "action": "ast_index",
+                "error": format!("Failed to load entities into graph: {e}"),
+            })
+            .to_string()
+        }
+    }
 }

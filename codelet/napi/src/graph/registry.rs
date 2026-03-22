@@ -65,6 +65,10 @@ pub fn is_graph_initialized(name: &str) -> bool {
 }
 
 /// Reset a specific named graph, removing it from the registry.
+///
+/// Available for use when a specific graph needs to be re-initialized
+/// (e.g., after schema migration or data directory change for a single graph).
+#[allow(dead_code)]
 pub fn reset_graph(name: &str) {
     match REGISTRY.lock() {
         Ok(mut guard) => {

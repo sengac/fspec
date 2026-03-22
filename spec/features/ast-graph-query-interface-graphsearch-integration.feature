@@ -13,7 +13,7 @@ Feature: AST Graph Query Interface & GraphSearch Integration
   #   1. New AST action types must be added to the GraphSearchAction enum in tools/src/graph_search/types.rs
   #   2. AST queries must use the AST graph database (via database.rs GraphDatabase), NOT the existing agent-memory graph
   #   3. AST dispatch functions must be in a separate file (ast_dispatch.rs) from the existing dispatch.rs
-  #   4. PG queries for AST data must be in a separate file (ast_queries.pg or bundled constant) from existing agent-memory queries
+  #   4. PG queries for AST data must be in a separate file (ast-queries.gq or bundled constant) from existing agent-memory queries
   #   5. Must support at minimum: search entities by name/type, navigate neighbors of a node, and get codebase statistics
   #   6. The existing dispatch handler must route AST actions to AST dispatch and learnings/memory actions to the existing dispatch — transparent to the caller
   #

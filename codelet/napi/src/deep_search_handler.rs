@@ -189,38 +189,22 @@ pub async fn execute_deep_search(
     let mut system_prompt = build_system_prompt(scope_vec, can_recurse);
 
     if graph_available {
-        // Query related learnings for the search query and inject as context.
+        // KGRAPH-024/KGRAPH-022: Inject formatted learnings context when available.
+        // Uses build_learnings_context() which queries the Learnings graph for
+        // relevant decisions, failed explorations, and conventions, then formats
+        // them as structured text (much richer than raw JSON dispatch results).
         // Use block_in_place to avoid holding nanograph's !Send futures across await
         // boundaries (which causes recursion_limit overflow with Lance's complex types).
         let graph_context = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
-                match crate::graph::registry::get_graph(
-                    crate::graph::registry::LEARNINGS_GRAPH,
-                ).await {
-                    Ok(db) => {
-                        let result = crate::graph::learnings_dispatch::dispatch_learnings_search(
-                            &db,
-                            &query,
-                            None,
-                            Some(10),
-                        ).await;
-                        // If we got results, format them as context
-                        if result.contains("\"count\":0") || result.contains("\"error\"") {
-                            None
-                        } else {
-                            Some(format!(
-                                "\n\n## Relevant Learnings from Knowledge Graph\n\n{}\n",
-                                result
-                            ))
-                        }
-                    }
-                    Err(_) => None,
-                }
+                crate::graph::learnings_context::build_learnings_context(&query).await
             })
         });
 
         if let Some(context) = graph_context {
+            system_prompt.push_str("\n\n");
             system_prompt.push_str(&context);
+            system_prompt.push('\n');
         }
     }
 
