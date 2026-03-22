@@ -220,6 +220,70 @@ pub fn sanitize_image_content(messages: &mut [Message]) -> bool {
     replaced
 }
 
+/// PROV-040: Maximum number of consecutive truncation recovery retries per turn.
+/// After this many retries, the error is reported to the user as non-recoverable.
+/// Public for testing — tests must import the real constant, not hardcode the value.
+pub const MAX_TRUNCATION_RETRIES: u32 = 2;
+
+/// PROV-040: Check if an error indicates a truncated tool call due to output token limit.
+///
+/// Detects the enriched error message emitted by PROV-039 in the Anthropic streaming
+/// handler when `stop_reason == "max_tokens"` and a pending tool call was never closed.
+///
+/// This function is public for testing. Tests MUST import and test the
+/// real function, NOT a copy. See: codelet/cli/tests/truncation_recovery_test.rs
+pub fn is_truncated_tool_call_error(error_str: &str) -> bool {
+    error_str.contains("Tool call truncated due to output token limit")
+}
+
+/// PROV-040: Build a structured recovery message for a truncated tool call.
+///
+/// Extracts the tool name from the error message and generates guidance telling
+/// the model to use an alternative strategy for large content.
+///
+/// This function is public for testing.
+pub fn build_truncation_recovery_message(error_str: &str) -> String {
+    // Extract tool name from the error message: "Tool '...' received incomplete JSON arguments"
+    let tool_name = error_str
+        .split("Tool '")
+        .nth(1)
+        .and_then(|s| s.split('\'').next())
+        .unwrap_or("unknown");
+
+    // Extract partial arguments from the error: "Partial arguments: ..."
+    let partial_args = error_str
+        .split("Partial arguments: ")
+        .nth(1)
+        .unwrap_or("(not available)");
+
+    format!(
+        "Your {tool_name} tool call was truncated because it exceeded the output token limit. \
+         The model hit max_tokens while generating the tool call arguments.\n\n\
+         Truncated tool: {tool_name}\n\
+         Partial arguments received: {partial_args}\n\n\
+         IMPORTANT: You MUST use a different strategy to accomplish this task:\n\
+         1. Use the Bash tool with cat/heredoc to write large files: \
+            Bash(command='cat << '\"'\"'HEREDOC_EOF'\"'\"' > /path/to/file\\n...content...\\nHEREDOC_EOF')\n\
+         2. Split the content into multiple smaller Write calls \
+            (write the first portion, then use Edit to append the rest)\n\
+         3. For very large generated content, use Bash with echo/printf commands\n\n\
+         Do NOT retry the same large {tool_name} call — it will be truncated again."
+    )
+}
+
+/// PROV-040: Build the error message displayed when the truncation retry budget is exhausted.
+///
+/// This function is public for testing.
+pub fn build_truncation_budget_exhausted_message(max_retries: u32) -> String {
+    format!(
+        "Tool call truncated {} times — retry budget exhausted. \
+         The content is too large for a single tool call. \
+         Use Bash with heredoc/echo to write large files, \
+         or split into multiple smaller operations.",
+        max_retries
+    )
+}
+
 /// CMPCT-002: Check if an error indicates compaction was cancelled by the hook
 /// This is used to detect when the CompactionHook cancels a request due to token threshold
 fn is_compaction_cancelled(error: &anyhow::Error) -> bool {
@@ -680,6 +744,8 @@ where
     let mut assistant_text = String::new();
     // PROV-039: Track stop_reason from FinalResponse for truncation detection
     let mut final_stop_reason: Option<String> = None;
+    // PROV-040: Track consecutive truncation retries to prevent infinite loops
+    let mut truncation_retry_count: u32 = 0;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
 
@@ -1485,6 +1551,89 @@ where
                             break;
                         }
                         // If no images found to sanitize, fall through to normal error handling
+                    }
+
+                    // PROV-040: Check if this is a truncated tool call error
+                    // When the LLM hits max_tokens mid-tool-call, PROV-039 emits an enriched
+                    // error. Instead of returning that error (which causes infinite retry loops),
+                    // inject a recovery prompt telling the model to use an alternative strategy.
+                    if is_truncated_tool_call_error(&error_str) {
+                        truncation_retry_count += 1;
+
+                        if truncation_retry_count <= MAX_TRUNCATION_RETRIES {
+                            info!(
+                                "PROV-040: Truncated tool call detected (attempt {}/{}), injecting recovery prompt",
+                                truncation_retry_count, MAX_TRUNCATION_RETRIES
+                            );
+
+                            // Save any partial assistant text accumulated before truncation
+                            if !assistant_text.is_empty() {
+                                handle_final_response(&assistant_text, &mut session.messages)?;
+                                assistant_text.clear();
+                            }
+
+                            // Build recovery message with alternative strategies
+                            let recovery_prompt = build_truncation_recovery_message(&error_str);
+
+                            // Create fresh hook and token state for the retry
+                            let retry_token_state = Arc::new(Mutex::new(TokenState {
+                                input_tokens: session.token_tracker.input_tokens,
+                                cache_read_input_tokens: 0,
+                                cache_creation_input_tokens: 0,
+                                output_tokens: 0,
+                                compaction_needed: false,
+                            }));
+                            let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+
+                            debug!(
+                                "API REQUEST (truncation recovery {}/{}) - Provider: {}, Model: {}",
+                                truncation_retry_count,
+                                MAX_TRUNCATION_RETRIES,
+                                session.current_provider_name(),
+                                session.current_model_id().as_deref().unwrap_or("NONE")
+                            );
+
+                            // Start new stream with recovery prompt
+                            // rig clones session.messages and appends recovery_prompt as new user message
+                            stream = agent
+                                .prompt_streaming_with_history_and_hook(
+                                    &recovery_prompt,
+                                    &mut session.messages,
+                                    retry_hook,
+                                )
+                                .await;
+
+                            // Add recovery prompt to session.messages for persistence
+                            // (same pattern as line 646 where we push the original prompt)
+                            session.messages.push(Message::User {
+                                content: OneOrMany::one(UserContent::text(&recovery_prompt)),
+                            });
+
+                            // Reset per-stream tracking for the retry
+                            tool_calls_buffer.clear();
+                            last_tool_name = None;
+                            final_stop_reason = None;
+                            turn_tool_infos.clear();
+
+                            // STREAMING-DISPLAY: Reset display for retry
+                            streaming_display = StreamingTokenDisplay::new(
+                                session.token_tracker.input_tokens,
+                                session.token_tracker.output_tokens,
+                                session.token_tracker.cache_read_input_tokens.unwrap_or(0),
+                                session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+                            );
+
+                            continue;
+                        }
+
+                        // Retry budget exhausted — report to user and terminate
+                        warn!(
+                            "PROV-040: Truncation retry budget exhausted after {} attempts",
+                            MAX_TRUNCATION_RETRIES
+                        );
+                        let budget_error = build_truncation_budget_exhausted_message(MAX_TRUNCATION_RETRIES);
+                        output.emit_error(&budget_error);
+                        return Err(anyhow::anyhow!("Agent error: truncation retry budget exhausted after {} attempts", MAX_TRUNCATION_RETRIES));
                     }
 
                     // NAPI-008: Log error with full details (include in message for TypeScript layer)

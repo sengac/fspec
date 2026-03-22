@@ -16,6 +16,8 @@ pub use output::{
 };
 pub use stream_loop::{
     build_user_content_with_images, is_image_content_error, is_prompt_too_long_error,
+    is_truncated_tool_call_error, build_truncation_recovery_message,
+    build_truncation_budget_exhausted_message, MAX_TRUNCATION_RETRIES,
     run_agent_stream, run_agent_stream_with_images, sanitize_image_content, BridgeImage,
 };
 

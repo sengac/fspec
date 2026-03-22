@@ -1,0 +1,357 @@
+{
+  "scenarios": [
+    {
+      "name": "Truncated tool call error includes structured recovery instruction",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "lines": "20-60",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                226,
+                235,
+                236,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                1555,
+                1556,
+                1560,
+                1561,
+                1562,
+                1563,
+                1564,
+                1565,
+                1566,
+                1567,
+                1568,
+                1569,
+                1570,
+                1571,
+                1572,
+                1573,
+                1574,
+                1575,
+                1576,
+                1577,
+                1578,
+                1579,
+                1580,
+                1581,
+                1582,
+                1583,
+                1584,
+                1585,
+                1586,
+                1587,
+                1588,
+                1589,
+                1590,
+                1591,
+                1592,
+                1593,
+                1594,
+                1595,
+                1596,
+                1597,
+                1598,
+                1599,
+                1600,
+                1601,
+                1602,
+                1603,
+                1604,
+                1605,
+                1606,
+                1607,
+                1608,
+                1609,
+                1610,
+                1611,
+                1612,
+                1613,
+                1614,
+                1615,
+                1616,
+                1617,
+                1618,
+                1619,
+                1620,
+                1621,
+                1622,
+                1623,
+                1624,
+                1625,
+                1626
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Retry budget prevents infinite truncation retry loops",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "lines": "68-143",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                226,
+                235,
+                236,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                748,
+                1560,
+                1561,
+                1562,
+                1563,
+                1564,
+                1565,
+                1566,
+                1567,
+                1568,
+                1569,
+                1570,
+                1571,
+                1572,
+                1573,
+                1574,
+                1575,
+                1576,
+                1577,
+                1578,
+                1579,
+                1580,
+                1581,
+                1582,
+                1583,
+                1584,
+                1585,
+                1586,
+                1587,
+                1588,
+                1589,
+                1590,
+                1591,
+                1592,
+                1593,
+                1594,
+                1595,
+                1596,
+                1597,
+                1598,
+                1599,
+                1600,
+                1601,
+                1602,
+                1603,
+                1604,
+                1605,
+                1606,
+                1607,
+                1608,
+                1609,
+                1610,
+                1611,
+                1612,
+                1613,
+                1614,
+                1615,
+                1616,
+                1617,
+                1618,
+                1619,
+                1620,
+                1621,
+                1622,
+                1623,
+                1624,
+                1625,
+                1626,
+                1627,
+                1628,
+                1629,
+                1630,
+                1631,
+                1632,
+                1633,
+                1634,
+                1635,
+                1636,
+                1637,
+                1638,
+                1639,
+                1640,
+                1641
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Normal completion is unaffected by truncation recovery logic",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "lines": "150-200",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                235,
+                236
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text-only truncation does not trigger tool call recovery",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "lines": "209-237",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                235,
+                236
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Truncation recovery is provider-agnostic",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/truncation_recovery_test.rs",
+          "lines": "244-279",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                235,
+                236,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                1555,
+                1556,
+                1557,
+                1558,
+                1559,
+                1560
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/truncation_recovery_test.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 494
+  }
+}
