@@ -169,12 +169,15 @@ fn extract_types(
 /// Returns a map of imported identifier name → (target file slug, is_relative),
 /// used for resolving cross-file Calls and TypeRef edges.
 /// Only relative imports (from `./` or `../`) produce Calls/TypeRef edges.
+///
+/// Returns a map of `local_name -> (target_file_slug, is_relative, original_name)`.
+/// The `original_name` is the exported name in the target file (before `as` alias).
 fn extract_imports(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
     rel_path: &str,
     entities: &mut Vec<GraphEntity>,
-) -> HashMap<String, (String, bool)> {
+) -> HashMap<String, (String, bool, String)> {
     let mut import_map = HashMap::new();
 
     for node in root.root().find_all(TS_IMPORT_PATTERN) {
@@ -190,10 +193,13 @@ fn extract_imports(
         let resolved = resolve_import_path(rel_path, &import_path);
         let target_slug = helpers::slugify_path(&resolved);
 
-        // Extract imported identifiers (e.g., `{ validateConfig, parseArgs }`)
+        // Extract imported identifiers as (local_name, original_name) pairs
         let imported_names = extract_imported_names(&matched_text);
-        for name in &imported_names {
-            import_map.insert(name.clone(), (target_slug.clone(), is_relative));
+        for (local_name, original_name) in &imported_names {
+            import_map.insert(
+                local_name.clone(),
+                (target_slug.clone(), is_relative, original_name.clone()),
+            );
         }
 
         // Create target File node (may be merged if already exists in graph)
@@ -232,7 +238,7 @@ fn extract_calls(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
     local_functions: &HashSet<String>,
-    import_map: &HashMap<String, (String, bool)>,
+    import_map: &HashMap<String, (String, bool, String)>,
     entities: &mut Vec<GraphEntity>,
 ) {
     // For each function, scan its body for call expressions
@@ -268,13 +274,14 @@ fn extract_calls(
                             to_slug: target_slug,
                             properties: Map::new(),
                         });
-                    } else if let Some((target_file_slug, is_relative)) =
+                    } else if let Some((target_file_slug, is_relative, original_name)) =
                         import_map.get(callee_name.as_str())
                     {
                         // Cross-file call via import — only for relative imports
                         // (external packages don't have Function nodes in our graph)
+                        // Use original_name (the exported name) not the local alias
                         if *is_relative {
-                            let target_slug = format!("{target_file_slug}::{callee_name}");
+                            let target_slug = format!("{target_file_slug}::{original_name}");
                             entities.push(GraphEntity::Edge {
                                 edge_type: "Calls".to_string(),
                                 from_slug: caller_slug.clone(),
@@ -390,7 +397,7 @@ fn extract_type_refs(
     file_slug: &str,
     function_names: &HashSet<String>,
     local_types: &HashSet<String>,
-    import_map: &HashMap<String, (String, bool)>,
+    import_map: &HashMap<String, (String, bool, String)>,
     entities: &mut Vec<GraphEntity>,
 ) {
     let lang = SupportLang::TypeScript;
@@ -427,12 +434,13 @@ fn extract_type_refs(
                         to_slug: target_slug,
                         properties: Map::new(),
                     });
-                } else if let Some((target_file_slug, is_relative)) =
+                } else if let Some((target_file_slug, is_relative, original_name)) =
                     import_map.get(type_name.as_str())
                 {
                     // Cross-file type via import — only for relative imports
+                    // Use original_name (the exported name) not the local alias
                     if *is_relative {
-                        let target_slug = format!("{target_file_slug}::{type_name}");
+                        let target_slug = format!("{target_file_slug}::{original_name}");
                         entities.push(GraphEntity::Edge {
                             edge_type: "TypeRef".to_string(),
                             from_slug: caller_slug.clone(),
@@ -489,10 +497,11 @@ fn extract_type_names_from_signature(signature: &str, out: &mut HashSet<String>)
 
 /// Extract imported identifier names from an import statement.
 ///
-/// Handles: `import { a, b, c } from '...'` → ["a", "b", "c"]
-/// Handles: `import { a as b } from '...'` → ["b"] (the local alias)
-/// Handles: `import type { X } from '...'` → ["X"]
-fn extract_imported_names(import_text: &str) -> Vec<String> {
+/// Returns `(local_name, original_name)` pairs.
+/// - `import { a, b } from '...'` → [("a", "a"), ("b", "b")]
+/// - `import { a as b } from '...'` → [("b", "a")] — local alias "b", original export "a"
+/// - `import type { X } from '...'` → [("X", "X")]
+fn extract_imported_names(import_text: &str) -> Vec<(String, String)> {
     let mut names = Vec::new();
 
     // Find the { ... } block
@@ -504,14 +513,15 @@ fn extract_imported_names(import_text: &str) -> Vec<String> {
                 if trimmed.is_empty() {
                     continue;
                 }
-                // Handle `name as alias` — use alias (local name)
+                // Handle `name as alias` — track both original and local name
                 if let Some(as_pos) = trimmed.find(" as ") {
+                    let original = trimmed[..as_pos].trim();
                     let alias = trimmed[as_pos + 4..].trim();
-                    if !alias.is_empty() {
-                        names.push(alias.to_string());
+                    if !alias.is_empty() && !original.is_empty() {
+                        names.push((alias.to_string(), original.to_string()));
                     }
                 } else {
-                    names.push(trimmed.to_string());
+                    names.push((trimmed.to_string(), trimmed.to_string()));
                 }
             }
         }
@@ -590,4 +600,167 @@ fn resolve_import_path(source_file: &str, import_path: &str) -> String {
         resolved.push_str(".ts");
     }
     resolved
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_calls_finds_local_calls() {
+        let source = r#"
+function validateCommand(file) {
+    const files = file ? [file] : findAllFeatureFiles();
+    validateFile(files[0]);
+}
+
+function findAllFeatureFiles() {
+    return [];
+}
+
+function validateFile(f) {
+    checkForCommonIssues(f);
+}
+
+function checkForCommonIssues(content) {
+    return getSuggestion(content);
+}
+
+function getSuggestion(msg) {
+    return undefined;
+}
+"#;
+        let entities = extract_typescript(source, "test/validate.ts").unwrap();
+        let calls: Vec<_> = entities
+            .iter()
+            .filter(|e| matches!(e, GraphEntity::Edge { edge_type, .. } if edge_type == "Calls"))
+            .collect();
+        println!("Total entities: {}", entities.len());
+        println!("Calls edges: {}", calls.len());
+        for c in &calls {
+            if let GraphEntity::Edge { from_slug, to_slug, .. } = c {
+                println!("  {} -> {}", from_slug, to_slug);
+            }
+        }
+        assert!(
+            !calls.is_empty(),
+            "Expected Calls edges for local function calls"
+        );
+    }
+
+    #[test]
+    fn test_extract_call_names_from_body_basic() {
+        let body = r#"{ foo(); bar(x, y); baz.method(); new Constructor(); }"#;
+        let mut names = HashSet::new();
+        extract_call_names_from_body(body, &mut names);
+        println!("Found call names: {:?}", names);
+        assert!(names.contains("foo"), "Should find 'foo' call");
+        assert!(names.contains("bar"), "Should find 'bar' call");
+        assert!(!names.contains("method"), "Should NOT find method call");
+        assert!(
+            !names.contains("Constructor"),
+            "Should NOT find constructor"
+        );
+    }
+
+    #[test]
+    fn test_extract_typescript_with_async_functions() {
+        let source = r#"
+export async function main() {
+    const result = await helper();
+    return result;
+}
+
+async function helper() {
+    return 42;
+}
+"#;
+        let entities = extract_typescript(source, "test/async.ts").unwrap();
+        let functions: Vec<_> = entities
+            .iter()
+            .filter(|e| {
+                matches!(e, GraphEntity::Node { node_type, .. } if node_type == "Function")
+            })
+            .collect();
+        let calls: Vec<_> = entities
+            .iter()
+            .filter(|e| matches!(e, GraphEntity::Edge { edge_type, .. } if edge_type == "Calls"))
+            .collect();
+        println!("Functions found: {}", functions.len());
+        println!("Calls found: {}", calls.len());
+        for f in &functions {
+            if let GraphEntity::Node { slug, .. } = f {
+                println!("  Function: {}", slug);
+            }
+        }
+        for c in &calls {
+            if let GraphEntity::Edge { from_slug, to_slug, .. } = c {
+                println!("  Call: {} -> {}", from_slug, to_slug);
+            }
+        }
+        assert_eq!(functions.len(), 2, "Should find 2 functions");
+        assert!(
+            !calls.is_empty(),
+            "main() calls helper(), should have Calls edge"
+        );
+    }
+
+    #[test]
+    fn test_extract_imported_names_with_aliases() {
+        // Without alias
+        let names = extract_imported_names("import { foo, bar } from './mod'");
+        assert_eq!(names, vec![
+            ("foo".to_string(), "foo".to_string()),
+            ("bar".to_string(), "bar".to_string()),
+        ]);
+
+        // With alias — local name "util", original name "createCheckpoint"
+        let names = extract_imported_names(
+            "import { createCheckpoint as util } from '../utils/git-checkpoint'"
+        );
+        assert_eq!(names, vec![
+            ("util".to_string(), "createCheckpoint".to_string()),
+        ]);
+
+        // Mixed
+        let names = extract_imported_names(
+            "import { alpha, beta as b, gamma } from './lib'"
+        );
+        assert_eq!(names, vec![
+            ("alpha".to_string(), "alpha".to_string()),
+            ("b".to_string(), "beta".to_string()),
+            ("gamma".to_string(), "gamma".to_string()),
+        ]);
+    }
+
+    #[test]
+    fn test_cross_file_calls_use_original_name_not_alias() {
+        let source = r#"
+import { createCheckpoint as createCheckpointUtil } from '../utils/git-checkpoint';
+
+export function runCheckpoint() {
+    const result = createCheckpointUtil({ workUnit: 'TEST-001' });
+    return result;
+}
+"#;
+        let entities = extract_typescript(source, "src/commands/checkpoint.ts").unwrap();
+        let calls: Vec<_> = entities
+            .iter()
+            .filter_map(|e| {
+                if let GraphEntity::Edge { edge_type, from_slug, to_slug, .. } = e {
+                    if edge_type == "Calls" {
+                        return Some((from_slug.as_str(), to_slug.as_str()));
+                    }
+                }
+                None
+            })
+            .collect();
+        println!("Calls edges: {:?}", calls);
+        // Should resolve to the original name "createCheckpoint", not the alias
+        assert!(
+            calls.iter().any(|(_, to)| to.contains("::createCheckpoint") && !to.contains("::createCheckpointUtil")),
+            "Cross-file call should use original export name, not alias. Got: {:?}",
+            calls
+        );
+    }
 }

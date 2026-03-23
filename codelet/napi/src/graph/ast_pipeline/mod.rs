@@ -145,15 +145,15 @@ pub fn walk_and_extract(project_root: &Path) -> Result<Vec<GraphEntity>, String>
     Ok(deduplicate_entities(all_entities))
 }
 
-/// Deduplicate graph entities by `(node_type, slug)`.
+/// Deduplicate graph entities by `(node_type, slug)` and prune dangling edges.
 ///
 /// When two Node entities share the same `(node_type, slug)` key, the one
 /// with **more properties** is kept (full File node wins over stub).
-/// Edge entities are never deduplicated — all edges are preserved.
 ///
-/// This prevents `@unique` constraint violations in nanograph when the
-/// TypeScript import extractor creates stub File nodes for import targets
-/// that are also walked directly by the file walker.
+/// After deduplication, edges whose `from_slug` or `to_slug` don't match
+/// any known node slug are dropped. This prevents `@key` constraint violations
+/// in nanograph when cross-file edges reference aliased imports or functions
+/// that weren't extracted (e.g., arrow functions, class methods).
 pub fn deduplicate_entities(entities: Vec<GraphEntity>) -> Vec<GraphEntity> {
     // Track seen nodes by (node_type, slug) → index into deduped_nodes
     let mut node_map: HashMap<(String, String), usize> = HashMap::new();
@@ -190,6 +190,38 @@ pub fn deduplicate_entities(entities: Vec<GraphEntity>) -> Vec<GraphEntity> {
         }
     }
 
-    deduped_nodes.extend(edges);
+    // Build a set of all known node slugs (any node type) for edge validation
+    let all_slugs: std::collections::HashSet<String> = deduped_nodes
+        .iter()
+        .filter_map(|n| {
+            if let GraphEntity::Node { slug, .. } = n {
+                Some(slug.clone())
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    // Only keep edges whose both endpoints exist as nodes
+    let mut pruned = 0usize;
+    for edge in edges {
+        if let GraphEntity::Edge {
+            ref from_slug,
+            ref to_slug,
+            ..
+        } = edge
+        {
+            if all_slugs.contains(from_slug.as_str()) && all_slugs.contains(to_slug.as_str()) {
+                deduped_nodes.push(edge);
+            } else {
+                pruned += 1;
+            }
+        }
+    }
+
+    if pruned > 0 {
+        tracing::debug!(pruned, "pruned dangling edges with unknown target nodes");
+    }
+
     deduped_nodes
 }
