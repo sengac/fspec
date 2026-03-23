@@ -10,12 +10,12 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_napi::graph::ast_pipeline::{extract_file, walk_and_extract};
+use codelet_napi::graph::ast_pipeline::walk_and_extract;
 use codelet_napi::graph::database::GraphDatabase;
 use codelet_napi::graph::graph_entities::GraphEntity;
 
 mod graph_test_helpers;
-use graph_test_helpers::{count_edges, count_nodes, find_node, write_test_file};
+use graph_test_helpers::{count_edges, write_test_file};
 
 /// The AST code schema for loading extracted entities.
 const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
