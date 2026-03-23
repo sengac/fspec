@@ -10,7 +10,7 @@
 //! Uses `ignore::WalkBuilder` for `.gitignore`-aware file walking.
 //! All extracted entities are batched before loading.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use super::graph_entities::GraphEntity;
@@ -40,10 +40,18 @@ const SKIP_DIRS: &[&str] = &[
 /// to the appropriate extractor. Returns all entities (nodes + edges)
 /// for this file.
 ///
+/// The `known_files` set contains relative paths of all source files in
+/// the project (used for barrel-import resolution in TypeScript). Pass
+/// an empty set when extracting a single file in isolation.
+///
 /// Panics from ast-grep or extractor code are caught via `catch_unwind`
 /// and converted to `Err`, so a malformed source file never crashes the
 /// indexing pipeline.
-pub fn extract_file(file_path: &Path, project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+pub fn extract_file(
+    file_path: &Path,
+    project_root: &Path,
+    known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let ext = file_path
         .extension()
         .and_then(|e| e.to_str())
@@ -60,9 +68,10 @@ pub fn extract_file(file_path: &Path, project_root: &Path) -> Result<Vec<GraphEn
 
     // Wrap extraction in catch_unwind to turn panics (e.g. from ast-grep
     // or byte-level string slicing on non-ASCII source) into Err values.
+    let known_files_clone = known_files.clone();
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match ext {
         "ts" | "tsx" | "js" | "jsx" | "mjs" | "mts" => {
-            ast_ts_extractor::extract_typescript(&source, &rel_path)
+            ast_ts_extractor::extract_typescript(&source, &rel_path, &known_files_clone)
         }
         "rs" => ast_rust_extractor::extract_rust(&source, &rel_path),
         _ => Ok(vec![]), // Unsupported language — skip
@@ -96,15 +105,19 @@ fn panic_payload_to_string(payload: &Box<dyn std::any::Any + Send>) -> String {
 /// Respects `.gitignore` and skips common non-source directories
 /// (node_modules, target, dist, .git). Returns a flat list of all
 /// entities across all files, suitable for batch loading.
+///
+/// Uses a two-phase approach:
+/// 1. **Collect** all source file paths (cheap directory walk)
+/// 2. **Extract** each file with knowledge of all paths (enables barrel-import resolution)
 pub fn walk_and_extract(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+    // Phase 1: Collect all source file paths for import resolution context
+    let mut source_files: Vec<std::path::PathBuf> = Vec::new();
     let walker = ignore::WalkBuilder::new(project_root)
-        .hidden(true) // Skip hidden files
-        .git_ignore(true) // Respect .gitignore
+        .hidden(true)
+        .git_ignore(true)
         .git_global(false)
         .git_exclude(false)
         .build();
-
-    let mut all_entities = Vec::new();
 
     for entry in walker {
         let entry = match entry {
@@ -116,10 +129,9 @@ pub fn walk_and_extract(project_root: &Path) -> Result<Vec<GraphEntity>, String>
             continue;
         }
 
-        let path = entry.path();
+        let path = entry.into_path();
 
-        // Explicitly skip well-known directories even without .gitignore
-        let rel = path.strip_prefix(project_root).unwrap_or(path);
+        let rel = path.strip_prefix(project_root).unwrap_or(&path);
         if rel
             .components()
             .any(|c| SKIP_DIRS.contains(&c.as_os_str().to_str().unwrap_or("")))
@@ -128,13 +140,28 @@ pub fn walk_and_extract(project_root: &Path) -> Result<Vec<GraphEntity>, String>
         }
 
         let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-
-        // Only process supported language files
         if !SUPPORTED_EXTENSIONS.contains(&ext) {
             continue;
         }
 
-        match extract_file(path, project_root) {
+        source_files.push(path);
+    }
+
+    // Build known files set (relative paths with forward slashes)
+    let known_files: HashSet<String> = source_files
+        .iter()
+        .filter_map(|p| {
+            p.strip_prefix(project_root)
+                .ok()
+                .map(|rel| rel.to_string_lossy().replace('\\', "/"))
+        })
+        .collect();
+
+    // Phase 2: Extract each file with the full known-files context
+    let mut all_entities = Vec::new();
+
+    for path in &source_files {
+        match extract_file(path, project_root, &known_files) {
             Ok(entities) => all_entities.extend(entities),
             Err(e) => {
                 tracing::warn!(?path, error = %e, "failed to extract AST from file");

@@ -5,7 +5,7 @@ import {
   validateSteps,
   formatValidationError,
 } from '../../utils/step-validation';
-import { WorkUnitType } from '../../types/work-units';
+import { WorkUnitType } from '../../types';
 import { wrapSystemReminder } from './utils';
 import { detectWorkUnitType } from './utils';
 

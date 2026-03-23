@@ -14,8 +14,8 @@ use super::database::GraphDatabase;
 pub fn format_graph_stats(db: &GraphDatabase, action_name: &str) -> String {
     match db.stats() {
         Ok(stats) => {
-            let nodes = stats.get("nodes").cloned().unwrap_or(serde_json::json!({}));
-            let edges_obj = stats.get("edges").cloned().unwrap_or(serde_json::json!({}));
+            let nodes = stats.get("nodes").cloned().unwrap_or_else(|| serde_json::json!({}));
+            let edges_obj = stats.get("edges").cloned().unwrap_or_else(|| serde_json::json!({}));
 
             // Calculate total edges
             let total_edges: u64 = edges_obj

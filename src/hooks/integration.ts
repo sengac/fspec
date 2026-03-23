@@ -13,7 +13,7 @@ import { evaluateHookCondition } from './conditions';
 import { formatHookOutput } from './formatting';
 import { getGitContext } from './git-context';
 import type { HookContext, HookExecutionResult } from './types';
-import type { WorkUnit } from '../types/work-units';
+import type { WorkUnit } from '../types';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 

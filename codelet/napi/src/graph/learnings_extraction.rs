@@ -9,11 +9,10 @@
 //! - Targets the Learnings graph (registry::LEARNINGS_GRAPH)
 //! - Uses Residue categories: Learning, Exploration, Constraint
 //!
-//! Production currently uses structural extraction (`extract_structural_learnings_from_dag`
-//! in mod.rs) for zero-cost extraction without LLM calls.
-//! This module provides the LLM-based extraction pipeline (`extract_learnings_from_text`)
-//! which produces richer results when an LLM is available. The pipeline accepts
-//! pre-computed LLM responses for testability.
+//! The function `extract_learnings_from_text` accepts a pre-computed LLM
+//! response for testability. The caller (mod.rs `extract_learnings_from_dag`)
+//! is responsible for making the LLM call with `LEARNINGS_EXTRACTION_PROMPT`
+//! and passing the response here.
 
 use chrono::Utc;
 use serde::Deserialize;
@@ -174,6 +173,36 @@ pub fn extract_learnings_from_text(
             "Truncating learnings extraction to volume limit"
         );
         entities.truncate(MAX_ENTITIES_PER_EXTRACTION);
+
+        // Recalculate counts after truncation to stay accurate
+        learning_count = 0;
+        exploration_count = 0;
+        constraint_count = 0;
+        for entity in &entities {
+            if let GraphEntity::Node {
+                node_type,
+                properties,
+                ..
+            } = entity
+            {
+                match node_type.as_str() {
+                    "Learning" => {
+                        learning_count += 1;
+                        if properties
+                            .get("category")
+                            .and_then(|c| c.as_str())
+                            .map_or(false, |c| c == "constraint")
+                        {
+                            constraint_count += 1;
+                        }
+                    }
+                    "Exploration" => {
+                        exploration_count += 1;
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
 
     Ok(LearningsExtractionResult {

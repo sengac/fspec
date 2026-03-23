@@ -15,20 +15,20 @@ use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
 use crate::compaction_threshold::calculate_usable_context;
-use crate::interactive_helpers::{compression_ratio, convert_messages_to_turns, execute_compaction};
+use crate::interactive_helpers::{convert_messages_to_turns, execute_compaction};
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_common::token_estimator::count_tokens;
 use codelet_core::compaction::annotation_detector::{detect_annotations, ToolCallInfo, TurnContext};
-use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState, ensure_thought_signatures, GeminiTurnCompletionFacade, TurnCompletionFacade, ContinuationStrategy, StreamingTokenDisplay};
+use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState, ensure_thought_signatures, StreamingTokenDisplay};
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
 use crossterm::event::KeyCode;
 use futures::StreamExt;
 use rig::agent::MultiTurnStreamItem;
 use rig::completion::{CompletionModel, GetTokenUsage};
-use rig::message::{Message, ToolResultContent, UserContent};
+use rig::message::UserContent;
 use rig::one_or_many::OneOrMany;
 use rig::streaming::{StreamedAssistantContent, StreamedUserContent};
 use rig::wasm_compat::WasmCompatSend;
@@ -70,355 +70,48 @@ fn process_turn_annotations(
     *previous = std::mem::take(current);
 }
 
-/// Check if an error indicates the prompt/context is too long
-/// PROV-010: Exclude thinking budget configuration errors (budget_tokens)
-///
-/// This function is public for testing. Tests MUST import and test the
-/// real function, NOT a copy. See: codelet/cli/tests/prompt_too_long_recovery_test.rs
-pub fn is_prompt_too_long_error(error_str: &str) -> bool {
-    let error_lower = error_str.to_lowercase();
-    
-    // PROV-010: Exclude thinking budget configuration errors
-    // These contain "budget_tokens" and should NOT trigger compaction
-    if error_lower.contains("budget_tokens") {
-        return false;
-    }
-    
-    error_lower.contains("prompt is too long")
-        || error_lower.contains("maximum context length")
-        || error_lower.contains("context_length_exceeded")
-        || error_lower.contains("too many tokens")
-        || error_lower.contains("exceeds the model")
-        || (error_lower.contains("invalid_request_error")
-            && (error_lower.contains("token") || error_lower.contains("maximum")))
-}
+// Error classifiers moved to error_classifiers.rs
+use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_compaction_cancelled};
 
-/// EXT-016: Check if an error indicates image content was rejected by the API.
-///
-/// Detects 400 errors related to image dimensions, image size, or image processing.
-/// This is used to trigger image content sanitization in the error recovery path.
-///
-/// This function is public for testing.
-pub fn is_image_content_error(error_str: &str) -> bool {
-    let error_lower = error_str.to_lowercase();
+// Image recovery moved to recovery_image.rs
+use super::recovery_image::sanitize_image_content;
 
-    // Must mention "image" in conjunction with dimension/size-related terms
-    if error_lower.contains("image") {
-        return error_lower.contains("dimension")
-            || error_lower.contains("exceed")
-            || error_lower.contains("too large")
-            || error_lower.contains("max allowed size")
-            || error_lower.contains("size");
-    }
+// Truncation recovery moved to recovery_truncation.rs
+use super::recovery_truncation::{MAX_TRUNCATION_RETRIES, build_truncation_recovery_message, build_truncation_budget_exhausted_message};
 
-    false
-}
+// Thinking recovery moved to recovery_thinking.rs
+use super::recovery_thinking::{
+    MAX_THINKING_EXHAUSTION_RETRIES, THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
+    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
+    is_thinking_exhaustion, build_thinking_exhaustion_recovery_message,
+    build_thinking_budget_exhausted_message, downgrade_thinking_level,
+};
 
-/// EXT-016: Sanitize image content from conversation history.
-///
-/// Walks messages and replaces any Image content (UserContent::Image,
-/// ToolResultContent::Image within UserContent::ToolResult) with text placeholders.
-///
-/// Returns `true` if any image content was replaced.
-///
-/// This function is public for testing.
-pub fn sanitize_image_content(messages: &mut [Message]) -> bool {
-    let mut replaced = false;
-
-    for msg in messages.iter_mut().rev() {
-        if let Message::User { content } = msg {
-            let mut has_image = false;
-            for item in content.iter() {
-                match item {
-                    UserContent::Image { .. } => {
-                        has_image = true;
-                        break;
-                    }
-                    UserContent::ToolResult(tool_result) => {
-                        for tr_item in tool_result.content.iter() {
-                            if matches!(tr_item, ToolResultContent::Image { .. }) {
-                                has_image = true;
-                                break;
-                            }
-                        }
-                        if has_image {
-                            break;
-                        }
-                    }
-                    _ => {}
-                }
-            }
-
-            if has_image {
-                let mut new_parts: Vec<UserContent> = Vec::new();
-                for item in content.iter() {
-                    match item {
-                        UserContent::Image { .. } => {
-                            new_parts.push(UserContent::text(
-                                "[Image removed: exceeded provider pixel dimension limit]",
-                            ));
-                            replaced = true;
-                        }
-                        UserContent::ToolResult(tool_result) => {
-                            // Check if tool result contains images
-                            let has_tr_image = tool_result
-                                .content
-                                .iter()
-                                .any(|i| matches!(i, ToolResultContent::Image { .. }));
-
-                            if has_tr_image {
-                                // Replace image content within tool result
-                                let mut new_tr_parts: Vec<ToolResultContent> = Vec::new();
-                                for tr_item in tool_result.content.iter() {
-                                    match tr_item {
-                                        ToolResultContent::Image { .. } => {
-                                            new_tr_parts.push(ToolResultContent::text(
-                                                "[Image removed: exceeded provider pixel dimension limit]",
-                                            ));
-                                            replaced = true;
-                                        }
-                                        other => {
-                                            new_tr_parts.push(other.clone());
-                                        }
-                                    }
-                                }
-                                if let Ok(new_tr_content) =
-                                    OneOrMany::many(new_tr_parts)
-                                {
-                                    // Preserve call_id if present (OpenAI provider path)
-                                    if let Some(call_id) = &tool_result.call_id {
-                                        new_parts.push(UserContent::tool_result_with_call_id(
-                                            &tool_result.id,
-                                            call_id.clone(),
-                                            new_tr_content,
-                                        ));
-                                    } else {
-                                        new_parts.push(UserContent::tool_result(
-                                            &tool_result.id,
-                                            new_tr_content,
-                                        ));
-                                    }
-                                } else {
-                                    new_parts.push(item.clone());
-                                }
-                            } else {
-                                new_parts.push(item.clone());
-                            }
-                        }
-                        other => {
-                            new_parts.push(other.clone());
-                        }
-                    }
-                }
-                if let Ok(new_content) = OneOrMany::many(new_parts) {
-                    *content = new_content;
-                }
-            }
-        }
-    }
-
-    replaced
-}
-
-/// PROV-040: Maximum number of consecutive truncation recovery retries per turn.
-/// After this many retries, the error is reported to the user as non-recoverable.
-/// Public for testing — tests must import the real constant, not hardcode the value.
-pub const MAX_TRUNCATION_RETRIES: u32 = 2;
-
-/// PROV-040: Check if an error indicates a truncated tool call due to output token limit.
-///
-/// Detects the enriched error message emitted by PROV-039 in the Anthropic streaming
-/// handler when `stop_reason == "max_tokens"` and a pending tool call was never closed.
-///
-/// This function is public for testing. Tests MUST import and test the
-/// real function, NOT a copy. See: codelet/cli/tests/truncation_recovery_test.rs
-pub fn is_truncated_tool_call_error(error_str: &str) -> bool {
-    error_str.contains("Tool call truncated due to output token limit")
-}
-
-/// PROV-040: Build a structured recovery message for a truncated tool call.
-///
-/// Extracts the tool name from the error message and generates guidance telling
-/// the model to use an alternative strategy for large content.
-///
-/// This function is public for testing.
-pub fn build_truncation_recovery_message(error_str: &str) -> String {
-    // Extract tool name from the error message: "Tool '...' received incomplete JSON arguments"
-    let tool_name = error_str
-        .split("Tool '")
-        .nth(1)
-        .and_then(|s| s.split('\'').next())
-        .unwrap_or("unknown");
-
-    // Extract partial arguments from the error: "Partial arguments: ..."
-    let partial_args = error_str
-        .split("Partial arguments: ")
-        .nth(1)
-        .unwrap_or("(not available)");
-
-    format!(
-        "Your {tool_name} tool call was truncated because it exceeded the output token limit. \
-         The model hit max_tokens while generating the tool call arguments.\n\n\
-         Truncated tool: {tool_name}\n\
-         Partial arguments received: {partial_args}\n\n\
-         IMPORTANT: You MUST use a different strategy to accomplish this task:\n\
-         1. Use the Bash tool with cat/heredoc to write large files: \
-            Bash(command='cat << '\"'\"'HEREDOC_EOF'\"'\"' > /path/to/file\\n...content...\\nHEREDOC_EOF')\n\
-         2. Split the content into multiple smaller Write calls \
-            (write the first portion, then use Edit to append the rest)\n\
-         3. For very large generated content, use Bash with echo/printf commands\n\n\
-         Do NOT retry the same large {tool_name} call — it will be truncated again."
-    )
-}
-
-/// PROV-040: Build the error message displayed when the truncation retry budget is exhausted.
-///
-/// This function is public for testing.
-pub fn build_truncation_budget_exhausted_message(max_retries: u32) -> String {
-    format!(
-        "Tool call truncated {} times — retry budget exhausted. \
-         The content is too large for a single tool call. \
-         Use Bash with heredoc/echo to write large files, \
-         or split into multiple smaller operations.",
-        max_retries
-    )
-}
-
-// =============================================================================
-// PROV-041: Thinking token exhaustion recovery
-// =============================================================================
-
-/// PROV-041: Maximum number of consecutive thinking exhaustion retries per turn.
-/// After this many retries, thinking is disabled entirely for the turn.
-/// Public for testing — tests must import the real constant, not hardcode the value.
-pub const MAX_THINKING_EXHAUSTION_RETRIES: u32 = 2;
-
-/// PROV-041: Output token threshold below which a response is considered "near-empty".
-/// If a response terminates with FinishReason::Length AND has reasoning_tokens > 0
-/// AND output_tokens < this threshold, it's classified as thinking exhaustion.
-/// Public for testing — tests must import the real constant, not hardcode the value.
-pub const THINKING_EXHAUSTION_OUTPUT_THRESHOLD: u64 = 50;
-
-/// PROV-041: Threshold for session-level progressive degradation across turns.
-/// After this many thinking exhaustion events across different turns (not retries),
-/// the session-level reasoning effort is automatically downgraded.
-/// Public for testing — tests must import the real constant, not hardcode the value.
-pub const THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD: u32 = 3;
-
-/// PROV-041: Detect whether a response represents thinking token exhaustion.
-///
-/// Thinking exhaustion occurs when the model spent most/all of its token budget on
-/// reasoning/thinking and produced little or no useful output. This is distinct from
-/// regular output truncation (PROV-039/PROV-040) where the model produces useful content
-/// that simply exceeds the token limit.
-///
-/// Detection heuristic:
-/// - stop_reason indicates length/max_tokens (case-insensitive)
-/// - reasoning_tokens > 0 (model was actually thinking)
-/// - output_tokens < threshold (model said almost nothing)
-///
-/// This function is public for testing. Tests MUST import and test the
-/// real function, NOT a copy. See: codelet/cli/tests/thinking_exhaustion_recovery_test.rs
-pub fn is_thinking_exhaustion(
-    stop_reason: Option<&str>,
-    reasoning_tokens: u64,
-    output_tokens: u64,
+/// Emit context fill information from API token usage.
+/// Extracted as a standalone function so it can be shared with compaction_retry.
+pub(super) fn emit_context_fill_from_usage<O: StreamOutput>(
+    output: &O,
+    usage: &ApiTokenUsage,
     threshold: u64,
-) -> bool {
-    // Must have a stop_reason indicating length/truncation
-    let Some(reason) = stop_reason else {
-        return false;
+    context_window: u64,
+) {
+    let total_tokens = usage.total_context();
+    let fill_percentage = if threshold > 0 {
+        ((total_tokens as f64 / threshold as f64) * 100.0) as u32
+    } else {
+        0
     };
-
-    let reason_lower = reason.to_lowercase();
-    let is_length_stop = reason_lower == "max_tokens"
-        || reason_lower == "length";
-
-    if !is_length_stop {
-        return false;
-    }
-
-    // Must have reasoning tokens (model was actually thinking)
-    if reasoning_tokens == 0 {
-        return false;
-    }
-
-    // Output must be below threshold (model said almost nothing)
-    output_tokens < threshold
-}
-
-/// PROV-041: Build a recovery message for thinking exhaustion.
-///
-/// Generates a message to inject into the conversation that:
-/// 1. Preserves any captured thinking content as context
-/// 2. Instructs the model to be more concise in reasoning
-/// 3. Indicates the thinking budget has been reduced
-///
-/// This function is public for testing.
-pub fn build_thinking_exhaustion_recovery_message(
-    reasoning_tokens: u64,
-    output_tokens: u64,
-    captured_reasoning: Option<&str>,
-) -> String {
-    let mut msg = format!(
-        "Your previous response was interrupted because you spent too many tokens on reasoning \
-         ({reasoning_tokens} reasoning tokens, only {output_tokens} output tokens). \
-         Your thinking budget has been reduced for this retry.\n\n\
-         IMPORTANT: Be more concise in your reasoning. Focus on producing useful output \
-         rather than extensive internal deliberation."
-    );
-
-    if let Some(reasoning) = captured_reasoning {
-        // Truncate very long reasoning to avoid bloating the context
-        let truncated = if reasoning.len() > 2000 {
-            &reasoning[..2000]
-        } else {
-            reasoning
-        };
-        msg.push_str(&format!(
-            "\n\nYour previous reasoning (preserved as context):\n{truncated}"
-        ));
-    }
-
-    msg
-}
-
-/// PROV-041: Build the message displayed when thinking exhaustion retry budget is exhausted.
-///
-/// This function is public for testing.
-pub fn build_thinking_budget_exhausted_message(max_retries: u32) -> String {
-    format!(
-        "Thinking exhaustion occurred {max_retries} times — retry budget exhausted. \
-         Thinking/reasoning has been disabled for this turn to produce a response. \
-         The model will respond without extended reasoning."
-    )
-}
-
-/// PROV-041: Downgrade a ThinkingLevel by one step.
-///
-/// Degradation path: High → Medium → Low → Off → Off
-/// Used for both per-turn retry degradation and session-level progressive degradation.
-///
-/// This function is public for testing.
-pub fn downgrade_thinking_level(level: codelet_tools::facade::ThinkingLevel) -> codelet_tools::facade::ThinkingLevel {
-    use codelet_tools::facade::ThinkingLevel;
-    match level {
-        ThinkingLevel::High => ThinkingLevel::Medium,
-        ThinkingLevel::Medium => ThinkingLevel::Low,
-        ThinkingLevel::Low => ThinkingLevel::Off,
-        ThinkingLevel::Off => ThinkingLevel::Off,
-    }
-}
-
-/// CMPCT-002: Check if an error indicates compaction was cancelled by the hook
-/// This is used to detect when the CompactionHook cancels a request due to token threshold
-fn is_compaction_cancelled(error: &anyhow::Error) -> bool {
-    error.to_string().contains("PromptCancelled")
+    output.emit_context_fill(&ContextFillInfo {
+        fill_percentage,
+        effective_tokens: total_tokens,
+        threshold,
+        context_window,
+    });
 }
 
 /// CMPCT-002: Signal that compaction is needed by setting the flag in token state
 /// This allows the post-loop compaction logic to detect and handle it
-fn signal_compaction_needed(token_state: &Arc<Mutex<TokenState>>) {
+pub(super) fn signal_compaction_needed(token_state: &Arc<Mutex<TokenState>>) {
     // PROV-009-DEBUG: Log when signal_compaction_needed is called with backtrace
     debug!(
         "[signal_compaction_needed] CALLED - setting compaction_needed=true - BACKTRACE:\n{:?}",
@@ -536,69 +229,8 @@ where
     .await
 }
 
-/// BRIDGE-007: Image data from bridge for multimodal support
-#[derive(Clone)]
-pub struct BridgeImage {
-    /// Base64-encoded image data
-    pub data: String,
-    /// Media type (e.g., "image/jpeg", "image/png")
-    pub media_type: String,
-}
-
-/// EXT-016: Build user message content from prompt text and optional bridge images.
-///
-/// Validates pixel dimensions on each image before including it. Oversized images
-/// are replaced with a text error message (Layer 3 defense-in-depth).
-///
-/// This function is public for testing.
-pub fn build_user_content_with_images(
-    prompt: &str,
-    images: Option<Vec<BridgeImage>>,
-) -> OneOrMany<UserContent> {
-    use rig::message::ImageMediaType;
-
-    match images {
-        Some(bridge_images) => {
-            let mut content_parts: Vec<UserContent> = Vec::new();
-            if !prompt.is_empty() {
-                content_parts.push(UserContent::text(prompt));
-            }
-            for img in bridge_images {
-                let media_type = match img.media_type.as_str() {
-                    "image/jpeg" | "image/jpg" => Some(ImageMediaType::JPEG),
-                    "image/png" => Some(ImageMediaType::PNG),
-                    "image/gif" => Some(ImageMediaType::GIF),
-                    "image/webp" => Some(ImageMediaType::WEBP),
-                    _ => Some(ImageMediaType::JPEG),
-                };
-
-                // EXT-016: Validate pixel dimensions before adding user-pasted images
-                // This is Layer 3 defense-in-depth — prevents oversized bridge images
-                // from entering conversation history
-                if let Some((width, height)) =
-                    codelet_tools::image_dimensions::extract_dimensions_from_base64(&img.data)
-                {
-                    if codelet_tools::image_dimensions::exceeds_pixel_limit(width, height) {
-                        let error_msg =
-                            codelet_tools::image_dimensions::format_dimension_error(None, width, height);
-                        warn!(
-                            "Rejecting user-pasted image: {}x{} exceeds limit",
-                            width, height
-                        );
-                        // Add error as text instead of the image
-                        content_parts.push(UserContent::text(error_msg));
-                        continue;
-                    }
-                }
-
-                content_parts.push(UserContent::image_base64(img.data, media_type, None));
-            }
-            OneOrMany::many(content_parts)
-                .unwrap_or_else(|_| OneOrMany::one(UserContent::text(prompt)))
-        }
-        None => OneOrMany::one(UserContent::text(prompt)),
-    }
-}
+// Multimodal content building moved to multimodal.rs
+use super::multimodal::{BridgeImage, build_user_content_with_images};
 
 /// Internal generic stream loop
 ///
@@ -721,25 +353,6 @@ where
 
     // TUI-033: Helper to emit context fill percentage after token updates
     // PROV-001: Uses ApiTokenUsage.total_context() for consistent calculation
-    let emit_context_fill_from_usage = |output: &O,
-                                        usage: &ApiTokenUsage,
-                                        threshold: u64,
-                                        context_window: u64| {
-        let total_tokens = usage.total_context();
-        // Calculate fill percentage (can exceed 100% near compaction)
-        let fill_percentage = if threshold > 0 {
-            ((total_tokens as f64 / threshold as f64) * 100.0) as u32
-        } else {
-            0
-        };
-        output.emit_context_fill(&ContextFillInfo {
-            fill_percentage,
-            effective_tokens: total_tokens,
-            threshold,
-            context_window,
-        });
-    };
-
     // PROV-001: session.token_tracker.input_tokens stores TOTAL context (input + cache_read + cache_creation)
     // Initialize cache values to 0 to avoid double-counting in TokenState::total()
     // During streaming, on_stream_completion_response_finish will update with actual API values
@@ -1190,395 +803,30 @@ where
                         }
                     }
 
-                    // GEMINI-TURN: Check if Gemini model returned empty response after tool call
-                    // and needs a continuation prompt to nudge it to respond with the results.
-                    // 
-                    // The facade returns a ContinuationStrategy that tells us HOW to continue:
-                    // - None: Response is complete, proceed normally
-                    // - FullLoop: Re-run the full agentic loop (handles tool calls in continuation)
-                    let provider_name = session.current_provider_name();
-                    let model_id = session.current_model_id().unwrap_or_default();
-                    
-                    if provider_name == "gemini" {
-                        let turn_completion = GeminiTurnCompletionFacade;
-                        if turn_completion.requires_turn_completion_check(&model_id) {
-                            let strategy = turn_completion.continuation_strategy(&assistant_text, &session.messages);
-                            
-                            if let ContinuationStrategy::FullLoop { prompt: continuation_prompt } = strategy {
-                                // Log that we need a continuation prompt
-                                info!(
-                                    "GEMINI-TURN: Empty response after tool call detected for model {}, using FullLoop strategy",
-                                    model_id
-                                );
-                                
-                                // Capture continuation event for debugging
-                                if let Ok(manager_arc) = get_debug_capture_manager() {
-                                    if let Ok(mut manager) = manager_arc.lock() {
-                                        if manager.is_enabled() {
-                                            manager.capture(
-                                                "gemini.continuation",
-                                                serde_json::json!({
-                                                    "reason": "empty_response_after_tool",
-                                                    "strategy": "FullLoop",
-                                                    "model": model_id,
-                                                    "prompt": continuation_prompt,
-                                                }),
-                                                None,
-                                            );
-                                        }
-                                    }
-                                }
-                                
-                                // Handle final response (add empty assistant text to history)
-                                handle_final_response(&assistant_text, &mut session.messages)?;
-                                
-                                // GEMINI-TURN-002: Use recursive full loop for continuation
-                                // This allows the continuation to handle tool calls properly,
-                                // unlike the previous inline approach that only handled text.
-                                //
-                                // We add the continuation prompt to messages, update session state,
-                                // and DON'T emit done - the outer loop will continue.
-                                
-                                // Add the continuation as a new user message
-                                session.messages.push(rig::message::Message::User {
-                                    content: rig::OneOrMany::one(rig::message::UserContent::text(continuation_prompt)),
-                                });
-                                
-                                // Prepare history again for Gemini (add thought signatures)
-                                if let Some(model_id) = session.current_model_id() {
-                                    ensure_thought_signatures(&mut session.messages, &model_id);
-                                }
-                                
-                                // CMPCT-001: Update display values before recursion (no billing accumulation yet)
-                                // Use current values from streaming_display
-                                let current_display = streaming_display.current();
-                                let turn_usage = ApiTokenUsage::new(
-                                    current_display.input_tokens,
-                                    current_display.cache_read_tokens,
-                                    current_display.cache_creation_tokens,
-                                    0,
-                                );
-                                session.token_tracker.update_display_only(&turn_usage, current_display.output_tokens);
-                                
-                                // Create a new hook and token state for the continuation
-                                let continuation_token_state = Arc::new(Mutex::new(TokenState {
-                                    input_tokens: session.token_tracker.input_tokens,
-                                    cache_read_input_tokens: current_display.cache_read_tokens,
-                                    cache_creation_input_tokens: current_display.cache_creation_tokens,
-                                    output_tokens: current_display.output_tokens,
-                                    compaction_needed: false,
-                                }));
-                                let continuation_hook = CompactionHook::new(Arc::clone(&continuation_token_state), threshold);
-                                
-                                // Start a new FULL stream for the continuation
-                                // This stream can handle tool calls, unlike the previous simple approach
-                                debug!(
-                                    "API REQUEST (Gemini continuation) - Provider: {}, Model: {}",
-                                    session.current_provider_name(),
-                                    session.current_model_id().as_deref().unwrap_or("NONE")
-                                );
-                                let mut continuation_stream = agent
-                                    .prompt_streaming_with_history_and_hook(
-                                        continuation_prompt,
-                                        &mut session.messages,
-                                        continuation_hook,
-                                    )
-                                    .await;
-                                
-                                // Track continuation state
-                                let mut continuation_text = String::new();
-                                let mut continuation_tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
-                                let mut continuation_last_tool_name: Option<String> = None;
-                                
-                                // STREAMING-DISPLAY: Create continuation display tracker
-                                let mut continuation_display = StreamingTokenDisplay::new(
-                                    current_display.input_tokens,
-                                    current_display.output_tokens,
-                                    current_display.cache_read_tokens,
-                                    current_display.cache_creation_tokens,
-                                );
-                                
-                                // Process the continuation stream - FULL loop with tool support
-                                loop {
-                                    // Check interruption
-                                    if is_interrupted.load(Acquire) {
-                                        let queued = if let Some(ref mut iq) = input_queue {
-                                            iq.dequeue_all()
-                                        } else {
-                                            vec![]
-                                        };
-                                        output.emit_interrupted(&queued);
-                                        if !continuation_text.is_empty() {
-                                            handle_final_response(&continuation_text, &mut session.messages)?;
-                                        }
-                                        
-                                        // CMPCT-001: Update token tracker with billing accumulation on interrupt
-                                        let cont_final = continuation_display.current();
-                                        let cont_usage = ApiTokenUsage::new(
-                                            cont_final.input_tokens,
-                                            cont_final.cache_read_tokens,
-                                            cont_final.cache_creation_tokens,
-                                            0,
-                                        );
-                                        session.token_tracker.update_from_usage(&cont_usage, cont_final.output_tokens);
-                                        
-                                        // Clear tool progress callback before returning
-                                        set_tool_progress_callback(None);
-                                        // PROV-039: Propagate stop_reason on Gemini continuation interrupt
-                                        output.emit_done_with_stop_reason(final_stop_reason.take());
-                                        return Ok(());
-                                    }
-                                    
-                                    match continuation_stream.next().await {
-                                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
-                                            StreamedAssistantContent::Text(text),
-                                        ))) => {
-                                            handle_text_chunk(&text.text, &mut continuation_text, None, output)?;
-                                            // STREAMING-DISPLAY: Record chunk in continuation display
-                                            if let Some(update) = continuation_display.record_chunk(&text.text) {
-                                                output.emit_tokens(&update.into());
-                                            }
-                                        }
-                                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
-                                            StreamedAssistantContent::ToolCall(tool_call),
-                                        ))) => {
-                                            // GEMINI-TURN-002: Handle tool calls in continuation
-                                            handle_tool_call(
-                                                &tool_call,
-                                                &mut session.messages,
-                                                &mut continuation_text,
-                                                &mut continuation_tool_calls_buffer,
-                                                &mut continuation_last_tool_name,
-                                                output,
-                                            )?;
-                                        }
-                                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
-                                            StreamedAssistantContent::ReasoningDelta { reasoning, .. },
-                                        ))) => {
-                                            output.emit_thinking(&reasoning);
-                                            // STREAMING-DISPLAY: Record thinking chunk
-                                            if let Some(update) = continuation_display.record_chunk(&reasoning) {
-                                                output.emit_tokens(&update.into());
-                                            }
-                                        }
-                                        Some(Ok(MultiTurnStreamItem::StreamUserItem(
-                                            StreamedUserContent::ToolResult(tool_result),
-                                        ))) => {
-                                            // GEMINI-TURN-002: Handle tool results in continuation
-                                            handle_tool_result(
-                                                &tool_result,
-                                                &mut session.messages,
-                                                &mut continuation_tool_calls_buffer,
-                                                &continuation_last_tool_name,
-                                                output,
-                                            )?;
-                                        }
-                                        Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
-                                            // STREAMING-DISPLAY: Update from usage event
-                                            if usage.output_tokens == 0 {
-                                                continuation_display.start_new_segment(&usage);
-                                            } else if let Some(update) = continuation_display.update_from_usage(&usage) {
-                                                output.emit_tokens(&update.into());
-                                            }
-                                        }
-                                        Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                                            // Get usage from FinalResponse
-                                            let usage = final_resp.usage();
-
-                                            // STREAMING-DISPLAY: Update from final response if needed
-                                            let cont_final = if !continuation_display.has_authoritative_output() && usage.input_tokens > 0 {
-                                                continuation_display.update_from_final_response(&usage)
-                                            } else {
-                                                continuation_display.current()
-                                            };
-
-                                            // GEMINI-TURN-002: Check if we need ANOTHER continuation
-                                            // This handles the case where multiple tool calls happen in sequence
-                                            let nested_strategy = turn_completion.continuation_strategy(
-                                                &continuation_text,
-                                                &session.messages,
-                                            );
-                                            
-                                            if let ContinuationStrategy::FullLoop { prompt: nested_prompt } = nested_strategy {
-                                                info!(
-                                                    "GEMINI-TURN: Nested empty response detected, continuing again"
-                                                );
-                                                
-                                                // Capture nested continuation for debugging
-                                                if let Ok(manager_arc) = get_debug_capture_manager() {
-                                                    if let Ok(mut manager) = manager_arc.lock() {
-                                                        if manager.is_enabled() {
-                                                            manager.capture(
-                                                                "gemini.continuation",
-                                                                serde_json::json!({
-                                                                    "reason": "nested_empty_response_after_tool",
-                                                                    "strategy": "FullLoop",
-                                                                    "model": model_id,
-                                                                    "prompt": nested_prompt,
-                                                                }),
-                                                                None,
-                                                            );
-                                                        }
-                                                    }
-                                                }
-                                                
-                                                // Add continuation text to history
-                                                handle_final_response(&continuation_text, &mut session.messages)?;
-                                                continuation_text.clear();
-                                                
-                                                // Add nested continuation prompt
-                                                session.messages.push(rig::message::Message::User {
-                                                    content: rig::OneOrMany::one(rig::message::UserContent::text(nested_prompt)),
-                                                });
-                                                
-                                                // Prepare history again
-                                                if let Some(model_id) = session.current_model_id() {
-                                                    ensure_thought_signatures(&mut session.messages, &model_id);
-                                                }
-                                                
-                                                // Create new stream for nested continuation
-                                                let nested_token_state = Arc::new(Mutex::new(TokenState {
-                                                    input_tokens: cont_final.input_tokens,
-                                                    cache_read_input_tokens: cont_final.cache_read_tokens,
-                                                    cache_creation_input_tokens: cont_final.cache_creation_tokens,
-                                                    output_tokens: cont_final.output_tokens,
-                                                    compaction_needed: false,
-                                                }));
-                                                let nested_hook = CompactionHook::new(Arc::clone(&nested_token_state), threshold);
-
-                                                debug!(
-                                                    "API REQUEST (Gemini nested continuation) - Provider: {}, Model: {}",
-                                                    session.current_provider_name(),
-                                                    session.current_model_id().as_deref().unwrap_or("NONE")
-                                                );
-                                                continuation_stream = agent
-                                                    .prompt_streaming_with_history_and_hook(
-                                                        nested_prompt,
-                                                        &mut session.messages,
-                                                        nested_hook,
-                                                    )
-                                                    .await;
-                                                
-                                                // Reset for next iteration - create new display tracker
-                                                continuation_tool_calls_buffer.clear();
-                                                continuation_last_tool_name = None;
-                                                continuation_display = StreamingTokenDisplay::new(
-                                                    cont_final.input_tokens,
-                                                    cont_final.output_tokens,
-                                                    cont_final.cache_read_tokens,
-                                                    cont_final.cache_creation_tokens,
-                                                );
-                                                continue;
-                                            }
-                                            
-                                            // Normal completion - add text to history and exit
-                                            handle_final_response(&continuation_text, &mut session.messages)?;
-                                            
-                                            // CMPCT-001: Update token tracker with billing accumulation on normal completion
-                                            let cont_usage = ApiTokenUsage::new(
-                                                cont_final.input_tokens,
-                                                cont_final.cache_read_tokens,
-                                                cont_final.cache_creation_tokens,
-                                                0,
-                                            );
-                                            session.token_tracker.update_from_usage(&cont_usage, cont_final.output_tokens);
-                                            
-                                            break;
-                                        }
-                                        Some(Err(e)) => {
-                                            // CMPCT-002: Check if this is a compaction cancellation using helper
-                                            if is_compaction_cancelled(&e) {
-                                                // CMPCT-002: Handle compaction gracefully during Gemini continuation
-                                                // Instead of returning an error, we:
-                                                // 1. Save partial text to session history
-                                                // 2. Update token tracker with cumulative billing
-                                                // 3. Set compaction_needed flag
-                                                // 4. Break out to let post-loop compaction logic handle it
-                                                info!(
-                                                    "Compaction triggered during Gemini continuation - handling gracefully"
-                                                );
-                                                
-                                                // Save any partial text accumulated during continuation
-                                                if !continuation_text.is_empty() {
-                                                    handle_final_response(&continuation_text, &mut session.messages)?;
-                                                    info!("Saved {} chars of partial continuation text", continuation_text.len());
-                                                }
-                                                
-                                                // Update token tracker with current display values
-                                                let cont_err_final = continuation_display.current();
-                                                let cont_err_usage = ApiTokenUsage::new(
-                                                    cont_err_final.input_tokens,
-                                                    cont_err_final.cache_read_tokens,
-                                                    cont_err_final.cache_creation_tokens,
-                                                    0,
-                                                );
-                                                session.token_tracker.update_from_usage(&cont_err_usage, cont_err_final.output_tokens);
-                                                
-                                                // Set compaction_needed flag so post-loop logic handles it
-                                                signal_compaction_needed(&token_state);
-                                                
-                                                // UX-002: Use structured compaction event
-                                                output.emit_compaction_started();
-                                                
-                                                // UX-002: Emit progress for continuation compaction
-                                                let total_turns = session.messages.len() as u32 / 2;
-                                                output.emit_compaction_progress("Context limit reached", 0, total_turns.max(1));
-                                                
-                                                // Clear tool progress callback before breaking
-                                                set_tool_progress_callback(None);
-                                                
-                                                // Break out of continuation loop - outer code will handle compaction
-                                                // Note: We break from the continuation loop but NOT from the main stream loop
-                                                // The main loop's post-processing will detect compaction_needed and handle it
-                                                break;
-                                            }
-                                            
-                                            // Non-compaction error - return error as before
-                                            set_tool_progress_callback(None);
-                                            output.emit_error(&e.to_string());
-                                            return Err(anyhow::anyhow!("Gemini continuation error: {e}"));
-                                        }
-                                        None => {
-                                            // Stream ended unexpectedly - update token tracker before exiting
-                                            if !continuation_text.is_empty() {
-                                                handle_final_response(&continuation_text, &mut session.messages)?;
-                                            }
-                                            
-                                            // CMPCT-001: Update token tracker with current display values
-                                            let cont_end_final = continuation_display.current();
-                                            let cont_end_usage = ApiTokenUsage::new(
-                                                cont_end_final.input_tokens,
-                                                cont_end_final.cache_read_tokens,
-                                                cont_end_final.cache_creation_tokens,
-                                                0,
-                                            );
-                                            session.token_tracker.update_from_usage(&cont_end_usage, cont_end_final.output_tokens);
-                                            
-                                            break;
-                                        }
-                                        _ => {}
-                                    }
-                                    output.flush();
-                                }
-                                
-                                // CMPCT-002: Check if we broke from continuation loop due to compaction
-                                // If so, don't return - break from main stream loop to run compaction
-                                let compaction_during_continuation = token_state
-                                    .lock()
-                                    .map(|state| state.compaction_needed)
-                                    .unwrap_or(false);
-                                
-                                if compaction_during_continuation {
-                                    // Don't return Ok() - break from main stream loop
-                                    // The post-loop compaction logic will handle it
-                                    break;
-                                }
-                                
-                                // Normal continuation completion - clear callback and return
-                                set_tool_progress_callback(None);
-                                // PROV-039: Propagate stop_reason on Gemini continuation completion
-                                output.emit_done_with_stop_reason(final_stop_reason.take());
+                    // GEMINI-TURN: Check if Gemini model needs a continuation prompt
+                    // Extracted to gemini_continuation.rs
+                    {
+                        use super::gemini_continuation::{handle_gemini_continuation, GeminiContinuationResult};
+                        match handle_gemini_continuation(
+                            &agent,
+                            session,
+                            output,
+                            &is_interrupted,
+                            &mut input_queue,
+                            &token_state,
+                            threshold,
+                            &assistant_text,
+                            &streaming_display,
+                            &mut final_stop_reason,
+                        ).await? {
+                            GeminiContinuationResult::NoContinuation => {
+                                // Fall through to normal processing below
+                            }
+                            GeminiContinuationResult::Completed => {
                                 return Ok(());
+                            }
+                            GeminiContinuationResult::CompactionNeeded => {
+                                break;
                             }
                         }
                     }
@@ -1649,9 +897,7 @@ where
 
                                 // Emit warning to the user
                                 output.emit_status(&format!(
-                                    "Thinking exhaustion detected (attempt {}/{}). Retrying with reduced reasoning budget...",
-                                    thinking_exhaustion_retry_count,
-                                    MAX_THINKING_EXHAUSTION_RETRIES
+                                    "Thinking exhaustion detected (attempt {thinking_exhaustion_retry_count}/{MAX_THINKING_EXHAUSTION_RETRIES}). Retrying with reduced reasoning budget..."
                                 ));
 
                                 // PROV-041: Context preservation at >90% utilization (Rule[5])
@@ -1668,8 +914,7 @@ where
                                         utilization_pct
                                     );
                                     output.emit_status(&format!(
-                                        "Context window at {:.0}% — session state preserved before retry",
-                                        utilization_pct
+                                        "Context window at {utilization_pct:.0}% — session state preserved before retry"
                                     ));
                                     // The session.messages already contain the full conversation history.
                                     // In the NAPI layer, the persist_pending_annotations call after
@@ -1922,7 +1167,7 @@ where
                         );
                         let budget_error = build_truncation_budget_exhausted_message(MAX_TRUNCATION_RETRIES);
                         output.emit_error(&budget_error);
-                        return Err(anyhow::anyhow!("Agent error: truncation retry budget exhausted after {} attempts", MAX_TRUNCATION_RETRIES));
+                        return Err(anyhow::anyhow!("Agent error: truncation retry budget exhausted after {MAX_TRUNCATION_RETRIES} attempts"));
                     }
 
                     // NAPI-008: Log error with full details (include in message for TypeScript layer)
@@ -2024,284 +1269,20 @@ where
     );
 
     if compaction_needed && !is_interrupted.load(Acquire) {
-        // PROV-005-DEBUG: Log entry to compaction block
-        debug!(
-            "[stream_loop] ENTERING compaction block - messages_len={}, approx_turns={}",
-            session.messages.len(),
-            session.messages.len() / 2
-        );
-        // UX-002: Use structured compaction event - this triggers both CLI display and NAPI state change
-        output.emit_compaction_started();
-        
-        // UX-002: Emit progress for automatic compaction
-        let total_turns = session.messages.len() as u32 / 2; // Approximate turn count
-        output.emit_compaction_progress("Analyzing context", 0, total_turns.max(1));
-        
-        // Capture compaction.triggered event
-        if let Ok(manager_arc) = get_debug_capture_manager() {
-            if let Ok(mut manager) = manager_arc.lock() {
-                if manager.is_enabled() {
-                    if let Ok(state) = token_state.lock() {
-                        manager.capture(
-                            "compaction.triggered",
-                            serde_json::json!({
-                                "timing": "hook-triggered",
-                                "inputTokens": state.input_tokens,
-                                "cacheReadInputTokens": state.cache_read_input_tokens,
-                                "threshold": threshold,
-                                "contextWindow": context_window,
-                            }),
-                            None,
-                        );
-                    }
-                }
-            }
-        }
-
-        let original_tokens = session.token_tracker.input_tokens;
-
-        match execute_compaction(session, compaction_in_progress.clone(), Some(prompt)).await {
-            Ok(()) => {
-                let compacted_tokens = session.token_tracker.input_tokens;
-                let ratio = compression_ratio(original_tokens, compacted_tokens);
-
-                // Capture context.update event after compaction
-                if let Ok(manager_arc) = get_debug_capture_manager() {
-                    if let Ok(mut manager) = manager_arc.lock() {
-                        if manager.is_enabled() {
-                            manager.capture(
-                                "context.update",
-                                serde_json::json!({
-                                    "type": "compaction",
-                                    "originalTokens": original_tokens,
-                                    "compactedTokens": compacted_tokens,
-                                    "compressionRatio": ratio,
-                                }),
-                                None,
-                            );
-                        }
-                    }
-                }
-
-                output.emit_compaction_continuing();
-                session.token_tracker.reset_after_compaction();
-
-                // Create fresh hook and token state for the retry
-                // PROV-001: After compaction, input_tokens is the new estimated total
-                // Cache values were reset to None above, so they're 0 here
-                // This prevents double-counting in TokenState::total()
-                let retry_token_state = Arc::new(Mutex::new(TokenState {
-                    input_tokens: session.token_tracker.input_tokens,
-                    cache_read_input_tokens: 0, // Reset after compaction
-                    cache_creation_input_tokens: 0, // Reset after compaction
-                    output_tokens: 0, // Fresh start after compaction
-                    compaction_needed: false,
-                }));
-                let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
-
-                // Start new stream with compacted context
-                debug!(
-                    "API REQUEST (retry after compaction) - Provider: {}, Model: {}",
-                    session.current_provider_name(),
-                    session.current_model_id().as_deref().unwrap_or("NONE")
-                );
-                // Use synthetic continuation prompt — the original prompt is already
-                // embedded in the compaction instruction in session.messages.
-                let mut retry_stream = agent
-                    .prompt_streaming_with_history_and_hook(
-                        "Continue",
-                        &mut session.messages,
-                        retry_hook,
-                    )
-                    .await;
-
-                // Reset tracking for this retry
-                let mut retry_assistant_text = String::new();
-                let mut retry_tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
-                let mut retry_last_tool_name: Option<String> = None;
-
-                // STREAMING-DISPLAY: Create retry display tracker (fresh start after compaction)
-                let mut retry_display = StreamingTokenDisplay::new(
-                    session.token_tracker.input_tokens,
-                    0, // Fresh start after compaction
-                    0, // Cache reset after compaction
-                    0, // Cache reset after compaction
-                );
-
-                // Process retry stream
-                loop {
-                    if is_interrupted.load(Acquire) {
-                        let queued = if let Some(ref mut iq) = input_queue {
-                            iq.dequeue_all()
-                        } else {
-                            vec![]
-                        };
-                        output.emit_interrupted(&queued);
-                        if !retry_assistant_text.is_empty() {
-                            handle_final_response(&retry_assistant_text, &mut session.messages)?;
-                        }
-                        // PROV-039: Propagate stop_reason even on retry-interrupt path
-                        output.emit_done_with_stop_reason(None);
-                        break;
-                    }
-
-                    match retry_stream.next().await {
-                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
-                            StreamedAssistantContent::Text(text),
-                        ))) => {
-                            handle_text_chunk(&text.text, &mut retry_assistant_text, None, output)?;
-
-                            // STREAMING-DISPLAY: Track chunk and emit if not throttled
-                            if let Some(update) = retry_display.record_chunk(&text.text) {
-                                output.emit_tokens(&update.into());
-                            }
-                        }
-                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
-                            StreamedAssistantContent::ToolCall(tool_call),
-                        ))) => {
-                            handle_tool_call(
-                                &tool_call,
-                                &mut session.messages,
-                                &mut retry_assistant_text,
-                                &mut retry_tool_calls_buffer,
-                                &mut retry_last_tool_name,
-                                output,
-                            )?;
-                        }
-                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
-                            StreamedAssistantContent::ReasoningDelta { reasoning, .. },
-                        ))) => {
-                            // TOOL-010: Emit thinking/reasoning content from extended thinking
-                            output.emit_thinking(&reasoning);
-                            
-                            // STREAMING-DISPLAY: Track thinking chunk
-                            if let Some(update) = retry_display.record_chunk(&reasoning) {
-                                output.emit_tokens(&update.into());
-                            }
-                        }
-                        Some(Ok(MultiTurnStreamItem::StreamUserItem(
-                            StreamedUserContent::ToolResult(tool_result),
-                        ))) => {
-                            handle_tool_result(
-                                &tool_result,
-                                &mut session.messages,
-                                &mut retry_tool_calls_buffer,
-                                &retry_last_tool_name,
-                                output,
-                            )?;
-
-                            // PROV-001: Don't emit token updates after tool results
-                        }
-                        Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
-                            // STREAMING-DISPLAY: Update from usage event
-                            if usage.output_tokens == 0 {
-                                retry_display.start_new_segment(&usage);
-                            } else if let Some(update) = retry_display.update_from_usage(&usage) {
-                                output.emit_tokens(&update.into());
-                                // CTX-004: Context fill uses CURRENT API values
-                                let fill_usage = ApiTokenUsage::new(
-                                    update.input_tokens,
-                                    update.cache_read_tokens,
-                                    update.cache_creation_tokens,
-                                    usage.output_tokens,
-                                ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
-                                emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
-                            }
-                        }
-                        Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                            // PROV-039: Capture stop_reason from retry FinalResponse
-                            let retry_stop_reason = final_resp.stop_reason().map(String::from);
-
-                            // Get usage from FinalResponse
-                            let usage = final_resp.usage();
-
-                            // STREAMING-DISPLAY: Update from final response if needed
-                            let retry_final = if !retry_display.has_authoritative_output() && usage.input_tokens > 0 {
-                                trace!(
-                                    "OpenAI-compatible provider (retry): extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
-                                    usage.input_tokens, usage.output_tokens, usage.cache_read_input_tokens
-                                );
-                                retry_display.update_from_final_response(&usage)
-                            } else {
-                                retry_display.current()
-                            };
-
-                            // Emit final token update
-                            output.emit_tokens(&retry_final.into());
-                            let fill_usage = ApiTokenUsage::new(
-                                retry_final.input_tokens,
-                                retry_final.cache_read_tokens,
-                                retry_final.cache_creation_tokens,
-                                usage.output_tokens,
-                            ).with_reasoning_tokens(usage.reasoning_tokens.unwrap_or(0));
-                            emit_context_fill_from_usage(output, &fill_usage, threshold, context_window);
-
-                            // TUI-031: Update session state after retry completes
-                            if !is_interrupted.load(Acquire) {
-                                let retry_usage = ApiTokenUsage::new(
-                                    retry_final.input_tokens,
-                                    retry_final.cache_read_tokens,
-                                    retry_final.cache_creation_tokens,
-                                    0,
-                                );
-                                session.token_tracker.update_from_usage(&retry_usage, retry_final.output_tokens);
-                            }
-
-                            handle_final_response(&retry_assistant_text, &mut session.messages)?;
-                            // Done is emitted here; CompactionComplete comes from
-                            // agent_loop after apply_pending_dag succeeds.
-                            // PROV-039: Propagate stop_reason from retry stream
-                            output.emit_done_with_stop_reason(retry_stop_reason);
-                            break;
-                        }
-                        Some(Err(e)) => {
-                            output.emit_error(&e.to_string());
-                            return Err(anyhow::anyhow!("Retry error after compaction: {e}"));
-                        }
-                        None => {
-                            if !retry_assistant_text.is_empty() {
-                                handle_final_response(&retry_assistant_text, &mut session.messages)?;
-                            }
-                            // Done is emitted here; CompactionComplete comes from
-                            // agent_loop after apply_pending_dag succeeds.
-                            // PROV-039: retry_stop_reason may not be set if stream ended
-                            // without FinalResponse — emit None (will default to end_turn)
-                            output.emit_done_with_stop_reason(None);
-                            break;
-                        }
-                        _ => {}
-                    }
-                    output.flush();
-                }
-
-                return Ok(());
-            }
-            Err(e) => {
-                // Compaction failed - DO NOT reset token tracker!
-                // Keep the high token values so next turn will retry compaction.
-                // UX-002: Use structured compaction failed event
-                output.emit_compaction_failed(&format!("{e} - will retry on next turn"));
-
-                // Capture compaction failure for debugging
-                if let Ok(manager_arc) = get_debug_capture_manager() {
-                    if let Ok(mut manager) = manager_arc.lock() {
-                        if manager.is_enabled() {
-                            manager.capture(
-                                "compaction.failed",
-                                serde_json::json!({
-                                    "error": e.to_string(),
-                                    "inputTokens": session.token_tracker.input_tokens,
-                                }),
-                                None,
-                            );
-                        }
-                    }
-                }
-
-                // Return error so caller knows compaction failed
-                return Err(anyhow::anyhow!("Compaction failed: {e}"));
-            }
-        }
+        // Extracted to compaction_retry.rs
+        use super::compaction_retry::handle_compaction_retry;
+        return handle_compaction_retry(
+            &agent,
+            session,
+            output,
+            &is_interrupted,
+            &mut input_queue,
+            &token_state,
+            threshold,
+            context_window,
+            compaction_in_progress,
+            prompt,
+        ).await;
     }
 
     // CMPCT-001: Update session token tracker with BOTH current context AND cumulative billing

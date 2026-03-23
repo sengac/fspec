@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { WorkUnitType } from '../../types/work-units';
+import { WorkUnitType } from '../../types';
 
 export function wrapSystemReminder(content: string): string {
   return `<system-reminder>\n${content}\n</system-reminder>`;

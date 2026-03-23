@@ -37,7 +37,18 @@ const TS_TYPE_PATTERNS: &[(&str, &str)] = &[
 ];
 
 /// Extract entities from TypeScript/JavaScript source code.
-pub fn extract_typescript(source: &str, rel_path: &str) -> Result<Vec<GraphEntity>, String> {
+///
+/// The `known_files` set contains all relative paths of source files in the
+/// project. When non-empty, it enables barrel-import resolution: an import
+/// like `from '../types'` that resolves to `src/types.ts` will be corrected
+/// to `src/types/index.ts` if the latter exists in `known_files` but the
+/// former does not. Pass an empty set when extracting a single file in
+/// isolation (barrel resolution is best-effort in that case).
+pub fn extract_typescript(
+    source: &str,
+    rel_path: &str,
+    known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::TypeScript;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
@@ -66,7 +77,7 @@ pub fn extract_typescript(source: &str, rel_path: &str) -> Result<Vec<GraphEntit
     let type_names = extract_types(&root, &file_slug, &mut entities);
 
     // Extract import statements — collect imported name→target slug mappings
-    let import_map = extract_imports(&root, &file_slug, rel_path, &mut entities);
+    let import_map = extract_imports(&root, &file_slug, rel_path, known_files, &mut entities);
 
     // Extract Calls edges by scanning function bodies for call expressions
     extract_calls(&root, &file_slug, &function_names, &import_map, &mut entities);
@@ -176,6 +187,7 @@ fn extract_imports(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
     rel_path: &str,
+    known_files: &HashSet<String>,
     entities: &mut Vec<GraphEntity>,
 ) -> HashMap<String, (String, bool, String)> {
     let mut import_map = HashMap::new();
@@ -190,7 +202,7 @@ fn extract_imports(
         let is_relative = import_path.starts_with('.');
 
         // Resolve relative import to a file path
-        let resolved = resolve_import_path(rel_path, &import_path);
+        let resolved = resolve_import_path(rel_path, &import_path, known_files);
         let target_slug = helpers::slugify_path(&resolved);
 
         // Extract imported identifiers as (local_name, original_name) pairs
@@ -564,7 +576,17 @@ fn extract_import_path(text: &str) -> String {
 }
 
 /// Resolve a relative import path to a file path.
-fn resolve_import_path(source_file: &str, import_path: &str) -> String {
+///
+/// When `known_files` is non-empty, barrel imports are resolved: if the
+/// initial resolution (e.g. `src/types.ts`) is not in `known_files`, the
+/// resolver tries `src/types/index.{ts,tsx,js,jsx}` as fallbacks. This
+/// correctly handles `import { Foo } from '../types'` when the actual
+/// file is `src/types/index.ts`.
+fn resolve_import_path(
+    source_file: &str,
+    import_path: &str,
+    known_files: &HashSet<String>,
+) -> String {
     if !import_path.starts_with('.') {
         return import_path.to_string();
     }
@@ -591,15 +613,48 @@ fn resolve_import_path(source_file: &str, import_path: &str) -> String {
         }
     }
 
-    let mut resolved = parts.join("/");
-    if !resolved.ends_with(".ts")
-        && !resolved.ends_with(".tsx")
-        && !resolved.ends_with(".js")
-        && !resolved.ends_with(".jsx")
+    let base = parts.join("/");
+
+    // If the import already has a file extension, return as-is
+    if base.ends_with(".ts")
+        || base.ends_with(".tsx")
+        || base.ends_with(".js")
+        || base.ends_with(".jsx")
     {
-        resolved.push_str(".ts");
+        return base;
     }
-    resolved
+
+    // Default resolution: append .ts
+    let direct = format!("{base}.ts");
+
+    // If we have no known files set, return the direct resolution (legacy behavior)
+    if known_files.is_empty() {
+        return direct;
+    }
+
+    // If the direct resolution exists in known files, use it
+    if known_files.contains(&direct) {
+        return direct;
+    }
+
+    // Try barrel import resolution: directory/index.{ts,tsx,js,jsx}
+    for ext in &["ts", "tsx", "js", "jsx"] {
+        let barrel = format!("{base}/index.{ext}");
+        if known_files.contains(&barrel) {
+            return barrel;
+        }
+    }
+
+    // Also try .tsx fallback for the direct path (e.g. Component.tsx)
+    for ext in &["tsx", "js", "jsx"] {
+        let alt = format!("{base}.{ext}");
+        if known_files.contains(&alt) {
+            return alt;
+        }
+    }
+
+    // No match found — return the default .ts resolution
+    direct
 }
 
 #[cfg(test)]
@@ -630,7 +685,7 @@ function getSuggestion(msg) {
     return undefined;
 }
 "#;
-        let entities = extract_typescript(source, "test/validate.ts").unwrap();
+        let entities = extract_typescript(source, "test/validate.ts", &HashSet::new()).unwrap();
         let calls: Vec<_> = entities
             .iter()
             .filter(|e| matches!(e, GraphEntity::Edge { edge_type, .. } if edge_type == "Calls"))
@@ -675,7 +730,7 @@ async function helper() {
     return 42;
 }
 "#;
-        let entities = extract_typescript(source, "test/async.ts").unwrap();
+        let entities = extract_typescript(source, "test/async.ts", &HashSet::new()).unwrap();
         let functions: Vec<_> = entities
             .iter()
             .filter(|e| {
@@ -743,7 +798,7 @@ export function runCheckpoint() {
     return result;
 }
 "#;
-        let entities = extract_typescript(source, "src/commands/checkpoint.ts").unwrap();
+        let entities = extract_typescript(source, "src/commands/checkpoint.ts", &HashSet::new()).unwrap();
         let calls: Vec<_> = entities
             .iter()
             .filter_map(|e| {
@@ -761,6 +816,108 @@ export function runCheckpoint() {
             calls.iter().any(|(_, to)| to.contains("::createCheckpoint") && !to.contains("::createCheckpointUtil")),
             "Cross-file call should use original export name, not alias. Got: {:?}",
             calls
+        );
+    }
+
+    #[test]
+    fn test_resolve_import_path_barrel_import() {
+        // Without known_files, barrel import resolves to foo.ts (legacy)
+        let empty = HashSet::new();
+        let resolved = resolve_import_path("src/commands/program.ts", "../types", &empty);
+        assert_eq!(resolved, "src/types.ts", "Without known_files, should resolve to .ts");
+
+        // With known_files containing the index.ts barrel file
+        let mut known = HashSet::new();
+        known.insert("src/types/index.ts".to_string());
+        let resolved = resolve_import_path("src/commands/program.ts", "../types", &known);
+        assert_eq!(
+            resolved, "src/types/index.ts",
+            "With known_files, should resolve to index.ts barrel"
+        );
+
+        // Direct file still wins when it exists
+        let mut known2 = HashSet::new();
+        known2.insert("src/utils.ts".to_string());
+        known2.insert("src/utils/index.ts".to_string());
+        let resolved = resolve_import_path("src/commands/program.ts", "../utils", &known2);
+        assert_eq!(
+            resolved, "src/utils.ts",
+            "Direct .ts file should win over barrel index.ts when both exist"
+        );
+
+        // Barrel import for schedule directory
+        let mut known3 = HashSet::new();
+        known3.insert("src/commands/schedule/index.ts".to_string());
+        let resolved = resolve_import_path("src/cli/program.ts", "../commands/schedule", &known3);
+        assert_eq!(
+            resolved, "src/commands/schedule/index.ts",
+            "Schedule barrel import should resolve to index.ts"
+        );
+    }
+
+    #[test]
+    fn test_resolve_import_path_tsx_fallback() {
+        // TSX fallback when .ts doesn't exist
+        let mut known = HashSet::new();
+        known.insert("src/components/App.tsx".to_string());
+        let resolved = resolve_import_path("src/index.ts", "./components/App", &known);
+        assert_eq!(
+            resolved, "src/components/App.tsx",
+            "Should fall back to .tsx when .ts doesn't exist"
+        );
+    }
+
+    #[test]
+    fn test_extract_typescript_barrel_import_creates_correct_target() {
+        let source = r#"
+import { WorkUnitsData } from '../types';
+
+export function listUnits(): void {
+    return;
+}
+"#;
+        let mut known = HashSet::new();
+        known.insert("src/types/index.ts".to_string());
+
+        let entities = extract_typescript(source, "src/commands/list.ts", &known).unwrap();
+
+        // Find the Imports edge
+        let import_edges: Vec<_> = entities
+            .iter()
+            .filter_map(|e| {
+                if let GraphEntity::Edge { edge_type, to_slug, .. } = e {
+                    if edge_type == "Imports" {
+                        return Some(to_slug.as_str());
+                    }
+                }
+                None
+            })
+            .collect();
+
+        assert_eq!(import_edges.len(), 1);
+        assert_eq!(
+            import_edges[0], "src-types-index-ts",
+            "Import edge should target the barrel index.ts, not src-types-ts"
+        );
+
+        // Find the stub File node for the import target
+        let target_file: Vec<_> = entities
+            .iter()
+            .filter_map(|e| {
+                if let GraphEntity::Node { node_type, properties, .. } = e {
+                    if node_type == "File" {
+                        let path = properties.get("path").and_then(|v| v.as_str());
+                        if path == Some("src/types/index.ts") {
+                            return Some(path);
+                        }
+                    }
+                }
+                None
+            })
+            .collect();
+        assert_eq!(
+            target_file.len(), 1,
+            "Should create stub File node with correct barrel path"
         );
     }
 }

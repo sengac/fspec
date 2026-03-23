@@ -9,7 +9,7 @@
 
 use nanograph::query_input::JsonParamMode;
 use nanograph::result::RunResult;
-use nanograph::store::database::Database;
+use nanograph::store::database::{Database, LoadMode};
 use serde_json::Value;
 use std::path::{Path, PathBuf};
 use tracing::info;
@@ -115,6 +115,31 @@ impl GraphDatabase {
             .load(jsonl)
             .await
             .map_err(|e| format!("Failed to load JSONL into graph: {e}"))
+    }
+
+    /// Load entities using Overwrite mode — replaces ALL existing data.
+    ///
+    /// Unlike `load_entities()` (which uses Merge mode and retains stale
+    /// nodes/edges from previous loads), this method performs a full
+    /// replacement. Use for re-indexing operations where the entire
+    /// entity set is recomputed from scratch.
+    pub async fn load_entities_overwrite(
+        &self,
+        entities: &[GraphEntity],
+    ) -> Result<usize, String> {
+        if entities.is_empty() {
+            return Ok(0);
+        }
+
+        let jsonl = entities_to_jsonl(entities);
+        self.db
+            .load_with_mode(&jsonl, LoadMode::Overwrite)
+            .await
+            .map_err(|e| format!("Failed to overwrite-load JSONL into graph: {e}"))?;
+
+        let count = entities.len();
+        info!(count, "overwrite-loaded entity batch into graph database");
+        Ok(count)
     }
 
     // ── Querying ──────────────────────────────────────────────

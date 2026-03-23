@@ -3,7 +3,7 @@ import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
-import type { WorkUnitType } from '../types/work-units';
+import type { WorkUnitType } from '../types';
 import { fileManager } from '../utils/file-manager';
 import {
   LinkCoverageOptions,

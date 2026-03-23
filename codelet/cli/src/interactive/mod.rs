@@ -4,26 +4,45 @@
 //! Based on OpenAI codex architecture with tokio::select! pattern.
 
 mod agent_runner;
+mod compaction_retry;
+mod error_classifiers;
+mod gemini_continuation;
 mod message_helpers;
+mod multimodal;
 pub mod output;
+mod recovery_image;
+mod recovery_thinking;
+mod recovery_truncation;
 mod repl_loop;
 mod stream_handlers;
 pub mod stream_loop;
 
+pub use error_classifiers::{
+    is_prompt_too_long_error,
+    is_image_content_error,
+    is_truncated_tool_call_error,
+};
+pub use recovery_truncation::{
+    MAX_TRUNCATION_RETRIES,
+    build_truncation_recovery_message,
+    build_truncation_budget_exhausted_message,
+};
+pub use recovery_thinking::{
+    MAX_THINKING_EXHAUSTION_RETRIES,
+    THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
+    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
+    is_thinking_exhaustion,
+    build_thinking_exhaustion_recovery_message,
+    build_thinking_budget_exhausted_message,
+    downgrade_thinking_level,
+};
+pub use recovery_image::sanitize_image_content;
+pub use multimodal::{BridgeImage, build_user_content_with_images};
 pub use output::{
     CliOutput, ContextFillInfo, StreamEvent, StreamOutput, TokenInfo, ToolCallEvent,
     ToolResultEvent,
 };
-pub use stream_loop::{
-    build_user_content_with_images, is_image_content_error, is_prompt_too_long_error,
-    is_truncated_tool_call_error, build_truncation_recovery_message,
-    build_truncation_budget_exhausted_message, MAX_TRUNCATION_RETRIES,
-    is_thinking_exhaustion, build_thinking_exhaustion_recovery_message,
-    build_thinking_budget_exhausted_message, downgrade_thinking_level,
-    MAX_THINKING_EXHAUSTION_RETRIES, THINKING_EXHAUSTION_OUTPUT_THRESHOLD,
-    THINKING_EXHAUSTION_CROSS_TURN_THRESHOLD,
-    run_agent_stream, run_agent_stream_with_images, sanitize_image_content, BridgeImage,
-};
+pub use stream_loop::{run_agent_stream, run_agent_stream_with_images};
 
 use crate::session::Session;
 use anyhow::Result;

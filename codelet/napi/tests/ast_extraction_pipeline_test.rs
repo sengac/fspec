@@ -12,6 +12,8 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
+use std::collections::HashSet;
+
 use codelet_napi::graph::ast_pipeline::{extract_file, walk_and_extract};
 use codelet_napi::graph::database::GraphDatabase;
 use codelet_napi::graph::graph_entities::GraphEntity;
@@ -84,7 +86,7 @@ export const logout = async (): Promise<void> => {
     let file_path = write_test_file(temp_dir.path(), "src/auth/login.ts", ts_content);
 
     // @step When the TypeScript extractor parses the file
-    let entities = extract_file(&file_path, temp_dir.path())
+    let entities = extract_file(&file_path, temp_dir.path(), &HashSet::new())
         .expect("TypeScript extraction should succeed");
 
     // @step Then Function nodes should be created with correct name, qualifiedName, isAsync, isPublic properties
@@ -166,7 +168,7 @@ fn internal_helper(x: i32) -> i32 {
     let file_path = write_test_file(temp_dir.path(), "src/graph/database.rs", rs_content);
 
     // @step When the Rust extractor parses the file
-    let entities = extract_file(&file_path, temp_dir.path())
+    let entities = extract_file(&file_path, temp_dir.path(), &HashSet::new())
         .expect("Rust extraction should succeed");
 
     // @step Then Type nodes should be created for each struct with typeKind "struct_kind"
@@ -257,7 +259,7 @@ export interface Config {
     let login_path = temp_dir.path().join("src/auth/login.ts");
 
     // @step When the TypeScript extractor parses the file
-    let entities = extract_file(&login_path, temp_dir.path())
+    let entities = extract_file(&login_path, temp_dir.path(), &HashSet::new())
         .expect("TypeScript extraction should succeed");
 
     // @step Then File nodes should be created for all three files
@@ -734,7 +736,7 @@ function processHeader(header: string): string {
     let file_path = write_test_file(temp_dir.path(), "src/board.ts", ts_content);
 
     // @step When the TypeScript extractor parses the file
-    let result = extract_file(&file_path, temp_dir.path());
+    let result = extract_file(&file_path, temp_dir.path(), &HashSet::new());
 
     // @step Then extraction should succeed without panicking
     assert!(
@@ -776,7 +778,7 @@ export function hello(): string {
     let file_path = write_test_file(temp_dir.path(), "src/hello.ts", ts_content);
 
     // @step When extract_file is called
-    let result = extract_file(&file_path, temp_dir.path());
+    let result = extract_file(&file_path, temp_dir.path(), &HashSet::new());
 
     // @step Then it should return Ok with entities (no panic)
     assert!(result.is_ok(), "Normal extraction should succeed");
@@ -787,5 +789,186 @@ export function hello(): string {
     assert!(
         !entities.is_empty(),
         "Should produce at least one entity (File node)"
+    );
+}
+
+// ============================================================================
+// Scenario: Barrel imports resolve to directory/index.ts during project walk
+// ============================================================================
+#[tokio::test]
+async fn test_barrel_imports_resolve_to_index_ts() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let project_dir = temp_dir.path();
+
+    // @step Given a project with a barrel module "src/types/index.ts"
+    let types_content = r#"
+export interface WorkUnit {
+    id: string;
+    title: string;
+}
+
+export interface PrefixesData {
+    prefixes: string[];
+}
+"#;
+    write_test_file(project_dir, "src/types/index.ts", types_content);
+
+    // @step And a command file "src/commands/list.ts" that imports from "../types"
+    let list_content = r#"
+import type { WorkUnit } from '../types';
+
+export function listWorkUnits(): void {
+    return;
+}
+"#;
+    write_test_file(project_dir, "src/commands/list.ts", list_content);
+
+    // @step And another command file "src/commands/show.ts" that also imports from "../types"
+    let show_content = r#"
+import type { WorkUnit, PrefixesData } from '../types';
+
+export function showWorkUnit(): void {
+    return;
+}
+"#;
+    write_test_file(project_dir, "src/commands/show.ts", show_content);
+    write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
+
+    // @step When the extraction pipeline processes the project directory
+    let entities = walk_and_extract(project_dir)
+        .expect("walk_and_extract should succeed");
+
+    // @step Then "src/types/index.ts" should be resolved correctly (not "src/types.ts")
+    let types_index_nodes: Vec<_> = entities
+        .iter()
+        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+            if node_type == "File"
+                && properties.get("path").and_then(|v| v.as_str()) == Some("src/types/index.ts")))
+        .collect();
+    assert_eq!(
+        types_index_nodes.len(),
+        1,
+        "Should have exactly 1 File node for src/types/index.ts"
+    );
+
+    // @step And NO phantom File node should exist for "src/types.ts"
+    let phantom_nodes: Vec<_> = entities
+        .iter()
+        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+            if node_type == "File"
+                && properties.get("path").and_then(|v| v.as_str()) == Some("src/types.ts")))
+        .collect();
+    assert_eq!(
+        phantom_nodes.len(),
+        0,
+        "Should NOT create a phantom File node for src/types.ts — barrel import should resolve to index.ts"
+    );
+
+    // @step And Import edges should point to the correct "src-types-index-ts" slug
+    let import_edges: Vec<_> = entities
+        .iter()
+        .filter_map(|e| {
+            if let GraphEntity::Edge { edge_type, to_slug, from_slug, .. } = e {
+                if edge_type == "Imports" && to_slug.contains("types") {
+                    return Some((from_slug.clone(), to_slug.clone()));
+                }
+            }
+            None
+        })
+        .collect();
+
+    assert_eq!(import_edges.len(), 2, "Should have 2 Imports edges to types");
+    for (from, to) in &import_edges {
+        assert_eq!(
+            to, "src-types-index-ts",
+            "Import from {} should target src-types-index-ts, got {}",
+            from, to
+        );
+    }
+
+    // @step And the graph should load successfully
+    let db_path = temp_dir.path().join("test-ast-barrel.nano");
+    let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)
+        .await
+        .expect("DB init should succeed");
+
+    let load_result = db.load_entities(&entities).await;
+    assert!(
+        load_result.is_ok(),
+        "Graph load should succeed, got: {:?}",
+        load_result.err()
+    );
+}
+
+// ============================================================================
+// Scenario: Barrel import via subdirectory (e.g. commands/schedule → schedule/index.ts)
+// ============================================================================
+#[tokio::test]
+async fn test_barrel_import_subdirectory_schedule() {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+    let project_dir = temp_dir.path();
+
+    // @step Given a barrel module "src/commands/schedule/index.ts" re-exporting sub-modules
+    let index_content = r#"
+export { addSchedule } from './add-schedule';
+export { removeSchedule } from './remove-schedule';
+"#;
+    write_test_file(project_dir, "src/commands/schedule/index.ts", index_content);
+
+    let add_content = r#"
+export function addSchedule(): void {}
+"#;
+    write_test_file(project_dir, "src/commands/schedule/add-schedule.ts", add_content);
+
+    let remove_content = r#"
+export function removeSchedule(): void {}
+"#;
+    write_test_file(project_dir, "src/commands/schedule/remove-schedule.ts", remove_content);
+
+    // @step And a CLI file "src/cli/program.ts" that imports from "../commands/schedule"
+    let program_content = r#"
+import { addSchedule, removeSchedule } from '../commands/schedule';
+
+export function registerCommands(): void {
+    addSchedule();
+    removeSchedule();
+}
+"#;
+    write_test_file(project_dir, "src/cli/program.ts", program_content);
+    write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
+
+    // @step When the extraction pipeline processes the project directory
+    let entities = walk_and_extract(project_dir)
+        .expect("walk_and_extract should succeed");
+
+    // @step Then the import should resolve to "src/commands/schedule/index.ts"
+    let import_edges: Vec<_> = entities
+        .iter()
+        .filter_map(|e| {
+            if let GraphEntity::Edge { edge_type, to_slug, from_slug, .. } = e {
+                if edge_type == "Imports" && from_slug.contains("program") && to_slug.contains("schedule") {
+                    return Some(to_slug.clone());
+                }
+            }
+            None
+        })
+        .collect();
+
+    assert!(!import_edges.is_empty(), "Should have import edge from program to schedule");
+    assert_eq!(
+        import_edges[0], "src-commands-schedule-index-ts",
+        "Import should resolve to schedule/index.ts barrel, not schedule.ts"
+    );
+
+    // @step And NO phantom "src/commands/schedule.ts" File node should exist
+    let phantom: Vec<_> = entities
+        .iter()
+        .filter(|e| matches!(e, GraphEntity::Node { node_type, properties, .. }
+            if node_type == "File"
+                && properties.get("path").and_then(|v| v.as_str()) == Some("src/commands/schedule.ts")))
+        .collect();
+    assert!(
+        phantom.is_empty(),
+        "Should NOT create phantom src/commands/schedule.ts node"
     );
 }

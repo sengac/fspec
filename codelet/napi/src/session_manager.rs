@@ -5003,6 +5003,8 @@ async fn agent_loop(
 
                 // KGRAPH-021: Extract learnings from the DAG summary at compaction boundary.
                 // This is a session boundary event — the right time to extract knowledge.
+                // Uses the Residue methodology: sends the DAG text to the current LLM with
+                // LEARNINGS_EXTRACTION_PROMPT, then passes the response to the extraction pipeline.
                 // Fire-and-forget on a background thread to not block the agent loop.
                 // Errors are logged via tracing (not silently swallowed).
                 {
@@ -5011,13 +5013,26 @@ async fn agent_loop(
                         .map(|n| n.label.as_str())
                         .collect::<Vec<_>>()
                         .join("\n");
+                    let learnings_provider = current_provider.clone();
+                    let learnings_model = current_model.clone();
                     std::thread::spawn(move || {
                         let rt = tokio::runtime::Builder::new_current_thread()
                             .enable_all()
                             .build();
                         match rt {
                             Ok(rt) => {
-                                rt.block_on(crate::graph::extract_learnings_from_dag(&dag_text));
+                                rt.block_on(async {
+                                    // Make LLM call using the session's provider/model
+                                    let llm_response = crate::graph::call_learnings_extraction_llm(
+                                        &learnings_provider,
+                                        learnings_model.as_deref(),
+                                        &dag_text,
+                                    ).await;
+                                    crate::graph::extract_learnings_from_dag(
+                                        &dag_text,
+                                        llm_response.as_deref(),
+                                    ).await;
+                                });
                             }
                             Err(e) => {
                                 tracing::warn!(

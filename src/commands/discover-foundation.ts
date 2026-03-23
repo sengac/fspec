@@ -16,7 +16,7 @@ import { getAgentConfig } from '../utils/agentRuntimeConfig';
 import { createWorkUnit } from './work-unit';
 import { createPrefix } from './create-prefix';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
-import type { WorkUnitsData } from '../types/work-unit';
+import type { WorkUnitsData } from '../types';
 
 import { output } from '../utils/output';
 export interface DiscoverFoundationOptions {

@@ -225,8 +225,8 @@ pub async fn dispatch_ast_index() -> String {
         .to_string();
     }
 
-    // Batch-load into graph
-    match db.load_entities(&all_entities).await {
+    // Batch-load into graph (overwrite to remove stale entities from prior index)
+    match db.load_entities_overwrite(&all_entities).await {
         Ok(loaded) => {
             tracing::info!(loaded, "AST index complete — entities loaded into graph");
             // Return fresh stats after indexing

@@ -26,7 +26,7 @@ import type {
   ConversationMessage,
   ConversationLine,
 } from '../types/conversation';
-import { LazyLineIndex, createLazyLineIndex } from './lazyLineIndex';
+import { LazyLineIndex, createLazyLineIndex } from '../utils/lazyLineIndex';
 
 /**
  * Result of useLazyConversationLines hook
