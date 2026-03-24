@@ -1,0 +1,594 @@
+{
+  "scenarios": [
+    {
+      "name": "Server starts and listens on configured port",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "84-98",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful authentication with valid API key",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "100-123",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Open mode authentication when no API key is configured",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "125-144",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentication failure with invalid API key",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "146-170",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unauthenticated client sends non-auth message",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "172-198",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Connected message broadcast to channel peers",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "200-225",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Route input message to channel peers",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "227-253",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Route chunk message to channel peers",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "283-306",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Route command and commandResponse between channel peers",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "308-347",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Channel isolation prevents cross-channel message leaking",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "349-373",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Server responds to ping with pong directly",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "375-397",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                236,
+                237,
+                238,
+                239
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Client removed from channel on disconnect",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "399-430",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Newly connecting client receives current instance list",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "432-462",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Route sessionControl message to channel peers",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/relay-server.test.ts",
+          "lines": "255-281",
+          "implMappings": [
+            {
+              "file": "bridge/relay-server.ts",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
+    "testFiles": [
+      "bridge/__tests__/relay-server.test.ts"
+    ],
+    "implFiles": [
+      "bridge/relay-server.ts"
+    ],
+    "totalLinesCovered": 720
+  }
+}
