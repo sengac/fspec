@@ -75,6 +75,7 @@ mod tests {
                 query: "login".to_string(),
                 entity_type: None,
                 limit: None,
+                path: None,
             },
         );
 

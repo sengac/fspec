@@ -22,6 +22,8 @@ pub enum GraphSearchAction {
         query: String,
         entity_type: Option<String>,
         limit: Option<usize>,
+        /// Glob filter to scope results to matching file paths (e.g. "src/tui/**/*.tsx").
+        path: Option<String>,
     },
     /// Get AST graph neighbors of a code entity node.
     AstNeighbors {
@@ -46,6 +48,8 @@ pub enum GraphSearchAction {
     AstDeadCode {
         entity_type: Option<String>,
         limit: Option<usize>,
+        /// Glob filter to scope results to matching file paths (e.g. "src/tui/**/*.tsx").
+        path: Option<String>,
     },
 
     // ── Learnings Graph Actions ──────────────────────────────────

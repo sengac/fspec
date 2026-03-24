@@ -7,6 +7,7 @@
 
 use crate::graph::database::GraphDatabase;
 use crate::graph::dispatch_helpers::{format_graph_stats, matches_fields, AST_SEARCHABLE_FIELDS};
+use globset::{Glob, GlobMatcher};
 use serde_json::Value;
 use tracing::warn;
 
@@ -41,20 +42,106 @@ const NEIGHBOR_QUERIES: &[NeighborQuery] = &[
     NeighborQuery { query_name: "type_referencing_functions", edge_type: "ReferencedBy" },
 ];
 
+/// Build a compiled glob matcher from an optional path pattern.
+///
+/// Returns `None` if no pattern is provided or if the pattern is invalid.
+/// Used by `dispatch_ast_search` and `dispatch_ast_dead_code` to filter
+/// results by file path.
+fn build_glob_matcher(path_pattern: Option<&str>) -> Option<GlobMatcher> {
+    path_pattern.and_then(|pattern| {
+        match Glob::new(pattern) {
+            Ok(g) => Some(g.compile_matcher()),
+            Err(e) => {
+                warn!(pattern, error = %e, "Invalid glob pattern for path filter — ignoring");
+                None
+            }
+        }
+    })
+}
+
+/// Check if a JSON item matches a path glob filter.
+///
+/// For File entities: checks the "path" field directly.
+/// For Function/Type entities: checks the "qualifiedName" or "slug" field
+/// to extract the file slug prefix, then looks up the file path via the
+/// `file_paths` map. If no file_paths map is provided, falls back to
+/// matching the slug prefix against the pattern.
+fn matches_path_glob(item: &Value, matcher: &GlobMatcher, path_field: &str) -> bool {
+    item.get(path_field)
+        .and_then(|v| v.as_str())
+        .is_some_and(|path| matcher.is_match(path))
+}
+
+/// Look up all file paths from the graph, returning a slug → path map.
+///
+/// Used to resolve Function/Type slugs (which contain the file slug prefix)
+/// back to the actual file path for glob matching.
+async fn build_file_path_index(db: &GraphDatabase) -> std::collections::HashMap<String, String> {
+    let mut index = std::collections::HashMap::new();
+    if let Ok(Value::Array(files)) = db.query_with_source(AST_QUERIES, "all_files", None).await {
+        for file in files {
+            if let (Some(slug), Some(path)) = (
+                file.get("slug").and_then(|v| v.as_str()),
+                file.get("path").and_then(|v| v.as_str()),
+            ) {
+                index.insert(slug.to_string(), path.to_string());
+            }
+        }
+    }
+    index
+}
+
+/// Check if a Function or Type item matches a path glob by resolving its
+/// file slug from the qualifiedName (format: "file-slug::entityName").
+fn matches_entity_path_glob(
+    item: &Value,
+    matcher: &GlobMatcher,
+    file_path_index: &std::collections::HashMap<String, String>,
+) -> bool {
+    // Try qualifiedName first (Functions), then slug (Types)
+    let id = item
+        .get("qualifiedName")
+        .or_else(|| item.get("slug"))
+        .and_then(|v| v.as_str());
+
+    if let Some(id_str) = id {
+        // Split on "::" to get the file slug prefix
+        if let Some(file_slug) = id_str.split("::").next() {
+            if let Some(file_path) = file_path_index.get(file_slug) {
+                return matcher.is_match(file_path);
+            }
+        }
+    }
+    false
+}
+
 /// Search AST code entities by name/pattern.
 ///
 /// Supports filtering by entity_type ("Function", "File", "Type", "Dependency").
 /// If no entity_type is specified, searches across all entity types.
 /// Uses client-side filtering on the result sets.
+///
+/// Optional `path_pattern` applies a glob filter to scope results to
+/// entities from matching file paths.
 pub async fn dispatch_ast_search(
     db: &GraphDatabase,
     query: &str,
     entity_type: Option<&str>,
     limit: Option<usize>,
+    path_pattern: Option<&str>,
 ) -> String {
     let query_lower = query.to_lowercase();
     let max_results = limit.unwrap_or(20);
     let mut results = Vec::new();
+
+    let glob_matcher = build_glob_matcher(path_pattern);
+
+    // Build file path index if we need to resolve Function/Type paths
+    let file_path_index = if glob_matcher.is_some() {
+        build_file_path_index(db).await
+    } else {
+        std::collections::HashMap::new()
+    };
 
     let types_to_search: Vec<&str> = match entity_type {
         Some(t) => vec![t],
@@ -76,9 +163,23 @@ pub async fn dispatch_ast_search(
                     if results.len() >= max_results {
                         break;
                     }
-                    if matches_fields(&item, &query_lower, AST_SEARCHABLE_FIELDS) {
-                        results.push(item);
+                    if !matches_fields(&item, &query_lower, AST_SEARCHABLE_FIELDS) {
+                        continue;
                     }
+                    // Apply glob filter if provided
+                    if let Some(ref matcher) = glob_matcher {
+                        let matches = match search_type {
+                            "File" => matches_path_glob(&item, matcher, "path"),
+                            "Function" | "Type" => {
+                                matches_entity_path_glob(&item, matcher, &file_path_index)
+                            }
+                            _ => true, // Dependencies don't have file paths
+                        };
+                        if !matches {
+                            continue;
+                        }
+                    }
+                    results.push(item);
                 }
             }
             Ok(_) => { /* query returned non-array result; skip */ }
@@ -262,16 +363,27 @@ pub async fn dispatch_ast_index() -> String {
 /// - Unreferenced types: Type nodes with no incoming TypeRef edges
 ///
 /// Accepts optional `entity_type` filter ("File", "Function", "Type").
+/// Accepts optional `path_pattern` glob to scope results to matching file paths.
 /// Excludes test files and stub File nodes (no language) by default.
 pub async fn dispatch_ast_dead_code(
     db: &GraphDatabase,
     entity_type: Option<&str>,
     limit: Option<usize>,
+    path_pattern: Option<&str>,
 ) -> String {
     let max_results = limit.unwrap_or(100);
     let types_to_check: Vec<&str> = match entity_type {
         Some(t) => vec![t],
         None => vec!["File", "Function", "Type"],
+    };
+
+    let glob_matcher = build_glob_matcher(path_pattern);
+
+    // Build file path index if we need to resolve Function/Type paths
+    let file_path_index = if glob_matcher.is_some() {
+        build_file_path_index(db).await
+    } else {
+        std::collections::HashMap::new()
     };
 
     let mut all_results = serde_json::Map::new();
@@ -297,7 +409,19 @@ pub async fn dispatch_ast_dead_code(
                                 .unwrap_or(false);
                             let has_language =
                                 item.get("language").and_then(|v| v.as_str()).is_some();
-                            !is_test && has_language
+                            if is_test || !has_language {
+                                return false;
+                            }
+                        }
+                        // Apply glob filter if provided
+                        if let Some(ref matcher) = glob_matcher {
+                            match *check_type {
+                                "File" => matches_path_glob(item, matcher, "path"),
+                                "Function" | "Type" => {
+                                    matches_entity_path_glob(item, matcher, &file_path_index)
+                                }
+                                _ => true,
+                            }
                         } else {
                             true
                         }

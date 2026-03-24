@@ -49,13 +49,13 @@ async fn get_graph_or_err(
 async fn dispatch_action(action: GraphSearchAction) -> String {
     match action {
         // ── AST Graph Actions ──────────────────────────────────
-        GraphSearchAction::AstSearch { query, entity_type, limit } => {
+        GraphSearchAction::AstSearch { query, entity_type, limit, path } => {
             let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_search").await {
                 Ok(db) => db,
                 Err(err_json) => return err_json,
             };
             graph::ast_dispatch::dispatch_ast_search(
-                &db, &query, entity_type.as_deref(), limit,
+                &db, &query, entity_type.as_deref(), limit, path.as_deref(),
             ).await
         }
         GraphSearchAction::AstNeighbors { node_id, depth, edge_types } => {
@@ -79,13 +79,13 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
             graph::ast_dispatch::dispatch_ast_index().await
         }
 
-        GraphSearchAction::AstDeadCode { entity_type, limit } => {
+        GraphSearchAction::AstDeadCode { entity_type, limit, path } => {
             let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_dead_code").await {
                 Ok(db) => db,
                 Err(err_json) => return err_json,
             };
             graph::ast_dispatch::dispatch_ast_dead_code(
-                &db, entity_type.as_deref(), limit,
+                &db, entity_type.as_deref(), limit, path.as_deref(),
             ).await
         }
 

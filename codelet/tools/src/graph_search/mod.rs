@@ -61,6 +61,10 @@ impl Tool for GraphSearchTool {
                         "description": "Filter AST search by entity type (optional for 'ast_search')",
                         "enum": ["Function", "File", "Type", "Dependency"]
                     },
+                    "path": {
+                        "type": "string",
+                        "description": "Glob filter to scope AST results to matching file paths (optional for 'ast_search' and 'ast_dead_code'). Examples: 'src/tui/**/*.tsx', 'codelet/napi/src/**/*.rs'"
+                    },
                     "category": {
                         "type": "string",
                         "description": "Filter by learning category (optional for 'learnings_search')",
