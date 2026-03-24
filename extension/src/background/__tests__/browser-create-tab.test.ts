@@ -355,27 +355,6 @@ describe('Feature: Add browser_create_tab tool', () => {
     });
   });
 
-  describe('Scenario: Skill documentation includes browser_create_tab', () => {
-    it('should document browser_create_tab in extension-skill.md', async () => {
-      // @step Given the extension-skill.md documentation file
-      const { readFile } = await import('fs/promises');
-      const { join } = await import('path');
-      const skillPath = join(
-        import.meta.dirname ?? '.',
-        '..',
-        '..',
-        '..',
-        'extension-skill.md'
-      );
-      const source = await readFile(skillPath, 'utf-8');
-
-      // @step Then the documentation should reference browser_create_tab with its parameters and return value
-      expect(source).toContain('browser_create_tab');
-      expect(source).toContain('url');
-      expect(source).toContain('active');
-      expect(source).toContain('pinned');
-      expect(source).toContain('windowId');
-      expect(source).toContain('tabId');
-    });
-  });
+  // NOTE: Scenario "Skill documentation includes browser_create_tab" removed —
+  // extension-skill.md was intentionally deleted in commit c3677dfc.
 });

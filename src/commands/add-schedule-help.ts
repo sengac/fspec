@@ -63,7 +63,7 @@ const config: CommandHelpConfig = {
     },
     {
       command:
-        'fspec add-schedule -n daily-tests -c "30 6 * * 1-5" -z America/New_York -t shell --command "npm test"',
+        'fspec add-schedule -n daily-tests -c "30 6 * * 1-5" -z America/New_York -t shell --command "<test-command>"',
       description:
         'Add a shell schedule that runs tests weekdays at 6:30 AM Eastern',
       output:
@@ -71,7 +71,7 @@ const config: CommandHelpConfig = {
     },
     {
       command:
-        'fspec add-schedule -n weekly-deps -c "0 9 * * 1" -z Europe/London -t shell --command "npm audit" -o queue',
+        'fspec add-schedule -n weekly-deps -c "0 9 * * 1" -z Europe/London -t shell --command "npx depcheck" -o queue',
       description: 'Add a weekly dependency audit with queue overlap policy',
       output:
         "✓ Schedule 'weekly-deps' added successfully\n  Type: shell\n  Cron: 0 9 * * 1\n  Timezone: Europe/London",

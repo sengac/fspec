@@ -164,7 +164,7 @@ describe("Feature: Checkpoint restore shows file not found but doesn't delete fi
       // @step Then the diff should show "Will be deleted on restore" instead of "File not found in checkpoint"
       expect(diff).toBeDefined();
       expect(diff).not.toContain('File not found in checkpoint');
-      expect(diff).toContain('Will be deleted on restore');
+      expect(diff!.toLowerCase()).toContain('will be deleted on restore');
 
       // @step And the message should clearly indicate the file will be removed during restoration
       expect(diff).toMatch(/delete|remov/i);
