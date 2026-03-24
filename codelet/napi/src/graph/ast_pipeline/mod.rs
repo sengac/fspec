@@ -6,6 +6,17 @@
 //! Delegates to per-language extractors:
 //! - `ast_ts_extractor`: TypeScript/JavaScript
 //! - `ast_rust_extractor`: Rust
+//! - `ast_python_extractor`: Python
+//! - `ast_go_extractor`: Go
+//! - `ast_java_extractor`: Java
+//! - `ast_c_extractor`: C
+//! - `ast_cpp_extractor`: C++
+//! - `ast_csharp_extractor`: C#
+//! - `ast_ruby_extractor`: Ruby
+//! - `ast_kotlin_extractor`: Kotlin
+//! - `ast_swift_extractor`: Swift
+//! - `ast_scala_extractor`: Scala
+//! - `ast_php_extractor`: PHP
 //!
 //! Uses `ignore::WalkBuilder` for `.gitignore`-aware file walking.
 //! All extracted entities are batched before loading.
@@ -15,14 +26,47 @@ use std::path::Path;
 
 use super::graph_entities::GraphEntity;
 
+pub mod ast_c_extractor;
+pub mod ast_cpp_extractor;
+pub mod ast_csharp_extractor;
+pub mod ast_go_extractor;
+pub mod ast_java_extractor;
+pub mod ast_kotlin_extractor;
+pub mod ast_php_extractor;
+pub mod ast_python_extractor;
+pub mod ast_ruby_extractor;
 pub mod ast_rust_extractor;
+pub mod ast_scala_extractor;
+pub mod ast_swift_extractor;
 pub mod ast_ts_extractor;
 pub mod cargo_dep_extractor;
+pub mod composer_dep_extractor;
+pub mod csproj_dep_extractor;
+pub mod gemfile_dep_extractor;
+pub mod gomod_dep_extractor;
+pub mod java_dep_extractor;
 pub mod npm_dep_extractor;
+pub mod pip_dep_extractor;
+pub mod sbt_dep_extractor;
+pub mod swift_dep_extractor;
 pub(crate) mod helpers;
 
 /// Supported source file extensions for AST extraction.
-const SUPPORTED_EXTENSIONS: &[&str] = &["ts", "tsx", "js", "jsx", "mjs", "mts", "rs"];
+const SUPPORTED_EXTENSIONS: &[&str] = &[
+    "ts", "tsx", "js", "jsx", "mjs", "mts", // TypeScript/JavaScript
+    "rs",                                     // Rust
+    "py", "pyi",                              // Python
+    "go",                                     // Go
+    "java",                                   // Java
+    "c", "h",                                 // C (h files may be C or C++)
+    "cpp", "cc", "cxx", "hpp",                // C++
+    "cs",                                     // C#
+    "rb", "gemspec",                          // Ruby
+    "kt", "kts",                              // Kotlin
+    "swift",                                  // Swift
+    "scala", "sc",                            // Scala
+    "php",                                    // PHP
+];
 
 /// Directories to always skip even without .gitignore.
 const SKIP_DIRS: &[&str] = &[
@@ -32,6 +76,14 @@ const SKIP_DIRS: &[&str] = &[
     ".git",
     ".fspec",
     "__pycache__",
+    ".mypy_cache",
+    ".pytest_cache",
+    "venv",
+    ".venv",
+    "vendor",
+    "Pods",
+    ".gradle",
+    "build",
 ];
 
 /// Extract AST entities from a single file.
@@ -74,6 +126,25 @@ pub fn extract_file(
             ast_ts_extractor::extract_typescript(&source, &rel_path, &known_files_clone)
         }
         "rs" => ast_rust_extractor::extract_rust(&source, &rel_path),
+        "py" | "pyi" => ast_python_extractor::extract_python(&source, &rel_path),
+        "go" => ast_go_extractor::extract_go(&source, &rel_path),
+        "java" => ast_java_extractor::extract_java(&source, &rel_path),
+        "c" => ast_c_extractor::extract_c(&source, &rel_path),
+        "h" => {
+            // Heuristic: if the .h file looks like C++, parse as C++
+            if ast_cpp_extractor::is_cpp_header(&source) {
+                ast_cpp_extractor::extract_cpp(&source, &rel_path)
+            } else {
+                ast_c_extractor::extract_c(&source, &rel_path)
+            }
+        }
+        "cpp" | "cc" | "cxx" | "hpp" => ast_cpp_extractor::extract_cpp(&source, &rel_path),
+        "cs" => ast_csharp_extractor::extract_csharp(&source, &rel_path),
+        "rb" | "gemspec" => ast_ruby_extractor::extract_ruby(&source, &rel_path),
+        "kt" | "kts" => ast_kotlin_extractor::extract_kotlin(&source, &rel_path),
+        "swift" => ast_swift_extractor::extract_swift(&source, &rel_path),
+        "scala" | "sc" => ast_scala_extractor::extract_scala(&source, &rel_path),
+        "php" => ast_php_extractor::extract_php(&source, &rel_path),
         _ => Ok(vec![]), // Unsupported language — skip
     }));
 

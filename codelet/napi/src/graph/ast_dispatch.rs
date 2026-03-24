@@ -316,6 +316,71 @@ pub async fn dispatch_ast_index() -> String {
         }
     }
 
+    // Extract dependencies from requirements.txt / pyproject.toml
+    match super::ast_pipeline::pip_dep_extractor::extract_python_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Python dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from go.mod
+    match super::ast_pipeline::gomod_dep_extractor::extract_go_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Go dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from pom.xml / build.gradle
+    match super::ast_pipeline::java_dep_extractor::extract_java_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Java dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from composer.json
+    match super::ast_pipeline::composer_dep_extractor::extract_composer_dependencies(&project_root)
+    {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Composer dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from Gemfile
+    match super::ast_pipeline::gemfile_dep_extractor::extract_gemfile_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Gemfile dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from .csproj files
+    match super::ast_pipeline::csproj_dep_extractor::extract_csproj_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("C# dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from build.sbt
+    match super::ast_pipeline::sbt_dep_extractor::extract_sbt_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("SBT dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
+    // Extract dependencies from Package.swift
+    match super::ast_pipeline::swift_dep_extractor::extract_swift_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Swift dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
     let entity_count = all_entities.len();
     if entity_count == 0 {
         return serde_json::json!({

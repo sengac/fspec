@@ -1,7 +1,8 @@
 //! Shared helpers for AST extractors.
 //!
-//! Common utility functions used by both TypeScript and Rust extractors
-//! to build graph entities consistently.
+//! Common utility functions used by all language extractors
+//! (TypeScript, Rust, Python, Go, Java, C, C++, C#, Ruby, Kotlin,
+//! Swift, Scala, PHP) to build graph entities consistently.
 
 use serde_json::{Map, Value};
 
@@ -171,6 +172,49 @@ pub fn build_depends_on_edge(file_slug: &str, dep_name: &str) -> GraphEntity {
     }
 }
 
+/// Count Python parameters, filtering out `self` and `cls`.
+pub fn count_params_python(text: &str) -> i32 {
+    if let Some(open) = text.find('(') {
+        if let Some(close) = text.find(')') {
+            let params = text[open + 1..close].trim();
+            if params.is_empty() {
+                return 0;
+            }
+            let count = params
+                .split(',')
+                .map(|p| p.trim())
+                .filter(|p| !p.is_empty())
+                .filter(|p| {
+                    let name = p.split(':').next().unwrap_or(p).split('=').next().unwrap_or(p).trim();
+                    name != "self" && name != "cls"
+                })
+                .count();
+            return count as i32;
+        }
+    }
+    0
+}
+
+/// Count Go parameters, filtering out the receiver parameter.
+///
+/// Go method signatures look like: `func (r *Receiver) Name(a int, b string)`
+/// The receiver `(r *Receiver)` is the first paren group, actual params are the second.
+pub fn count_params_go(text: &str) -> i32 {
+    // For methods: func (recv) Name(params) — use the second paren group
+    // For functions: func Name(params) — use the first paren group
+    let has_receiver = text.starts_with("func (") || text.starts_with("func(");
+
+    if has_receiver {
+        // Skip past the receiver paren group
+        if let Some(first_close) = text.find(')') {
+            let rest = &text[first_close + 1..];
+            return count_params(rest);
+        }
+    }
+
+    count_params(text)
+}
+
 /// Extract an identifier name after a keyword (e.g., "function " → name, "fn " → name).
 ///
 /// Shared by both TypeScript and Rust extractors to avoid duplicated name-parsing logic.
@@ -184,4 +228,26 @@ pub fn extract_name_after_keyword(text: &str, keyword: &str) -> String {
             .collect();
     }
     String::new()
+}
+
+/// Find the line number of the closing brace for a block starting at `start`.
+///
+/// Tracks `{` / `}` depth and returns the line index where depth returns
+/// to zero. Used by C++, C#, and other line-scanning extractors.
+pub fn find_closing_brace(lines: &[&str], start: usize) -> Option<usize> {
+    let mut depth = 0i32;
+    for (i, line) in lines.iter().enumerate().skip(start) {
+        for c in line.chars() {
+            if c == '{' {
+                depth += 1;
+            }
+            if c == '}' {
+                depth -= 1;
+                if depth == 0 {
+                    return Some(i);
+                }
+            }
+        }
+    }
+    None
 }

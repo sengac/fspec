@@ -49,6 +49,35 @@ pub fn find_node<'a>(
     })
 }
 
+/// Get a string property from a node entity.
+pub fn get_node_property<'a>(entity: &'a GraphEntity, key: &str) -> Option<&'a str> {
+    if let GraphEntity::Node { properties, .. } = entity {
+        properties.get(key).and_then(|v| v.as_str())
+    } else {
+        None
+    }
+}
+
+/// Find any Dependency node and verify it has the expected source.
+pub fn has_dependency_with_source(entities: &[GraphEntity], expected_source: &str) -> bool {
+    entities.iter().any(|e| {
+        if let GraphEntity::Node {
+            node_type,
+            properties,
+            ..
+        } = e
+        {
+            node_type == "Dependency"
+                && properties
+                    .get("source")
+                    .and_then(|v| v.as_str())
+                    .map_or(false, |s| s == expected_source)
+        } else {
+            false
+        }
+    })
+}
+
 // ============================================================================
 // Learnings Entity Builders
 // ============================================================================
