@@ -61,7 +61,7 @@ pub fn extract_java(
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from method bodies
-    extract_calls(source, &file_slug, lang, &function_names, &import_map, &mut entities);
+    extract_calls(source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities);
 
     // Extract TypeRef edges from method signatures
     extract_type_refs(
@@ -267,6 +267,7 @@ fn extract_calls(
     file_slug: &str,
     lang: SupportLang,
     local_functions: &HashSet<String>,
+    local_types: &HashSet<String>,
     import_map: &HashMap<String, (String, bool, String)>,
     entities: &mut Vec<GraphEntity>,
 ) {
@@ -298,9 +299,28 @@ fn extract_calls(
                     &callee_names,
                     &fn_name,
                     local_functions,
+                    local_types,
                     import_map,
                     entities,
                 );
+
+                // Extract `new ClassName(` patterns → TypeRef edges
+                let mut constructor_names = HashSet::new();
+                edge_helpers::extract_constructor_names_from_body(body, &mut constructor_names);
+                for ctor_name in &constructor_names {
+                    // Check local types first
+                    if local_types.contains(ctor_name.as_str()) {
+                        let target_slug = format!("{file_slug}::{ctor_name}");
+                        edge_helpers::build_typeref_edge(&caller_slug, &target_slug, entities);
+                    } else if let Some((target_file_slug, is_relative, original_name)) =
+                        import_map.get(ctor_name.as_str())
+                    {
+                        if *is_relative {
+                            let target_slug = format!("{target_file_slug}::{original_name}");
+                            edge_helpers::build_typeref_edge(&caller_slug, &target_slug, entities);
+                        }
+                    }
+                }
             }
         }
     }
@@ -414,6 +434,27 @@ fn extract_java_type_annotations(signature: &str, out: &mut HashSet<String>) {
                 if !type_name.is_empty() && !java_builtins.contains(type_name.as_str()) {
                     out.insert(type_name);
                 }
+            }
+        }
+    }
+
+    // Extract types from throws clause: `throws FooException, BarException`
+    if let Some(throws_pos) = signature.find("throws ") {
+        let after_throws = &signature[throws_pos + 7..];
+        // Remove everything after '{' if present
+        let throws_part = if let Some(brace) = after_throws.find('{') {
+            &after_throws[..brace]
+        } else {
+            after_throws
+        };
+        for exception in throws_part.split(',') {
+            let name: String = exception
+                .trim()
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            if !name.is_empty() && !java_builtins.contains(name.as_str()) {
+                out.insert(name);
             }
         }
     }

@@ -80,7 +80,7 @@ pub fn extract_scala(source: &str, rel_path: &str, known_files: &HashSet<String>
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
-    extract_calls(source, &file_slug, &function_names, &import_map, &mut entities);
+    extract_calls(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
 
     // Extract TypeRef edges from function signatures
     extract_type_refs(
@@ -256,6 +256,7 @@ fn extract_calls(
     source: &str,
     file_slug: &str,
     local_functions: &HashSet<String>,
+    local_types: &HashSet<String>,
     import_map: &HashMap<String, (String, bool, String)>,
     entities: &mut Vec<GraphEntity>,
 ) {
@@ -283,6 +284,7 @@ fn extract_calls(
                     &callee_names,
                     &fn_name,
                     local_functions,
+                    local_types,
                     import_map,
                     entities,
                 );

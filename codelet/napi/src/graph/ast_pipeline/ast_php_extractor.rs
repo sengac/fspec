@@ -68,6 +68,7 @@ pub fn extract_php(
         &file_slug,
         lang,
         &function_names,
+        &type_names,
         &import_map,
         &mut entities,
     );
@@ -292,6 +293,7 @@ fn extract_calls(
     file_slug: &str,
     lang: SupportLang,
     local_functions: &HashSet<String>,
+    local_types: &HashSet<String>,
     import_map: &HashMap<String, (String, bool, String)>,
     entities: &mut Vec<GraphEntity>,
 ) {
@@ -331,6 +333,7 @@ fn extract_calls(
                     &callee_names,
                     &fn_name,
                     local_functions,
+                    local_types,
                     import_map,
                     entities,
                 );

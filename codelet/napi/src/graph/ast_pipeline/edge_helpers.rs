@@ -171,6 +171,46 @@ pub fn extract_call_names_from_body(body: &str, out: &mut HashSet<String>) {
     }
 }
 
+/// Extract constructor target names from `new ClassName(` patterns.
+///
+/// In Java/C#/C++, `new Foo(...)` is a type reference, not a function call.
+/// Returns the class names that follow `new`.
+pub fn extract_constructor_names_from_body(body: &str, out: &mut HashSet<String>) {
+    let search = "new ";
+    let mut pos = 0;
+    let bytes = body.as_bytes();
+    let len = bytes.len();
+
+    while let Some(found) = body[pos..].find(search) {
+        let abs = pos + found + search.len();
+        // Check the identifier starts here
+        if abs < len && is_ident_start(bytes[abs]) {
+            let start = abs;
+            let mut end = abs;
+            while end < len && is_ident_char(bytes[end]) {
+                end += 1;
+            }
+            let name = &body[start..end];
+            // Skip whitespace
+            let mut j = end;
+            while j < len && bytes[j] == b' ' {
+                j += 1;
+            }
+            // Must be followed by (
+            if j < len && bytes[j] == b'(' {
+                // Must start with uppercase (class convention)
+                let first = name.chars().next().unwrap_or('a');
+                if first.is_uppercase() {
+                    out.insert(name.to_string());
+                }
+            }
+            pos = end;
+        } else {
+            pos = abs;
+        }
+    }
+}
+
 /// Extract `$this->method()` and `self::method()` calls from a PHP/C#/Java method body.
 ///
 /// Returns the method names (without the `$this->` / `self::` prefix).
@@ -206,6 +246,10 @@ pub fn extract_member_call_names(body: &str, out: &mut HashSet<String>) {
 /// For each callee name, checks:
 /// 1. If it's a known function in the same file → local Calls edge
 /// 2. If it's an imported function from a relative import → cross-file Calls edge
+/// 3. If it's a known TYPE (local or imported) → TypeRef edge instead of Calls
+///
+/// The `local_types` set prevents emitting dangling Calls edges when a class
+/// is called as a constructor (e.g. `OptionParser(ctx)` in Python).
 ///
 /// Returns nothing — emits edges directly into the entities vector.
 pub fn resolve_calls(
@@ -214,6 +258,7 @@ pub fn resolve_calls(
     callee_names: &HashSet<String>,
     caller_fn_name: &str,
     local_functions: &HashSet<String>,
+    local_types: &HashSet<String>,
     import_map: &HashMap<String, (String, bool, String)>,
     entities: &mut Vec<GraphEntity>,
 ) {
@@ -222,15 +267,29 @@ pub fn resolve_calls(
             continue; // skip self-recursion
         }
 
+        // Check local entities first
         if local_functions.contains(callee_name.as_str()) {
             let target_slug = format!("{file_slug}::{callee_name}");
             build_calls_edge(caller_slug, &target_slug, entities);
+        } else if local_types.contains(callee_name.as_str()) {
+            // Constructor call to a local class → TypeRef, not Calls
+            let target_slug = format!("{file_slug}::{callee_name}");
+            build_typeref_edge(caller_slug, &target_slug, entities);
         } else if let Some((target_file_slug, is_relative, original_name)) =
             import_map.get(callee_name.as_str())
         {
             if *is_relative {
                 let target_slug = format!("{target_file_slug}::{original_name}");
-                build_calls_edge(caller_slug, &target_slug, entities);
+                // Check if the original name starts with uppercase → likely a class/type
+                // In Python and Java, classes follow PascalCase convention.
+                // Strip leading underscores first: _OptionParser → O is uppercase → Type
+                let stripped = original_name.trim_start_matches('_');
+                let first_char = stripped.chars().next().unwrap_or('a');
+                if first_char.is_uppercase() {
+                    build_typeref_edge(caller_slug, &target_slug, entities);
+                } else {
+                    build_calls_edge(caller_slug, &target_slug, entities);
+                }
             }
         }
     }

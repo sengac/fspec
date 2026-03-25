@@ -220,14 +220,66 @@ pub fn count_params_go(text: &str) -> i32 {
 /// Shared by both TypeScript and Rust extractors to avoid duplicated name-parsing logic.
 /// Returns an empty string if the keyword is not found.
 pub fn extract_name_after_keyword(text: &str, keyword: &str) -> String {
-    if let Some(pos) = text.find(keyword) {
-        let after = &text[pos + keyword.len()..];
+    // Strip comments before searching, so keywords in comments don't match.
+    // Process line by line: remove // line comments and /* */ block comments.
+    let stripped = strip_comments(text);
+    if let Some(pos) = stripped.find(keyword) {
+        let after = &stripped[pos + keyword.len()..];
         return after
             .chars()
             .take_while(|c| c.is_alphanumeric() || *c == '_')
             .collect();
     }
     String::new()
+}
+
+/// Strip C-style comments from source text.
+///
+/// Removes `// ...` line comments and `/* ... */` block comments.
+/// Also strips string literals (double-quoted) to avoid matching keywords
+/// inside annotation values like `@SuppressWarnings("MemberName")`.
+fn strip_comments(text: &str) -> String {
+    let mut result = String::with_capacity(text.len());
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'/' {
+            // Line comment — skip to end of line
+            while i < len && bytes[i] != b'\n' {
+                i += 1;
+            }
+        } else if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'*' {
+            // Block comment — skip to closing */
+            i += 2;
+            while i + 1 < len && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                i += 1;
+            }
+            if i + 1 < len {
+                i += 2; // skip */
+            }
+        } else if bytes[i] == b'"' {
+            // String literal — skip contents to avoid keyword matches
+            result.push(' ');
+            i += 1;
+            while i < len && bytes[i] != b'"' {
+                if bytes[i] == b'\\' && i + 1 < len {
+                    i += 2; // skip escape sequence
+                } else {
+                    i += 1;
+                }
+            }
+            if i < len {
+                i += 1; // skip closing "
+            }
+        } else {
+            result.push(bytes[i] as char);
+            i += 1;
+        }
+    }
+
+    result
 }
 
 /// Find the line number of the closing brace for a block starting at `start`.

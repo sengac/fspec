@@ -292,32 +292,89 @@ pub fn deduplicate_entities(entities: Vec<GraphEntity>) -> Vec<GraphEntity> {
         }
     }
 
-    // Build a set of all known node slugs (any node type) for edge validation
-    let all_slugs: std::collections::HashSet<String> = deduped_nodes
-        .iter()
-        .filter_map(|n| {
-            if let GraphEntity::Node { slug, .. } = n {
-                Some(slug.clone())
-            } else {
-                None
-            }
-        })
-        .collect();
+    // Build a typed slug map: slug → set of node_types that slug belongs to.
+    // This lets us validate that edge endpoints match the schema-expected types
+    // (e.g. Calls: Function→Function, TypeRef: Function→Type).
+    let mut slug_types: HashMap<String, std::collections::HashSet<String>> = HashMap::new();
+    for node in &deduped_nodes {
+        if let GraphEntity::Node {
+            node_type, slug, ..
+        } = node
+        {
+            slug_types
+                .entry(slug.clone())
+                .or_default()
+                .insert(node_type.clone());
+        }
+    }
 
-    // Only keep edges whose both endpoints exist as nodes
+    // Schema-expected target types for each edge kind.
+    // Calls: Function→Function, TypeRef: Function→Type,
+    // Contains: File→Function, ContainsType: File→Type,
+    // Imports: File→File, DependsOn: File→Dependency,
+    // Implements: Type→Type, Extends: Type→Type.
+    fn expected_target_type(edge_type: &str) -> Option<&'static str> {
+        match edge_type {
+            "Calls" => Some("Function"),
+            "TypeRef" => Some("Type"),
+            "Contains" => Some("Function"),
+            "ContainsType" => Some("Type"),
+            "Imports" => Some("File"),
+            "DependsOn" => Some("Dependency"),
+            "Implements" | "Extends" => Some("Type"),
+            _ => None,
+        }
+    }
+
+    fn expected_source_type(edge_type: &str) -> Option<&'static str> {
+        match edge_type {
+            "Calls" => Some("Function"),
+            "TypeRef" => Some("Function"),
+            "Contains" | "ContainsType" | "Imports" | "DependsOn" => Some("File"),
+            "Implements" | "Extends" => Some("Type"),
+            _ => None,
+        }
+    }
+
+    // Only keep edges whose both endpoints exist AND match schema-expected types
     let mut pruned = 0usize;
     for edge in edges {
         if let GraphEntity::Edge {
+            ref edge_type,
             ref from_slug,
             ref to_slug,
             ..
         } = edge
         {
-            if all_slugs.contains(from_slug.as_str()) && all_slugs.contains(to_slug.as_str()) {
-                deduped_nodes.push(edge);
-            } else {
+            let from_exists = slug_types.contains_key(from_slug.as_str());
+            let to_exists = slug_types.contains_key(to_slug.as_str());
+
+            if !from_exists || !to_exists {
                 pruned += 1;
+                continue;
             }
+
+            // Validate source node type matches schema
+            if let Some(expected_src) = expected_source_type(edge_type) {
+                if let Some(types) = slug_types.get(from_slug.as_str()) {
+                    if !types.contains(expected_src) {
+                        pruned += 1;
+                        continue;
+                    }
+                }
+            }
+
+            // Validate target node type matches schema
+            if let Some(expected_tgt) = expected_target_type(edge_type) {
+                if let Some(types) = slug_types.get(to_slug.as_str()) {
+                    if !types.contains(expected_tgt) {
+                        pruned += 1;
+                        continue;
+                    }
+                }
+            }
+
+            deduped_nodes.push(edge);
         }
     }
 

@@ -59,7 +59,7 @@ pub fn extract_csharp(
     let type_names = extract_types(&root, &file_slug, lang, &mut entities);
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
-    extract_calls(source, &file_slug, lang, &function_names, &import_map, &mut entities);
+    extract_calls(source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities);
     extract_type_refs(
         source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities,
     );
@@ -197,6 +197,7 @@ fn extract_calls(
     file_slug: &str,
     lang: SupportLang,
     local_functions: &HashSet<String>,
+    local_types: &HashSet<String>,
     import_map: &HashMap<String, (String, bool, String)>,
     entities: &mut Vec<GraphEntity>,
 ) {
@@ -217,7 +218,7 @@ fn extract_calls(
                 edge_helpers::extract_call_names_from_body(body, &mut callee_names);
                 edge_helpers::resolve_calls(
                     &caller_slug, file_slug, &callee_names, &fn_name,
-                    local_functions, import_map, entities,
+                    local_functions, local_types, import_map, entities,
                 );
             }
         }

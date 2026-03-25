@@ -145,6 +145,7 @@ fn extract_calls(
                     &callee_names,
                     &fn_name,
                     local_functions,
+                    &HashSet::new(),
                     import_map,
                     entities,
                 );
