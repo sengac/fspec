@@ -571,7 +571,8 @@
         "KGRAPH-050",
         "KGRAPH-051",
         "KGRAPH-052",
-        "KGRAPH-053"
+        "KGRAPH-053",
+        "KGRAPH-054"
       ]
     },
     "provider-resilience": {

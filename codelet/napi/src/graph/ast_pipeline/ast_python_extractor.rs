@@ -18,6 +18,7 @@ use crate::graph::graph_entities::GraphEntity;
 /// ast-grep patterns for Python function declarations.
 const PYTHON_FUNCTION_PATTERNS: &[&str] = &[
     "def $NAME($$$ARGS): $$$BODY",
+    "def $NAME($$$ARGS) -> $RET: $$$BODY",
 ];
 
 /// ast-grep patterns for Python class declarations.
@@ -56,13 +57,16 @@ pub fn extract_python(
     let function_names = extract_functions(&root, &file_slug, &mut entities);
 
     // Extract type (class) declarations → collect names for TypeRef
-    let _type_names = extract_types(&root, &file_slug, &mut entities);
+    let type_names = extract_types(&root, &file_slug, &mut entities);
 
     // Extract import statements → Imports edges + import map
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges from function bodies
     extract_calls(source, &file_slug, &function_names, &import_map, &mut entities);
+
+    // Extract TypeRef edges from function signatures (type annotations)
+    extract_type_refs(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
 
     Ok(entities)
 }
@@ -173,41 +177,40 @@ fn extract_imports(
                 .and_then(|s| s.split_once(" import "))
             {
                 let module_path = module_part.trim();
-                let resolved_path = resolve_python_module(module_path);
+                let resolved_path = match resolve_python_module(module_path, known_files) {
+                    Some(p) => p,
+                    None => continue,
+                };
 
-                let is_local = known_files.contains(&resolved_path);
-
-                if is_local {
-                    // Parse imported names
-                    for name_item in names_part.split(',') {
-                        let name_item = name_item.trim();
-                        if name_item.is_empty() || name_item == "*" {
-                            continue;
-                        }
-
-                        let (local_name, original_name) = if let Some((orig, alias)) =
-                            name_item.split_once(" as ")
-                        {
-                            (alias.trim().to_string(), orig.trim().to_string())
-                        } else {
-                            (name_item.to_string(), name_item.to_string())
-                        };
-
-                        let target_slug = helpers::slugify_path(&resolved_path);
-                        import_map.insert(
-                            local_name,
-                            (target_slug, true, original_name),
-                        );
+                // Parse imported names
+                for name_item in names_part.split(',') {
+                    let name_item = name_item.trim();
+                    if name_item.is_empty() || name_item == "*" {
+                        continue;
                     }
 
-                    edge_helpers::build_import_edge(
-                        file_slug,
-                        module_path,
-                        &resolved_path,
-                        false,
-                        entities,
+                    let (local_name, original_name) = if let Some((orig, alias)) =
+                        name_item.split_once(" as ")
+                    {
+                        (alias.trim().to_string(), orig.trim().to_string())
+                    } else {
+                        (name_item.to_string(), name_item.to_string())
+                    };
+
+                    let target_slug = helpers::slugify_path(&resolved_path);
+                    import_map.insert(
+                        local_name,
+                        (target_slug, true, original_name),
                     );
                 }
+
+                edge_helpers::build_import_edge(
+                    file_slug,
+                    module_path,
+                    &resolved_path,
+                    false,
+                    entities,
+                );
             }
         } else if trimmed.starts_with("import ") {
             // `import module.path` or `import module.path as alias`
@@ -227,10 +230,7 @@ fn extract_imports(
                     (module_item, module_item.to_string())
                 };
 
-                let resolved_path = resolve_python_module(module_path);
-                let is_local = known_files.contains(&resolved_path);
-
-                if is_local {
+                if let Some(resolved_path) = resolve_python_module(module_path, known_files) {
                     edge_helpers::build_import_edge(
                         file_slug,
                         module_path,
@@ -245,13 +245,34 @@ fn extract_imports(
     import_map
 }
 
-/// Resolve a Python module path to a file path.
+/// Resolve a Python module path to a file path using suffix matching.
 ///
-/// `click.core` → `click/core.py`
-/// `.utils` → relative (handled by caller)
-fn resolve_python_module(module_path: &str) -> String {
-    let path = module_path.replace('.', "/");
-    format!("{path}.py")
+/// `click.core` → looks for any known file ending with `click/core.py`
+/// Falls back to exact match for flat structures.
+fn resolve_python_module(module_path: &str, known_files: &HashSet<String>) -> Option<String> {
+    let suffix = module_path.replace('.', "/");
+    let suffix_py = format!("{suffix}.py");
+    let suffix_init = format!("{suffix}/__init__.py");
+
+    // Try exact match first
+    if known_files.contains(&suffix_py) {
+        return Some(suffix_py);
+    }
+    if known_files.contains(&suffix_init) {
+        return Some(suffix_init);
+    }
+
+    // Try suffix match: find any known file ending with /click/core.py
+    let with_slash = format!("/{suffix_py}");
+    if let Some(found) = known_files.iter().find(|f| f.ends_with(&with_slash)) {
+        return Some(found.clone());
+    }
+    let with_slash_init = format!("/{suffix_init}");
+    if let Some(found) = known_files.iter().find(|f| f.ends_with(&with_slash_init)) {
+        return Some(found.clone());
+    }
+
+    None
 }
 
 /// Extract Calls edges from Python function bodies.
@@ -296,6 +317,131 @@ fn extract_calls(
                     entities,
                 );
             }
+        }
+    }
+}
+
+/// Extract TypeRef edges from Python function type annotations.
+///
+/// Python type annotations appear in function signatures:
+/// - `def process(ctx: Context) -> None`
+/// - `def foo(x: int, y: List[str]) -> Optional[Result]`
+///
+/// Filters out Python builtins (str, int, float, bool, None, etc.).
+fn extract_type_refs(
+    source: &str,
+    file_slug: &str,
+    function_names: &HashSet<String>,
+    local_types: &HashSet<String>,
+    import_map: &HashMap<String, (String, bool, String)>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    let lang = SupportLang::Python;
+    let root = lang.ast_grep(source);
+
+    let python_builtins: HashSet<&str> = [
+        "str", "int", "float", "bool", "bytes", "None", "list", "dict",
+        "tuple", "set", "frozenset", "object", "type", "complex",
+        "range", "slice", "memoryview", "bytearray",
+        "List", "Dict", "Tuple", "Set", "FrozenSet", "Optional",
+        "Union", "Any", "Callable", "Iterator", "Generator",
+        "Sequence", "Mapping", "MutableMapping", "Iterable",
+        "Type", "ClassVar", "Final", "Literal",
+    ]
+    .into_iter()
+    .collect();
+
+    for pattern in PYTHON_FUNCTION_PATTERNS {
+        for node in root.root().find_all(*pattern) {
+            let fn_text = node.text();
+            let fn_name = helpers::extract_name_after_keyword(&fn_text, "def ");
+            if fn_name.is_empty() || !function_names.contains(&fn_name) {
+                continue;
+            }
+
+            let fn_slug = format!("{file_slug}::{fn_name}");
+
+            // Extract the signature (everything before the body colon)
+            // For `def process(ctx: Context) -> None:`, we need everything up to the last `:`
+            // Handle both `):` (no return type) and `) -> Type:` (with return type)
+            let signature = if let Some(colon_pos) = fn_text.find("):") {
+                &fn_text[..colon_pos + 1]
+            } else if let Some(arrow_pos) = fn_text.find("->") {
+                // Has return type: find the `)` before `->`
+                if let Some(close_paren) = fn_text[..arrow_pos].rfind(')') {
+                    &fn_text[..close_paren + 1]
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            };
+
+            let mut type_names = HashSet::new();
+            extract_python_type_annotations(signature, &fn_text, &python_builtins, &mut type_names);
+
+            edge_helpers::resolve_type_refs(
+                &fn_slug,
+                file_slug,
+                &type_names,
+                local_types,
+                import_map,
+                entities,
+            );
+        }
+    }
+}
+
+/// Extract type names from Python function signatures.
+///
+/// Looks for:
+/// - Parameter annotations: `param: TypeName`
+/// - Return type: `) -> TypeName:`
+fn extract_python_type_annotations(
+    signature: &str,
+    full_text: &str,
+    builtins: &HashSet<&str>,
+    out: &mut HashSet<String>,
+) {
+    // Extract parameter type annotations: `name: TypeName`
+    // Look for patterns like `word: Word` inside the parameter list
+    if let Some(paren_open) = signature.find('(') {
+        let paren_close = signature.rfind(')').unwrap_or(signature.len());
+        let params = &signature[paren_open + 1..paren_close];
+
+        for param in params.split(',') {
+            let param = param.trim();
+            if let Some(colon_pos) = param.find(':') {
+                let type_part = param[colon_pos + 1..].trim();
+                // Extract the first identifier from the type annotation
+                let type_name: String = type_part
+                    .chars()
+                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                    .collect();
+                if !type_name.is_empty() && !builtins.contains(type_name.as_str()) {
+                    out.insert(type_name);
+                }
+            }
+        }
+    }
+
+    // Extract return type annotation: `) -> TypeName`
+    // Look in the full text for the return type between `)` and `:`
+    if let Some(arrow_pos) = full_text.find("->") {
+        let after_arrow = full_text[arrow_pos + 2..].trim();
+        // Return type ends at `:` (start of body)
+        let type_part = if let Some(colon_pos) = after_arrow.find(':') {
+            after_arrow[..colon_pos].trim()
+        } else {
+            after_arrow
+        };
+
+        let type_name: String = type_part
+            .chars()
+            .take_while(|c| c.is_alphanumeric() || *c == '_')
+            .collect();
+        if !type_name.is_empty() && !builtins.contains(type_name.as_str()) {
+            out.insert(type_name);
         }
     }
 }

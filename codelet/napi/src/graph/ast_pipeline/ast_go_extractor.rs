@@ -10,20 +10,15 @@
 
 use std::collections::{HashMap, HashSet};
 
+use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
 
-/// ast-grep patterns for Go function declarations.
-/// Each tuple: (pattern, has_receiver).
-const GO_FUNCTION_PATTERNS: &[(&str, bool)] = &[
-    ("func $NAME($$$ARGS) $RET { $$$BODY }", false),
-    ("func $NAME($$$ARGS) { $$$BODY }", false),
-    ("func ($RECV) $NAME($$$ARGS) $RET { $$$BODY }", true),
-    ("func ($RECV) $NAME($$$ARGS) { $$$BODY }", true),
-];
+/// AST node kinds for Go functions and methods.
+const GO_FUNC_KINDS: &[&str] = &["function_declaration", "method_declaration"];
 
 /// ast-grep patterns for Go type declarations.
 const GO_TYPE_PATTERNS: &[(&str, &str)] = &[
@@ -56,19 +51,28 @@ pub fn extract_go(
     // Extract function declarations → collect names
     let function_names = extract_functions(&root, &file_slug, &mut entities);
 
-    // Extract type declarations
-    extract_types(&root, &file_slug, &mut entities);
+    // Extract type declarations → collect names for TypeRef
+    let type_names = extract_types(&root, &file_slug, &mut entities);
 
-    // Extract imports → Imports edges
+    // Extract imports → Imports edges + import map
     let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
+
+    // Add same-package Imports edges to other Go files in the same package
+    add_same_package_edges(source, rel_path, &file_slug, known_files, &mut entities);
 
     // Extract Calls edges
     extract_calls(source, &file_slug, &function_names, &import_map, &mut entities);
 
+    // Extract TypeRef edges from function/method signatures
+    extract_type_refs(source, &file_slug, &function_names, &type_names, &import_map, &mut entities);
+
     Ok(entities)
 }
 
-/// Extract function declarations from Go source.
+/// Extract function/method declarations from Go source using kind-based matching.
+///
+/// Uses `KindMatcher` for `function_declaration` and `method_declaration`
+/// to capture both package-level functions AND method receivers.
 ///
 /// Returns the set of function names found in this file.
 fn extract_functions(
@@ -77,26 +81,17 @@ fn extract_functions(
     entities: &mut Vec<GraphEntity>,
 ) -> HashSet<String> {
     let mut seen_names = HashSet::new();
+    let lang = SupportLang::Go;
 
-    for (pattern, _has_receiver) in GO_FUNCTION_PATTERNS {
-        for node in root.root().find_all(*pattern) {
+    for kind_name in GO_FUNC_KINDS {
+        let matcher = match KindMatcher::try_new(kind_name, lang) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        for node in root.root().find_all(matcher.clone()) {
             let matched_text = node.text();
-            let name = helpers::extract_name_after_keyword(&matched_text, "func ");
-            // For methods: "func (r *Recv) Name(...)" — skip past the receiver
-            let name = if name.starts_with('(') {
-                if let Some(close) = matched_text.find(") ") {
-                    let after = &matched_text[close + 2..];
-                    helpers::extract_name_after_keyword(after, "")
-                        .chars()
-                        .take_while(|c| c.is_alphanumeric() || *c == '_')
-                        .collect()
-                } else {
-                    continue;
-                }
-            } else {
-                name
-            };
-
+            let name = extract_go_func_name(&matched_text);
             if name.is_empty() || !seen_names.insert(name.clone()) {
                 continue;
             }
@@ -127,12 +122,41 @@ fn extract_functions(
     seen_names
 }
 
+/// Extract the function/method name from Go source text.
+///
+/// Handles both:
+/// - `func Name(...)` → extracts "Name"
+/// - `func (r *Recv) Name(...)` → skips receiver, extracts "Name"
+fn extract_go_func_name(text: &str) -> String {
+    let after_func = text.strip_prefix("func ").unwrap_or(text);
+
+    // If it starts with `(`, there's a receiver — skip past `) `
+    if after_func.starts_with('(') {
+        if let Some(close_paren) = after_func.find(") ") {
+            let after_recv = &after_func[close_paren + 2..];
+            return after_recv
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+        }
+        return String::new();
+    }
+
+    // Regular function: first word after "func "
+    after_func
+        .chars()
+        .take_while(|c| c.is_alphanumeric() || *c == '_')
+        .collect()
+}
+
 /// Extract type declarations from Go source.
+///
+/// Returns the set of type names found in this file.
 fn extract_types(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
     entities: &mut Vec<GraphEntity>,
-) {
+) -> HashSet<String> {
     let mut seen_names = HashSet::new();
 
     for (pattern, type_kind) in GO_TYPE_PATTERNS {
@@ -157,6 +181,73 @@ fn extract_types(
             ));
         }
     }
+    seen_names
+}
+
+/// Add implicit Imports edges between Go files in the same package.
+///
+/// Go files in the same directory sharing the same `package X` declaration
+/// have implicit visibility to each other's symbols. We create bidirectional
+/// Imports edges to represent this.
+fn add_same_package_edges(
+    source: &str,
+    rel_path: &str,
+    file_slug: &str,
+    known_files: &HashSet<String>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    // Extract package name from first `package X` line
+    let pkg_name = source
+        .lines()
+        .find_map(|line| {
+            let trimmed = line.trim();
+            if trimmed.starts_with("package ") {
+                Some(trimmed.strip_prefix("package ")?.trim().to_string())
+            } else {
+                None
+            }
+        });
+
+    let pkg_name = match pkg_name {
+        Some(n) => n,
+        None => return,
+    };
+
+    // Get the directory of this file
+    let dir = if let Some(slash_pos) = rel_path.rfind('/') {
+        &rel_path[..slash_pos]
+    } else {
+        ""
+    };
+
+    // Find all other .go files in the same directory (same package)
+    for known_file in known_files {
+        if known_file == rel_path {
+            continue;
+        }
+        if !known_file.ends_with(".go") {
+            continue;
+        }
+
+        // Check if in same directory
+        let other_dir = if let Some(slash_pos) = known_file.rfind('/') {
+            &known_file[..slash_pos]
+        } else {
+            ""
+        };
+
+        if other_dir == dir {
+            // Same directory → same package (we trust the convention)
+            // Note: the reverse edge is created when the other file is extracted
+            edge_helpers::build_import_edge(
+                file_slug,
+                &pkg_name,
+                known_file,
+                false,
+                entities,
+            );
+        }
+    }
 }
 
 /// Extract Go import statements and produce Imports edges.
@@ -170,7 +261,7 @@ fn extract_imports(
     known_files: &HashSet<String>,
     entities: &mut Vec<GraphEntity>,
 ) -> HashMap<String, (String, bool, String)> {
-    let import_map = HashMap::new();
+    let mut import_map = HashMap::new();
 
     for line in source.lines() {
         let trimmed = line.trim();
@@ -209,6 +300,14 @@ fn extract_imports(
             } else {
                 format!("{import_path}.go")
             };
+
+            // Populate import_map with the package name for cross-file call resolution
+            let pkg_name = import_path.rsplit('/').next().unwrap_or(&import_path);
+            let target_slug = helpers::slugify_path(&resolved);
+            import_map.insert(
+                pkg_name.to_string(),
+                (target_slug, true, pkg_name.to_string()),
+            );
 
             edge_helpers::build_import_edge(
                 file_slug,
@@ -266,23 +365,15 @@ fn extract_calls(
     let lang = SupportLang::Go;
     let root = lang.ast_grep(source);
 
-    for (pattern, _) in GO_FUNCTION_PATTERNS {
-        for node in root.root().find_all(*pattern) {
+    for kind_name in GO_FUNC_KINDS {
+        let matcher = match KindMatcher::try_new(kind_name, lang) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        for node in root.root().find_all(matcher.clone()) {
             let fn_text = node.text();
-            let name = helpers::extract_name_after_keyword(&fn_text, "func ");
-            let fn_name = if name.starts_with('(') {
-                if let Some(close) = fn_text.find(") ") {
-                    let after = &fn_text[close + 2..];
-                    helpers::extract_name_after_keyword(after, "")
-                        .chars()
-                        .take_while(|c| c.is_alphanumeric() || *c == '_')
-                        .collect()
-                } else {
-                    continue;
-                }
-            } else {
-                name
-            };
+            let fn_name = extract_go_func_name(&fn_text);
 
             if fn_name.is_empty() {
                 continue;
@@ -306,5 +397,122 @@ fn extract_calls(
                 );
             }
         }
+    }
+}
+
+/// Extract TypeRef edges from Go function/method signatures.
+///
+/// Go type references appear in:
+/// - Function parameters: `func Foo(c *Command, name string)`
+/// - Return types: `func Foo() (*Command, error)`
+/// - Method receivers: `func (c *Command) Foo()`
+///
+/// Filters out Go builtin types.
+fn extract_type_refs(
+    source: &str,
+    file_slug: &str,
+    function_names: &HashSet<String>,
+    local_types: &HashSet<String>,
+    import_map: &HashMap<String, (String, bool, String)>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    let lang = SupportLang::Go;
+    let root = lang.ast_grep(source);
+
+    let go_builtins: HashSet<&str> = [
+        "string", "int", "int8", "int16", "int32", "int64",
+        "uint", "uint8", "uint16", "uint32", "uint64", "uintptr",
+        "float32", "float64", "complex64", "complex128",
+        "bool", "byte", "rune", "error", "any",
+    ]
+    .into_iter()
+    .collect();
+
+    for kind_name in GO_FUNC_KINDS {
+        let matcher = match KindMatcher::try_new(kind_name, lang) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        for node in root.root().find_all(matcher.clone()) {
+            let fn_text = node.text();
+            let fn_name = extract_go_func_name(&fn_text);
+
+            if fn_name.is_empty() || !function_names.contains(&fn_name) {
+                continue;
+            }
+
+            let fn_slug = format!("{file_slug}::{fn_name}");
+
+            // Get the signature (everything before the first `{`)
+            let signature = if let Some(brace_pos) = fn_text.find('{') {
+                &fn_text[..brace_pos]
+            } else {
+                &fn_text
+            };
+
+            let mut type_names = HashSet::new();
+            extract_go_type_annotations(signature, &go_builtins, &mut type_names);
+
+            edge_helpers::resolve_type_refs(
+                &fn_slug,
+                file_slug,
+                &type_names,
+                local_types,
+                import_map,
+                entities,
+            );
+        }
+    }
+}
+
+/// Extract type names from Go function signatures.
+///
+/// Looks for capitalized identifiers after `*` or in parameter/return positions.
+/// Go convention: types start with uppercase letter.
+fn extract_go_type_annotations(
+    signature: &str,
+    builtins: &HashSet<&str>,
+    out: &mut HashSet<String>,
+) {
+    // Find all words that look like Go type names (capitalized, after * or space)
+    let bytes = signature.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        // Look for `*TypeName` or standalone `TypeName` in parameter positions
+        if bytes[i] == b'*' {
+            i += 1;
+            if i < len && bytes[i].is_ascii_uppercase() {
+                let start = i;
+                while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                    i += 1;
+                }
+                let type_name = &signature[start..i];
+                if !builtins.contains(type_name) {
+                    out.insert(type_name.to_string());
+                }
+                continue;
+            }
+        }
+
+        // Look for capitalized words that could be types in parameter lists
+        // Context: after `,` or `(` followed by whitespace, or after type keyword
+        if bytes[i].is_ascii_uppercase() {
+            let start = i;
+            while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                i += 1;
+            }
+            let word = &signature[start..i];
+            // Only include if it looks like a type (not a function name or keyword)
+            // Types in Go are followed by `,` `)` `{` or another word (var name)
+            if !builtins.contains(word) && word != "func" {
+                out.insert(word.to_string());
+            }
+            continue;
+        }
+
+        i += 1;
     }
 }

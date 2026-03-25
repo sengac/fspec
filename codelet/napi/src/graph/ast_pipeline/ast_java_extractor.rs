@@ -28,12 +28,6 @@ const JAVA_TYPE_KINDS: &[(&str, &str)] = &[
     ("record_declaration", "class"),
 ];
 
-/// Java standard library package prefixes that should NOT produce Imports edges.
-const JAVA_EXTERNAL_PREFIXES: &[&str] = &[
-    "java.", "javax.", "jakarta.", "org.junit", "org.apache", "org.slf4j",
-    "com.google", "io.netty", "org.springframework",
-];
-
 /// Extract entities from Java source code.
 ///
 /// Extracts File, Function, and Type nodes, plus Imports, Calls, and TypeRef edges.
@@ -212,11 +206,6 @@ fn extract_imports(
             continue;
         }
 
-        // Skip external/standard library imports
-        if JAVA_EXTERNAL_PREFIXES.iter().any(|p| import_path.starts_with(p)) {
-            continue;
-        }
-
         // Get local name (last segment)
         let local_name = import_path
             .rsplit('.')
@@ -224,35 +213,52 @@ fn extract_imports(
             .unwrap_or(import_path)
             .to_string();
 
-        // Resolve to file path: dots → slashes + .java
-        let resolved_path = resolve_java_import(import_path);
-        let is_local = known_files.contains(&resolved_path);
+        // Resolve to file path using suffix matching against known_files.
+        // We resolve FIRST, then filter — this ensures project files like
+        // `com/google/gson/Gson.java` produce Imports edges even though
+        // "com.google" looks like an external prefix.
+        let resolved_path = match resolve_java_import(import_path, known_files) {
+            Some(p) => p,
+            None => continue, // Not in known_files → skip (external/stdlib)
+        };
 
-        if is_local {
-            let target_slug = helpers::slugify_path(&resolved_path);
-            import_map.insert(
-                local_name.clone(),
-                (target_slug.clone(), true, local_name.clone()),
-            );
+        let target_slug = helpers::slugify_path(&resolved_path);
+        import_map.insert(
+            local_name.clone(),
+            (target_slug.clone(), true, local_name.clone()),
+        );
 
-            edge_helpers::build_import_edge(
-                file_slug,
-                import_path,
-                &resolved_path,
-                false,
-                entities,
-            );
-        }
+        edge_helpers::build_import_edge(
+            file_slug,
+            import_path,
+            &resolved_path,
+            false,
+            entities,
+        );
     }
     import_map
 }
 
-/// Resolve a Java package import to a file path.
+/// Resolve a Java package import to a file path using suffix matching.
 ///
-/// `com.myapp.service.UserService` → `com/myapp/service/UserService.java`
-fn resolve_java_import(import_path: &str) -> String {
-    let path = import_path.replace('.', "/");
-    format!("{path}.java")
+/// `com.myapp.service.UserService` → looks for known file ending with
+/// `com/myapp/service/UserService.java`. Falls back to exact match.
+fn resolve_java_import(import_path: &str, known_files: &HashSet<String>) -> Option<String> {
+    let suffix = import_path.replace('.', "/");
+    let suffix_java = format!("{suffix}.java");
+
+    // Try exact match first
+    if known_files.contains(&suffix_java) {
+        return Some(suffix_java);
+    }
+
+    // Try suffix match: find any known file ending with the package path
+    let with_slash = format!("/{suffix_java}");
+    if let Some(found) = known_files.iter().find(|f| f.ends_with(&with_slash)) {
+        return Some(found.clone());
+    }
+
+    None
 }
 
 /// Extract Calls edges from Java method bodies.
