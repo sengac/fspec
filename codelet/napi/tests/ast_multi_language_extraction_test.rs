@@ -1210,7 +1210,7 @@ async fn test_walk_and_extract_finds_multi_language_files() {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When walk_and_extract processes the project
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     // Collect all File node languages
@@ -1258,7 +1258,7 @@ async fn test_multi_language_entities_load_into_graph() {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When walk_and_extract processes the project
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     let schema = include_str!("../schemas/ast-code.pg");

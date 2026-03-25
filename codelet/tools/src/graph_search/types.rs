@@ -39,7 +39,16 @@ pub enum GraphSearchAction {
     /// Walks the project directory, extracts functions/types/imports via
     /// ast-grep, extracts dependencies from Cargo.toml/package.json,
     /// and loads everything into the AST code graph.
-    AstIndex,
+    ///
+    /// When `path` is provided, indexes only that directory (ignoring
+    /// `.gitignore` rules so external repos can be indexed). Falls back
+    /// to the current working directory when omitted.
+    AstIndex {
+        /// Optional directory to index. When omitted, indexes from cwd.
+        /// When provided, `.gitignore` is disabled so external/vendored
+        /// repos under gitignored directories can be indexed.
+        path: Option<String>,
+    },
 
     /// Detect dead code: orphan files, uncalled functions, unreferenced types.
     ///

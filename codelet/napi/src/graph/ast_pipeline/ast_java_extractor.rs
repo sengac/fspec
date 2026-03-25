@@ -1,38 +1,47 @@
 //! Java AST Extractor
 //!
 //! Extracts Function nodes, Type nodes, File nodes, and relationship edges
-//! (Contains, ContainsType) from Java source files using ast-grep pattern matching.
+//! (Contains, ContainsType, Imports, Calls, TypeRef) from Java source files
+//! using kind-based AST matching.
+//!
+//! Uses `KindMatcher` to find `method_declaration` and type nodes rather than
+//! pattern matching, which misses annotated methods (`@Override`, `@Test`),
+//! constructors, and methods with generic return types.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
+use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
 
-/// ast-grep patterns for Java method declarations.
-/// Each tuple: (pattern, is_public_from_pattern).
-const JAVA_METHOD_PATTERNS: &[(&str, bool)] = &[
-    ("public $RET $NAME($$$ARGS) { $$$BODY }", true),
-    ("public static $RET $NAME($$$ARGS) { $$$BODY }", true),
-    ("private $RET $NAME($$$ARGS) { $$$BODY }", false),
-    ("protected $RET $NAME($$$ARGS) { $$$BODY }", false),
-    ("$RET $NAME($$$ARGS) { $$$BODY }", false),
+/// AST node kinds for Java functions/methods.
+const JAVA_FUNC_KINDS: &[&str] = &["method_declaration", "constructor_declaration"];
+
+/// AST node kinds for Java type declarations.
+const JAVA_TYPE_KINDS: &[(&str, &str)] = &[
+    ("class_declaration", "class"),
+    ("interface_declaration", "interface"),
+    ("enum_declaration", "enum_kind"),
+    ("record_declaration", "class"),
 ];
 
-/// ast-grep patterns for Java type declarations.
-/// Each tuple: (pattern, type_kind, is_public).
-const JAVA_TYPE_PATTERNS: &[(&str, &str, bool)] = &[
-    ("public class $NAME { $$$BODY }", "class", true),
-    ("class $NAME { $$$BODY }", "class", false),
-    ("public interface $NAME { $$$BODY }", "interface", true),
-    ("interface $NAME { $$$BODY }", "interface", false),
-    ("public enum $NAME { $$$BODY }", "enum_kind", true),
-    ("enum $NAME { $$$BODY }", "enum_kind", false),
+/// Java standard library package prefixes that should NOT produce Imports edges.
+const JAVA_EXTERNAL_PREFIXES: &[&str] = &[
+    "java.", "javax.", "jakarta.", "org.junit", "org.apache", "org.slf4j",
+    "com.google", "io.netty", "org.springframework",
 ];
 
 /// Extract entities from Java source code.
-pub fn extract_java(source: &str, rel_path: &str) -> Result<Vec<GraphEntity>, String> {
+///
+/// Extracts File, Function, and Type nodes, plus Imports, Calls, and TypeRef edges.
+pub fn extract_java(
+    source: &str,
+    rel_path: &str,
+    known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::Java;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
@@ -48,24 +57,45 @@ pub fn extract_java(source: &str, rel_path: &str) -> Result<Vec<GraphEntity>, St
 
     let root = lang.ast_grep(source);
 
-    extract_methods(&root, &file_slug, &mut entities);
-    extract_types(&root, &file_slug, &mut entities);
+    // Extract method declarations → collect names for call resolution
+    let function_names = extract_methods(&root, &file_slug, lang, &mut entities);
+
+    // Extract type declarations → collect names for TypeRef resolution
+    let type_names = extract_types(&root, &file_slug, lang, &mut entities);
+
+    // Extract import statements → collect import map for cross-file resolution
+    let import_map = extract_imports(source, &file_slug, known_files, &mut entities);
+
+    // Extract Calls edges from method bodies
+    extract_calls(source, &file_slug, lang, &function_names, &import_map, &mut entities);
+
+    // Extract TypeRef edges from method signatures
+    extract_type_refs(
+        source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities,
+    );
 
     Ok(entities)
 }
 
-/// Extract method declarations from Java source.
+/// Extract method declarations from Java source using kind-based matching.
+///
+/// Returns the set of method names found in this file.
 fn extract_methods(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
+    lang: SupportLang,
     entities: &mut Vec<GraphEntity>,
-) {
+) -> HashSet<String> {
     let mut seen_names = HashSet::new();
 
-    for (pattern, is_public_from_pattern) in JAVA_METHOD_PATTERNS {
-        for node in root.root().find_all(*pattern) {
+    for kind_name in JAVA_FUNC_KINDS {
+        let matcher = match KindMatcher::try_new(kind_name, lang) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        for node in root.root().find_all(matcher.clone()) {
             let matched_text = node.text();
-            // Find name: it's the identifier just before (
             let name = extract_java_method_name(&matched_text);
             if name.is_empty() || !seen_names.insert(name.clone()) {
                 continue;
@@ -73,8 +103,7 @@ fn extract_methods(
 
             let start_pos = node.start_pos();
             let end_pos = node.end_pos();
-            let is_public = *is_public_from_pattern
-                || matched_text.starts_with("public ");
+            let is_public = matched_text.contains("public ");
             let param_count = helpers::count_params(&matched_text);
 
             let fn_slug = format!("{file_slug}::{name}");
@@ -95,21 +124,36 @@ fn extract_methods(
             ));
         }
     }
+    seen_names
 }
 
-/// Extract type declarations from Java source.
+/// Extract type declarations from Java source using kind-based matching.
+///
+/// Returns the set of type names found in this file.
 fn extract_types(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
+    lang: SupportLang,
     entities: &mut Vec<GraphEntity>,
-) {
+) -> HashSet<String> {
     let mut seen_names = HashSet::new();
 
-    for (pattern, type_kind, is_public_from_pattern) in JAVA_TYPE_PATTERNS {
-        for node in root.root().find_all(*pattern) {
+    for (kind_name, type_kind) in JAVA_TYPE_KINDS {
+        let matcher = match KindMatcher::try_new(kind_name, lang) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        for node in root.root().find_all(matcher.clone()) {
             let matched_text = node.text();
             let keyword = match *type_kind {
-                "class" => "class ",
+                "class" => {
+                    if matched_text.contains("record ") {
+                        "record "
+                    } else {
+                        "class "
+                    }
+                }
                 "interface" => "interface ",
                 "enum_kind" => "enum ",
                 _ => continue,
@@ -119,7 +163,7 @@ fn extract_types(
                 continue;
             }
 
-            let is_public = *is_public_from_pattern;
+            let is_public = matched_text.contains("public ");
 
             let type_slug = format!("{file_slug}::{name}");
             entities.push(helpers::build_type_node(
@@ -131,6 +175,240 @@ fn extract_types(
                 &type_slug,
                 "ContainsType",
             ));
+        }
+    }
+    seen_names
+}
+
+/// Extract Java `import` statements and produce Imports edges.
+///
+/// Resolves package paths to file paths: `com.myapp.service.UserService`
+/// → `com/myapp/service/UserService.java`. Only produces edges for imports
+/// whose resolved path exists in `known_files`.
+///
+/// Returns a map of `local_name → (target_file_slug, is_local, original_name)`.
+fn extract_imports(
+    source: &str,
+    file_slug: &str,
+    known_files: &HashSet<String>,
+    entities: &mut Vec<GraphEntity>,
+) -> HashMap<String, (String, bool, String)> {
+    let mut import_map = HashMap::new();
+
+    for line in source.lines() {
+        let trimmed = line.trim();
+
+        if !trimmed.starts_with("import ") || trimmed.starts_with("import static ") {
+            continue;
+        }
+
+        let import_path = trimmed
+            .strip_prefix("import ")
+            .unwrap_or("")
+            .trim_end_matches(';')
+            .trim();
+
+        if import_path.is_empty() {
+            continue;
+        }
+
+        // Skip external/standard library imports
+        if JAVA_EXTERNAL_PREFIXES.iter().any(|p| import_path.starts_with(p)) {
+            continue;
+        }
+
+        // Get local name (last segment)
+        let local_name = import_path
+            .rsplit('.')
+            .next()
+            .unwrap_or(import_path)
+            .to_string();
+
+        // Resolve to file path: dots → slashes + .java
+        let resolved_path = resolve_java_import(import_path);
+        let is_local = known_files.contains(&resolved_path);
+
+        if is_local {
+            let target_slug = helpers::slugify_path(&resolved_path);
+            import_map.insert(
+                local_name.clone(),
+                (target_slug.clone(), true, local_name.clone()),
+            );
+
+            edge_helpers::build_import_edge(
+                file_slug,
+                import_path,
+                &resolved_path,
+                false,
+                entities,
+            );
+        }
+    }
+    import_map
+}
+
+/// Resolve a Java package import to a file path.
+///
+/// `com.myapp.service.UserService` → `com/myapp/service/UserService.java`
+fn resolve_java_import(import_path: &str) -> String {
+    let path = import_path.replace('.', "/");
+    format!("{path}.java")
+}
+
+/// Extract Calls edges from Java method bodies.
+fn extract_calls(
+    source: &str,
+    file_slug: &str,
+    lang: SupportLang,
+    local_functions: &HashSet<String>,
+    import_map: &HashMap<String, (String, bool, String)>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    let root = lang.ast_grep(source);
+
+    for kind_name in JAVA_FUNC_KINDS {
+        let matcher = match KindMatcher::try_new(kind_name, lang) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        for node in root.root().find_all(matcher.clone()) {
+            let fn_text = node.text();
+            let fn_name = extract_java_method_name(&fn_text);
+            if fn_name.is_empty() {
+                continue;
+            }
+
+            let caller_slug = format!("{file_slug}::{fn_name}");
+
+            if let Some(body_start) = fn_text.find('{') {
+                let body = &fn_text[body_start..];
+                let mut callee_names = HashSet::new();
+                edge_helpers::extract_call_names_from_body(body, &mut callee_names);
+
+                edge_helpers::resolve_calls(
+                    &caller_slug,
+                    file_slug,
+                    &callee_names,
+                    &fn_name,
+                    local_functions,
+                    import_map,
+                    entities,
+                );
+            }
+        }
+    }
+}
+
+/// Extract TypeRef edges from Java method signatures.
+///
+/// Java signatures: `public Response handle(Request req)`
+fn extract_type_refs(
+    source: &str,
+    file_slug: &str,
+    lang: SupportLang,
+    function_names: &HashSet<String>,
+    local_types: &HashSet<String>,
+    import_map: &HashMap<String, (String, bool, String)>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    let root = lang.ast_grep(source);
+
+    for kind_name in JAVA_FUNC_KINDS {
+        let matcher = match KindMatcher::try_new(kind_name, lang) {
+            Ok(m) => m,
+            Err(_) => continue,
+        };
+
+        for node in root.root().find_all(matcher.clone()) {
+            let fn_text = node.text();
+            let fn_name = extract_java_method_name(&fn_text);
+            if fn_name.is_empty() || !function_names.contains(&fn_name) {
+                continue;
+            }
+
+            let fn_slug = format!("{file_slug}::{fn_name}");
+
+            let signature = if let Some(brace_pos) = fn_text.find('{') {
+                &fn_text[..brace_pos]
+            } else {
+                &fn_text
+            };
+
+            let mut type_names = HashSet::new();
+            extract_java_type_annotations(signature, &mut type_names);
+
+            edge_helpers::resolve_type_refs(
+                &fn_slug,
+                file_slug,
+                &type_names,
+                local_types,
+                import_map,
+                entities,
+            );
+        }
+    }
+}
+
+/// Extract type names from Java method signatures.
+///
+/// Java type annotations appear:
+/// - Return type: `public Response handle(...)` — word before method name
+/// - Parameter types: `handle(Request req, String name)` — word before param name
+///
+/// Filters out Java primitives and common standard library types.
+fn extract_java_type_annotations(signature: &str, out: &mut HashSet<String>) {
+    let java_builtins: HashSet<&str> = [
+        "void", "int", "long", "short", "byte", "float", "double",
+        "boolean", "char", "String", "Object", "Integer", "Long",
+        "Short", "Byte", "Float", "Double", "Boolean", "Character",
+        "List", "Map", "Set", "Collection", "Optional", "Stream",
+        "Iterable", "Iterator", "Comparable", "Serializable",
+        "var", "final", "static", "public", "private", "protected",
+        "abstract", "synchronized", "volatile", "transient", "native",
+        "Override", "Test", "Deprecated",
+    ]
+    .into_iter()
+    .collect();
+
+    // Extract return type: word before method name (before `(`)
+    if let Some(paren_pos) = signature.find('(') {
+        let before_paren = signature[..paren_pos].trim();
+        // Split by spaces: "public Response handle" → ["public", "Response", "handle"]
+        let words: Vec<&str> = before_paren.split_whitespace().collect();
+        if words.len() >= 2 {
+            // Return type is the second-to-last word (last is method name)
+            let return_type = words[words.len() - 2];
+            let type_name: String = return_type
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            if !type_name.is_empty() && !java_builtins.contains(type_name.as_str()) {
+                out.insert(type_name);
+            }
+        }
+    }
+
+    // Extract parameter types from parameter list
+    if let Some(paren_open) = signature.find('(') {
+        let paren_close = signature.rfind(')').unwrap_or(signature.len());
+        let params_str = &signature[paren_open + 1..paren_close];
+
+        for param in params_str.split(',') {
+            let param = param.trim();
+            // Java param: `TypeName varName` or `final TypeName varName`
+            let words: Vec<&str> = param.split_whitespace().collect();
+            if words.len() >= 2 {
+                // Type is the word before the last word (var name)
+                let type_word = words[words.len() - 2];
+                let type_name: String = type_word
+                    .chars()
+                    .take_while(|c| c.is_alphanumeric() || *c == '_')
+                    .collect();
+                if !type_name.is_empty() && !java_builtins.contains(type_name.as_str()) {
+                    out.insert(type_name);
+                }
+            }
         }
     }
 }

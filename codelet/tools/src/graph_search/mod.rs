@@ -63,7 +63,7 @@ impl Tool for GraphSearchTool {
                     },
                     "path": {
                         "type": "string",
-                        "description": "Glob filter to scope AST results to matching file paths (optional for 'ast_search' and 'ast_dead_code'). Examples: 'src/tui/**/*.tsx', 'codelet/napi/src/**/*.rs'"
+                        "description": "Glob filter to scope AST results to matching file paths (optional for 'ast_search' and 'ast_dead_code'). For 'ast_index', specifies a directory to index with .gitignore disabled (useful for indexing external repos in gitignored directories). Examples: 'src/tui/**/*.tsx', 'codelet/napi/src/**/*.rs', 'tmp/my-repo'"
                     },
                     "category": {
                         "type": "string",

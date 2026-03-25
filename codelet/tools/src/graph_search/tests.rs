@@ -24,6 +24,9 @@ mod tests {
             GraphSearchAction::AstSearch { query, .. } => {
                 format!(r#"{{"results":[{{"name":"{}","type":"Function"}}]}}"#, query)
             }
+            GraphSearchAction::AstIndex { .. } => {
+                r#"{"action":"ast_index","entities_loaded":0}"#.to_string()
+            }
             GraphSearchAction::LearningsStats => {
                 r#"{"nodes":{"Learning":0,"Decision":0},"edges":{"RelatesTo":0}}"#.to_string()
             }
@@ -126,5 +129,104 @@ mod tests {
             result.contains("not available") || result.contains("No handler") || result.contains("error"),
             "Should return descriptive error: {result}"
         );
+    }
+
+    // ============================================================================
+    // Scenario: AstIndex action deserializes without path (backwards compatible)
+    // ============================================================================
+    #[test]
+    fn test_ast_index_deserializes_without_path() {
+        // @step Given a JSON payload for ast_index with no path field
+        let json = r#"{"action_type":"ast_index"}"#;
+
+        // @step When the action is deserialized
+        let result: Result<GraphSearchAction, _> = serde_json::from_str(json);
+
+        // @step Then it should succeed with path set to None
+        assert!(result.is_ok(), "AstIndex should parse without path: {:?}", result.err());
+        if let Ok(GraphSearchAction::AstIndex { path }) = result {
+            assert!(path.is_none(), "Path should be None when omitted");
+        } else {
+            panic!("Expected AstIndex variant, got: {:?}", result.unwrap());
+        }
+    }
+
+    // ============================================================================
+    // Scenario: AstIndex action deserializes with explicit path
+    // ============================================================================
+    #[test]
+    fn test_ast_index_deserializes_with_path() {
+        // @step Given a JSON payload for ast_index with path "tmp/my-repo"
+        let json = r#"{"action_type":"ast_index","path":"tmp/my-repo"}"#;
+
+        // @step When the action is deserialized
+        let result: Result<GraphSearchAction, _> = serde_json::from_str(json);
+
+        // @step Then it should succeed with path set to "tmp/my-repo"
+        assert!(result.is_ok(), "AstIndex should parse with path: {:?}", result.err());
+        if let Ok(GraphSearchAction::AstIndex { path }) = result {
+            assert_eq!(path.as_deref(), Some("tmp/my-repo"), "Path should match provided value");
+        } else {
+            panic!("Expected AstIndex variant, got: {:?}", result.unwrap());
+        }
+    }
+
+    // ============================================================================
+    // Scenario: AstIndex action dispatches through handler with path
+    // ============================================================================
+    #[test]
+    fn test_ast_index_dispatches_with_path() {
+        let session_id = Uuid::new_v4();
+
+        // @step Given the GraphSearch handler is registered for a session
+        set_graph_search_handler(session_id, Some(mock_handler()));
+
+        // @step When the agent calls GraphSearch with action_type 'ast_index' and path 'tmp/repo'
+        let result = execute_graph_search(
+            session_id,
+            GraphSearchAction::AstIndex {
+                path: Some("tmp/repo".to_string()),
+            },
+        );
+
+        // @step Then the handler receives and processes the action
+        assert!(
+            result.contains("ast_index") || result.contains("entities_loaded"),
+            "Should return index result: {result}"
+        );
+
+        // @step And no error is returned
+        assert!(!result.contains("error"), "Should not contain error: {result}");
+
+        // Cleanup
+        set_graph_search_handler(session_id, None);
+    }
+
+    // ============================================================================
+    // Scenario: AstIndex action dispatches through handler without path
+    // ============================================================================
+    #[test]
+    fn test_ast_index_dispatches_without_path() {
+        let session_id = Uuid::new_v4();
+
+        // @step Given the GraphSearch handler is registered for a session
+        set_graph_search_handler(session_id, Some(mock_handler()));
+
+        // @step When the agent calls GraphSearch with action_type 'ast_index' and no path
+        let result = execute_graph_search(
+            session_id,
+            GraphSearchAction::AstIndex {
+                path: None,
+            },
+        );
+
+        // @step Then the handler receives and processes the action
+        assert!(
+            result.contains("ast_index") || result.contains("entities_loaded"),
+            "Should return index result: {result}"
+        );
+
+        // Cleanup
+        set_graph_search_handler(session_id, None);
     }
 }

@@ -1,12 +1,16 @@
 //! C AST Extractor
 //!
 //! Extracts Function nodes, Type nodes, File nodes, and relationship edges
-//! (Contains, ContainsType) from C source files using ast-grep pattern matching.
+//! (Contains, ContainsType, Imports, Calls) from C source files using ast-grep
+//! pattern matching.
+//!
+//! C uses `#include "file.h"` for local imports and bare function calls.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
 
@@ -26,12 +30,14 @@ const C_ENUM_PATTERNS: &[&str] = &[
     "enum $NAME { $$$VARIANTS }",
 ];
 
-/// ast-grep patterns for C typedef declarations.
-/// Note: tree-sitter's C grammar may not always match these patterns,
-/// so we also have line-based fallback in extract_types.
-
 /// Extract entities from C source code.
-pub fn extract_c(source: &str, rel_path: &str) -> Result<Vec<GraphEntity>, String> {
+///
+/// Extracts File, Function, and Type nodes, plus Imports and Calls edges.
+pub fn extract_c(
+    source: &str,
+    rel_path: &str,
+    known_files: &HashSet<String>,
+) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::C;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
@@ -46,18 +52,29 @@ pub fn extract_c(source: &str, rel_path: &str) -> Result<Vec<GraphEntity>, Strin
 
     let root = lang.ast_grep(source);
 
-    extract_functions(&root, &file_slug, &mut entities);
+    // Extract function declarations → collect names for call resolution
+    let function_names = extract_functions(&root, &file_slug, &mut entities);
+
+    // Extract type declarations
     extract_types(&root, source, &file_slug, &mut entities);
+
+    // Extract #include directives → Imports edges
+    let import_map = edge_helpers::extract_c_includes(source, &file_slug, known_files, &mut entities);
+
+    // Extract Calls edges from function bodies
+    extract_calls(&root, &file_slug, &function_names, &import_map, &mut entities);
 
     Ok(entities)
 }
 
 /// Extract function declarations from C source.
+///
+/// Returns the set of function names found in this file.
 fn extract_functions(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
     entities: &mut Vec<GraphEntity>,
-) {
+) -> HashSet<String> {
     let mut seen_names = HashSet::new();
 
     for pattern in C_FUNCTION_PATTERNS {
@@ -76,7 +93,6 @@ fn extract_functions(
             let start_pos = node.start_pos();
             let end_pos = node.end_pos();
             let param_count = helpers::count_params(&matched_text);
-            // In C, `static` functions have file scope (private)
             let is_public = !matched_text.trim_start().starts_with("static ");
 
             let fn_slug = format!("{file_slug}::{name}");
@@ -95,6 +111,44 @@ fn extract_functions(
                 &fn_slug,
                 "Contains",
             ));
+        }
+    }
+    seen_names
+}
+
+/// Extract Calls edges from C function bodies.
+fn extract_calls(
+    root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
+    file_slug: &str,
+    local_functions: &HashSet<String>,
+    import_map: &HashMap<String, (String, bool, String)>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    for pattern in C_FUNCTION_PATTERNS {
+        for node in root.root().find_all(*pattern) {
+            let fn_text = node.text();
+            let fn_name = extract_c_function_name(&fn_text);
+            if fn_name.is_empty() {
+                continue;
+            }
+
+            let caller_slug = format!("{file_slug}::{fn_name}");
+
+            if let Some(body_start) = fn_text.find('{') {
+                let body = &fn_text[body_start..];
+                let mut callee_names = HashSet::new();
+                edge_helpers::extract_call_names_from_body(body, &mut callee_names);
+
+                edge_helpers::resolve_calls(
+                    &caller_slug,
+                    file_slug,
+                    &callee_names,
+                    &fn_name,
+                    local_functions,
+                    import_map,
+                    entities,
+                );
+            }
         }
     }
 }
@@ -143,36 +197,27 @@ fn extract_types(
         }
     }
 
-    // Line-based fallback for structs/enums that ast-grep patterns miss
-    // (tree-sitter C grammar may not match patterns with trailing semicolons)
+    // Line-based fallback for structs/enums
     for line in source.lines() {
         let trimmed = line.trim();
         if trimmed.starts_with("struct ") && trimmed.contains('{') {
             let name = helpers::extract_name_after_keyword(trimmed, "struct ");
             if !name.is_empty() && seen_names.insert(name.clone()) {
                 let type_slug = format!("{file_slug}::{name}");
-                entities.push(helpers::build_type_node(
-                    file_slug, &name, "struct_kind", true,
-                ));
-                entities.push(helpers::build_contains_edge(
-                    file_slug, &type_slug, "ContainsType",
-                ));
+                entities.push(helpers::build_type_node(file_slug, &name, "struct_kind", true));
+                entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
             }
         } else if trimmed.starts_with("enum ") && trimmed.contains('{') {
             let name = helpers::extract_name_after_keyword(trimmed, "enum ");
             if !name.is_empty() && seen_names.insert(name.clone()) {
                 let type_slug = format!("{file_slug}::{name}");
-                entities.push(helpers::build_type_node(
-                    file_slug, &name, "enum_kind", true,
-                ));
-                entities.push(helpers::build_contains_edge(
-                    file_slug, &type_slug, "ContainsType",
-                ));
+                entities.push(helpers::build_type_node(file_slug, &name, "enum_kind", true));
+                entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
             }
         }
     }
 
-    // Typedefs — use line-based detection for reliable extraction
+    // Typedefs
     for line in source.lines() {
         let trimmed = line.trim();
         if !trimmed.starts_with("typedef ") {
@@ -182,18 +227,13 @@ fn extract_types(
         if name.is_empty() || !seen_names.insert(name.clone()) {
             continue;
         }
-        // Skip keywords and well-known type names
         if matches!(name.as_str(), "struct" | "enum" | "int" | "void" | "char"
             | "unsigned" | "signed" | "long" | "short" | "double" | "float") {
             continue;
         }
         let type_slug = format!("{file_slug}::{name}");
-        entities.push(helpers::build_type_node(
-            file_slug, &name, "typedef", true,
-        ));
-        entities.push(helpers::build_contains_edge(
-            file_slug, &type_slug, "ContainsType",
-        ));
+        entities.push(helpers::build_type_node(file_slug, &name, "type_alias", true));
+        entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
     }
 }
 
@@ -201,7 +241,6 @@ fn extract_types(
 fn extract_c_function_name(text: &str) -> String {
     if let Some(paren_pos) = text.find('(') {
         let before = text[..paren_pos].trim();
-        // Last token before ( — could be "*name" for pointer returns
         if let Some(last_space) = before.rfind(' ') {
             let name = before[last_space + 1..].trim_start_matches('*');
             return name
@@ -209,7 +248,6 @@ fn extract_c_function_name(text: &str) -> String {
                 .take_while(|c| c.is_alphanumeric() || *c == '_')
                 .collect();
         }
-        // No space means the whole thing is the name (unlikely in real C)
         return before
             .chars()
             .take_while(|c| c.is_alphanumeric() || *c == '_')
@@ -220,7 +258,6 @@ fn extract_c_function_name(text: &str) -> String {
 
 /// Extract the typedef alias name (last identifier on the line).
 fn extract_typedef_name(text: &str) -> String {
-    // "typedef struct Point PointT;" → "PointT"
     let trimmed = text.trim().trim_end_matches(';');
     if let Some(last_space) = trimmed.rfind(' ') {
         return trimmed[last_space + 1..]

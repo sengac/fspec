@@ -100,3 +100,6 @@ tui-snapshots/
 vendor/nanograph/
 lib/libpdfium.dylib
 pdfium-mac-arm64.tgz
+
+# Temporary test repos for AST indexing
+tmp/

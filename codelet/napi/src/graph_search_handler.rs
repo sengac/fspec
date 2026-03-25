@@ -75,8 +75,8 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
             graph::ast_dispatch::dispatch_ast_stats(&db).await
         }
 
-        GraphSearchAction::AstIndex => {
-            graph::ast_dispatch::dispatch_ast_index().await
+        GraphSearchAction::AstIndex { path } => {
+            graph::ast_dispatch::dispatch_ast_index(path.as_deref()).await
         }
 
         GraphSearchAction::AstDeadCode { entity_type, limit, path } => {

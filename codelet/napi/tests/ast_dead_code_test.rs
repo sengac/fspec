@@ -68,7 +68,7 @@ export function validateConfig() { return true; }
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the TS extractor processes both files
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     // @step Then a Calls edge should exist from "src-app-ts::main" to "src-config-ts::validateConfig"
     let calls = find_edges(&entities, "Calls", Some("app"), Some("config"));
@@ -96,7 +96,7 @@ function bar() { return 1; }
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the TS extractor processes the file
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     // @step Then a Calls edge should exist from "src-utils-ts::foo" to "src-utils-ts::bar"
     let calls = find_edges(&entities, "Calls", Some("foo"), Some("bar"));
@@ -127,7 +127,7 @@ function run() {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the TS extractor processes the file
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     // @step Then no Calls edges should be emitted
     let calls_count = count_edges(&entities, "Calls");
@@ -157,7 +157,7 @@ function handler(req: Request): Response { return { status: 200 }; }
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the TS extractor processes the file
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     // @step Then a TypeRef edge should exist from "src-handler-ts::handler" to "src-handler-ts::Request"
     let request_refs = find_edges(&entities, "TypeRef", Some("handler"), Some("Request"));
@@ -200,7 +200,7 @@ export function orphanFn() { return 'nobody calls me'; }
     write_test_file(project_dir, "src/orphan.ts", orphan_content);
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     // Load into graph
     let db_path = temp_dir.path().join("test-orphan.nano");
@@ -272,7 +272,7 @@ function unused() { return 'nobody calls me'; }
     write_test_file(project_dir, "src/app.ts", app_content);
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     // Load into graph
     let db_path = temp_dir.path().join("test-uncalled.nano");
@@ -338,7 +338,7 @@ function handler(req: Request): Response { return { status: 200 }; }
     write_test_file(project_dir, "src/handler.ts", handler_content);
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     // Load into graph
     let db_path = temp_dir.path().join("test-unreferenced.nano");
@@ -407,7 +407,7 @@ export function realCode() { return 1; }
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step And that test file is never imported by any other file
-    let entities = walk_and_extract(project_dir).expect("extraction should succeed");
+    let entities = walk_and_extract(project_dir, true).expect("extraction should succeed");
 
     let db_path = temp_dir.path().join("test-exclude-tests.nano");
     let db = GraphDatabase::init(&db_path, AST_CODE_SCHEMA)

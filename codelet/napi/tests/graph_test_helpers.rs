@@ -10,6 +10,7 @@
 
 use codelet_napi::graph::graph_entities::GraphEntity;
 use serde_json::{Map, Value};
+use std::collections::HashSet;
 use std::path::Path;
 
 /// Write a file and return its path.
@@ -76,6 +77,66 @@ pub fn has_dependency_with_source(entities: &[GraphEntity], expected_source: &st
             false
         }
     })
+}
+
+// ============================================================================
+// Edge Extraction Test Helpers
+// ============================================================================
+
+/// Find edges by type with optional from/to slug substring match.
+///
+/// Used by all edge extraction integration tests.
+pub fn find_edges<'a>(
+    entities: &'a [GraphEntity],
+    edge_type: &str,
+    from_contains: Option<&str>,
+    to_contains: Option<&str>,
+) -> Vec<&'a GraphEntity> {
+    entities
+        .iter()
+        .filter(|e| match e {
+            GraphEntity::Edge {
+                edge_type: et,
+                from_slug,
+                to_slug,
+                ..
+            } => {
+                et == edge_type
+                    && from_contains.map_or(true, |f| from_slug.contains(f))
+                    && to_contains.map_or(true, |t| to_slug.contains(t))
+            }
+            _ => false,
+        })
+        .collect()
+}
+
+/// Build known_files set from a temp directory for import resolution.
+///
+/// Recursively walks the directory and collects relative file paths.
+pub fn build_known_files(dir: &std::path::Path) -> HashSet<String> {
+    let mut known = HashSet::new();
+    collect_files_recursive(dir, dir, &mut known);
+    known
+}
+
+/// Recursively collect file paths relative to root.
+fn collect_files_recursive(
+    current: &std::path::Path,
+    root: &std::path::Path,
+    known: &mut HashSet<String>,
+) {
+    if let Ok(entries) = std::fs::read_dir(current) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                collect_files_recursive(&path, root, known);
+            } else if path.is_file() {
+                if let Ok(rel) = path.strip_prefix(root) {
+                    known.insert(rel.to_string_lossy().replace('\\', "/"));
+                }
+            }
+        }
+    }
 }
 
 // ============================================================================

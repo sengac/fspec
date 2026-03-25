@@ -331,7 +331,7 @@ async fn test_walk_project_directory_with_gitignore_and_batch_load() {
     );
 
     // @step When the extraction pipeline walks the project directory
-    let all_entities = walk_and_extract(project_dir)
+    let all_entities = walk_and_extract(project_dir, true)
         .expect("Walk and extract should succeed");
 
     // @step Then files in node_modules should be skipped
@@ -434,7 +434,7 @@ export function helper(): string {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     // @step Then only one File node should exist for "src/utils.ts"
@@ -500,7 +500,7 @@ export function createApp(): void {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     // @step Then a stub File node should exist for the external import target
@@ -565,7 +565,7 @@ export function util(): string {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     // @step Then only one File node should exist for "src/shared.ts"
@@ -654,7 +654,7 @@ export function formatMessage(text: string): string {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the AST index operation runs via walk_and_extract
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     // @step And the entities are loaded into the graph database
@@ -835,7 +835,7 @@ export function showWorkUnit(): void {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     // @step Then "src/types/index.ts" should be resolved correctly (not "src/types.ts")
@@ -938,7 +938,7 @@ export function registerCommands(): void {
     write_test_file(project_dir, ".gitignore", "node_modules/\ntarget/\n");
 
     // @step When the extraction pipeline processes the project directory
-    let entities = walk_and_extract(project_dir)
+    let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
     // @step Then the import should resolve to "src/commands/schedule/index.ts"

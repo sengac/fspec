@@ -1,0 +1,156 @@
+{
+  "scenarios": [
+    {
+      "name": "Extract Imports edges from C include directives",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/c_cpp_edge_extraction_test.rs",
+          "lines": "17-57",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract Calls edges from C function calls",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/c_cpp_edge_extraction_test.rs",
+          "lines": "62-87",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract Imports edges from C++ include directives",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/c_cpp_edge_extraction_test.rs",
+          "lines": "92-118",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/c_cpp_edge_extraction_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/graph/ast_pipeline/ast_c_extractor.rs",
+      "codelet/napi/src/graph/ast_pipeline/ast_cpp_extractor.rs"
+    ],
+    "totalLinesCovered": 185
+  }
+}

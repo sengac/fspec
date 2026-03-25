@@ -49,7 +49,7 @@ pub async fn populate_ast_graph() {
     };
 
     // Walk codebase and extract AST entities
-    let mut all_entities = match ast_pipeline::walk_and_extract(&project_root) {
+    let mut all_entities = match ast_pipeline::walk_and_extract(&project_root, true) {
         Ok(entities) => entities,
         Err(e) => {
             tracing::warn!("[KGRAPH] AST extraction failed: {e}");
@@ -68,6 +68,9 @@ pub async fn populate_ast_graph() {
     {
         all_entities.extend(npm_deps);
     }
+
+    // Deduplicate after merging dep-extractor results (same reason as ast_dispatch)
+    let all_entities = ast_pipeline::deduplicate_entities(all_entities);
 
     if all_entities.is_empty() {
         tracing::debug!("[KGRAPH] No AST entities found to index");

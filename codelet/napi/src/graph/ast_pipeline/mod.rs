@@ -50,6 +50,7 @@ pub mod pip_dep_extractor;
 pub mod sbt_dep_extractor;
 pub mod swift_dep_extractor;
 pub(crate) mod helpers;
+pub(crate) mod edge_helpers;
 
 /// Supported source file extensions for AST extraction.
 const SUPPORTED_EXTENSIONS: &[&str] = &[
@@ -125,26 +126,26 @@ pub fn extract_file(
         "ts" | "tsx" | "js" | "jsx" | "mjs" | "mts" => {
             ast_ts_extractor::extract_typescript(&source, &rel_path, &known_files_clone)
         }
-        "rs" => ast_rust_extractor::extract_rust(&source, &rel_path),
-        "py" | "pyi" => ast_python_extractor::extract_python(&source, &rel_path),
-        "go" => ast_go_extractor::extract_go(&source, &rel_path),
-        "java" => ast_java_extractor::extract_java(&source, &rel_path),
-        "c" => ast_c_extractor::extract_c(&source, &rel_path),
+        "rs" => ast_rust_extractor::extract_rust(&source, &rel_path, &known_files_clone),
+        "py" | "pyi" => ast_python_extractor::extract_python(&source, &rel_path, &known_files_clone),
+        "go" => ast_go_extractor::extract_go(&source, &rel_path, &known_files_clone),
+        "java" => ast_java_extractor::extract_java(&source, &rel_path, &known_files_clone),
+        "c" => ast_c_extractor::extract_c(&source, &rel_path, &known_files_clone),
         "h" => {
             // Heuristic: if the .h file looks like C++, parse as C++
             if ast_cpp_extractor::is_cpp_header(&source) {
-                ast_cpp_extractor::extract_cpp(&source, &rel_path)
+                ast_cpp_extractor::extract_cpp(&source, &rel_path, &known_files_clone)
             } else {
-                ast_c_extractor::extract_c(&source, &rel_path)
+                ast_c_extractor::extract_c(&source, &rel_path, &known_files_clone)
             }
         }
-        "cpp" | "cc" | "cxx" | "hpp" => ast_cpp_extractor::extract_cpp(&source, &rel_path),
-        "cs" => ast_csharp_extractor::extract_csharp(&source, &rel_path),
-        "rb" | "gemspec" => ast_ruby_extractor::extract_ruby(&source, &rel_path),
-        "kt" | "kts" => ast_kotlin_extractor::extract_kotlin(&source, &rel_path),
-        "swift" => ast_swift_extractor::extract_swift(&source, &rel_path),
-        "scala" | "sc" => ast_scala_extractor::extract_scala(&source, &rel_path),
-        "php" => ast_php_extractor::extract_php(&source, &rel_path),
+        "cpp" | "cc" | "cxx" | "hpp" => ast_cpp_extractor::extract_cpp(&source, &rel_path, &known_files_clone),
+        "cs" => ast_csharp_extractor::extract_csharp(&source, &rel_path, &known_files_clone),
+        "rb" | "gemspec" => ast_ruby_extractor::extract_ruby(&source, &rel_path, &known_files_clone),
+        "kt" | "kts" => ast_kotlin_extractor::extract_kotlin(&source, &rel_path, &known_files_clone),
+        "swift" => ast_swift_extractor::extract_swift(&source, &rel_path, &known_files_clone),
+        "scala" | "sc" => ast_scala_extractor::extract_scala(&source, &rel_path, &known_files_clone),
+        "php" => ast_php_extractor::extract_php(&source, &rel_path, &known_files_clone),
         _ => Ok(vec![]), // Unsupported language — skip
     }));
 
@@ -180,12 +181,15 @@ fn panic_payload_to_string(payload: &Box<dyn std::any::Any + Send>) -> String {
 /// Uses a two-phase approach:
 /// 1. **Collect** all source file paths (cheap directory walk)
 /// 2. **Extract** each file with knowledge of all paths (enables barrel-import resolution)
-pub fn walk_and_extract(project_root: &Path) -> Result<Vec<GraphEntity>, String> {
+///
+/// When `respect_gitignore` is false, `.gitignore` rules are skipped so
+/// external repos under gitignored directories can be indexed.
+pub fn walk_and_extract(project_root: &Path, respect_gitignore: bool) -> Result<Vec<GraphEntity>, String> {
     // Phase 1: Collect all source file paths for import resolution context
     let mut source_files: Vec<std::path::PathBuf> = Vec::new();
     let walker = ignore::WalkBuilder::new(project_root)
         .hidden(true)
-        .git_ignore(true)
+        .git_ignore(respect_gitignore)
         .git_global(false)
         .git_exclude(false)
         .build();

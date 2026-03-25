@@ -265,15 +265,44 @@ pub async fn dispatch_ast_stats(db: &GraphDatabase) -> String {
 /// extracts dependencies from Cargo.toml/package.json, and batch-loads
 /// everything into the AST code graph. Idempotent — uses nanograph upsert
 /// semantics so repeated calls are safe.
-pub async fn dispatch_ast_index() -> String {
-    let project_root = match std::env::current_dir() {
-        Ok(p) => p,
-        Err(e) => {
+///
+/// When `custom_path` is provided, indexes only that directory with
+/// `.gitignore` disabled. Falls back to `cwd` when `None`.
+pub async fn dispatch_ast_index(custom_path: Option<&str>) -> String {
+    let (project_root, respect_gitignore) = if let Some(p) = custom_path {
+        let path = std::path::Path::new(p);
+        let resolved = if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            match std::env::current_dir() {
+                Ok(cwd) => cwd.join(path),
+                Err(e) => {
+                    return serde_json::json!({
+                        "action": "ast_index",
+                        "error": format!("Failed to get current directory: {e}"),
+                    })
+                    .to_string();
+                }
+            }
+        };
+        if !resolved.is_dir() {
             return serde_json::json!({
                 "action": "ast_index",
-                "error": format!("Failed to get current directory: {e}"),
+                "error": format!("Path is not a directory: {}", resolved.display()),
             })
             .to_string();
+        }
+        (resolved, false)
+    } else {
+        match std::env::current_dir() {
+            Ok(p) => (p, true),
+            Err(e) => {
+                return serde_json::json!({
+                    "action": "ast_index",
+                    "error": format!("Failed to get current directory: {e}"),
+                })
+                .to_string();
+            }
         }
     };
 
@@ -289,7 +318,7 @@ pub async fn dispatch_ast_index() -> String {
     };
 
     // Walk codebase and extract AST entities
-    let mut all_entities = match super::ast_pipeline::walk_and_extract(&project_root) {
+    let mut all_entities = match super::ast_pipeline::walk_and_extract(&project_root, respect_gitignore) {
         Ok(entities) => entities,
         Err(e) => {
             return serde_json::json!({
@@ -380,6 +409,12 @@ pub async fn dispatch_ast_index() -> String {
             tracing::warn!("Swift dependency extraction failed (non-fatal): {e}");
         }
     }
+
+    // Deduplicate after merging dep-extractor results with AST entities.
+    // walk_and_extract already deduplicates internally, but dep extractors
+    // may emit File nodes that overlap (e.g. Package.swift is both a Swift
+    // source file and the SPM manifest), so we run a final pass.
+    let all_entities = super::ast_pipeline::deduplicate_entities(all_entities);
 
     let entity_count = all_entities.len();
     if entity_count == 0 {

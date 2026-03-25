@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "name": "Extract Imports edges from Scala import statements",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scala_edge_extraction_test.rs",
+          "lines": "14-60",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/ast_scala_extractor.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Extract Calls edges from Scala function calls",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/scala_edge_extraction_test.rs",
+          "lines": "65-95",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/ast_scala_extractor.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/scala_edge_extraction_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/graph/ast_pipeline/ast_scala_extractor.rs"
+    ],
+    "totalLinesCovered": 137
+  }
+}

@@ -1,12 +1,17 @@
 //! Swift AST Extractor
 //!
 //! Extracts Function nodes, Type nodes, File nodes, and relationship edges
-//! (Contains, ContainsType) from Swift source files using ast-grep pattern matching.
+//! (Contains, ContainsType, Calls) from Swift source files using ast-grep
+//! pattern matching.
+//!
+//! Swift uses module-level imports (`import Foundation`) which don't map to
+//! individual files, so we skip Imports edges and focus on Calls edges only.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
 
@@ -25,7 +30,10 @@ const SWIFT_TYPE_PATTERNS: &[(&str, &str)] = &[
 ];
 
 /// Extract entities from Swift source code.
-pub fn extract_swift(source: &str, rel_path: &str) -> Result<Vec<GraphEntity>, String> {
+///
+/// Extracts File, Function, and Type nodes, plus Calls edges.
+/// Swift uses module-level imports so Imports edges are not extracted.
+pub fn extract_swift(source: &str, rel_path: &str, _known_files: &HashSet<String>) -> Result<Vec<GraphEntity>, String> {
     let lang = SupportLang::Swift;
     let file_slug = helpers::slugify_path(rel_path);
     let mut entities = Vec::new();
@@ -41,18 +49,29 @@ pub fn extract_swift(source: &str, rel_path: &str) -> Result<Vec<GraphEntity>, S
 
     let root = lang.ast_grep(source);
 
-    extract_functions(&root, &file_slug, &mut entities);
+    // Extract function declarations → collect names for call resolution
+    let function_names = extract_functions(&root, &file_slug, &mut entities);
+
+    // Extract type declarations
     extract_types(&root, &file_slug, &mut entities);
+
+    // No import extraction for Swift (module-level only)
+    let import_map: HashMap<String, (String, bool, String)> = HashMap::new();
+
+    // Extract Calls edges from function bodies
+    extract_calls(source, &file_slug, &function_names, &import_map, &mut entities);
 
     Ok(entities)
 }
 
 /// Extract function declarations from Swift source.
+///
+/// Returns the set of function names found in this file (for call resolution).
 fn extract_functions(
     root: &ast_grep_core::AstGrep<ast_grep_core::tree_sitter::StrDoc<SupportLang>>,
     file_slug: &str,
     entities: &mut Vec<GraphEntity>,
-) {
+) -> HashSet<String> {
     let mut seen_names = HashSet::new();
 
     for pattern in SWIFT_FUNCTION_PATTERNS {
@@ -91,6 +110,7 @@ fn extract_functions(
             ));
         }
     }
+    seen_names
 }
 
 /// Extract type declarations from Swift source.
@@ -129,6 +149,49 @@ fn extract_types(
                 &type_slug,
                 "ContainsType",
             ));
+        }
+    }
+}
+
+/// Extract Calls edges from Swift function bodies.
+///
+/// Scans each function body for bare function calls and resolves them
+/// against known local functions.
+fn extract_calls(
+    source: &str,
+    file_slug: &str,
+    local_functions: &HashSet<String>,
+    import_map: &HashMap<String, (String, bool, String)>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    let lang = SupportLang::Swift;
+    let root = lang.ast_grep(source);
+
+    for pattern in SWIFT_FUNCTION_PATTERNS {
+        for node in root.root().find_all(*pattern) {
+            let fn_text = node.text();
+            let fn_name = helpers::extract_name_after_keyword(&fn_text, "func ");
+            if fn_name.is_empty() {
+                continue;
+            }
+
+            let caller_slug = format!("{file_slug}::{fn_name}");
+
+            if let Some(body_start) = fn_text.find('{') {
+                let body = &fn_text[body_start..];
+                let mut callee_names = HashSet::new();
+                edge_helpers::extract_call_names_from_body(body, &mut callee_names);
+
+                edge_helpers::resolve_calls(
+                    &caller_slug,
+                    file_slug,
+                    &callee_names,
+                    &fn_name,
+                    local_functions,
+                    import_map,
+                    entities,
+                );
+            }
         }
     }
 }
