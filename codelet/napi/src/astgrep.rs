@@ -5,7 +5,8 @@
 
 use ast_grep_core::matcher::Pattern;
 use ast_grep_core::meta_var::MetaVariable;
-use ast_grep_language::{LanguageExt, SupportLang};
+use ast_grep_language::LanguageExt;
+use codelet_tools::astgrep::{AstGrepTool, LanguageChoice};
 use napi_derive::napi;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
@@ -134,39 +135,19 @@ pub struct AstGrepTransform {
     pub convert: Option<AstGrepConvertTransform>,
 }
 
-/// Parse language string to SupportLang enum
-fn parse_language(lang: &str) -> Option<SupportLang> {
-    lang.to_lowercase().parse::<SupportLang>().ok()
+/// Parse language string to LanguageChoice enum.
+///
+/// Delegates to `AstGrepTool::parse_language()` which handles "dart" as a
+/// special case and falls through to SupportLang.
+fn parse_language(lang: &str) -> Option<LanguageChoice> {
+    AstGrepTool::parse_language(lang)
 }
 
-/// Get file extensions for a language
-fn get_extensions(lang: SupportLang) -> Vec<&'static str> {
-    match lang {
-        SupportLang::TypeScript => vec!["ts"],
-        SupportLang::Tsx => vec!["tsx"],
-        SupportLang::JavaScript => vec!["js", "mjs", "cjs"],
-        SupportLang::Rust => vec!["rs"],
-        SupportLang::Python => vec!["py"],
-        SupportLang::Go => vec!["go"],
-        SupportLang::Java => vec!["java"],
-        SupportLang::C => vec!["c", "h"],
-        SupportLang::Cpp => vec!["cpp", "cc", "cxx", "hpp", "hh", "hxx"],
-        SupportLang::CSharp => vec!["cs"],
-        SupportLang::Ruby => vec!["rb"],
-        SupportLang::Kotlin => vec!["kt", "kts"],
-        SupportLang::Swift => vec!["swift"],
-        SupportLang::Scala => vec!["scala"],
-        SupportLang::Php => vec!["php"],
-        SupportLang::Bash => vec!["sh", "bash"],
-        SupportLang::Html => vec!["html", "htm"],
-        SupportLang::Css => vec!["css"],
-        SupportLang::Json => vec!["json"],
-        SupportLang::Yaml => vec!["yaml", "yml"],
-        SupportLang::Lua => vec!["lua"],
-        SupportLang::Elixir => vec!["ex", "exs"],
-        SupportLang::Haskell => vec!["hs"],
-        _ => vec![],
-    }
+/// Get file extensions for a language.
+///
+/// Delegates to `AstGrepTool::get_extensions()` for the canonical extension mapping.
+fn get_extensions(lang: &LanguageChoice) -> Vec<&'static str> {
+    AstGrepTool::get_extensions(lang)
 }
 
 /// Search for AST pattern matches in files
@@ -187,14 +168,18 @@ pub async fn ast_grep_search(
     // Parse language
     let lang = parse_language(&language).ok_or_else(|| {
         napi::Error::from_reason(format!(
-            "Unsupported language '{}'. Supported: typescript, javascript, rust, python, go, java, c, cpp, ruby, kotlin, swift, etc.",
+            "Unsupported language '{}'. Supported: typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell, dart, solidity, nix, hcl.",
             language
         ))
     })?;
 
     // Validate pattern syntax BEFORE searching
     // This catches errors like MultipleNode early and provides a better error message
-    if let Err(e) = Pattern::try_new(&pattern, lang) {
+    let pattern_valid = match lang {
+        LanguageChoice::Standard(sl) => Pattern::try_new(&pattern, sl),
+        LanguageChoice::Dart(dl) => Pattern::try_new(&pattern, dl),
+    };
+    if let Err(e) = pattern_valid {
         return Err(napi::Error::from_reason(format!(
             "Invalid AST pattern '{}' for {}.\n\nPattern error: {}\n\n\
             Pattern syntax guide:\n\
@@ -207,7 +192,7 @@ pub async fn ast_grep_search(
         )));
     }
 
-    let extensions = get_extensions(lang);
+    let extensions = get_extensions(&lang);
     let mut all_matches = Vec::new();
 
     for path_str in &paths {
@@ -250,7 +235,11 @@ pub async fn ast_grep_search(
 }
 
 /// Search a single file for pattern matches
-async fn search_file(path: &Path, pattern: &str, lang: SupportLang) -> Vec<AstGrepMatchResult> {
+async fn search_file(
+    path: &Path,
+    pattern: &str,
+    lang: LanguageChoice,
+) -> Vec<AstGrepMatchResult> {
     let source = match tokio::fs::read_to_string(path).await {
         Ok(content) => content,
         Err(_) => return Vec::new(),
@@ -262,22 +251,27 @@ async fn search_file(path: &Path, pattern: &str, lang: SupportLang) -> Vec<AstGr
     // Wrap in catch_unwind to prevent panics from crashing
     let search_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let mut results = Vec::new();
-        let ast_grep = lang.ast_grep(&source);
-        let root = ast_grep.root();
-        let matches = root.find_all(pattern_owned.as_str());
-
-        for node_match in matches {
-            let start_pos = node_match.start_pos();
-            let line = (start_pos.line() + 1) as u32;
-            let column = (start_pos.column(&node_match) + 1) as u32;
-            let text = node_match.text().to_string();
-
-            results.push(AstGrepMatchResult {
-                file: path_str.clone(),
-                line,
-                column,
-                text,
-            });
+        macro_rules! do_search {
+            ($lang_val:expr) => {{
+                let ast_grep = $lang_val.ast_grep(&source);
+                let root = ast_grep.root();
+                for node_match in root.find_all(pattern_owned.as_str()) {
+                    let start_pos = node_match.start_pos();
+                    let line = (start_pos.line() + 1) as u32;
+                    let column = (start_pos.column(&node_match) + 1) as u32;
+                    let text = node_match.text().to_string();
+                    results.push(AstGrepMatchResult {
+                        file: path_str.clone(),
+                        line,
+                        column,
+                        text,
+                    });
+                }
+            }};
+        }
+        match lang {
+            LanguageChoice::Standard(sl) => do_search!(sl),
+            LanguageChoice::Dart(dl) => do_search!(dl),
         }
         results
     }));
@@ -307,7 +301,11 @@ pub async fn ast_grep_refactor(
         .ok_or_else(|| napi::Error::from_reason(format!("Unsupported language '{}'", language)))?;
 
     // Validate pattern syntax BEFORE searching
-    if let Err(e) = Pattern::try_new(&pattern, lang) {
+    let pattern_valid = match lang {
+        LanguageChoice::Standard(sl) => Pattern::try_new(&pattern, sl),
+        LanguageChoice::Dart(dl) => Pattern::try_new(&pattern, dl),
+    };
+    if let Err(e) = pattern_valid {
         return Err(napi::Error::from_reason(format!(
             "Invalid AST pattern '{}' for {}.\n\nPattern error: {}\n\n\
             Pattern syntax guide:\n\
@@ -330,22 +328,27 @@ pub async fn ast_grep_refactor(
     let source_clone = source_content.clone();
 
     let matches_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        let ast_grep = lang.ast_grep(&source_clone);
-        let root = ast_grep.root();
-        let matches: Vec<_> = root.find_all(pattern_owned.as_str()).collect();
-
-        matches
-            .iter()
-            .map(|m| {
-                let start_pos = m.start_pos();
-                (
-                    m.text().to_string(),
-                    start_pos.line() + 1,
-                    m.range().start,
-                    m.range().end,
-                )
-            })
-            .collect::<Vec<_>>()
+        macro_rules! do_refactor_search {
+            ($lang_val:expr) => {{
+                let ast_grep = $lang_val.ast_grep(&source_clone);
+                let root = ast_grep.root();
+                root.find_all(pattern_owned.as_str())
+                    .map(|m| {
+                        let start_pos = m.start_pos();
+                        (
+                            m.text().to_string(),
+                            start_pos.line() + 1,
+                            m.range().start,
+                            m.range().end,
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            }};
+        }
+        match lang {
+            LanguageChoice::Standard(sl) => do_refactor_search!(sl),
+            LanguageChoice::Dart(dl) => do_refactor_search!(dl),
+        }
     }));
 
     let matches = matches_result.map_err(|_| {
@@ -432,7 +435,11 @@ pub async fn ast_grep_replace(
         .ok_or_else(|| napi::Error::from_reason(format!("Unsupported language '{}'", language)))?;
 
     // Validate pattern syntax BEFORE searching
-    if let Err(e) = Pattern::try_new(&pattern, lang) {
+    let pattern_valid = match lang {
+        LanguageChoice::Standard(sl) => Pattern::try_new(&pattern, sl),
+        LanguageChoice::Dart(dl) => Pattern::try_new(&pattern, dl),
+    };
+    if let Err(e) = pattern_valid {
         return Err(napi::Error::from_reason(format!(
             "Invalid AST pattern '{}' for {}.\n\nPattern error: {}\n\n\
             Pattern syntax guide:\n\
@@ -470,55 +477,55 @@ pub async fn ast_grep_replace(
     }
 
     let matches_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        let ast_grep = lang.ast_grep(&source_clone);
-        let root = ast_grep.root();
-        let matches: Vec<_> = root.find_all(pattern_owned.as_str()).collect();
+        macro_rules! do_replace_search {
+            ($lang_val:expr) => {{
+                let ast_grep = $lang_val.ast_grep(&source_clone);
+                let root = ast_grep.root();
+                root.find_all(pattern_owned.as_str())
+                    .map(|m| {
+                        let start_pos = m.start_pos();
 
-        matches
-            .iter()
-            .map(|m| {
-                let start_pos = m.start_pos();
+                        let mut variables: HashMap<String, String> = HashMap::new();
+                        let env = m.get_env();
 
-                // Extract ALL captured meta-variables using ast-grep's native API
-                let mut variables: HashMap<String, String> = HashMap::new();
-                let env = m.get_env();
-
-                // Get all matched single variables (e.g., $NAME, $TYPE, $EXPR)
-                // and multi-variables (e.g., $$$ARGS, $$$BODY)
-                for meta_var in env.get_matched_variables() {
-                    match meta_var {
-                        MetaVariable::Capture(name, _) => {
-                            if let Some(node) = env.get_match(&name) {
-                                variables.insert(name, node.text().to_string());
+                        for meta_var in env.get_matched_variables() {
+                            match meta_var {
+                                MetaVariable::Capture(name, _) => {
+                                    if let Some(node) = env.get_match(&name) {
+                                        variables.insert(name, node.text().to_string());
+                                    }
+                                }
+                                MetaVariable::MultiCapture(name) => {
+                                    let nodes = env.get_multiple_matches(&name);
+                                    if !nodes.is_empty() {
+                                        let text: String = nodes
+                                            .iter()
+                                            .map(|n| n.text())
+                                            .collect::<Vec<_>>()
+                                            .join(", ");
+                                        variables.insert(name, text);
+                                    }
+                                }
+                                MetaVariable::Dropped(_) | MetaVariable::Multiple => {}
                             }
                         }
-                        MetaVariable::MultiCapture(name) => {
-                            let nodes = env.get_multiple_matches(&name);
-                            if !nodes.is_empty() {
-                                // Join multiple captures with ", " for multi-variables
-                                let text: String = nodes
-                                    .iter()
-                                    .map(|n| n.text())
-                                    .collect::<Vec<_>>()
-                                    .join(", ");
-                                variables.insert(name, text);
-                            }
-                        }
-                        // Dropped ($_) and Multiple ($$$) are unnamed wildcards - skip them
-                        MetaVariable::Dropped(_) | MetaVariable::Multiple => {}
-                    }
-                }
 
-                MatchData {
-                    text: m.text().to_string(),
-                    line: (start_pos.line() + 1) as u32,
-                    column: (start_pos.column(m) + 1) as u32,
-                    start_byte: m.range().start,
-                    end_byte: m.range().end,
-                    variables,
-                }
-            })
-            .collect::<Vec<_>>()
+                        MatchData {
+                            text: m.text().to_string(),
+                            line: (start_pos.line() + 1) as u32,
+                            column: (start_pos.column(&m) + 1) as u32,
+                            start_byte: m.range().start,
+                            end_byte: m.range().end,
+                            variables,
+                        }
+                    })
+                    .collect::<Vec<_>>()
+            }};
+        }
+        match lang {
+            LanguageChoice::Standard(sl) => do_replace_search!(sl),
+            LanguageChoice::Dart(dl) => do_replace_search!(dl),
+        }
     }));
 
     let matches = matches_result.map_err(|_| {

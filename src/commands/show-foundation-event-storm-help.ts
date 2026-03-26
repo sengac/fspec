@@ -39,6 +39,10 @@ const config: CommandHelpConfig = {
     'show-foundation',
     'discover-foundation',
     'generate-example-mapping-from-event-storm',
+    'remove-foundation-bounded-context',
+    'remove-aggregate-from-foundation',
+    'remove-domain-event-from-foundation',
+    'remove-command-from-foundation',
   ],
   commonErrors: [
     {

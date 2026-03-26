@@ -1,0 +1,350 @@
+{
+  "scenarios": [
+    {
+      "name": "Search Dart files for class declarations using AstGrepTool",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "72-100",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/dart_lang.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search Dart files for function declarations with meta-variable capture",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "107-148",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unsupported language error message includes dart in supported list",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "262-288",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep.rs",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AstGrepTool finds .dart files when walking a directory",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "294-360",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep.rs",
+              "lines": [
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refactor a Dart source file by replacing a matched class pattern",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "150-201",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Batch replace all occurrences of a Dart class pattern",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "209-249",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep_refactor.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Solidity file extensions are mapped correctly",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "356-393",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep.rs",
+              "lines": [
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nix file extensions are mapped correctly",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "401-427",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep.rs",
+              "lines": [
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hcl file extensions are mapped correctly",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/astgrep_dart_test.rs",
+          "lines": "435-461",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/astgrep.rs",
+              "lines": [
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/astgrep_dart_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/dart_lang.rs",
+      "codelet/tools/src/astgrep.rs",
+      "codelet/tools/src/astgrep_refactor.rs"
+    ],
+    "totalLinesCovered": 538
+  }
+}

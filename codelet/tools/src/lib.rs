@@ -12,6 +12,7 @@ pub mod apply_patch;
 pub mod bash;
 pub mod blocklist;
 pub mod bridge;
+pub mod dart_lang;
 pub mod stage_permissions;
 pub mod bridge_handler;
 pub mod bridge_relay;

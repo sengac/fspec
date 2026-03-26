@@ -17,6 +17,7 @@
 //! - `ast_swift_extractor`: Swift
 //! - `ast_scala_extractor`: Scala
 //! - `ast_php_extractor`: PHP
+//! - `ast_dart_extractor`: Dart
 //!
 //! Uses `ignore::WalkBuilder` for `.gitignore`-aware file walking.
 //! All extracted entities are batched before loading.
@@ -29,6 +30,7 @@ use super::graph_entities::GraphEntity;
 pub mod ast_c_extractor;
 pub mod ast_cpp_extractor;
 pub mod ast_csharp_extractor;
+pub mod ast_dart_extractor;
 pub mod ast_go_extractor;
 pub mod ast_java_extractor;
 pub mod ast_kotlin_extractor;
@@ -47,6 +49,7 @@ pub mod gomod_dep_extractor;
 pub mod java_dep_extractor;
 pub mod npm_dep_extractor;
 pub mod pip_dep_extractor;
+pub mod pubspec_dep_extractor;
 pub mod sbt_dep_extractor;
 pub mod swift_dep_extractor;
 pub(crate) mod helpers;
@@ -67,6 +70,7 @@ const SUPPORTED_EXTENSIONS: &[&str] = &[
     "swift",                                  // Swift
     "scala", "sc",                            // Scala
     "php",                                    // PHP
+    "dart",                                   // Dart
 ];
 
 /// Directories to always skip even without .gitignore.
@@ -146,6 +150,7 @@ pub fn extract_file(
         "swift" => ast_swift_extractor::extract_swift(&source, &rel_path, &known_files_clone),
         "scala" | "sc" => ast_scala_extractor::extract_scala(&source, &rel_path, &known_files_clone),
         "php" => ast_php_extractor::extract_php(&source, &rel_path, &known_files_clone),
+        "dart" => ast_dart_extractor::extract_dart(&source, &rel_path, &known_files_clone),
         _ => Ok(vec![]), // Unsupported language — skip
     }));
 

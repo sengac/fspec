@@ -57,6 +57,7 @@ const config: CommandHelpConfig = {
     },
   ],
   relatedCommands: [
+    'remove-command-from-foundation',
     'add-foundation-bounded-context',
     'add-aggregate-to-foundation',
     'add-domain-event-to-foundation',

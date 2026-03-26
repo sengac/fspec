@@ -99,6 +99,31 @@ export async function validateMermaidSyntax(
       };
     }
 
+    // Fix JSDOM CSSStyleDeclaration.parentRule being getter-only.
+    // Mermaid's render pipeline sets parentRule on CSSStyleDeclaration instances
+    // during SVG generation, but JSDOM defines it with only a getter, causing:
+    // "Cannot set property parentRule of #<CSSStyleDeclaration> which has only a getter"
+    // Redefine with both getter and setter before mermaid import.
+    const parentRuleDesc = Object.getOwnPropertyDescriptor(
+      window.CSSStyleDeclaration.prototype,
+      'parentRule'
+    );
+    if (parentRuleDesc && !parentRuleDesc.set) {
+      Object.defineProperty(
+        window.CSSStyleDeclaration.prototype,
+        'parentRule',
+        {
+          get() {
+            return (this as Record<string, unknown>)._parentRule ?? null;
+          },
+          set(v: unknown) {
+            (this as Record<string, unknown>)._parentRule = v;
+          },
+          configurable: true,
+        }
+      );
+    }
+
     // Dynamically import mermaid after setting up the DOM
     const mermaid = (await import('mermaid')).default;
 

@@ -1,0 +1,603 @@
+{
+  "scenarios": [
+    {
+      "name": "Remove an empty bounded context",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "63-105",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-foundation-bounded-context.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Refuse to remove non-empty bounded context without cascade flag",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "108-176",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-foundation-bounded-context.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove non-empty bounded context with cascade flag",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "179-255",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-foundation-bounded-context.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove aggregate from bounded context",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "286-340",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-aggregate-from-foundation.ts",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove domain event from bounded context",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "345-387",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-domain-event-from-foundation.ts",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Remove command from bounded context",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "393-435",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-command-from-foundation.ts",
+              "lines": [
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error when removing aggregate from non-existent bounded context",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "441-470",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-aggregate-from-foundation.ts",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error when removing non-existent aggregate",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "473-502",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-aggregate-from-foundation.ts",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FOUNDATION.md regenerated after removal",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/remove-foundation-bounded-context.test.ts",
+          "lines": "258-308",
+          "implMappings": [
+            {
+              "file": "src/commands/remove-foundation-bounded-context.ts",
+              "lines": [
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/remove-foundation-bounded-context.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/remove-foundation-bounded-context.ts",
+      "src/commands/remove-aggregate-from-foundation.ts",
+      "src/commands/remove-domain-event-from-foundation.ts",
+      "src/commands/remove-command-from-foundation.ts"
+    ],
+    "totalLinesCovered": 881
+  }
+}

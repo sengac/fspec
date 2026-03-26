@@ -341,38 +341,37 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     setShowDeleteDialog(false);
   };
 
-  // Helper function to reload diff after restore
+  // Helper function to reload diff after restore using direct NAPI call
   const reloadDiffAfterRestore = (checkpoint: GitCheckpoint) => {
     const selectedFile = files[selectedFileIndex];
-    if (!selectedFile || !workerRef.current) return;
+    if (!selectedFile) { return; }
 
     setIsLoadingDiff(true);
-    const requestId = `${Date.now()}`;
-    pendingRequestId.current = requestId;
 
-    const worker = workerRef.current;
-    const messageHandler = (response: {
-      id: string;
-      diff?: string;
-      error?: string;
-    }) => {
-      if (response.id !== pendingRequestId.current) return;
-      if (response.error) {
-        setDiffContent('Error loading diff');
-      } else {
-        setDiffContent(response.diff || 'No changes to display');
+    try {
+      const diff = getCheckpointFileDiff(
+        cwd,
+        selectedFile.path,
+        checkpoint.stashRef
+      );
+
+      const MAX_DIFF_SIZE = 100000;
+      let finalDiff = diff || 'No changes to display';
+      if (finalDiff.length > MAX_DIFF_SIZE) {
+        const truncatedDiff = finalDiff.substring(0, MAX_DIFF_SIZE);
+        const linesShown = truncatedDiff.split('\n').length;
+        const totalLines = finalDiff.split('\n').length;
+        finalDiff =
+          truncatedDiff +
+          `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${finalDiff.length} chars)`;
       }
-      setIsLoadingDiff(false);
-      worker.off('message', messageHandler);
-    };
 
-    worker.on('message', messageHandler);
-    worker.postMessage({
-      id: requestId,
-      cwd,
-      filepath: selectedFile.path,
-      checkpointRef: checkpoint.stashRef,
-    });
+      setDiffContent(finalDiff);
+    } catch {
+      setDiffContent('Error loading diff');
+    } finally {
+      setIsLoadingDiff(false);
+    }
   };
 
   // Handle restore confirmation

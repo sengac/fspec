@@ -136,6 +136,10 @@ import { registerAddFoundationBoundedContextCommand } from '../commands/add-foun
 import { registerAddAggregateToFoundationCommand } from '../commands/add-aggregate-to-foundation';
 import { registerAddDomainEventToFoundationCommand } from '../commands/add-domain-event-to-foundation';
 import { registerAddCommandToFoundationCommand } from '../commands/add-command-to-foundation';
+import { registerRemoveFoundationBoundedContextCommand } from '../commands/remove-foundation-bounded-context';
+import { registerRemoveAggregateFromFoundationCommand } from '../commands/remove-aggregate-from-foundation';
+import { registerRemoveDomainEventFromFoundationCommand } from '../commands/remove-domain-event-from-foundation';
+import { registerRemoveCommandFromFoundationCommand } from '../commands/remove-command-from-foundation';
 import { registerShowTestPatternsCommand } from '../commands/show-test-patterns';
 import { registerShowWorkUnitCommand } from '../commands/show-work-unit';
 import { registerReviewCommand } from '../commands/review';
@@ -322,6 +326,10 @@ export function createProgram(): Command {
   registerAddAggregateToFoundationCommand(program);
   registerAddDomainEventToFoundationCommand(program);
   registerAddCommandToFoundationCommand(program);
+  registerRemoveFoundationBoundedContextCommand(program);
+  registerRemoveAggregateFromFoundationCommand(program);
+  registerRemoveDomainEventFromFoundationCommand(program);
+  registerRemoveCommandFromFoundationCommand(program);
   registerShowTestPatternsCommand(program);
   registerShowWorkUnitCommand(program);
   registerReviewCommand(program);

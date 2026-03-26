@@ -410,6 +410,14 @@ pub async fn dispatch_ast_index(custom_path: Option<&str>) -> String {
         }
     }
 
+    // Extract dependencies from pubspec.yaml
+    match super::ast_pipeline::pubspec_dep_extractor::extract_pubspec_dependencies(&project_root) {
+        Ok(dep_entities) => all_entities.extend(dep_entities),
+        Err(e) => {
+            tracing::warn!("Pubspec dependency extraction failed (non-fatal): {e}");
+        }
+    }
+
     // Deduplicate after merging dep-extractor results with AST entities.
     // walk_and_extract already deduplicates internally, but dep extractors
     // may emit File nodes that overlap (e.g. Package.swift is both a Swift
@@ -464,7 +472,14 @@ pub async fn dispatch_ast_index(custom_path: Option<&str>) -> String {
 ///
 /// Accepts optional `entity_type` filter ("File", "Function", "Type").
 /// Accepts optional `path_pattern` glob to scope results to matching file paths.
-/// Excludes test files and stub File nodes (no language) by default.
+///
+/// Applies false-positive reduction filters:
+/// - Excludes test files and stubs from orphan files
+/// - Excludes test file functions from uncalled functions
+/// - Excludes generated file entities (.g.dart, .freezed.dart)
+/// - Excludes Flutter platform directories for Flutter projects
+/// - Excludes main.dart entry points from orphan files
+/// - Excludes extension types (typeKind="extension") from unreferenced types
 pub async fn dispatch_ast_dead_code(
     db: &GraphDatabase,
     entity_type: Option<&str>,
@@ -479,12 +494,14 @@ pub async fn dispatch_ast_dead_code(
 
     let glob_matcher = build_glob_matcher(path_pattern);
 
-    // Build file path index if we need to resolve Function/Type paths
-    let file_path_index = if glob_matcher.is_some() {
-        build_file_path_index(db).await
-    } else {
-        std::collections::HashMap::new()
-    };
+    // Build file path index — needed for resolving Function/Type → file path
+    let file_path_index = build_file_path_index(db).await;
+
+    // Detect Flutter project by checking for "flutter" dependency
+    let is_flutter = is_flutter_project(db).await;
+
+    // Build file isTest index for filtering functions/types from test files
+    let file_test_index = build_file_test_index(db).await;
 
     let mut all_results = serde_json::Map::new();
 
@@ -501,7 +518,7 @@ pub async fn dispatch_ast_dead_code(
                 let filtered: Vec<Value> = items
                     .into_iter()
                     .filter(|item| {
-                        // For files: exclude test files and stubs (no language = external import)
+                        // ── File-level filters ──
                         if *check_type == "File" {
                             let is_test = item
                                 .get("isTest")
@@ -512,7 +529,68 @@ pub async fn dispatch_ast_dead_code(
                             if is_test || !has_language {
                                 return false;
                             }
+
+                            if let Some(path) = item.get("path").and_then(|v| v.as_str()) {
+                                // Exclude main.dart entry points
+                                if path.ends_with("main.dart") {
+                                    return false;
+                                }
+                                // Exclude generated Dart files
+                                if is_generated_dart_path(path) {
+                                    return false;
+                                }
+                                // Exclude Flutter platform directories
+                                if is_flutter && is_flutter_platform_path(path) {
+                                    return false;
+                                }
+                            }
                         }
+
+                        // ── Function-level filters ──
+                        if *check_type == "Function" {
+                            if let Some(slug) = item.get("slug").and_then(|v| v.as_str()) {
+                                // Resolve function's file slug
+                                if let Some(file_slug) = slug.split("::").next() {
+                                    // Exclude functions in test files
+                                    if file_test_index.get(file_slug).copied().unwrap_or(false) {
+                                        return false;
+                                    }
+                                    // Exclude functions in generated files
+                                    if let Some(file_path) = file_path_index.get(file_slug) {
+                                        if is_generated_dart_path(file_path) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // ── Type-level filters ──
+                        if *check_type == "Type" {
+                            // Exclude extension types (typeKind="extension")
+                            if let Some(type_kind) = item.get("typeKind").and_then(|v| v.as_str()) {
+                                if type_kind == "extension" {
+                                    return false;
+                                }
+                            }
+
+                            if let Some(slug) = item.get("slug").and_then(|v| v.as_str()) {
+                                // Resolve type's file slug
+                                if let Some(file_slug) = slug.split("::").next() {
+                                    // Exclude types in test files
+                                    if file_test_index.get(file_slug).copied().unwrap_or(false) {
+                                        return false;
+                                    }
+                                    // Exclude types in generated files
+                                    if let Some(file_path) = file_path_index.get(file_slug) {
+                                        if is_generated_dart_path(file_path) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         // Apply glob filter if provided
                         if let Some(ref matcher) = glob_matcher {
                             match *check_type {
@@ -559,4 +637,39 @@ pub async fn dispatch_ast_dead_code(
         "results": all_results,
     })
     .to_string()
+}
+
+/// Check if the indexed project is a Flutter project by looking for "flutter" dependency.
+async fn is_flutter_project(db: &GraphDatabase) -> bool {
+    if let Ok(Value::Array(deps)) = db.query_with_source(AST_QUERIES, "all_dependencies", None).await {
+        return deps.iter().any(|d| {
+            d.get("name").and_then(|v| v.as_str()) == Some("flutter")
+        });
+    }
+    false
+}
+
+/// Build a map of file_slug → isTest for filtering entities from test files.
+async fn build_file_test_index(db: &GraphDatabase) -> std::collections::HashMap<String, bool> {
+    let mut index = std::collections::HashMap::new();
+    if let Ok(Value::Array(files)) = db.query_with_source(AST_QUERIES, "all_files", None).await {
+        for file in files {
+            if let Some(slug) = file.get("slug").and_then(|v| v.as_str()) {
+                let is_test = file.get("isTest").and_then(|v| v.as_bool()).unwrap_or(false);
+                index.insert(slug.to_string(), is_test);
+            }
+        }
+    }
+    index
+}
+
+/// Check if a file path is a Dart generated file (.g.dart or .freezed.dart).
+fn is_generated_dart_path(path: &str) -> bool {
+    path.ends_with(".g.dart") || path.ends_with(".freezed.dart")
+}
+
+/// Check if a file path belongs to a Flutter platform directory.
+fn is_flutter_platform_path(path: &str) -> bool {
+    const FLUTTER_PLATFORM_DIRS: &[&str] = &["ios/", "android/", "macos/", "linux/", "windows/"];
+    FLUTTER_PLATFORM_DIRS.iter().any(|dir| path.starts_with(dir))
 }

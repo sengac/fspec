@@ -55,7 +55,7 @@ node Dependency
     name: String
     version: String?
     isDev: Bool?
-    source: enum(npm, crate, pip, go, composer, nuget, gradle, maven, sbt, gem, spm)?
+    source: enum(npm, crate, pip, go, composer, nuget, gradle, maven, sbt, gem, spm, pubspec)?
 }
 
 // ── Structural Relationship Edges ─────────────────────────────

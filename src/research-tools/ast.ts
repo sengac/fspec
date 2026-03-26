@@ -119,7 +119,7 @@ export const tool: ResearchTool = {
         {
           flag: '--lang <language>',
           description:
-            'Programming language (typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell). (required)',
+            'Programming language (typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell, dart, solidity, nix, hcl). (required)',
         },
         {
           flag: '--path <path>',
@@ -228,7 +228,7 @@ export const tool: ResearchTool = {
         },
         {
           error: 'Unsupported language',
-          fix: 'Use one of: typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell',
+          fix: 'Use one of: typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell, dart, solidity, nix, hcl',
         },
       ],
       exitCodes: [

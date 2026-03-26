@@ -1212,6 +1212,105 @@ function displayDiscoveryHelp(): void {
   console.log(
     '  ' +
       chalk.cyan(
+        'fspec remove-foundation-bounded-context <context-name> [--cascade]'
+      )
+  );
+  console.log(
+    '    Description: Remove bounded context from foundation Event Storm (soft-delete)'
+  );
+  console.log('    Options:');
+  console.log(
+    '      --cascade                        Also remove all child items'
+  );
+  console.log('    Examples:');
+  console.log('      fspec remove-foundation-bounded-context "Legacy System"');
+  console.log(
+    '      fspec remove-foundation-bounded-context "Old Module" --cascade'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
+        'fspec add-aggregate-to-foundation <context-name> <aggregate-name>'
+      )
+  );
+  console.log('    Description: Add aggregate to a foundation bounded context');
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-aggregate-to-foundation "Work Management" "WorkUnit"'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
+        'fspec remove-aggregate-from-foundation <context-name> <aggregate-name>'
+      )
+  );
+  console.log(
+    '    Description: Remove aggregate from a foundation bounded context (soft-delete)'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec remove-aggregate-from-foundation "Work Management" "LegacyItem"'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
+        'fspec add-domain-event-to-foundation <context-name> <event-name>'
+      )
+  );
+  console.log(
+    '    Description: Add domain event to a foundation bounded context'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-domain-event-to-foundation "Work Management" "WorkUnitCreated"'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
+        'fspec remove-domain-event-from-foundation <context-name> <event-name>'
+      )
+  );
+  console.log(
+    '    Description: Remove domain event from a foundation bounded context (soft-delete)'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec remove-domain-event-from-foundation "Work Management" "LegacyEvent"'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
+        'fspec add-command-to-foundation <context-name> <command-name>'
+      )
+  );
+  console.log('    Description: Add command to a foundation bounded context');
+  console.log('    Examples:');
+  console.log(
+    '      fspec add-command-to-foundation "Work Management" "CreateWorkUnit"'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
+        'fspec remove-command-from-foundation <context-name> <command-name>'
+      )
+  );
+  console.log(
+    '    Description: Remove command from a foundation bounded context (soft-delete)'
+  );
+  console.log('    Examples:');
+  console.log(
+    '      fspec remove-command-from-foundation "Work Management" "DeprecatedAction"'
+  );
+  console.log('');
+  console.log(
+    '  ' +
+      chalk.cyan(
         'fspec generate-example-mapping-from-event-storm <work-unit-id>'
       )
   );

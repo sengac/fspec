@@ -194,8 +194,13 @@ Next steps:
   2. Move to specifying: fspec update-work-unit-status ${eventStormStatus.workUnitId} specifying
   3. Conduct Foundation Event Storm using foundation commands:
      - fspec add-foundation-bounded-context <name>
+     - fspec remove-foundation-bounded-context <name> [--cascade]
      - fspec add-aggregate-to-foundation <context> <aggregate>
+     - fspec remove-aggregate-from-foundation <context> <aggregate>
      - fspec add-domain-event-to-foundation <context> <event>
+     - fspec remove-domain-event-from-foundation <context> <event>
+     - fspec add-command-to-foundation <context> <command>
+     - fspec remove-command-from-foundation <context> <command>
      - fspec show-foundation-event-storm
 
 See spec/CLAUDE.md "Foundation Event Storm" section for detailed guidance.
@@ -223,8 +228,13 @@ Option 1 (Recommended): Create a work unit to track this
 
 Option 2: Conduct Event Storm directly
   fspec add-foundation-bounded-context <name>
+  fspec remove-foundation-bounded-context <name> [--cascade]
   fspec add-aggregate-to-foundation <context> <aggregate>
+  fspec remove-aggregate-from-foundation <context> <aggregate>
   fspec add-domain-event-to-foundation <context> <event>
+  fspec remove-domain-event-from-foundation <context> <event>
+  fspec add-command-to-foundation <context> <command>
+  fspec remove-command-from-foundation <context> <command>
   fspec show-foundation-event-storm
 
 See spec/CLAUDE.md "Foundation Event Storm" section for detailed guidance.

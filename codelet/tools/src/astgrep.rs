@@ -7,6 +7,7 @@
 //! to ensure the session cannot search files outside its isolated environment.
 
 use crate::{
+    dart_lang::DartLang,
     error::ToolError,
     facade::validate_and_resolve_path,
     limits::OutputLimits,
@@ -22,6 +23,15 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::Path;
 use uuid::Uuid;
+
+/// Unified language choice — either an ast-grep builtin or our custom Dart.
+#[derive(Clone, Copy, Debug)]
+pub enum LanguageChoice {
+    /// A language supported by ast-grep-language
+    Standard(SupportLang),
+    /// Dart — custom integration via tree-sitter-dart
+    Dart(DartLang),
+}
 
 /// AstGrepTool for AST-based code pattern matching.
 ///
@@ -40,39 +50,50 @@ impl AstGrepTool {
         Self { session_id }
     }
 
-    /// Parse language string to SupportLang
-    fn parse_language(lang: &str) -> Option<SupportLang> {
-        // Try parsing the language string
-        lang.to_lowercase().parse::<SupportLang>().ok()
+    /// Parse language string to LanguageChoice.
+    ///
+    /// Handles "dart" as a special case (custom integration), then falls through
+    /// to ast-grep's `SupportLang::from_str()` for all other languages.
+    pub fn parse_language(lang: &str) -> Option<LanguageChoice> {
+        let lower = lang.to_lowercase();
+        if lower == "dart" {
+            return Some(LanguageChoice::Dart(DartLang));
+        }
+        lower.parse::<SupportLang>().ok().map(LanguageChoice::Standard)
     }
 
-    /// Get file extensions for a language
-    fn get_extensions(lang: SupportLang) -> Vec<&'static str> {
+    /// Get file extensions for a language.
+    pub fn get_extensions(lang: &LanguageChoice) -> Vec<&'static str> {
         match lang {
-            SupportLang::TypeScript => vec!["ts"],
-            SupportLang::Tsx => vec!["tsx"],
-            SupportLang::JavaScript => vec!["js", "mjs", "cjs"],
-            SupportLang::Rust => vec!["rs"],
-            SupportLang::Python => vec!["py"],
-            SupportLang::Go => vec!["go"],
-            SupportLang::Java => vec!["java"],
-            SupportLang::C => vec!["c", "h"],
-            SupportLang::Cpp => vec!["cpp", "cc", "cxx", "hpp", "hh", "hxx"],
-            SupportLang::CSharp => vec!["cs"],
-            SupportLang::Ruby => vec!["rb"],
-            SupportLang::Kotlin => vec!["kt", "kts"],
-            SupportLang::Swift => vec!["swift"],
-            SupportLang::Scala => vec!["scala"],
-            SupportLang::Php => vec!["php"],
-            SupportLang::Bash => vec!["sh", "bash"],
-            SupportLang::Html => vec!["html", "htm"],
-            SupportLang::Css => vec!["css"],
-            SupportLang::Json => vec!["json"],
-            SupportLang::Yaml => vec!["yaml", "yml"],
-            SupportLang::Lua => vec!["lua"],
-            SupportLang::Elixir => vec!["ex", "exs"],
-            SupportLang::Haskell => vec!["hs"],
-            _ => vec![],
+            LanguageChoice::Dart(_) => vec!["dart"],
+            LanguageChoice::Standard(sl) => match sl {
+                SupportLang::TypeScript => vec!["ts"],
+                SupportLang::Tsx => vec!["tsx"],
+                SupportLang::JavaScript => vec!["js", "mjs", "cjs"],
+                SupportLang::Rust => vec!["rs"],
+                SupportLang::Python => vec!["py"],
+                SupportLang::Go => vec!["go"],
+                SupportLang::Java => vec!["java"],
+                SupportLang::C => vec!["c", "h"],
+                SupportLang::Cpp => vec!["cpp", "cc", "cxx", "hpp", "hh", "hxx"],
+                SupportLang::CSharp => vec!["cs"],
+                SupportLang::Ruby => vec!["rb"],
+                SupportLang::Kotlin => vec!["kt", "kts"],
+                SupportLang::Swift => vec!["swift"],
+                SupportLang::Scala => vec!["scala"],
+                SupportLang::Php => vec!["php"],
+                SupportLang::Bash => vec!["sh", "bash"],
+                SupportLang::Html => vec!["html", "htm"],
+                SupportLang::Css => vec!["css"],
+                SupportLang::Json => vec!["json"],
+                SupportLang::Yaml => vec!["yaml", "yml"],
+                SupportLang::Lua => vec!["lua"],
+                SupportLang::Elixir => vec!["ex", "exs"],
+                SupportLang::Haskell => vec!["hs"],
+                SupportLang::Solidity => vec!["sol"],
+                SupportLang::Nix => vec!["nix"],
+                SupportLang::Hcl => vec!["hcl", "tf"],
+            },
         }
     }
 
@@ -81,7 +102,7 @@ impl AstGrepTool {
     async fn search_file(
         path: &Path,
         pattern: &str,
-        lang: SupportLang,
+        lang: LanguageChoice,
     ) -> (Vec<MatchResult>, bool) {
         // Read file content (async, non-blocking)
         let source = match tokio::fs::read_to_string(path).await {
@@ -96,23 +117,43 @@ impl AstGrepTool {
 
         let search_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let mut results = Vec::new();
-            let ast_grep = lang.ast_grep(&source);
-            let root = ast_grep.root();
-            let matches = root.find_all(pattern_owned.as_str());
 
-            for node_match in matches {
-                // Get position (0-based, convert to 1-based)
-                let start_pos = node_match.start_pos();
-                let line = start_pos.line() + 1; // Convert to 1-based
-                let column = start_pos.column(&node_match) + 1; // Convert to 1-based
-                let text = node_match.text().to_string();
-
-                results.push(MatchResult {
-                    file: path_str.clone(),
-                    line,
-                    column,
-                    text,
-                });
+            // Dispatch to the correct language implementation
+            match lang {
+                LanguageChoice::Standard(sl) => {
+                    let ast_grep = sl.ast_grep(&source);
+                    let root = ast_grep.root();
+                    let matches = root.find_all(pattern_owned.as_str());
+                    for node_match in matches {
+                        let start_pos = node_match.start_pos();
+                        let line = start_pos.line() + 1;
+                        let column = start_pos.column(&node_match) + 1;
+                        let text = node_match.text().to_string();
+                        results.push(MatchResult {
+                            file: path_str.clone(),
+                            line,
+                            column,
+                            text,
+                        });
+                    }
+                }
+                LanguageChoice::Dart(dl) => {
+                    let ast_grep = dl.ast_grep(&source);
+                    let root = ast_grep.root();
+                    let matches = root.find_all(pattern_owned.as_str());
+                    for node_match in matches {
+                        let start_pos = node_match.start_pos();
+                        let line = start_pos.line() + 1;
+                        let column = start_pos.column(&node_match) + 1;
+                        let text = node_match.text().to_string();
+                        results.push(MatchResult {
+                            file: path_str.clone(),
+                            line,
+                            column,
+                            text,
+                        });
+                    }
+                }
             }
             results
         }));
@@ -149,14 +190,18 @@ impl AstGrepTool {
             Some(l) => l,
             None => {
                 return Ok(ToolOutput::error(format!(
-                    "Error: Unsupported language '{language_str}'. Supported languages include: typescript, javascript, rust, python, go, java, c, cpp, ruby, kotlin, swift, etc."
+                    "Error: Unsupported language '{language_str}'. Supported languages include: typescript, javascript, rust, python, go, java, c, cpp, ruby, kotlin, swift, dart, solidity, nix, hcl, etc."
                 )))
             }
         };
 
         // Validate pattern syntax BEFORE searching files
         // This catches errors like MultipleNode early and provides a better error message
-        if let Err(e) = Pattern::try_new(pattern, lang) {
+        let pattern_valid = match lang {
+            LanguageChoice::Standard(sl) => Pattern::try_new(pattern, sl),
+            LanguageChoice::Dart(dl) => Pattern::try_new(pattern, dl),
+        };
+        if let Err(e) = pattern_valid {
             return Ok(ToolOutput::error(format!(
                 "Error: Invalid AST pattern '{pattern}' for {language_str}.\n\n\
                 Pattern error: {e}\n\n\
@@ -214,7 +259,7 @@ impl AstGrepTool {
         }
 
         // Get valid extensions for this language
-        let extensions = Self::get_extensions(lang);
+        let extensions = Self::get_extensions(&lang);
 
         // Collect all file paths to search (sync walker is fast, respects gitignore)
         let mut files_to_search: Vec<std::path::PathBuf> = Vec::new();
@@ -347,7 +392,7 @@ pub struct AstGrepArgs {
     /// Examples: 'fn $NAME($_)' for Rust functions, 'function $NAME($$$ARGS)' for JS functions.
     pub pattern: String,
     /// Programming language to search. Supported: rust, typescript, tsx, javascript, python,
-    /// go, java, c, cpp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell.
+    /// go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell, dart, solidity, nix, hcl.
     pub language: String,
     /// Directory or file to search in (optional, defaults to current directory)
     #[serde(skip_serializing_if = "Option::is_none")]

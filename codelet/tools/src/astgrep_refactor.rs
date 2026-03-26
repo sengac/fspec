@@ -11,7 +11,8 @@ use crate::{error::ToolError, facade::validate_and_resolve_path, ToolOutput};
 use anyhow::Result;
 use ast_grep_core::matcher::Pattern;
 use ast_grep_core::meta_var::MetaVariable;
-use ast_grep_language::{LanguageExt, SupportLang};
+use ast_grep_language::LanguageExt;
+use crate::astgrep::{AstGrepTool, LanguageChoice};
 use regex::Regex;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -126,14 +127,17 @@ impl AstGrepRefactorTool {
         Self { session_id }
     }
 
-    /// Parse language string to SupportLang
-    fn parse_language(lang: &str) -> Option<SupportLang> {
-        lang.to_lowercase().parse::<SupportLang>().ok()
+    /// Parse language string to LanguageChoice.
+    ///
+    /// Delegates to `AstGrepTool::parse_language()` which handles "dart" as a
+    /// special case and falls through to ast-grep's `SupportLang::from_str()`.
+    fn parse_language(lang: &str) -> Option<LanguageChoice> {
+        AstGrepTool::parse_language(lang)
     }
 
     /// Get list of supported languages for error messages
     fn supported_languages() -> &'static str {
-        "typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell"
+        "typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell, dart, solidity, nix, hcl"
     }
 
     /// Refactor operation - extract matched code to target file or replace in-place
@@ -243,7 +247,11 @@ impl AstGrepRefactorTool {
 
         // Validate pattern syntax BEFORE searching
         // This catches errors like MultipleNode early and provides a better error message
-        if let Err(e) = Pattern::try_new(pattern, lang) {
+        let pattern_valid = match lang {
+            LanguageChoice::Standard(sl) => Pattern::try_new(pattern, sl),
+            LanguageChoice::Dart(dl) => Pattern::try_new(pattern, dl),
+        };
+        if let Err(e) = pattern_valid {
             return Ok(ToolOutput::error(format!(
                 "Error: Invalid AST pattern '{pattern}' for {language_str}.\n\n\
                 Pattern error: {e}\n\n\
@@ -289,57 +297,61 @@ impl AstGrepRefactorTool {
         }
 
         let search_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let ast_grep = lang.ast_grep(&source_for_search);
-            let root = ast_grep.root();
-            let matches: Vec<_> = root
-                .find_all(pattern_owned.as_str())
-                .map(|m| {
-                    let start_pos = m.start_pos();
-                    let text = m.text().to_string();
-                    let start_byte = m.range().start;
-                    let end_byte = m.range().end;
+            // Helper macro to avoid duplicating the match body for both language variants.
+            // ast-grep's generic API requires a concrete Language type, so we must dispatch.
+            macro_rules! do_search {
+                ($lang_val:expr) => {{
+                    let ast_grep = $lang_val.ast_grep(&source_for_search);
+                    let root = ast_grep.root();
+                    root.find_all(pattern_owned.as_str())
+                        .map(|m| {
+                            let start_pos = m.start_pos();
+                            let text = m.text().to_string();
+                            let start_byte = m.range().start;
+                            let end_byte = m.range().end;
 
-                    // Extract ALL captured meta-variables using ast-grep's native API
-                    let mut variables: HashMap<String, String> = HashMap::new();
-                    let env = m.get_env();
+                            let mut variables: HashMap<String, String> = HashMap::new();
+                            let env = m.get_env();
 
-                    // Get all matched single variables (e.g., $NAME, $TYPE, $EXPR)
-                    // and multi-variables (e.g., $$$ARGS, $$$BODY)
-                    for meta_var in env.get_matched_variables() {
-                        match meta_var {
-                            MetaVariable::Capture(name, _) => {
-                                if let Some(node) = env.get_match(&name) {
-                                    variables.insert(name, node.text().to_string());
+                            for meta_var in env.get_matched_variables() {
+                                match meta_var {
+                                    MetaVariable::Capture(name, _) => {
+                                        if let Some(node) = env.get_match(&name) {
+                                            variables.insert(name, node.text().to_string());
+                                        }
+                                    }
+                                    MetaVariable::MultiCapture(name) => {
+                                        let nodes = env.get_multiple_matches(&name);
+                                        if !nodes.is_empty() {
+                                            let var_text: String = nodes
+                                                .iter()
+                                                .map(ast_grep_core::Node::text)
+                                                .collect::<Vec<_>>()
+                                                .join(", ");
+                                            variables.insert(name, var_text);
+                                        }
+                                    }
+                                    MetaVariable::Dropped(_) | MetaVariable::Multiple => {}
                                 }
                             }
-                            MetaVariable::MultiCapture(name) => {
-                                let nodes = env.get_multiple_matches(&name);
-                                if !nodes.is_empty() {
-                                    // Join multiple captures with ", " for multi-variables
-                                    let var_text: String = nodes
-                                        .iter()
-                                        .map(ast_grep_core::Node::text)
-                                        .collect::<Vec<_>>()
-                                        .join(", ");
-                                    variables.insert(name, var_text);
-                                }
-                            }
-                            // Dropped ($_) and Multiple ($$$) are unnamed wildcards - skip them
-                            MetaVariable::Dropped(_) | MetaVariable::Multiple => {}
-                        }
-                    }
 
-                    MatchData {
-                        line: start_pos.line() + 1,
-                        column: start_pos.column(&m) + 1,
-                        text,
-                        start_byte,
-                        end_byte,
-                        variables,
-                    }
-                })
-                .collect();
-            matches
+                            MatchData {
+                                line: start_pos.line() + 1,
+                                column: start_pos.column(&m) + 1,
+                                text,
+                                start_byte,
+                                end_byte,
+                                variables,
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                }};
+            }
+
+            match lang {
+                LanguageChoice::Standard(sl) => do_search!(sl),
+                LanguageChoice::Dart(dl) => do_search!(dl),
+            }
         }));
 
         let matches = match search_result {
@@ -932,7 +944,7 @@ pub struct AstGrepRefactorArgs {
     /// Pattern must match exactly ONE node in the source file (unless batch mode).
     pub pattern: String,
     /// Programming language. Supported: rust, typescript, tsx, javascript, python,
-    /// go, java, c, cpp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell.
+    /// go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell, dart, solidity, nix, hcl.
     pub language: String,
     /// Path to the source file to refactor
     pub source_file: String,

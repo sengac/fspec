@@ -431,8 +431,13 @@ Then re-run: fspec discover-foundation --finalize`;
 
 Use these commands to populate foundation.json eventStorm field:
 - fspec add-foundation-bounded-context <name>
+- fspec remove-foundation-bounded-context <name> [--cascade]
 - fspec add-aggregate-to-foundation <context> <aggregate>
+- fspec remove-aggregate-from-foundation <context> <aggregate>
 - fspec add-domain-event-to-foundation <context> <event>
+- fspec remove-domain-event-from-foundation <context> <event>
+- fspec add-command-to-foundation <context> <command>
+- fspec remove-command-from-foundation <context> <command>
 - fspec show-foundation-event-storm
 
 Why this matters:

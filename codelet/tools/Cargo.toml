@@ -56,6 +56,9 @@ grep-matcher.workspace = true
 ast-grep-core.workspace = true
 ast-grep-language.workspace = true
 
+# Dart tree-sitter parser (not in upstream ast-grep since v0.30.0)
+tree-sitter-dart = "0.1.0"
+
 # Utilities
 regex.workspace = true
 uuid.workspace = true

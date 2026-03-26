@@ -52,19 +52,32 @@ fspec add-foundation-bounded-context "Work Management"
 fspec add-foundation-bounded-context "Specification"
 fspec add-foundation-bounded-context "Testing & Validation"
 
+# Remove bounded context (soft-delete)
+fspec remove-foundation-bounded-context "Legacy System"
+fspec remove-foundation-bounded-context "Old Module" --cascade
+
 # Add aggregate to bounded context
 fspec add-aggregate-to-foundation "Work Management" "WorkUnit"
 fspec add-aggregate-to-foundation "Work Management" "Epic"
 fspec add-aggregate-to-foundation "Specification" "Feature"
+
+# Remove aggregate from bounded context (soft-delete)
+fspec remove-aggregate-from-foundation "Work Management" "LegacyItem"
 
 # Add domain event to bounded context
 fspec add-domain-event-to-foundation "Work Management" "WorkUnitCreated"
 fspec add-domain-event-to-foundation "Work Management" "WorkUnitStatusChanged"
 fspec add-domain-event-to-foundation "Specification" "FeatureFileCreated"
 
+# Remove domain event from bounded context (soft-delete)
+fspec remove-domain-event-from-foundation "Work Management" "LegacyEvent"
+
 # Add command to bounded context
 fspec add-command-to-foundation "Work Management" "CreateWorkUnit"
 fspec add-command-to-foundation "Work Management" "UpdateWorkUnitStatus"
+
+# Remove command from bounded context (soft-delete)
+fspec remove-command-from-foundation "Work Management" "DeprecatedAction"
 
 # View foundation Event Storm
 fspec show-foundation-event-storm
@@ -77,7 +90,7 @@ fspec show-foundation-event-storm
 | **Scope** | entire domain | single feature |
 | **Storage** | \`foundation.json\` eventStorm field | \`work-units.json\` per work unit |
 | **Bounded Contexts** | Strategic boundaries | Tactical scope |
-| **Commands** | \`add-foundation-bounded-context\` | \`add-bounded-context <work-unit-id>\` |
+| **Commands** | \`add-foundation-bounded-context\`, \`remove-foundation-bounded-context\` | \`add-bounded-context <work-unit-id>\` |
 | **When** | Once after foundation discovery | Many times, per story |
 | **Output** | tag ontology, architecture maps | scenarios, feature files |
 | **Purpose** | Establish domain boundaries | Understand feature business flow |
