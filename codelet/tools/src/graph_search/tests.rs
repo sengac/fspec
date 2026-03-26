@@ -144,7 +144,7 @@ mod tests {
 
         // @step Then it should succeed with path set to None
         assert!(result.is_ok(), "AstIndex should parse without path: {:?}", result.err());
-        if let Ok(GraphSearchAction::AstIndex { path }) = result {
+        if let Ok(GraphSearchAction::AstIndex { path, .. }) = result {
             assert!(path.is_none(), "Path should be None when omitted");
         } else {
             panic!("Expected AstIndex variant, got: {:?}", result.unwrap());
@@ -164,7 +164,7 @@ mod tests {
 
         // @step Then it should succeed with path set to "tmp/my-repo"
         assert!(result.is_ok(), "AstIndex should parse with path: {:?}", result.err());
-        if let Ok(GraphSearchAction::AstIndex { path }) = result {
+        if let Ok(GraphSearchAction::AstIndex { path, .. }) = result {
             assert_eq!(path.as_deref(), Some("tmp/my-repo"), "Path should match provided value");
         } else {
             panic!("Expected AstIndex variant, got: {:?}", result.unwrap());
@@ -186,6 +186,7 @@ mod tests {
             session_id,
             GraphSearchAction::AstIndex {
                 path: Some("tmp/repo".to_string()),
+                reset: None,
             },
         );
 
@@ -217,6 +218,7 @@ mod tests {
             session_id,
             GraphSearchAction::AstIndex {
                 path: None,
+                reset: None,
             },
         );
 

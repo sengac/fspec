@@ -10,7 +10,7 @@
 
 use std::collections::HashSet;
 
-use codelet_napi::graph::ast_dispatch::dispatch_ast_dead_code;
+use codelet_napi::graph::ast_dead_code::dispatch_ast_dead_code;
 use codelet_napi::graph::ast_pipeline::ast_dart_extractor::extract_dart;
 use codelet_napi::graph::ast_pipeline::pubspec_dep_extractor::extract_pubspec_dependencies;
 use codelet_napi::graph::ast_pipeline::walk_and_extract;
@@ -475,7 +475,7 @@ void useUser(User u) {
     // After fix: extensions should have a distinct typeKind (e.g., "extension") and be
     // filtered in dispatch, OR they should produce TypeRef edges to their target type
     // Currently they're extracted with typeKind="class", making them indistinguishable
-    let extension_type_names: Vec<&str> = type_nodes.iter()
+    let _extension_type_names: Vec<&str> = type_nodes.iter()
         .filter(|(name, _)| *name == "StringExt" || *name == "UserPatterns")
         .map(|(name, _)| *name)
         .collect();

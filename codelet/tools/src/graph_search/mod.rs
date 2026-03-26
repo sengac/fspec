@@ -65,6 +65,10 @@ impl Tool for GraphSearchTool {
                         "type": "string",
                         "description": "Glob filter to scope AST results to matching file paths (optional for 'ast_search' and 'ast_dead_code'). For 'ast_index', specifies a directory to index with .gitignore disabled (useful for indexing external repos in gitignored directories). Examples: 'src/tui/**/*.tsx', 'codelet/napi/src/**/*.rs', 'tmp/my-repo'"
                     },
+                    "reset": {
+                        "type": "boolean",
+                        "description": "When true, deletes the existing on-disk graph database and clears the in-memory cache before re-indexing. Use after schema changes that make the existing database incompatible. Only applies to 'ast_index' action."
+                    },
                     "category": {
                         "type": "string",
                         "description": "Filter by learning category (optional for 'learnings_search')",

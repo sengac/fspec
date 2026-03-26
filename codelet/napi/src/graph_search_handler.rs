@@ -75,8 +75,8 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
             graph::ast_dispatch::dispatch_ast_stats(&db).await
         }
 
-        GraphSearchAction::AstIndex { path } => {
-            graph::ast_dispatch::dispatch_ast_index(path.as_deref()).await
+        GraphSearchAction::AstIndex { path, reset } => {
+            graph::ast_index::dispatch_ast_index(path.as_deref(), reset.unwrap_or(false)).await
         }
 
         GraphSearchAction::AstDeadCode { entity_type, limit, path } => {
@@ -84,7 +84,7 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
                 Ok(db) => db,
                 Err(err_json) => return err_json,
             };
-            graph::ast_dispatch::dispatch_ast_dead_code(
+            graph::ast_dead_code::dispatch_ast_dead_code(
                 &db, entity_type.as_deref(), limit, path.as_deref(),
             ).await
         }

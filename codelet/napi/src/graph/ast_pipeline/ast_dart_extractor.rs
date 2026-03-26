@@ -673,6 +673,110 @@ fn extract_dart_type_annotations(
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Feature: spec/features/dart-extension-typekind-not-in-nanograph-schema-ast-index-crashes-on-dart-projects-with-extension-declarations.feature
+
+    #[test]
+    fn test_extension_declarations_produce_extension_typekind() {
+        // @step Given a Dart project that contains extension declarations
+        let source = r#"
+extension StringHelper on String {
+  bool get isBlank => trim().isEmpty;
+}
+
+extension type Meters(double value) {
+  double toKilometers() => value / 1000;
+}
+"#;
+        let known = HashSet::new();
+
+        // @step When I run ast_index on the project directory
+        let entities = extract_dart(source, "lib/extensions.dart", &known).unwrap();
+
+        // @step Then the index completes without schema violation errors
+        // (extract_dart succeeds — the schema validation happens at load time,
+        //  but if the typeKind is correct, schema won't reject it)
+        assert!(!entities.is_empty(), "Extraction should succeed");
+
+        // @step Then the extension types are stored with typeKind extension in the graph
+        let type_nodes: Vec<_> = entities
+            .iter()
+            .filter_map(|e| {
+                if let GraphEntity::Node {
+                    node_type,
+                    properties,
+                    ..
+                } = e
+                {
+                    if node_type == "Type" {
+                        return Some(properties);
+                    }
+                }
+                None
+            })
+            .collect();
+
+        assert_eq!(type_nodes.len(), 2, "Should extract 2 extension types");
+
+        for props in &type_nodes {
+            let type_kind = props.get("typeKind").and_then(|v| v.as_str()).unwrap();
+            assert_eq!(
+                type_kind, "extension",
+                "Extension declarations must have typeKind 'extension'"
+            );
+        }
+    }
+
+    #[test]
+    fn test_non_extension_types_unaffected() {
+        // @step Given a project with no Dart files
+        // (here: a Dart file with only classes and enums, no extensions)
+        let source = r#"
+class MyClass {
+  final String name;
+  MyClass(this.name);
+}
+
+enum Color { red, green, blue }
+"#;
+        let known = HashSet::new();
+
+        // @step When I run ast_index on the project directory
+        let entities = extract_dart(source, "lib/models.dart", &known).unwrap();
+
+        // @step Then the index completes successfully with no errors
+        let type_nodes: Vec<_> = entities
+            .iter()
+            .filter_map(|e| {
+                if let GraphEntity::Node {
+                    node_type,
+                    properties,
+                    ..
+                } = e
+                {
+                    if node_type == "Type" {
+                        return Some(properties);
+                    }
+                }
+                None
+            })
+            .collect();
+
+        assert_eq!(type_nodes.len(), 2, "Should extract class and enum");
+
+        let kinds: Vec<&str> = type_nodes
+            .iter()
+            .filter_map(|p| p.get("typeKind").and_then(|v| v.as_str()))
+            .collect();
+        assert!(kinds.contains(&"class"));
+        assert!(kinds.contains(&"enum_kind"));
+        assert!(!kinds.contains(&"extension"), "No extensions in this file");
+    }
+}
+
 /// Extract qualified static method call targets: `ClassName.method()`.
 ///
 /// In Dart (and other languages), `BoardFixtures.connectedInstance()` is a

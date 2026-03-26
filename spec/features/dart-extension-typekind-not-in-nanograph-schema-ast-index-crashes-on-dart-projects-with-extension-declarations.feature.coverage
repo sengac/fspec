@@ -1,0 +1,68 @@
+{
+  "scenarios": [
+    {
+      "name": "ast_index succeeds on Dart project with extension declarations",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+          "lines": "682-724",
+          "implMappings": [
+            {
+              "file": "codelet/napi/schemas/ast-code.pg",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-Dart indexing is not affected",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs",
+          "lines": "728-770",
+          "implMappings": [
+            {
+              "file": "codelet/napi/schemas/ast-code.pg",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/graph/ast_pipeline/ast_dart_extractor.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/schemas/ast-code.pg"
+    ],
+    "totalLinesCovered": 106
+  }
+}

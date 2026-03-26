@@ -68,7 +68,6 @@ pub fn is_graph_initialized(name: &str) -> bool {
 ///
 /// Available for use when a specific graph needs to be re-initialized
 /// (e.g., after schema migration or data directory change for a single graph).
-#[allow(dead_code)]
 pub fn reset_graph(name: &str) {
     match REGISTRY.lock() {
         Ok(mut guard) => {
@@ -80,6 +79,38 @@ pub fn reset_graph(name: &str) {
             warn!("Failed to reset graph '{name}' (lock poisoned): {e}");
         }
     }
+}
+
+/// Delete the on-disk data for a named graph AND remove it from the in-memory registry.
+///
+/// This is the "nuclear reset" for when the schema has changed and the existing
+/// database is incompatible. Deletes the `.nano/` directory from disk and clears
+/// the in-memory singleton so the next `get_graph()` call will re-initialize
+/// with the compiled (current) schema.
+///
+/// Returns `Ok(true)` if data was deleted, `Ok(false)` if no data existed on disk.
+pub fn delete_graph_data(name: &str, db_path: &std::path::Path) -> Result<bool, String> {
+    // 1. Remove from in-memory registry first
+    reset_graph(name);
+
+    // 2. Delete on-disk data
+    if db_path.exists() {
+        std::fs::remove_dir_all(db_path)
+            .map_err(|e| format!("Failed to delete graph data at {}: {e}", db_path.display()))?;
+        info!(?db_path, name, "deleted on-disk graph data");
+        Ok(true)
+    } else {
+        Ok(false)
+    }
+}
+
+/// Insert a graph database into the registry (for testing).
+#[cfg(test)]
+pub fn insert_graph_for_test(name: &str, db: super::database::GraphDatabase) {
+    let mut guard = REGISTRY
+        .lock()
+        .expect("Graph registry lock poisoned in test");
+    guard.insert(name.to_string(), db);
 }
 
 /// Reset ALL graph databases in the registry.
@@ -117,16 +148,20 @@ pub fn close_all_graphs() {
 }
 
 /// Initialize a specific named graph database.
+///
+/// Uses schema hash validation: if the on-disk schema doesn't match the
+/// compiled schema, returns an actionable error instead of silently opening
+/// with stale schema.
 async fn init_graph(name: &str) -> Result<GraphDatabase, String> {
     let (db_path, schema) = resolve_graph_config(name)?;
 
     info!(?db_path, name, "initializing graph database");
 
-    GraphDatabase::open_or_init(&db_path, schema).await
+    GraphDatabase::open_or_init_with_schema_check(&db_path, schema).await
 }
 
-/// Resolve the path and schema for a named graph.
-fn resolve_graph_config(name: &str) -> Result<(PathBuf, &'static str), String> {
+/// Resolve the path and schema for a named graph (public for reset operations).
+pub fn resolve_graph_config(name: &str) -> Result<(PathBuf, &'static str), String> {
     match name {
         AST_CODE_GRAPH => {
             let project_dir = resolve_project_dir()?;

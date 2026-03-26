@@ -38,11 +38,11 @@ node Function
 }
 
 node Type
-  @description("A struct, class, interface, enum, trait, or type alias.")
+  @description("A struct, class, interface, enum, trait, type alias, or extension.")
 {
     slug: String @key
     name: String
-    typeKind: enum(struct_kind, class, interface, enum_kind, trait_kind, type_alias)
+    typeKind: enum(struct_kind, class, interface, enum_kind, trait_kind, type_alias, extension)
     isGeneric: Bool?
     isPublic: Bool?
     fieldCount: I32?

@@ -209,11 +209,15 @@ pub async fn call_learnings_extraction_llm(
     }
 }
 
+pub mod ast_dead_code;
 pub mod ast_dispatch;
+pub mod ast_index;
 pub mod ast_pipeline;
 pub mod database;
 pub mod dispatch_helpers;
 pub mod graph_entities;
+#[cfg(test)]
+mod graph_reset_tests;
 pub mod learnings_context;
 pub mod learnings_dispatch;
 pub mod learnings_extraction;

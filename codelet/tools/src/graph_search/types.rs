@@ -48,6 +48,10 @@ pub enum GraphSearchAction {
         /// When provided, `.gitignore` is disabled so external/vendored
         /// repos under gitignored directories can be indexed.
         path: Option<String>,
+        /// When `true`, deletes the existing on-disk database and clears
+        /// the in-memory graph singleton before re-indexing. Required
+        /// after schema changes that make the existing database incompatible.
+        reset: Option<bool>,
     },
 
     /// Detect dead code: orphan files, uncalled functions, unreferenced types.

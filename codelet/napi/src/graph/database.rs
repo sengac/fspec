@@ -11,6 +11,7 @@ use nanograph::query_input::JsonParamMode;
 use nanograph::result::RunResult;
 use nanograph::store::database::{Database, LoadMode};
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 use tracing::info;
 
@@ -73,6 +74,50 @@ impl GraphDatabase {
         } else {
             Self::init(db_path, schema_source).await
         }
+    }
+
+    /// Open an existing database with schema hash validation, or initialize a new one.
+    ///
+    /// Unlike `open_or_init`, this compares the compiled schema's hash against the
+    /// on-disk `schema.pg` file. If they differ (schema has changed since the database
+    /// was created), returns an actionable error telling the user to reset.
+    pub async fn open_or_init_with_schema_check(
+        db_path: &Path,
+        schema_source: &str,
+    ) -> Result<Self, String> {
+        if db_path.exists() && db_path.join("schema.ir.json").exists() {
+            // Check if on-disk schema matches compiled schema
+            let on_disk_schema_path = db_path.join("schema.pg");
+            if on_disk_schema_path.exists() {
+                let on_disk_schema = std::fs::read_to_string(&on_disk_schema_path)
+                    .map_err(|e| format!("Failed to read on-disk schema: {e}"))?;
+
+                let compiled_hash = Self::schema_hash(schema_source);
+                let on_disk_hash = Self::schema_hash(&on_disk_schema);
+
+                if compiled_hash != on_disk_hash {
+                    return Err(format!(
+                        "Schema has changed (compiled hash: {}… ≠ on-disk hash: {}…). \
+                         The existing database at {} is incompatible with the current schema. \
+                         Run ast_index with reset: true to delete the old database and rebuild \
+                         with the new schema.",
+                        &compiled_hash[..12],
+                        &on_disk_hash[..12],
+                        db_path.display(),
+                    ));
+                }
+            }
+            Self::open(db_path).await
+        } else {
+            Self::init(db_path, schema_source).await
+        }
+    }
+
+    /// Compute a hex-encoded SHA-256 hash of a schema source string.
+    fn schema_hash(schema_source: &str) -> String {
+        let mut hasher = Sha256::new();
+        hasher.update(schema_source.as_bytes());
+        format!("{:x}", hasher.finalize())
     }
 
     /// Set the bundled query source for named query execution.
