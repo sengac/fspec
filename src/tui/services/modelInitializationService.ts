@@ -257,6 +257,9 @@ function extractCodexSection(
 
 /**
  * Load profile sections for local servers (vLLM, Ollama, etc.)
+ *
+ * PROV-040: Now passes API key to modelsListLocalOpenai for servers that
+ * require authentication (e.g., Fireworks AI, Together AI).
  */
 async function loadProfileSections(): Promise<ProviderSection[]> {
   const profileSections: ProviderSection[] = [];
@@ -275,7 +278,11 @@ async function loadProfileSections(): Promise<ProviderSection[]> {
         let isUnreachable = false;
 
         try {
-          const modelIds = await modelsListLocalOpenai(profile.baseUrl);
+          // PROV-040: Pass API key for servers requiring authentication
+          const modelIds = await modelsListLocalOpenai(
+            profile.baseUrl,
+            profile.apiKey || null
+          );
           localModels = modelIds.map(id => ({
             id,
             name: id,

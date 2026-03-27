@@ -201,13 +201,37 @@ impl OpenAIProvider {
     /// PROV-006: This method is used by the TUI to populate the model selection dialog
     /// when OPENAI_BASE_URL is set.
     ///
+    /// PROV-040: Added optional api_key parameter for servers that require authentication
+    /// (e.g., Fireworks AI, Together AI). Local servers (vLLM, Ollama) typically don't
+    /// require auth for the /models endpoint.
+    ///
     /// # Arguments
     /// * `base_url` - The base URL of the local server (e.g., "http://localhost:8888")
+    /// * `api_key` - Optional API key for servers requiring authentication
     ///
     /// # Returns
     /// * `Ok(Vec<String>)` - List of model IDs
     /// * `Err(ProviderError)` - If server is unreachable or response is invalid
     pub async fn list_local_models(base_url: &str) -> Result<Vec<String>, ProviderError> {
+        Self::list_local_models_with_auth(base_url, None).await
+    }
+
+    /// Fetch available models from an OpenAI-compatible server with optional authentication
+    ///
+    /// PROV-040: Same as list_local_models but accepts an optional API key for servers
+    /// that require authentication (Fireworks AI, Together AI, etc.).
+    ///
+    /// # Arguments
+    /// * `base_url` - The base URL of the server (e.g., "https://api.fireworks.ai/inference")
+    /// * `api_key` - Optional API key for servers requiring authentication
+    ///
+    /// # Returns
+    /// * `Ok(Vec<String>)` - List of model IDs
+    /// * `Err(ProviderError)` - If server is unreachable or response is invalid
+    pub async fn list_local_models_with_auth(
+        base_url: &str,
+        api_key: Option<&str>,
+    ) -> Result<Vec<String>, ProviderError> {
         use reqwest::Client;
         use std::time::Duration;
 
@@ -219,12 +243,27 @@ impl OpenAIProvider {
                 ProviderError::api("openai", format!("Failed to create HTTP client: {e}"))
             })?;
 
+        // Normalize base URL: strip trailing slash and /v1 suffix if present
+        // This handles both "https://api.fireworks.ai/inference" and
+        // "https://api.fireworks.ai/inference/v1" formats
+        let trimmed = base_url.trim_end_matches('/');
+        let normalized = if trimmed.ends_with("/v1") {
+            &trimmed[..trimmed.len() - 3]
+        } else {
+            trimmed
+        };
+
         // Build URL for /v1/models endpoint
-        let url = format!("{}/v1/models", base_url.trim_end_matches('/'));
+        let url = format!("{}/v1/models", normalized);
+
+        // Build GET request, optionally with Authorization header (PROV-040)
+        let mut request = client.get(&url);
+        if let Some(key) = api_key {
+            request = request.header("Authorization", format!("Bearer {}", key));
+        }
 
         // Make GET request
-        let response = client
-            .get(&url)
+        let response = request
             .send()
             .await
             .map_err(|e| {

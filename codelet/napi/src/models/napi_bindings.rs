@@ -209,7 +209,7 @@ pub async fn models_refresh_cache() -> Result<u32> {
 }
 
 // ============================================================================
-// Local Model Listing (PROV-006)
+// Local Model Listing (PROV-006, PROV-040)
 // ============================================================================
 
 /// List models from a local OpenAI-compatible server (async)
@@ -217,22 +217,35 @@ pub async fn models_refresh_cache() -> Result<u32> {
 /// PROV-006: Makes HTTP GET request to {base_url}/v1/models endpoint.
 /// Used by TUI when OPENAI_BASE_URL is set.
 ///
+/// PROV-040: Added optional api_key parameter for servers requiring authentication
+/// (e.g., Fireworks AI, Together AI). Local servers (vLLM, Ollama) typically don't
+/// require auth for the /models endpoint.
+///
 /// # Arguments
 /// * `base_url` - The base URL of the local server (e.g., "http://localhost:8888")
+/// * `api_key` - Optional API key for servers requiring authentication
 ///
 /// # Returns
 /// Array of model ID strings
 ///
 /// # Example
 /// ```typescript
+/// // Local server (no auth required)
 /// const models = await modelsListLocalOpenai("http://localhost:8888");
 /// // Returns: ["Qwen/Qwen3-80B", "mistral-7b"]
+///
+/// // Fireworks AI (auth required)
+/// const models = await modelsListLocalOpenai("https://api.fireworks.ai/inference", "fw_...");
+/// // Returns: ["accounts/fireworks/models/llama-v3p1-8b-instruct", ...]
 /// ```
 #[napi]
-pub async fn models_list_local_openai(base_url: String) -> Result<Vec<String>> {
+pub async fn models_list_local_openai(
+    base_url: String,
+    api_key: Option<String>,
+) -> Result<Vec<String>> {
     use codelet_providers::OpenAIProvider;
 
-    OpenAIProvider::list_local_models(&base_url)
+    OpenAIProvider::list_local_models_with_auth(&base_url, api_key.as_deref())
         .await
         .map_err(|e| Error::from_reason(format!("Failed to list local models: {}", e)))
 }

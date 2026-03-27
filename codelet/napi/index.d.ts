@@ -1232,20 +1232,31 @@ export declare function modelsListForProvider(
  * PROV-006: Makes HTTP GET request to {base_url}/v1/models endpoint.
  * Used by TUI when OPENAI_BASE_URL is set.
  *
+ * PROV-040: Added optional api_key parameter for servers requiring authentication
+ * (e.g., Fireworks AI, Together AI). Local servers (vLLM, Ollama) typically don't
+ * require auth for the /models endpoint.
+ *
  * # Arguments
  * * `base_url` - The base URL of the local server (e.g., "http://localhost:8888")
+ * * `api_key` - Optional API key for servers requiring authentication
  *
  * # Returns
  * Array of model ID strings
  *
  * # Example
  * ```typescript
+ * // Local server (no auth required)
  * const models = await modelsListLocalOpenai("http://localhost:8888");
  * // Returns: ["Qwen/Qwen3-80B", "mistral-7b"]
+ *
+ * // Fireworks AI (auth required)
+ * const models = await modelsListLocalOpenai("https://api.fireworks.ai/inference", "fw_...");
+ * // Returns: ["accounts/fireworks/models/llama-v3p1-8b-instruct", ...]
  * ```
  */
 export declare function modelsListLocalOpenai(
-  baseUrl: string
+  baseUrl: string,
+  apiKey?: string | undefined | null
 ): Promise<Array<string>>;
 
 /**
