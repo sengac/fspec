@@ -42,6 +42,9 @@ pub mod ast_scala_extractor;
 pub mod ast_swift_extractor;
 pub mod ast_ts_extractor;
 pub mod cargo_dep_extractor;
+pub mod complexity;
+pub mod metadata;
+pub mod variables;
 pub mod composer_dep_extractor;
 pub mod csproj_dep_extractor;
 pub mod gemfile_dep_extractor;
@@ -52,8 +55,9 @@ pub mod pip_dep_extractor;
 pub mod pubspec_dep_extractor;
 pub mod sbt_dep_extractor;
 pub mod swift_dep_extractor;
-pub(crate) mod helpers;
+pub mod helpers;
 pub(crate) mod edge_helpers;
+pub mod incremental;
 
 /// Supported source file extensions for AST extraction.
 const SUPPORTED_EXTENSIONS: &[&str] = &[
@@ -177,20 +181,11 @@ fn panic_payload_to_string(payload: &Box<dyn std::any::Any + Send>) -> String {
     }
 }
 
-/// Walk a project directory and extract all AST entities.
+/// Walk a project directory and return all source file paths.
 ///
-/// Respects `.gitignore` and skips common non-source directories
-/// (node_modules, target, dist, .git). Returns a flat list of all
-/// entities across all files, suitable for batch loading.
-///
-/// Uses a two-phase approach:
-/// 1. **Collect** all source file paths (cheap directory walk)
-/// 2. **Extract** each file with knowledge of all paths (enables barrel-import resolution)
-///
-/// When `respect_gitignore` is false, `.gitignore` rules are skipped so
-/// external repos under gitignored directories can be indexed.
-pub fn walk_and_extract(project_root: &Path, respect_gitignore: bool) -> Result<Vec<GraphEntity>, String> {
-    // Phase 1: Collect all source file paths for import resolution context
+/// Extracted from `walk_and_extract` so the file list can be reused
+/// for mtime collection without re-walking the directory.
+pub fn walk_source_files(project_root: &Path, respect_gitignore: bool) -> Vec<std::path::PathBuf> {
     let mut source_files: Vec<std::path::PathBuf> = Vec::new();
     let walker = ignore::WalkBuilder::new(project_root)
         .hidden(true)
@@ -226,6 +221,25 @@ pub fn walk_and_extract(project_root: &Path, respect_gitignore: bool) -> Result<
 
         source_files.push(path);
     }
+
+    source_files
+}
+
+/// Walk a project directory and extract all AST entities.
+///
+/// Respects `.gitignore` and skips common non-source directories
+/// (node_modules, target, dist, .git). Returns a flat list of all
+/// entities across all files, suitable for batch loading.
+///
+/// Uses a two-phase approach:
+/// 1. **Collect** all source file paths (cheap directory walk)
+/// 2. **Extract** each file with knowledge of all paths (enables barrel-import resolution)
+///
+/// When `respect_gitignore` is false, `.gitignore` rules are skipped so
+/// external repos under gitignored directories can be indexed.
+pub fn walk_and_extract(project_root: &Path, respect_gitignore: bool) -> Result<Vec<GraphEntity>, String> {
+    // Phase 1: Collect all source file paths for import resolution context
+    let source_files = walk_source_files(project_root, respect_gitignore);
 
     // Build known files set (relative paths with forward slashes)
     let known_files: HashSet<String> = source_files

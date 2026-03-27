@@ -79,6 +79,9 @@ mod tests {
                 entity_type: None,
                 limit: None,
                 path: None,
+                search_mode: None,
+                decorator: None,
+                parameter: None,
             },
         );
 
@@ -187,6 +190,7 @@ mod tests {
             GraphSearchAction::AstIndex {
                 path: Some("tmp/repo".to_string()),
                 reset: None,
+                incremental: None,
             },
         );
 
@@ -219,6 +223,7 @@ mod tests {
             GraphSearchAction::AstIndex {
                 path: None,
                 reset: None,
+                incremental: None,
             },
         );
 

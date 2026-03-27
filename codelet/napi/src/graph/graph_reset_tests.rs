@@ -286,7 +286,7 @@ node Type {
             "AstIndex should parse with reset flag: {:?}",
             result.err()
         );
-        if let Ok(GraphSearchAction::AstIndex { path, reset }) = result {
+        if let Ok(GraphSearchAction::AstIndex { path, reset, .. }) = result {
             assert!(path.is_none(), "Path should be None");
             assert_eq!(reset, Some(true), "Reset should be Some(true)");
         } else {

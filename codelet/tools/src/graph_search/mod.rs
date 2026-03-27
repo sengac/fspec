@@ -49,7 +49,7 @@ impl Tool for GraphSearchTool {
                 "properties": {
                     "action_type": {
                         "type": "string",
-                        "enum": ["ast_search", "ast_neighbors", "ast_stats", "ast_index", "ast_dead_code", "learnings_search", "learnings_decisions", "learnings_stats", "learnings_related"],
+                        "enum": ["ast_search", "ast_neighbors", "ast_stats", "ast_index", "ast_dead_code", "ast_call_chain", "ast_callers", "ast_callees", "ast_hierarchy", "ast_complexity", "ast_export", "ast_import", "learnings_search", "learnings_decisions", "learnings_stats", "learnings_related"],
                         "description": "The type of graph query to perform"
                     },
                     "query": {
@@ -59,7 +59,7 @@ impl Tool for GraphSearchTool {
                     "entity_type": {
                         "type": "string",
                         "description": "Filter AST search by entity type (optional for 'ast_search')",
-                        "enum": ["Function", "File", "Type", "Dependency"]
+                        "enum": ["Function", "File", "Type", "Dependency", "Variable"]
                     },
                     "path": {
                         "type": "string",
@@ -68,6 +68,10 @@ impl Tool for GraphSearchTool {
                     "reset": {
                         "type": "boolean",
                         "description": "When true, deletes the existing on-disk graph database and clears the in-memory cache before re-indexing. Use after schema changes that make the existing database incompatible. Only applies to 'ast_index' action."
+                    },
+                    "incremental": {
+                        "type": "boolean",
+                        "description": "When true, only re-extracts files whose modification time has changed since the last index. Unchanged file entities are reused from the existing graph. Falls back to full extraction when no prior index exists or when >50% of files have changed. Only applies to 'ast_index' action."
                     },
                     "category": {
                         "type": "string",
@@ -81,7 +85,7 @@ impl Tool for GraphSearchTool {
                     },
                     "node_id": {
                         "type": "string",
-                        "description": "Node slug to explore (required for 'ast_neighbors')"
+                        "description": "Node slug to explore (required for 'ast_neighbors', 'ast_callers', 'ast_callees', 'ast_hierarchy'; optional for 'ast_complexity' — omit for top-N mode)"
                     },
                     "depth": {
                         "type": "integer",
@@ -109,6 +113,54 @@ impl Tool for GraphSearchTool {
                         "type": "string",
                         "description": "Filter decisions by status (optional for 'learnings_decisions')",
                         "enum": ["active", "proposed", "reversed", "superseded"]
+                    },
+                    "from": {
+                        "type": "string",
+                        "description": "Source function slug for call chain tracing (required for 'ast_call_chain')"
+                    },
+                    "to": {
+                        "type": "string",
+                        "description": "Target function slug for call chain tracing (required for 'ast_call_chain')"
+                    },
+                    "max_depth": {
+                        "type": "integer",
+                        "description": "Maximum BFS traversal depth (optional for 'ast_call_chain', 'ast_callers', 'ast_callees', default: 5)",
+                        "minimum": 1
+                    },
+                    "include_methods": {
+                        "type": "boolean",
+                        "description": "Whether to include methods in hierarchy results (optional for 'ast_hierarchy', default: true)"
+                    },
+                    "min_threshold": {
+                        "type": "integer",
+                        "description": "Minimum cyclomatic complexity threshold (optional for 'ast_complexity', only return functions >= this value)",
+                        "minimum": 1
+                    },
+                    "output_path": {
+                        "type": "string",
+                        "description": "File path for the output .astbundle file (required for 'ast_export')"
+                    },
+                    "input_path": {
+                        "type": "string",
+                        "description": "File path to the .astbundle file to import (required for 'ast_import')"
+                    },
+                    "merge_mode": {
+                        "type": "string",
+                        "description": "Import mode: 'overwrite' (default — replaces all data) or 'merge' (upserts by slug key). Only for 'ast_import'.",
+                        "enum": ["overwrite", "merge"]
+                    },
+                    "search_mode": {
+                        "type": "string",
+                        "description": "Search mode for 'ast_search': 'name' (default — searches name/slug/path/qualifiedName), 'content' (searches source/docstring), 'all' (searches every field). Omit for name-only search.",
+                        "enum": ["name", "content", "all"]
+                    },
+                    "decorator": {
+                        "type": "string",
+                        "description": "Filter by decorator/annotation name (optional for 'ast_search'). Case-insensitive, strips leading @/#[ for cross-language matching. Example: 'Test' matches @Test, @test, #[test]"
+                    },
+                    "parameter": {
+                        "type": "string",
+                        "description": "Filter by parameter name (optional for 'ast_search'). Case-insensitive contains match on function parameter names. Example: 'request' matches functions with a 'request' parameter"
                     }
                 },
                 "required": ["action_type"]

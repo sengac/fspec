@@ -15,6 +15,8 @@ use ast_grep_core::matcher::KindMatcher;
 use codelet_tools::dart_lang::DartLang;
 use ast_grep_language::LanguageExt;
 
+use super::complexity;
+use super::metadata;
 use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
@@ -134,6 +136,8 @@ fn extract_functions(
             let param_count = helpers::count_params(&matched_text);
 
             let fn_slug = format!("{file_slug}::{name}");
+            let cc = complexity::calculate(&matched_text, "dart");
+            let meta = metadata::extract_function_meta(&matched_text, "dart");
             entities.push(helpers::build_function_node(
                 file_slug,
                 &name,
@@ -142,6 +146,13 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
+            cc,
+                &meta.parameters,
+                &meta.source,
+                &meta.docstring,
+                &meta.decorators,
+                "dart",
+                meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -300,8 +311,14 @@ fn extract_types(
             let is_public = !name.starts_with('_');
 
             let type_slug = format!("{file_slug}::{name}");
+            let type_start = node.start_pos();
+            let type_end = node.end_pos();
+            let type_meta = metadata::extract_type_meta(&matched_text, "dart");
             entities.push(helpers::build_type_node(
                 file_slug, &name, type_kind, is_public,
+                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
+                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
+                "dart", type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(

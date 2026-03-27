@@ -12,6 +12,9 @@ use std::collections::{HashMap, HashSet};
 
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::complexity;
+use super::metadata;
+use super::variables;
 use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
@@ -64,6 +67,8 @@ pub fn extract_ruby(source: &str, rel_path: &str, known_files: &HashSet<String>)
     // Extract Calls edges from method bodies
     extract_calls(source, &file_slug, &function_names, &import_map, &mut entities);
 
+    // Extract module-level variables
+    variables::extract_variables(source, &file_slug, rel_path, "ruby", &mut entities);
     Ok(entities)
 }
 
@@ -106,6 +111,8 @@ fn extract_methods(
             let param_count = helpers::count_params(&matched_text);
 
             let fn_slug = format!("{file_slug}::{name}");
+            let cc = complexity::calculate(&matched_text, "ruby");
+            let meta = metadata::extract_function_meta(&matched_text, "ruby");
             entities.push(helpers::build_function_node(
                 file_slug,
                 &name,
@@ -114,6 +121,13 @@ fn extract_methods(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
+            cc,
+                &meta.parameters,
+                &meta.source,
+                &meta.docstring,
+                &meta.decorators,
+                "ruby",
+                meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -148,8 +162,14 @@ fn extract_types(
             }
 
             let type_slug = format!("{file_slug}::{name}");
+            let type_start = node.start_pos();
+            let type_end = node.end_pos();
+            let type_meta = metadata::extract_type_meta(&matched_text, "ruby");
             entities.push(helpers::build_type_node(
                 file_slug, &name, type_kind, true,
+                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
+                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
+                "ruby", type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(

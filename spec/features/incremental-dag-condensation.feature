@@ -34,7 +34,7 @@ Feature: Incremental DAG Condensation
   Background: User Story
     As a compaction engine
     I want to use incremental DAG condensation when re-compacting a session that already has a DAG summary
-    So that avoid rebuilding the entire DAG from scratch each time and preserve established decisions
+    So that I avoid rebuilding the entire DAG from scratch each time and preserve established decisions
 
   Scenario: First compaction uses FRESH instruction when no existing DAG
     Given a session with conversation messages but no compaction-dag system-reminder

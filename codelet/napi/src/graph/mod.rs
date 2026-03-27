@@ -209,10 +209,15 @@ pub async fn call_learnings_extraction_llm(
     }
 }
 
+pub mod ast_call_chain;
+pub mod ast_complexity;
 pub mod ast_dead_code;
 pub mod ast_dispatch;
+pub mod ast_hierarchy;
 pub mod ast_index;
 pub mod ast_pipeline;
+pub mod ast_transitive;
+pub mod bundle;
 pub mod database;
 pub mod dispatch_helpers;
 pub mod graph_entities;

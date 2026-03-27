@@ -12,6 +12,9 @@ use std::collections::{HashMap, HashSet};
 
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::complexity;
+use super::metadata;
+use super::variables;
 use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
@@ -89,6 +92,8 @@ pub fn extract_rust(
         &mut entities,
     );
 
+    // Extract module-level variables
+    variables::extract_variables(source, &file_slug, rel_path, "rust", &mut entities);
     Ok(entities)
 }
 
@@ -119,6 +124,8 @@ fn extract_functions(
                     .parent()
                     .is_some_and(|p| p.text().starts_with("pub "));
             let param_count = helpers::count_params_rust(&matched_text);
+            let cc = complexity::calculate(&matched_text, "rust");
+            let meta = metadata::extract_function_meta(&matched_text, "rust");
 
             let fn_slug = format!("{file_slug}::{name}");
             entities.push(helpers::build_function_node(
@@ -129,6 +136,13 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
+                cc,
+                &meta.parameters,
+                &meta.source,
+                &meta.docstring,
+                &meta.decorators,
+                "rust",
+                meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -166,11 +180,14 @@ fn extract_types(
                     .is_some_and(|p| p.text().starts_with("pub "));
 
             let type_slug = format!("{file_slug}::{name}");
+            let type_start = node.start_pos();
+            let type_end = node.end_pos();
+            let type_meta = metadata::extract_type_meta(&matched_text, "rust");
             entities.push(helpers::build_type_node(
-                file_slug,
-                &name,
-                type_kind,
-                is_public,
+                file_slug, &name, type_kind, is_public,
+                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
+                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
+                "rust", type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(

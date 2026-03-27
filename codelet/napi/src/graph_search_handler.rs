@@ -49,13 +49,14 @@ async fn get_graph_or_err(
 async fn dispatch_action(action: GraphSearchAction) -> String {
     match action {
         // ── AST Graph Actions ──────────────────────────────────
-        GraphSearchAction::AstSearch { query, entity_type, limit, path } => {
+        GraphSearchAction::AstSearch { query, entity_type, limit, path, search_mode, decorator, parameter } => {
             let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_search").await {
                 Ok(db) => db,
                 Err(err_json) => return err_json,
             };
             graph::ast_dispatch::dispatch_ast_search(
                 &db, &query, entity_type.as_deref(), limit, path.as_deref(),
+                search_mode.as_deref(), decorator.as_deref(), parameter.as_deref(),
             ).await
         }
         GraphSearchAction::AstNeighbors { node_id, depth, edge_types } => {
@@ -75,8 +76,12 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
             graph::ast_dispatch::dispatch_ast_stats(&db).await
         }
 
-        GraphSearchAction::AstIndex { path, reset } => {
-            graph::ast_index::dispatch_ast_index(path.as_deref(), reset.unwrap_or(false)).await
+        GraphSearchAction::AstIndex { path, reset, incremental } => {
+            graph::ast_index::dispatch_ast_index(
+                path.as_deref(),
+                reset.unwrap_or(false),
+                incremental.unwrap_or(false),
+            ).await
         }
 
         GraphSearchAction::AstDeadCode { entity_type, limit, path } => {
@@ -87,6 +92,102 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
             graph::ast_dead_code::dispatch_ast_dead_code(
                 &db, entity_type.as_deref(), limit, path.as_deref(),
             ).await
+        }
+
+        GraphSearchAction::AstCallChain { from, to, max_depth } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_call_chain").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            graph::ast_call_chain::dispatch_ast_call_chain(
+                &db, &from, &to, max_depth,
+            ).await
+        }
+
+        GraphSearchAction::AstCallers { node_id, max_depth, limit } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_callers").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            graph::ast_transitive::dispatch_ast_callers(
+                &db, &node_id, max_depth, limit,
+            ).await
+        }
+
+        GraphSearchAction::AstCallees { node_id, max_depth, limit } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_callees").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            graph::ast_transitive::dispatch_ast_callees(
+                &db, &node_id, max_depth, limit,
+            ).await
+        }
+
+        GraphSearchAction::AstHierarchy { node_id, depth, include_methods } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_hierarchy").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            graph::ast_hierarchy::dispatch_ast_hierarchy(
+                &db, &node_id, depth, include_methods,
+            ).await
+        }
+
+        GraphSearchAction::AstComplexity { node_id, limit, min_threshold, path } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_complexity").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            graph::ast_complexity::dispatch_ast_complexity(
+                &db,
+                node_id.as_deref(),
+                limit,
+                min_threshold,
+                path.as_deref(),
+            ).await
+        }
+
+        GraphSearchAction::AstExport { output_path } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_export").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            let schema = include_str!("graph/../../schemas/ast-code.pg");
+            let path = std::path::Path::new(&output_path);
+            match db.export_bundle(path, schema).await {
+                Ok(()) => {
+                    let stats = db.stats().unwrap_or_default();
+                    serde_json::json!({
+                        "action": "ast_export",
+                        "output_path": output_path,
+                        "stats": stats,
+                    }).to_string()
+                }
+                Err(e) => serde_json::json!({ "error": e }).to_string(),
+            }
+        }
+
+        GraphSearchAction::AstImport { input_path, merge_mode } => {
+            let db = match get_graph_or_err(graph::registry::AST_CODE_GRAPH, "ast_import").await {
+                Ok(db) => db,
+                Err(err_json) => return err_json,
+            };
+            let schema = include_str!("graph/../../schemas/ast-code.pg");
+            let path = std::path::Path::new(&input_path);
+            let mode = merge_mode.as_deref().unwrap_or("overwrite");
+            match db.import_bundle(path, schema, mode).await {
+                Ok(()) => {
+                    let stats = db.stats().unwrap_or_default();
+                    serde_json::json!({
+                        "action": "ast_import",
+                        "input_path": input_path,
+                        "mode": mode,
+                        "stats": stats,
+                    }).to_string()
+                }
+                Err(e) => serde_json::json!({ "error": e }).to_string(),
+            }
         }
 
         // ── Learnings Graph Actions ──────────────────────────────

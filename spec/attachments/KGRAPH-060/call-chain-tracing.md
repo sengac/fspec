@@ -22,23 +22,56 @@ def find_function_call_chain(self, start_function: str, end_function: str,
         WITH path, func_nodes, call_rels, list_extract(func_nodes, size(func_nodes)) as path_end
         WHERE path_end.name = end_target.name
         RETURN 
-            [node in func_nodes | {{name: node.name, path: node.path, ...}}] as function_chain,
-            [rel in call_rels | {{call_line: rel.line_number, ...}}] as call_details,
+            [node in func_nodes | {{
+                name: node.name,
+                path: node.path,
+                line_number: node.line_number,
+                is_dependency: node.is_dependency
+            }}] as function_chain,
+            [rel in call_rels | {{
+                call_line: rel.line_number,
+                args: rel.args,
+                full_call_name: rel.full_call_name
+            }}] as call_details,
             length(path) as chain_length
         ORDER BY chain_length ASC
         LIMIT 20
     """
 ```
 
-**Key design decisions in CGC:**
-- Returns the **shortest** chains first (ORDER BY chain_length ASC)
+### CGC Key Design Decisions
+- Returns the **shortest** chains first (`ORDER BY chain_length ASC`)
 - Returns the **full chain** as an array of function objects, not just start/end
-- Includes **call details** (line number, args, full call name) on each hop
-- Optional file path disambiguation for both start and end functions
+- **Each chain has TWO arrays**: `function_chain` (node metadata) AND `call_details` (edge metadata per hop)
+- Call details include: `call_line` (line number of the call site), `args`, `full_call_name`
 - Default max_depth of 5, configurable up to higher values
-- LIMIT 20 prevents explosion on deeply connected graphs
+- `LIMIT 20` prevents explosion on deeply connected graphs
 
-**MCP tool schema** (`tool_definitions.py` line 40–49):
+### CGC Handler Response Format
+**File**: `src/codegraphcontext/tools/handlers/analysis_handlers.py` line 61–89
+**File**: `src/codegraphcontext/tools/code_finder.py` lines 913–922
+
+```python
+# Handler wraps result in standard envelope:
+return {
+    "success": True,
+    "query_type": "call_chain",
+    "target": target,
+    "results": results,  # list of dicts from find_function_call_chain
+}
+
+# analyze_code_relationships adds summary:
+return {
+    "query_type": "call_chain",
+    "target": target,
+    "results": results,
+    "summary": f"Found {len(results)} call chains from '{start_func}' to '{end_func}' (max depth: {max_depth})"
+}
+```
+
+### CGC MCP Tool Schema
+**File**: `tool_definitions.py` lines 40–49
+
 ```python
 "analyze_code_relationships": {
     "query_type": {"enum": [..., "call_chain", ...]},
@@ -47,54 +80,49 @@ def find_function_call_chain(self, start_function: str, end_function: str,
 }
 ```
 
-## What We Need to Implement
+## Our Implementation Mapping
 
-### New nanograph query (`.gq` file)
+### CGC → fspec Mapping Table
 
-We need a variable-length path traversal query in nanograph's query language. Our current queries are all single-hop `match` clauses. We need something equivalent to:
+| CGC Concept | fspec Equivalent | Notes |
+|-------------|------------------|-------|
+| `start_function` / `end_function` | `from` / `to` slugs | We use slugs instead of names |
+| `max_depth` (default 5) | `max_depth: Option<u32>` (default 5) | Same semantics |
+| `start_file` / `end_file` | Not needed | Slugs are already file-qualified |
+| `repo_path` | Not needed | Single-graph-per-project model |
+| `function_chain` array | `function_chain` in each chain object | Node metadata per hop |
+| `call_details` array | `call_details` in each chain object | Edge metadata per hop |
+| `chain_length` | `chain_length` integer | Number of hops |
+| `ORDER BY chain_length ASC` | `sort_by_key(\|p\| p.len())` | Shortest first |
+| `LIMIT 20` | `MAX_CHAINS = 20` | Same cap |
+| `summary` string | `summary` field | Human-readable count |
+| `[:CALLS*1..{max_depth}]` | BFS in Rust | nanograph lacks variable-length paths |
+
+### Schema: Our Calls Edge Properties
 
 ```
-match path {
-  $start: Function { slug: $from_slug }
-  ($start)-[calls: Calls*1..5]->($end: Function { slug: $to_slug })
+edge Calls: Function -> Function {
+    callCount: I32?
+    isConditional: Bool?
 }
-return path
 ```
 
-### New GraphSearch action
+CGC has `line_number`, `args`, `full_call_name` on edges. We have `callCount` and `isConditional`. Our `call_details` returns what our schema supports.
 
-Add `ast_call_chain` to the `GraphSearchAction` enum in `codelet/tools/src/graph_search/types.rs`:
-
-```rust
-AstCallChain {
-    from: String,        // source function slug
-    to: String,          // target function slug  
-    max_depth: Option<u32>, // default 5
-}
-```
-
-### Dispatch in `codelet/napi/src/graph_search_handler.rs`
-
-Route to a new `ast_call_chain_dispatch()` function that:
-1. Resolves both slugs to node IDs
-2. Runs the variable-length path query
-3. Returns ordered list of chains with intermediate hops
-
-### Our existing edge infrastructure
-
-We already have `Calls` edges populated by all 14 language extractors (KGRAPH-041 through KGRAPH-054). The data is there — we just can't traverse it beyond one hop.
-
-### Files to modify
+### Files Modified
 
 | File | Change |
 |------|--------|
-| `codelet/tools/src/graph_search/types.rs` | Add `AstCallChain` variant |
-| `codelet/napi/src/graph_search_handler.rs` | Add dispatch case |
-| `codelet/napi/src/graph/` | Add new `.gq` query file for path traversal |
-| `codelet/napi/src/graph/dispatch_helpers.rs` | Add chain formatting helper |
+| `codelet/tools/src/graph_search/types.rs` | `AstCallChain` variant with `from`, `to`, `max_depth` |
+| `codelet/napi/src/graph_search_handler.rs` | Dispatch case for `AstCallChain` |
+| `codelet/napi/src/graph/ast_call_chain.rs` | BFS implementation with `GraphSnapshot` |
+| `codelet/napi/src/graph/mod.rs` | `pub mod ast_call_chain` |
+| `codelet/tools/src/graph_search/mod.rs` | Tool description with `from`, `to`, `max_depth` params |
 
-### Open questions
+### Architecture: BFS with GraphSnapshot
 
-1. Does nanograph support variable-length path traversal? If not, we may need BFS/DFS in Rust over single-hop queries.
-2. Should we return all paths up to max_depth, or just the shortest K?
-3. Should we support cross-file chains only, or also intra-file chains?
+nanograph does not support variable-length path traversal (Cypher `[:CALLS*1..N]`). We implement BFS in Rust:
+1. `GraphSnapshot::load()` — single `all_functions` query builds `HashSet` + metadata map
+2. `build_adjacency_list()` — per-function `function_calls` queries (N queries, unavoidable)
+3. `bfs_find_paths()` — pure BFS over adjacency map, returns slug-only chains
+4. `enrich_chains()` — maps slugs to full metadata from snapshot

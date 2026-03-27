@@ -35,6 +35,13 @@ node Function
     paramCount: I32?
     lineStart: I32?
     lineEnd: I32?
+    cyclomaticComplexity: I32?
+    parameters: String?
+    source: String?
+    docstring: String?
+    decorators: String?
+    language: String?
+    truncated: Bool?
 }
 
 node Type
@@ -46,6 +53,27 @@ node Type
     isGeneric: Bool?
     isPublic: Bool?
     fieldCount: I32?
+    lineStart: I32?
+    lineEnd: I32?
+    source: String?
+    docstring: String?
+    decorators: String?
+    language: String?
+    truncated: Bool?
+}
+
+node Variable
+  @description("A module-level or class-level variable or constant.")
+{
+    slug: String @key
+    name: String
+    path: String?
+    lineStart: I32?
+    value: String?
+    scope: enum(module, class)?
+    scopeName: String?
+    isConstant: Bool?
+    language: String?
 }
 
 node Dependency
@@ -65,6 +93,10 @@ edge Contains: File -> Function {
 }
 
 edge ContainsType: File -> Type {
+    lineStart: I32?
+}
+
+edge ContainsVariable: File -> Variable {
     lineStart: I32?
 }
 

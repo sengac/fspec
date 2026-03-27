@@ -56,6 +56,10 @@ serde_json = "1"
 # KGRAPH-002: Nanograph embedded graph database
 nanograph = "1.0.0"
 
+# KGRAPH-069: Arrow types for graph export (must match nanograph's version)
+arrow-array = "57"
+arrow-schema = "57"
+
 # KGRAPH-029: Glob matching for AST graph path filters
 globset.workspace = true
 
@@ -90,6 +94,9 @@ notify-debouncer-mini = "0.4"
 # WebSocket client (BRIDGE-001)
 tokio-tungstenite = { workspace = true }
 url = { workspace = true }
+
+# KGRAPH-069: ZIP archive for portable graph bundles
+zip = { version = "2", default-features = false, features = ["deflate"] }
 
 # Test support (used by integration tests)
 tempfile = "3"

@@ -18,7 +18,7 @@
 
 query all_functions() {
     match { $fn: Function }
-    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.paramCount, $fn.lineStart, $fn.lineEnd }
+    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.paramCount, $fn.lineStart, $fn.lineEnd, $fn.cyclomaticComplexity, $fn.parameters, $fn.source, $fn.docstring, $fn.decorators, $fn.language, $fn.truncated }
 }
 
 query all_files() {
@@ -28,12 +28,17 @@ query all_files() {
 
 query all_types() {
     match { $t: Type }
-    return { $t.slug, $t.name, $t.typeKind, $t.isPublic }
+    return { $t.slug, $t.name, $t.typeKind, $t.isPublic, $t.lineStart, $t.lineEnd, $t.source, $t.docstring, $t.decorators, $t.language, $t.truncated }
 }
 
 query all_dependencies() {
     match { $d: Dependency }
     return { $d.slug, $d.name, $d.version, $d.isDev, $d.source }
+}
+
+query all_variables() {
+    match { $v: Variable }
+    return { $v.slug, $v.name, $v.path, $v.lineStart, $v.value, $v.scope, $v.scopeName, $v.isConstant, $v.language }
 }
 
 // ── Neighbor Queries (per edge type) ──────────────────────────
@@ -74,6 +79,24 @@ query file_dependencies($slug: String) {
         $f dependsOn $dep
     }
     return { $dep.slug, $dep.name }
+}
+
+// File → Variable (outgoing ContainsVariable)
+query file_variables($slug: String) {
+    match {
+        $f: File { slug: $slug }
+        $f containsVariable $v
+    }
+    return { $v.slug, $v.name }
+}
+
+// Variable ← File (incoming ContainsVariable — which file contains this variable)
+query variable_container($slug: String) {
+    match {
+        $v: Variable { slug: $slug }
+        $f containsVariable $v
+    }
+    return { $f.slug, $f.path }
 }
 
 // Function → Function (outgoing Calls)
@@ -150,6 +173,24 @@ query type_referencing_functions($slug: String) {
     return { $fn.slug, $fn.name }
 }
 
+// Type ← Type (incoming Extends — types that extend this type, i.e. children)
+query type_extended_by($slug: String) {
+    match {
+        $parent: Type { slug: $slug }
+        $child extends $parent
+    }
+    return { $child.slug, $child.name, $child.typeKind }
+}
+
+// Type ← Type (incoming Implements — types that implement this interface)
+query type_implemented_by($slug: String) {
+    match {
+        $iface: Type { slug: $slug }
+        $impl implements $iface
+    }
+    return { $impl.slug, $impl.name, $impl.typeKind }
+}
+
 // ── Dead Code Detection Queries ───────────────────────────────
 // Uses `not { }` anti-join to find nodes with no incoming edges.
 
@@ -168,7 +209,7 @@ query uncalled_functions() {
         $fn: Function
         not { $caller calls $fn }
     }
-    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.lineStart, $fn.lineEnd }
+    return { $fn.slug, $fn.name, $fn.qualifiedName, $fn.isAsync, $fn.isPublic, $fn.lineStart, $fn.lineEnd, $fn.cyclomaticComplexity, $fn.parameters, $fn.source, $fn.docstring, $fn.decorators, $fn.language, $fn.truncated }
 }
 
 // Types with no incoming TypeRef, Extends, or Implements edges
@@ -177,5 +218,5 @@ query unreferenced_types() {
         $t: Type
         not { $fn typeRef $t }
     }
-    return { $t.slug, $t.name, $t.typeKind, $t.isPublic }
+    return { $t.slug, $t.name, $t.typeKind, $t.isPublic, $t.lineStart, $t.lineEnd, $t.source, $t.docstring, $t.decorators, $t.language, $t.truncated }
 }

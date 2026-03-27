@@ -1,0 +1,267 @@
+{
+  "scenarios": [
+    {
+      "name": "Find class hierarchy with parents and children",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "lines": "80-118",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multi-level hierarchy traversal",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "lines": "124-163",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Standalone type with no inheritance",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "lines": "169-202",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-existent type returns error",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_hierarchy_test.rs",
+          "lines": "208-232",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_hierarchy.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/ast_hierarchy_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/graph/ast_hierarchy.rs"
+    ],
+    "totalLinesCovered": 325
+  }
+}

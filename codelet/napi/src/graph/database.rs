@@ -1,11 +1,8 @@
 //! Reusable Graph Database Abstraction
 //!
 //! Wraps a nanograph `Database` with lifecycle management (init/open/close),
-//! data loading (batch JSONL), and query execution. Designed to be instantiated
-//! multiple times for different graph schemas (AST graph, Learnings graph, etc).
-//!
-//! This module does NOT contain any global singletons — those live in
-//! `registry.rs` which manages named instances.
+//! data loading (batch JSONL), and query execution. Singletons live in
+//! `registry.rs`; bundle export/import lives in `bundle.rs`.
 
 use nanograph::query_input::JsonParamMode;
 use nanograph::result::RunResult;
@@ -17,13 +14,10 @@ use tracing::info;
 
 use super::graph_entities::{entities_to_jsonl, GraphEntity};
 
-/// A reusable graph database instance.
-///
-/// Wraps nanograph's `Database` (which is `Arc`-wrapped and cheap to clone)
-/// with its schema source and query definitions.
+/// A reusable graph database instance wrapping nanograph's `Database`.
 #[derive(Clone)]
 pub struct GraphDatabase {
-    db: Database,
+    pub(crate) db: Database,
     path: PathBuf,
     /// Optional bundled query source (`.gq` file content).
     query_source: Option<String>,
@@ -31,9 +25,7 @@ pub struct GraphDatabase {
 
 impl GraphDatabase {
     /// Initialize a new graph database at `db_path` with the given schema.
-    ///
-    /// Creates the parent directory if needed. Fails if a database already exists
-    /// at this path — use `open()` or `open_or_init()` instead.
+    /// Creates the parent directory if needed.
     pub async fn init(db_path: &Path, schema_source: &str) -> Result<Self, String> {
         let parent = db_path
             .parent()
@@ -76,11 +68,8 @@ impl GraphDatabase {
         }
     }
 
-    /// Open an existing database with schema hash validation, or initialize a new one.
-    ///
-    /// Unlike `open_or_init`, this compares the compiled schema's hash against the
-    /// on-disk `schema.pg` file. If they differ (schema has changed since the database
-    /// was created), returns an actionable error telling the user to reset.
+    /// Open an existing database with schema hash validation, or init a new one.
+    /// Returns an error if the on-disk schema differs from the compiled schema.
     pub async fn open_or_init_with_schema_check(
         db_path: &Path,
         schema_source: &str,
@@ -114,7 +103,7 @@ impl GraphDatabase {
     }
 
     /// Compute a hex-encoded SHA-256 hash of a schema source string.
-    fn schema_hash(schema_source: &str) -> String {
+    pub(crate) fn schema_hash(schema_source: &str) -> String {
         let mut hasher = Sha256::new();
         hasher.update(schema_source.as_bytes());
         format!("{:x}", hasher.finalize())
@@ -134,9 +123,6 @@ impl GraphDatabase {
     // ── Data Loading ──────────────────────────────────────────
 
     /// Load a batch of entities into the graph in a single JSONL call.
-    ///
-    /// This avoids the Lance version amplification that occurs when loading
-    /// entities one at a time.
     pub async fn load_entities(&self, entities: &[GraphEntity]) -> Result<usize, String> {
         if entities.is_empty() {
             return Ok(0);
@@ -163,11 +149,6 @@ impl GraphDatabase {
     }
 
     /// Load entities using Overwrite mode — replaces ALL existing data.
-    ///
-    /// Unlike `load_entities()` (which uses Merge mode and retains stale
-    /// nodes/edges from previous loads), this method performs a full
-    /// replacement. Use for re-indexing operations where the entire
-    /// entity set is recomputed from scratch.
     pub async fn load_entities_overwrite(
         &self,
         entities: &[GraphEntity],
@@ -190,7 +171,6 @@ impl GraphDatabase {
     // ── Querying ──────────────────────────────────────────────
 
     /// Run a named query from the bundled query source.
-    ///
     /// Requires `with_query_source()` to have been called.
     pub async fn query(
         &self,
@@ -249,10 +229,7 @@ impl GraphDatabase {
         self.db.catalog().edge_types.keys().cloned().collect()
     }
 
-    /// Check if a node type has a specific property with an @key or @index annotation.
-    ///
-    /// Note: nanograph checks @key via schema IR during merge operations.
-    /// This method simply verifies the property exists on the node type.
+    /// Check if a node type has a specific property.
     pub fn node_has_property(&self, node_type: &str, prop_name: &str) -> bool {
         self.db
             .catalog()
@@ -267,27 +244,21 @@ impl GraphDatabase {
         let catalog = self.db.catalog();
         let mut stats = serde_json::Map::new();
 
-        let mut node_types = serde_json::Map::new();
+        let mut nodes = serde_json::Map::new();
         for name in catalog.node_types.keys() {
-            let count: usize = storage
-                .node_segments
-                .get(name.as_str())
-                .map(|seg| seg.batches.iter().map(|b| b.num_rows()).sum())
-                .unwrap_or(0);
-            node_types.insert(name.clone(), Value::Number(count.into()));
+            let c: usize = storage.node_segments.get(name.as_str())
+                .map(|s| s.batches.iter().map(|b| b.num_rows()).sum()).unwrap_or(0);
+            nodes.insert(name.clone(), Value::Number(c.into()));
         }
-        stats.insert("nodes".to_string(), Value::Object(node_types));
+        stats.insert("nodes".to_string(), Value::Object(nodes));
 
-        let mut edge_types = serde_json::Map::new();
+        let mut edges = serde_json::Map::new();
         for name in catalog.edge_types.keys() {
-            let count: usize = storage
-                .edge_segments
-                .get(name.as_str())
-                .map(|seg| seg.batches.iter().map(|b| b.num_rows()).sum())
-                .unwrap_or(0);
-            edge_types.insert(name.clone(), Value::Number(count.into()));
+            let c: usize = storage.edge_segments.get(name.as_str())
+                .map(|s| s.batches.iter().map(|b| b.num_rows()).sum()).unwrap_or(0);
+            edges.insert(name.clone(), Value::Number(c.into()));
         }
-        stats.insert("edges".to_string(), Value::Object(edge_types));
+        stats.insert("edges".to_string(), Value::Object(edges));
 
         Ok(Value::Object(stats))
     }
@@ -295,33 +266,22 @@ impl GraphDatabase {
     /// Describe all node and edge types in human-readable format.
     pub fn describe_schema(&self) -> String {
         let catalog = self.db.catalog();
-        let mut description = String::new();
-
-        description.push_str("=== Node Types ===\n");
+        let mut desc = String::new();
+        desc.push_str("=== Node Types ===\n");
         for (name, nt) in &catalog.node_types {
-            description.push_str(&format!("  {name}\n"));
-            for (prop_name, prop_type) in &nt.properties {
-                description.push_str(&format!(
-                    "    - {}: {}\n",
-                    prop_name,
-                    prop_type.display_name()
-                ));
+            desc.push_str(&format!("  {name}\n"));
+            for (pn, pt) in &nt.properties {
+                desc.push_str(&format!("    - {}: {}\n", pn, pt.display_name()));
             }
         }
-
-        description.push_str("\n=== Edge Types ===\n");
+        desc.push_str("\n=== Edge Types ===\n");
         for (name, et) in &catalog.edge_types {
-            description.push_str(&format!("  {} ({} -> {})\n", name, et.from_type, et.to_type));
-            for (prop_name, prop_type) in &et.properties {
-                description.push_str(&format!(
-                    "    - {}: {}\n",
-                    prop_name,
-                    prop_type.display_name()
-                ));
+            desc.push_str(&format!("  {} ({} -> {})\n", name, et.from_type, et.to_type));
+            for (pn, pt) in &et.properties {
+                desc.push_str(&format!("    - {}: {}\n", pn, pt.display_name()));
             }
         }
-
-        description
+        desc
     }
 }
 
@@ -336,3 +296,4 @@ impl std::fmt::Debug for GraphDatabase {
             .finish()
     }
 }
+

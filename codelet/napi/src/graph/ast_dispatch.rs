@@ -1,8 +1,6 @@
 //! AST Graph Dispatch Functions
 //!
-//! Implements query dispatch logic for AST-specific GraphSearch actions.
 //! Routes queries to the AST code graph database (dual-graph architecture).
-//!
 //! Each function takes a `GraphDatabase` reference and returns a JSON string.
 //!
 //! Note: `dispatch_ast_index` lives in `ast_index.rs` and
@@ -10,7 +8,10 @@
 //! file-size compliance).
 
 use crate::graph::database::GraphDatabase;
-use crate::graph::dispatch_helpers::{format_graph_stats, matches_fields, AST_SEARCHABLE_FIELDS};
+use crate::graph::dispatch_helpers::{
+    fields_for_search_mode, format_graph_stats, matches_decorator, matches_fields,
+    matches_parameter,
+};
 use globset::{Glob, GlobMatcher};
 use serde_json::Value;
 use tracing::warn;
@@ -34,6 +35,7 @@ const NEIGHBOR_QUERIES: &[NeighborQuery] = &[
     NeighborQuery { query_name: "file_types", edge_type: "ContainsType" },
     NeighborQuery { query_name: "file_imports", edge_type: "Imports" },
     NeighborQuery { query_name: "file_dependencies", edge_type: "DependsOn" },
+    NeighborQuery { query_name: "file_variables", edge_type: "ContainsVariable" },
     // Function neighbors
     NeighborQuery { query_name: "function_calls", edge_type: "Calls" },
     NeighborQuery { query_name: "function_callers", edge_type: "CalledBy" },
@@ -44,13 +46,12 @@ const NEIGHBOR_QUERIES: &[NeighborQuery] = &[
     NeighborQuery { query_name: "type_implements", edge_type: "Implements" },
     NeighborQuery { query_name: "type_extends", edge_type: "Extends" },
     NeighborQuery { query_name: "type_referencing_functions", edge_type: "ReferencedBy" },
+    // Variable neighbors
+    NeighborQuery { query_name: "variable_container", edge_type: "ContainedBy" },
 ];
 
 /// Build a compiled glob matcher from an optional path pattern.
-///
-/// Returns `None` if no pattern is provided or if the pattern is invalid.
-/// Used by `dispatch_ast_search` and `dispatch_ast_dead_code` to filter
-/// results by file path.
+/// Returns `None` if no pattern or if the pattern is invalid.
 pub(crate) fn build_glob_matcher(path_pattern: Option<&str>) -> Option<GlobMatcher> {
     path_pattern.and_then(|pattern| {
         match Glob::new(pattern) {
@@ -129,18 +130,33 @@ pub(crate) fn matches_entity_path_glob(
 ///
 /// Optional `path_pattern` applies a glob filter to scope results to
 /// entities from matching file paths.
+///
+/// Optional `search_mode` controls which fields are searched:
+/// - `"name"` (default) — name, slug, path, qualifiedName
+/// - `"content"` — source, docstring only
+/// - `"all"` — all fields including source, docstring, parameters, decorators
+///
+/// Optional `decorator_filter` restricts results to entities whose decorators
+/// match (case-insensitive, cross-language symbol stripping).
+///
+/// Optional `parameter_filter` restricts results to functions whose parameter
+/// list contains the given name (case-insensitive).
 pub async fn dispatch_ast_search(
     db: &GraphDatabase,
     query: &str,
     entity_type: Option<&str>,
     limit: Option<usize>,
     path_pattern: Option<&str>,
+    search_mode: Option<&str>,
+    decorator_filter: Option<&str>,
+    parameter_filter: Option<&str>,
 ) -> String {
     let query_lower = query.to_lowercase();
     let max_results = limit.unwrap_or(20);
     let mut results = Vec::new();
 
     let glob_matcher = build_glob_matcher(path_pattern);
+    let search_fields = fields_for_search_mode(search_mode);
 
     // Build file path index if we need to resolve Function/Type paths
     let file_path_index = if glob_matcher.is_some() {
@@ -151,7 +167,7 @@ pub async fn dispatch_ast_search(
 
     let types_to_search: Vec<&str> = match entity_type {
         Some(t) => vec![t],
-        None => vec!["Function", "File", "Type", "Dependency"],
+        None => vec!["Function", "File", "Type", "Dependency", "Variable"],
     };
 
     for search_type in types_to_search {
@@ -160,6 +176,7 @@ pub async fn dispatch_ast_search(
             "File" => "all_files",
             "Type" => "all_types",
             "Dependency" => "all_dependencies",
+            "Variable" => "all_variables",
             _ => continue,
         };
 
@@ -169,13 +186,29 @@ pub async fn dispatch_ast_search(
                     if results.len() >= max_results {
                         break;
                     }
-                    if !matches_fields(&item, &query_lower, AST_SEARCHABLE_FIELDS) {
+                    // Text match: skip if query is non-empty and no field matches
+                    if !query_lower.is_empty()
+                        && !matches_fields(&item, &query_lower, search_fields)
+                    {
                         continue;
+                    }
+                    // Decorator filter: AND constraint
+                    if let Some(dec_filter) = decorator_filter {
+                        if !matches_decorator(&item, dec_filter) {
+                            continue;
+                        }
+                    }
+                    // Parameter filter: AND constraint
+                    if let Some(param_filter) = parameter_filter {
+                        if !matches_parameter(&item, param_filter) {
+                            continue;
+                        }
                     }
                     // Apply glob filter if provided
                     if let Some(ref matcher) = glob_matcher {
                         let matches = match search_type {
                             "File" => matches_path_glob(&item, matcher, "path"),
+                            "Variable" => matches_path_glob(&item, matcher, "path"),
                             "Function" | "Type" => {
                                 matches_entity_path_glob(&item, matcher, &file_path_index)
                             }
@@ -200,6 +233,7 @@ pub async fn dispatch_ast_search(
         "action": "ast_search",
         "query": query,
         "entity_type": entity_type,
+        "search_mode": search_mode.unwrap_or("name"),
         "results": results,
         "count": count,
     })

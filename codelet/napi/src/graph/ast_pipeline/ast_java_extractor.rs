@@ -13,6 +13,9 @@ use std::collections::{HashMap, HashSet};
 use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::complexity;
+use super::metadata;
+use super::variables;
 use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
@@ -68,6 +71,8 @@ pub fn extract_java(
         source, &file_slug, lang, &function_names, &type_names, &import_map, &mut entities,
     );
 
+    // Extract class-level variables
+    variables::extract_variables(source, &file_slug, rel_path, "java", &mut entities);
     Ok(entities)
 }
 
@@ -101,6 +106,8 @@ fn extract_methods(
             let param_count = helpers::count_params(&matched_text);
 
             let fn_slug = format!("{file_slug}::{name}");
+            let cc = complexity::calculate(&matched_text, "java");
+            let meta = metadata::extract_function_meta(&matched_text, "java");
             entities.push(helpers::build_function_node(
                 file_slug,
                 &name,
@@ -109,6 +116,13 @@ fn extract_methods(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
+            cc,
+                &meta.parameters,
+                &meta.source,
+                &meta.docstring,
+                &meta.decorators,
+                "java",
+                meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -160,8 +174,14 @@ fn extract_types(
             let is_public = matched_text.contains("public ");
 
             let type_slug = format!("{file_slug}::{name}");
+            let type_start = node.start_pos();
+            let type_end = node.end_pos();
+            let type_meta = metadata::extract_type_meta(&matched_text, "java");
             entities.push(helpers::build_type_node(
                 file_slug, &name, type_kind, is_public,
+                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
+                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
+                "java", type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(

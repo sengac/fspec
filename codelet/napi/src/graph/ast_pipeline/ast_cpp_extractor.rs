@@ -10,6 +10,9 @@ use std::collections::{HashMap, HashSet};
 
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::complexity;
+use super::metadata;
+use super::variables;
 use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
@@ -54,6 +57,8 @@ pub fn extract_cpp(
     // Extract Calls edges from function bodies
     extract_calls_by_scanning(source, &file_slug, &function_names, &import_map, &mut entities);
 
+    // Extract module-level variables
+    variables::extract_variables(source, &file_slug, rel_path, "cpp", &mut entities);
     Ok(entities)
 }
 
@@ -112,10 +117,20 @@ fn extract_functions_by_scanning(
             let param_count = helpers::count_params(trimmed);
             let line_start = i as i32 + 1;
             let line_end = helpers::find_closing_brace(&lines, i).unwrap_or(i) as i32 + 1;
+            let fn_body = lines[i..=(line_end as usize - 1).min(lines.len() - 1)].join("\n");
+            let cc = complexity::calculate(&fn_body, "cpp");
+            let meta = metadata::extract_function_meta(&fn_body, "cpp");
 
             let fn_slug = format!("{file_slug}::{name}");
             entities.push(helpers::build_function_node(
                 file_slug, &name, false, is_public, param_count, line_start, line_end,
+                cc,
+                &meta.parameters,
+                &meta.source,
+                &meta.docstring,
+                &meta.decorators,
+                "cpp",
+                meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(file_slug, &fn_slug, "Contains"));
@@ -237,7 +252,10 @@ fn extract_types(
             }
 
             let type_slug = format!("{file_slug}::{name}");
-            entities.push(helpers::build_type_node(file_slug, &name, type_kind, true));
+            let type_start = node.start_pos();
+            let type_end = node.end_pos();
+            let type_meta = metadata::extract_type_meta(&matched_text, "cpp");
+            entities.push(helpers::build_type_node(file_slug, &name, type_kind, true, type_start.line() as i32 + 1, type_end.line() as i32 + 1, &type_meta.source, &type_meta.docstring, &type_meta.decorators, "cpp", type_meta.truncated));
             entities.push(helpers::build_contains_edge(file_slug, &type_slug, "ContainsType"));
         }
     }

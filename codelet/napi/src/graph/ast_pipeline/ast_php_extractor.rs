@@ -13,6 +13,9 @@ use std::collections::{HashMap, HashSet};
 use ast_grep_core::matcher::KindMatcher;
 use ast_grep_language::{LanguageExt, SupportLang};
 
+use super::complexity;
+use super::metadata;
+use super::variables;
 use super::edge_helpers;
 use super::helpers;
 use crate::graph::graph_entities::GraphEntity;
@@ -84,6 +87,8 @@ pub fn extract_php(
         &mut entities,
     );
 
+    // Extract class constants
+    variables::extract_variables(source, &file_slug, rel_path, "php", &mut entities);
     Ok(entities)
 }
 
@@ -117,6 +122,8 @@ fn extract_functions(
             let param_count = helpers::count_params(&matched_text);
 
             let fn_slug = format!("{file_slug}::{name}");
+            let cc = complexity::calculate(&matched_text, "php");
+            let meta = metadata::extract_function_meta(&matched_text, "php");
             entities.push(helpers::build_function_node(
                 file_slug,
                 &name,
@@ -125,6 +132,13 @@ fn extract_functions(
                 param_count,
                 start_pos.line() as i32 + 1,
                 end_pos.line() as i32 + 1,
+            cc,
+                &meta.parameters,
+                &meta.source,
+                &meta.docstring,
+                &meta.decorators,
+                "php",
+                meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(
@@ -180,8 +194,14 @@ fn extract_types(
                 && !matched_text.starts_with("internal ");
 
             let type_slug = format!("{file_slug}::{name}");
+            let type_start = node.start_pos();
+            let type_end = node.end_pos();
+            let type_meta = metadata::extract_type_meta(&matched_text, "php");
             entities.push(helpers::build_type_node(
                 file_slug, &name, type_kind, is_public,
+                type_start.line() as i32 + 1, type_end.line() as i32 + 1,
+                &type_meta.source, &type_meta.docstring, &type_meta.decorators,
+                "php", type_meta.truncated,
             ));
 
             entities.push(helpers::build_contains_edge(

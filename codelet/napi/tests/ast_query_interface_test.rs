@@ -54,7 +54,7 @@ async fn test_ast_search_function_by_name() {
     let db = setup_test_ast_db(temp_dir.path()).await;
 
     // @step When I execute an AstSearch action with query "login"
-    let result = ast_dispatch::dispatch_ast_search(&db, "login", None, None, None)
+    let result = ast_dispatch::dispatch_ast_search(&db, "login", None, None, None, None, None, None)
         .await;
     let parsed: Value = serde_json::from_str(&result).expect("valid JSON");
 

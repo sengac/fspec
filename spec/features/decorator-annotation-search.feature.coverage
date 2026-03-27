@@ -1,0 +1,256 @@
+{
+  "scenarios": [
+    {
+      "name": "Python decorators extracted during indexing",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "lines": "20-37",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scala annotations extracted as AtSign style",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "lines": "43-55",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PHP 8 attributes extracted as HashBracket style",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "lines": "61-74",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rust attributes extracted as HashBracket style",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "lines": "80-92",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "C# attributes extracted as SquareBracket style",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "lines": "98-110",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Languages without decorators produce empty string",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/ast_decorator_search_test.rs",
+          "lines": "116-139",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
+              "lines": [
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/ast_decorator_search_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/graph/ast_pipeline/metadata.rs"
+    ],
+    "totalLinesCovered": 239
+  }
+}

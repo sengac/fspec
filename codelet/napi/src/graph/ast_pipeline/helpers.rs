@@ -48,6 +48,13 @@ pub fn build_function_node(
     param_count: i32,
     line_start: i32,
     line_end: i32,
+    cyclomatic_complexity: i32,
+    parameters: &str,
+    source: &str,
+    docstring: &str,
+    decorators: &str,
+    language: &str,
+    truncated: bool,
 ) -> GraphEntity {
     let fn_slug = format!("{file_slug}::{name}");
     let mut props = Map::new();
@@ -59,6 +66,16 @@ pub fn build_function_node(
     props.insert("paramCount".to_string(), Value::Number(param_count.into()));
     props.insert("lineStart".to_string(), Value::Number(line_start.into()));
     props.insert("lineEnd".to_string(), Value::Number(line_end.into()));
+    props.insert(
+        "cyclomaticComplexity".to_string(),
+        Value::Number(cyclomatic_complexity.into()),
+    );
+    props.insert("parameters".to_string(), Value::String(parameters.to_string()));
+    props.insert("source".to_string(), Value::String(source.to_string()));
+    props.insert("docstring".to_string(), Value::String(docstring.to_string()));
+    props.insert("decorators".to_string(), Value::String(decorators.to_string()));
+    props.insert("language".to_string(), Value::String(language.to_string()));
+    props.insert("truncated".to_string(), Value::Bool(truncated));
     GraphEntity::Node {
         node_type: "Function".to_string(),
         slug: fn_slug,
@@ -86,6 +103,13 @@ pub fn build_type_node(
     name: &str,
     type_kind: &str,
     is_public: bool,
+    line_start: i32,
+    line_end: i32,
+    source: &str,
+    docstring: &str,
+    decorators: &str,
+    language: &str,
+    truncated: bool,
 ) -> GraphEntity {
     let type_slug = format!("{file_slug}::{name}");
     let mut props = Map::new();
@@ -93,10 +117,72 @@ pub fn build_type_node(
     props.insert("name".to_string(), Value::String(name.to_string()));
     props.insert("typeKind".to_string(), Value::String(type_kind.to_string()));
     props.insert("isPublic".to_string(), Value::Bool(is_public));
+    props.insert("lineStart".to_string(), Value::Number(line_start.into()));
+    props.insert("lineEnd".to_string(), Value::Number(line_end.into()));
+    props.insert("source".to_string(), Value::String(source.to_string()));
+    props.insert("docstring".to_string(), Value::String(docstring.to_string()));
+    props.insert("decorators".to_string(), Value::String(decorators.to_string()));
+    props.insert("language".to_string(), Value::String(language.to_string()));
+    props.insert("truncated".to_string(), Value::Bool(truncated));
     GraphEntity::Node {
         node_type: "Type".to_string(),
         slug: type_slug,
         properties: props,
+    }
+}
+
+/// Build a Variable node with standard properties.
+///
+/// For module-level variables: `scope` is "module", `scope_name` is "".
+/// For class-level variables: `scope` is "class", `scope_name` is the class name.
+/// The slug format is `{file_slug}::{name}` for module-level,
+/// or `{file_slug}::{ClassName}.{name}` for class-level.
+pub fn build_variable_node(
+    file_slug: &str,
+    name: &str,
+    rel_path: &str,
+    line_start: i32,
+    value: &str,
+    scope: &str,
+    scope_name: &str,
+    is_constant: bool,
+    language: &str,
+) -> GraphEntity {
+    let var_slug = if scope == "class" && !scope_name.is_empty() {
+        format!("{file_slug}::{scope_name}.{name}")
+    } else {
+        format!("{file_slug}::{name}")
+    };
+    // Cap value at 200 chars
+    let capped_value = if value.len() > 200 {
+        format!("{}…", &value[..199])
+    } else {
+        value.to_string()
+    };
+    let mut props = Map::new();
+    props.insert("slug".to_string(), Value::String(var_slug.clone()));
+    props.insert("name".to_string(), Value::String(name.to_string()));
+    props.insert("path".to_string(), Value::String(rel_path.to_string()));
+    props.insert("lineStart".to_string(), Value::Number(line_start.into()));
+    props.insert("value".to_string(), Value::String(capped_value));
+    props.insert("scope".to_string(), Value::String(scope.to_string()));
+    props.insert("scopeName".to_string(), Value::String(scope_name.to_string()));
+    props.insert("isConstant".to_string(), Value::Bool(is_constant));
+    props.insert("language".to_string(), Value::String(language.to_string()));
+    GraphEntity::Node {
+        node_type: "Variable".to_string(),
+        slug: var_slug,
+        properties: props,
+    }
+}
+
+/// Build a ContainsVariable edge from a File to a Variable.
+pub fn build_contains_variable_edge(file_slug: &str, variable_slug: &str) -> GraphEntity {
+    GraphEntity::Edge {
+        edge_type: "ContainsVariable".to_string(),
+        from_slug: file_slug.to_string(),
+        to_slug: variable_slug.to_string(),
+        properties: Map::new(),
     }
 }
 

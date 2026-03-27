@@ -2,133 +2,151 @@
 
 ## Problem
 
-Our Function and Type nodes store only structural metadata (`name`, `slug`, `path`, `qualifiedName`, `visibility`). When an agent finds a function via the graph, it must make a separate `Read` tool call to see the actual code. CGC stores source code directly in graph nodes, cutting tool calls in half.
+Our Function and Type nodes store only structural metadata. When an agent finds a function via the graph, it must make a separate `Read` tool call to see the actual code. CGC stores source code directly in graph nodes, cutting tool calls in half.
 
-## CGC Reference Implementation
+## Current State
 
-### Properties stored per Function — `graph_builder.py` lines 312–348, 388–450
+### Function Node (ast-code.pg schema)
+```
+slug, name, qualifiedName, isAsync, isPublic, paramCount, lineStart, lineEnd, cyclomaticComplexity
+```
+`build_function_node()` takes 8 params and populates all 9 properties (slug derived).
 
-```python
-session.run("""
-    MERGE (f:Function {name: $name, path: $path, line_number: $line_number})
-    SET f.end_line = $end_line,
-        f.args = $args,
-        f.source = $source,
-        f.docstring = $docstring,
-        f.decorators = $decorators,
-        f.cyclomatic_complexity = $cyclomatic_complexity,
-        f.is_dependency = $is_dependency,
-        f.lang = $lang,
-        f.context = $context
-""", ...)
+### Type Node (ast-code.pg schema)
+```
+slug, name, typeKind, isGeneric (never populated), isPublic, fieldCount (never populated)
+```
+`build_type_node()` takes 4 params (file_slug, name, type_kind, is_public). No lineStart/lineEnd on Types.
+
+## CGC Reference
+
+### Properties stored per Function — `graph_builder.py`
+- `name`, `line_number`, `end_line`, `args` (list of param names), `source` (full body),
+  `docstring`, `decorators` (list), `cyclomatic_complexity`, `context`, `context_type`,
+  `class_context`, `lang`, `is_dependency`
+
+### Properties stored per Class — `graph_builder.py`
+- `name`, `line_number`, `end_line`, `bases`, `source`, `docstring`, `decorators`, `lang`, `is_dependency`
+
+### Key CGC design decisions
+- `source` and `docstring` gated by `INDEX_SOURCE=true` config flag
+- `SET n += $props` merges entire dict onto Neo4j node (schemaless)
+- Parameters stored BOTH as property (list) on node AND separate Parameter child nodes
+- Each language parser returns consistent schema with language-specific extras
+
+## What We Add
+
+### Schema changes (ast-code.pg)
+
+**Function node — 5 new properties:**
+```
+parameters: String?      // comma-separated: "self, name, age"
+source: String?          // function body, capped at 100 lines / 4KB
+docstring: String?       // extracted doc comment
+decorators: String?      // comma-separated: "@staticmethod, @override"
+language: String?        // "typescript", "rust", "python", etc.
 ```
 
-### What each language parser extracts — e.g. `languages/python.py`
-
-Each language-specific parser returns a dict per function containing:
-- `name` — function/method name
-- `line_number` — start line
-- `end_line` — end line (critical for knowing function boundaries)
-- `args` — parameter list as array of strings
-- `source` — **full source code** of the function body
-- `docstring` — extracted docstring/JSDoc/rustdoc
-- `decorators` — list of decorator/attribute names
-- `cyclomatic_complexity` — complexity score
-- `context` — "class" or "module" (scope indicator)
-- `lang` — language identifier
-
-### Properties stored per Class — `graph_builder.py` lines 450–490
-
-```python
-session.run("""
-    MERGE (c:Class {name: $name, path: $path, line_number: $line_number})
-    SET c.end_line = $end_line,
-        c.bases = $bases,
-        c.source = $source,
-        c.docstring = $docstring,
-        c.decorators = $decorators,
-        c.is_dependency = $is_dependency,
-        c.lang = $lang
-""", ...)
+**Type node — 6 new properties:**
+```
+lineStart: I32?          // was missing from Type (only on Function)
+lineEnd: I32?            // was missing from Type (only on Function)
+source: String?          // type body, capped
+docstring: String?
+decorators: String?
+language: String?
 ```
 
-### How source is extracted — `languages/typescript.py` (representative)
+### DRY Architecture — metadata.rs
 
-```python
-def _extract_source(self, node):
-    """Extract source text from a tree-sitter node."""
-    return node.text.decode('utf-8') if node.text else ''
+Create `codelet/napi/src/graph/ast_pipeline/metadata.rs` with:
+
+1. **`extract_source(full_text, max_lines=100, max_bytes=4096) -> (String, bool)`**
+   Returns (capped_source, was_truncated). Single entry point for all extractors.
+
+2. **`extract_docstring(text_before_entity, language) -> String`**
+   Data-driven per-language config (same pattern as complexity.rs):
+   - TS/JS: `/** ... */` (JSDoc)
+   - Rust: `///` lines or `//!` (rustdoc)
+   - Python: first triple-quoted string in body
+   - Java/Kotlin/Scala: `/** ... */` (Javadoc)
+   - C#: `/// <summary>` (XML doc)
+   - Go: `//` lines immediately before declaration
+   - Ruby: `#` lines before `def`/`class`
+   - PHP: `/** ... */` (PHPDoc)
+   - Dart: `///` (DartDoc)
+   - C/C++: `/** ... */` or `///`
+   - Swift: `///` or `/** ... */`
+
+3. **`extract_decorators(text_before_entity, language) -> String`**
+   - Python/TS/Dart: `@decorator` syntax
+   - Rust: `#[attr]` or `#[derive(...)]`
+   - Java/Kotlin: `@Annotation`
+   - C#: `[Attribute]`
+   - Swift: `@objc`, `@available`
+   - Go/C/C++/Ruby/Scala/PHP: empty (no decorator syntax or not standard)
+
+4. **`extract_parameters(signature_text, language) -> String`**
+   Extracts parameter names only (no types), comma-separated.
+   Filters out `self`/`cls` (Python), `&self`/`&mut self` (Rust), receiver (Go).
+
+### Signature changes
+
+**`build_function_node()` — 8 → 13 params:**
+```rust
+pub fn build_function_node(
+    file_slug: &str,
+    name: &str,
+    is_async: bool,
+    is_public: bool,
+    param_count: i32,
+    line_start: i32,
+    line_end: i32,
+    cyclomatic_complexity: i32,
+    // NEW:
+    parameters: &str,       // comma-separated param names
+    source: &str,           // capped source text
+    docstring: &str,        // extracted doc comment
+    decorators: &str,       // comma-separated decorators
+    language: &str,         // language identifier
+) -> GraphEntity
 ```
 
-The full text of the AST node (function/class body) is stored directly.
-
-## What We Need to Implement
-
-### Extend nanograph schema
-
-Current Function node:
-```
-node Function {
-  @key slug: String
-  name: String
-  path: String
-  qualifiedName: String
-  visibility: String
-}
-```
-
-Proposed Function node:
-```
-node Function {
-  @key slug: String
-  name: String
-  path: String
-  qualifiedName: String
-  visibility: String
-  startLine: Int           // NEW
-  endLine: Int             // NEW
-  parameters: String       // NEW — JSON array or comma-separated
-  source: String           // NEW — first N lines of source (capped)
-  docstring: String        // NEW — extracted doc comment
-  decorators: String       // NEW — JSON array of decorator names
-  language: String         // NEW — "typescript", "rust", etc.
-}
+**`build_type_node()` — 4 → 10 params:**
+```rust
+pub fn build_type_node(
+    file_slug: &str,
+    name: &str,
+    type_kind: &str,
+    is_public: bool,
+    // NEW:
+    line_start: i32,        // was missing from Types
+    line_end: i32,          // was missing from Types
+    source: &str,
+    docstring: &str,
+    decorators: &str,
+    language: &str,
+) -> GraphEntity
 ```
 
-Similarly for Type nodes.
+### Query changes (ast-queries.gq)
 
-### Source extraction during AST walk
+Update `all_functions` to include: `$fn.parameters, $fn.source, $fn.docstring, $fn.decorators, $fn.language`
+Update `all_types` to include: `$t.lineStart, $t.lineEnd, $t.source, $t.docstring, $t.decorators, $t.language`
+Update `uncalled_functions` and `unreferenced_types` similarly.
 
-We use ast-grep for extraction. During the walk, for each matched function/type:
-1. Read the matched node's text span from the source file
-2. Cap at ~100 lines or 4KB to prevent graph bloat
-3. Extract leading doc comments (JSDoc, rustdoc, Python docstrings)
-4. Extract parameter names from function signatures
-5. Extract decorator/attribute lists
+### Searchable fields update (dispatch_helpers.rs)
 
-### Storage size considerations
-
-Storing full source for every function could bloat the graph significantly:
-- A project with 5,000 functions averaging 30 lines × 40 chars = ~6MB
-- With 100-line cap: manageable
-- **Recommendation**: Store first 50 lines + a `truncated: bool` flag
-- Alternatively, store only the **signature** + docstring (much smaller)
-
-### Impact on other cards
-
-- **KGRAPH-067 (Full-Text Search)** depends on this — needs `source` and `docstring` properties to search over
-- **KGRAPH-068 (Decorator Search)** depends on `decorators` property
-- **KGRAPH-062 (Complexity)** needs `startLine`/`endLine` for AST range
+Add `"source"`, `"docstring"`, `"parameters"`, `"decorators"` to `AST_SEARCHABLE_FIELDS`.
 
 ### Files to modify
 
 | File | Change |
 |------|--------|
-| `codelet/napi/src/graph/` | Update AST schema with new properties |
-| `codelet/napi/src/ast_pipeline/` | Extract source, docstring, params, decorators per language |
-| `codelet/napi/src/graph/graph_entities.rs` | Add new fields to GraphEntity serialization |
-| `codelet/napi/src/graph/dispatch_helpers.rs` | Include new fields in search results |
-
-### Effort estimate
-
-**Low-Medium** — Schema change is straightforward. Source extraction is mostly reading byte ranges from the already-parsed file. Docstring extraction requires language-specific logic (JSDoc vs rustdoc vs Python docstrings). Parameter extraction is already partially done in some extractors.
+| `codelet/napi/schemas/ast-code.pg` | Add new properties to Function and Type |
+| `codelet/napi/schemas/ast-queries.gq` | Return new properties in queries |
+| `codelet/napi/src/graph/ast_pipeline/helpers.rs` | Extend build_function_node/build_type_node |
+| `codelet/napi/src/graph/ast_pipeline/metadata.rs` | **NEW** — extract_source, extract_docstring, extract_decorators, extract_parameters |
+| `codelet/napi/src/graph/ast_pipeline/mod.rs` | Register metadata module |
+| `codelet/napi/src/graph/ast_pipeline/ast_*.rs` (×14) | Pass new fields to build helpers |
+| `codelet/napi/src/graph/dispatch_helpers.rs` | Update AST_SEARCHABLE_FIELDS |
