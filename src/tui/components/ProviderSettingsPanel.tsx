@@ -347,7 +347,7 @@ export function ProviderSettingsPanel({
 
           <Box marginTop={2}>
             <Text dimColor>
-              Tab: next field | Shift+Tab: prev | Enter: save | Esc: cancel
+              ↑/↓: switch field | Enter: save | Esc: cancel
             </Text>
           </Box>
         </Box>

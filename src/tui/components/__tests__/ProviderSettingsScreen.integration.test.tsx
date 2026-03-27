@@ -606,8 +606,8 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
   // PROFILE FORM MODE
   // ===========================================================================
 
-  describe('Scenario: Navigate to next field with Tab', () => {
-    it('should increment formFieldIndex when Tab is pressed in profile form', async () => {
+  describe('Scenario: Navigate to next field with Down arrow', () => {
+    it('should increment formFieldIndex when Down arrow is pressed in profile form', async () => {
       // @step Given ProviderSettingsScreen is in create-profile mode
       const { stdin, lastFrame } = render(
         <ProviderSettingsScreen
@@ -635,13 +635,13 @@ describe('Feature: Create ProviderSettingsScreen component', () => {
       const formFrame = lastFrame();
       expect(formFrame).toContain('Profile');
 
-      // @step When the user presses the Tab key
-      pressKey(stdin, { name: 'tab' });
+      // @step When the user presses the Down arrow key
+      pressKey(stdin, { name: 'down' });
       await waitFor(50);
 
       // @step Then formFieldIndex increments to 1
       const frame = lastFrame();
-      // Still in form mode (Tab navigates fields, not exits)
+      // Still in form mode (Down arrow navigates fields)
       expect(frame).toContain('URL');
     });
   });

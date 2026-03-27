@@ -31,8 +31,19 @@ export function handleProfileFormMode(
     return true;
   }
 
+  // TUI-084: Use arrow keys for field navigation, NOT Tab
+  if (key.downArrow) {
+    handleArrowDown(providerSettings, isNewProfile);
+    return true;
+  }
+
+  if (key.upArrow) {
+    handleArrowUp(providerSettings, isNewProfile);
+    return true;
+  }
+
+  // Tab key is intentionally ignored in profile form mode (TUI-084)
   if (key.tab) {
-    handleTab(key, providerSettings, isNewProfile);
     return true;
   }
 
@@ -53,24 +64,37 @@ export function handleProfileFormMode(
   return true;
 }
 
-function handleTab(
-  key: Key,
+/**
+ * TUI-084: Handle Down arrow key to move to next field
+ */
+function handleArrowDown(
   providerSettings: UseProviderSettingsStateReturn,
   isNewProfile: boolean
 ): void {
   if (providerSettings.isEditingName) {
+    // Exit name editing and go to first field
     providerSettings.setIsEditingName(false);
     providerSettings.setFormFieldIndex(0);
-  } else if (key.shift) {
-    if (providerSettings.formFieldIndex > 0) {
-      providerSettings.setFormFieldIndex(prev => prev - 1);
-    } else if (isNewProfile) {
-      providerSettings.setIsEditingName(true);
-    }
-  } else {
-    if (providerSettings.formFieldIndex < PROFILE_FORM_FIELDS.length - 1) {
-      providerSettings.setFormFieldIndex(prev => prev + 1);
-    }
+  } else if (providerSettings.formFieldIndex < PROFILE_FORM_FIELDS.length - 1) {
+    providerSettings.setFormFieldIndex(prev => prev + 1);
+  }
+}
+
+/**
+ * TUI-084: Handle Up arrow key to move to previous field
+ */
+function handleArrowUp(
+  providerSettings: UseProviderSettingsStateReturn,
+  isNewProfile: boolean
+): void {
+  if (providerSettings.isEditingName) {
+    // Already at the top, do nothing
+    return;
+  } else if (providerSettings.formFieldIndex > 0) {
+    providerSettings.setFormFieldIndex(prev => prev - 1);
+  } else if (isNewProfile) {
+    // At first field, go back to name editing
+    providerSettings.setIsEditingName(true);
   }
 }
 

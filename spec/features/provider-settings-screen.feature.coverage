@@ -4033,7 +4033,7 @@
       ]
     },
     {
-      "name": "Navigate to next field with Tab",
+      "name": "Navigate to next field with Down arrow",
       "testMappings": [
         {
           "file": "src/tui/components/__tests__/ProviderSettingsScreen.integration.test.tsx",

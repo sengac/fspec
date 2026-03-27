@@ -1695,12 +1695,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Incremental falls back to full extraction when more than 50% of files changed",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 6,
+    "totalScenarios": 7,
     "coveredScenarios": 6,
-    "coveragePercent": 100,
+    "coveragePercent": 86,
     "testFiles": [
       "codelet/napi/tests/ast_incremental_test.rs"
     ],

@@ -152,10 +152,10 @@ Feature: Create ProviderSettingsScreen component
   # ========================================
   @keyboard
   @profile-form-mode
-  Scenario: Navigate to next field with Tab
+  Scenario: Navigate to next field with Down arrow
     Given ProviderSettingsScreen is in create-profile mode
     And formFieldIndex is 0
-    When the user presses the Tab key
+    When the user presses the Down arrow key
     Then formFieldIndex increments to 1
 
   @keyboard

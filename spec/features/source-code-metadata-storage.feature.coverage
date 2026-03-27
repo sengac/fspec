@@ -177,53 +177,6 @@
       ]
     },
     {
-      "name": "Source code is capped at 100 lines",
-      "testMappings": [
-        {
-          "file": "codelet/napi/tests/ast_metadata_test.rs",
-          "lines": "161-188",
-          "implMappings": [
-            {
-              "file": "codelet/napi/src/graph/ast_pipeline/metadata.rs",
-              "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Short function source is stored in full",
       "testMappings": [
         {
@@ -646,12 +599,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Source code is capped at 100 lines or 4096 bytes",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 8,
-    "coveredScenarios": 8,
-    "coveragePercent": 100,
+    "coveredScenarios": 7,
+    "coveragePercent": 88,
     "testFiles": [
       "codelet/napi/tests/ast_metadata_test.rs"
     ],
