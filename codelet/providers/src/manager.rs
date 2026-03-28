@@ -412,7 +412,8 @@ impl ProviderManager {
     /// Get OpenAI provider (if selected)
     ///
     /// Requires a model to be selected via select_model().
-    pub fn get_openai(&self) -> Result<OpenAIProvider, ProviderError> {
+    /// PROV-051: Accepts session_id for cache optimization (session affinity headers).
+    pub fn get_openai(&self, session_id: uuid::Uuid) -> Result<OpenAIProvider, ProviderError> {
         if self.current_provider != ProviderType::OpenAI {
             return Err(ProviderError::config(
                 "manager",
@@ -429,7 +430,7 @@ impl ProviderManager {
 
         let api_key = std::env::var("OPENAI_API_KEY")
             .map_err(|_| ProviderError::auth("openai", "OPENAI_API_KEY not set"))?;
-        OpenAIProvider::from_api_key(&api_key, &model_id)
+        OpenAIProvider::from_api_key_with_session(&api_key, &model_id, session_id)
     }
 
     /// Get Codex provider (if selected)

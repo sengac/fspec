@@ -9,7 +9,8 @@
         "PROV-001",
         "REFAC-007",
         "PROV-004",
-        "PROV-005"
+        "PROV-005",
+        "PROV-008"
       ]
     },
     "interactive-tui": {

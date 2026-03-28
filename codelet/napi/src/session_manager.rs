@@ -4976,7 +4976,52 @@ async fn agent_loop(
             
             let result = match current_provider.as_str() {
                 "claude" => run_with_provider!(&mut inner_session, get_claude, input, bridge_images.clone(), session, &output, thinking_config_value),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, input, bridge_images.clone(), session, &output, thinking_config_value),
+                "openai" => {
+                    // PROV-051: get_openai requires session_id for cache optimization headers
+                    match inner_session.provider_manager_mut().get_openai(session.id) {
+                        Ok(provider) => {
+                            tracing::debug!(
+                                "[run_with_provider] Creating agent - session={}, getter=get_openai",
+                                session.id,
+                            );
+                            let mcp_wrappers = codelet_tools::gather_mcp_tool_wrappers(session.id);
+                            let role_preamble = session.get_role();
+                            let agent = provider.create_rig_agent(session.id, role_preamble.as_deref(), thinking_config_value.clone());
+                            if !mcp_wrappers.is_empty() {
+                                tracing::info!(
+                                    "[MCP] Adding {} MCP tool wrappers to agent for session {}",
+                                    mcp_wrappers.len(),
+                                    session.id,
+                                );
+                                for wrapper in mcp_wrappers {
+                                    if let Err(e) = agent.tool_server_handle.add_tool(wrapper).await {
+                                        tracing::warn!("[MCP] Failed to add MCP tool: {}", e);
+                                    }
+                                }
+                            }
+                            codelet_tools::set_mcp_tool_server_handle(
+                                session.id,
+                                agent.tool_server_handle.clone(),
+                            );
+                            let agent = codelet_core::RigAgent::with_default_depth(agent);
+                            codelet_cli::interactive::run_agent_stream_with_images(
+                                agent,
+                                input,
+                                bridge_images.clone(),
+                                &mut inner_session,
+                                session.is_interrupted.clone(),
+                                session.compaction_in_progress.clone(),
+                                session.interrupt_notify.clone(),
+                                &output,
+                            )
+                            .await
+                        }
+                        Err(e) => {
+                            tracing::warn!("[run_with_provider] Failed to get provider: {}", e);
+                            Err(anyhow::anyhow!("Failed to get provider: {}", e))
+                        }
+                    }
+                },
                 "gemini" => run_with_provider!(&mut inner_session, get_gemini, input, bridge_images.clone(), session, &output, thinking_config_value),
                 "zai" => run_with_provider!(&mut inner_session, get_zai, input, bridge_images, session, &output, thinking_config_value),
                 "codex" => run_with_provider!(&mut inner_session, get_codex, input, bridge_images.clone(), session, &output, thinking_config_value),

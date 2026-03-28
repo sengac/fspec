@@ -58,9 +58,25 @@ pub(super) async fn run_agent_with_interruption(
     // Dispatch to provider-specific agent
     // PROV-006: For now pass None - preamble comes from session.messages as user messages
     // Future enhancement: extract CLAUDE.md content as preamble for API key mode
+    // PROV-051: get_openai requires session_id for cache optimization headers
     match provider_name.as_str() {
         "claude" => run_with_provider!(get_claude, None),
-        "openai" => run_with_provider!(get_openai, None),
+        "openai" => {
+            let provider = manager.get_openai(session_id)?;
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
+            let agent = RigAgent::with_default_depth(rig_agent);
+            run_agent_stream_with_interruption(
+                agent,
+                prompt,
+                session,
+                event_stream,
+                input_queue,
+                is_interrupted,
+                compaction_in_progress.clone(),
+                &output,
+            )
+            .await
+        },
         "codex" => run_with_provider!(get_codex, None),
         "gemini" => run_with_provider!(get_gemini, None),
         _ => Err(anyhow::anyhow!("Unknown provider")),

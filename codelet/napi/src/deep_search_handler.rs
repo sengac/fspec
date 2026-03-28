@@ -389,7 +389,7 @@ async fn build_and_run_agent(
             build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
         "openai" => {
-            let provider = manager.get_openai()
+            let provider = manager.get_openai(session_id)
                 .map_err(|e| format!("Failed to get OpenAI provider: {e}"))?;
             let request_config = request_config_for_provider(
                 provider_name,

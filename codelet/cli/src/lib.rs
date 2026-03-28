@@ -145,7 +145,7 @@ async fn run_agent(
             run_agent_stream(agent, prompt).await
         }
         "openai" => {
-            let provider = manager.get_openai()?;
+            let provider = manager.get_openai(session_id)?;
             let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await

@@ -198,7 +198,33 @@ pub async fn call_learnings_extraction_llm(
 
     match provider_name {
         "claude" => call_with_provider!(get_claude),
-        "openai" => call_with_provider!(get_openai),
+        "openai" => {
+            // PROV-051: get_openai requires session_id for cache optimization headers.
+            // Learnings extraction is a background task without a user session,
+            // so we use a throwaway UUID — cache affinity isn't critical here.
+            let provider = manager.get_openai(uuid::Uuid::new_v4()).map_err(|e| {
+                tracing::warn!("[KGRAPH] Failed to get provider for learnings extraction: {e}");
+                e
+            }).ok()?;
+            let agent = provider
+                .client()
+                .agent(provider.model())
+                .preamble(learnings_extraction::LEARNINGS_EXTRACTION_PROMPT)
+                .build();
+            match agent.prompt(&prompt_text).await {
+                Ok(response) => {
+                    tracing::info!(
+                        chars = response.len(),
+                        "[KGRAPH] LLM learnings extraction response received"
+                    );
+                    Some(response)
+                }
+                Err(e) => {
+                    tracing::warn!("[KGRAPH] LLM learnings extraction call failed: {e}");
+                    None
+                }
+            }
+        },
         "gemini" => call_with_provider!(get_gemini),
         "zai" => call_with_provider!(get_zai),
         "codex" => call_with_provider!(get_codex),

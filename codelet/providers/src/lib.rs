@@ -3,6 +3,7 @@
 //! Multi-provider LLM abstraction.
 
 pub mod adapter;
+pub mod cache_optimization;
 pub mod cache_token_extractor;
 pub mod caching_client;
 pub mod claude;
@@ -30,6 +31,7 @@ pub use error::ProviderError;
 
 use async_trait::async_trait;
 
+pub use cache_optimization::{CacheOptimizationFacade, SessionAffinityConfig};
 pub use cache_token_extractor::{extract_cache_tokens_from_sse, CacheTokenExtractor};
 pub use caching_client::{
     should_transform_request, transform_request_body, transform_system_prompt,

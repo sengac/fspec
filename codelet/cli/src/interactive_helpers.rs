@@ -353,7 +353,7 @@ pub async fn prompt_provider(
             agent.prompt(prompt).await
         }
         "openai" => {
-            let provider = manager.get_openai()?;
+            let provider = manager.get_openai(session_id)?;
             let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await

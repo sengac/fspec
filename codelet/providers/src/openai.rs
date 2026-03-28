@@ -10,6 +10,7 @@ use crate::{
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_prompt_data, extract_text_from_content, validate_api_key_static, CompletionResponse,
     LlmProvider, ProviderAdapter, ProviderError, StopReason,
+    cache_optimization::{CacheOptimizationFacade, SessionAffinityConfig},
 };
 use async_trait::async_trait;
 use codelet_common::{Message, MessageContent};
@@ -107,30 +108,48 @@ impl OpenAIProvider {
         // PROV-006: Check for custom base URL and normalize it
         let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
 
-        Self::from_api_key_with_options(&api_key, &model_name, base_url.as_deref())
+        Self::from_api_key_with_options(&api_key, &model_name, base_url.as_deref(), None)
     }
 
     /// Create a new OpenAIProvider with an explicit API key and model
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
+    /// PROV-051: Delegates to from_api_key_with_options with no session_id.
+    /// Use from_api_key_with_session for session-aware construction.
     pub fn from_api_key(api_key: &str, model: &str) -> Result<Self, ProviderError> {
         // Check for custom base URL from environment and normalize it
         let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
-        Self::from_api_key_with_options(api_key, model, base_url.as_deref())
+        Self::from_api_key_with_options(api_key, model, base_url.as_deref(), None)
+    }
+
+    /// Create a new OpenAIProvider with explicit API key, model, and session ID
+    ///
+    /// PROV-051: Session-aware constructor that reads OPENAI_BASE_URL from env
+    /// and applies cache optimization headers when a custom base URL is set.
+    pub fn from_api_key_with_session(
+        api_key: &str,
+        model: &str,
+        session_id: uuid::Uuid,
+    ) -> Result<Self, ProviderError> {
+        let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
+        Self::from_api_key_with_options(api_key, model, base_url.as_deref(), Some(session_id))
     }
 
     /// Create a new OpenAIProvider with explicit API key, model, and optional base URL
     ///
     /// PROV-006: New constructor that supports custom base URLs for local model servers.
+    /// PROV-051: Accepts optional session_id for cache optimization (session affinity headers).
     ///
     /// # Arguments
     /// * `api_key` - The API key (any non-empty value for local servers)
     /// * `model` - The model name
     /// * `base_url` - Optional custom base URL (e.g., "http://localhost:8888")
+    /// * `session_id` - Optional session UUID for cache optimization headers
     pub fn from_api_key_with_options(
         api_key: &str,
         model: &str,
         base_url: Option<&str>,
+        session_id: Option<uuid::Uuid>,
     ) -> Result<Self, ProviderError> {
         // Use shared validation helper (REFAC-013)
         validate_api_key_static("openai", api_key)?;
@@ -148,14 +167,24 @@ impl OpenAIProvider {
 
         // Build rig completions client
         // PROV-006: Use custom base_url if provided (for vLLM, Ollama, etc.)
+        // PROV-051: Apply cache optimization headers via facade when session_id is available
+        let cache_headers = session_id
+            .map(|sid| {
+                let config = SessionAffinityConfig::from_env(sid, base_url.is_some());
+                CacheOptimizationFacade::build_headers(&config)
+            })
+            .unwrap_or_default();
+
         let rig_client = if let Some(url) = base_url {
-            openai::CompletionsClient::builder()
+            let mut builder = openai::CompletionsClient::builder()
                 .api_key(api_key)
-                .base_url(url)
-                .build()
-                .map_err(|e| {
-                    ProviderError::config("openai", format!("Failed to build OpenAI client with custom base URL: {e}"))
-                })?
+                .base_url(url);
+            if !cache_headers.is_empty() {
+                builder = builder.http_headers(cache_headers);
+            }
+            builder.build().map_err(|e| {
+                ProviderError::config("openai", format!("Failed to build OpenAI client with custom base URL: {e}"))
+            })?
         } else {
             openai::CompletionsClient::builder()
                 .api_key(api_key)
@@ -247,19 +276,19 @@ impl OpenAIProvider {
         // This handles both "https://api.fireworks.ai/inference" and
         // "https://api.fireworks.ai/inference/v1" formats
         let trimmed = base_url.trim_end_matches('/');
-        let normalized = if trimmed.ends_with("/v1") {
-            &trimmed[..trimmed.len() - 3]
+        let normalized = if let Some(stripped) = trimmed.strip_suffix("/v1") {
+            stripped
         } else {
             trimmed
         };
 
         // Build URL for /v1/models endpoint
-        let url = format!("{}/v1/models", normalized);
+        let url = format!("{normalized}/v1/models");
 
         // Build GET request, optionally with Authorization header (PROV-040)
         let mut request = client.get(&url);
         if let Some(key) = api_key {
-            request = request.header("Authorization", format!("Bearer {}", key));
+            request = request.header("Authorization", format!("Bearer {key}"));
         }
 
         // Make GET request
@@ -520,6 +549,7 @@ mod tests {
             "test-key",
             "gpt-4o",
             None,
+            None,
         ).unwrap();
 
         // @step Then the instance max_output_tokens is 16384
@@ -542,6 +572,7 @@ mod tests {
         let provider = OpenAIProvider::from_api_key_with_options(
             "test-key",
             "gpt-4o",
+            None,
             None,
         ).unwrap();
 
