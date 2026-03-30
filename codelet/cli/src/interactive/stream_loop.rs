@@ -494,6 +494,8 @@ where
     let mut thinking_exhaustion_retry_count: u32 = 0;
     // NET-001: Track consecutive network error retries to prevent infinite loops
     let mut network_retry_count: u32 = 0;
+    // NET-001: Track whether we're recovering from a network retry (for UX feedback)
+    let mut network_retry_in_progress = false;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
 
@@ -606,6 +608,10 @@ where
                     StreamedAssistantContent::Text(text),
                 ))) => {
                     // NET-001: Reset network retry counter on successful data receipt
+                    if network_retry_in_progress {
+                        output.emit_status("✓ Reconnected");
+                        network_retry_in_progress = false;
+                    }
                     network_retry_count = 0;
                     handle_text_chunk(&text.text, &mut assistant_text, Some(&request_id), output)?;
 
@@ -618,6 +624,10 @@ where
                     StreamedAssistantContent::ToolCall(tool_call),
                 ))) => {
                     // NET-001: Reset network retry counter on successful data receipt
+                    if network_retry_in_progress {
+                        output.emit_status("✓ Reconnected");
+                        network_retry_in_progress = false;
+                    }
                     network_retry_count = 0;
                     handle_tool_call(
                         &tool_call,
@@ -638,6 +648,15 @@ where
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                     StreamedAssistantContent::ReasoningDelta { reasoning, .. },
                 ))) => {
+                    // NET-001: Reset network retry counter on successful data receipt
+                    // ReasoningDelta is valid data — if a network error occurs after receiving
+                    // reasoning but before text, the counter should reset.
+                    if network_retry_in_progress {
+                        output.emit_status("✓ Reconnected");
+                        network_retry_in_progress = false;
+                    }
+                    network_retry_count = 0;
+
                     // TOOL-010: Emit thinking/reasoning content from extended thinking
                     output.emit_thinking(&reasoning);
 
@@ -686,6 +705,10 @@ where
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
                     // NET-001: Reset network retry counter on successful data receipt
+                    if network_retry_in_progress {
+                        output.emit_status("✓ Reconnected");
+                        network_retry_in_progress = false;
+                    }
                     network_retry_count = 0;
                     // Usage events come from:
                     // 1. MessageStart (input tokens, output=0) - marks start of new API call (Anthropic)
@@ -718,6 +741,10 @@ where
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
                     // NET-001: Reset network retry counter on successful data receipt
+                    if network_retry_in_progress {
+                        output.emit_status("✓ Reconnected");
+                        network_retry_in_progress = false;
+                    }
                     network_retry_count = 0;
                     // PROV-005-DEBUG: Log FinalResponse received
                     debug!(
@@ -1200,10 +1227,12 @@ where
                                 delay.as_secs_f64(),
                                 error_str
                             );
-                            output.emit_status(&format!(
-                                "Network error (attempt {network_retry_count}/{MAX_NETWORK_RETRIES}). Retrying in {:.1}s...",
-                                delay.as_secs_f64()
-                            ));
+                            // Only show the reconnecting message once (first attempt).
+                            // Subsequent retries are silent to avoid cluttering the conversation.
+                            if network_retry_count == 1 {
+                                output.emit_status("⟳ Reconnecting...");
+                            }
+                            network_retry_in_progress = true;
 
                             tokio::time::sleep(delay).await;
 
@@ -1275,9 +1304,7 @@ where
                             "NET-001: Network retry budget exhausted after {} attempts",
                             MAX_NETWORK_RETRIES
                         );
-                        output.emit_status(&format!(
-                            "Network error persists after {MAX_NETWORK_RETRIES} retries — giving up"
-                        ));
+                        output.emit_status("✗ Reconnection failed");
                         // Fall through to the terminal error handler below
                     }
 

@@ -188,6 +188,8 @@ where
     let mut retry_last_tool_name: Option<String> = None;
     // NET-001: Track network retry count for compaction retry stream
     let mut network_retry_count: u32 = 0;
+    // NET-001: Track whether we're recovering from a network retry (for UX feedback)
+    let mut network_retry_in_progress = false;
     let mut retry_display = StreamingTokenDisplay::new(
         session.token_tracker.input_tokens,
         0,
@@ -214,6 +216,10 @@ where
             Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                 StreamedAssistantContent::Text(text),
             ))) => {
+                if network_retry_in_progress {
+                    output.emit_status("✓ Reconnected");
+                    network_retry_in_progress = false;
+                }
                 network_retry_count = 0;
                 handle_text_chunk(&text.text, &mut retry_text, None, output)?;
                 if let Some(update) = retry_display.record_chunk(&text.text) {
@@ -223,6 +229,10 @@ where
             Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                 StreamedAssistantContent::ToolCall(tool_call),
             ))) => {
+                if network_retry_in_progress {
+                    output.emit_status("✓ Reconnected");
+                    network_retry_in_progress = false;
+                }
                 network_retry_count = 0;
                 handle_tool_call(
                     &tool_call,
@@ -236,6 +246,13 @@ where
             Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                 StreamedAssistantContent::ReasoningDelta { reasoning, .. },
             ))) => {
+                // NET-001: Reset network retry counter on successful data receipt
+                if network_retry_in_progress {
+                    output.emit_status("✓ Reconnected");
+                    network_retry_in_progress = false;
+                }
+                network_retry_count = 0;
+
                 output.emit_thinking(&reasoning);
                 if let Some(update) = retry_display.record_chunk(&reasoning) {
                     output.emit_tokens(&update.into());
@@ -317,10 +334,10 @@ where
                             delay.as_secs_f64(),
                             error_str
                         );
-                        output.emit_status(&format!(
-                            "Network error (attempt {network_retry_count}/{MAX_NETWORK_RETRIES}). Retrying in {:.1}s...",
-                            delay.as_secs_f64()
-                        ));
+                        if network_retry_count == 1 {
+                            output.emit_status("⟳ Reconnecting...");
+                        }
+                        network_retry_in_progress = true;
                         tokio::time::sleep(delay).await;
                         if is_interrupted.load(Acquire) {
                             break;
@@ -336,6 +353,7 @@ where
                         "NET-001: Network retry budget exhausted in compaction retry after {} attempts",
                         MAX_NETWORK_RETRIES
                     );
+                    output.emit_status("✗ Reconnection failed");
                 }
                 output.emit_error(&error_str);
                 return Err(anyhow::anyhow!("Retry error after compaction: {e}"));

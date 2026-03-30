@@ -460,10 +460,23 @@ const processChunksToConversation = (
       });
     } else if (chunk.type === 'UserNotification') {
       // NAPI-010: User-facing notification - display in conversation
-      messages.push({
-        type: 'status',
-        content: chunk.message,
-      });
+      // NET-001: "✓ Reconnected" or "✗ Reconnection failed" replaces prior
+      // "⟳ Reconnecting..." for clean display on resume/attach
+      const isReconnectionUpdate =
+        chunk.message === '✓ Reconnected' ||
+        chunk.message === '✗ Reconnection failed';
+      if (isReconnectionUpdate) {
+        const idx = messages.findLastIndex(
+          m => m.type === 'status' && m.content === '⟳ Reconnecting...'
+        );
+        if (idx !== -1) {
+          messages[idx].content = chunk.message;
+        } else {
+          messages.push({ type: 'status', content: chunk.message });
+        }
+      } else {
+        messages.push({ type: 'status', content: chunk.message });
+      }
     }
     // NAPI-010: SessionStateChange is intentionally NOT handled here
     // It's an internal state update, not a conversation message
@@ -2288,10 +2301,29 @@ export const AgentView: React.FC<AgentViewProps> = ({
                 statusMessage
               );
               if (!isCompactionFailure) {
-                setConversation(prev => [
-                  ...prev,
-                  { type: 'status', content: statusMessage },
-                ]);
+                // NET-001: Handle network reconnection messages with replace semantics.
+                // "✓ Reconnected" or "✗ Reconnection failed" replaces the prior
+                // "⟳ Reconnecting..." message, so the user sees one message that
+                // transitions rather than accumulating clutter.
+                const isReconnectionUpdate =
+                  statusMessage === '✓ Reconnected' ||
+                  statusMessage === '✗ Reconnection failed';
+                setConversation(prev => {
+                  if (isReconnectionUpdate) {
+                    const idx = prev.findLastIndex(
+                      m => m.type === 'status' && m.content === '⟳ Reconnecting...'
+                    );
+                    if (idx !== -1) {
+                      const updated = [...prev];
+                      updated[idx] = { type: 'status', content: statusMessage };
+                      return updated;
+                    }
+                  }
+                  return [
+                    ...prev,
+                    { type: 'status', content: statusMessage },
+                  ];
+                });
               }
             } else if (chunk.type === 'Interrupted') {
               // Agent was interrupted by user
@@ -3207,10 +3239,29 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Filter compaction failure messages from conversation (they show in retry dialog)
       const isCompactionFailure = /^Compaction failed:/.test(statusMessage);
       if (!isCompactionFailure) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: statusMessage },
-        ]);
+        // NET-001: Handle network reconnection messages with replace semantics.
+        // "✓ Reconnected" or "✗ Reconnection failed" replaces the prior
+        // "⟳ Reconnecting..." message, so the user sees one message that
+        // transitions rather than accumulating clutter.
+        const isReconnectionUpdate =
+          statusMessage === '✓ Reconnected' ||
+          statusMessage === '✗ Reconnection failed';
+        setConversation(prev => {
+          if (isReconnectionUpdate) {
+            const idx = prev.findLastIndex(
+              m => m.type === 'status' && m.content === '⟳ Reconnecting...'
+            );
+            if (idx !== -1) {
+              const updated = [...prev];
+              updated[idx] = { type: 'status', content: statusMessage };
+              return updated;
+            }
+          }
+          return [
+            ...prev,
+            { type: 'status', content: statusMessage },
+          ];
+        });
       }
     } else if (chunk.type === 'Interrupted') {
       setConversation(prev => {
