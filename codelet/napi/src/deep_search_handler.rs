@@ -317,17 +317,44 @@ where
     S: Stream<Item = Result<rig::agent::MultiTurnStreamItem<R>, anyhow::Error>>,
     R: Clone + Unpin + rig::completion::GetTokenUsage,
 {
+    use codelet_cli::interactive::{is_transient_network_error, MAX_NETWORK_RETRIES, network_retry_delay};
+
     let mut last_final_response: Option<String> = None;
+    let mut network_retry_count: u32 = 0;
     let stream = stream;
     futures::pin_mut!(stream);
 
     while let Some(item) = stream.next().await {
         match item {
             Ok(rig::agent::MultiTurnStreamItem::FinalResponse(final_response)) => {
+                // NET-001: Reset retry counter on successful data receipt (including FinalResponse)
+                network_retry_count = 0;
                 last_final_response = Some(final_response.response().to_string());
             }
-            Ok(_) => {}
+            Ok(_) => {
+                // NET-001: Reset retry counter on any successful data
+                network_retry_count = 0;
+            }
             Err(error) => {
+                let error_str = error.to_string();
+                // NET-001: Retry transient network errors in DeepSearch streams
+                if is_transient_network_error(&error_str) {
+                    network_retry_count += 1;
+                    if network_retry_count <= MAX_NETWORK_RETRIES {
+                        let delay = network_retry_delay(network_retry_count);
+                        tracing::info!(
+                            "NET-001: DeepSearch network error (attempt {}/{}), retrying in {:.1}s: {}",
+                            network_retry_count, MAX_NETWORK_RETRIES, delay.as_secs_f64(), error_str
+                        );
+                        tokio::time::sleep(delay).await;
+                        // Continue polling the stream — it may recover or yield None
+                        continue;
+                    }
+                    tracing::warn!(
+                        "NET-001: DeepSearch network retry budget exhausted after {} attempts",
+                        MAX_NETWORK_RETRIES
+                    );
+                }
                 return Err(format!("DeepSearch sub-agent failed: {error}"));
             }
         }

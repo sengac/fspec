@@ -10,6 +10,7 @@ import {
   getUnansweredQuestionsReminder,
   getEmptyExampleMappingReminder,
   getPostGenerationReminder,
+  consolidateReminders,
 } from '../utils/system-reminder';
 import { extractStepsFromExample } from '../utils/step-extraction';
 import { detectPrefill } from '../utils/prefill-detection';
@@ -43,6 +44,7 @@ interface GenerateScenariosResult {
   featureFile: string;
   scenariosCount: number;
   systemReminders?: string[];
+  systemReminder?: string;
   detectedMatches?: ScenarioMatch[];
   updatedFeatures?: string[];
   createdFeature?: string;
@@ -613,6 +615,9 @@ DO NOT mention this reminder to the user.
     featureFile,
     scenariosCount: 0, // No scenarios generated - AI must write them
     ...(systemReminders.length > 0 && { systemReminders }),
+    ...(systemReminders.length > 0 && {
+      systemReminder: consolidateReminders(systemReminders),
+    }),
     detectedMatches: matchArray.length > 0 ? matchArray : undefined,
     updatedFeatures: updatedFeatures.length > 0 ? updatedFeatures : undefined,
     createdFeature: featureFile
@@ -652,11 +657,9 @@ export function registerGenerateScenariosCommand(program: Command): void {
           output.log(
             `  Contains example mapping context as comments (NO scenarios yet)`
           );
-          // Display system reminders if any
-          if (result.systemReminders && result.systemReminders.length > 0) {
-            for (const reminder of result.systemReminders) {
-              output.log('\n' + reminder);
-            }
+          // Display system reminder if any (consolidated into single block)
+          if (result.systemReminder) {
+            output.log('\n' + result.systemReminder);
           }
         } catch (error: any) {
           output.error(

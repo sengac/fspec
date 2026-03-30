@@ -1,0 +1,220 @@
+{
+  "scenarios": [
+    {
+      "name": "show-work-unit consolidates multiple reminders into single block",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/system-reminder-consolidation-all-commands.test.ts",
+          "lines": "55-115",
+          "implMappings": [
+            {
+              "file": "src/commands/show-work-unit.ts",
+              "lines": [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                451,
+                452,
+                453,
+                454,
+                455
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "add-tag-to-feature consolidates unregistered tag reminders into single block",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/system-reminder-consolidation-all-commands.test.ts",
+          "lines": "117-158",
+          "implMappings": [
+            {
+              "file": "src/commands/add-tag-to-feature.ts",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                314,
+                315,
+                316,
+                317
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "generate-scenarios consolidates reminders into single block",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/system-reminder-consolidation-all-commands.test.ts",
+          "lines": "160-228",
+          "implMappings": [
+            {
+              "file": "src/commands/generate-scenarios.ts",
+              "lines": [
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                613,
+                614,
+                615,
+                616,
+                617,
+                618,
+                619,
+                620,
+                621,
+                622,
+                660,
+                661,
+                662,
+                663
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TUI path consolidates reminders from fspec tool call into single block",
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/system-reminder-consolidation-all-commands.test.ts",
+          "lines": "230-265",
+          "implMappings": [
+            {
+              "file": "src/utils/system-reminder.ts",
+              "lines": [
+                1048,
+                1049,
+                1050,
+                1051,
+                1052,
+                1053,
+                1054,
+                1055,
+                1056,
+                1057,
+                1058,
+                1059,
+                1060,
+                1061,
+                1062,
+                1063,
+                1064,
+                1065,
+                1066,
+                1067,
+                1068,
+                1069,
+                1070,
+                1071,
+                1072,
+                1073,
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/system-reminder-consolidation-all-commands.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/show-work-unit.ts",
+      "src/commands/add-tag-to-feature.ts",
+      "src/commands/generate-scenarios.ts",
+      "src/utils/system-reminder.ts"
+    ],
+    "totalLinesCovered": 345
+  }
+}

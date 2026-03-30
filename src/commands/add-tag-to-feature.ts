@@ -9,6 +9,7 @@ import { output } from '../utils/output';
 import {
   getUnregisteredTagReminder,
   getMissingRequiredTagsReminder,
+  consolidateReminders,
 } from '../utils/system-reminder';
 
 interface AddTagToFeatureOptions {
@@ -22,6 +23,7 @@ interface AddTagToFeatureResult {
   message?: string;
   error?: string;
   systemReminders?: string[];
+  systemReminder?: string;
 }
 
 export async function addTagToFeature(
@@ -291,6 +293,9 @@ export async function addTagToFeature(
     valid,
     message: `Added ${tagList} to ${featureFilePath}`,
     ...(systemReminders.length > 0 && { systemReminders }),
+    ...(systemReminders.length > 0 && {
+      systemReminder: consolidateReminders(systemReminders),
+    }),
   };
 }
 
@@ -309,11 +314,9 @@ export async function addTagToFeatureCommand(
 
     output.log(`✓ ${result.message}`);
 
-    // Display system reminders if any
-    if (result.systemReminders && result.systemReminders.length > 0) {
-      for (const reminder of result.systemReminders) {
-        output.log('\n' + reminder);
-      }
+    // Display system reminder if any (consolidated into single block)
+    if (result.systemReminder) {
+      output.log('\n' + result.systemReminder);
     }
 
     process.exit(0);

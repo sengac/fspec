@@ -13,6 +13,7 @@ import {
   getEmptyExampleMappingReminder,
   getLongDurationReminder,
   getLargeEstimateReminder,
+  consolidateReminders,
 } from '../utils/system-reminder';
 
 interface ShowWorkUnitOptions {
@@ -56,6 +57,7 @@ interface WorkUnitDetails {
   updatedAt: string;
   linkedFeatures?: LinkedFeature[];
   systemReminders?: string[];
+  systemReminder?: string;
   [key: string]: unknown;
 }
 
@@ -309,6 +311,9 @@ export async function showWorkUnit(
     updatedAt: workUnit.updatedAt,
     linkedFeatures,
     ...(systemReminders.length > 0 && { systemReminders }),
+    ...(systemReminders.length > 0 && {
+      systemReminder: consolidateReminders(systemReminders),
+    }),
   };
 }
 
@@ -443,12 +448,10 @@ export async function showWorkUnitCommand(
       output.log('Updated:', new Date(result.updatedAt).toLocaleString());
       output.log('');
 
-      // Display system reminders if any
-      if (result.systemReminders && result.systemReminders.length > 0) {
-        for (const reminder of result.systemReminders) {
-          output.log(reminder);
-          output.log('');
-        }
+      // Display system reminders if any (consolidated into single block)
+      if (result.systemReminder) {
+        output.log(result.systemReminder);
+        output.log('');
       }
     }
 

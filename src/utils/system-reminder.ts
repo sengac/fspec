@@ -1047,6 +1047,35 @@ export function appendReminder(
 }
 
 /**
+ * Consolidates multiple system reminders into a single `<system-reminder>` block.
+ * Strips individual wrapper tags, joins content with double newlines, and re-wraps once.
+ * Handles both wrapped (`<system-reminder>...</system-reminder>`) and unwrapped plain text.
+ *
+ * @param reminders - Array of reminder strings (may be wrapped or unwrapped)
+ * @returns A single consolidated `<system-reminder>` block, or undefined if empty
+ */
+export function consolidateReminders(reminders: string[]): string | undefined {
+  if (reminders.length === 0) {
+    return undefined;
+  }
+
+  const unwrappedContents = reminders
+    .map(r =>
+      r
+        .replace(/<system-reminder>\n?/g, '')
+        .replace(/<\/system-reminder>\n?/g, '')
+        .trim()
+    )
+    .filter(r => r.length > 0);
+
+  if (unwrappedContents.length === 0) {
+    return undefined;
+  }
+
+  return wrapInSystemReminder(unwrappedContents.join('\n\n'));
+}
+
+/**
  * Example commands for research tools
  */
 const RESEARCH_TOOL_EXAMPLES = {

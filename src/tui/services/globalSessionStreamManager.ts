@@ -364,9 +364,7 @@ export class GlobalSessionStreamManager {
 
       let systemReminder: string | undefined = undefined;
       if (parsed.systemReminders && parsed.systemReminders.length > 0) {
-        systemReminder = parsed.systemReminders
-          .map(r => `<system-reminder>\n${r}\n</system-reminder>`)
-          .join('\n');
+        systemReminder = `<system-reminder>\n${parsed.systemReminders.join('\n\n')}\n</system-reminder>`;
       }
 
       const napi = await getNapiModule();

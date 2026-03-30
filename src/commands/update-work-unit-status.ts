@@ -14,6 +14,7 @@ import {
   getVirtualHooksReminder,
   getVirtualHooksCleanupReminder,
   wrapInSystemReminder,
+  consolidateReminders,
   type WorkflowState,
 } from '../utils/system-reminder';
 import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
@@ -804,19 +805,10 @@ This is optional but recommended to catch issues early.
     reminders.push(workUnitContextResult.systemReminder);
   }
 
-  // Combine all reminders - strip wrappers first, then wrap once
+  // Combine all reminders using shared consolidation utility
   let systemReminder: string | undefined;
   if (reminders.length > 0) {
-    // Strip <system-reminder> tags from each reminder
-    const unwrappedContents = reminders.map(r =>
-      r
-        .replace(/<system-reminder>\n?/g, '')
-        .replace(/<\/system-reminder>\n?/g, '')
-        .trim()
-    );
-
-    // Wrap combined content once
-    systemReminder = wrapInSystemReminder(unwrappedContents.join('\n\n'));
+    systemReminder = consolidateReminders(reminders);
   }
 
   // Check for tool configuration when moving to validating state

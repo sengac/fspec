@@ -11,6 +11,7 @@ mod message_helpers;
 mod multimodal;
 pub mod output;
 mod recovery_image;
+mod recovery_network;
 mod recovery_thinking;
 mod recovery_truncation;
 mod repl_loop;
@@ -21,6 +22,7 @@ pub use error_classifiers::{
     is_prompt_too_long_error,
     is_image_content_error,
     is_truncated_tool_call_error,
+    is_transient_network_error,
 };
 pub use recovery_truncation::{
     MAX_TRUNCATION_RETRIES,
@@ -37,6 +39,10 @@ pub use recovery_thinking::{
     downgrade_thinking_level,
 };
 pub use recovery_image::sanitize_image_content;
+pub use recovery_network::{
+    MAX_NETWORK_RETRIES,
+    network_retry_delay,
+};
 pub use multimodal::{BridgeImage, build_user_content_with_images};
 pub use output::{
     CliOutput, ContextFillInfo, StreamEvent, StreamOutput, TokenInfo, ToolCallEvent,

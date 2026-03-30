@@ -71,7 +71,7 @@ fn process_turn_annotations(
 }
 
 // Error classifiers moved to error_classifiers.rs
-use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_compaction_cancelled};
+use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_compaction_cancelled, is_transient_network_error};
 
 // Image recovery moved to recovery_image.rs
 use super::recovery_image::sanitize_image_content;
@@ -86,6 +86,9 @@ use super::recovery_thinking::{
     is_thinking_exhaustion, build_thinking_exhaustion_recovery_message,
     build_thinking_budget_exhausted_message, downgrade_thinking_level,
 };
+
+// Network recovery moved to recovery_network.rs
+use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay};
 
 /// Emit context fill information from API token usage.
 /// Extracted as a standalone function so it can be shared with compaction_retry.
@@ -489,6 +492,8 @@ where
     let mut truncation_retry_count: u32 = 0;
     // PROV-041: Track consecutive thinking exhaustion retries to prevent infinite loops
     let mut thinking_exhaustion_retry_count: u32 = 0;
+    // NET-001: Track consecutive network error retries to prevent infinite loops
+    let mut network_retry_count: u32 = 0;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
 
@@ -600,6 +605,8 @@ where
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                     StreamedAssistantContent::Text(text),
                 ))) => {
+                    // NET-001: Reset network retry counter on successful data receipt
+                    network_retry_count = 0;
                     handle_text_chunk(&text.text, &mut assistant_text, Some(&request_id), output)?;
 
                     // STREAMING-DISPLAY: Track chunk and emit if not throttled
@@ -610,6 +617,8 @@ where
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                     StreamedAssistantContent::ToolCall(tool_call),
                 ))) => {
+                    // NET-001: Reset network retry counter on successful data receipt
+                    network_retry_count = 0;
                     handle_tool_call(
                         &tool_call,
                         &mut session.messages,
@@ -676,6 +685,8 @@ where
                     // Token updates only occur during text streaming and at FinalResponse.
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
+                    // NET-001: Reset network retry counter on successful data receipt
+                    network_retry_count = 0;
                     // Usage events come from:
                     // 1. MessageStart (input tokens, output=0) - marks start of new API call (Anthropic)
                     // 2. MessageDelta (input + output tokens) - streaming updates (Anthropic)
@@ -706,6 +717,8 @@ where
                     }
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
+                    // NET-001: Reset network retry counter on successful data receipt
+                    network_retry_count = 0;
                     // PROV-005-DEBUG: Log FinalResponse received
                     debug!(
                         "[stream_loop] FinalResponse received - checking compaction_needed state"
@@ -1168,6 +1181,104 @@ where
                         let budget_error = build_truncation_budget_exhausted_message(MAX_TRUNCATION_RETRIES);
                         output.emit_error(&budget_error);
                         return Err(anyhow::anyhow!("Agent error: truncation retry budget exhausted after {MAX_TRUNCATION_RETRIES} attempts"));
+                    }
+
+                    // NET-001: Check for transient network/connection errors.
+                    // When the HTTP connection drops mid-stream (e.g., "error sending request"),
+                    // retry the request using the full conversation history rather than failing.
+                    // The retry happens here (stream_loop level) because chat completion APIs
+                    // are stateless — SSE-level reconnection would lose accumulated state.
+                    if is_transient_network_error(&error_str) {
+                        network_retry_count += 1;
+
+                        if network_retry_count <= MAX_NETWORK_RETRIES {
+                            let delay = network_retry_delay(network_retry_count);
+                            info!(
+                                "NET-001: Transient network error detected (attempt {}/{}), retrying in {:.1}s: {}",
+                                network_retry_count,
+                                MAX_NETWORK_RETRIES,
+                                delay.as_secs_f64(),
+                                error_str
+                            );
+                            output.emit_status(&format!(
+                                "Network error (attempt {network_retry_count}/{MAX_NETWORK_RETRIES}). Retrying in {:.1}s...",
+                                delay.as_secs_f64()
+                            ));
+
+                            tokio::time::sleep(delay).await;
+
+                            // Check for interruption during the sleep
+                            if is_interrupted.load(Acquire) {
+                                break;
+                            }
+
+                            // Save any partial assistant text accumulated before the disconnect
+                            if !assistant_text.is_empty() {
+                                handle_final_response(&assistant_text, &mut session.messages)?;
+                                assistant_text.clear();
+                            }
+
+                            // Create fresh hook and token state for the retry
+                            let retry_token_state = Arc::new(Mutex::new(TokenState {
+                                input_tokens: session.token_tracker.input_tokens,
+                                cache_read_input_tokens: 0,
+                                cache_creation_input_tokens: 0,
+                                output_tokens: session.token_tracker.output_tokens,
+                                compaction_needed: false,
+                            }));
+                            let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+
+                            debug!(
+                                "API REQUEST (network retry {}/{}) - Provider: {}, Model: {}",
+                                network_retry_count,
+                                MAX_NETWORK_RETRIES,
+                                session.current_provider_name(),
+                                session.current_model_id().as_deref().unwrap_or("NONE")
+                            );
+
+                            // Restart the stream with "Continue" prompt.
+                            // Conversation history is intact — model picks up where it left off.
+                            stream = agent
+                                .prompt_streaming_with_history_and_hook(
+                                    "Continue",
+                                    &mut session.messages,
+                                    retry_hook,
+                                )
+                                .await;
+
+                            // Add continuation prompt to session messages for persistence
+                            session.messages.push(Message::User {
+                                content: OneOrMany::one(UserContent::text("Continue")),
+                            });
+
+                            // Reset per-stream tracking for the retry
+                            tool_calls_buffer.clear();
+                            last_tool_name = None;
+                            final_stop_reason = None;
+                            accumulated_reasoning.clear();
+                            turn_tool_infos.clear();
+
+                            // Reset streaming display for retry
+                            streaming_display = StreamingTokenDisplay::new(
+                                session.token_tracker.input_tokens,
+                                session.token_tracker.output_tokens,
+                                session.token_tracker.cache_read_input_tokens.unwrap_or(0),
+                                session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+                            );
+
+                            debug!("[stream_loop] NET-001: Created new stream for network retry");
+                            continue;
+                        }
+
+                        // Retry budget exhausted — fall through to terminal error
+                        warn!(
+                            "NET-001: Network retry budget exhausted after {} attempts",
+                            MAX_NETWORK_RETRIES
+                        );
+                        output.emit_status(&format!(
+                            "Network error persists after {MAX_NETWORK_RETRIES} retries — giving up"
+                        ));
+                        // Fall through to the terminal error handler below
                     }
 
                     // NAPI-008: Log error with full details (include in message for TypeScript layer)

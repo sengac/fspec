@@ -58,6 +58,45 @@ pub fn is_truncated_tool_call_error(error_str: &str) -> bool {
     error_str.contains("Tool call truncated due to output token limit")
 }
 
+/// Check if an error is a transient network/connection error that can be retried.
+///
+/// Detects HTTP transport failures, DNS errors, connection resets, and similar
+/// transient issues that may resolve on retry. These errors originate from the
+/// reqwest HTTP client or the SSE transport layer.
+///
+/// This function is public for testing. Tests MUST import and test the
+/// real function, NOT a copy.
+pub fn is_transient_network_error(error_str: &str) -> bool {
+    let lower = error_str.to_lowercase();
+
+    // reqwest-level transport errors
+    lower.contains("error sending request")
+        || lower.contains("connection reset")
+        || lower.contains("connection refused")
+        || lower.contains("connection closed")
+        || lower.contains("broken pipe")
+        || lower.contains("network is unreachable")
+        || lower.contains("dns error")
+        || lower.contains("connection aborted")
+        || lower.contains("connection was not ready")
+        // Timeout errors (network-level, not API-level)
+        || (lower.contains("timed out") && !lower.contains("context_length"))
+        || lower.contains("operation timed out")
+        // hyper-level errors
+        || lower.contains("hyper::error")
+        || lower.contains("stream closed before completion")
+        // SSE transport errors (wrapping the above)
+        || (lower.contains("sse error") && lower.contains("http client error"))
+        // reqwest TLS errors
+        || lower.contains("ssl routines")
+        || lower.contains("certificate")
+        // Generic I/O errors during streaming
+        || (lower.contains("sse error") && lower.contains("instance"))
+        // EOF during streaming
+        || lower.contains("unexpected eof")
+        || lower.contains("incomplete message")
+}
+
 /// CMPCT-002: Check if an error indicates compaction was cancelled by the hook
 /// This is used to detect when the CompactionHook cancels a request due to token threshold
 pub(super) fn is_compaction_cancelled(error: &anyhow::Error) -> bool {

@@ -6,6 +6,8 @@
 use super::output::StreamOutput;
 use super::stream_handlers::{handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result};
 use super::stream_loop::emit_context_fill_from_usage;
+use super::error_classifiers::is_transient_network_error;
+use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay};
 
 use crate::interactive_helpers::{compression_ratio, execute_compaction};
 use crate::session::Session;
@@ -184,6 +186,8 @@ where
     let mut retry_text = String::new();
     let mut retry_tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut retry_last_tool_name: Option<String> = None;
+    // NET-001: Track network retry count for compaction retry stream
+    let mut network_retry_count: u32 = 0;
     let mut retry_display = StreamingTokenDisplay::new(
         session.token_tracker.input_tokens,
         0,
@@ -210,6 +214,7 @@ where
             Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                 StreamedAssistantContent::Text(text),
             ))) => {
+                network_retry_count = 0;
                 handle_text_chunk(&text.text, &mut retry_text, None, output)?;
                 if let Some(update) = retry_display.record_chunk(&text.text) {
                     output.emit_tokens(&update.into());
@@ -218,6 +223,7 @@ where
             Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                 StreamedAssistantContent::ToolCall(tool_call),
             ))) => {
+                network_retry_count = 0;
                 handle_tool_call(
                     &tool_call,
                     &mut session.messages,
@@ -298,7 +304,40 @@ where
                 break;
             }
             Some(Err(e)) => {
-                output.emit_error(&e.to_string());
+                let error_str = e.to_string();
+                // NET-001: Retry transient network errors in compaction retry stream
+                if is_transient_network_error(&error_str) {
+                    network_retry_count += 1;
+                    if network_retry_count <= MAX_NETWORK_RETRIES {
+                        let delay = network_retry_delay(network_retry_count);
+                        tracing::info!(
+                            "NET-001: Network error in compaction retry (attempt {}/{}), retrying in {:.1}s: {}",
+                            network_retry_count,
+                            MAX_NETWORK_RETRIES,
+                            delay.as_secs_f64(),
+                            error_str
+                        );
+                        output.emit_status(&format!(
+                            "Network error (attempt {network_retry_count}/{MAX_NETWORK_RETRIES}). Retrying in {:.1}s...",
+                            delay.as_secs_f64()
+                        ));
+                        tokio::time::sleep(delay).await;
+                        if is_interrupted.load(Acquire) {
+                            break;
+                        }
+                        // The compaction retry stream cannot be restarted from here
+                        // (we don't have access to the agent), so we just continue
+                        // polling — the stream may recover on the next poll_next().
+                        // If it yields None or another error, the subsequent handler
+                        // will deal with it.
+                        continue;
+                    }
+                    tracing::warn!(
+                        "NET-001: Network retry budget exhausted in compaction retry after {} attempts",
+                        MAX_NETWORK_RETRIES
+                    );
+                }
+                output.emit_error(&error_str);
                 return Err(anyhow::anyhow!("Retry error after compaction: {e}"));
             }
             None => {

@@ -389,6 +389,11 @@
       "prefix": "LCP",
       "description": "Local Change Protocol — embedded file-level governance rules for high-risk code",
       "createdAt": "2026-03-22T02:02:46.411Z"
+    },
+    "NET": {
+      "prefix": "NET",
+      "description": "Network resilience and connectivity error recovery",
+      "createdAt": "2026-03-29T22:02:30.353Z"
     }
   }
 }
