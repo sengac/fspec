@@ -221,7 +221,6 @@ export async function createTaskCommand(
     parent?: string;
   }
 ): Promise<void> {
-  const chalk = await import('chalk').then(m => m.default);
   try {
     const result = await createTask({
       prefix,

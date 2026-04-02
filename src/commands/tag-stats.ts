@@ -115,22 +115,22 @@ export async function tagStats(
   if (tagsData) {
     // Group by categories from tags.json
     for (const category of tagsData.categories) {
-      const tagStats: TagCount[] = [];
+      const categoryTags: TagCount[] = [];
 
       for (const tagDef of category.tags) {
         const tag = tagDef.name;
         registeredTags.add(tag);
         const count = tagCounts.get(tag) || 0;
         if (count > 0) {
-          tagStats.push({ tag, count });
+          categoryTags.push({ tag, count });
         }
       }
 
       // Sort by count descending
-      tagStats.sort((a, b) => b.count - a.count);
+      categoryTags.sort((a, b) => b.count - a.count);
 
-      if (tagStats.length > 0) {
-        categories.push({ name: category.name, tags: tagStats });
+      if (categoryTags.length > 0) {
+        categories.push({ name: category.name, tags: categoryTags });
       }
     }
 

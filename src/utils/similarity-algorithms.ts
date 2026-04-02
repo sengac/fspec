@@ -338,16 +338,19 @@ export function gherkinStructuralSimilarity(
   const steps2 = parseSteps(scenario2);
 
   // Calculate Jaccard similarity for each section
-  const jaccardForSteps = (steps1: string[], steps2: string[]): number => {
-    if (steps1.length === 0 && steps2.length === 0) {
+  const jaccardForSteps = (
+    stepListA: string[],
+    stepListB: string[]
+  ): number => {
+    if (stepListA.length === 0 && stepListB.length === 0) {
       return 1.0;
     }
-    if (steps1.length === 0 || steps2.length === 0) {
+    if (stepListA.length === 0 || stepListB.length === 0) {
       return 0.0;
     }
 
-    const set1 = new Set(steps1);
-    const set2 = new Set(steps2);
+    const set1 = new Set(stepListA);
+    const set2 = new Set(stepListB);
     const intersection = new Set([...set1].filter(s => set2.has(s)));
     const union = new Set([...set1, ...set2]);
 

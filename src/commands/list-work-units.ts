@@ -81,7 +81,6 @@ export async function listWorkUnitsCommand(options: {
   type?: WorkUnitType;
   format?: string;
 }): Promise<void> {
-  const chalk = await import('chalk').then(m => m.default);
   try {
     const result = await listWorkUnits({
       status: options.status,

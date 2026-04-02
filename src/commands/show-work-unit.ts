@@ -322,7 +322,6 @@ export async function showWorkUnitCommand(
   workUnitId: string,
   options: { format?: string }
 ): Promise<void> {
-  const chalk = await import('chalk').then(m => m.default);
   try {
     const result = await showWorkUnit({ workUnitId, format: options.format });
 

@@ -102,9 +102,11 @@ export async function addDiagram(
     );
 
     // Validate updated JSON against schema
-    const validation = validateFoundationJson(foundationData);
-    if (!validation.valid) {
-      const errorMessages = validation.errors?.map(e => e.message).join(', ');
+    const schemaValidation = validateFoundationJson(foundationData);
+    if (!schemaValidation.valid) {
+      const errorMessages = schemaValidation.errors
+        ?.map(e => e.message)
+        .join(', ');
       return {
         success: false,
         error: `Updated foundation.json failed schema validation: ${errorMessages}`,

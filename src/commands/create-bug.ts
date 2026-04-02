@@ -226,7 +226,6 @@ export async function createBugCommand(
     parent?: string;
   }
 ): Promise<void> {
-  const chalk = await import('chalk').then(m => m.default);
   try {
     const result = await createBug({
       prefix,

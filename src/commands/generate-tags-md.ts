@@ -22,11 +22,13 @@ interface GenerateTagsMdResult {
 export async function generateTagsMdCommand(
   options: GenerateTagsMdOptions = {}
 ): Promise<GenerateTagsMdResult> {
-  const { cwd = process.cwd(), output } = options;
+  const { cwd = process.cwd(), output: outputPath } = options;
 
   try {
     const tagsJsonPath = join(cwd, 'spec/tags.json');
-    const tagsMdPath = output ? join(cwd, output) : join(cwd, 'spec/TAGS.md');
+    const tagsMdPath = outputPath
+      ? join(cwd, outputPath)
+      : join(cwd, 'spec/TAGS.md');
 
     // Check if tags.json exists
     if (!existsSync(tagsJsonPath)) {
@@ -59,7 +61,7 @@ export async function generateTagsMdCommand(
     // Write TAGS.md
     await writeFile(tagsMdPath, markdown, 'utf-8');
 
-    const outputRelative = output || 'spec/TAGS.md';
+    const outputRelative = outputPath || 'spec/TAGS.md';
     return {
       success: true,
       message: `Generated ${outputRelative} from spec/tags.json`,

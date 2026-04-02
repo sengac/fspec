@@ -23,12 +23,12 @@ interface GenerateFoundationMdResult {
 export async function generateFoundationMdCommand(
   options: GenerateFoundationMdOptions = {}
 ): Promise<GenerateFoundationMdResult> {
-  const { cwd = process.cwd(), output } = options;
+  const { cwd = process.cwd(), output: outputPath } = options;
 
   try {
     const foundationJsonPath = join(cwd, 'spec/foundation.json');
-    const foundationMdPath = output
-      ? join(cwd, output)
+    const foundationMdPath = outputPath
+      ? join(cwd, outputPath)
       : join(cwd, 'spec/FOUNDATION.md');
 
     // Check if foundation.json exists
@@ -104,7 +104,7 @@ export async function generateFoundationMdCommand(
     // Write FOUNDATION.md
     await writeFile(foundationMdPath, markdown, 'utf-8');
 
-    const outputRelative = output || 'spec/FOUNDATION.md';
+    const outputRelative = outputPath || 'spec/FOUNDATION.md';
     return {
       success: true,
       message: `Generated ${outputRelative} from spec/foundation.json`,

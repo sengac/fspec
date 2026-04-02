@@ -15,19 +15,19 @@ export const tool: ResearchTool = {
 
   async execute(args: string[]): Promise<string> {
     // Helper function to parse argument (handles both --flag=value and --flag value)
-    function parseArg(args: string[], flagName: string): string | undefined {
+    function parseArg(argList: string[], flagName: string): string | undefined {
       const flagWithEquals = `${flagName}=`;
 
       // Check for --flag=value format
-      const equalsArg = args.find(arg => arg.startsWith(flagWithEquals));
+      const equalsArg = argList.find(arg => arg.startsWith(flagWithEquals));
       if (equalsArg) {
         return equalsArg.substring(flagWithEquals.length);
       }
 
       // Check for --flag value format
-      const index = args.indexOf(flagName);
-      if (index >= 0 && index + 1 < args.length) {
-        return args[index + 1];
+      const index = argList.indexOf(flagName);
+      if (index >= 0 && index + 1 < argList.length) {
+        return argList[index + 1];
       }
 
       return undefined;

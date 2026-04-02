@@ -37,7 +37,12 @@ const FIELD_MAP: Record<string, string> = {
 export async function showFoundation(
   options: ShowFoundationOptions
 ): Promise<ShowFoundationResult> {
-  const { section, format = 'text', output, cwd = process.cwd() } = options;
+  const {
+    section,
+    format = 'text',
+    output: outputPath,
+    cwd = process.cwd(),
+  } = options;
 
   try {
     // Load or create foundation.json using ensureFoundationFile (generic schema v2.0.0)
@@ -82,8 +87,8 @@ export async function showFoundation(
     }
 
     // Write to file if output specified
-    if (output) {
-      await writeFile(output, formattedOutput, 'utf-8');
+    if (outputPath) {
+      await writeFile(outputPath, formattedOutput, 'utf-8');
     }
 
     return {

@@ -71,48 +71,48 @@ export async function auditCoverage(
   }
 
   // Generate report
-  let output = '';
+  let report = '';
 
   if (missingFiles.length === 0) {
     // All files found
-    output += chalk.green(
+    report += chalk.green(
       `✅ All files found (${allFiles.length}/${allFiles.length})`
     );
-    output += '\n';
-    output += chalk.green('All mappings valid');
+    report += '\n';
+    report += chalk.green('All mappings valid');
 
     return {
-      output,
+      output: report,
       exitCode: 0,
     };
   }
 
   // Missing files found
-  output += chalk.red(
+  report += chalk.red(
     `✗ ${missingFiles.length} missing file(s) out of ${allFiles.length} total files`
   );
-  output += '\n\n';
+  report += '\n\n';
 
   for (const missing of missingFiles) {
     if (missing.type === 'test') {
-      output += chalk.red(`❌ Test file not found: ${missing.file}`);
-      output += '\n';
-      output += chalk.yellow(
+      report += chalk.red(`❌ Test file not found: ${missing.file}`);
+      report += '\n';
+      report += chalk.yellow(
         '   Recommendation: Remove this mapping or restore the deleted file'
       );
-      output += '\n\n';
+      report += '\n\n';
     } else {
-      output += chalk.red(`❌ Implementation file not found: ${missing.file}`);
-      output += '\n';
-      output += chalk.yellow(
+      report += chalk.red(`❌ Implementation file not found: ${missing.file}`);
+      report += '\n';
+      report += chalk.yellow(
         '   Recommendation: Remove this mapping or restore the deleted file'
       );
-      output += '\n\n';
+      report += '\n\n';
     }
   }
 
   return {
-    output,
+    output: report,
     exitCode: 1,
   };
 }

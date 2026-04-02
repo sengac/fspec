@@ -102,11 +102,11 @@ export async function queryEstimateAccuracy(options: {
     }
 
     const byStoryPointsResult: Record<string, AccuracyByPoints> = {};
-    for (const [points, data] of Object.entries(byStoryPoints)) {
+    for (const [points, stats] of Object.entries(byStoryPoints)) {
       byStoryPointsResult[points] = {
         avgIterations:
-          Math.round((data.totalIterations / data.count) * 10) / 10,
-        samples: data.count,
+          Math.round((stats.totalIterations / stats.count) * 10) / 10,
+        samples: stats.count,
       };
     }
 
@@ -135,12 +135,12 @@ export async function queryEstimateAccuracy(options: {
       }
 
       const byPrefixResult: Record<string, PrefixAccuracy> = {};
-      for (const [prefix, data] of Object.entries(byPrefix)) {
-        const avgIterations = data.totalIterations / data.count;
+      for (const [prefix, stats] of Object.entries(byPrefix)) {
+        const avgIterations = stats.totalIterations / stats.count;
 
         byPrefixResult[prefix] = {
           avgAccuracy: `${avgIterations.toFixed(1)} avg iterations`,
-          recommendation: `${data.count} sample${data.count > 1 ? 's' : ''}`,
+          recommendation: `${stats.count} sample${stats.count > 1 ? 's' : ''}`,
         };
       }
 

@@ -55,23 +55,26 @@ export function registerExportWorkUnitsCommand(program: Command): void {
     .argument('<output>', 'Output file path')
     .option('--status <status>', 'Filter by status')
     .action(
-      async (format: string, output: string, options: { status?: string }) => {
+      async (
+        format: string,
+        outputPath: string,
+        options: { status?: string }
+      ) => {
         try {
           const result = await exportWorkUnits({
             format: format as 'json' | 'csv',
-            output,
-            status: options.status as any,
+            output: outputPath,
+            status: options.status,
           });
           output.log(
             chalk.green(
-              `✓ Exported ${result.count} work units to ${result.outputFile}`
+              `✓ Exported ${(result as Record<string, unknown>).count} work units to ${(result as Record<string, unknown>).outputFile}`
             )
           );
-        } catch (error: any) {
-          output.error(
-            chalk.red('✗ Failed to export work units:'),
-            error.message
-          );
+        } catch (error: unknown) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          output.error(chalk.red('✗ Failed to export work units:'), message);
           process.exit(1);
         }
       }

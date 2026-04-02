@@ -32,7 +32,12 @@ interface ShowFeatureResult {
 export async function showFeature(
   options: ShowFeatureOptions
 ): Promise<ShowFeatureResult> {
-  const { feature, format = 'text', output, cwd = process.cwd() } = options;
+  const {
+    feature,
+    format = 'text',
+    output: outputPath,
+    cwd = process.cwd(),
+  } = options;
 
   try {
     // Find the feature file
@@ -134,8 +139,8 @@ export async function showFeature(
     }
 
     // Write to file if output specified
-    if (output) {
-      await writeFile(output, outputContent, 'utf-8');
+    if (outputPath) {
+      await writeFile(outputPath, outputContent, 'utf-8');
     }
 
     return {

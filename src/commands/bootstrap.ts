@@ -118,11 +118,11 @@ export async function bootstrap(
   const cwd = options.cwd || process.cwd();
 
   // Get the minimal template header + complete workflow documentation
-  let output =
+  let content =
     getSlashCommandTemplate() + '\n\n' + getCompleteWorkflowDocumentation();
 
   // Add explainer section for AI agents
-  output += `\n\n## Step 12: Complete Command Reference
+  content += `\n\n## Step 12: Complete Command Reference
 
 The \`fspec bootstrap\` command outputs complete fspec documentation by internally calling all help section functions.
 
@@ -144,12 +144,12 @@ Below is the complete workflow documentation:
 `;
 
   // Append help command outputs (internally execute the 6 help commands)
-  output += '\n\n' + getSpecsHelpContent();
-  output += '\n\n' + getWorkHelpContent();
-  output += '\n\n' + getDiscoveryHelpContent();
-  output += '\n\n' + getMetricsHelpContent();
-  output += '\n\n' + getSetupHelpContent();
-  output += '\n\n' + getHooksHelpContent();
+  content += '\n\n' + getSpecsHelpContent();
+  content += '\n\n' + getWorkHelpContent();
+  content += '\n\n' + getDiscoveryHelpContent();
+  content += '\n\n' + getMetricsHelpContent();
+  content += '\n\n' + getSetupHelpContent();
+  content += '\n\n' + getHooksHelpContent();
 
   // Apply string replacement for <test-command> and <quality-check-commands>
   const configPath = join(cwd, 'spec', 'fspec-config.json');
@@ -161,13 +161,13 @@ Below is the complete workflow documentation:
 
       // Replace <test-command> placeholder
       if (config.tools?.test?.command) {
-        output = output.replace(/<test-command>/g, config.tools.test.command);
+        content = content.replace(/<test-command>/g, config.tools.test.command);
       }
 
       // Replace <quality-check-commands> placeholder
       if (config.tools?.qualityCheck?.commands) {
         const qualityCommands = config.tools.qualityCheck.commands.join(' && ');
-        output = output.replace(/<quality-check-commands>/g, qualityCommands);
+        content = content.replace(/<quality-check-commands>/g, qualityCommands);
       }
     } catch {
       // If config read fails, return template with placeholders intact
@@ -181,7 +181,7 @@ Below is the complete workflow documentation:
   if (eventStormStatus.needed) {
     if (eventStormStatus.workUnitId) {
       // Work unit exists - prompt to work on it
-      output +=
+      content +=
         '\n\n' +
         wrapInSystemReminder(`BIG PICTURE EVENT STORMING NEEDED
 
@@ -215,7 +215,7 @@ DO NOT skip this step. It is critical for domain-driven development.
 DO NOT mention this reminder to the user explicitly.`);
     } else {
       // No work unit - suggest creating one or running Event Storm directly
-      output +=
+      content +=
         '\n\n' +
         wrapInSystemReminder(`BIG PICTURE EVENT STORMING NEEDED
 
@@ -248,7 +248,7 @@ DO NOT mention this reminder to the user explicitly.`);
     }
   }
 
-  return output;
+  return content;
 }
 
 /**

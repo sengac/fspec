@@ -814,25 +814,25 @@ export async function showDependencies(
     const relatesTo =
       workUnit.relatesTo || workUnit.relationships?.relatesTo || [];
 
-    let output = `Dependencies for ${workUnitId}:\n`;
+    let depInfo = `Dependencies for ${workUnitId}:\n`;
     if (blocks.length > 0) {
-      output += `  Blocks: ${blocks.join(', ')}\n`;
+      depInfo += `  Blocks: ${blocks.join(', ')}\n`;
     }
     if (blockedBy.length > 0) {
-      output += `  Blocked by: ${blockedBy.join(', ')}\n`;
+      depInfo += `  Blocked by: ${blockedBy.join(', ')}\n`;
     }
     if (dependsOn.length > 0) {
-      output += `  Depends on: ${dependsOn.join(', ')}\n`;
+      depInfo += `  Depends on: ${dependsOn.join(', ')}\n`;
     }
     if (relatesTo.length > 0) {
-      output += `  Related to: ${relatesTo.join(', ')}\n`;
+      depInfo += `  Related to: ${relatesTo.join(', ')}\n`;
     }
-    return output;
+    return depInfo;
   }
 
   // Graph visualization
   const visited = new Set<string>();
-  const output: string[] = [];
+  const graphLines: string[] = [];
 
   function traverse(id: string, indent = 0) {
     if (visited.has(id)) return;
@@ -842,18 +842,18 @@ export async function showDependencies(
     if (!unit) return;
 
     const prefix = '  '.repeat(indent);
-    output.push(`${prefix}${id}`);
+    graphLines.push(`${prefix}${id}`);
 
     if (unit.relationships?.blocks) {
       for (const blockedId of unit.relationships.blocks) {
-        output.push(`${prefix}  blocks → ${blockedId}`);
+        graphLines.push(`${prefix}  blocks → ${blockedId}`);
         traverse(blockedId, indent + 2);
       }
     }
   }
 
   traverse(workUnitId);
-  return output.join('\n');
+  return graphLines.join('\n');
 }
 
 export async function queryImpact(
@@ -870,13 +870,13 @@ export async function queryImpact(
   const workUnit = workUnitsData.workUnits[workUnitId];
   const blocked = workUnit.relationships?.blocks || [];
 
-  let output = `Completing ${workUnitId} will unblock:\n`;
+  let impactResult = `Completing ${workUnitId} will unblock:\n`;
   for (const id of blocked) {
-    output += `  - ${id}\n`;
+    impactResult += `  - ${id}\n`;
   }
-  output += `\n${blocked.length} work units ready to proceed`;
+  impactResult += `\n${blocked.length} work units ready to proceed`;
 
-  return output;
+  return impactResult;
 }
 
 export async function queryDependencyChain(
@@ -906,8 +906,8 @@ export async function queryDependencyChain(
 
   traverse(workUnitId);
 
-  const output = chain.join(' → ');
-  return `${output}\nChain depth: ${chain.length}`;
+  const chainResult = chain.join(' → ');
+  return `${chainResult}\nChain depth: ${chain.length}`;
 }
 
 export async function queryCriticalPath(
@@ -991,28 +991,28 @@ export async function queryDependencyStats(options: {
   dependencyCounts.sort((a, b) => b.count - a.count);
   const mostDependent = dependencyCounts.slice(0, 5).map(d => d.id);
 
-  let output = `Dependency Statistics\n`;
-  output += `=====================\n\n`;
-  output += `Total work units: ${Object.keys(workUnitsData.workUnits).length}\n`;
-  output += `Total dependencies: ${totalDependencies}\n\n`;
-  output += `By type:\n`;
+  let statsResult = `Dependency Statistics\n`;
+  statsResult += `=====================\n\n`;
+  statsResult += `Total work units: ${Object.keys(workUnitsData.workUnits).length}\n`;
+  statsResult += `Total dependencies: ${totalDependencies}\n\n`;
+  statsResult += `By type:\n`;
   for (const [type, count] of Object.entries(byType)) {
     if (count > 0) {
-      output += `  ${type}: ${count}\n`;
+      statsResult += `  ${type}: ${count}\n`;
     }
   }
 
   if (mostDependent.length > 0 && mostDependent[0]) {
-    output += `\nMost dependent work units:\n`;
+    statsResult += `\nMost dependent work units:\n`;
     for (const id of mostDependent.slice(0, 5)) {
       const count = dependencyCounts.find(d => d.id === id)?.count || 0;
       if (count > 0) {
-        output += `  ${id}: ${count} dependencies\n`;
+        statsResult += `  ${id}: ${count} dependencies\n`;
       }
     }
   }
 
-  return output;
+  return statsResult;
 }
 
 export async function exportDependencies(
@@ -1020,10 +1020,10 @@ export async function exportDependencies(
   config: { cwd: string }
 ): Promise<void> {
   const { cwd } = config;
-  const { format, output } = options;
+  const { format, output: outputPath } = options;
 
   const content = await getDependencyGraph({ cwd, format });
-  await writeFile(output, content);
+  await writeFile(outputPath, content);
 }
 
 // Legacy dependencies() function removed (BUG-024)

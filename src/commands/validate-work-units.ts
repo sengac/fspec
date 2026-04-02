@@ -115,8 +115,8 @@ export async function validateWorkUnits(
     }
 
     // Check if work unit is in wrong state array
-    for (const [stateName, ids] of Object.entries(workUnitsData.states)) {
-      if (stateName !== status && ids.includes(id)) {
+    for (const [stateName, stateIds] of Object.entries(workUnitsData.states)) {
+      if (stateName !== status && stateIds.includes(id)) {
         errors.push(
           `State consistency error: Work unit ${id} has status '${status}' but is in '${stateName}' array. Run 'fspec repair-work-units' to fix inconsistencies.`
         );

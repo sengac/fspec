@@ -204,14 +204,14 @@ export async function queryWorkUnits(options: {
     if (outputFormat === 'json') {
       // JSON format - return data array with work unit IDs and feature file paths
       // PLUS workUnits array for backward compatibility
-      const data = workUnits.map(wu => ({
+      const jsonData = workUnits.map(wu => ({
         workUnitId: wu.id,
         featureFilePath: wu.featureFile || 'unknown',
       }));
       return {
         workUnits, // Backward compatibility
         format: 'json',
-        data,
+        data: jsonData,
       };
     }
 

@@ -108,11 +108,11 @@ async function executeResearchTool(
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
-    let output = '';
+    let toolOutput = '';
     let errorOutput = '';
 
     child.stdout.on('data', (data: Buffer) => {
-      output += data.toString();
+      toolOutput += data.toString();
     });
 
     child.stderr.on('data', (data: Buffer) => {
@@ -123,7 +123,7 @@ async function executeResearchTool(
       if (code !== 0) {
         reject(new Error(`Tool exited with code ${code}: ${errorOutput}`));
       } else {
-        resolve(output);
+        resolve(toolOutput);
       }
     });
 

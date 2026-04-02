@@ -202,8 +202,8 @@ export async function setupGitTest(testName: string): Promise<GitTestSetup> {
 
     // Create initial commit so HEAD exists
     const { writeFile } = await import('fs/promises');
-    const { join } = await import('path');
-    await writeFile(join(baseSetup.testDir, 'README.md'), '# Test Project');
+    const { join: pathJoin } = await import('path');
+    await writeFile(pathJoin(baseSetup.testDir, 'README.md'), '# Test Project');
     gitAdd(baseSetup.testDir, 'README.md');
     gitCommit(
       baseSetup.testDir,

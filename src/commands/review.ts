@@ -219,20 +219,20 @@ export async function review(
     cwd,
   });
 
-  const output: string[] = [];
+  const lines: string[] = [];
   const criticalIssues: CriticalIssue[] = [];
   const warnings: Warning[] = [];
   const recommendations: Recommendation[] = [];
 
   // Build review header
-  output.push(
+  lines.push(
     '================================================================================'
   );
-  output.push(`REVIEW: ${workUnitId} - ${workUnit.title}`);
-  output.push(
+  lines.push(`REVIEW: ${workUnitId} - ${workUnit.title}`);
+  lines.push(
     '================================================================================'
   );
-  output.push('');
+  lines.push('');
 
   // Step 2: Read Feature Files
   let featureFile: string | null = null;
@@ -399,80 +399,80 @@ export async function review(
   }
 
   // Build Issues Found section
-  output.push('## Issues Found');
-  output.push('');
-  output.push('### 🔴 Critical Issues');
+  lines.push('## Issues Found');
+  lines.push('');
+  lines.push('### 🔴 Critical Issues');
   if (criticalIssues.length > 0) {
     criticalIssues.forEach((issue, index) => {
-      output.push(`${index + 1}. **Issue:** ${issue.issue}`);
+      lines.push(`${index + 1}. **Issue:** ${issue.issue}`);
       if (issue.location) {
-        output.push(`   - **Location:** ${issue.location}`);
+        lines.push(`   - **Location:** ${issue.location}`);
       }
-      output.push(`   - **Fix:** ${issue.fix}`);
-      output.push(`   - **Action:** ${issue.action}`);
-      output.push('');
+      lines.push(`   - **Fix:** ${issue.fix}`);
+      lines.push(`   - **Action:** ${issue.action}`);
+      lines.push('');
     });
   } else {
-    output.push('No critical issues detected.');
-    output.push('');
+    lines.push('No critical issues detected.');
+    lines.push('');
   }
 
-  output.push('### 🟡 Warnings');
+  lines.push('### 🟡 Warnings');
   if (warnings.length > 0) {
     warnings.forEach((warning, index) => {
-      output.push(`${index + 1}. **Issue:** ${warning.issue}`);
+      lines.push(`${index + 1}. **Issue:** ${warning.issue}`);
       if (warning.location) {
-        output.push(`   - **Location:** ${warning.location}`);
+        lines.push(`   - **Location:** ${warning.location}`);
       }
-      output.push(`   - **Fix:** ${warning.fix}`);
-      output.push(`   - **Action:** ${warning.action}`);
-      output.push('');
+      lines.push(`   - **Fix:** ${warning.fix}`);
+      lines.push(`   - **Action:** ${warning.action}`);
+      lines.push('');
     });
   } else {
-    output.push('No warnings detected.');
-    output.push('');
+    lines.push('No warnings detected.');
+    lines.push('');
   }
 
   // Recommendations section (plain output, will be included in system-reminder later)
   if (recommendations.length > 0) {
-    output.push('## Recommendations');
-    output.push('');
+    lines.push('## Recommendations');
+    lines.push('');
 
-    output.push('**IMPORTANT:** ACDD COMPLIANCE REVIEW');
-    output.push('');
+    lines.push('**IMPORTANT:** ACDD COMPLIANCE REVIEW');
+    lines.push('');
 
     recommendations.forEach((rec, index) => {
-      output.push(`${index + 1}. **Recommendation:** ${rec.recommendation}`);
-      output.push(`   - **Rationale:** ${rec.rationale}`);
-      output.push(`   - **Action:** ${rec.action}`);
-      output.push('');
+      lines.push(`${index + 1}. **Recommendation:** ${rec.recommendation}`);
+      lines.push(`   - **Rationale:** ${rec.rationale}`);
+      lines.push(`   - **Action:** ${rec.action}`);
+      lines.push('');
     });
   }
 
   // ACDD Compliance section
-  output.push('## ACDD Compliance');
-  output.push('');
+  lines.push('## ACDD Compliance');
+  lines.push('');
   if (acddPassed.length > 0) {
-    output.push('✅ **Passed:**');
+    lines.push('✅ **Passed:**');
     acddPassed.forEach(item => {
-      output.push(`- ${item}`);
+      lines.push(`- ${item}`);
     });
-    output.push('');
+    lines.push('');
   }
   if (acddFailed.length > 0) {
-    output.push('❌ **Failed:**');
+    lines.push('❌ **Failed:**');
     acddFailed.forEach(item => {
-      output.push(`- ${item}`);
+      lines.push(`- ${item}`);
     });
-    output.push('');
+    lines.push('');
   }
 
   // Coverage Analysis section
-  output.push('## Coverage Analysis');
-  output.push('');
+  lines.push('## Coverage Analysis');
+  lines.push('');
   if (coverageData && coverageData.stats) {
-    output.push(`- **Total Scenarios:** ${coverageData.stats.totalScenarios}`);
-    output.push(
+    lines.push(`- **Total Scenarios:** ${coverageData.stats.totalScenarios}`);
+    lines.push(
       `- **Covered Scenarios:** ${coverageData.stats.coveredScenarios} (${coverageData.stats.coveragePercent}%)`
     );
 
@@ -482,21 +482,21 @@ export async function review(
         .map(s => s.name);
 
       if (uncovered.length > 0) {
-        output.push('');
-        output.push('**Uncovered Scenarios:**');
+        lines.push('');
+        lines.push('**Uncovered Scenarios:**');
         uncovered.forEach(name => {
-          output.push(`  - ${name}`);
+          lines.push(`  - ${name}`);
         });
       }
     }
   } else {
-    output.push('- No coverage data available');
+    lines.push('- No coverage data available');
   }
-  output.push('');
+  lines.push('');
 
   // Summary section
-  output.push('## Summary');
-  output.push('');
+  lines.push('## Summary');
+  lines.push('');
 
   let assessment = 'PASS';
   if (criticalIssues.length > 0) {
@@ -505,16 +505,16 @@ export async function review(
     assessment = 'NEEDS WORK';
   }
 
-  output.push(`**Overall Assessment:** ${assessment}`);
-  output.push('');
+  lines.push(`**Overall Assessment:** ${assessment}`);
+  lines.push('');
 
   // Show current state for in-progress work
   if (workUnit.status !== 'done') {
-    output.push(`**Current State:** ${workUnit.status}`);
-    output.push('');
+    lines.push(`**Current State:** ${workUnit.status}`);
+    lines.push('');
   }
 
-  output.push('**Priority Actions:**');
+  lines.push('**Priority Actions:**');
 
   // Determine priority actions
   const priorityActions: string[] = [];
@@ -542,9 +542,9 @@ export async function review(
   }
 
   priorityActions.forEach((action, index) => {
-    output.push(`${index + 1}. ${action}`);
+    lines.push(`${index + 1}. ${action}`);
   });
-  output.push('');
+  lines.push('');
 
   // Build AI-driven deep analysis system-reminder (includes ACDD recommendations)
   const systemReminder = await buildAIAnalysisReminder(
@@ -556,12 +556,12 @@ export async function review(
     recommendations
   );
 
-  output.push(formatAgentOutput(agent, systemReminder));
-  output.push('');
+  lines.push(formatAgentOutput(agent, systemReminder));
+  lines.push('');
 
   return {
     success: true,
-    output: output.join('\n'),
+    output: lines.join('\n'),
   };
 }
 

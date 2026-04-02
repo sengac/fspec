@@ -225,7 +225,6 @@ export async function createStoryCommand(
     parent?: string;
   }
 ): Promise<void> {
-  const chalk = await import('chalk').then(m => m.default);
   try {
     const result = await createStory({
       prefix,

@@ -92,7 +92,15 @@ export async function exportDependencies(
     outputContent = generateMermaidDiagram(data);
   } else {
     // JSON format
-    const dependencies: Record<string, any> = {};
+    const dependencies: Record<
+      string,
+      {
+        blocks: string[];
+        blockedBy: string[];
+        dependsOn: string[];
+        relatesTo: string[];
+      }
+    > = {};
     for (const [id, workUnit] of Object.entries(data.workUnits)) {
       dependencies[id] = {
         blocks: workUnit.blocks || [],
@@ -121,20 +129,18 @@ export function registerExportDependenciesCommand(program: Command): void {
     .description('Export dependency graph visualization')
     .argument('<format>', 'Output format: mermaid or json')
     .argument('<output>', 'Output file path')
-    .action(async (format: string, output: string) => {
+    .action(async (format: string, outputPath: string) => {
       try {
         const result = await exportDependencies({
           format: format as 'mermaid' | 'json',
-          output,
+          output: outputPath,
         });
         output.log(
           chalk.green(`✓ Dependencies exported to ${result.outputFile}`)
         );
-      } catch (error: any) {
-        output.error(
-          chalk.red('✗ Failed to export dependencies:'),
-          error.message
-        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        output.error(chalk.red('✗ Failed to export dependencies:'), message);
         process.exit(1);
       }
     });

@@ -58,16 +58,16 @@ export async function queryEstimationGuide(options: {
     // Calculate patterns
     const patterns: EstimationPattern[] = [];
 
-    for (const [points, data] of Object.entries(byPoints)) {
+    for (const [points, pointStats] of Object.entries(byPoints)) {
       const pointsNum = parseInt(points);
-      const minIterations = Math.min(...data.iterations);
-      const maxIterations = Math.max(...data.iterations);
+      const minIterations = Math.min(...pointStats.iterations);
+      const maxIterations = Math.max(...pointStats.iterations);
 
       // Determine confidence based on sample size
       let confidence = 'low';
-      if (data.iterations.length >= 4) {
+      if (pointStats.iterations.length >= 4) {
         confidence = 'high';
-      } else if (data.iterations.length >= 2) {
+      } else if (pointStats.iterations.length >= 2) {
         confidence = 'medium';
       }
 

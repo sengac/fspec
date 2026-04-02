@@ -174,18 +174,18 @@ export async function showAcceptanceCriteria(
   }
 
   // Generate output based on format
-  let output = '';
+  let formattedResult = '';
   if (format === 'markdown') {
-    output = generateMarkdown(features);
+    formattedResult = generateMarkdown(features);
   } else if (format === 'json') {
-    output = JSON.stringify(features, null, 2);
+    formattedResult = JSON.stringify(features, null, 2);
   } else {
-    output = generateTextOutput(features);
+    formattedResult = generateTextOutput(features);
   }
 
   // Write to file if output path specified
   if (options.output) {
-    await writeFile(options.output, output, 'utf-8');
+    await writeFile(options.output, formattedResult, 'utf-8');
     const filename = options.output.split('/').pop();
     message = `Acceptance criteria written to ${filename}`;
   }
@@ -195,7 +195,7 @@ export async function showAcceptanceCriteria(
     features,
     totalScenarios,
     message,
-    output,
+    output: formattedResult,
   };
 }
 
@@ -238,40 +238,40 @@ function generateMarkdown(features: FeatureAC[]): string {
 }
 
 function generateTextOutput(features: FeatureAC[]): string {
-  let output = '';
+  let text = '';
 
   for (const feature of features) {
-    output += chalk.bold.blue(`\n${feature.name}\n`);
-    output += chalk.gray('─'.repeat(feature.name.length)) + '\n';
+    text += chalk.bold.blue(`\n${feature.name}\n`);
+    text += chalk.gray('─'.repeat(feature.name.length)) + '\n';
 
     if (feature.tags.length > 0) {
-      output += chalk.cyan(`Tags: ${feature.tags.join(' ')}\n`);
+      text += chalk.cyan(`Tags: ${feature.tags.join(' ')}\n`);
     }
 
     if (feature.description) {
-      output += chalk.gray(`\n${feature.description}\n`);
+      text += chalk.gray(`\n${feature.description}\n`);
     }
 
     if (feature.background) {
-      output += chalk.yellow(`\nBackground:\n${feature.background}\n`);
+      text += chalk.yellow(`\nBackground:\n${feature.background}\n`);
     }
 
     for (const scenario of feature.scenarios) {
-      output += chalk.bold.green(`\n  Scenario: ${scenario.name}\n`);
+      text += chalk.bold.green(`\n  Scenario: ${scenario.name}\n`);
 
       for (const step of scenario.steps) {
-        output += chalk.white(`    ${step.keyword} ${step.text}\n`);
+        text += chalk.white(`    ${step.keyword} ${step.text}\n`);
       }
     }
 
     if (feature.scenarios.length === 0) {
-      output += chalk.gray('\n  No scenarios defined\n');
+      text += chalk.gray('\n  No scenarios defined\n');
     }
 
-    output += '\n';
+    text += '\n';
   }
 
-  return output;
+  return text;
 }
 
 export async function showAcceptanceCriteriaCommand(options: {
