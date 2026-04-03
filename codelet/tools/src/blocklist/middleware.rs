@@ -7,6 +7,7 @@ use super::matcher::{BlocklistMatcher, CheckResult};
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, RwLock};
+use tracing::error;
 
 /// Global blocklist matcher instance
 /// Uses RwLock instead of OnceLock to allow reinitialization (e.g., when project changes)
@@ -62,8 +63,8 @@ pub fn load_blocklist_config(project_root: Option<&Path>) -> BlocklistConfig {
             match BlocklistConfig::load_from_file(&system_path) {
                 Ok(config) => system_config = config,
                 Err(e) => {
-                    eprintln!(
-                        "Warning: Failed to load system blocklist config from {system_path:?}: {e}"
+                    error!(
+                        "Failed to load system blocklist config from {system_path:?}: {e}"
                     );
                 }
             }
@@ -77,8 +78,8 @@ pub fn load_blocklist_config(project_root: Option<&Path>) -> BlocklistConfig {
             match BlocklistConfig::load_from_file(&project_path) {
                 Ok(config) => project_config = config,
                 Err(e) => {
-                    eprintln!(
-                        "Warning: Failed to load project blocklist config from {project_path:?}: {e}"
+                    error!(
+                        "Failed to load project blocklist config from {project_path:?}: {e}"
                     );
                 }
             }

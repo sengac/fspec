@@ -105,20 +105,18 @@ describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
 
       expect(result.success).toBe(true);
 
-      // When the generated scenarios contain placeholder steps
+      // When the generated feature contains placeholder text in Background section
       const featureContent = await readFile(
         join(setup.testDir, 'spec/features/test-scenario-generation.feature'),
         'utf-8'
       );
 
-      // Verify placeholders exist in steps
-      expect(featureContent).toMatch(
-        /\[precondition\]|\[action\]|\[expected outcome\]/
-      );
+      // Verify placeholders exist in Background section (not scenario steps)
+      expect(featureContent).toMatch(/\[role\]|\[action\]|\[benefit\]/);
 
-      // Then a system-reminder should suggest using fspec add-step commands
+      // Then a system-reminder should suggest using fspec set-user-story commands
       if (result.systemReminder) {
-        expect(result.systemReminder).toContain('add-step');
+        expect(result.systemReminder).toContain('set-user-story');
         expect(result.systemReminder.toLowerCase()).toContain('cli');
       }
       // Note: System reminders are optional but recommended for better UX

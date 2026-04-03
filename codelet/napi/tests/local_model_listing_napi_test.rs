@@ -37,7 +37,7 @@ mod napi_binding_exposes_local_model_listing {
         
         // NOTE: This test will fail until models_list_local_openai is implemented
         // The function should be exposed via NAPI and call OpenAIProvider::list_local_models internally
-        let result = codelet_napi::models_list_local_openai(base_url).await;
+        let result = codelet_napi::models_list_local_openai(base_url, None).await;
         
         // @step Then the function should return an array of model IDs
         let models = result.expect("Should return model list");

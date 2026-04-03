@@ -9,6 +9,7 @@ use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
+use tracing::warn;
 use uuid::Uuid;
 
 /// Message store - handles storing and retrieving messages
@@ -224,20 +225,14 @@ impl SessionStore {
                 let content = match fs::read_to_string(&path) {
                     Ok(c) => c,
                     Err(e) => {
-                        eprintln!(
-                            "[warn] Skipping unreadable session file {:?}: {}",
-                            path, e
-                        );
+                        warn!("Skipping unreadable session file {:?}: {}", path, e);
                         continue;
                     }
                 };
                 let session: SessionManifest = match serde_json::from_str(&content) {
                     Ok(s) => s,
                     Err(e) => {
-                        eprintln!(
-                            "[warn] Skipping incompatible session file {:?}: {}",
-                            path, e
-                        );
+                        warn!("Skipping incompatible session file {:?}: {}", path, e);
                         continue;
                     }
                 };

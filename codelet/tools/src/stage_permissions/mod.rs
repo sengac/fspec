@@ -34,6 +34,7 @@ pub use matcher::{StageCheckResult, StagePermissionsMatcher};
 
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
+use tracing::warn;
 
 /// Global stage permissions matcher instance
 /// Uses RwLock to allow reinitialization (e.g., when project changes)
@@ -87,8 +88,9 @@ pub fn load_stage_permissions_config(project_root: Option<&Path>) -> StagePermis
                     any_config_found = true;
                 }
                 Err(e) => {
-                    eprintln!(
-                        "Warning: Failed to load system stage permissions config from {system_path:?}: {e}"
+                    warn!(
+                        "Failed to load system stage permissions config from {:?}: {}",
+                        system_path, e
                     );
                 }
             }
@@ -105,8 +107,9 @@ pub fn load_stage_permissions_config(project_root: Option<&Path>) -> StagePermis
                     any_config_found = true;
                 }
                 Err(e) => {
-                    eprintln!(
-                        "Warning: Failed to load project stage permissions config from {project_path:?}: {e}"
+                    warn!(
+                        "Failed to load project stage permissions config from {:?}: {}",
+                        project_path, e
                     );
                 }
             }

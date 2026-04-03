@@ -3,6 +3,7 @@
 //! Evaluates commands against blocklist rules using regex patterns.
 
 use regex::Regex;
+use tracing::error;
 use super::config::{BlocklistAction, BlocklistConfig, BlocklistRule};
 
 /// Result of checking a command against the blocklist
@@ -67,7 +68,7 @@ impl BlocklistMatcher {
                     Ok(regex) => Some(CompiledRule { rule, regex }),
                     Err(e) => {
                         // Log invalid patterns but don't fail
-                        eprintln!("Warning: Invalid regex pattern '{}': {}", rule.pattern, e);
+                        error!("Warning: Invalid regex pattern '{}': {}", rule.pattern, e);
                         None
                     }
                 }

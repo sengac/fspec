@@ -67,6 +67,10 @@ chrono.workspace = true
 # Base64 encoding for multimodal content
 base64 = "0.22"
 
+# PTY for remote terminal support (SRV-009)
+portable-pty = { workspace = true }
+dashmap = { workspace = true }
+
 # PDF Reading (TOOLS-002)
 lopdf.workspace = true
 hayro.workspace = true

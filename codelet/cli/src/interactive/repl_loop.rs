@@ -11,7 +11,7 @@ use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::io::Write;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
     let mut input_queue = InputQueue::new();
@@ -125,9 +125,7 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                         }),
                     );
 
-                    eprintln!("Compaction failed: {e}");
-                    eprintln!("[Context remains unchanged]\n");
-                    debug!("/compact failed: {}", e);
+                    error!("/compact failed: {}", e);
                 }
             }
             continue;
@@ -152,7 +150,7 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                 }
                 Err(e) => {
                     debug!("Provider switch failed: {}", e);
-                    eprintln!("Error switching provider: {e}\n");
+                    error!("Error switching provider: {e}\n");
                     continue;
                 }
             }
@@ -193,7 +191,7 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
 
         match agent_result {
             Ok(()) => println!("\n"),
-            Err(e) => eprintln!("Error: {e}\n"),
+            Err(e) => error!("Error: {e}\n"),
         }
     }
 

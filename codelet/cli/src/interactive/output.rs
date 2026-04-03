@@ -11,6 +11,7 @@
 
 use crate::error_display::{format_cli_error, format_tool_error};
 use std::io::Write;
+use tracing::{error, warn};
 
 /// Token usage information for streaming updates
 ///
@@ -399,7 +400,7 @@ impl StreamOutput for CliOutput {
                 // PROV-039: Display truncation warning if stop_reason is max_tokens
                 if let Some(reason) = stop_reason {
                     if reason == "max_tokens" {
-                        eprintln!("\r\n⚠️  Response truncated: model hit max_tokens output limit");
+                        warn!("Response truncated: model hit max_tokens output limit");
                     }
                 }
             }
@@ -407,7 +408,7 @@ impl StreamOutput for CliOutput {
                 // Clean up error message and display in red
                 let formatted = format_cli_error(&error);
                 let display_error = formatted.replace('\n', "\r\n");
-                eprintln!("\r\n{display_error}");
+                error!("{display_error}");
             }
             StreamEvent::Interrupted(queued_inputs) => {
                 // Use \r\n for raw mode compatibility

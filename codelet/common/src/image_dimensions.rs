@@ -282,7 +282,7 @@ mod tests {
     #[test]
     fn test_extract_png_dimensions_at_boundary() {
         let bytes = make_png_header(5999, 5999);
-        let (w, h) = extract_png_dimensions(&bytes).unwrap();
+        let (w, h) = extract_png_dimensions(&bytes).expect("PNG dimensions should be extractable");
         assert!(w <= MAX_IMAGE_PIXEL_DIMENSION);
         assert!(h <= MAX_IMAGE_PIXEL_DIMENSION);
     }
@@ -290,7 +290,7 @@ mod tests {
     #[test]
     fn test_extract_png_dimensions_exactly_6000_exceeds() {
         let bytes = make_png_header(6000, 6000);
-        let (w, h) = extract_png_dimensions(&bytes).unwrap();
+        let (w, h) = extract_png_dimensions(&bytes).expect("PNG dimensions should be extractable");
         assert!(w > MAX_IMAGE_PIXEL_DIMENSION);
         assert!(h > MAX_IMAGE_PIXEL_DIMENSION);
     }
@@ -409,7 +409,7 @@ mod tests {
 
         // @step Then it should replace the image with a ToolResultContent::text error
         assert!(result.is_some(), "Oversized image should produce error message");
-        let msg = result.unwrap();
+        let msg = result.expect("Error message should be present for oversized image with file path");
 
         // @step And the error text should indicate the image exceeds dimension limits
         assert!(msg.contains("10000"), "Should contain actual width");
@@ -442,7 +442,7 @@ mod tests {
         let result = check_image_dimensions(&b64, None);
 
         assert!(result.is_some(), "Oversized PDF page should produce error");
-        let msg = result.unwrap();
+        let msg = result.expect("Error message should be present for oversized PDF page");
         assert!(
             msg.contains("7000") || msg.contains("9000"),
             "Should contain actual dimensions"
@@ -492,7 +492,7 @@ mod tests {
         let result = check_image_dimensions(&b64, Some("/tmp/huge.png"));
 
         assert!(result.is_some());
-        let msg = result.unwrap();
+        let msg = result.expect("Error message should be present for oversized image");
         assert!(msg.contains("/tmp/huge.png"), "Should contain file path");
     }
 

@@ -110,6 +110,10 @@ headless_chrome = "1.0"
 tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
 url = "2"
 
+# === PTY (SRV-009) ===
+portable-pty = "0.8"
+dashmap = "6"
+
 # === MCP Protocol (MCP-001) ===
 rmcp = { version = "1.1", features = ["client", "transport-child-process", "transport-streamable-http-client-reqwest"] }
 

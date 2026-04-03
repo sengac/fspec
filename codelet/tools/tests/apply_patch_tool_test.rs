@@ -233,9 +233,8 @@ async fn test_multi_file_patch_mixed_operations() {
     assert!(result.contains("Updated"), "Should mention updated file");
     assert!(result.contains("Deleted"), "Should mention deleted file");
     // Verify all three paths are in the output
-    let lines: Vec<&str> = result.lines().collect();
     assert_eq!(
-        lines.len(),
+        result.lines().count(),
         3,
         "Should have exactly 3 result lines, got: {result}"
     );

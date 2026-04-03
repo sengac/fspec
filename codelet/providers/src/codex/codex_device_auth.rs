@@ -13,6 +13,7 @@
 
 use anyhow::{anyhow, Result};
 use serde::Deserialize;
+use tracing::debug;
 
 use super::codex_auth::{CodexAuthJson, CodexTokens, write_codex_auth};
 use super::codex_oauth::{CODEX_CLIENT_ID, exchange_authorization_code, extract_account_id};
@@ -246,7 +247,7 @@ pub async fn device_auth_login(config: DeviceAuthConfig) -> Result<CodexTokens> 
     if let Some(display_fn) = &config.display_fn {
         display_fn(&device_code.user_code, &verification_url);
     } else {
-        eprintln!(
+        debug!(
             "\nTo authenticate, visit: {}\nEnter code: {}\n",
             verification_url, device_code.user_code
         );

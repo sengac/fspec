@@ -83,15 +83,16 @@ pub async fn run() -> Result<()> {
         Some(Commands::Config { path }) => {
             if path {
                 if let Some(config_dir) = dirs::config_dir() {
-                    println!(
-                        "{}",
-                        config_dir.join("codelet").join("config.toml").display()
-                    );
+                    let path = config_dir.join("codelet").join("config.toml");
+                    println!("{}", path.display());
+                    Ok(())
                 } else {
-                    println!("Could not determine config directory");
+                    error!("Could not determine config directory");
+                    Err(anyhow::anyhow!("Could not determine config directory"))
                 }
+            } else {
+                Ok(())
             }
-            Ok(())
         }
         None => {
             if let Some(prompt) = cli.prompt {
@@ -203,7 +204,7 @@ where
         }
     }
 
-    println!(); // Final newline
+    println!(); // Final newline after streaming output
     Ok(())
 }
 
