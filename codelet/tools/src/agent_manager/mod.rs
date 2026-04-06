@@ -26,17 +26,19 @@ use rig::tool::Tool;
 use serde_json::json;
 
 use crate::ToolError;
-use handler::execute_agent_manager;
+use handler::{execute_agent_manager, execute_agent_manager_async};
 use types::AgentManagerArgs;
 use uuid::Uuid;
 
 pub use handler::{
     clear_all_agent_manager_handlers, has_agent_manager_handler,
-    set_agent_manager_handler, AgentManagerHandler,
+    set_agent_manager_handler, set_agent_manager_async_handler,
+    AgentManagerHandler, AgentManagerAsyncHandler,
 };
 pub use types::{
     AgentManagerAction, AgentManagerArgs as Args, AgentManagerResult,
-    SessionEntry, SessionStatus,
+    AwaitOutcome, AwaitSessionResult, SessionEntry, SessionIdParam,
+    SessionStatus,
 };
 
 /// AgentManager Tool — Rig Tool implementation
@@ -75,7 +77,8 @@ impl Tool for AgentManagerTool {
                 "'get_status' (detailed info for a specific session), ",
                 "'close' (terminate a subordinate session — spawner only), ",
                 "'message' (send a message to any session by ID, with optional context references), ",
-                "'set_role' (set or replace the system prompt overlay on a session). ",
+                "'set_role' (set or replace the system prompt overlay on a session), ",
+                "'await_idle' (block until one or more sessions become idle — use instead of polling get_status with sleep). ",
                 "Spawned sessions inherit the spawner's model and start idle. ",
                 "Use 'spawn' to create workers, send them tasks via 'message', ",
                 "monitor with 'list'/'get_status', and clean up with 'close'. ",
@@ -89,7 +92,7 @@ impl Tool for AgentManagerTool {
                 "properties": {
                     "action": {
                         "type": "string",
-                        "enum": ["spawn", "list", "get_status", "close", "message", "set_role"],
+                        "enum": ["spawn", "list", "get_status", "close", "message", "set_role", "await_idle"],
                         "description": "The action to perform"
                     },
                     "role": {
@@ -97,8 +100,11 @@ impl Tool for AgentManagerTool {
                         "description": "Role string — system prompt overlay. For 'spawn': optional role for subordinate. For 'set_role': the role text to set (empty string clears)."
                     },
                     "session_id": {
-                        "type": ["string", "null"],
-                        "description": "Target session ID (required for get_status, close, message; optional for set_role — defaults to caller's own session)"
+                        "oneOf": [
+                            { "type": "string" },
+                            { "type": "array", "items": { "type": "string" } }
+                        ],
+                        "description": "Target session ID (required for get_status, close, message; optional for set_role — defaults to caller's own session). For await_idle: one or more session IDs to wait for."
                     },
                     "message": {
                         "type": ["string", "null"],
@@ -134,6 +140,11 @@ impl Tool for AgentManagerTool {
                             },
                             "required": ["session_id"]
                         }
+                    },
+                    "timeout": {
+                        "type": ["integer", "null"],
+                        "description": "Optional maximum wait time in seconds for await_idle. If omitted, waits indefinitely until all sessions are idle.",
+                        "minimum": 0
                     }
                 },
                 "required": ["action"]
@@ -154,7 +165,13 @@ impl Tool for AgentManagerTool {
             });
         }
 
-        let result = execute_agent_manager(self.session_id, args.action);
+        // AMGR-015: Route await_idle to the async handler, all others to sync
+        let result = match &args.action {
+            AgentManagerAction::AwaitIdle { .. } => {
+                execute_agent_manager_async(self.session_id, args.action).await
+            }
+            _ => execute_agent_manager(self.session_id, args.action),
+        };
 
         serde_json::to_string_pretty(&result).map_err(|e| ToolError::Execution {
             tool: "agent_manager",

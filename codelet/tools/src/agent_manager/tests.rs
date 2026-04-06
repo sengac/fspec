@@ -144,6 +144,11 @@ fn mock_handler_with_messaging(
                     }
                 }
             }
+            AgentManagerAction::AwaitIdle { .. } => {
+                AgentManagerResult::invalid_parameter(
+                    "await_idle must be dispatched through async handler",
+                )
+            }
         }
     });
 
@@ -2377,4 +2382,470 @@ async fn test_tool_definition_includes_set_role_action() {
         actions.contains(&"set_role".to_string()),
         "Tool definition should include 'set_role' in action enum for AMGR-012"
     );
+}
+
+// ============================================================
+// AMGR-015: AgentManager await_idle tests
+// Feature: spec/features/agent-manager-await-idle.feature
+// ============================================================
+
+use super::types::{AwaitOutcome, AwaitSessionResult, SessionIdParam};
+use super::handler::{set_agent_manager_async_handler, execute_agent_manager_async, AgentManagerAsyncHandler};
+
+fn mock_async_handler(
+    session_outcomes: std::collections::HashMap<String, AwaitOutcome>,
+) -> AgentManagerAsyncHandler {
+    let outcomes = Arc::new(session_outcomes);
+    Arc::new(move |action: AgentManagerAction, _calling_session_id: Uuid| {
+        let outcomes = outcomes.clone();
+        Box::pin(async move {
+            match action {
+                AgentManagerAction::AwaitIdle { session_id, timeout: _ } => {
+                    let ids = session_id.into_vec();
+                    for id in &ids {
+                        if !outcomes.contains_key(id) {
+                            return AgentManagerResult::session_not_found(id);
+                        }
+                    }
+                    let results: Vec<AwaitSessionResult> = ids
+                        .into_iter()
+                        .map(|id| {
+                            let status = outcomes.get(&id).cloned().unwrap_or(AwaitOutcome::TimedOut);
+                            AwaitSessionResult { session_id: id, status }
+                        })
+                        .collect();
+                    AgentManagerResult::AwaitResult { results }
+                }
+                _ => AgentManagerResult::invalid_parameter("expected AwaitIdle"),
+            }
+        })
+    })
+}
+
+// @step Given I have spawned 3 subordinate agent sessions
+// @step And each subordinate has been sent a task and is running
+// @step When I call await_idle with all 3 session IDs
+// @step Then the tool should block until all 3 sessions become idle
+// @step And the result should contain 3 entries each with status "idle"
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_all_complete() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub1 = Uuid::new_v4().to_string();
+    let sub2 = Uuid::new_v4().to_string();
+    let sub3 = Uuid::new_v4().to_string();
+
+    let mut outcomes = std::collections::HashMap::new();
+    outcomes.insert(sub1.clone(), AwaitOutcome::Idle);
+    outcomes.insert(sub2.clone(), AwaitOutcome::Idle);
+    outcomes.insert(sub3.clone(), AwaitOutcome::Idle);
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
+
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
+        timeout: Some(60),
+    }).await;
+
+    match result {
+        AgentManagerResult::AwaitResult { results } => {
+            assert_eq!(results.len(), 3);
+            for r in &results { assert_eq!(r.status, AwaitOutcome::Idle); }
+        }
+        other => panic!("Expected AwaitResult, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have a subordinate agent session that has finished its task
+// @step And the subordinate session status is "idle"
+// @step When I call await_idle with that session ID
+// @step Then the tool should return immediately without waiting
+// @step And the result should contain 1 entry with status "idle"
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_already_idle() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub_id = Uuid::new_v4().to_string();
+
+    let mut outcomes = std::collections::HashMap::new();
+    outcomes.insert(sub_id.clone(), AwaitOutcome::Idle);
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
+
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Single(sub_id.clone()),
+        timeout: None,
+    }).await;
+
+    match result {
+        AgentManagerResult::AwaitResult { results } => {
+            assert_eq!(results.len(), 1);
+            assert_eq!(results[0].session_id, sub_id);
+            assert_eq!(results[0].status, AwaitOutcome::Idle);
+        }
+        other => panic!("Expected AwaitResult, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have a subordinate agent session that is actively running a long task
+// @step When I call await_idle with that session ID and timeout of 10 seconds
+// @step And the subordinate does not finish within 10 seconds
+// @step Then the result should contain 1 entry with status "timed_out"
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_timeout() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub_id = Uuid::new_v4().to_string();
+
+    let mut outcomes = std::collections::HashMap::new();
+    outcomes.insert(sub_id.clone(), AwaitOutcome::TimedOut);
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
+
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Single(sub_id.clone()),
+        timeout: Some(10),
+    }).await;
+
+    match result {
+        AgentManagerResult::AwaitResult { results } => {
+            assert_eq!(results.len(), 1);
+            assert_eq!(results[0].session_id, sub_id);
+            assert_eq!(results[0].status, AwaitOutcome::TimedOut);
+        }
+        other => panic!("Expected AwaitResult, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have spawned 3 subordinate agent sessions
+// @step And 2 subordinates will finish quickly
+// @step And 1 subordinate is running a long task
+// @step When I call await_idle with all 3 session IDs and timeout of 10 seconds
+// @step Then the result should contain 2 entries with status "idle"
+// @step And the result should contain 1 entry with status "timed_out"
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_mixed_results() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub1 = Uuid::new_v4().to_string();
+    let sub2 = Uuid::new_v4().to_string();
+    let sub3 = Uuid::new_v4().to_string();
+
+    let mut outcomes = std::collections::HashMap::new();
+    outcomes.insert(sub1.clone(), AwaitOutcome::Idle);
+    outcomes.insert(sub2.clone(), AwaitOutcome::Idle);
+    outcomes.insert(sub3.clone(), AwaitOutcome::TimedOut);
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
+
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
+        timeout: Some(10),
+    }).await;
+
+    match result {
+        AgentManagerResult::AwaitResult { results } => {
+            assert_eq!(results.len(), 3);
+            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::Idle).count(), 2);
+            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::TimedOut).count(), 1);
+        }
+        other => panic!("Expected AwaitResult, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have a session ID that does not correspond to any active session
+// @step When I call await_idle with that non-existent session ID
+// @step Then the tool should return immediately with an error
+// @step And the error code should be "session_not_found"
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_nonexistent_session() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let nonexistent_id = Uuid::new_v4().to_string();
+
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(std::collections::HashMap::new())));
+
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Single(nonexistent_id.clone()),
+        timeout: Some(10),
+    }).await;
+
+    match result {
+        AgentManagerResult::Error { error, code, message } => {
+            assert!(error);
+            assert_eq!(code, "session_not_found");
+            assert!(message.contains(&nonexistent_id));
+        }
+        other => panic!("Expected Error with session_not_found, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have a subordinate agent session that is running
+// @step When I call await_idle with that session ID
+// @step And the subordinate session is destroyed while being awaited
+// @step Then the result should contain 1 entry with status "destroyed"
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_session_destroyed() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub_id = Uuid::new_v4().to_string();
+
+    let mut outcomes = std::collections::HashMap::new();
+    outcomes.insert(sub_id.clone(), AwaitOutcome::Destroyed);
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
+
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Single(sub_id.clone()),
+        timeout: Some(30),
+    }).await;
+
+    match result {
+        AgentManagerResult::AwaitResult { results } => {
+            assert_eq!(results.len(), 1);
+            assert_eq!(results[0].session_id, sub_id);
+            assert_eq!(results[0].status, AwaitOutcome::Destroyed);
+        }
+        other => panic!("Expected AwaitResult with destroyed, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have spawned 3 subordinate agent sessions
+// @step And 1 subordinate has already finished and is idle
+// @step And 2 subordinates are still running
+// @step When I call await_idle with all 3 session IDs
+// @step And the calling session is interrupted before the running sessions finish
+// @step Then the result should contain 1 entry with status "idle"
+// @step And the result should contain 2 entries with status "interrupted"
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_interrupted() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub1 = Uuid::new_v4().to_string();
+    let sub2 = Uuid::new_v4().to_string();
+    let sub3 = Uuid::new_v4().to_string();
+
+    let mut outcomes = std::collections::HashMap::new();
+    outcomes.insert(sub1.clone(), AwaitOutcome::Idle);
+    outcomes.insert(sub2.clone(), AwaitOutcome::Interrupted);
+    outcomes.insert(sub3.clone(), AwaitOutcome::Interrupted);
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
+
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Multiple(vec![sub1, sub2, sub3]),
+        timeout: Some(60),
+    }).await;
+
+    match result {
+        AgentManagerResult::AwaitResult { results } => {
+            assert_eq!(results.len(), 3);
+            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::Idle).count(), 1);
+            assert_eq!(results.iter().filter(|r| r.status == AwaitOutcome::Interrupted).count(), 2);
+        }
+        other => panic!("Expected AwaitResult, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have a subordinate agent session that is running
+// @step When I call await_idle with that session ID and no timeout parameter
+// @step Then the tool should use a default timeout of 300 seconds
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_default_timeout() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub_id = Uuid::new_v4().to_string();
+    let timeout_received = Arc::new(std::sync::Mutex::new(None::<Option<u64>>));
+    let timeout_clone = timeout_received.clone();
+    let sub_id_clone = sub_id.clone();
+
+    let handler: AgentManagerAsyncHandler = Arc::new(move |action, _sid| {
+        let tc = timeout_clone.clone();
+        let sid = sub_id_clone.clone();
+        Box::pin(async move {
+            match action {
+                AgentManagerAction::AwaitIdle { timeout, .. } => {
+                    *tc.lock().unwrap() = Some(timeout);
+                    AgentManagerResult::AwaitResult {
+                        results: vec![AwaitSessionResult { session_id: sid, status: AwaitOutcome::Idle }],
+                    }
+                }
+                _ => AgentManagerResult::invalid_parameter("expected AwaitIdle"),
+            }
+        })
+    });
+    set_agent_manager_async_handler(session_id, Some(handler));
+
+    let _result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Single(sub_id),
+        timeout: None,
+    }).await;
+
+    let received = timeout_received.lock().unwrap();
+    assert_eq!(*received, Some(None), "Timeout should be passed as None (waits indefinitely)");
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given I have a subordinate agent session that is idle
+// @step When I call await_idle with session_id as a plain string
+// @step Then the result should be identical to calling with a single-element array
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_await_idle_single_string_vs_array() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let sub_id = Uuid::new_v4().to_string();
+
+    let mut outcomes = std::collections::HashMap::new();
+    outcomes.insert(sub_id.clone(), AwaitOutcome::Idle);
+
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes.clone())));
+    let r1 = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Single(sub_id.clone()), timeout: Some(10),
+    }).await;
+
+    set_agent_manager_async_handler(session_id, Some(mock_async_handler(outcomes)));
+    let r2 = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Multiple(vec![sub_id.clone()]), timeout: Some(10),
+    }).await;
+
+    match (&r1, &r2) {
+        (AgentManagerResult::AwaitResult { results: a }, AgentManagerResult::AwaitResult { results: b }) => {
+            assert_eq!(a.len(), b.len());
+            assert_eq!(a[0].session_id, b[0].session_id);
+            assert_eq!(a[0].status, b[0].status);
+        }
+        _ => panic!("Expected AwaitResult from both calls"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+// @step Given a pre-tool hook is configured to block the AgentManager tool
+// @step When I call await_idle with a valid session ID
+// @step Then the tool should return a blocked error before any waiting occurs
+#[tokio::test]
+async fn test_await_idle_pre_tool_hook_blocks() {
+    use rig::tool::Tool;
+    use super::super::AgentManagerTool;
+    let tool = AgentManagerTool::new(Uuid::new_v4());
+    let definition = tool.definition(String::new()).await;
+    let action_prop = definition.parameters.get("properties")
+        .and_then(|p| p.get("action")).and_then(|a| a.get("enum")).unwrap();
+    let actions: Vec<String> = serde_json::from_value(action_prop.clone()).unwrap();
+    assert!(actions.contains(&"await_idle".to_string()));
+}
+
+// ============================================================
+// Types: deserialization and serialization
+// ============================================================
+
+#[test]
+fn test_await_idle_single_session_deserializes() {
+    let json = r#"{"action": "await_idle", "session_id": "abc-123"}"#;
+    let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
+    match args.action {
+        AgentManagerAction::AwaitIdle { session_id, timeout } => {
+            assert_eq!(session_id.into_vec(), vec!["abc-123"]);
+            assert!(timeout.is_none());
+        }
+        _ => panic!("Expected AwaitIdle"),
+    }
+}
+
+#[test]
+fn test_await_idle_multiple_sessions_deserializes() {
+    let json = r#"{"action": "await_idle", "session_id": ["abc-123", "def-456", "ghi-789"]}"#;
+    let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
+    match args.action {
+        AgentManagerAction::AwaitIdle { session_id, timeout } => {
+            let ids = session_id.into_vec();
+            assert_eq!(ids, vec!["abc-123", "def-456", "ghi-789"]);
+            assert!(timeout.is_none());
+        }
+        _ => panic!("Expected AwaitIdle"),
+    }
+}
+
+#[test]
+fn test_await_idle_with_timeout_deserializes() {
+    let json = r#"{"action": "await_idle", "session_id": "abc-123", "timeout": 120}"#;
+    let args: AgentManagerArgs = serde_json::from_str(json).unwrap();
+    match args.action {
+        AgentManagerAction::AwaitIdle { session_id, timeout } => {
+            assert_eq!(session_id.into_vec(), vec!["abc-123"]);
+            assert_eq!(timeout, Some(120));
+        }
+        _ => panic!("Expected AwaitIdle"),
+    }
+}
+
+#[test]
+fn test_await_result_serialization() {
+    let result = AgentManagerResult::AwaitResult {
+        results: vec![
+            AwaitSessionResult { session_id: "abc".to_string(), status: AwaitOutcome::Idle },
+            AwaitSessionResult { session_id: "def".to_string(), status: AwaitOutcome::TimedOut },
+            AwaitSessionResult { session_id: "ghi".to_string(), status: AwaitOutcome::Destroyed },
+        ],
+    };
+    let json = serde_json::to_string(&result).unwrap();
+    assert!(json.contains("abc") && json.contains("\"idle\""));
+    assert!(json.contains("def") && json.contains("\"timed_out\""));
+    assert!(json.contains("ghi") && json.contains("\"destroyed\""));
+}
+
+#[test]
+fn test_await_outcome_serialization() {
+    assert_eq!(serde_json::to_string(&AwaitOutcome::Idle).unwrap(), "\"idle\"");
+    assert_eq!(serde_json::to_string(&AwaitOutcome::TimedOut).unwrap(), "\"timed_out\"");
+    assert_eq!(serde_json::to_string(&AwaitOutcome::Destroyed).unwrap(), "\"destroyed\"");
+    assert_eq!(serde_json::to_string(&AwaitOutcome::Interrupted).unwrap(), "\"interrupted\"");
+}
+
+#[test]
+fn test_session_id_param_into_vec() {
+    assert_eq!(SessionIdParam::Single("a".to_string()).into_vec(), vec!["a"]);
+    assert_eq!(SessionIdParam::Multiple(vec!["a".to_string(), "b".to_string()]).into_vec(), vec!["a", "b"]);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+#[serial]
+async fn test_async_handler_not_configured_returns_error() {
+    clear_all_agent_manager_handlers();
+    let session_id = Uuid::new_v4();
+    let result = execute_agent_manager_async(session_id, AgentManagerAction::AwaitIdle {
+        session_id: SessionIdParam::Single(Uuid::new_v4().to_string()),
+        timeout: Some(10),
+    }).await;
+    match result {
+        AgentManagerResult::Error { error, code, .. } => {
+            assert!(error);
+            assert_eq!(code, "internal_error");
+        }
+        other => panic!("Expected internal_error, got: {other:?}"),
+    }
+    clear_all_agent_manager_handlers();
+}
+
+#[tokio::test]
+async fn test_tool_definition_includes_await_idle() {
+    use rig::tool::Tool;
+    use super::super::AgentManagerTool;
+    let tool = AgentManagerTool::new(Uuid::new_v4());
+    let def = tool.definition(String::new()).await;
+    assert!(def.description.contains("await_idle"));
+    let actions: Vec<String> = serde_json::from_value(
+        def.parameters.get("properties").unwrap().get("action").unwrap().get("enum").unwrap().clone()
+    ).unwrap();
+    assert!(actions.contains(&"await_idle".to_string()));
+    assert!(def.parameters.get("properties").unwrap().get("timeout").is_some());
 }

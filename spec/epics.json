@@ -477,7 +477,8 @@
         "TUI-081",
         "TUI-082",
         "BUG-121",
-        "TUI-083"
+        "TUI-083",
+        "AMGR-015"
       ]
     },
     "hierarchical-compaction": {

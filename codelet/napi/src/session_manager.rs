@@ -813,35 +813,44 @@ impl BackgroundSession {
     pub fn set_work_unit_context(&self, id: Option<String>, title: Option<String>, status: Option<String>) {
         use codelet_cli::session::SystemReminderType;
         
-        let mut ctx = self.work_unit_context.write().expect("work_unit_context lock poisoned");
-        let base_env = self.base_environment_content.read().expect("base_environment_content lock poisoned");
-        
-        if let (Some(id_val), Some(title_val), Some(status_val)) = (id.clone(), title.clone(), status.clone()) {
-            *ctx = Some(WorkUnitContext::new(id_val, title_val, status_val));
+        // Scope the locks so they're dropped before broadcast_metadata_update(),
+        // which calls back into get_work_unit_context() on all sessions.
+        // Without this scoping, the write lock on work_unit_context would deadlock
+        // when the broadcast tries to read-lock the same session's work_unit_context.
+        {
+            let mut ctx = self.work_unit_context.write().expect("work_unit_context lock poisoned");
+            let base_env = self.base_environment_content.read().expect("base_environment_content lock poisoned");
             
-            // Compose full environment info with work unit
-            // TUI-059: Add "Current work unit: ID" to the environment info (alongside Platform, Shell, etc.)
-            let work_unit_line = ctx.as_ref()
-                .and_then(|c| c.format_for_environment())
-                .unwrap_or_default();
-            
-            let full_env = if work_unit_line.is_empty() {
-                base_env.clone()
+            if let (Some(id_val), Some(title_val), Some(status_val)) = (id.clone(), title.clone(), status.clone()) {
+                *ctx = Some(WorkUnitContext::new(id_val, title_val, status_val));
+                
+                // Compose full environment info with work unit
+                // TUI-059: Add "Current work unit: ID" to the environment info (alongside Platform, Shell, etc.)
+                let work_unit_line = ctx.as_ref()
+                    .and_then(|c| c.format_for_environment())
+                    .unwrap_or_default();
+                
+                let full_env = if work_unit_line.is_empty() {
+                    base_env.clone()
+                } else {
+                    format!("{}\n{}", base_env, work_unit_line)
+                };
+                
+                // Update the Environment reminder (supersedes the original)
+                if let Ok(mut inner) = self.inner.try_lock() {
+                    inner.add_system_reminder(SystemReminderType::Environment, &full_env);
+                }
             } else {
-                format!("{}\n{}", base_env, work_unit_line)
-            };
-            
-            // Update the Environment reminder (supersedes the original)
-            if let Ok(mut inner) = self.inner.try_lock() {
-                inner.add_system_reminder(SystemReminderType::Environment, &full_env);
+                *ctx = None;
+                // Restore base environment without work unit
+                if let Ok(mut inner) = self.inner.try_lock() {
+                    inner.add_system_reminder(SystemReminderType::Environment, &base_env);
+                }
             }
-        } else {
-            *ctx = None;
-            // Restore base environment without work unit
-            if let Ok(mut inner) = self.inner.try_lock() {
-                inner.add_system_reminder(SystemReminderType::Environment, &base_env);
-            }
-        }
+        } // locks dropped here
+
+        // Broadcast metadata update so relay clients see work unit changes
+        codelet_tools::broadcast_metadata_update();
     }
 
     /// Update cached token counts (called when TokenUpdate events are emitted)
@@ -891,6 +900,10 @@ impl BackgroundSession {
                 SessionStatus::Compacting => SessionState::Compacting,
             };
             self.handle_output(StreamChunk::session_state_change(state));
+            
+            // BRIDGE-SESSION: Broadcast metadata update on session state change
+            // so relay clients see updated session status in real-time.
+            codelet_tools::broadcast_metadata_update();
         }
     }
     
@@ -1245,6 +1258,14 @@ impl BackgroundSession {
         self.is_interrupted.store(false, Ordering::Release);
         // Also clear bash abort flag
         clear_bash_abort();
+    }
+
+    /// Get a clone of the interrupt notify handle (AMGR-015)
+    ///
+    /// Used by `await_idle` to cancel waiting when the calling session
+    /// is interrupted (Esc).
+    pub fn get_interrupt_notify(&self) -> Arc<Notify> {
+        self.interrupt_notify.clone()
     }
     
     /// TUI-065: Clear session history and reinject context reminders
@@ -3444,6 +3465,9 @@ impl SessionManager {
             global_cb.call(id.to_string(), chunk);
         }
         
+        // BRIDGE-SESSION: Broadcast metadata update so relay clients see new session
+        codelet_tools::broadcast_metadata_update();
+        
         Ok(())
     }
 
@@ -3680,6 +3704,9 @@ impl SessionManager {
             global_cb.call(id.to_string(), chunk);
         }
         
+        // BRIDGE-SESSION: Broadcast metadata update so relay clients see new isolated session
+        codelet_tools::broadcast_metadata_update();
+        
         Ok(IsolatedSessionResult {
             session_id: id.to_string(),
             worktree_path: worktree_path.to_string_lossy().to_string(),
@@ -3865,6 +3892,10 @@ impl SessionManager {
             unregister_pre_tool_hook(uuid);
             // Drop the input sender to signal the loop to exit
             // (happens automatically when session is dropped)
+            
+            // BRIDGE-SESSION: Broadcast metadata update so relay clients see session removed
+            codelet_tools::broadcast_metadata_update();
+            
             Ok(())
         } else {
             Err(Error::from_reason(format!("Session not found: {}", id)))
@@ -4750,6 +4781,12 @@ async fn agent_loop(
                 codelet_tools::set_agent_manager_handler(session.id, Some(agent_manager_handler));
             }
 
+            // AMGR-015: Register async handler for await_idle action
+            {
+                let async_handler = crate::agent_manager_handler::create_async_handler();
+                codelet_tools::set_agent_manager_async_handler(session.id, Some(async_handler));
+            }
+
             // Register inject_summary handler — stores DAG in pending_dag_content
             // and fires on_injected to emit CompactionComplete immediately.
             {
@@ -5199,6 +5236,7 @@ Use SessionSearch to recover context.
             codelet_tools::set_inject_summary_handler(session.id, None);
             codelet_tools::set_deep_search_handler(session.id, None); // RLM-001: Cleanup
             codelet_tools::set_agent_manager_handler(session.id, None); // AMGR-009: Cleanup
+            codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
             codelet_tools::set_bridge_handler(None);
@@ -5649,6 +5687,10 @@ pub fn session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChun
     // These callbacks use the GLOBAL_CHUNK_CALLBACK to emit UserNotification chunks
     init_block_notification_callbacks();
     
+    // BRIDGE-SESSION: Register session list and model info providers so bridge relay
+    // can populate instance metadata with current sessions and model info.
+    init_bridge_metadata_providers();
+    
     Ok(())
 }
 
@@ -5671,6 +5713,50 @@ fn init_block_notification_callbacks() {
     
     // GIT-020: Register the effective_cwd callback
     set_get_effective_cwd_callback(get_session_effective_cwd);
+}
+
+/// BRIDGE-SESSION: Register session list and model info providers with the bridge relay.
+///
+/// These providers query the SessionManager singleton and are called by `get_instance_metadata()`
+/// to populate the sessions, provider, and model fields in bridge auth and metadata updates.
+fn init_bridge_metadata_providers() {
+    // Session list provider — returns a Vec<serde_json::Value> of session objects
+    let session_list_provider: codelet_tools::SessionListProvider = std::sync::Arc::new(|| {
+        let sm = SessionManager::instance();
+        sm.list_sessions()
+            .into_iter()
+            .map(|info| {
+                let wu_ctx = sm.get_session(&info.id)
+                    .ok()
+                    .and_then(|s| s.get_work_unit_context());
+                serde_json::json!({
+                    "id": info.id,
+                    "state": info.status,
+                    "name": info.name,
+                    "provider_id": info.provider_id,
+                    "model_id": info.model_id,
+                    "work_unit_id": wu_ctx.as_ref().and_then(|c| c.id.as_deref()),
+                    "work_unit_status": wu_ctx.as_ref().and_then(|c| c.status.as_deref()),
+                })
+            })
+            .collect()
+    });
+    codelet_tools::set_session_list_provider(Some(session_list_provider));
+
+    // Model info provider — returns the first running session's provider/model,
+    // or the first session's provider/model if none are running.
+    let model_info_provider: codelet_tools::ModelInfoProvider = std::sync::Arc::new(|| {
+        let sm = SessionManager::instance();
+        let sessions = sm.list_sessions();
+        // Prefer a running session's model info
+        let running = sessions.iter().find(|s| s.status == "running");
+        let info = running.or_else(|| sessions.first());
+        match info {
+            Some(s) => (s.provider_id.clone(), s.model_id.clone()),
+            None => (None, None),
+        }
+    });
+    codelet_tools::set_model_info_provider(Some(model_info_provider));
 }
 
 /// Callback function that emits a block notification to the TUI.

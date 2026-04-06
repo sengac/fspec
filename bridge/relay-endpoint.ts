@@ -11,9 +11,7 @@
  * - WebSocket CLIENT connects TO the relay server
  * - Local WebSocket SERVER accepts codelet BridgeTool connections
  * - Supports multiple concurrent sessions via session_id→WS map
- * - Command messages are translated to flat InboundMessage format and forwarded
- *   through the codelet bridge WebSocket to bridge_relay.rs (BRIDGE-018)
- * - StreamChunk data passes through without internal field transformation
+ * - Message handlers are in relay-endpoint-handlers.ts
  */
 
 import { WebSocketServer, WebSocket } from 'ws';
@@ -24,18 +22,21 @@ import type {
   RelayEndpointState,
   RelayMessage,
   ReconnectState,
+  SessionCreateCallback,
+  ConfigValidationResult,
 } from './relay-types';
 
 import {
-  validateConfig,
+  handleRelayMessage,
+  handleCodeletMessage,
   translateRelayInputToFspec,
   translateRelaySessionControlToFspec,
   translateRelayCommandToFspec,
-} from './relay-message-translation';
+} from './relay-endpoint-handlers';
+import type { HandlerContext, CodeletSocket } from './relay-endpoint-handlers';
 
 // Re-export for test imports
 export {
-  validateConfig,
   translateRelayInputToFspec,
   translateRelaySessionControlToFspec,
   translateRelayCommandToFspec,
@@ -46,6 +47,31 @@ export type {
   RelayMessage,
   FspecInboundMessage,
 } from './relay-types';
+
+// ---------------------------------------------------------------------------
+// Config Validation
+// ---------------------------------------------------------------------------
+
+export function validateConfig(
+  configInput: Partial<RelayEndpointConfig>
+): ConfigValidationResult {
+  const errors: string[] = [];
+
+  if (!configInput.relayUrl) {
+    errors.push('RELAY_URL is required');
+  }
+  if (!configInput.channelId) {
+    errors.push('RELAY_CHANNEL_ID is required');
+  }
+  if (!configInput.apiKey) {
+    errors.push('RELAY_API_KEY is required');
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
 
 // Load environment variables
 config();
@@ -63,13 +89,9 @@ const LOG_PREFIX = '[relay-endpoint]';
 // Relay Endpoint Factory
 // ============================================================================
 
-/** Minimal WebSocket interface for codelet connections (allows test mocks) */
-interface CodeletSocket {
-  send: (data: string) => void;
-}
-
 export function createRelayEndpoint(
-  endpointConfig: RelayEndpointConfig
+  endpointConfig: RelayEndpointConfig,
+  onSessionCreate?: SessionCreateCallback
 ): RelayEndpointState & {
   buildAuthMessage: () => Record<string, unknown>;
   handleRelayMessage: (data: string) => void;
@@ -115,24 +137,6 @@ export function createRelayEndpoint(
     }
   }
 
-  /**
-   * Look up the codelet WebSocket for a session. Logs a warning and returns
-   * null when the session is unknown — callers should silently drop the message.
-   */
-  function getSessionOrWarn(
-    sessionId: string | undefined,
-    context: string
-  ): CodeletSocket | null {
-    const id = sessionId || '';
-    const ws = state.sessions.get(id);
-    if (!ws) {
-      console.warn(
-        `${LOG_PREFIX} No codelet connection for session ${id}${context ? ` (${context})` : ''}`
-      );
-    }
-    return ws ?? null;
-  }
-
   function startPingInterval(): void {
     if (state.pingInterval) {
       clearInterval(state.pingInterval);
@@ -161,7 +165,7 @@ export function createRelayEndpoint(
       console.log(`${LOG_PREFIX} Codelet session connected`);
 
       ws.on('message', (rawData: Buffer | string) => {
-        endpoint.handleCodeletMessage(ws, rawData.toString());
+        handleCodeletMessage(ws, rawData.toString(), ctx);
       });
 
       ws.on('close', () => {
@@ -181,105 +185,16 @@ export function createRelayEndpoint(
   }
 
   // ------------------------------------------------------------------
-  // Relay message handler
+  // Handler context — passed to extracted message handlers
   // ------------------------------------------------------------------
 
-  function handleRelayMessageInternal(data: string): void {
-    let msg: RelayMessage;
-    try {
-      msg = JSON.parse(data) as RelayMessage;
-    } catch {
-      console.error(`${LOG_PREFIX} Failed to parse relay message`);
-      return;
-    }
-
-    switch (msg.type) {
-      case 'authSuccess':
-        state.authenticated = true;
-        state.authError = undefined;
-        console.log(`${LOG_PREFIX} Authenticated with relay`);
-        startLocalServer();
-        startPingInterval();
-        break;
-
-      case 'authError': {
-        state.authenticated = false;
-        const errorData = msg.data || {};
-        state.authError = {
-          code: (errorData.code as string) || 'UNKNOWN',
-          message: (errorData.message as string) || 'Authentication failed',
-        };
-        console.error(
-          `${LOG_PREFIX} Authentication failed`,
-          state.authError.code
-        );
-        break;
-      }
-
-      case 'pong':
-        state.connectionAlive = true;
-        break;
-
-      case 'input': {
-        const sessionWs = getSessionOrWarn(msg.session_id, '');
-        if (!sessionWs) {
-          return;
-        }
-        sessionWs.send(JSON.stringify(translateRelayInputToFspec(msg)));
-        break;
-      }
-
-      case 'sessionControl': {
-        const sessionWs = getSessionOrWarn(msg.session_id, '');
-        if (!sessionWs) {
-          return;
-        }
-        sessionWs.send(
-          JSON.stringify(translateRelaySessionControlToFspec(msg))
-        );
-        break;
-      }
-
-      case 'command': {
-        const sessionWs = getSessionOrWarn(msg.session_id, 'command');
-        if (!sessionWs) {
-          return;
-        }
-        sessionWs.send(JSON.stringify(translateRelayCommandToFspec(msg)));
-        break;
-      }
-
-      default:
-        break;
-    }
-  }
-
-  // ------------------------------------------------------------------
-  // Codelet message handler
-  // ------------------------------------------------------------------
-
-  function handleCodeletMessageInternal(ws: CodeletSocket, data: string): void {
-    let msg: Record<string, unknown>;
-    try {
-      msg = JSON.parse(data) as Record<string, unknown>;
-    } catch {
-      console.error(`${LOG_PREFIX} Failed to parse codelet message`);
-      return;
-    }
-
-    const msgType = msg.type as string;
-
-    if (msgType === 'connected') {
-      const sessionId = msg.session_id as string;
-      state.sessions.set(sessionId, ws);
-      console.log(`${LOG_PREFIX} Session registered: ${sessionId}`);
-      sendToRelay(msg);
-      return;
-    }
-
-    // chunk + any other messages pass through to relay
-    sendToRelay(msg);
-  }
+  const ctx: HandlerContext = {
+    state,
+    sendToRelay,
+    startLocalServer,
+    startPingInterval,
+    onSessionCreate,
+  };
 
   // ------------------------------------------------------------------
   // Relay connection + reconnection
@@ -305,7 +220,7 @@ export function createRelayEndpoint(
         });
 
         ws.on('message', (rawData: Buffer | string) => {
-          handleRelayMessageInternal(rawData.toString());
+          handleRelayMessage(rawData.toString(), ctx);
         });
 
         ws.on('close', () => {
@@ -370,8 +285,9 @@ export function createRelayEndpoint(
       };
     },
 
-    handleRelayMessage: handleRelayMessageInternal,
-    handleCodeletMessage: handleCodeletMessageInternal,
+    handleRelayMessage: (data: string) => handleRelayMessage(data, ctx),
+    handleCodeletMessage: (ws: CodeletSocket, data: string) =>
+      handleCodeletMessage(ws, data, ctx),
 
     hasSession(sessionId: string): boolean {
       return state.sessions.has(sessionId);
@@ -405,17 +321,9 @@ export function createRelayEndpoint(
       return { ...state.reconnectState };
     },
 
-    isAuthenticated(): boolean {
-      return state.authenticated;
-    },
-
-    isLocalServerRunning(): boolean {
-      return state.localWss !== null;
-    },
-
-    isConnectionAlive(): boolean {
-      return state.connectionAlive;
-    },
+    isAuthenticated: (): boolean => state.authenticated,
+    isLocalServerRunning: (): boolean => state.localWss !== null,
+    isConnectionAlive: (): boolean => state.connectionAlive,
 
     async start(): Promise<void> {
       const validation = validateConfig(endpointConfig);

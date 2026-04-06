@@ -12,6 +12,8 @@ pub mod apply_patch;
 pub mod bash;
 pub mod blocklist;
 pub mod bridge;
+pub mod bridge_multiplexed;
+pub mod bridge_pty;
 pub mod dart_lang;
 pub mod stage_permissions;
 pub mod bridge_handler;
@@ -58,13 +60,19 @@ pub mod bridge_test_fixtures;
 #[cfg(test)]
 mod bridge_integration_tests;
 
+// Multiplexed wiring tests (ARCH-004)
+#[cfg(test)]
+mod bridge_multiplexed_wiring_tests;
+
 pub use error::ToolError;
 
 pub use agent_manager::{
-    AgentManagerTool, AgentManagerHandler, AgentManagerResult,
-    AgentManagerAction, SessionEntry, SessionStatus,
-    set_agent_manager_handler, has_agent_manager_handler,
-    clear_all_agent_manager_handlers,
+    AgentManagerTool, AgentManagerHandler, AgentManagerAsyncHandler,
+    AgentManagerResult, AgentManagerAction,
+    AwaitOutcome, AwaitSessionResult, SessionIdParam,
+    SessionEntry, SessionStatus,
+    set_agent_manager_handler, set_agent_manager_async_handler,
+    has_agent_manager_handler, clear_all_agent_manager_handlers,
 };
 
 use serde::{Deserialize, Serialize};
@@ -95,7 +103,18 @@ pub use bridge_handler::{
     set_bridge_handler, set_bridge_session_context, remove_bridge_session_context,
     BridgeHandler, BridgeRequest, BroadcastReceiverFactory,
 };
-pub use bridge_relay::{spawn_relay_task, InputInjector, InjectedInput, ImageData, ControlHandler, CommandEmitter};
+pub use bridge_relay::{spawn_relay_task, InputInjector, InjectedInput, ImageData, ControlHandler, CommandEmitter,
+    handle_multiplexed_inbound, process_outbound_envelope, get_instance_metadata, OutboundEnvelopeAction,
+    set_session_list_provider, set_model_info_provider, broadcast_metadata_update,
+    SessionListProvider, ModelInfoProvider, OutboundControlTx};
+pub use bridge_multiplexed::{
+    Envelope, Service as MultiplexedService, InstanceMetadata,
+    InboundAction, route_inbound, is_multiplexed_endpoint,
+};
+pub use bridge_pty::{
+    PtyRegistry, PtyEntry, CreateTerminalOpts,
+    create_terminal, resize_terminal, write_terminal_input, destroy_terminal,
+};
 pub use chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 pub use edit::EditTool;
 pub use fspec::FspecTool;

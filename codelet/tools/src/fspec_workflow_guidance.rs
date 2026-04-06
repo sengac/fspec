@@ -1118,7 +1118,17 @@ AgentManager(action='message', session_id='<worker-id>',
   message='Continue this work',
   context=[{session_id: '<other-session>', start_turn: 0, end_turn: 20}])
 
-# Check status
+# Wait for workers to finish (use INSTEAD of polling get_status with sleep)
+AgentManager(action='await_idle', session_id=['<worker-1>', '<worker-2>'])
+# Returns: { results: [{session_id, status: 'idle'|'timed_out'|'destroyed'|'interrupted'}, ...] }
+
+# Wait for a single worker
+AgentManager(action='await_idle', session_id='<worker-id>')
+
+# Wait with an optional timeout (seconds) — omit for indefinite wait
+AgentManager(action='await_idle', session_id='<worker-id>', timeout=120)
+
+# Check status (one-shot snapshot, no waiting)
 AgentManager(action='list')
 AgentManager(action='get_status', session_id='<worker-id>')
 
@@ -1137,6 +1147,8 @@ AgentManager(action='close', session_id='<worker-id>')
 
 **Cross-Session Context**: Workers use SessionSearch to read supervisor context. Use message with context array to share specific turns.
 
+**Await Pattern**: Spawn workers, send tasks, then `await_idle` to block until all finish. Do NOT poll `get_status` in a loop with sleep — use `await_idle` instead.
+
 **Rules**:
 - Subordinates start idle — always send a task after spawning
 - Only the spawner can close a subordinate
@@ -1144,6 +1156,7 @@ AgentManager(action='close', session_id='<worker-id>')
 - Workers inherit the supervisor's model
 - DeepSearch is read-only — use AgentManager for write access
 - Always close workers when done
+- Use `await_idle` to wait for workers — never poll `get_status` with sleep
 
 </system-reminder>
 "#;

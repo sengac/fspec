@@ -610,9 +610,9 @@ mod tests {
 
     mod inbound_messages {
         use super::*;
-        use crate::bridge_relay::InboundMessage;
 
         /// Scenario: Receive input from endpoint and inject into session
+        /// Updated for ARCH-004: uses multiplexed Envelope format
         #[tokio::test]
         async fn test_receive_input_from_endpoint_and_inject() {
             // @step Given an agent session is running
@@ -621,27 +621,29 @@ mod tests {
             // @step And the agent has connected a bridge to "ws://localhost:8080"
             // (Connection setup handled by BridgeManager)
 
-            // @step When the endpoint sends a JSON message:
-            //   {"type": "input", "session_id": "<session_id>", "message": "build the app"}
-            let inbound_msg = InboundMessage {
-                msg_type: "input".to_string(),
-                session_id: session_id.to_string(),
-                message: "build the app".to_string(),
-                images: None, // BRIDGE-007: No images in this test
-                action: None, // BRIDGE-008: No action for input messages
-                response: None, // BRIDGE-014: No response for input messages
-                request_id: None, // BRIDGE-016: No command fields for input messages
-                command: None,
-                args_json: None,
-            };
+            // @step When the endpoint sends a multiplexed envelope:
+            let envelope_json = serde_json::json!({
+                "service": "session",
+                "type": "input",
+                "session_id": session_id.to_string(),
+                "data": {
+                    "message": "build the app"
+                }
+            });
 
-            // @step Then the agent should receive "build the app" as user input
-            assert_eq!(inbound_msg.msg_type, "input");
-            assert_eq!(inbound_msg.session_id, session_id.to_string());
-            assert_eq!(inbound_msg.message, "build the app");
+            // @step Then the envelope should parse as a session input
+            let env: crate::bridge_multiplexed::Envelope =
+                serde_json::from_value(envelope_json).unwrap();
+            assert_eq!(env.service, crate::bridge_multiplexed::Service::Session);
+            assert_eq!(env.msg_type, "input");
 
-            // Note: Actual injection into session's watcher_input channel
-            // is tested in integration tests
+            let action = crate::bridge_multiplexed::route_inbound(&env);
+            match action {
+                crate::bridge_multiplexed::InboundAction::SessionInput { message, .. } => {
+                    assert_eq!(message, "build the app");
+                }
+                other => panic!("Expected SessionInput, got {:?}", other),
+            }
         }
     }
 

@@ -3,15 +3,42 @@
 //! Feature: spec/features/agent-manager-core.feature
 //! Feature: spec/features/agent-manager-messaging.feature
 //! Feature: spec/features/agent-manager-context-resolution.feature
+//! Feature: spec/features/agent-manager-await-idle.feature
 //!
-//! Defines the data model for the AgentManager tool's five core actions:
+//! Defines the data model for the AgentManager tool's seven core actions:
 //! - `spawn`: Create a new subordinate session with optional role
 //! - `list`: List all sessions with relationships
 //! - `get_status`: Get detailed status of a specific session
 //! - `close`: Terminate a subordinate session (spawner-only)
 //! - `message`: Send a plain text message to any session by ID, with optional context references
+//! - `set_role`: Set or replace the system prompt overlay on a session
+//! - `await_idle`: Block until one or more sessions reach idle state
 
 use serde::{Deserialize, Serialize};
+
+/// Flexible session ID parameter — accepts a single string or array of strings (AMGR-015)
+///
+/// Allows the `await_idle` action to accept either:
+/// - A single session ID: `"session_id": "abc-123"`
+/// - Multiple session IDs: `"session_id": ["abc-123", "def-456"]`
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum SessionIdParam {
+    /// A single session ID string
+    Single(String),
+    /// An array of session ID strings
+    Multiple(Vec<String>),
+}
+
+impl SessionIdParam {
+    /// Convert to a Vec of session ID strings regardless of variant
+    pub fn into_vec(self) -> Vec<String> {
+        match self {
+            Self::Single(s) => vec![s],
+            Self::Multiple(v) => v,
+        }
+    }
+}
 
 /// AgentManager action types — discriminated union via serde tag
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -52,6 +79,18 @@ pub enum AgentManagerAction {
         session_id: Option<String>,
         /// Role string to set (empty string clears the role)
         role: String,
+    },
+    /// Await one or more sessions reaching idle state (AMGR-015)
+    ///
+    /// Blocks efficiently using broadcast channel subscription rather than polling.
+    /// Returns structured results showing which sessions became idle, timed out,
+    /// were destroyed, or were interrupted.
+    AwaitIdle {
+        /// Target session ID(s) — accepts a single string or array of strings
+        session_id: SessionIdParam,
+        /// Optional maximum wait time in seconds. If omitted, waits indefinitely.
+        #[serde(default)]
+        timeout: Option<u64>,
     },
 }
 
@@ -171,12 +210,40 @@ pub enum AgentManagerResult {
         /// New role value, or None if role was cleared
         role: Option<String>,
     },
+    /// Result from the `await_idle` action (AMGR-015)
+    AwaitResult {
+        /// Per-session await outcomes
+        results: Vec<AwaitSessionResult>,
+    },
     /// Error result
     Error {
         error: bool,
         code: String,
         message: String,
     },
+}
+
+/// Per-session result from `await_idle` (AMGR-015)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct AwaitSessionResult {
+    /// Session UUID
+    pub session_id: String,
+    /// Outcome of the await for this session
+    pub status: AwaitOutcome,
+}
+
+/// Outcome of awaiting a single session (AMGR-015)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum AwaitOutcome {
+    /// Session reached idle state
+    Idle,
+    /// Timeout expired before session became idle
+    TimedOut,
+    /// Session was destroyed during the wait
+    Destroyed,
+    /// Calling session was interrupted (Esc) during the wait
+    Interrupted,
 }
 
 impl AgentManagerResult {

@@ -1,0 +1,114 @@
+{
+  "scenarios": [
+    {
+      "name": "Await multiple subordinates that all complete within timeout",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2425-2462",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Await a single session that is already idle",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2467-2495",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Timeout expires before session becomes idle",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2498-2528",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Mixed results when some sessions finish and others timeout",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2531-2563",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Non-existent session ID returns immediate error",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2566-2592",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Session destroyed during await resolves as destroyed",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2595-2626",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "User interrupt cancels await and returns partial results",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2629-2660",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Default timeout is 300 seconds when omitted",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2663-2700",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Single string session_id works the same as single-element array",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2703-2733",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Pre-tool hooks are checked before await_idle executes",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/agent_manager/tests.rs",
+          "lines": "2736-2750",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/agent_manager/tests.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 306
+  }
+}

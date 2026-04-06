@@ -3,12 +3,14 @@
 //!
 //! Feature: spec/features/agent-manager-core.feature
 //! Feature: spec/features/agent-manager-messaging.feature
+//! Feature: spec/features/agent-manager-await-idle.feature
 //!
 //! Creates an `AgentManagerHandler` closure that accesses SessionManager
-//! directly to execute spawn/list/get_status/close/message actions.
+//! directly to execute spawn/list/get_status/close/message/await_idle actions.
 
 use codelet_tools::agent_manager::{
-    AgentManagerAction, AgentManagerHandler, AgentManagerResult,
+    AgentManagerAction, AgentManagerAsyncHandler, AgentManagerHandler, AgentManagerResult,
+    AwaitOutcome, AwaitSessionResult,
     SessionEntry, SessionStatus,
 };
 use codelet_tools::agent_manager::types::ContextReference;
@@ -59,6 +61,11 @@ pub fn create_handler(
             }
             AgentManagerAction::SetRole { session_id, role } => {
                 handle_set_role(session_manager, calling_session_id, session_id.as_deref(), &role)
+            }
+            AgentManagerAction::AwaitIdle { .. } => {
+                AgentManagerResult::invalid_parameter(
+                    "await_idle must be dispatched through the async handler",
+                )
             }
         }
     })
@@ -622,6 +629,232 @@ fn format_turns_label(turns: &[usize]) -> String {
         format!("{min}-{max}")
     } else {
         turns.iter().map(|t| t.to_string()).collect::<Vec<_>>().join(",")
+    }
+}
+
+/// Create an async AgentManagerHandler closure for `await_idle` (AMGR-015)
+///
+/// The async handler subscribes to each target session's `supervisor_broadcast`
+/// channel and uses `tokio::select!` to wait for `SessionStateChange(Idle)`
+/// events — zero polling, notification-based waiting.
+pub fn create_async_handler() -> AgentManagerAsyncHandler {
+    Arc::new(move |action: AgentManagerAction, calling_session_id: Uuid| {
+        Box::pin(async move {
+            match action {
+                AgentManagerAction::AwaitIdle { session_id, timeout } => {
+                    handle_await_idle(
+                        calling_session_id,
+                        session_id.into_vec(),
+                        timeout,
+                    ).await
+                }
+                _ => AgentManagerResult::invalid_parameter(
+                    "Only await_idle should be dispatched to the async handler",
+                ),
+            }
+        })
+    })
+}
+
+/// Handle the `await_idle` action — block until sessions reach idle (AMGR-015)
+///
+/// Subscribes to each target session's `supervisor_broadcast` channel and
+/// watches for `SessionStateChange(Idle)` events. Uses `tokio::select!` with
+/// an optional deadline for timeout, and the calling session's `interrupt_notify`
+/// for cancellation. If `timeout` is `None`, waits indefinitely.
+async fn handle_await_idle(
+    calling_session_id: Uuid,
+    session_ids: Vec<String>,
+    timeout: Option<u64>,
+) -> AgentManagerResult {
+    use crate::types::SessionState;
+    use std::time::Duration;
+    use tokio::time::Instant;
+
+    let session_manager = SessionManager::instance();
+
+    // Phase 1: Validate all sessions exist and check which are already idle
+    let mut results: Vec<AwaitSessionResult> = Vec::new();
+    let mut pending: Vec<(String, tokio::sync::broadcast::Receiver<crate::types::StreamChunk>)> = Vec::new();
+
+    for id in &session_ids {
+        let session = match session_manager.get_session(id) {
+            Ok(s) => s,
+            Err(_) => return AgentManagerResult::session_not_found(id),
+        };
+
+        if session.get_status().as_str() == "idle" {
+            results.push(AwaitSessionResult {
+                session_id: id.clone(),
+                status: AwaitOutcome::Idle,
+            });
+        } else {
+            let rx = session.subscribe_to_stream();
+            pending.push((id.clone(), rx));
+        }
+    }
+
+    // All already idle — return immediately
+    if pending.is_empty() {
+        return AgentManagerResult::AwaitResult { results };
+    }
+
+    // Phase 2: Wait for pending sessions with optional timeout and interrupt
+    let deadline = timeout.map(|secs| Instant::now() + Duration::from_secs(secs));
+
+    // Get the calling session's interrupt notify for cancellation
+    let interrupt_notify = session_manager
+        .get_session(&calling_session_id.to_string())
+        .ok()
+        .map(|s| s.get_interrupt_notify());
+
+    // Spawn a task per pending session that watches its broadcast channel
+    let mut join_set = tokio::task::JoinSet::new();
+    for (id, mut rx) in pending {
+        join_set.spawn(async move {
+            loop {
+                match rx.recv().await {
+                    Ok(chunk) => {
+                        if let crate::types::StreamChunk::SessionStateChange { state } = &chunk {
+                            if *state == SessionState::Idle {
+                                return (id, AwaitOutcome::Idle);
+                            }
+                        }
+                    }
+                    Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                        return (id, AwaitOutcome::Destroyed);
+                    }
+                    Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                        continue;
+                    }
+                }
+            }
+        });
+    }
+
+    // Phase 3: Collect results — race join_set against optional timeout and interrupt
+    loop {
+        // Check timeout if set
+        if let Some(dl) = deadline {
+            let remaining = dl.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                // Timeout — mark all remaining as timed_out
+                join_set.abort_all();
+                while let Some(res) = join_set.join_next().await {
+                    if let Ok((id, outcome)) = res {
+                        results.push(AwaitSessionResult { session_id: id, status: outcome });
+                    }
+                }
+                let resolved_ids: std::collections::HashSet<&str> =
+                    results.iter().map(|r| r.session_id.as_str()).collect();
+                let missing: Vec<String> = session_ids.iter()
+                    .filter(|id| !resolved_ids.contains(id.as_str()))
+                    .cloned()
+                    .collect();
+                for id in missing {
+                    results.push(AwaitSessionResult {
+                        session_id: id,
+                        status: AwaitOutcome::TimedOut,
+                    });
+                }
+                break;
+            }
+        }
+
+        // Build the select based on what's available
+        match (&interrupt_notify, deadline) {
+            (Some(notify), Some(dl)) => {
+                let remaining = dl.saturating_duration_since(Instant::now());
+                tokio::select! {
+                    biased;
+                    _ = notify.notified() => {
+                        finish_interrupted(&mut join_set, &mut results, &session_ids).await;
+                        break;
+                    }
+                    _ = tokio::time::sleep(remaining) => { continue; }
+                    result = join_set.join_next() => {
+                        if handle_join_result(result, &mut results, &join_set) { break; }
+                    }
+                }
+            }
+            (Some(notify), None) => {
+                tokio::select! {
+                    biased;
+                    _ = notify.notified() => {
+                        finish_interrupted(&mut join_set, &mut results, &session_ids).await;
+                        break;
+                    }
+                    result = join_set.join_next() => {
+                        if handle_join_result(result, &mut results, &join_set) { break; }
+                    }
+                }
+            }
+            (None, Some(dl)) => {
+                let remaining = dl.saturating_duration_since(Instant::now());
+                tokio::select! {
+                    biased;
+                    _ = tokio::time::sleep(remaining) => { continue; }
+                    result = join_set.join_next() => {
+                        if handle_join_result(result, &mut results, &join_set) { break; }
+                    }
+                }
+            }
+            (None, None) => {
+                // No timeout, no interrupt — just wait for all tasks
+                match join_set.join_next().await {
+                    Some(Ok((id, outcome))) => {
+                        results.push(AwaitSessionResult { session_id: id, status: outcome });
+                        if join_set.is_empty() { break; }
+                    }
+                    Some(Err(_)) => { if join_set.is_empty() { break; } }
+                    None => break,
+                }
+            }
+        }
+    }
+
+    AgentManagerResult::AwaitResult { results }
+}
+
+/// Handle an interrupt: abort remaining tasks and mark unresolved sessions as interrupted
+async fn finish_interrupted(
+    join_set: &mut tokio::task::JoinSet<(String, AwaitOutcome)>,
+    results: &mut Vec<AwaitSessionResult>,
+    session_ids: &[String],
+) {
+    join_set.abort_all();
+    while let Some(res) = join_set.join_next().await {
+        if let Ok((id, outcome)) = res {
+            results.push(AwaitSessionResult { session_id: id, status: outcome });
+        }
+    }
+    let resolved_ids: std::collections::HashSet<&str> =
+        results.iter().map(|r| r.session_id.as_str()).collect();
+    let missing: Vec<String> = session_ids.iter()
+        .filter(|id| !resolved_ids.contains(id.as_str()))
+        .cloned()
+        .collect();
+    for id in missing {
+        results.push(AwaitSessionResult {
+            session_id: id,
+            status: AwaitOutcome::Interrupted,
+        });
+    }
+}
+
+/// Handle a JoinSet result; returns true if the loop should break (all done)
+fn handle_join_result(
+    result: Option<Result<(String, AwaitOutcome), tokio::task::JoinError>>,
+    results: &mut Vec<AwaitSessionResult>,
+    join_set: &tokio::task::JoinSet<(String, AwaitOutcome)>,
+) -> bool {
+    match result {
+        Some(Ok((id, outcome))) => {
+            results.push(AwaitSessionResult { session_id: id, status: outcome });
+            join_set.is_empty()
+        }
+        Some(Err(_)) => join_set.is_empty(),
+        None => true,
     }
 }
 

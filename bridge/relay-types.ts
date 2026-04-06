@@ -80,3 +80,19 @@ export interface RelayEndpointState {
   connectionAlive: boolean;
   isRunning: boolean;
 }
+
+// ============================================================================
+// Session Creation Callback (injected by parent process)
+// ============================================================================
+
+/** Result of creating a remote session via the bridge callback. */
+export interface SessionCreateResult {
+  session_id: string;
+}
+
+/**
+ * Callback for creating a new codelet session on the fspec instance.
+ * Injected by the parent process (e.g., TUI) when initializing the relay endpoint.
+ * If not provided, session:create requests are silently dropped.
+ */
+export type SessionCreateCallback = () => Promise<SessionCreateResult>;
