@@ -64,6 +64,10 @@ mod bridge_integration_tests;
 #[cfg(test)]
 mod bridge_multiplexed_wiring_tests;
 
+// Subordinate session relay tests (SESS-015)
+#[cfg(test)]
+mod subordinate_relay_tests;
+
 pub use error::ToolError;
 
 pub use agent_manager::{
@@ -106,7 +110,8 @@ pub use bridge_handler::{
 pub use bridge_relay::{spawn_relay_task, InputInjector, InjectedInput, ImageData, ControlHandler, CommandEmitter,
     handle_multiplexed_inbound, process_outbound_envelope, get_instance_metadata, OutboundEnvelopeAction,
     set_session_list_provider, set_model_info_provider, broadcast_metadata_update,
-    SessionListProvider, ModelInfoProvider, OutboundControlTx};
+    SessionListProvider, ModelInfoProvider, OutboundControlTx,
+    SubordinateChunkTx, get_subordinate_chunk_senders};
 pub use bridge_multiplexed::{
     Envelope, Service as MultiplexedService, InstanceMetadata,
     InboundAction, route_inbound, is_multiplexed_endpoint,

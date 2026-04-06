@@ -624,6 +624,15 @@
         "LCP-007",
         "LCP-008"
       ]
+    },
+    "zai-glm-performance": {
+      "id": "zai-glm-performance",
+      "title": "Z.AI GLM Provider Performance & Quality Improvements",
+      "createdAt": "2026-04-06T11:06:08.088Z",
+      "description": "Improvements to fspec's Z.AI GLM provider integration for better tool-calling accuracy, reasoning support, and runtime configurability. Based on analysis of the official GLM-5 reference repository.",
+      "workUnits": [
+        "PROV-052"
+      ]
     }
   }
 }

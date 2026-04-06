@@ -159,6 +159,55 @@ fn remove_outbound_controls(session_id: Uuid) {
     }
 }
 
+// ── SESS-015: Subordinate chunk forwarding channels ─────────────────────────
+
+/// Sender type for subordinate chunks: (subordinate_session_id, chunk_json)
+pub type SubordinateChunkTx = mpsc::UnboundedSender<(Uuid, serde_json::Value)>;
+
+/// Receiver type for subordinate chunks
+pub type SubordinateChunkRx = mpsc::UnboundedReceiver<(Uuid, serde_json::Value)>;
+
+/// Global per-session subordinate chunk senders.
+///
+/// When a subordinate session is spawned, a forwarding task subscribes to the
+/// subordinate's supervisor_broadcast and sends chunks here. The parent's relay
+/// loop reads from the corresponding receiver and sends them over WebSocket
+/// with the subordinate's session_id.
+static SUBORDINATE_CHUNK_SENDERS: once_cell::sync::Lazy<
+    RwLock<HashMap<Uuid, Vec<SubordinateChunkTx>>>,
+> = once_cell::sync::Lazy::new(|| RwLock::new(HashMap::new()));
+
+/// Register a subordinate chunk channel for a parent session.
+///
+/// Returns the receiver that the relay loop should select! on.
+/// Multiple relay connections for the same session each get their own channel.
+pub fn register_subordinate_chunk_channel(parent_session_id: Uuid) -> SubordinateChunkRx {
+    let (tx, rx) = mpsc::unbounded_channel();
+    if let Ok(mut guard) = SUBORDINATE_CHUNK_SENDERS.write() {
+        guard.entry(parent_session_id).or_default().push(tx);
+    }
+    rx
+}
+
+/// Get a clone of all subordinate chunk senders for a parent session.
+///
+/// Used by agent_manager_handler to get a sender for forwarding subordinate
+/// chunks to the parent's relay loop.
+pub fn get_subordinate_chunk_senders(parent_session_id: Uuid) -> Vec<SubordinateChunkTx> {
+    SUBORDINATE_CHUNK_SENDERS
+        .read()
+        .ok()
+        .and_then(|guard| guard.get(&parent_session_id).cloned())
+        .unwrap_or_default()
+}
+
+/// Remove all subordinate chunk senders for a session.
+fn remove_subordinate_chunk_senders(session_id: Uuid) {
+    if let Ok(mut guard) = SUBORDINATE_CHUNK_SENDERS.write() {
+        guard.remove(&session_id);
+    }
+}
+
 /// Send a metadata update envelope to all bridge connections for all sessions.
 ///
 /// Called by the NAPI layer when sessions change (created, destroyed, status change).
@@ -233,6 +282,11 @@ pub fn get_instance_metadata() -> InstanceMetadata {
 /// - Regular chunks → Envelope::relay_chunk()
 /// - FspecCommandResult → Envelope::fspec_command_response() if pending
 /// - FspecCommandRequest → Skip (for TypeScript only)
+///
+/// SESS-015: If the chunk JSON contains a `_relay_session_id` field, that
+/// value is used as the envelope's session_id instead of the relay-level
+/// `session_id` parameter. This allows subordinate session chunks forwarded
+/// through the parent's broadcast to retain their correct session identity.
 pub fn process_outbound_envelope(
     chunk_json: &serde_json::Value,
     instance_id: &str,
@@ -293,9 +347,15 @@ pub fn process_outbound_envelope(
             }
         }
         _ => {
+            // SESS-015: Prefer chunk-level session_id for subordinate forwarding
+            let effective_session_id = chunk_json
+                .get("_relay_session_id")
+                .and_then(|v| v.as_str())
+                .unwrap_or(session_id);
+
             let env = Envelope::relay_chunk(
                 instance_id,
-                session_id,
+                effective_session_id,
                 chunk_json.clone(),
             );
             OutboundEnvelopeAction::RelayChunk(env)
@@ -561,6 +621,9 @@ async fn connect_and_relay(
     let (control_tx, mut control_rx) = mpsc::unbounded_channel::<Envelope>();
     register_outbound_control(session_id, control_tx);
 
+    // SESS-015: Register subordinate chunk channel for this relay connection
+    let mut subordinate_rx = register_subordinate_chunk_channel(session_id);
+
     // Spawn inbound handler
     let inbound_url = url.to_string();
     let inbound_shutdown_tx = shutdown_tx.clone();
@@ -661,6 +724,7 @@ async fn connect_and_relay(
                         if let Err(e) = ws_write.send(Message::Text(msg_json.into())).await {
                             tracing::warn!("Failed to send to WebSocket: {}", e);
                             remove_outbound_controls(session_id);
+                            remove_subordinate_chunk_senders(session_id);
                             return Err(format!("Send failed: {e}"));
                         }
                     }
@@ -673,10 +737,43 @@ async fn connect_and_relay(
                     }
                 }
             }
+            // SESS-015: Subordinate chunk forwarding — chunks from subordinate
+            // sessions arrive here tagged with _relay_session_id
+            Some((sub_session_id, chunk_json)) = subordinate_rx.recv() => {
+                let sub_session_id_str = sub_session_id.to_string();
+                let action = process_outbound_envelope(
+                    &chunk_json,
+                    &instance_id,
+                    &sub_session_id_str,
+                    None, // Subordinate chunks don't participate in fspec command protocol
+                );
+
+                let envelope = match action {
+                    OutboundEnvelopeAction::RelayChunk(env) => env,
+                    OutboundEnvelopeAction::Skip => continue,
+                    OutboundEnvelopeAction::CommandResponse(_) => continue,
+                };
+
+                let msg_json = match serde_json::to_string(&envelope) {
+                    Ok(json) => json,
+                    Err(e) => {
+                        tracing::warn!("Failed to serialize subordinate envelope: {}", e);
+                        continue;
+                    }
+                };
+
+                if let Err(e) = ws_write.send(Message::Text(msg_json.into())).await {
+                    tracing::warn!("Failed to send subordinate chunk to WebSocket: {}", e);
+                    remove_outbound_controls(session_id);
+                    remove_subordinate_chunk_senders(session_id);
+                    return Err(format!("Send failed: {e}"));
+                }
+            }
         }
     }
 
     remove_outbound_controls(session_id);
+    remove_subordinate_chunk_senders(session_id);
     let _ = inbound_handle.await;
     Ok(())
 }
@@ -695,7 +792,7 @@ async fn update_connection_state(session_id: Uuid, url: &str, state: BridgeConne
 // ── Tests ───────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[allow(clippy::unwrap_used)]
 mod tests {
     use super::*;
 
@@ -743,7 +840,7 @@ mod tests {
                 assert_eq!(env.instance_id.as_deref(), Some("proj"));
                 assert_eq!(env.session_id.as_deref(), Some("s1"));
             }
-            other => panic!("Expected RelayChunk, got {other:?}"),
+            other => panic!("Expected RelayChunk, got {:?}", other),
         }
     }
 
@@ -775,7 +872,7 @@ mod tests {
                 assert_eq!(env.service, Service::Fspec);
                 assert_eq!(env.request_id.as_deref(), Some("r1"));
             }
-            other => panic!("Expected CommandResponse, got {other:?}"),
+            other => panic!("Expected CommandResponse, got {:?}", other),
         }
     }
 
@@ -805,7 +902,7 @@ mod tests {
                 assert_eq!(env.service, Service::System);
                 assert_eq!(env.msg_type, "pong");
             }
-            other => panic!("Expected pong envelope, got {other:?}"),
+            other => panic!("Expected pong envelope, got {:?}", other),
         }
     }
 }

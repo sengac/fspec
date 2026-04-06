@@ -171,8 +171,132 @@ fn handle_spawn(
         }
     }
 
+    // SESS-015: Spawn a forwarding task that pipes the subordinate's
+    // supervisor_broadcast chunks into the parent's relay connection.
+    // Without this, the dashboard creates tabs for subordinates but never
+    // receives any output — the subordinate's broadcast goes nowhere.
+    spawn_subordinate_forwarding_task(session_manager, spawner_id, subordinate_id);
+
     AgentManagerResult::Spawned {
         session_id: subordinate_id.to_string(),
+    }
+}
+
+/// SESS-015: Spawn a tokio task that subscribes to a subordinate session's
+/// `supervisor_broadcast` and forwards chunks to the parent's relay connection
+/// via the `SubordinateChunkTx` channels.
+///
+/// Each chunk is converted from `StreamChunk` → `serde_json::Value`, then tagged
+/// with `_relay_session_id` so `process_outbound_envelope()` uses the subordinate's
+/// session_id in the envelope rather than the parent's.
+///
+/// The task self-terminates when the subordinate's broadcast sender is dropped
+/// (i.e., the session is destroyed), ensuring clean lifecycle management.
+///
+/// For nested subordinates (sub-A spawns sub-B), each level independently
+/// forwards to the root parent's relay channels — chunks bubble up naturally.
+fn spawn_subordinate_forwarding_task(
+    session_manager: &SessionManager,
+    parent_session_id: Uuid,
+    subordinate_id: Uuid,
+) {
+    // Get the subordinate's session to subscribe to its broadcast
+    let subordinate_session = match session_manager.get_session(&subordinate_id.to_string()) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::warn!(
+                "SESS-015: Failed to get subordinate session {} for forwarding: {}",
+                subordinate_id, e
+            );
+            return;
+        }
+    };
+
+    // Walk up the supervisor chain to find the root parent (the session that
+    // owns the relay WebSocket connection). For nested subordinates, we need
+    // to send chunks to the root parent's relay channels, not the immediate
+    // parent's — only the root has a bridge connection with select! loop.
+    let root_parent_id = find_root_parent(session_manager, parent_session_id);
+
+    // Subscribe to the subordinate's broadcast channel
+    let mut sub_rx = subordinate_session.subscribe_to_stream();
+    let sub_id = subordinate_id;
+
+    // Spawn the forwarding task
+    tokio::spawn(async move {
+        tracing::debug!(
+            "SESS-015: Forwarding task started for subordinate {} → root parent {}",
+            sub_id, root_parent_id
+        );
+
+        loop {
+            match sub_rx.recv().await {
+                Ok(chunk) => {
+                    // Convert StreamChunk to JSON
+                    let mut chunk_json = chunk.to_json_value();
+
+                    // Inject _relay_session_id so process_outbound_envelope uses
+                    // the subordinate's session_id in the relay envelope
+                    if let Some(obj) = chunk_json.as_object_mut() {
+                        obj.insert(
+                            "_relay_session_id".to_string(),
+                            serde_json::Value::String(sub_id.to_string()),
+                        );
+                    }
+
+                    // Send to all registered relay connections for the root parent
+                    let senders = codelet_tools::get_subordinate_chunk_senders(root_parent_id);
+                    if senders.is_empty() {
+                        // No relay connections yet — this is fine for late bridge
+                        // connections. Chunks emitted before Bridge connect are lost,
+                        // but chunks after connect will be forwarded.
+                        continue;
+                    }
+
+                    for tx in &senders {
+                        // Fire-and-forget: if channel is closed, the relay disconnected
+                        let _ = tx.send((sub_id, chunk_json.clone()));
+                    }
+                }
+                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                    tracing::debug!(
+                        "SESS-015: Forwarding task terminating — subordinate {} broadcast closed",
+                        sub_id
+                    );
+                    break;
+                }
+                Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
+                    tracing::warn!(
+                        "SESS-015: Forwarding task lagged {} messages for subordinate {}",
+                        n, sub_id
+                    );
+                    // Continue receiving — we'll catch up
+                }
+            }
+        }
+    });
+}
+
+/// Walk up the supervisor chain to find the root parent session.
+///
+/// For a direct subordinate, this returns the parent itself.
+/// For nested subordinates (A → B → C), this walks B → A and returns A.
+/// If the chain is broken or a session has no supervisors, returns the
+/// starting session_id as the best available root.
+fn find_root_parent(session_manager: &SessionManager, session_id: Uuid) -> Uuid {
+    let mut current = session_id;
+    let mut visited = std::collections::HashSet::new();
+    visited.insert(current);
+
+    loop {
+        let supervisors = session_manager.get_supervisors(current);
+        match supervisors.first() {
+            Some(&supervisor_id) if !visited.contains(&supervisor_id) => {
+                visited.insert(supervisor_id);
+                current = supervisor_id;
+            }
+            _ => return current,
+        }
     }
 }
 
@@ -1009,5 +1133,45 @@ mod tests {
                 "Provider extraction failed for {model_str}"
             );
         }
+    }
+
+    // ============================================================
+    // Feature: spec/features/subordinate-session-relay.feature
+    //
+    // SESS-015: Verify that find_root_parent correctly walks the
+    // supervisor chain to find the root parent session.
+    // ============================================================
+
+    // ============================================================
+    // Scenario: find_root_parent returns parent for direct subordinate
+    // ============================================================
+    #[test]
+    fn test_find_root_parent_direct_subordinate() {
+        // @step Given a parent session with a direct subordinate
+        let parent_id = Uuid::new_v4();
+
+        // @step When find_root_parent is called with the parent's ID
+        // With no supervisors registered, the parent IS the root
+        let session_manager = SessionManager::instance();
+        let root = find_root_parent(session_manager, parent_id);
+
+        // @step Then it should return the parent itself
+        assert_eq!(root, parent_id);
+    }
+
+    // ============================================================
+    // Scenario: find_root_parent handles cycle-free chain
+    // ============================================================
+    #[test]
+    fn test_find_root_parent_no_supervisors_returns_self() {
+        // @step Given a session with no supervisors in the chain
+        let session_id = Uuid::new_v4();
+        let session_manager = SessionManager::instance();
+
+        // @step When find_root_parent is called
+        let root = find_root_parent(session_manager, session_id);
+
+        // @step Then it should return the session itself (it's already the root)
+        assert_eq!(root, session_id);
     }
 }
