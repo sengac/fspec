@@ -695,7 +695,7 @@ async fn update_connection_state(session_id: Uuid, url: &str, state: BridgeConne
 // ── Tests ───────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -743,7 +743,7 @@ mod tests {
                 assert_eq!(env.instance_id.as_deref(), Some("proj"));
                 assert_eq!(env.session_id.as_deref(), Some("s1"));
             }
-            other => panic!("Expected RelayChunk, got {:?}", other),
+            other => panic!("Expected RelayChunk, got {other:?}"),
         }
     }
 
@@ -775,7 +775,7 @@ mod tests {
                 assert_eq!(env.service, Service::Fspec);
                 assert_eq!(env.request_id.as_deref(), Some("r1"));
             }
-            other => panic!("Expected CommandResponse, got {:?}", other),
+            other => panic!("Expected CommandResponse, got {other:?}"),
         }
     }
 
@@ -805,7 +805,7 @@ mod tests {
                 assert_eq!(env.service, Service::System);
                 assert_eq!(env.msg_type, "pong");
             }
-            other => panic!("Expected pong envelope, got {:?}", other),
+            other => panic!("Expected pong envelope, got {other:?}"),
         }
     }
 }

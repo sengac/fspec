@@ -1,10 +1,10 @@
-/// Feature: spec/features/graph-database-reset.feature
-///
-/// Tests for graph database reset functionality — force-rebuild after schema changes.
-/// Validates that the reset flag clears both on-disk and in-memory graph state.
+// Feature: spec/features/graph-database-reset.feature
+//
+// Tests for graph database reset functionality — force-rebuild after schema changes.
+// Validates that the reset flag clears both on-disk and in-memory graph state.
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod tests {
     use std::path::PathBuf;
 

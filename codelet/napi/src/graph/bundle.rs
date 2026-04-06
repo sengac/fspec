@@ -204,7 +204,7 @@ impl GraphDatabase {
         }
 
         // Phase 2: Export edges — resolve numeric IDs to slugs
-        for (type_name, _segment) in &storage.edge_segments {
+        for type_name in storage.edge_segments.keys() {
             if let Ok(Some(batch)) = storage.edge_batch_for_save(type_name) {
                 if batch.num_rows() == 0 {
                     continue;

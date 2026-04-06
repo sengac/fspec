@@ -501,6 +501,11 @@ where
     let mut network_retry_in_progress = false;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
+    // AMGR-016-FIX: Track whether a tool is currently executing inside rig's multi-turn stream.
+    // Between a ToolCall chunk and the corresponding ToolResult chunk, stream.next() is blocked
+    // running the tool. The stall timeout must be disabled during this window because tools
+    // (DeepSearch, Bash, AgentManager await_idle) can legitimately take minutes.
+    let mut tool_execution_in_progress = false;
 
     let mut turn_tool_infos: Vec<ToolCallInfo> = Vec::new();
     let mut previous_turn_tool_infos: Vec<ToolCallInfo> = Vec::new();
@@ -564,7 +569,17 @@ where
         // AMGR-016: Stall timeout duration — resets on every received chunk.
         // If no streaming data (tokens, tool_calls, usage, etc.) arrives for this
         // duration, the stream is considered stalled and we abort.
-        let stall_timeout = stall_timeout_duration();
+        //
+        // AMGR-016-FIX: When a tool is executing (between ToolCall and ToolResult chunks),
+        // stream.next() blocks on the tool — no chunks are produced. Tools like DeepSearch
+        // (300s), Bash, and AgentManager await_idle can legitimately take minutes. The stall
+        // timeout must be disabled during tool execution to prevent false positives.
+        let effective_stall_timeout = if tool_execution_in_progress {
+            // Tool is running inside rig — disable stall timeout (use 24h as effectively infinite)
+            Duration::from_secs(86400)
+        } else {
+            stall_timeout_duration()
+        };
 
         // Process next chunk - different based on mode
         let chunk = match (&mut event_stream, &mut status_interval, &status) {
@@ -586,10 +601,10 @@ where
                         let _ = st.format_status();
                         None // No chunk, continue loop
                     }
-                    _ = tokio::time::sleep(stall_timeout) => {
+                    _ = tokio::time::sleep(effective_stall_timeout) => {
                         // AMGR-016: CLI mode stall timeout — same behavior as NAPI mode.
-                        // No data received for stall_timeout duration — terminal error.
-                        let stall_msg = build_stall_timeout_message(stall_timeout.as_secs());
+                        // No data received for effective_stall_timeout duration — terminal error.
+                        let stall_msg = build_stall_timeout_message(effective_stall_timeout.as_secs());
                         warn!("AMGR-016: {}", stall_msg);
                         output.emit_error(&stall_msg);
 
@@ -614,11 +629,11 @@ where
                         tokio::select! {
                             c = stream.next() => Some(c),
                             _ = interrupt_fut => None, // Wakes immediately when interrupt() called
-                            _ = tokio::time::sleep(stall_timeout) => {
-                                // AMGR-016: No data received for stall_timeout duration.
+                            _ = tokio::time::sleep(effective_stall_timeout) => {
+                                // AMGR-016: No data received for effective_stall_timeout duration.
                                 // Emit a clear error and break — this is a terminal error
                                 // that must NOT be caught by error classifiers (Rule [5], [6]).
-                                let stall_msg = build_stall_timeout_message(stall_timeout.as_secs());
+                                let stall_msg = build_stall_timeout_message(effective_stall_timeout.as_secs());
                                 warn!("AMGR-016: {}", stall_msg);
                                 output.emit_error(&stall_msg);
 
@@ -635,10 +650,10 @@ where
                     None => {
                         // Fallback for any mode without notify (shouldn't happen in practice)
                         // AMGR-016: Still apply stall timeout even without interrupt notify
-                        match tokio::time::timeout(stall_timeout, stream.next()).await {
+                        match tokio::time::timeout(effective_stall_timeout, stream.next()).await {
                             Ok(chunk) => Some(chunk),
                             Err(_elapsed) => {
-                                let stall_msg = build_stall_timeout_message(stall_timeout.as_secs());
+                                let stall_msg = build_stall_timeout_message(effective_stall_timeout.as_secs());
                                 warn!("AMGR-016: {}", stall_msg);
                                 output.emit_error(&stall_msg);
 
@@ -698,6 +713,11 @@ where
                         output: None,
                         success: true, // Assume success until result arrives
                     });
+
+                    // AMGR-016-FIX: Mark tool execution in progress — the next stream.next()
+                    // will block on tool execution. Stall timeout must be disabled until
+                    // the ToolResult chunk arrives.
+                    tool_execution_in_progress = true;
                 }
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                     StreamedAssistantContent::ReasoningDelta { reasoning, .. },
@@ -756,6 +776,11 @@ where
                     // MessageStart may have very different input values (cache growing).
                     // Emitting here causes "bouncing" in the display.
                     // Token updates only occur during text streaming and at FinalResponse.
+
+                    // AMGR-016-FIX: Tool execution completed — re-enable stall timeout.
+                    // The next stream.next() will be waiting for the LLM's next API response,
+                    // where the 120s stall timeout is appropriate again.
+                    tool_execution_in_progress = false;
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
                     // NET-001: Reset network retry counter on successful data receipt
@@ -1057,6 +1082,7 @@ where
                                 tool_calls_buffer.clear();
                                 last_tool_name = None;
                                 turn_tool_infos.clear();
+                                tool_execution_in_progress = false;
 
                                 // STREAMING-DISPLAY: Reset display for retry
                                 streaming_display = StreamingTokenDisplay::new(
@@ -1252,6 +1278,7 @@ where
                             last_tool_name = None;
                             final_stop_reason = None;
                             turn_tool_infos.clear();
+                            tool_execution_in_progress = false;
 
                             // STREAMING-DISPLAY: Reset display for retry
                             streaming_display = StreamingTokenDisplay::new(
@@ -1350,6 +1377,7 @@ where
                             final_stop_reason = None;
                             accumulated_reasoning.clear();
                             turn_tool_infos.clear();
+                            tool_execution_in_progress = false;
 
                             // Reset streaming display for retry
                             streaming_display = StreamingTokenDisplay::new(

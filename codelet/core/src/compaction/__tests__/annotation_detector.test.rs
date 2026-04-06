@@ -217,7 +217,7 @@ fn test_annotations_are_zero_cost_inline_detection() {
     // @step Then detection should use only pattern matching on tool call metadata
     // Verified by: detect_annotations is a pure function that takes tool call data
     // and returns annotations — no async, no network, no LLM
-    assert!(annotations.len() >= 1, "Should detect annotations from pure pattern matching");
+    assert!(!annotations.is_empty(), "Should detect annotations from pure pattern matching");
 
     // @step And no LLM calls should be made for annotation detection
     // Verified by: detect_annotations signature is synchronous (fn, not async fn)

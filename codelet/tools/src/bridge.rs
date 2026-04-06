@@ -642,7 +642,7 @@ mod tests {
                 crate::bridge_multiplexed::InboundAction::SessionInput { message, .. } => {
                     assert_eq!(message, "build the app");
                 }
-                other => panic!("Expected SessionInput, got {:?}", other),
+                other => panic!("Expected SessionInput, got {other:?}"),
             }
         }
     }

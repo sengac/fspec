@@ -226,7 +226,7 @@ pub fn format_sections_plain(sections: &[Section]) -> String {
 }
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -563,7 +563,7 @@ mod tests {
     fn test_utf8_truncation_at_exact_cjk_boundary() {
         // 500 bytes of 3-byte CJK = 166 chars + 2 bytes remainder
         // Byte 500 lands INSIDE a CJK char (which starts at byte 498)
-        let cjk_str: String = std::iter::repeat('中').take(200).collect(); // 600 bytes
+        let cjk_str: String = std::iter::repeat_n('中', 200).collect(); // 600 bytes
         let sections = vec![Section::Thinking(cjk_str)];
         let output = format_sections_plain(&sections);
         assert!(output.contains("..."));
@@ -574,7 +574,7 @@ mod tests {
     #[test]
     fn test_utf8_truncation_at_exact_4byte_boundary() {
         // 4-byte emoji: byte 500 could land 1, 2, or 3 bytes into a char
-        let emoji_str: String = std::iter::repeat('😀').take(150).collect(); // 600 bytes
+        let emoji_str: String = std::iter::repeat_n('😀', 150).collect(); // 600 bytes
         let sections = vec![Section::Thinking(emoji_str)];
         let output = format_sections_plain(&sections);
         assert!(output.contains("..."));
@@ -642,7 +642,7 @@ mod tests {
         ] {
             // Fill up to just past 500 bytes
             let count = (502 / byte_len) + 1;
-            let content: String = std::iter::repeat(ch).take(count).collect();
+            let content: String = std::iter::repeat_n(ch, count).collect();
             assert!(
                 content.len() > 500,
                 "{label}: expected > 500 bytes, got {}",

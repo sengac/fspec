@@ -68,6 +68,7 @@ pub fn deep_search_wall_clock_timeout() -> Duration {
 }
 
 #[cfg(test)]
+#[allow(clippy::panic)]
 mod tests {
     use super::*;
     use super::super::error_classifiers::{

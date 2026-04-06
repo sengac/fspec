@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Pre-tool-use hook integration tests for native tools
 //!
 //! Feature: spec/features/agent-lifecycle-hooks.feature

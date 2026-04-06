@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_arguments, clippy::type_complexity)]
 //! Shared helpers for AST extractors.
 //!
 //! Common utility functions used by all language extractors

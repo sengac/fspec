@@ -37,8 +37,8 @@ fn find_edges<'a>(
                 ..
             } => {
                 et == edge_type
-                    && from_contains.map_or(true, |f| from_slug.contains(f))
-                    && to_contains.map_or(true, |t| to_slug.contains(t))
+                    && from_contains.is_none_or(|f| from_slug.contains(f))
+                    && to_contains.is_none_or(|t| to_slug.contains(t))
             }
             _ => false,
         })

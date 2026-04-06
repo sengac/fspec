@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/device-auth-flow.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
@@ -47,7 +47,7 @@ async fn test_successful_device_auth_login_completes_end_to_end() {
     // @step Then a device authorization request should be POST-ed to the usercode endpoint with client_id
     Mock::given(method("POST"))
         .and(path("/api/accounts/deviceauth/usercode"))
-        .and(body_string_contains(&format!("client_id={CODEX_CLIENT_ID}")))
+        .and(body_string_contains(format!("client_id={CODEX_CLIENT_ID}")))
         .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
             "device_auth_id": "dev_abc123",
             "user_code": "ABCD-1234",
@@ -95,7 +95,7 @@ async fn test_successful_device_auth_login_completes_end_to_end() {
         .and(body_string_contains("grant_type=authorization_code"))
         .and(body_string_contains("code=auth_code_from_device"))
         .and(body_string_contains("code_verifier=verifier_from_device"))
-        .and(body_string_contains(&format!("client_id={CODEX_CLIENT_ID}")))
+        .and(body_string_contains(format!("client_id={CODEX_CLIENT_ID}")))
         .respond_with(ResponseTemplate::new(200).set_body_json(&token_body))
         .expect(1)
         .mount(&mock_server)
@@ -207,14 +207,13 @@ async fn test_polling_continues_on_authorization_pending_status() {
             assert_eq!(authorization_code, "auth_code_after_pending");
             assert_eq!(code_verifier, "verifier_after_pending");
         }
-        other => panic!("Expected PollResult::Success, got: {:?}", other),
+        other => panic!("Expected PollResult::Success, got: {other:?}"),
     }
 
     // Should have waited at least 3 * 50ms (the pending intervals)
     assert!(
         elapsed.as_millis() >= 100,
-        "Should have waited between polls, elapsed: {:?}",
-        elapsed
+        "Should have waited between polls, elapsed: {elapsed:?}"
     );
 }
 
@@ -285,7 +284,7 @@ async fn test_polling_backs_off_on_slow_down_response() {
             assert_eq!(authorization_code, "auth_code_after_slowdown");
             assert_eq!(code_verifier, "verifier_after_slowdown");
         }
-        other => panic!("Expected PollResult::Success, got: {:?}", other),
+        other => panic!("Expected PollResult::Success, got: {other:?}"),
     }
 
     // After slow_down, interval = base(50ms) + increment(200ms) = 250ms.
@@ -293,8 +292,7 @@ async fn test_polling_backs_off_on_slow_down_response() {
     // was applied beyond the base polling interval of 50ms.
     assert!(
         elapsed.as_millis() >= 200,
-        "Backoff should increase interval beyond base 50ms to 250ms, but elapsed only {:?}",
-        elapsed
+        "Backoff should increase interval beyond base 50ms to 250ms, but elapsed only {elapsed:?}"
     );
 }
 
@@ -345,7 +343,7 @@ async fn test_polling_stops_on_expired_token_error() {
                 "Error should mention expired: {error}"
             );
         }
-        other => panic!("Expected PollResult::TerminalError, got: {:?}", other),
+        other => panic!("Expected PollResult::TerminalError, got: {other:?}"),
     }
 }
 
@@ -396,7 +394,7 @@ async fn test_polling_stops_on_access_denied_error() {
                 "Error should mention denied: {error}"
             );
         }
-        other => panic!("Expected PollResult::TerminalError, got: {:?}", other),
+        other => panic!("Expected PollResult::TerminalError, got: {other:?}"),
     }
 }
 
@@ -541,7 +539,7 @@ async fn test_token_exchange_uses_correct_parameters_without_redirect_uri() {
         .and(body_string_contains("grant_type=authorization_code"))
         .and(body_string_contains("code=device_auth_code_xyz"))
         .and(body_string_contains("code_verifier=device_code_verifier_xyz"))
-        .and(body_string_contains(&format!("client_id={CODEX_CLIENT_ID}")))
+        .and(body_string_contains(format!("client_id={CODEX_CLIENT_ID}")))
         .respond_with(ResponseTemplate::new(200).set_body_json(&token_body))
         .expect(1)
         .mount(&mock_server)
@@ -652,7 +650,7 @@ async fn test_device_auth_produces_same_codex_tokens_output_as_browser_oauth() {
     // @step And the output should be identical in structure to browser OAuth login output
     // Verify the type IS CodexTokens (same struct used by browser OAuth)
     // This is a compile-time check — the function signature returns CodexTokens.
-    let _: CodexTokens = tokens.clone();
+    let _: CodexTokens = tokens;
 
     // Verify we can serialize/deserialize identically to browser OAuth format
     let serialized = serde_json::to_value(&tokens).unwrap();
@@ -678,7 +676,7 @@ async fn test_request_device_code_sends_correct_request() {
 
     Mock::given(method("POST"))
         .and(path("/api/accounts/deviceauth/usercode"))
-        .and(body_string_contains(&format!("client_id={CODEX_CLIENT_ID}")))
+        .and(body_string_contains(format!("client_id={CODEX_CLIENT_ID}")))
         .respond_with(ResponseTemplate::new(200).set_body_json(serde_json::json!({
             "device_auth_id": "dev_unit_test",
             "user_code": "UNIT-5678",

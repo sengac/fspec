@@ -219,8 +219,7 @@ fn extract_python_docstring(text: &str) -> String {
 
     // Try triple double-quotes first, then triple single-quotes
     for quote in &["\"\"\"", "'''"] {
-        if trimmed.starts_with(quote) {
-            let after_open = &trimmed[quote.len()..];
+        if let Some(after_open) = trimmed.strip_prefix(quote) {
             if let Some(close_pos) = after_open.find(quote) {
                 return after_open[..close_pos].trim().to_string();
             }

@@ -1645,13 +1645,11 @@ mod tests {
     fn test_codex_does_not_expose_non_native_glob() {
         // @step Given a Codex agent built with create_rig_agent
         // Collect all facade tool names that would be registered
-        let codex_facade_names = vec![
-            CodexShellCommandFacade.tool_name(),
+        let codex_facade_names = [CodexShellCommandFacade.tool_name(),
             CodexReadFileFacade.tool_name(),
             CodexListDirFacade.tool_name(),
             CodexGrepFilesFacade.tool_name(),
-            CodexViewImageFacade.tool_name(),
-        ];
+            CodexViewImageFacade.tool_name()];
 
         // @step When the agent tool definitions are inspected
         // @step Then the tool list does not contain "glob"

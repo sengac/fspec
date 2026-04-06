@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_arguments, clippy::type_complexity)]
 //! AST Graph Dispatch Functions
 //!
 //! Routes queries to the AST code graph database (dual-graph architecture).

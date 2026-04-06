@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::uninlined_format_args)]
 //! Feature: spec/features/truncated-tool-call-recovery-auto-chunk-large-writes-and-retry-on-max-tokens.feature
 //!
 //! PROV-040: Truncated tool call recovery — auto-chunk large writes and retry on max_tokens

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! PROV-051: Integration tests for session affinity in OpenAI provider
 //!
 //! Feature: spec/features/openai-session-affinity.feature
@@ -255,7 +256,7 @@ fn test_cached_tokens_deserialization() {
     let details = response_json
         .get("prompt_tokens_details")
         .and_then(|d| d.get("cached_tokens"))
-        .and_then(|v| v.as_u64());
+        .and_then(serde_json::Value::as_u64);
 
     // @step Then the usage should report cache_read_input_tokens as 5000
     assert_eq!(details, Some(5000));
@@ -276,7 +277,7 @@ fn test_cached_tokens_zero_is_reported() {
     let details = response_json
         .get("prompt_tokens_details")
         .and_then(|d| d.get("cached_tokens"))
-        .and_then(|v| v.as_u64());
+        .and_then(serde_json::Value::as_u64);
 
     assert_eq!(details, Some(0), "Zero cached tokens should be reported");
 }
@@ -292,7 +293,7 @@ fn test_cached_tokens_missing_details() {
     let details = response_json
         .get("prompt_tokens_details")
         .and_then(|d| d.get("cached_tokens"))
-        .and_then(|v| v.as_u64());
+        .and_then(serde_json::Value::as_u64);
 
     assert_eq!(
         details, None,

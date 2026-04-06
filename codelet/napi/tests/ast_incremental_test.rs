@@ -113,7 +113,7 @@ async fn test_full_index_stores_mtime_on_file_nodes() {
     let stored = read_stored_mtimes(&db).expect("read stored mtimes");
     assert_eq!(stored.len(), 3, "should have 3 files with mtimes stored");
     for (rel_path, original_mtime) in &mtimes {
-        let stored_mtime = stored.get(rel_path).expect(&format!("mtime for {rel_path}"));
+        let stored_mtime = stored.get(rel_path).unwrap_or_else(|| panic!("mtime for {rel_path}"));
         assert_eq!(
             stored_mtime, original_mtime,
             "stored mtime should match filesystem mtime for {rel_path}"

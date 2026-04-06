@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 //! Feature: spec/features/claude-refreshing-client.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.

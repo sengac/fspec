@@ -1,3 +1,4 @@
+#![allow(clippy::too_many_arguments, clippy::type_complexity)]
 //! Shared edge extraction helpers for cross-language Imports, Calls, and TypeRef.
 //!
 //! Provides reusable functions for extracting edge relationships that are common

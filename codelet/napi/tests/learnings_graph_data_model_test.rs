@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::await_holding_lock)]
 // Feature: spec/features/learnings-graph-data-model.feature
 //
 // Learnings Graph Data Model & Schema
@@ -6,7 +7,6 @@
 //
 // Each test uses an isolated temp directory to avoid polluting real data.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use codelet_napi::graph::database::GraphDatabase;
 use codelet_napi::graph::registry;

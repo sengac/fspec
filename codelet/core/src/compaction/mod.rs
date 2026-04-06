@@ -15,21 +15,25 @@ mod trimmer_metadata;
 pub mod trimmer;
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod trimmer_tests {
     include!("__tests__/trimmer.test.rs");
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod structural_annotation_tests {
     include!("__tests__/structural_annotation.test.rs");
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod annotation_detector_tests {
     include!("__tests__/annotation_detector.test.rs");
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod dag_node_parsing_tests {
     include!("__tests__/dag_node_parsing.test.rs");
 }

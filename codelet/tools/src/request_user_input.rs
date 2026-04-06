@@ -370,12 +370,12 @@ impl Tool for RequestUserInputTool {
 
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod tests {
     use super::*;
     use serial_test::serial;
 
-    /// Feature: spec/features/request-user-input-hitl-tool.feature
+    // Feature: spec/features/request-user-input-hitl-tool.feature
 
     // ====================================================================
     // Helper: build a valid question with options

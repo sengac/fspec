@@ -48,8 +48,7 @@ fn test_role_text_included_in_claude_oauth_system_prompt_via_preamble() {
     // @step And the system prompt includes "You are a security reviewer"
     assert!(
         effective_preamble.contains(role_text),
-        "Effective preamble should contain role text. Got: {}",
-        effective_preamble
+        "Effective preamble should contain role text. Got: {effective_preamble}"
     );
 }
 
@@ -66,8 +65,7 @@ fn test_role_text_included_in_claude_api_key_system_prompt_via_preamble() {
     // @step And the system prompt includes "You are a security reviewer"
     assert!(
         effective_preamble.contains(role_text),
-        "Effective preamble should contain role text. Got: {}",
-        effective_preamble
+        "Effective preamble should contain role text. Got: {effective_preamble}"
     );
 }
 
@@ -86,16 +84,14 @@ fn test_role_text_included_in_gemini_system_prompt_via_preamble() {
     // @step And the system prompt includes "You are a security reviewer"
     assert!(
         effective_preamble.contains(role_text),
-        "Effective preamble should contain role text. Got: {}",
-        effective_preamble
+        "Effective preamble should contain role text. Got: {effective_preamble}"
     );
 
     // Also verify through the concrete Gemini system prompt builder
     let gemini_prompt = build_gemini_system_prompt("gemini-2.0-flash", Some(role_text));
     assert!(
         gemini_prompt.contains(role_text),
-        "Gemini system prompt should contain role text. Got: {}",
-        gemini_prompt
+        "Gemini system prompt should contain role text. Got: {gemini_prompt}"
     );
 }
 
@@ -113,8 +109,7 @@ fn test_role_text_included_in_openai_system_prompt_via_preamble() {
     // @step And the system prompt includes "You are a security reviewer"
     assert!(
         effective_preamble.contains(role_text),
-        "Effective preamble should contain role text. Got: {}",
-        effective_preamble
+        "Effective preamble should contain role text. Got: {effective_preamble}"
     );
 }
 
@@ -131,8 +126,7 @@ fn test_role_text_included_in_zai_system_prompt_via_fspec_guidance() {
     // @step And the system prompt includes "You are a security reviewer"
     assert!(
         effective_preamble.contains(role_text),
-        "ZAI effective preamble should contain role text. Got: {}",
-        effective_preamble
+        "ZAI effective preamble should contain role text. Got: {effective_preamble}"
     );
 }
 
@@ -231,8 +225,7 @@ fn test_cleared_role_reverts_facade_to_defaults() {
     // @step Then create_rig_agent receives None as the preamble parameter
     assert!(
         !cleared.contains(ROLE_A),
-        "Cleared preamble should NOT contain role text '{}'",
-        ROLE_A
+        "Cleared preamble should NOT contain role text '{ROLE_A}'"
     );
     assert!(
         cleared.contains("You are Claude Code"),
@@ -253,8 +246,7 @@ fn test_cleared_role_reverts_gemini_to_defaults() {
     // @step Then create_rig_agent receives None as the preamble parameter
     assert!(
         !cleared.contains(ROLE_A),
-        "Cleared Gemini prompt should NOT contain role text '{}'",
-        ROLE_A
+        "Cleared Gemini prompt should NOT contain role text '{ROLE_A}'"
     );
 }
 
@@ -271,8 +263,7 @@ fn test_cleared_role_reverts_openai_to_defaults() {
     // @step Then create_rig_agent receives None as the preamble parameter
     assert!(
         !cleared.contains(ROLE_A),
-        "Cleared OpenAI preamble should NOT contain role text '{}'",
-        ROLE_A
+        "Cleared OpenAI preamble should NOT contain role text '{ROLE_A}'"
     );
 }
 
@@ -301,13 +292,11 @@ fn test_role_change_replaces_old_role_in_claude_preamble() {
     // @step And the system prompt includes "tester"
     assert!(
         second_preamble.contains(ROLE_B),
-        "System prompt should contain new role '{}'. Got: {}",
-        ROLE_B, second_preamble
+        "System prompt should contain new role '{ROLE_B}'. Got: {second_preamble}"
     );
     assert!(
         !second_preamble.contains(ROLE_A),
-        "System prompt should NOT contain old role '{}'",
-        ROLE_A
+        "System prompt should NOT contain old role '{ROLE_A}'"
     );
 }
 
@@ -326,8 +315,7 @@ fn test_role_change_replaces_old_role_in_openai_preamble() {
     assert!(second.contains(ROLE_B));
     assert!(
         !second.contains(ROLE_A),
-        "OpenAI preamble should NOT contain old role '{}'",
-        ROLE_A
+        "OpenAI preamble should NOT contain old role '{ROLE_A}'"
     );
 }
 
@@ -346,8 +334,7 @@ fn test_role_change_replaces_old_role_in_gemini_prompt() {
     assert!(second.contains(ROLE_B));
     assert!(
         !second.contains(ROLE_A),
-        "Gemini prompt should NOT contain old role '{}'",
-        ROLE_A
+        "Gemini prompt should NOT contain old role '{ROLE_A}'"
     );
 }
 
@@ -376,8 +363,7 @@ fn test_spawned_subordinate_role_flows_through_claude_facade() {
     let effective = facade.transform_preamble(role);
     assert!(
         effective.contains("test-writer"),
-        "Subordinate's Claude preamble should contain 'test-writer'. Got: {}",
-        effective
+        "Subordinate's Claude preamble should contain 'test-writer'. Got: {effective}"
     );
     // Also verify the API format (cache_control blocks) includes the role
     let api_format = facade.format_for_api(role);
@@ -404,8 +390,7 @@ fn test_spawned_subordinate_role_flows_through_gemini_builder() {
     let prompt = build_gemini_system_prompt("gemini-2.0-flash", Some(role));
     assert!(
         prompt.contains("test-writer"),
-        "Subordinate's Gemini prompt should contain 'test-writer'. Got: {}",
-        prompt
+        "Subordinate's Gemini prompt should contain 'test-writer'. Got: {prompt}"
     );
 }
 
@@ -421,8 +406,7 @@ fn test_spawned_subordinate_role_flows_through_openai_facade() {
     let effective = prepend_fspec_guidance(role);
     assert!(
         effective.contains("test-writer"),
-        "Subordinate's OpenAI preamble should contain 'test-writer'. Got: {}",
-        effective
+        "Subordinate's OpenAI preamble should contain 'test-writer'. Got: {effective}"
     );
 }
 
@@ -450,8 +434,7 @@ fn test_role_text_appears_in_claude_oauth_format_for_api() {
 
     assert!(
         all_text.contains(role_text),
-        "API format should contain role text. Got: {}",
-        all_text
+        "API format should contain role text. Got: {all_text}"
     );
 }
 
@@ -473,7 +456,6 @@ fn test_role_text_appears_in_claude_api_key_format_for_api() {
 
     assert!(
         all_text.contains(role_text),
-        "API format should contain role text. Got: {}",
-        all_text
+        "API format should contain role text. Got: {all_text}"
     );
 }

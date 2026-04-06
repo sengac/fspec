@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Lifecycle Hooks Engine — Execution & Output Interpretation Tests
 //!
 //! Feature: spec/features/agent-lifecycle-hooks.feature

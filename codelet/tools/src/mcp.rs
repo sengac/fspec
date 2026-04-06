@@ -1382,7 +1382,7 @@ impl rig::tool::Tool for ConnectMcpTool {
 }
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod tests {
     use super::*;
 
@@ -1390,7 +1390,7 @@ mod tests {
     ///
     /// This test file validates the acceptance criteria defined in the feature file.
     /// Scenarios map directly to Gherkin scenarios.
-
+    ///
     /// NOTE: These tests validate data structures, helper functions, routing logic,
     /// and the injection channel mechanism. They do NOT create real rmcp connections
     /// — McpConnection requires RunningService<RoleClient, DynMcpHandler> which
@@ -1401,9 +1401,10 @@ mod tests {
     /// - Pure functions (parse_mcp_tool_name, qualified_mcp_tool_name, format_uptime)
     /// - Data structure construction and serialization (McpConnectArgs, McpConnectResult)
     /// - Injection channel mechanism (McpInjection via mpsc/oneshot)
-    /// - gather_mcp_tools / list_connections via test helper that mirrors the logic
-
+    /// - `gather_mcp_tools` / `list_connections` via test helper that mirrors the logic
+    ///
     /// Lightweight stand-in for McpConnection fields we can test without rmcp.
+    ///
     /// McpConnection itself requires RunningService which can't be constructed
     /// without a live transport, so we mirror only the data fields.
     struct TestMcpConnectionData {
@@ -1522,7 +1523,7 @@ mod tests {
                 data.server_info.version,
                 data.tools.len(),
             ),
-            tools: Some(data.tools.clone()),
+            tools: Some(data.tools),
             connections: None,
         };
         assert!(result.success);
@@ -1700,15 +1701,12 @@ mod tests {
         // @step And the handler should update the cached tools for the "github" connection
         // Simulate what on_tool_list_changed does: update cache then inject notification.
         // Original tools before the notification:
-        let _original_tools = vec![
-            McpToolDef {
+        let _original_tools = [McpToolDef {
                 name: "create_issue".to_string(),
                 description: Some("Create an issue".to_string()),
                 input_schema: serde_json::json!({"type": "object"}),
-            },
-        ];
-        let updated_tools = vec![
-            McpToolDef {
+            }];
+        let updated_tools = [McpToolDef {
                 name: "create_issue".to_string(),
                 description: Some("Create an issue".to_string()),
                 input_schema: serde_json::json!({"type": "object"}),
@@ -1717,8 +1715,7 @@ mod tests {
                 name: "new_tool".to_string(),
                 description: Some("Newly added tool".to_string()),
                 input_schema: serde_json::json!({"type": "object"}),
-            },
-        ];
+            }];
         assert_eq!(updated_tools.len(), 2, "should have updated tool list");
         assert!(
             updated_tools.iter().any(|t| t.name == "new_tool"),
@@ -2023,7 +2020,7 @@ mod tests {
     #[tokio::test]
     async fn test_tool_list_assembly_includes_mcp_tools_alongside_built_in_tools() {
         // @step Given the session has built-in tools "Read", "Write", "Bash"
-        let built_in = vec!["Read", "Write", "Bash"];
+        let built_in = ["Read", "Write", "Bash"];
 
         // @step And MCP server "github" is connected with tools "create_issue" and "list_repos"
         let github = make_test_data("github", &["create_issue", "list_repos"], McpTransport::Stdio);
@@ -2032,7 +2029,7 @@ mod tests {
         let mcp_tools = gather_tools_from_test_data(&[&github]);
 
         // Simulate combining built-in + MCP tools (as done in create_rig_agent)
-        let mut all_tool_names: Vec<String> = built_in.iter().map(|s| s.to_string()).collect();
+        let mut all_tool_names: Vec<String> = built_in.iter().map(std::string::ToString::to_string).collect();
         all_tool_names.extend(mcp_tools.iter().map(|t| t.name.clone()));
 
         // @step Then the result should contain "Read", "Write", "Bash" as built-in tools
@@ -2755,7 +2752,7 @@ mod tests {
             let handle = server.run();
 
             // @step Then the agent's ToolServerHandle is stored in McpSessionState via set_mcp_tool_server_handle
-            set_mcp_tool_server_handle(session_id, handle.clone());
+            set_mcp_tool_server_handle(session_id, handle);
 
             // @step And subsequent ConnectMcpTool calls can access it for mid-turn registration
             let retrieved = get_mcp_tool_server_handle(session_id);

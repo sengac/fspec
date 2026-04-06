@@ -1,3 +1,4 @@
+#![allow(clippy::await_holding_lock, clippy::type_complexity)]
 //! AST Index Dispatch
 //!
 //! Handles the `ast_index` action: walks the project directory, extracts

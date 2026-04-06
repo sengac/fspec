@@ -34,10 +34,10 @@ fn create_test_session() -> codelet_cli::session::Session {
 fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: usize) {
     for i in 0..count {
         session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(&format!("User message {}", i))),
+            content: OneOrMany::one(UserContent::text(format!("User message {i}"))),
         });
         let assistant_text = AssistantContent::Text(Text {
-            text: format!("Assistant response {}", i),
+            text: format!("Assistant response {i}"),
         });
         session.messages.push(Message::Assistant {
             id: None,
@@ -48,8 +48,7 @@ fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: us
 
 fn add_compaction_dag(session: &mut codelet_cli::session::Session, dag_content: &str) {
     let wrapped = format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n{}\n</system-reminder>",
-        dag_content
+        "<system-reminder>\n<!-- type:compaction-dag -->\n{dag_content}\n</system-reminder>"
     );
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text(&wrapped)),
@@ -82,7 +81,7 @@ async fn test_first_compaction_uses_fresh_instruction() {
         .expect("Should have a user message");
     let instruction_text = match last_user {
         Message::User { content } => match content.first() {
-            UserContent::Text(t) => t.text.clone(),
+            UserContent::Text(t) => t.text,
             _ => panic!("Expected text content"),
         },
         _ => panic!("Expected user message"),
@@ -151,7 +150,7 @@ async fn test_second_compaction_uses_incremental_instruction() {
         .expect("Should have a user message");
     let instruction_text = match last_user {
         Message::User { content } => match content.first() {
-            UserContent::Text(t) => t.text.clone(),
+            UserContent::Text(t) => t.text,
             _ => panic!("Expected text content"),
         },
         _ => panic!("Expected user message"),
@@ -199,8 +198,7 @@ fn test_detect_existing_dag_finds_dag() {
 - Current task
 </dag-node>"#;
     let wrapped = format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n{}\n</system-reminder>",
-        dag
+        "<system-reminder>\n<!-- type:compaction-dag -->\n{dag}\n</system-reminder>"
     );
     messages.push(Message::User {
         content: OneOrMany::one(UserContent::text(&wrapped)),
@@ -218,7 +216,7 @@ fn test_detect_existing_dag_finds_dag() {
     assert!(result.is_some(), "Should detect existing DAG");
     let (content, turn_end) = result.unwrap();
     assert!(
-        content.contains("Decisions") == true,
+        content.contains("Decisions"),
         "Should contain DAG content"
     );
 
@@ -324,7 +322,7 @@ async fn test_execute_compaction_appends_resume_prompt_fresh() {
         .unwrap();
     let text = match last_user {
         Message::User { content } => match content.first() {
-            UserContent::Text(t) => t.text.clone(),
+            UserContent::Text(t) => t.text,
             _ => panic!("Expected text"),
         },
         _ => panic!("Expected user"),
@@ -366,7 +364,7 @@ async fn test_execute_compaction_appends_resume_prompt_incremental() {
         .unwrap();
     let text = match last_user {
         Message::User { content } => match content.first() {
-            UserContent::Text(t) => t.text.clone(),
+            UserContent::Text(t) => t.text,
             _ => panic!("Expected text"),
         },
         _ => panic!("Expected user"),
@@ -388,8 +386,7 @@ fn test_detect_existing_dag_fallback_turn_end() {
     // @step Given a session with a compaction-dag system-reminder containing only plain text (no dag-node blocks)
     let plain_dag = "# Summary\n- Some notes without structured dag-node blocks";
     let wrapped = format!(
-        "<system-reminder>\n<!-- type:compaction-dag -->\n{}\n</system-reminder>",
-        plain_dag
+        "<system-reminder>\n<!-- type:compaction-dag -->\n{plain_dag}\n</system-reminder>"
     );
     let messages = vec![Message::User {
         content: OneOrMany::one(UserContent::text(&wrapped)),

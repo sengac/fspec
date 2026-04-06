@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/codex-oauth-login.feature
 //!
 //! This test file validates the acceptance criteria for PROV-011:
@@ -40,8 +41,7 @@ fn test_pkce_code_verifier_meets_rfc_7636_requirements() {
     for c in pkce.verifier.chars() {
         assert!(
             allowed_chars.contains(c),
-            "Invalid character in verifier: {}",
-            c
+            "Invalid character in verifier: {c}"
         );
     }
 
@@ -71,7 +71,7 @@ fn test_browser_oauth_login_with_pkce_completes_successfully() {
     // @step When the user initiates browser OAuth login
     let pkce = generate_pkce();
     let state = generate_state();
-    let redirect_uri = format!("http://localhost:{}/auth/callback", OAUTH_PORT);
+    let redirect_uri = format!("http://localhost:{OAUTH_PORT}/auth/callback");
 
     // @step Then a PKCE code verifier and S256 challenge should be generated
     assert!(!pkce.verifier.is_empty());
@@ -81,21 +81,18 @@ fn test_browser_oauth_login_with_pkce_completes_successfully() {
     // @step And the OAuth authorize URL should include client_id "app_EMoamEEZ73f0CkXaXp7hrann"
     let auth_url = build_authorize_url(&redirect_uri, &pkce, &state);
     assert!(
-        auth_url.contains(&format!("client_id={}", CODEX_CLIENT_ID)),
-        "URL missing client_id: {}",
-        auth_url
+        auth_url.contains(&format!("client_id={CODEX_CLIENT_ID}")),
+        "URL missing client_id: {auth_url}"
     );
 
     // @step And the OAuth authorize URL should include the PKCE challenge and state parameter
     assert!(
         auth_url.contains("code_challenge="),
-        "URL missing code_challenge: {}",
-        auth_url
+        "URL missing code_challenge: {auth_url}"
     );
     assert!(
         auth_url.contains("state="),
-        "URL missing state: {}",
-        auth_url
+        "URL missing state: {auth_url}"
     );
     assert!(
         auth_url.contains(&pkce.challenge),
@@ -213,7 +210,7 @@ fn test_account_id_extracted_from_jwt_id_token_claims() {
     // @step Given an OAuth token response contains an id_token JWT
     let header = base64_url_encode(r#"{"typ":"JWT","alg":"none"}"#);
     let payload = base64_url_encode(r#"{"chatgpt_account_id":"acct_abc123"}"#);
-    let id_token = format!("{}.{}.stub_signature", header, payload);
+    let id_token = format!("{header}.{payload}.stub_signature");
 
     // @step And the id_token payload contains a "chatgpt_account_id" claim
 
@@ -244,7 +241,7 @@ fn test_account_id_extracted_from_nested_jwt_claims() {
     let payload = base64_url_encode(
         r#"{"https://api.openai.com/auth":{"chatgpt_account_id":"acct_nested456"}}"#,
     );
-    let id_token = format!("{}.{}.stub_signature", header, payload);
+    let id_token = format!("{header}.{payload}.stub_signature");
 
     // @step When the account ID is extracted from the token response
     let claims = parse_jwt_claims(&id_token).unwrap();
@@ -264,7 +261,7 @@ fn test_account_id_extracted_from_organizations_claim_as_fallback() {
     // @step And the id_token payload has no chatgpt_account_id but has organizations array
     let header = base64_url_encode(r#"{"typ":"JWT","alg":"none"}"#);
     let payload = base64_url_encode(r#"{"organizations":[{"id":"org_fallback789"}]}"#);
-    let id_token = format!("{}.{}.stub_signature", header, payload);
+    let id_token = format!("{header}.{payload}.stub_signature");
 
     // @step When the account ID is extracted from the token response
     let claims = parse_jwt_claims(&id_token).unwrap();
@@ -293,8 +290,7 @@ fn test_oauth_callback_rejects_mismatched_state_parameter() {
     let error_msg = result.unwrap_err().to_string();
     assert!(
         error_msg.contains("CSRF") || error_msg.contains("state"),
-        "Error should mention CSRF or state: {}",
-        error_msg
+        "Error should mention CSRF or state: {error_msg}"
     );
 
     // @step And the browser should show an error page explaining the failure
@@ -352,7 +348,7 @@ fn test_api_requests_rewritten_to_codex_endpoint_with_oauth_headers() {
     let headers = build_codex_headers(access_token, account_id);
     assert_eq!(
         headers.get("authorization").unwrap(),
-        &format!("Bearer {}", access_token)
+        &format!("Bearer {access_token}")
     );
 
     // @step And the ChatGPT-Account-Id header should be set to the account_id

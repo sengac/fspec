@@ -34,10 +34,10 @@ fn create_test_session_with_conversation() -> codelet_cli::session::Session {
     let mut session = create_test_session();
     for i in 0..20 {
         session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(&format!("User message {}", i))),
+            content: OneOrMany::one(UserContent::text(format!("User message {i}"))),
         });
         let assistant_text = AssistantContent::Text(Text {
-            text: format!("Assistant response {}", i),
+            text: format!("Assistant response {i}"),
         });
         session.messages.push(Message::Assistant {
             id: None,
@@ -342,7 +342,7 @@ async fn test_callers_adapt_to_ok_return_type() {
         Ok(()) => {
             // Successfully adapted to unit return type
         }
-        Err(e) => panic!("execute_compaction should return Ok(()), got error: {}", e),
+        Err(e) => panic!("execute_compaction should return Ok(()), got error: {e}"),
     }
 
     // @step And compaction events are emitted using pre-compaction token counts captured before the call
@@ -407,8 +407,7 @@ fn test_per_turn_annotation_detection_file_modification() {
     });
     assert!(
         has_file_mod,
-        "Should have FileModification annotation with correct path. Got: {:?}",
-        annotations
+        "Should have FileModification annotation with correct path. Got: {annotations:?}"
     );
 }
 
@@ -445,8 +444,7 @@ fn test_per_turn_annotation_detection_fspec_milestone() {
     });
     assert!(
         has_milestone,
-        "Should detect FspecMilestone annotation. Got: {:?}",
-        annotations
+        "Should detect FspecMilestone annotation. Got: {annotations:?}"
     );
 
     // @step And the annotation is serialized into the persisted message metadata
@@ -505,8 +503,7 @@ fn test_per_turn_annotation_detection_error_resolution() {
         .any(|a| matches!(a, StructuralAnnotation::ErrorResolution { .. }));
     assert!(
         has_resolution,
-        "Should detect ErrorResolution annotation. Got: {:?}",
-        annotations
+        "Should detect ErrorResolution annotation. Got: {annotations:?}"
     );
 
     // @step And the annotation references the failed tool and resolved file

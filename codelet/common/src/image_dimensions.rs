@@ -220,6 +220,7 @@ pub fn check_image_dimensions(base64_data: &str, file_path: Option<&str>) -> Opt
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used)]
 mod tests {
     use super::*;
     use base64::{engine::general_purpose::STANDARD, Engine};

@@ -1,10 +1,10 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 //! Feature: spec/features/unified-exec-tool.feature
 //!
 //! Tests for TOOL-016: Unified Exec Tool with PTY Session Management.
 //! Tests validate the ProcessStore, yield-and-resume pattern, action dispatch,
 //! and backward compatibility with BashTool's one-shot execution.
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use codelet_tools::unified_exec::{
     UnifiedExecTool, UnifiedExecArgs, UnifiedExecResult,
@@ -307,7 +307,7 @@ fn test_poll_uses_higher_minimum_yield_time() {
     assert_eq!(MIN_EMPTY_YIELD_TIME_MS, 5_000);
 
     let requested = 1000u64;
-    let effective = requested.max(MIN_EMPTY_YIELD_TIME_MS).min(MAX_YIELD_TIME_MS);
+    let effective = requested.clamp(MIN_EMPTY_YIELD_TIME_MS, MAX_YIELD_TIME_MS);
     assert_eq!(effective, 5_000);
 }
 

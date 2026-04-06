@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/legacy-compaction-cleanup.feature
 //
 // This test file validates the acceptance criteria for the legacy batch LLM
@@ -6,7 +7,6 @@
 // - The compaction module public API only exports kept types
 // - Deleted types are no longer accessible
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
 
 use std::time::SystemTime;
 
@@ -21,9 +21,8 @@ fn test_delete_legacy_compaction_source_files() {
     // @step When the legacy files are deleted
     // @step Then anchor.rs no longer exists in the compaction module
     assert!(
-        !std::path::Path::new("codelet/core/src/compaction/anchor.rs").exists()
-            || true, // Will fail after deletion
-        "anchor.rs check"
+        !std::path::Path::new("codelet/core/src/compaction/anchor.rs").exists(),
+        "anchor.rs should no longer exist in the compaction module"
     );
     // @step And compactor.rs no longer exists in the compaction module
     // @step And selector.rs no longer exists in the compaction module

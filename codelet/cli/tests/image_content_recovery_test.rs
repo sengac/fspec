@@ -83,11 +83,9 @@ fn test_session_recovers_from_image_dimension_400_error() {
 #[test]
 fn test_session_survives_unknown_content_400_error() {
     // @step Given a conversation has non-text content in its history
-    let messages = vec![
-        Message::User {
+    let messages = [Message::User {
             content: OneOrMany::one(UserContent::text("Hello")),
-        },
-    ];
+        }];
 
     // @step And the API returns a 400 invalid_request_error for an unknown reason
     let error_str = r#"{"type":"invalid_request_error","message":"Something unexpected went wrong"}"#;
@@ -318,11 +316,8 @@ fn test_build_user_content_rejects_oversized_png_bridge_image() {
     let parts: Vec<&UserContent> = content.iter().collect();
     assert_eq!(parts.len(), 2, "Should have prompt text + error text");
     for part in &parts {
-        match part {
-            UserContent::Image { .. } => {
-                panic!("Oversized bridge image should NOT produce Image content");
-            }
-            _ => {}
+        if let UserContent::Image { .. } = part {
+            panic!("Oversized bridge image should NOT produce Image content");
         }
     }
     // Second part should be the error text
@@ -351,11 +346,8 @@ fn test_build_user_content_rejects_oversized_jpeg_bridge_image() {
     // @step Then the image should be rejected before entering conversation history
     let parts: Vec<&UserContent> = content.iter().collect();
     for part in &parts {
-        match part {
-            UserContent::Image { .. } => {
-                panic!("Oversized JPEG bridge image should NOT produce Image content");
-            }
-            _ => {}
+        if let UserContent::Image { .. } = part {
+            panic!("Oversized JPEG bridge image should NOT produce Image content");
         }
     }
     // @step And the user should see an error message about dimension limits

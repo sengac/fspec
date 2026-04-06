@@ -690,6 +690,164 @@ fn extract_dart_type_annotations(
     }
 }
 
+/// Extract qualified static method call targets: `ClassName.method()`.
+///
+/// In Dart (and other languages), `BoardFixtures.connectedInstance()` is a
+/// common pattern. The base `extract_call_names_from_body` skips dotted calls,
+/// so this function specifically handles `PascalCase.identifier(` patterns.
+///
+/// Directly emits Calls edges for resolved qualified calls rather than
+/// returning callee names, because cross-file resolution requires knowing
+/// both the class name (for file lookup) and the method name (for the target slug).
+fn extract_qualified_calls(
+    body: &str,
+    caller_slug: &str,
+    file_slug: &str,
+    local_types: &HashSet<String>,
+    import_map: &HashMap<String, (String, bool, String)>,
+    entities: &mut Vec<GraphEntity>,
+) {
+    let bytes = body.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        // Skip strings
+        if bytes[i] == b'\'' || bytes[i] == b'"' {
+            let quote = bytes[i];
+            i += 1;
+            while i < len && bytes[i] != quote {
+                if bytes[i] == b'\\' {
+                    i += 1;
+                }
+                i += 1;
+            }
+            i += 1;
+            continue;
+        }
+
+        // Skip line comments
+        if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'/' {
+            while i < len && bytes[i] != b'\n' {
+                i += 1;
+            }
+            continue;
+        }
+
+        // Look for PascalCase identifier (starts with uppercase)
+        if bytes[i].is_ascii_uppercase() {
+            let class_start = i;
+            while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                i += 1;
+            }
+            let class_name = &body[class_start..i];
+
+            // Must be followed by `.`
+            if i < len && bytes[i] == b'.' {
+                i += 1; // skip dot
+
+                // Extract the method name after the dot
+                if i < len && (bytes[i].is_ascii_alphabetic() || bytes[i] == b'_') {
+                    let method_start = i;
+                    while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                        i += 1;
+                    }
+                    let method_name = &body[method_start..i];
+
+                    // Skip whitespace
+                    let mut j = i;
+                    while j < len && bytes[j] == b' ' {
+                        j += 1;
+                    }
+
+                    // Must be followed by `(`
+                    if j < len && bytes[j] == b'(' {
+                        // Resolve the class to its file via import_map
+                        // First check local types (same file)
+                        if local_types.contains(class_name) {
+                            let target_slug = format!("{file_slug}::{method_name}");
+                            edge_helpers::build_calls_edge(caller_slug, &target_slug, entities);
+                        } else {
+                            // Check imported files — the import map keys are file basenames,
+                            // not class names. We need to scan import_map values to find the
+                            // file that might contain this class.
+                            // Heuristic: if class_name matches the PascalCase of an imported
+                            // file's name (snake_case → PascalCase), emit the call.
+                            for (target_file_slug, is_relative, _original_name) in import_map.values() {
+                                if *is_relative {
+                                    let target_slug = format!("{target_file_slug}::{method_name}");
+                                    edge_helpers::build_calls_edge(caller_slug, &target_slug, entities);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            continue;
+        }
+        i += 1;
+    }
+}
+
+/// Extract constructor invocations from function bodies.
+///
+/// Finds PascalCase identifiers followed by `(` that aren't preceded by `.`
+/// (those are handled by `extract_qualified_call_names`).
+/// These represent constructor calls like `InMemoryConnectionRepository()`.
+fn extract_constructor_invocations_from_body(
+    body: &str,
+    builtins: &HashSet<&str>,
+    out: &mut HashSet<String>,
+) {
+    let bytes = body.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        // Skip strings
+        if bytes[i] == b'\'' || bytes[i] == b'"' {
+            let quote = bytes[i];
+            i += 1;
+            while i < len && bytes[i] != quote {
+                if bytes[i] == b'\\' {
+                    i += 1;
+                }
+                i += 1;
+            }
+            i += 1;
+            continue;
+        }
+
+        // Look for PascalCase identifiers (constructor calls)
+        if bytes[i].is_ascii_uppercase() {
+            // Check not preceded by `.` (that's a qualified call, not constructor)
+            let not_dotted = i == 0 || bytes[i - 1] != b'.';
+
+            let start = i;
+            while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
+                i += 1;
+            }
+            let name = &body[start..i];
+
+            // Skip whitespace
+            let mut j = i;
+            while j < len && bytes[j] == b' ' {
+                j += 1;
+            }
+
+            // Must be followed by `(` and not be a builtin
+            if j < len && bytes[j] == b'(' && not_dotted && !builtins.contains(name) {
+                // Skip keywords that happen to start uppercase (unlikely in Dart)
+                if name != "Function" && name != "Type" {
+                    out.insert(name.to_string());
+                }
+            }
+            continue;
+        }
+        i += 1;
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -791,163 +949,5 @@ enum Color { red, green, blue }
         assert!(kinds.contains(&"class"));
         assert!(kinds.contains(&"enum_kind"));
         assert!(!kinds.contains(&"extension"), "No extensions in this file");
-    }
-}
-
-/// Extract qualified static method call targets: `ClassName.method()`.
-///
-/// In Dart (and other languages), `BoardFixtures.connectedInstance()` is a
-/// common pattern. The base `extract_call_names_from_body` skips dotted calls,
-/// so this function specifically handles `PascalCase.identifier(` patterns.
-///
-/// Directly emits Calls edges for resolved qualified calls rather than
-/// returning callee names, because cross-file resolution requires knowing
-/// both the class name (for file lookup) and the method name (for the target slug).
-fn extract_qualified_calls(
-    body: &str,
-    caller_slug: &str,
-    file_slug: &str,
-    local_types: &HashSet<String>,
-    import_map: &HashMap<String, (String, bool, String)>,
-    entities: &mut Vec<GraphEntity>,
-) {
-    let bytes = body.as_bytes();
-    let len = bytes.len();
-    let mut i = 0;
-
-    while i < len {
-        // Skip strings
-        if bytes[i] == b'\'' || bytes[i] == b'"' {
-            let quote = bytes[i];
-            i += 1;
-            while i < len && bytes[i] != quote {
-                if bytes[i] == b'\\' {
-                    i += 1;
-                }
-                i += 1;
-            }
-            i += 1;
-            continue;
-        }
-
-        // Skip line comments
-        if i + 1 < len && bytes[i] == b'/' && bytes[i + 1] == b'/' {
-            while i < len && bytes[i] != b'\n' {
-                i += 1;
-            }
-            continue;
-        }
-
-        // Look for PascalCase identifier (starts with uppercase)
-        if bytes[i].is_ascii_uppercase() {
-            let class_start = i;
-            while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
-                i += 1;
-            }
-            let class_name = &body[class_start..i];
-
-            // Must be followed by `.`
-            if i < len && bytes[i] == b'.' {
-                i += 1; // skip dot
-
-                // Extract the method name after the dot
-                if i < len && (bytes[i].is_ascii_alphabetic() || bytes[i] == b'_') {
-                    let method_start = i;
-                    while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
-                        i += 1;
-                    }
-                    let method_name = &body[method_start..i];
-
-                    // Skip whitespace
-                    let mut j = i;
-                    while j < len && bytes[j] == b' ' {
-                        j += 1;
-                    }
-
-                    // Must be followed by `(`
-                    if j < len && bytes[j] == b'(' {
-                        // Resolve the class to its file via import_map
-                        // First check local types (same file)
-                        if local_types.contains(class_name) {
-                            let target_slug = format!("{file_slug}::{method_name}");
-                            edge_helpers::build_calls_edge(caller_slug, &target_slug, entities);
-                        } else {
-                            // Check imported files — the import map keys are file basenames,
-                            // not class names. We need to scan import_map values to find the
-                            // file that might contain this class.
-                            // Heuristic: if class_name matches the PascalCase of an imported
-                            // file's name (snake_case → PascalCase), emit the call.
-                            for (_local_name, (target_file_slug, is_relative, _original_name)) in import_map {
-                                if *is_relative {
-                                    let target_slug = format!("{target_file_slug}::{method_name}");
-                                    edge_helpers::build_calls_edge(caller_slug, &target_slug, entities);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            continue;
-        }
-        i += 1;
-    }
-}
-
-/// Extract constructor invocations from function bodies.
-///
-/// Finds PascalCase identifiers followed by `(` that aren't preceded by `.`
-/// (those are handled by `extract_qualified_call_names`).
-/// These represent constructor calls like `InMemoryConnectionRepository()`.
-fn extract_constructor_invocations_from_body(
-    body: &str,
-    builtins: &HashSet<&str>,
-    out: &mut HashSet<String>,
-) {
-    let bytes = body.as_bytes();
-    let len = bytes.len();
-    let mut i = 0;
-
-    while i < len {
-        // Skip strings
-        if bytes[i] == b'\'' || bytes[i] == b'"' {
-            let quote = bytes[i];
-            i += 1;
-            while i < len && bytes[i] != quote {
-                if bytes[i] == b'\\' {
-                    i += 1;
-                }
-                i += 1;
-            }
-            i += 1;
-            continue;
-        }
-
-        // Look for PascalCase identifiers (constructor calls)
-        if bytes[i].is_ascii_uppercase() {
-            // Check not preceded by `.` (that's a qualified call, not constructor)
-            let not_dotted = i == 0 || bytes[i - 1] != b'.';
-
-            let start = i;
-            while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_') {
-                i += 1;
-            }
-            let name = &body[start..i];
-
-            // Skip whitespace
-            let mut j = i;
-            while j < len && bytes[j] == b' ' {
-                j += 1;
-            }
-
-            // Must be followed by `(` and not be a builtin
-            if j < len && bytes[j] == b'(' && not_dotted && !builtins.contains(name) {
-                // Skip keywords that happen to start uppercase (unlikely in Dart)
-                if name != "Function" && name != "Type" {
-                    out.insert(name.to_string());
-                }
-            }
-            continue;
-        }
-        i += 1;
     }
 }

@@ -76,7 +76,7 @@ mod multiplexed_wiring_tests {
             crate::bridge_multiplexed::InboundAction::AuthResponse { success, .. } => {
                 assert!(success, "authSuccess should report success=true");
             }
-            other => panic!("Expected AuthResponse, got {:?}", other),
+            other => panic!("Expected AuthResponse, got {other:?}"),
         }
     }
 
@@ -104,7 +104,7 @@ mod multiplexed_wiring_tests {
             crate::bridge_multiplexed::InboundAction::AuthResponse { success, .. } => {
                 assert!(!success, "authError should report success=false");
             }
-            other => panic!("Expected AuthResponse, got {:?}", other),
+            other => panic!("Expected AuthResponse, got {other:?}"),
         }
     }
 
@@ -156,7 +156,7 @@ mod multiplexed_wiring_tests {
                 assert_eq!(data["type"], "text");
                 assert_eq!(data["text"], "Hello from the agent");
             }
-            other => panic!("Expected RelayChunk, got {:?}", other),
+            other => panic!("Expected RelayChunk, got {other:?}"),
         }
     }
 
@@ -220,7 +220,7 @@ mod multiplexed_wiring_tests {
                 assert_eq!(data["command"], "board");
                 assert_eq!(data["success"], true);
             }
-            other => panic!("Expected CommandResponse, got {:?}", other),
+            other => panic!("Expected CommandResponse, got {other:?}"),
         }
     }
 
@@ -399,7 +399,7 @@ mod multiplexed_wiring_tests {
                 assert_eq!(pong.msg_type, "pong");
             }
             Ok(None) => panic!("Expected pong envelope, got None"),
-            Err(e) => panic!("Expected pong envelope, got error: {}", e),
+            Err(e) => panic!("Expected pong envelope, got error: {e}"),
         }
     }
 

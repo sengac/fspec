@@ -132,7 +132,7 @@ fn make_plain_assistant_metadata() -> HashMap<String, Value> {
 /// Generate N lines of content for testing.
 fn generate_lines(n: usize) -> String {
     (1..=n)
-        .map(|i| format!("     {}: line {} content here with some text", i, i))
+        .map(|i| format!("     {i}: line {i} content here with some text"))
         .collect::<Vec<_>>()
         .join("\n")
 }
@@ -206,8 +206,7 @@ fn test_trim_read_tool_result_to_compact_file_reference() {
     );
     assert!(
         trimmed.contains("tok — use Read to retrieve]"),
-        "Expected 'tok — use Read to retrieve]' in: {}",
-        trimmed
+        "Expected 'tok — use Read to retrieve]' in: {trimmed}"
     );
 
     // @step And the trimmed output should be significantly smaller than the original
@@ -249,8 +248,7 @@ fn test_trim_write_tool_parameters_to_persistence_reference() {
     assert_eq!(
         trimmed,
         "[Write: src/auth.rs, 200 lines — file persisted to disk]",
-        "Expected Write compact reference, got: {}",
-        trimmed
+        "Expected Write compact reference, got: {trimmed}"
     );
 }
 
@@ -286,8 +284,7 @@ fn test_condense_edit_tool_parameters_to_change_summary() {
     assert_eq!(
         trimmed,
         "[Edit: src/auth.rs — replaced 50 chars with 80 chars]",
-        "Expected Edit condensed reference, got: {}",
-        trimmed
+        "Expected Edit condensed reference, got: {trimmed}"
     );
 }
 
@@ -299,7 +296,7 @@ fn test_condense_edit_tool_parameters_to_change_summary() {
 fn test_truncate_long_bash_output_with_head_and_tail() {
     // @step Given a StoredMessage with role "user" containing Bash tool output of 200 lines
     let lines: Vec<String> = (1..=200)
-        .map(|i| format!("output line {}", i))
+        .map(|i| format!("output line {i}"))
         .collect();
     let content = lines.join("\n");
     let tool_id = "toolu_bash_001";
@@ -322,33 +319,29 @@ fn test_truncate_long_bash_output_with_head_and_tail() {
     // @step Then the output should contain the first 10 lines of the original output
     for i in 1..=10 {
         assert!(
-            trimmed.contains(&format!("output line {}", i)),
-            "Expected first 10 lines, missing line {}",
-            i
+            trimmed.contains(&format!("output line {i}")),
+            "Expected first 10 lines, missing line {i}"
         );
     }
 
     // @step And the output should contain "... (185 lines omitted)"
     assert!(
         trimmed.contains("... (185 lines omitted)"),
-        "Expected '... (185 lines omitted)' in: {}",
-        trimmed
+        "Expected '... (185 lines omitted)' in: {trimmed}"
     );
 
     // @step And the output should contain the last 5 lines of the original output
     for i in 196..=200 {
         assert!(
-            trimmed.contains(&format!("output line {}", i)),
-            "Expected last 5 lines, missing line {}",
-            i
+            trimmed.contains(&format!("output line {i}")),
+            "Expected last 5 lines, missing line {i}"
         );
     }
 
     // @step And the output should include the exit code
     assert!(
         trimmed.contains("[exit code: 0]"),
-        "Expected exit code in output, got: {}",
-        trimmed
+        "Expected exit code in output, got: {trimmed}"
     );
 }
 
@@ -360,7 +353,7 @@ fn test_truncate_long_bash_output_with_head_and_tail() {
 fn test_short_bash_output_passes_through_unchanged() {
     // @step Given a StoredMessage with role "user" containing Bash tool output of 14 lines
     let lines: Vec<String> = (1..=14)
-        .map(|i| format!("short output line {}", i))
+        .map(|i| format!("short output line {i}"))
         .collect();
     let content = lines.join("\n");
     let tool_id = "toolu_bash_002";
@@ -404,7 +397,7 @@ fn test_strip_base64_image_data_to_metadata_placeholder() {
     ];
     let b64_header = simple_base64_encode(&png_header);
     let base64_data = format!("{}{}",  b64_header, "A".repeat(60000));
-    let content = format!("data:image/png;base64,{}", base64_data);
+    let content = format!("data:image/png;base64,{base64_data}");
     let tool_id = "toolu_screenshot_001";
 
     // @step And the image metadata indicates dimensions 800x600 and source path "screenshot.png"
@@ -429,8 +422,7 @@ fn test_strip_base64_image_data_to_metadata_placeholder() {
     );
     assert!(
         trimmed.contains("from screenshot.png]"),
-        "Expected source path in placeholder, got: {}",
-        trimmed
+        "Expected source path in placeholder, got: {trimmed}"
     );
     // Base64 data should be completely stripped
     assert!(
@@ -480,8 +472,7 @@ fn test_truncate_search_grep_output_to_first_matches() {
     // @step And the output should end with "... (40 more matches)"
     assert!(
         trimmed.contains("... (40 more matches)"),
-        "Expected '... (40 more matches)' in: {}",
-        trimmed
+        "Expected '... (40 more matches)' in: {trimmed}"
     );
 }
 
@@ -563,7 +554,7 @@ fn test_messages_without_tool_metadata_pass_through_unchanged() {
 fn test_trimming_is_deterministic() {
     // @step Given a StoredMessage with role "user" containing Bash tool output of 200 lines
     let lines: Vec<String> = (1..=200)
-        .map(|i| format!("deterministic line {}", i))
+        .map(|i| format!("deterministic line {i}"))
         .collect();
     let content = lines.join("\n");
     let tool_id = "toolu_bash_det";

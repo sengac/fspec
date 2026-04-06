@@ -4,9 +4,9 @@
 // Tests for the tool schema, handler map, and error handling.
 // Updated for KGRAPH-024: Uses only AST and Learnings actions.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::module_inception)]
 mod tests {
     use crate::graph_search::{
         execute_graph_search, has_graph_search_handler, set_graph_search_handler,
@@ -22,7 +22,7 @@ mod tests {
                 r#"{"nodes":{"File":0,"Function":0},"edges":{"Contains":0}}"#.to_string()
             }
             GraphSearchAction::AstSearch { query, .. } => {
-                format!(r#"{{"results":[{{"name":"{}","type":"Function"}}]}}"#, query)
+                format!(r#"{{"results":[{{"name":"{query}","type":"Function"}}]}}"#)
             }
             GraphSearchAction::AstIndex { .. } => {
                 r#"{"action":"ast_index","entities_loaded":0}"#.to_string()
@@ -31,7 +31,7 @@ mod tests {
                 r#"{"nodes":{"Learning":0,"Decision":0},"edges":{"RelatesTo":0}}"#.to_string()
             }
             GraphSearchAction::LearningsSearch { query, .. } => {
-                format!(r#"{{"results":[{{"name":"{}","category":"decision"}}]}}"#, query)
+                format!(r#"{{"results":[{{"name":"{query}","category":"decision"}}]}}"#)
             }
             _ => r#"{"results":[]}"#.to_string(),
         })

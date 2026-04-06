@@ -503,7 +503,7 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
     }
 }
 #[cfg(test)]
-#[allow(clippy::unwrap_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -560,7 +560,7 @@ mod tests {
             InboundAction::AuthResponse { success, .. } => {
                 assert!(success, "authSuccess should set success=true");
             }
-            other => panic!("Expected AuthResponse, got {:?}", other),
+            other => panic!("Expected AuthResponse, got {other:?}"),
         }
     }
 
@@ -590,7 +590,7 @@ mod tests {
                 // @step And the bridge should reconnect with exponential backoff
                 // Reconnection logic is handled by relay_loop — existing bridge_relay.rs behavior
             }
-            other => panic!("Expected AuthResponse, got {:?}", other),
+            other => panic!("Expected AuthResponse, got {other:?}"),
         }
     }
 
@@ -649,7 +649,7 @@ mod tests {
                 assert_eq!(imgs[0].data, "base64...");
                 assert_eq!(imgs[0].media_type, "image/png");
             }
-            other => panic!("Expected SessionInput, got {:?}", other),
+            other => panic!("Expected SessionInput, got {other:?}"),
         }
     }
 
@@ -670,7 +670,7 @@ mod tests {
                 assert_eq!(message, "Just text");
                 assert!(images.is_none());
             }
-            other => panic!("Expected SessionInput, got {:?}", other),
+            other => panic!("Expected SessionInput, got {other:?}"),
         }
     }
 
@@ -699,7 +699,7 @@ mod tests {
                 assert_eq!(action, "interrupt");
                 assert!(response.is_none());
             }
-            other => panic!("Expected SessionControl, got {:?}", other),
+            other => panic!("Expected SessionControl, got {other:?}"),
         }
     }
 
@@ -720,7 +720,7 @@ mod tests {
                 assert_eq!(action, "pause_response");
                 assert_eq!(response.as_deref(), Some("allow_once"));
             }
-            other => panic!("Expected SessionControl, got {:?}", other),
+            other => panic!("Expected SessionControl, got {other:?}"),
         }
     }
 
@@ -755,7 +755,7 @@ mod tests {
                 assert_eq!(command, "board");
                 assert!(!args_json.is_empty());
             }
-            other => panic!("Expected FspecCommand, got {:?}", other),
+            other => panic!("Expected FspecCommand, got {other:?}"),
         }
 
         // @step And when the FspecCommandResult comes back on the broadcast channel
@@ -832,7 +832,7 @@ mod tests {
                 assert!(shell.is_none());
                 assert!(cwd.is_none());
             }
-            other => panic!("Expected TerminalCreate, got {:?}", other),
+            other => panic!("Expected TerminalCreate, got {other:?}"),
         }
     }
 
@@ -855,7 +855,7 @@ mod tests {
                 assert_eq!(shell.as_deref(), Some("/bin/bash"));
                 assert_eq!(cwd.as_deref(), Some("/tmp"));
             }
-            other => panic!("Expected TerminalCreate, got {:?}", other),
+            other => panic!("Expected TerminalCreate, got {other:?}"),
         }
     }
 
@@ -882,7 +882,7 @@ mod tests {
                 assert_eq!(terminal_id, "T1");
                 assert_eq!(base64_data, "bHMK");
             }
-            other => panic!("Expected TerminalInput, got {:?}", other),
+            other => panic!("Expected TerminalInput, got {other:?}"),
         }
     }
 
@@ -910,7 +910,7 @@ mod tests {
                 assert_eq!(cols, 120);
                 assert_eq!(rows, 40);
             }
-            other => panic!("Expected TerminalResize, got {:?}", other),
+            other => panic!("Expected TerminalResize, got {other:?}"),
         }
     }
 
@@ -936,7 +936,7 @@ mod tests {
                 assert_eq!(terminal_id, "T1");
                 assert_eq!(request_id, "d1");
             }
-            other => panic!("Expected TerminalDestroy, got {:?}", other),
+            other => panic!("Expected TerminalDestroy, got {other:?}"),
         }
     }
 
@@ -1080,7 +1080,7 @@ mod tests {
                 assert_eq!(service, "session");
                 assert_eq!(msg_type, "unknown_type");
             }
-            other => panic!("Expected Unknown, got {:?}", other),
+            other => panic!("Expected Unknown, got {other:?}"),
         }
     }
 

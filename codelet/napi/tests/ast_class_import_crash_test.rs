@@ -36,7 +36,7 @@ fn find_nodes_by_name<'a>(
                     && properties
                         .get("name")
                         .and_then(|v| v.as_str())
-                        .map_or(false, |n| n.contains(name_contains))
+                        .is_some_and(|n| n.contains(name_contains))
             }
             _ => false,
         })

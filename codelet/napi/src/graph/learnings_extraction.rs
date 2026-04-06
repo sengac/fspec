@@ -190,8 +190,7 @@ pub fn extract_learnings_from_text(
                         learning_count += 1;
                         if properties
                             .get("category")
-                            .and_then(|c| c.as_str())
-                            .map_or(false, |c| c == "constraint")
+                            .and_then(|c| c.as_str()) == Some("constraint")
                         {
                             constraint_count += 1;
                         }

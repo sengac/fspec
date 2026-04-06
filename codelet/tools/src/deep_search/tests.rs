@@ -5,7 +5,7 @@
 //! This test file validates the acceptance criteria defined in the feature file.
 //! Scenarios map directly to Gherkin scenarios.
 
-#[allow(clippy::unwrap_used, clippy::expect_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::module_inception, clippy::assertions_on_constants)]
 mod tests {
     use super::super::*;
     use serial_test::serial;
@@ -389,7 +389,7 @@ mod tests {
         let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth, _max_rec| {
             cc.fetch_add(1, Ordering::SeqCst);
             *cq.lock().unwrap() = query.clone();
-            *cs.lock().unwrap() = scope.clone();
+            *cs.lock().unwrap() = scope;
             cd.store(max_depth, Ordering::SeqCst);
             Box::pin(async move {
                 Ok(format!("Answer about: {query}"))
@@ -456,7 +456,7 @@ mod tests {
 
         // @step When the parent agent calls DeepSearch with query "Find all sessions where we discussed compaction strategy" and no scope
         let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth, _max_rec| {
-            *cs.lock().unwrap() = scope.clone();
+            *cs.lock().unwrap() = scope;
             cd.store(max_depth, Ordering::SeqCst);
             Box::pin(async move {
                 Ok(format!("Session answer: {query}"))

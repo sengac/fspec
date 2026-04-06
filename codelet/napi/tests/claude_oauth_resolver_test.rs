@@ -1,9 +1,10 @@
-/// Feature: spec/features/claude-oauth-credential-detection-and-session-routing.feature
-///
-/// PROV-026: Credential Resolver Integration Test
-///
-/// Tests that resolver.rs correctly falls back to claude_auth.json
-/// for the anthropic provider, and sets CLAUDE_CODE_OAUTH_TOKEN env var.
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+// Feature: spec/features/claude-oauth-credential-detection-and-session-routing.feature
+//
+// PROV-026: Credential Resolver Integration Test
+//
+// Tests that resolver.rs correctly falls back to claude_auth.json
+// for the anthropic provider, and sets CLAUDE_CODE_OAUTH_TOKEN env var.
 
 use codelet_providers::claude_auth::{get_claude_auth_path, ClaudeAuthJson};
 use serial_test::serial;

@@ -467,7 +467,79 @@ impl CodexProvider {
     }
 }
 
+#[async_trait]
+impl LlmProvider for CodexProvider {
+    fn name(&self) -> &str {
+        "codex"
+    }
+
+    fn model(&self) -> &str {
+        &self.model_name
+    }
+
+    fn context_window(&self) -> usize {
+        CONTEXT_WINDOW
+    }
+
+    fn max_output_tokens(&self) -> usize {
+        MAX_OUTPUT_TOKENS
+    }
+
+    fn supports_caching(&self) -> bool {
+        false // Codex does not support prompt caching
+    }
+
+    fn supports_streaming(&self) -> bool {
+        true // Streaming support via rig
+    }
+
+    async fn complete(&self, messages: &[Message]) -> Result<String, ProviderError> {
+        // Reuse complete_with_tools with no tools to avoid code duplication
+        let response = self.complete_with_tools(messages, &[]).await?;
+
+        // Extract text using shared helper (REFAC-013)
+        Ok(extract_text_from_content(&response.content))
+    }
+
+    async fn complete_with_tools(
+        &self,
+        messages: &[Message],
+        tools: &[OurToolDefinition],
+    ) -> Result<CompletionResponse, ProviderError> {
+        // Extract prompt data using shared helper (REFAC-013)
+        let (preamble, prompt) = extract_prompt_data(messages);
+
+        // Convert tools to rig format using shared helper (REFAC-013)
+        let rig_tools = convert_tools_to_rig(tools);
+
+        // Build and send completion request using rig's builder pattern
+        // PROV-019: Codex backend API REQUIRES non-empty `instructions`.
+        // Always set preamble — use extracted preamble or fall back to base instructions.
+        let effective_preamble = preamble.unwrap_or_else(|| CODEX_BASE_INSTRUCTIONS.to_string());
+        // NOTE: Do NOT set .max_tokens() — the Codex backend API rejects
+        // `max_output_tokens` with 400: {"detail":"Unsupported parameter: max_output_tokens"}
+        // Both codex-cli and opencode omit this parameter for Codex endpoints.
+        let builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
+            .tools(rig_tools)
+            .preamble(effective_preamble)
+            // PROV-037: Include reasoning config in complete_with_tools, not just create_rig_agent.
+            // Without reasoning, GPT-5.x Codex models produce ~33 tokens of commentary
+            // with 0 reasoning tokens and no function_call output items.
+            .additional_params(Self::build_reasoning_params(None));
+
+        // Send request and get response
+        let response = builder
+            .send()
+            .await
+            .map_err(|e| ProviderError::api("codex", format!("Rig completion failed: {e}")))?;
+
+        // Convert rig response to our CompletionResponse format
+        self.rig_response_to_completion(response)
+    }
+}
+
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::CodexProvider;
     use uuid::Uuid;
@@ -564,7 +636,7 @@ mod tests {
         let tool_names: Vec<&str> = tool_defs.iter().map(|def| def.name.as_str()).collect();
 
         // @step Then the tool list does not contain "glob"
-        assert!(!tool_names.contains(&"glob"), "Codex agent should NOT expose non-native 'glob' tool, but found: {:?}", tool_names);
+        assert!(!tool_names.contains(&"glob"), "Codex agent should NOT expose non-native 'glob' tool, but found: {tool_names:?}");
         assert!(!tool_names.contains(&"Glob"), "Codex agent should NOT expose 'Glob' tool either");
 
         // @step And the tool list contains "shell_command"
@@ -645,76 +717,5 @@ mod tests {
             params["reasoning"]["effort"], "low",
             "User's effort level should be preserved, not overridden with default"
         );
-    }
-}
-
-#[async_trait]
-impl LlmProvider for CodexProvider {
-    fn name(&self) -> &str {
-        "codex"
-    }
-
-    fn model(&self) -> &str {
-        &self.model_name
-    }
-
-    fn context_window(&self) -> usize {
-        CONTEXT_WINDOW
-    }
-
-    fn max_output_tokens(&self) -> usize {
-        MAX_OUTPUT_TOKENS
-    }
-
-    fn supports_caching(&self) -> bool {
-        false // Codex does not support prompt caching
-    }
-
-    fn supports_streaming(&self) -> bool {
-        true // Streaming support via rig
-    }
-
-    async fn complete(&self, messages: &[Message]) -> Result<String, ProviderError> {
-        // Reuse complete_with_tools with no tools to avoid code duplication
-        let response = self.complete_with_tools(messages, &[]).await?;
-
-        // Extract text using shared helper (REFAC-013)
-        Ok(extract_text_from_content(&response.content))
-    }
-
-    async fn complete_with_tools(
-        &self,
-        messages: &[Message],
-        tools: &[OurToolDefinition],
-    ) -> Result<CompletionResponse, ProviderError> {
-        // Extract prompt data using shared helper (REFAC-013)
-        let (preamble, prompt) = extract_prompt_data(messages);
-
-        // Convert tools to rig format using shared helper (REFAC-013)
-        let rig_tools = convert_tools_to_rig(tools);
-
-        // Build and send completion request using rig's builder pattern
-        // PROV-019: Codex backend API REQUIRES non-empty `instructions`.
-        // Always set preamble — use extracted preamble or fall back to base instructions.
-        let effective_preamble = preamble.unwrap_or_else(|| CODEX_BASE_INSTRUCTIONS.to_string());
-        // NOTE: Do NOT set .max_tokens() — the Codex backend API rejects
-        // `max_output_tokens` with 400: {"detail":"Unsupported parameter: max_output_tokens"}
-        // Both codex-cli and opencode omit this parameter for Codex endpoints.
-        let builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)
-            .tools(rig_tools)
-            .preamble(effective_preamble)
-            // PROV-037: Include reasoning config in complete_with_tools, not just create_rig_agent.
-            // Without reasoning, GPT-5.x Codex models produce ~33 tokens of commentary
-            // with 0 reasoning tokens and no function_call output items.
-            .additional_params(Self::build_reasoning_params(None));
-
-        // Send request and get response
-        let response = builder
-            .send()
-            .await
-            .map_err(|e| ProviderError::api("codex", format!("Rig completion failed: {e}")))?;
-
-        // Convert rig response to our CompletionResponse format
-        self.rig_response_to_completion(response)
     }
 }

@@ -58,7 +58,7 @@ fn test_debug_api_request_event_should_use_model_id_not_provider_name() {
     // @step Then the event data should have model "gpt-5.3-codex"
     // Build the event JSON the way the FIXED code should build it
     let correct_model = model_id
-        .clone()
+        
         .unwrap_or_else(|| provider_name.clone());
     let event_data = serde_json::json!({
         "provider": &provider_name,
@@ -157,7 +157,7 @@ fn test_napi_session_metadata_should_use_model_id() {
     // The fix should construct SessionMetadata with model_id:
     let metadata = SessionMetadata {
         provider: Some(provider_name.to_string()),
-        model: model_id.map(|s| s.to_string()),
+        model: model_id.map(std::string::ToString::to_string),
         context_window: Some(128000),
         max_output_tokens: None,
     };
@@ -187,7 +187,7 @@ fn test_napi_session_toggle_debug_uses_model_id() {
     // Construct metadata the CORRECT way (using model_id)
     let correct_metadata = SessionMetadata {
         provider: Some(provider_name.to_string()),
-        model: model_id.map(|s| s.to_string()),
+        model: model_id.map(std::string::ToString::to_string),
         context_window: Some(128000),
         max_output_tokens: None,
     };

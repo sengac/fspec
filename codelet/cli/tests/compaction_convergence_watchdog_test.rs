@@ -33,10 +33,10 @@ fn create_test_session() -> codelet_cli::session::Session {
 fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: usize) {
     for i in 0..count {
         session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(&format!("User message {}", i))),
+            content: OneOrMany::one(UserContent::text(format!("User message {i}"))),
         });
         let assistant_text = AssistantContent::Text(Text {
-            text: format!("Assistant response {}", i),
+            text: format!("Assistant response {i}"),
         });
         session.messages.push(Message::Assistant {
             id: None,
@@ -344,15 +344,14 @@ fn test_force_inject_with_minimal_fallback() {
     // @step Then the engine should create a minimal fallback DAG with a D1 node
     let last_turn = session.messages.len().saturating_sub(1);
     let fallback = format!(
-        r#"<dag-node depth="D1" turns="0-{}" label="Auto-recovered: compaction timeout">
+        r#"<dag-node depth="D1" turns="0-{last_turn}" label="Auto-recovered: compaction timeout">
 Session was auto-compacted due to convergence timeout.
 Use SessionSearch to recover context.
-</dag-node>"#,
-        last_turn
+</dag-node>"#
     );
 
     // @step And the fallback D1 node should cover turns 0 through the last known turn
-    assert!(fallback.contains(&format!("turns=\"0-{}\"", last_turn)));
+    assert!(fallback.contains(&format!("turns=\"0-{last_turn}\"")));
 
     // @step And the fallback label should indicate auto-recovery from compaction timeout
     assert!(fallback.contains("Auto-recovered: compaction timeout"));

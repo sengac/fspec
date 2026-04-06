@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 //! Feature: spec/features/overlap-session-limit.feature
 //!
 //! Tests for Overlap & Session Limit Management (SCHED-006).
@@ -16,7 +17,7 @@ use uuid::Uuid;
 
 /// Mirrors the SchedulerState that will be created in the implementation.
 /// We test behavior against this expected interface.
-
+///
 /// Helper: build an agent schedule entry with an overlap policy
 fn make_agent_schedule(overlap_policy: Option<&str>) -> ScheduleEntry {
     ScheduleEntry {

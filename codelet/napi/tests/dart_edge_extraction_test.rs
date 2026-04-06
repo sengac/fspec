@@ -359,17 +359,17 @@ class User {
 
     println!("Function names found: {:?}", fn_nodes);
     assert!(
-        fn_nodes.iter().any(|n| *n == "User"),
+        fn_nodes.contains(&"User"),
         "Should have Function node for constructor 'User'. Got: {:?}",
         fn_nodes
     );
     assert!(
-        fn_nodes.iter().any(|n| *n == "fromJson"),
+        fn_nodes.contains(&"fromJson"),
         "Should have Function node for named constructor 'fromJson'. Got: {:?}",
         fn_nodes
     );
     assert!(
-        fn_nodes.iter().any(|n| *n == "create"),
+        fn_nodes.contains(&"create"),
         "Should have Function node for factory constructor 'create'. Got: {:?}",
         fn_nodes
     );

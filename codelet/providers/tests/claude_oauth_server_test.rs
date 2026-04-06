@@ -56,7 +56,7 @@ fn urlencoded(s: &str) -> String {
             b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
                 format!("{}", b as char)
             }
-            _ => format!("%{:02X}", b),
+            _ => format!("%{b:02X}"),
         })
         .collect()
 }
@@ -624,9 +624,7 @@ async fn test_claude_auth_persistence_writes_correct_json_structure() {
         .as_millis() as u64;
     assert!(
         persisted_expires > now_ms,
-        "expires {} should be in the future (now: {})",
-        persisted_expires,
-        now_ms
+        "expires {persisted_expires} should be in the future (now: {now_ms})"
     );
 
     // Also verify read_claude_auth round-trips correctly

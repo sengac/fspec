@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/claude-oauth-core.feature
 //!
 //! This test file validates the acceptance criteria for PROV-020:
@@ -39,7 +40,7 @@ fn test_pkce_code_verifier_meets_rfc_7636_requirements() {
     // @step And the verifier should contain only unreserved URI characters
     let allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
     for c in pkce.verifier.chars() {
-        assert!(allowed.contains(c), "Invalid character in verifier: {}", c);
+        assert!(allowed.contains(c), "Invalid character in verifier: {c}");
     }
 
     // @step And the challenge method should be "S256"
@@ -82,56 +83,49 @@ fn test_authorize_url_contains_all_required_parameters_for_max_mode() {
     // @step Then the URL base should be "https://claude.ai/oauth/authorize"
     assert!(
         url.starts_with("https://claude.ai/oauth/authorize?"),
-        "URL base wrong: {}",
-        url
+        "URL base wrong: {url}"
     );
 
     // @step And the URL should contain parameter "code" with value "true"
-    assert!(url.contains("code=true"), "Missing code=true: {}", url);
+    assert!(url.contains("code=true"), "Missing code=true: {url}");
 
     // @step And the URL should contain parameter "client_id" with value "9d1c250a-e61b-44d9-88ed-5944d1962f5e"
     assert!(
-        url.contains(&format!("client_id={}", CLAUDE_CLIENT_ID)),
-        "Missing client_id: {}",
-        url
+        url.contains(&format!("client_id={CLAUDE_CLIENT_ID}")),
+        "Missing client_id: {url}"
     );
 
     // @step And the URL should contain parameter "response_type" with value "code"
     assert!(
         url.contains("response_type=code"),
-        "Missing response_type: {}",
-        url
+        "Missing response_type: {url}"
     );
 
     // @step And the URL should contain parameter "redirect_uri" with value "https://console.anthropic.com/oauth/code/callback"
     assert!(
         url.contains("redirect_uri="),
-        "Missing redirect_uri: {}",
-        url
+        "Missing redirect_uri: {url}"
     );
 
     // @step And the URL should contain parameter "scope" with value "org:create_api_key user:profile user:inference"
-    assert!(url.contains("scope="), "Missing scope: {}", url);
+    assert!(url.contains("scope="), "Missing scope: {url}");
 
     // @step And the URL should contain parameter "code_challenge" matching the PKCE challenge
     assert!(
         url.contains(&format!("code_challenge={}", pkce.challenge)),
-        "Missing code_challenge: {}",
-        url
+        "Missing code_challenge: {url}"
     );
 
     // @step And the URL should contain parameter "code_challenge_method" with value "S256"
     assert!(
         url.contains("code_challenge_method=S256"),
-        "Missing code_challenge_method: {}",
-        url
+        "Missing code_challenge_method: {url}"
     );
 
     // @step And the URL should contain parameter "state" matching the PKCE verifier
     assert!(
         url.contains(&format!("state={}", pkce.verifier)),
-        "Missing state=verifier: {}",
-        url
+        "Missing state=verifier: {url}"
     );
 }
 
@@ -269,15 +263,13 @@ async fn test_code_exchange_fails_with_invalid_authorization_code() {
     let error_msg = result.unwrap_err().to_string();
     assert!(
         error_msg.contains("400"),
-        "Error should contain HTTP status: {}",
-        error_msg
+        "Error should contain HTTP status: {error_msg}"
     );
 
     // @step And the error should contain the response body
     assert!(
         error_msg.contains("invalid_grant") || error_msg.contains("Invalid code"),
-        "Error should contain response body: {}",
-        error_msg
+        "Error should contain response body: {error_msg}"
     );
 }
 
@@ -353,15 +345,13 @@ fn test_oauth_headers_built_with_required_beta_headers() {
     let beta = headers.get("anthropic-beta").unwrap();
     assert!(
         beta.contains("oauth-2025-04-20"),
-        "Missing oauth beta: {}",
-        beta
+        "Missing oauth beta: {beta}"
     );
 
     // @step And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
     assert!(
         beta.contains("interleaved-thinking-2025-05-14"),
-        "Missing thinking beta: {}",
-        beta
+        "Missing thinking beta: {beta}"
     );
 
     // @step And the user-agent header should be "claude-cli/2.1.3 (external, cli)"
@@ -396,20 +386,18 @@ fn test_oauth_headers_preserve_existing_beta_headers() {
     let beta = headers.get("anthropic-beta").unwrap();
 
     // @step Then the anthropic-beta header should contain "oauth-2025-04-20"
-    assert!(beta.contains("oauth-2025-04-20"), "Missing oauth beta: {}", beta);
+    assert!(beta.contains("oauth-2025-04-20"), "Missing oauth beta: {beta}");
 
     // @step And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
     assert!(
         beta.contains("interleaved-thinking-2025-05-14"),
-        "Missing thinking beta: {}",
-        beta
+        "Missing thinking beta: {beta}"
     );
 
     // @step And the anthropic-beta header should contain "prompt-caching-2024-07-31"
     assert!(
         beta.contains("prompt-caching-2024-07-31"),
-        "Missing existing beta: {}",
-        beta
+        "Missing existing beta: {beta}"
     );
 }
 
@@ -476,15 +464,13 @@ fn test_messages_url_with_existing_query_parameters_gets_beta_appended() {
     // @step Then the URL should contain "beta=true"
     assert!(
         rewritten.contains("beta=true"),
-        "Missing beta=true: {}",
-        rewritten
+        "Missing beta=true: {rewritten}"
     );
 
     // @step And the URL should preserve "stream=true"
     assert!(
         rewritten.contains("stream=true"),
-        "Missing stream=true: {}",
-        rewritten
+        "Missing stream=true: {rewritten}"
     );
 }
 
@@ -531,10 +517,7 @@ fn test_token_expiry_calculated_from_expires_in_seconds() {
     let expected_max = after + expires_in * 1000;
     assert!(
         expiry >= expected_min && expiry <= expected_max,
-        "Expiry {} should be between {} and {}",
-        expiry,
-        expected_min,
-        expected_max
+        "Expiry {expiry} should be between {expected_min} and {expected_max}"
     );
 }
 

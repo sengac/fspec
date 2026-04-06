@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::assertions_on_constants, clippy::needless_collect)]
 //! Feature: spec/features/supervisor-infrastructure-removal.feature
 //!
 //! This test file validates the acceptance criteria for removing old supervisor

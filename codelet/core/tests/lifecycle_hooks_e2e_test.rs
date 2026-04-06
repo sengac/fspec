@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Lifecycle Hooks — End-to-End Example Hook Integration Tests
 //!
 //! Feature: spec/features/agent-lifecycle-hooks.feature
@@ -52,7 +53,7 @@ fn setup_workspace() -> TempDir {
 
     // Replace relative "spec/hooks/examples/" prefix with absolute path
     let abs_examples = examples.to_string_lossy();
-    let config_fixed = config_src.replace("spec/hooks/examples/", &format!("{}/", abs_examples));
+    let config_fixed = config_src.replace("spec/hooks/examples/", &format!("{abs_examples}/"));
 
     fs::write(spec_dir.join("fspec-hooks.json"), config_fixed).expect("write fixed config");
 

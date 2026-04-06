@@ -6,7 +6,7 @@
 //! truly recursive with self-invocation and an RLM-aligned system prompt.
 //! Scenarios map directly to Gherkin scenarios.
 
-#[allow(clippy::unwrap_used, clippy::expect_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::module_inception)]
 mod recursive_tests {
     use crate::deep_search::{
         build_system_prompt, clear_all_deep_search_handlers, has_deep_search_handler,
@@ -468,7 +468,7 @@ mod recursive_tests {
         let cs = captured_scope.clone();
 
         let handler: DeepSearchHandler = Arc::new(move |_query, scope, _depth, _max_rec| {
-            *cs.lock().unwrap() = scope.clone();
+            *cs.lock().unwrap() = scope;
             Box::pin(async move {
                 // @step When the depth-0 sub-agent uses SessionSearch to find matching sessions
                 // @step Then it may call DeepSearch per session to extract summaries

@@ -446,7 +446,7 @@ async fn test_search_by_keyword_across_all_content() {
         SessionSearchAction::Search { query, .. } => {
             assert_eq!(query, "RLM-001");
             SessionSearchResult::Search {
-                query: query.clone(),
+                query,
                 total_matches: 3,
                 groups: vec![SearchMatchGroup {
                     session_id: "sess-1".to_string(),

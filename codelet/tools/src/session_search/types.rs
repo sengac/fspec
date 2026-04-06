@@ -221,7 +221,7 @@ pub const DEFAULT_SEARCH_LIMIT: usize = 20;
 pub const USER_MESSAGE_PREVIEW_LEN: usize = 200;
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 

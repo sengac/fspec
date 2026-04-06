@@ -303,7 +303,7 @@ fn extract_csharp_type_annotations(signature: &str, out: &mut HashSet<String>) {
         let paren_close = signature.rfind(')').unwrap_or(signature.len());
         let params_str = &signature[paren_open + 1..paren_close];
         for param in params_str.split(',') {
-            let words: Vec<&str> = param.trim().split_whitespace().collect();
+            let words: Vec<&str> = param.split_whitespace().collect();
             if words.len() >= 2 {
                 let type_word = words[words.len() - 2];
                 let name: String = type_word.chars().take_while(|c| c.is_alphanumeric() || *c == '_').collect();

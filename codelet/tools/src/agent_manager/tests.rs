@@ -220,7 +220,7 @@ fn test_spawn_with_role() {
         let handler: AgentManagerHandler = Arc::new(move |action, _sid| {
             match action {
                 AgentManagerAction::Spawn { role } => {
-                    *role_received_clone.lock().unwrap() = role.clone();
+                    *role_received_clone.lock().unwrap() = role;
                     AgentManagerResult::Spawned {
                         session_id: Uuid::new_v4().to_string(),
                     }
@@ -1033,7 +1033,7 @@ fn test_message_channel_full() {
         let result = execute_agent_manager(
             sender_id,
             AgentManagerAction::Message {
-                session_id: target_id.clone(),
+                session_id: target_id,
                 message: "this should fail".to_string(),
                 context: None,
             },
@@ -1453,7 +1453,7 @@ fn test_context_specific_turns() {
         // Use a handler that captures the context parameter
         let context_received = Arc::new(std::sync::Mutex::new(None::<Option<Vec<ContextReference>>>));
         let context_clone = context_received.clone();
-        let log_clone = message_log.clone();
+        let log_clone = message_log;
         let sessions_arc = Arc::new(sessions);
 
         let handler: AgentManagerHandler = Arc::new(move |action, calling_session_id| {

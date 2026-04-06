@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::type_complexity)]
 //! Feature: spec/features/claude-headless-login.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
@@ -442,7 +442,7 @@ async fn test_headless_login_produces_same_claude_auth_json_output_as_browser_oa
     // @step And the output should be identical in structure to browser OAuth login output from PROV-021
     // Verify the type IS ClaudeAuthJson — same struct used by browser OAuth (PROV-021)
     // This is a compile-time check: the function returns Result<ClaudeAuthJson>
-    let _: ClaudeAuthJson = auth.clone();
+    let _: ClaudeAuthJson = auth;
 
     // Verify all three fields are present in serialized form (identical structure to browser OAuth)
     let serialized = serde_json::to_value(&auth).unwrap();

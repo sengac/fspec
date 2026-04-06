@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Lifecycle Hooks Config — Loading, Merging & Compilation Tests
 //!
 //! Feature: spec/features/agent-lifecycle-hooks.feature
@@ -230,8 +231,7 @@ fn test_invalid_regex_prevents_engine_creation() {
     let err_msg = result.unwrap_err().to_string();
     assert!(
         err_msg.contains("regex") || err_msg.contains("invalid"),
-        "error should mention regex: {}",
-        err_msg
+        "error should mention regex: {err_msg}"
     );
 
     // @step And no hooks should be compiled
@@ -523,8 +523,7 @@ fn test_malformed_json_config_produces_error() {
     let err_msg = result.unwrap_err().to_string();
     assert!(
         err_msg.contains("JSON") || err_msg.contains("parse"),
-        "error should mention JSON parsing: {}",
-        err_msg
+        "error should mention JSON parsing: {err_msg}"
     );
 }
 

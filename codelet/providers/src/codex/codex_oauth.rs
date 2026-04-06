@@ -411,7 +411,7 @@ mod tests {
         let pkce = generate_pkce();
         let allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
         for c in pkce.verifier.chars() {
-            assert!(allowed.contains(c), "Invalid character in verifier: {}", c);
+            assert!(allowed.contains(c), "Invalid character in verifier: {c}");
         }
     }
 

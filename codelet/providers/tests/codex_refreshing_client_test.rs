@@ -1,4 +1,4 @@
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 //! Feature: spec/features/codex-refreshing-client.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
@@ -104,7 +104,7 @@ async fn mount_successful_refresh(
     Mock::given(method("POST"))
         .and(path("/oauth/token"))
         .and(body_string_contains("grant_type=refresh_token"))
-        .and(body_string_contains(&format!("client_id={CODEX_CLIENT_ID}")))
+        .and(body_string_contains(format!("client_id={CODEX_CLIENT_ID}")))
         .respond_with(ResponseTemplate::new(200).set_body_json(&token_body))
         .mount(mock_server)
         .await;

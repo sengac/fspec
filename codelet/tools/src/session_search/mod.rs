@@ -18,7 +18,7 @@ pub mod reassembly;
 pub mod types;
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
 mod tests;
 
 use rig::tool::Tool;

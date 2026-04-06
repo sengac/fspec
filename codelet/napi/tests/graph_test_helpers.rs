@@ -69,10 +69,9 @@ pub fn has_dependency_with_source(entities: &[GraphEntity], expected_source: &st
         } = e
         {
             node_type == "Dependency"
-                && properties
+                && (properties
                     .get("source")
-                    .and_then(|v| v.as_str())
-                    .map_or(false, |s| s == expected_source)
+                    .and_then(|v| v.as_str()) == Some(expected_source))
         } else {
             false
         }
@@ -102,8 +101,8 @@ pub fn find_edges<'a>(
                 ..
             } => {
                 et == edge_type
-                    && from_contains.map_or(true, |f| from_slug.contains(f))
-                    && to_contains.map_or(true, |t| to_slug.contains(t))
+                    && from_contains.is_none_or(|f| from_slug.contains(f))
+                    && to_contains.is_none_or(|t| to_slug.contains(t))
             }
             _ => false,
         })

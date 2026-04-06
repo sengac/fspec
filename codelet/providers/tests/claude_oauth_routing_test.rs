@@ -1,12 +1,13 @@
-/// Feature: spec/features/claude-oauth-credential-detection-and-session-routing.feature
-///
-/// PROV-026: Claude OAuth Credential Detection and Session Routing Tests
-///
-/// Tests for:
-/// - read_claude_auth_sync() — sync file reader
-/// - has_claude_auth() — credential detection
-/// - get_claude() — OAuth routing with from_oauth_tokens()
-/// - resolver fallback — claude_auth.json as credential source
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+// Feature: spec/features/claude-oauth-credential-detection-and-session-routing.feature
+//
+// PROV-026: Claude OAuth Credential Detection and Session Routing Tests
+//
+// Tests for:
+// - read_claude_auth_sync() — sync file reader
+// - has_claude_auth() — credential detection
+// - get_claude() — OAuth routing with from_oauth_tokens()
+// - resolver fallback — claude_auth.json as credential source
 
 use codelet_providers::claude_auth::{get_claude_auth_path, ClaudeAuthJson};
 use codelet_providers::ProviderCredentials;

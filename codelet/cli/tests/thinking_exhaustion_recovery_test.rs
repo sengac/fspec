@@ -40,8 +40,7 @@ fn test_anthropic_thinking_exhaustion_detected_and_recovered() {
     // @step Then the system detects this as thinking exhaustion rather than regular output truncation
     assert!(
         detected,
-        "Should detect thinking exhaustion: reasoning_tokens={}, output_tokens={}, threshold={}",
-        reasoning_tokens, output_tokens, THINKING_EXHAUSTION_OUTPUT_THRESHOLD
+        "Should detect thinking exhaustion: reasoning_tokens={reasoning_tokens}, output_tokens={output_tokens}, threshold={THINKING_EXHAUSTION_OUTPUT_THRESHOLD}"
     );
 
     // @step And the system retries with a reduced thinking_budget of 4096
@@ -91,8 +90,7 @@ fn test_openai_thinking_exhaustion_detected_and_recovered() {
     // @step Then the system detects this as thinking exhaustion
     assert!(
         detected,
-        "Should detect OpenAI thinking exhaustion: reasoning={}, output={}, stop=length",
-        reasoning_tokens, output_tokens
+        "Should detect OpenAI thinking exhaustion: reasoning={reasoning_tokens}, output={output_tokens}, stop=length"
     );
 
     // @step And the system retries with reasoning_effort downgraded to Medium
@@ -134,8 +132,7 @@ fn test_gemini_thinking_exhaustion_detected_and_recovered() {
     // @step Then the system detects this as thinking exhaustion
     assert!(
         detected,
-        "Should detect Gemini thinking exhaustion: reasoning={}, output={}, stop=MAX_TOKENS",
-        reasoning_tokens, output_tokens
+        "Should detect Gemini thinking exhaustion: reasoning={reasoning_tokens}, output={output_tokens}, stop=MAX_TOKENS"
     );
 
     // @step And the system retries with thinking_level downgraded from high to medium
@@ -184,13 +181,11 @@ fn test_thinking_content_preserved_for_retry() {
     // @step And the thinking content is not silently discarded
     assert!(
         recovery_msg.contains("step by step"),
-        "Recovery message must include the preserved thinking content. Got: {}",
-        recovery_msg
+        "Recovery message must include the preserved thinking content. Got: {recovery_msg}"
     );
     assert!(
         recovery_msg.contains("reasoning"),
-        "Recovery message must reference reasoning context. Got: {}",
-        recovery_msg
+        "Recovery message must reference reasoning context. Got: {recovery_msg}"
     );
 }
 
@@ -251,13 +246,11 @@ fn test_retry_budget_prevents_infinite_thinking_exhaustion_loops() {
     let budget_msg = build_thinking_budget_exhausted_msg(MAX_THINKING_EXHAUSTION_RETRIES);
     assert!(
         budget_msg.to_lowercase().contains("thinking"),
-        "Budget exhaustion message should mention thinking. Got: {}",
-        budget_msg
+        "Budget exhaustion message should mention thinking. Got: {budget_msg}"
     );
     assert!(
         budget_msg.contains(&MAX_THINKING_EXHAUSTION_RETRIES.to_string()),
-        "Budget exhaustion message should include retry count. Got: {}",
-        budget_msg
+        "Budget exhaustion message should include retry count. Got: {budget_msg}"
     );
 }
 
@@ -312,8 +305,7 @@ fn test_normal_completion_unaffected_by_exhaustion_detection() {
         );
         assert!(
             !result,
-            "Normal stop_reason '{}' must NOT trigger thinking exhaustion",
-            reason
+            "Normal stop_reason '{reason}' must NOT trigger thinking exhaustion"
         );
     }
 }
@@ -331,8 +323,7 @@ fn test_context_preserved_before_retry_near_limits() {
     let utilization = (current_tokens as f64 / context_window as f64) * 100.0;
     assert!(
         utilization > 90.0,
-        "Context utilization should exceed 90%: {:.1}%",
-        utilization
+        "Context utilization should exceed 90%: {utilization:.1}%"
     );
 
     // @step When thinking exhaustion is detected
@@ -350,8 +341,7 @@ fn test_context_preserved_before_retry_near_limits() {
     let needs_preservation = detected && utilization > 90.0;
     assert!(
         needs_preservation,
-        "Should flag context preservation needed when exhaustion detected at {:.1}% utilization",
-        utilization
+        "Should flag context preservation needed when exhaustion detected at {utilization:.1}% utilization"
     );
 
     // @step And the thinking-reduced retry proceeds after archival
@@ -389,8 +379,7 @@ fn test_session_level_reasoning_auto_downgrades_across_turns() {
     assert_eq!(
         session_level,
         ThinkingLevel::Medium,
-        "Session-level should downgrade from High to Medium after {} exhaustions",
-        cross_turn_exhaustion_count
+        "Session-level should downgrade from High to Medium after {cross_turn_exhaustion_count} exhaustions"
     );
 
     // @step And the user is notified that reasoning effort was automatically reduced
@@ -488,8 +477,7 @@ fn test_recovery_message_without_reasoning_content() {
     assert!(!msg.is_empty(), "Recovery message should not be empty even without reasoning content");
     assert!(
         msg.contains("8000"),
-        "Recovery message should include reasoning token count. Got: {}",
-        msg
+        "Recovery message should include reasoning token count. Got: {msg}"
     );
 }
 
@@ -499,8 +487,7 @@ fn test_recovery_message_with_reasoning_content() {
     let msg = build_thinking_exhaustion_recovery_message(8000, 10, Some(reasoning));
     assert!(
         msg.contains("analyzing"),
-        "Recovery message should include reasoning content. Got: {}",
-        msg
+        "Recovery message should include reasoning content. Got: {msg}"
     );
 }
 
@@ -510,13 +497,11 @@ fn test_budget_exhausted_message_content() {
     assert!(msg.contains("2"), "Should include retry count");
     assert!(
         msg.to_lowercase().contains("thinking") || msg.to_lowercase().contains("reasoning"),
-        "Should mention thinking/reasoning. Got: {}",
-        msg
+        "Should mention thinking/reasoning. Got: {msg}"
     );
     assert!(
         msg.to_lowercase().contains("disabled") || msg.to_lowercase().contains("exhausted"),
-        "Should indicate thinking is disabled/exhausted. Got: {}",
-        msg
+        "Should indicate thinking is disabled/exhausted. Got: {msg}"
     );
 }
 
