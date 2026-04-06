@@ -1,3 +1,4 @@
+@done
 @AMGR-015
 Feature: AgentManager await_idle action — efficient blocking wait for subordinate agents to finish
 
@@ -17,7 +18,7 @@ Feature: AgentManager await_idle action — efficient blocking wait for subordin
   # BUSINESS RULES:
   #   1. The action name must be `await_idle` and be added to the AgentManagerAction enum alongside spawn/list/get_status/close/message/set_role
   #   2. The `session_id` parameter accepts either a single session ID string or an array of session ID strings to await multiple agents simultaneously
-  #   3. An optional `timeout` parameter (in seconds) sets a maximum wait duration; if omitted, defaults to 300 seconds (5 minutes)
+  #   3. An optional `timeout` parameter (in seconds) sets a maximum wait duration; if omitted, waits indefinitely until all sessions are idle
   #   4. Must use notification-based waiting (subscribe to supervisor_broadcast channel for SessionStateChange events), NOT polling with sleep
   #   5. If a target session is already idle at call time, it is immediately resolved without waiting
   #   6. The result must report which sessions became idle and which timed out, using a structured JSON response
@@ -34,7 +35,7 @@ Feature: AgentManager await_idle action — efficient blocking wait for subordin
   #   5. Supervisor calls await_idle with a non-existent session ID → immediate error response with session_not_found code
   #   6. Supervisor calls await_idle on a session that gets destroyed mid-wait → that session resolves as `destroyed`, remaining sessions continue being awaited
   #   7. User presses Esc while supervisor is awaiting 3 sessions (1 already idle, 2 still running) → returns partial result: 1 idle, 2 interrupted
-  #   8. Supervisor calls await_idle with timeout omitted → uses 300s default timeout
+  #   8. Supervisor calls await_idle with timeout omitted → waits indefinitely until session becomes idle
   #   9. Supervisor calls await_idle with a single string session_id (not array) → works the same as passing a single-element array
   #
   # ========================================

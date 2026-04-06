@@ -3,6 +3,7 @@
 //! Feature: spec/features/agent-manager-core.feature
 //! Feature: spec/features/agent-manager-messaging.feature
 //! Feature: spec/features/agent-manager-context-resolution.feature
+//! Feature: spec/features/agent-manager-await-idle.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature files.
 //! Scenarios map directly to Gherkin scenarios.
@@ -2657,7 +2658,7 @@ async fn test_await_idle_interrupted() {
 
 // @step Given I have a subordinate agent session that is running
 // @step When I call await_idle with that session ID and no timeout parameter
-// @step Then the tool should use a default timeout of 300 seconds
+// @step Then the tool should wait indefinitely until the session becomes idle
 #[tokio::test(flavor = "multi_thread")]
 #[serial]
 async fn test_await_idle_default_timeout() {

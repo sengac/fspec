@@ -97,8 +97,139 @@ pub fn is_transient_network_error(error_str: &str) -> bool {
         || lower.contains("incomplete message")
 }
 
+/// AMGR-016: Check if an error indicates a stall timeout (no streaming data received).
+///
+/// Stall timeouts are TERMINAL errors that must NOT be retried by any error classifier.
+/// They bypass the entire error classifier cascade — Rule [5], Rule [6].
+///
+/// Uses the canonical prefix from `recovery_stall::STALL_TIMEOUT_ERROR_PREFIX` to ensure
+/// the identifier string is always in sync between creation and detection.
+///
+/// This function is public for testing.
+pub fn is_stall_timeout_error(error_str: &str) -> bool {
+    error_str.contains(super::recovery_stall::STALL_TIMEOUT_ERROR_PREFIX)
+}
+
 /// CMPCT-002: Check if an error indicates compaction was cancelled by the hook
 /// This is used to detect when the CompactionHook cancels a request due to token threshold
 pub(super) fn is_compaction_cancelled(error: &anyhow::Error) -> bool {
     error.to_string().contains("PromptCancelled")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Feature: spec/features/agent-stall-detection.feature
+
+    // ====================================================================
+    // Scenario: Stall timeout error is not caught by error classifiers
+    // ====================================================================
+
+    // @step Given the stream loop has a stall timeout configured
+    // @step When the stall timeout fires due to no tokens received
+    // @step Then the error should bypass the error classifier cascade
+    // @step And the error should not be retried as a network or truncation error
+    // @step And the stream loop should break immediately with a terminal error
+    #[test]
+    fn stall_timeout_error_is_identified_by_dedicated_classifier() {
+        let stall_msg = "Generation stalled: no streaming data received for 120s. \
+                         The LLM connection is alive but not producing tokens. \
+                         This may indicate an API-side hang or an overloaded endpoint.";
+
+        assert!(
+            is_stall_timeout_error(stall_msg),
+            "is_stall_timeout_error must identify stall timeout errors"
+        );
+    }
+
+    #[test]
+    fn stall_timeout_error_not_caught_by_network_classifier() {
+        let stall_msg = "Generation stalled: no streaming data received for 120s. \
+                         The LLM connection is alive but not producing tokens.";
+
+        assert!(
+            !is_transient_network_error(stall_msg),
+            "is_transient_network_error must NOT catch stall timeout errors"
+        );
+    }
+
+    #[test]
+    fn stall_timeout_error_not_caught_by_truncation_classifier() {
+        let stall_msg = "Generation stalled: no streaming data received for 120s.";
+
+        assert!(
+            !is_truncated_tool_call_error(stall_msg),
+            "is_truncated_tool_call_error must NOT catch stall timeout errors"
+        );
+    }
+
+    #[test]
+    fn stall_timeout_error_not_caught_by_prompt_too_long_classifier() {
+        let stall_msg = "Generation stalled: no streaming data received for 120s.";
+
+        assert!(
+            !is_prompt_too_long_error(stall_msg),
+            "is_prompt_too_long_error must NOT catch stall timeout errors"
+        );
+    }
+
+    #[test]
+    fn stall_timeout_error_not_caught_by_image_content_classifier() {
+        let stall_msg = "Generation stalled: no streaming data received for 120s.";
+
+        assert!(
+            !is_image_content_error(stall_msg),
+            "is_image_content_error must NOT catch stall timeout errors"
+        );
+    }
+
+    // ====================================================================
+    // Scenario: Network retry logic is not affected by stall timeout
+    // ====================================================================
+
+    // @step Given a subordinate agent is running and streaming a response
+    // @step When a transient network error occurs during streaming
+    // @step Then the existing NET-001 retry logic should handle the error
+    // @step And the stall timeout should not interfere with the retry backoff
+    // @step And the agent should complete normally after successful retry
+    #[test]
+    fn network_errors_are_not_classified_as_stall() {
+        let network_errors = [
+            "error sending request for url",
+            "connection reset by peer",
+            "dns error: failed to lookup address",
+            "connection refused",
+            "operation timed out",
+        ];
+
+        for error_msg in &network_errors {
+            assert!(
+                is_transient_network_error(error_msg),
+                "'{error_msg}' should be classified as transient network error"
+            );
+            assert!(
+                !is_stall_timeout_error(error_msg),
+                "'{error_msg}' must NOT be classified as stall timeout"
+            );
+        }
+    }
+
+    #[test]
+    fn stall_classifier_does_not_match_unrelated_errors() {
+        let unrelated = [
+            "API key invalid",
+            "rate limit exceeded",
+            "model not found",
+            "internal server error",
+            "connection reset",
+        ];
+
+        for error_msg in &unrelated {
+            assert!(
+                !is_stall_timeout_error(error_msg),
+                "'{error_msg}' must NOT be classified as stall timeout"
+            );
+        }
+    }
 }

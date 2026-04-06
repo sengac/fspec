@@ -5011,6 +5011,33 @@ async fn agent_loop(
                     .collect()
             });
             
+            // AMGR-016: Drop guard ensures set_status(Idle) executes even if the stream
+            // loop panics (Rule [7]). The guard is armed when status is set to Running and
+            // disarmed when the normal cleanup code runs. If a panic occurs, Drop fires
+            // and transitions the session back to Idle so await_idle callers don't hang.
+            struct IdleOnDropGuard {
+                session: Arc<BackgroundSession>,
+                armed: bool,
+            }
+
+            impl Drop for IdleOnDropGuard {
+                fn drop(&mut self) {
+                    if self.armed {
+                        tracing::warn!(
+                            "AMGR-016: IdleOnDropGuard fired (panic or early exit) — forcing session {} to Idle",
+                            self.session.id
+                        );
+                        self.session.set_status(SessionStatus::Idle);
+                        self.session.handle_output(StreamChunk::done());
+                    }
+                }
+            }
+
+            let mut idle_guard = IdleOnDropGuard {
+                session: session.clone(),
+                armed: true,
+            };
+
             let result = match current_provider.as_str() {
                 "claude" => run_with_provider!(&mut inner_session, get_claude, input, bridge_images.clone(), session, &output, thinking_config_value),
                 "openai" => {
@@ -5245,6 +5272,11 @@ Use SessionSearch to recover context.
             // Handle result
             // Note: run_agent_stream emits StreamEvent::Done on successful completion,
             // so we only emit Done here on error (to ensure the turn is properly terminated)
+
+            // AMGR-016: Disarm the drop guard — normal cleanup is handling the transition.
+            // If we don't reach this line (panic), the guard's Drop fires instead.
+            idle_guard.armed = false;
+
             if let Err(e) = result {
                 // PROV-009-DEBUG: Log full error with chain at warn level
                 tracing::warn!(

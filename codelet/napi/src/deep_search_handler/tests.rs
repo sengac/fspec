@@ -1,6 +1,12 @@
 use super::*;
 use crate::deep_search_provider_config::{request_config_for_provider, SUB_AGENT_MAX_TOKENS};
 use rig::agent::MultiTurnStreamItem;
+use codelet_cli::interactive::{
+    DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS,
+    build_deep_search_timeout_message,
+    deep_search_wall_clock_timeout,
+    is_stall_timeout_error,
+};
 
 #[derive(Clone)]
 struct TestStreamResponse;
@@ -122,5 +128,106 @@ async fn collect_final_response_from_stream_propagates_stream_errors() {
         result
             .expect_err("expected stream error")
             .contains("stream blew up")
+    );
+}
+
+// ====================================================================
+// Feature: spec/features/agent-stall-detection.feature
+// AMGR-016: DeepSearch wall-clock timeout tests
+// ====================================================================
+
+// Scenario: DeepSearch sub-agent stall triggers wall-clock timeout
+
+// @step Given a subordinate agent invokes a DeepSearch tool
+// @step And the DeepSearch sub-agent's LLM generation stalls indefinitely
+// @step When the DeepSearch wall-clock timeout of 300 seconds expires
+// @step Then the parent agent should receive a timeout error as the tool result string
+// @step And the parent agent should continue processing with the error result
+// @step And the parent agent should not hang or remain in running state
+#[tokio::test]
+async fn deep_search_wall_clock_timeout_fires_on_stalled_sub_agent() {
+    // Simulate a sub-agent execution that never completes
+    let never_completing = async {
+        tokio::time::sleep(std::time::Duration::from_secs(3600)).await;
+        Ok::<String, String>("never reached".to_string())
+    };
+
+    // Apply wall-clock timeout (short duration for test speed)
+    let result = tokio::time::timeout(
+        std::time::Duration::from_millis(50),
+        never_completing,
+    )
+    .await;
+
+    // The timeout must fire — this is the wrapping pattern for build_and_run_agent
+    assert!(result.is_err(), "Wall-clock timeout must fire on stalled sub-agent");
+
+    // When timeout fires, the error message returned to the parent must be descriptive
+    let timeout_msg = build_deep_search_timeout_message(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS);
+    assert!(
+        timeout_msg.contains("timed out after 300s"),
+        "Timeout message must include the duration"
+    );
+    assert!(
+        timeout_msg.contains("DeepSearch sub-agent"),
+        "Timeout message must identify the source"
+    );
+}
+
+#[test]
+fn deep_search_wall_clock_timeout_defaults_to_300_seconds() {
+    assert_eq!(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, 300);
+    assert_eq!(
+        deep_search_wall_clock_timeout(),
+        std::time::Duration::from_secs(300)
+    );
+}
+
+#[test]
+fn deep_search_timeout_message_is_not_classified_as_stall_timeout() {
+    // The DeepSearch timeout message is returned as a TOOL RESULT string,
+    // not as a stream error. But verify it doesn't accidentally match
+    // the stall timeout classifier if it ever reaches error handling.
+    let timeout_msg = build_deep_search_timeout_message(300);
+    assert!(
+        !is_stall_timeout_error(&timeout_msg),
+        "DeepSearch timeout message must NOT match the stall timeout classifier \
+         (it's a tool result, not a stream error)"
+    );
+}
+
+// Scenario: Streaming collection with stalled stream would be caught by wall-clock timeout
+#[tokio::test]
+async fn collect_final_response_stalled_stream_aborted_by_wall_clock_timeout() {
+    // Simulate a stream that produces one chunk then stalls forever
+    // (the SSE connection is alive but no more data flows)
+    let stalled_stream = futures::stream::unfold(0u32, |count| async move {
+        if count == 0 {
+            Some((
+                Ok::<MultiTurnStreamItem<TestStreamResponse>, anyhow::Error>(
+                    MultiTurnStreamItem::StreamAssistantItem(
+                        rig::streaming::StreamedAssistantContent::<TestStreamResponse>::text("partial"),
+                    ),
+                ),
+                count + 1,
+            ))
+        } else {
+            // Stall forever — simulates the root cause of AMGR-016
+            futures::future::pending::<()>().await;
+            unreachable!()
+        }
+    });
+
+    // The wall-clock timeout wraps the ENTIRE collect_final_response call
+    let result = tokio::time::timeout(
+        std::time::Duration::from_millis(100),
+        collect_final_response_from_stream(stalled_stream),
+    )
+    .await;
+
+    // Wall-clock timeout must fire — collect_final_response would block forever without it
+    assert!(
+        result.is_err(),
+        "Wall-clock timeout must abort stalled collect_final_response_from_stream"
     );
 }

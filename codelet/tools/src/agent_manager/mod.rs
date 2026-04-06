@@ -1,19 +1,24 @@
-//! AgentManager Tool — Spawn subordinate agents, manage lifecycle, messaging
+//! AgentManager Tool — Spawn subordinate agents, manage lifecycle, messaging, and coordination
 //!
 //! Feature: spec/features/agent-manager-core.feature
 //! Feature: spec/features/agent-manager-messaging.feature
 //! Feature: spec/features/agent-manager-context-resolution.feature
+//! Feature: spec/features/agent-manager-await-idle.feature
 //!
-//! This tool provides five core actions for agent lifecycle and messaging:
+//! This tool provides seven core actions for agent lifecycle, messaging, and coordination:
 //! - `spawn`: Create a new subordinate session with optional role
 //! - `list`: List all sessions with their relationships
 //! - `get_status`: Get detailed status of a specific session
 //! - `close`: Terminate a subordinate session (spawner-only)
-//! - `message`: Send a plain text message to any session by ID
+//! - `message`: Send a plain text message to any session by ID, with optional context references
+//! - `set_role`: Set or replace the system prompt overlay on a session
+//! - `await_idle`: Block until one or more sessions become idle (AMGR-015)
 //!
 //! The tool uses the handler pattern (like SessionSearchTool) to delegate to the
 //! session management layer in codelet-napi. The tool definition and schema live here,
 //! the actual session operations are registered via `set_agent_manager_handler()`.
+//! For async actions (await_idle), a separate async handler is used via
+//! `set_agent_manager_async_handler()`.
 
 pub mod handler;
 pub mod types;

@@ -71,7 +71,7 @@ fn process_turn_annotations(
 }
 
 // Error classifiers moved to error_classifiers.rs
-use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_compaction_cancelled, is_transient_network_error};
+use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_compaction_cancelled, is_transient_network_error, is_stall_timeout_error};
 
 // Image recovery moved to recovery_image.rs
 use super::recovery_image::sanitize_image_content;
@@ -89,6 +89,9 @@ use super::recovery_thinking::{
 
 // Network recovery moved to recovery_network.rs
 use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay};
+
+// Stall timeout recovery moved to recovery_stall.rs
+use super::recovery_stall::{build_stall_timeout_message, stall_timeout_duration};
 
 /// Emit context fill information from API token usage.
 /// Extracted as a standalone function so it can be shared with compaction_retry.
@@ -558,10 +561,15 @@ where
             break;
         }
 
+        // AMGR-016: Stall timeout duration — resets on every received chunk.
+        // If no streaming data (tokens, tool_calls, usage, etc.) arrives for this
+        // duration, the stream is considered stalled and we abort.
+        let stall_timeout = stall_timeout_duration();
+
         // Process next chunk - different based on mode
         let chunk = match (&mut event_stream, &mut status_interval, &status) {
             (Some(es), Some(si), Some(st)) => {
-                // CLI mode: Use tokio::select! with event stream and status interval
+                // CLI mode: Use tokio::select! with event stream, status interval, and stall timeout
                 // NOTE: Tool progress is emitted directly via progress_emitter callback,
                 // not through tokio::select! because select! can't interleave during stream.next()
                 tokio::select! {
@@ -578,10 +586,25 @@ where
                         let _ = st.format_status();
                         None // No chunk, continue loop
                     }
+                    _ = tokio::time::sleep(stall_timeout) => {
+                        // AMGR-016: CLI mode stall timeout — same behavior as NAPI mode.
+                        // No data received for stall_timeout duration — terminal error.
+                        let stall_msg = build_stall_timeout_message(stall_timeout.as_secs());
+                        warn!("AMGR-016: {}", stall_msg);
+                        output.emit_error(&stall_msg);
+
+                        if !assistant_text.is_empty() {
+                            handle_final_response(&assistant_text, &mut session.messages)?;
+                        }
+
+                        output.emit_done_with_stop_reason(Some("stall_timeout".to_string()));
+                        return Err(anyhow::anyhow!("{stall_msg}"));
+                    }
                 }
             }
             _ => {
                 // NAPI mode: Use tokio::select! with interrupt notification (NAPI-004)
+                // and stall timeout (AMGR-016)
                 // This allows immediate ESC response even during blocking operations
                 // NOTE: Tool progress is emitted directly via progress_emitter callback,
                 // not through tokio::select! because select! can't interleave during stream.next()
@@ -591,11 +614,42 @@ where
                         tokio::select! {
                             c = stream.next() => Some(c),
                             _ = interrupt_fut => None, // Wakes immediately when interrupt() called
+                            _ = tokio::time::sleep(stall_timeout) => {
+                                // AMGR-016: No data received for stall_timeout duration.
+                                // Emit a clear error and break — this is a terminal error
+                                // that must NOT be caught by error classifiers (Rule [5], [6]).
+                                let stall_msg = build_stall_timeout_message(stall_timeout.as_secs());
+                                warn!("AMGR-016: {}", stall_msg);
+                                output.emit_error(&stall_msg);
+
+                                // Preserve partial assistant text in history (Rule: mid-response stall)
+                                if !assistant_text.is_empty() {
+                                    handle_final_response(&assistant_text, &mut session.messages)?;
+                                }
+
+                                output.emit_done_with_stop_reason(Some("stall_timeout".to_string()));
+                                return Err(anyhow::anyhow!("{stall_msg}"));
+                            }
                         }
                     }
                     None => {
                         // Fallback for any mode without notify (shouldn't happen in practice)
-                        Some(stream.next().await)
+                        // AMGR-016: Still apply stall timeout even without interrupt notify
+                        match tokio::time::timeout(stall_timeout, stream.next()).await {
+                            Ok(chunk) => Some(chunk),
+                            Err(_elapsed) => {
+                                let stall_msg = build_stall_timeout_message(stall_timeout.as_secs());
+                                warn!("AMGR-016: {}", stall_msg);
+                                output.emit_error(&stall_msg);
+
+                                if !assistant_text.is_empty() {
+                                    handle_final_response(&assistant_text, &mut session.messages)?;
+                                }
+
+                                output.emit_done_with_stop_reason(Some("stall_timeout".to_string()));
+                                return Err(anyhow::anyhow!("{stall_msg}"));
+                            }
+                        }
                     }
                 }
             }
@@ -1071,6 +1125,16 @@ where
 
                     // Check if this is a "prompt is too long" error from the API
                     let error_str = e.to_string();
+
+                    // AMGR-016: Stall timeout errors are terminal — they must bypass
+                    // ALL error classifiers and never be retried (Rule [5], Rule [6]).
+                    // This guard prevents accidental classification as network/truncation errors.
+                    if is_stall_timeout_error(&error_str) {
+                        error!("AMGR-016: Stall timeout reached error classifier cascade (unexpected path)");
+                        output.emit_error(&error_str);
+                        return Err(anyhow::anyhow!("Agent error: {e}"));
+                    }
+
                     let is_prompt_too_long = is_prompt_too_long_error(&error_str);
 
                     // PROV-010: Only trigger compaction if there are actual user/assistant turns to compact

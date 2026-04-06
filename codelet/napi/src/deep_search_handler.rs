@@ -197,7 +197,7 @@ pub async fn execute_deep_search(
         // boundaries (which causes recursion_limit overflow with Lance's complex types).
         let graph_context = tokio::task::block_in_place(|| {
             tokio::runtime::Handle::current().block_on(async {
-                crate::graph::learnings_context::build_learnings_context(&query).await
+                crate::graph::learnings_context::build_learnings_context(query).await
             })
         });
 
@@ -209,7 +209,10 @@ pub async fn execute_deep_search(
     }
 
     // 4. Build rig agent with read-only tools (+ DeepSearch if recursion enabled, + GraphSearch if available)
-    build_and_run_agent(
+    // AMGR-016: Wrap the entire sub-agent execution in a wall-clock timeout
+    // to prevent stalled sub-agents from blocking the parent forever (Rule [6]).
+    let wall_clock_timeout = codelet_cli::interactive::deep_search_wall_clock_timeout();
+    match tokio::time::timeout(wall_clock_timeout, build_and_run_agent(
         ephemeral_session_id,
         &system_prompt,
         query,
@@ -218,7 +221,16 @@ pub async fn execute_deep_search(
         model_id,
         can_recurse,
         graph_available,
-    ).await
+    )).await {
+        Ok(result) => result,
+        Err(_elapsed) => {
+            let timeout_msg = codelet_cli::interactive::build_deep_search_timeout_message(
+                wall_clock_timeout.as_secs(),
+            );
+            tracing::warn!("AMGR-016: {}", timeout_msg);
+            Err(timeout_msg)
+        }
+    }
 
     // 5. Cleanup: drop guards dropped here (or on panic), removing handlers
 }

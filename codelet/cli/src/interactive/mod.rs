@@ -12,6 +12,7 @@ mod multimodal;
 pub mod output;
 mod recovery_image;
 mod recovery_network;
+mod recovery_stall;
 mod recovery_thinking;
 mod recovery_truncation;
 mod repl_loop;
@@ -23,6 +24,7 @@ pub use error_classifiers::{
     is_image_content_error,
     is_truncated_tool_call_error,
     is_transient_network_error,
+    is_stall_timeout_error,
 };
 pub use recovery_truncation::{
     MAX_TRUNCATION_RETRIES,
@@ -42,6 +44,15 @@ pub use recovery_image::sanitize_image_content;
 pub use recovery_network::{
     MAX_NETWORK_RETRIES,
     network_retry_delay,
+};
+pub use recovery_stall::{
+    STALL_TIMEOUT_SECS,
+    STALL_TIMEOUT_ERROR_PREFIX,
+    DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS,
+    build_stall_timeout_message,
+    build_deep_search_timeout_message,
+    stall_timeout_duration,
+    deep_search_wall_clock_timeout,
 };
 pub use multimodal::{BridgeImage, build_user_content_with_images};
 pub use output::{
