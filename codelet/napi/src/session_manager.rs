@@ -3785,21 +3785,19 @@ impl SessionManager {
         *handle = Some(h);
     }
     
-    /// Get the next session after the active one (VIEWNV-001)
+    /// Get the next session after the active one.
     ///
-    /// Uses hierarchy-aware navigation:
-    /// - From board: returns first subordinate session
-    /// - From subordinate session with supervisors: returns first supervisor
-    /// - From subordinate session without supervisors: returns next subordinate session
-    /// - From supervisor: returns next sibling supervisor, or next subordinate session
-    /// - From last item: returns None (show create dialog)
+    /// Uses flat insertion-order navigation (BUG-124):
+    /// - From board: returns the first session in spawn order
+    /// - From any session: returns the next session in spawn order
+    /// - From the last session: returns None (caller shows create dialog)
     pub fn get_next_session(&self) -> Option<String> {
         use crate::navigation::{build_navigation_list, get_next_target, NavigationTarget};
         
         let sessions = self.sessions.read().expect("sessions lock poisoned");
         let active = self.active_session_id.read().expect("active_session lock poisoned");
         
-        // Build the navigation list with supervisors following their subordinates
+        // Build the flat insertion-order navigation list
         let nav_list = build_navigation_list(&sessions, &self.chain_of_command);
 
         // Get the next target
@@ -3811,20 +3809,19 @@ impl SessionManager {
         }
     }
     
-    /// Get the previous session before the active one (VIEWNV-001)
+    /// Get the previous session before the active one.
     ///
-    /// Uses hierarchy-aware navigation:
+    /// Uses flat insertion-order navigation (BUG-124):
     /// - From board: returns None (stay on board)
-    /// - From first subordinate session: returns None (go to board)
-    /// - From supervisor: returns prev sibling supervisor, or subordinate session
-    /// - From subordinate session: returns last supervisor of prev session, or prev session
+    /// - From the first session: returns None (caller goes to board)
+    /// - From any other session: returns the previous session in spawn order
     pub fn get_prev_session(&self) -> Option<String> {
         use crate::navigation::{build_navigation_list, get_prev_target, NavigationTarget};
         
         let sessions = self.sessions.read().expect("sessions lock poisoned");
         let active = self.active_session_id.read().expect("active_session lock poisoned");
 
-        // Build the navigation list with supervisors following their subordinates
+        // Build the flat insertion-order navigation list
         let nav_list = build_navigation_list(&sessions, &self.chain_of_command);
 
         // Get the previous target
@@ -3836,8 +3833,7 @@ impl SessionManager {
         }
     }
     
-    /// Get the first session (VIEWNV-001)
-    /// Returns the first subordinate session (not a supervisor)
+    /// Get the first session in spawn order.
     pub fn get_first_session(&self) -> Option<String> {
         use crate::navigation::build_navigation_list;
         

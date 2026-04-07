@@ -1,18 +1,24 @@
 /**
- * VIEWNV-001: Session Navigation Module
+ * Session Navigation Module
  *
- * Provides hierarchy-aware navigation through sessions and supervisors.
+ * Provides flat insertion-order navigation through sessions.
  *
  * Navigation order:
- * Board → Session1 → S1.Supervisor1 → S1.Supervisor2 → Session2 → S2.Supervisor1 → ... → Create Dialog
+ * Board → Session1 → Session2 → ... → SessionN → Create Dialog
  *
- * Rules:
- * - Shift+Right from session with supervisors → first supervisor
- * - Shift+Right from session without supervisors → next session
- * - Shift+Right from supervisor → next sibling, or next session if last sibling
- * - Shift+Left from first supervisor → subordinate session
- * - Shift+Left from supervisor → prev sibling, or subordinate if first sibling
- * - Shift+Left from first session → board
+ * History:
+ * - VIEWNV-001 introduced a hierarchy-aware traversal that grouped
+ *   subordinates after their supervisor.
+ * - BUG-124 (2026-04-07): the hierarchy traversal duplicated supervisors
+ *   once per child whenever the supervisor was inserted into the IndexMap
+ *   BEFORE its children (the real-world spawn pattern). Vec::position()
+ *   always returned the first occurrence, so get_next_target /
+ *   get_prev_target looped between the supervisor and its first child while
+ *   leaving every other child unreachable.
+ * - The fix replaces the traversal with a flat insertion-order walk,
+ *   producing each session UUID exactly once. The chain_of_command
+ *   parameter is preserved in the signature for ABI/test stability but is
+ *   no longer consulted.
  */
 use indexmap::IndexMap;
 use std::sync::Arc;
@@ -33,39 +39,16 @@ pub enum NavigationTarget {
     None,
 }
 
-/// Build a flattened navigation list from sessions and supervisors.
+/// Build a flat navigation list of every session in the manager.
 ///
-/// The list is ordered: Session1 → S1.Supervisors → Session2 → S2.Supervisors → ...
-/// Each session is followed by its supervisors (in creation order).
+/// Each session UUID appears exactly once, in IndexMap insertion order
+/// (i.e. spawn order). The `_chain_of_command` parameter is intentionally
+/// unused — see BUG-124 in this module's history for the rationale.
 pub fn build_navigation_list(
     sessions: &IndexMap<Uuid, Arc<BackgroundSession>>,
-    chain_of_command: &ChainOfCommand,
+    _chain_of_command: &ChainOfCommand,
 ) -> Vec<Uuid> {
-    let mut result = Vec::new();
-
-    // Iterate through sessions in insertion order
-    for session_id in sessions.keys() {
-        // Check if this session is a supervisor (has any subordinates)
-        let has_subordinates = !chain_of_command.get_subordinates(*session_id).is_empty();
-
-        if has_subordinates {
-            continue;
-        }
-
-        // Add the subordinate session
-        result.push(*session_id);
-
-        // Add all supervisors for this session
-        let supervisors = chain_of_command.get_supervisors(*session_id);
-        for supervisor_id in supervisors {
-            // Only add if the supervisor exists in sessions
-            if sessions.contains_key(&supervisor_id) {
-                result.push(supervisor_id);
-            }
-        }
-    }
-
-    result
+    sessions.keys().copied().collect()
 }
 
 /// Get the next navigation target from the current position.
