@@ -133,7 +133,7 @@ mod tests {
     // @step And the stream loop should break immediately with a terminal error
     #[test]
     fn stall_timeout_error_is_identified_by_dedicated_classifier() {
-        let stall_msg = "Generation stalled: no streaming data received for 120s. \
+        let stall_msg = "Generation stalled: no streaming data received for 300s. \
                          The LLM connection is alive but not producing tokens. \
                          This may indicate an API-side hang or an overloaded endpoint.";
 
@@ -145,7 +145,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_network_classifier() {
-        let stall_msg = "Generation stalled: no streaming data received for 120s. \
+        let stall_msg = "Generation stalled: no streaming data received for 300s. \
                          The LLM connection is alive but not producing tokens.";
 
         assert!(
@@ -156,7 +156,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_truncation_classifier() {
-        let stall_msg = "Generation stalled: no streaming data received for 120s.";
+        let stall_msg = "Generation stalled: no streaming data received for 300s.";
 
         assert!(
             !is_truncated_tool_call_error(stall_msg),
@@ -166,7 +166,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_prompt_too_long_classifier() {
-        let stall_msg = "Generation stalled: no streaming data received for 120s.";
+        let stall_msg = "Generation stalled: no streaming data received for 300s.";
 
         assert!(
             !is_prompt_too_long_error(stall_msg),
@@ -176,7 +176,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_image_content_classifier() {
-        let stall_msg = "Generation stalled: no streaming data received for 120s.";
+        let stall_msg = "Generation stalled: no streaming data received for 300s.";
 
         assert!(
             !is_image_content_error(stall_msg),

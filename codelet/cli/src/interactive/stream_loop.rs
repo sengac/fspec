@@ -779,7 +779,7 @@ where
 
                     // AMGR-016-FIX: Tool execution completed — re-enable stall timeout.
                     // The next stream.next() will be waiting for the LLM's next API response,
-                    // where the 120s stall timeout is appropriate again.
+                    // where the 300s stall timeout is appropriate again.
                     tool_execution_in_progress = false;
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {

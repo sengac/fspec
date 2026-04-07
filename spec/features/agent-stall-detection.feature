@@ -18,20 +18,20 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   #   1. stream.next().await in the stream loop must be wrapped in a tokio::time::timeout so that stalled SSE streams are detected and aborted
   #   2. The idle timeout resets on every received streaming chunk (token, tool_call, etc.) — only fires when no data arrives for the full duration
   #   3. When the idle timeout fires, the stream loop must break and return Err so the outer agent_loop sets status to Idle
-  #   4. The timeout duration should be configurable but default to 120 seconds
+  #   4. The timeout duration should be configurable but default to 300 seconds
   #   5. After a stall timeout, the error emitted to the UI must clearly indicate it was a stall (not a network error or API error)
   #   6. The existing error classifier cascade must NOT catch stall timeouts — stall is a distinct terminal error that always breaks the loop
   #   7. DeepSearch sub-agent execution must be wrapped in a wall-clock timeout (default 300s) so stalled sub-agents don't block the parent forever
   #   8. The agent_loop post-stream cleanup (set_status(Idle) + emit Done) must ALWAYS execute even if the stream loop panics — use a drop guard or equivalent
   #
   # EXAMPLES:
-  #   1. LLM SSE stream stalls after DeepSearch result is injected — stream.next() blocks for 120s — timeout fires — agent transitions to Idle — error message emitted — await_idle caller gets idle result
+  #   1. LLM SSE stream stalls after DeepSearch result is injected — stream.next() blocks for 300s — timeout fires — agent transitions to Idle — error message emitted — await_idle caller gets idle result
   #   2. LLM generates tokens normally — each token resets the idle timeout — no timeout fires — agent completes and transitions to Idle normally
-  #   3. LLM pauses for 60s between tokens (slow generation) — timeout is 120s — no timeout fires — agent completes successfully
+  #   3. LLM pauses for 60s between tokens (slow generation) — timeout is 300s — no timeout fires — agent completes successfully
   #   4. DeepSearch sub-agent's LLM stalls during its own generation — wall-clock timeout (300s) fires — parent agent receives timeout error as tool result string — parent continues processing
   #   5. Network error during streaming triggers existing NET-001 retry logic — stall timeout does NOT interfere — retries succeed — agent completes normally
   #   6. Stream loop panics during processing — drop guard fires — agent_loop sets status to Idle — await_idle returns idle
-  #   7. LLM starts responding with tokens, then stops mid-sentence for 120s — stall timeout fires — partial text is preserved in history — agent transitions to Idle
+  #   7. LLM starts responding with tokens, then stops mid-sentence for 300s — stall timeout fires — partial text is preserved in history — agent transitions to Idle
   #
   # ========================================
 
@@ -44,7 +44,7 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   Scenario: Stalled SSE stream detected and agent recovers to idle
     Given a subordinate agent is running and has received a tool result
     And the agent's stream loop is awaiting the next LLM chunk
-    When the LLM SSE stream produces no chunks for 120 seconds
+    When the LLM SSE stream produces no chunks for 300 seconds
     Then the stream loop should abort with a stall timeout error
     And the agent should transition from running to idle status
     And an error message indicating "generation stalled" should be emitted
@@ -53,7 +53,7 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   @stall-detection
   Scenario: Normal token generation does not trigger stall timeout
     Given a subordinate agent is running and generating a response
-    When the LLM produces tokens continuously with less than 120 seconds between each
+    When the LLM produces tokens continuously with less than 300 seconds between each
     Then no stall timeout should fire
     And the agent should complete its response normally
     And the agent should transition to idle status
@@ -62,7 +62,7 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   Scenario: Slow but active generation does not trigger stall timeout
     Given a subordinate agent is running and generating a response
     When the LLM pauses for 60 seconds between tokens
-    And the stall timeout is configured to 120 seconds
+    And the stall timeout is configured to 300 seconds
     Then no stall timeout should fire
     And the agent should complete its response successfully
 
@@ -93,7 +93,7 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   @stall-detection
   Scenario: Mid-response stall preserves partial text in history
     Given a subordinate agent is running and has received partial response tokens
-    When the LLM stops producing tokens for 120 seconds mid-sentence
+    When the LLM stops producing tokens for 300 seconds mid-sentence
     Then the stall timeout should fire and abort the generation
     And the partial response text should be preserved in the session history
     And the agent should transition to idle status
