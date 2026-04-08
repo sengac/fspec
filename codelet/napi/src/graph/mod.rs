@@ -24,69 +24,6 @@ pub fn reset_graph_db() {
     registry::reset_all_graphs();
 }
 
-/// Populate the AST code graph from the current project directory.
-///
-/// Walks the codebase extracting functions, types, imports, and dependencies,
-/// then batch-loads everything into the AST graph. Silently skips if the
-/// graph is unavailable.
-///
-/// Called at session start so the GraphSearch tool has data to query.
-pub async fn populate_ast_graph() {
-    let project_root = match std::env::current_dir() {
-        Ok(p) => p,
-        Err(e) => {
-            tracing::warn!("[KGRAPH] Failed to get cwd for AST indexing: {e}");
-            return;
-        }
-    };
-
-    let db = match registry::get_graph(registry::AST_CODE_GRAPH).await {
-        Ok(db) => db,
-        Err(e) => {
-            tracing::warn!("[KGRAPH] Failed to open AST graph for indexing: {e}");
-            return;
-        }
-    };
-
-    // Walk codebase and extract AST entities
-    let mut all_entities = match ast_pipeline::walk_and_extract(&project_root, true) {
-        Ok(entities) => entities,
-        Err(e) => {
-            tracing::warn!("[KGRAPH] AST extraction failed: {e}");
-            return;
-        }
-    };
-
-    // Extract dependencies (non-fatal failures)
-    if let Ok(cargo_deps) =
-        ast_pipeline::cargo_dep_extractor::extract_cargo_dependencies(&project_root)
-    {
-        all_entities.extend(cargo_deps);
-    }
-    if let Ok(npm_deps) =
-        ast_pipeline::npm_dep_extractor::extract_npm_dependencies(&project_root)
-    {
-        all_entities.extend(npm_deps);
-    }
-
-    // Deduplicate after merging dep-extractor results (same reason as ast_dispatch)
-    let all_entities = ast_pipeline::deduplicate_entities(all_entities);
-
-    if all_entities.is_empty() {
-        tracing::debug!("[KGRAPH] No AST entities found to index");
-        return;
-    }
-
-    match db.load_entities_overwrite(&all_entities).await {
-        Ok(count) => {
-            tracing::info!(count, "[KGRAPH] AST graph populated at session start");
-        }
-        Err(e) => {
-            tracing::warn!("[KGRAPH] Failed to load AST entities: {e}");
-        }
-    }
-}
-
 /// Extract learnings from a compaction DAG summary using LLM extraction.
 ///
 /// Called at compaction boundaries (after inject_summary applies the DAG).

@@ -146,7 +146,8 @@ fn test_get_openai_accepts_session_id_parameter() {
 
     // @step Then the returned provider should have the session affinity header set
     // Verify get_openai succeeds and returns a properly configured provider
-    let provider = provider.expect("get_openai should succeed with valid credentials and session ID");
+    let provider =
+        provider.expect("get_openai should succeed with valid credentials and session ID");
     assert_eq!(provider.model(), "test-model");
     assert!(
         provider.is_local_endpoint(),

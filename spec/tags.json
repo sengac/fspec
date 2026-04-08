@@ -110,6 +110,10 @@
           "description": "Extension popup UI scenarios"
         },
         {
+          "name": "@profiling",
+          "description": "Runtime profiling and instrumentation features"
+        },
+        {
           "name": "@providers",
           "description": "Provider integration and LLM provider implementations"
         },
@@ -1038,6 +1042,10 @@
           "description": "Adaptive thinking mode for Claude 4.6+ models"
         },
         {
+          "name": "@agent-loop",
+          "description": "Agent loop dispatch and provider routing in session_manager"
+        },
+        {
           "name": "@ai-agent",
           "description": "AI agent integration features"
         },
@@ -1088,6 +1096,10 @@
         {
           "name": "@auth-methods",
           "description": "Authentication method handling"
+        },
+        {
+          "name": "@auth-schema",
+          "description": "Authentication credential file schema scenarios"
         },
         {
           "name": "@auto-create",
@@ -1238,6 +1250,10 @@
           "description": "Context preservation before retries near context window limits"
         },
         {
+          "name": "@copilot",
+          "description": "GitHub Copilot provider integration scenarios"
+        },
+        {
           "name": "@credential-resolution",
           "description": "Credential resolution and priority chain"
         },
@@ -1282,6 +1298,10 @@
           "description": "Content deduplication scenarios"
         },
         {
+          "name": "@deep-search",
+          "description": "DeepSearch sub-agent provider configuration"
+        },
+        {
           "name": "@default",
           "description": "Scenarios testing default behavior or state"
         },
@@ -1302,6 +1322,10 @@
           "description": "BDD discovery technique used before writing Gherkin scenarios"
         },
         {
+          "name": "@dispatch",
+          "description": "Provider dispatch and routing logic"
+        },
+        {
           "name": "@document",
           "description": "Document content type scenarios"
         },
@@ -1312,6 +1336,14 @@
         {
           "name": "@email",
           "description": "Email-related functionality"
+        },
+        {
+          "name": "@endpoints-api",
+          "description": "Dynamic API endpoint resolution from provider responses (enterprise vs SaaS)"
+        },
+        {
+          "name": "@enterprise",
+          "description": "Enterprise deployment scenarios with custom hosts and endpoints"
         },
         {
           "name": "@env-vars",
@@ -1598,6 +1630,10 @@
           "description": "Non-isolated session scenarios"
         },
         {
+          "name": "@oauth",
+          "description": "OAuth authentication flows including device-code grants"
+        },
+        {
           "name": "@ollama",
           "description": "Ollama local provider"
         },
@@ -1790,6 +1826,10 @@
           "description": "Stable indices system for maintaining unique IDs across soft-delete operations"
         },
         {
+          "name": "@stale-cache",
+          "description": "Stale credential cache detection and re-detection scenarios"
+        },
+        {
           "name": "@state",
           "description": "Session state scenarios"
         },
@@ -1868,6 +1908,14 @@
         {
           "name": "@timestamp",
           "description": "Timestamp-related functionality for temporal ordering and history"
+        },
+        {
+          "name": "@token-exchange",
+          "description": "Token exchange flows where one credential is exchanged for another (e.g. GitHub OAuth → Copilot API token)"
+        },
+        {
+          "name": "@token-refresh",
+          "description": "Token refresh and expiry handling scenarios"
         },
         {
           "name": "@tokens",
@@ -2204,6 +2252,10 @@
         {
           "name": "@empty",
           "description": "Empty state scenarios"
+        },
+        {
+          "name": "@end-to-end",
+          "description": "End-to-end integration scenarios spanning multiple subsystems"
         },
         {
           "name": "@equivalence",
@@ -2554,7 +2606,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-03-22T01:08:36.749Z",
+    "lastUpdated": "2026-04-08T01:35:03.748Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

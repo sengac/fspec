@@ -172,8 +172,7 @@ impl RefreshingClaudeClient {
 fn update_token_state(state: &mut ClaudeTokenState, response: &ClaudeTokenResponse) {
     state.access_token = response.access_token.clone();
     state.refresh_token = response.refresh_token.clone();
-    state.expires_at =
-        Instant::now() + std::time::Duration::from_secs(response.expires_in);
+    state.expires_at = Instant::now() + std::time::Duration::from_secs(response.expires_in);
 }
 
 /// Persist refreshed tokens to claude_auth.json (best-effort, fire-and-forget).
@@ -195,10 +194,7 @@ fn persist_tokens(response: &ClaudeTokenResponse) {
 
 /// Prepare a request for the Claude API: strip existing Authorization and inject Bearer.
 /// Unlike Codex, no URL rewriting or extra headers needed.
-fn prepare_oauth_request<T>(
-    req: http::Request<T>,
-    access_token: &str,
-) -> http::Request<T> {
+fn prepare_oauth_request<T>(req: http::Request<T>, access_token: &str) -> http::Request<T> {
     let (mut parts, body) = req.into_parts();
 
     // Strip existing Authorization header (rig may set a stale token)
@@ -272,8 +268,9 @@ impl rig::http_client::HttpClientExt for RefreshingClaudeClient {
     fn send_streaming<T>(
         &self,
         req: http::Request<T>,
-    ) -> impl std::future::Future<Output = rig::http_client::Result<rig::http_client::StreamingResponse>>
-           + Send
+    ) -> impl std::future::Future<
+        Output = rig::http_client::Result<rig::http_client::StreamingResponse>,
+    > + Send
     where
         T: Into<bytes::Bytes>,
     {

@@ -11,7 +11,7 @@ Post-completion review of the Anthropic OAuth Login Flow (PROV-012) and all chil
 
 ### Problem
 
-4 tests manipulate shared process-wide env vars (`CODELET_HOME`, `ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`) without `#[serial]` serialization. When Cargo runs tests in parallel (default), env var mutations leak between threads, causing non-deterministic failures.
+4 tests manipulate shared process-wide env vars (`FSPEC_HOME`, `ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`) without `#[serial]` serialization. When Cargo runs tests in parallel (default), env var mutations leak between threads, causing non-deterministic failures.
 
 All 4 pass with `--test-threads=1` but fail in default parallel execution.
 

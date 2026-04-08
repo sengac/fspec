@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 //! Feature: spec/features/claude-refreshing-client.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
@@ -16,11 +21,9 @@ mod fixtures;
 
 use codelet_providers::claude_auth;
 use codelet_providers::claude_oauth::CLAUDE_CLIENT_ID;
-use codelet_providers::claude_refreshing_client::{
-    RefreshingClaudeClient, EXPIRY_BUFFER_SECS,
-};
+use codelet_providers::claude_refreshing_client::{RefreshingClaudeClient, EXPIRY_BUFFER_SECS};
 use codelet_providers::{AuthMode, ClaudeProvider};
-use fixtures::setup_codelet_home;
+use fixtures::setup_fspec_home;
 use http::Request;
 use rig::http_client::HttpClientExt;
 #[allow(unused_imports)]
@@ -102,7 +105,10 @@ fn make_request_with_static_headers(url: &str) -> Request<Vec<u8>> {
         .method("POST")
         .uri(url)
         .header("content-type", "application/json")
-        .header("anthropic-beta", "prompt-caching-2024-07-31,interleaved-thinking-2025-05-14")
+        .header(
+            "anthropic-beta",
+            "prompt-caching-2024-07-31,interleaved-thinking-2025-05-14",
+        )
         .header("user-agent", "claude-cli/2.1.3 (external, cli)")
         .header("authorization", "Bearer old-stale-token")
         .body(Vec::new())
@@ -115,8 +121,7 @@ async fn mount_successful_refresh(
     new_access_token: &str,
     new_refresh_token: &str,
 ) {
-    let token_body =
-        build_claude_token_response(new_access_token, new_refresh_token, 3600);
+    let token_body = build_claude_token_response(new_access_token, new_refresh_token, 3600);
 
     Mock::given(method("POST"))
         .and(path("/v1/oauth/token"))
@@ -133,10 +138,9 @@ async fn mount_failed_refresh(mock_server: &MockServer) {
     Mock::given(method("POST"))
         .and(path("/v1/oauth/token"))
         .and(body_string_contains("refresh_token"))
-        .respond_with(
-            ResponseTemplate::new(401)
-                .set_body_string(r#"{"error":"invalid_grant","error_description":"Invalid refresh token"}"#),
-        )
+        .respond_with(ResponseTemplate::new(401).set_body_string(
+            r#"{"error":"invalid_grant","error_description":"Invalid refresh token"}"#,
+        ))
         .mount(mock_server)
         .await;
 }
@@ -175,9 +179,16 @@ async fn test_request_with_valid_token_injects_bearer_header_without_refresh() {
 
     // @step Then the Authorization header should be "Bearer {access_token}"
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
     assert_eq!(
-        received[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
+    assert_eq!(
+        received[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some(format!("Bearer {access_token}")).as_deref(),
         "Authorization header should be Bearer token"
     );
@@ -207,12 +218,16 @@ async fn test_expired_token_is_automatically_refreshed_before_request() {
     // @step Given a RefreshingClaudeClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
     let client = build_expired_oauth_client("valid_refresh_tok", &mock_server.uri());
 
     // @step And a valid refresh token
-    mount_successful_refresh(&mock_server, "new_claude_access_tok", "new_claude_refresh_tok")
-        .await;
+    mount_successful_refresh(
+        &mock_server,
+        "new_claude_access_tok",
+        "new_claude_refresh_tok",
+    )
+    .await;
 
     // Mount a backend for the actual API request
     Mock::given(method("POST"))
@@ -248,14 +263,27 @@ async fn test_expired_token_is_automatically_refreshed_before_request() {
     // Allow a small delay for the tokio::spawn persistence task
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     let persisted = claude_auth::read_claude_auth().await.unwrap().unwrap();
-    assert_eq!(persisted.access_token, "new_claude_access_tok", "Persisted access_token should match refreshed value");
-    assert_eq!(persisted.refresh_token, "new_claude_refresh_tok", "Persisted refresh_token should match refreshed value");
+    assert_eq!(
+        persisted.access_token, "new_claude_access_tok",
+        "Persisted access_token should match refreshed value"
+    );
+    assert_eq!(
+        persisted.refresh_token, "new_claude_refresh_tok",
+        "Persisted refresh_token should match refreshed value"
+    );
 
     // @step And the request should proceed with the new access token
     let backend_reqs = backend.received_requests().await.unwrap();
-    assert_eq!(backend_reqs.len(), 1, "API request should be forwarded after refresh");
     assert_eq!(
-        backend_reqs[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        backend_reqs.len(),
+        1,
+        "API request should be forwarded after refresh"
+    );
+    assert_eq!(
+        backend_reqs[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some("Bearer new_claude_access_tok"),
         "Refreshed token should be used"
     );
@@ -274,8 +302,7 @@ async fn test_token_refresh_failure_propagates_error() {
     // @step Given a RefreshingClaudeClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let client =
-        build_expired_oauth_client("invalid_refresh_tok", &mock_server.uri());
+    let client = build_expired_oauth_client("invalid_refresh_tok", &mock_server.uri());
 
     // @step And an invalid refresh token that returns a 401 error
     mount_failed_refresh(&mock_server).await;
@@ -330,17 +357,11 @@ async fn test_streaming_request_with_expired_token_refreshes_before_streaming() 
     // @step Given a RefreshingClaudeClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_codelet_home();
-    let client =
-        build_expired_oauth_client("valid_refresh_for_stream", &mock_server.uri());
+    let (_temp_dir, _guard) = setup_fspec_home();
+    let client = build_expired_oauth_client("valid_refresh_for_stream", &mock_server.uri());
 
     // @step And a valid refresh token
-    mount_successful_refresh(
-        &mock_server,
-        "stream_access_tok",
-        "stream_refresh_tok",
-    )
-    .await;
+    mount_successful_refresh(&mock_server, "stream_access_tok", "stream_refresh_tok").await;
 
     // Mount a backend for the streaming request — respond with minimal SSE stream
     Mock::given(method("POST"))
@@ -377,9 +398,16 @@ async fn test_streaming_request_with_expired_token_refreshes_before_streaming() 
 
     // @step And the streaming response should use the refreshed credentials
     let backend_reqs = backend.received_requests().await.unwrap();
-    assert_eq!(backend_reqs.len(), 1, "Streaming request should be forwarded");
     assert_eq!(
-        backend_reqs[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        backend_reqs.len(),
+        1,
+        "Streaming request should be forwarded"
+    );
+    assert_eq!(
+        backend_reqs[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some("Bearer stream_access_tok"),
         "Refreshed token should be used for streaming"
     );
@@ -419,7 +447,11 @@ async fn test_api_key_mode_passes_requests_through_unchanged() {
     // @step And the original headers from rig should be preserved
     // @step And the request should be forwarded to reqwest as-is
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
+    assert_eq!(
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
     // In API key mode, no Authorization header is injected by RefreshingClaudeClient
     // (rig's static headers are preserved as-is)
     assert!(
@@ -474,12 +506,7 @@ async fn test_existing_authorization_header_is_replaced() {
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
     let access_token = "real_claude_bearer_token";
-    let client = build_oauth_client(
-        access_token,
-        "refresh_tok",
-        Some(1800),
-        &mock_server.uri(),
-    );
+    let client = build_oauth_client(access_token, "refresh_tok", Some(1800), &mock_server.uri());
 
     // Mount a backend to capture the request
     Mock::given(method("POST"))
@@ -506,9 +533,16 @@ async fn test_existing_authorization_header_is_replaced() {
     // @step Then the stale Authorization header should be stripped
     // @step And replaced with "Bearer {current_access_token}"
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
     assert_eq!(
-        received[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
+    assert_eq!(
+        received[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some(format!("Bearer {access_token}")).as_deref(),
         "Stale auth header should be replaced with real Bearer token"
     );
@@ -524,12 +558,7 @@ async fn test_static_headers_are_preserved_and_not_modified() {
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
     let access_token = "static_header_test_token";
-    let client = build_oauth_client(
-        access_token,
-        "refresh_tok",
-        Some(1800),
-        &mock_server.uri(),
-    );
+    let client = build_oauth_client(access_token, "refresh_tok", Some(1800), &mock_server.uri());
 
     // Mount a backend to capture the request
     Mock::given(method("POST"))
@@ -547,25 +576,38 @@ async fn test_static_headers_are_preserved_and_not_modified() {
         client.send(req).await;
 
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
+    assert_eq!(
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
 
     // @step Then the anthropic-beta header should be preserved unchanged
     assert_eq!(
-        received[0].headers.get("anthropic-beta").map(|v| v.to_str().unwrap()),
+        received[0]
+            .headers
+            .get("anthropic-beta")
+            .map(|v| v.to_str().unwrap()),
         Some("prompt-caching-2024-07-31,interleaved-thinking-2025-05-14"),
         "anthropic-beta header should be preserved unchanged"
     );
 
     // @step And the user-agent header should be preserved unchanged
     assert_eq!(
-        received[0].headers.get("user-agent").map(|v| v.to_str().unwrap()),
+        received[0]
+            .headers
+            .get("user-agent")
+            .map(|v| v.to_str().unwrap()),
         Some("claude-cli/2.1.3 (external, cli)"),
         "user-agent header should be preserved unchanged"
     );
 
     // @step And only the Authorization header should be modified
     assert_eq!(
-        received[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        received[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some(format!("Bearer {access_token}")).as_deref(),
         "Only Authorization header should be modified to current token"
     );
@@ -595,10 +637,7 @@ async fn test_claude_provider_uses_refreshing_client_for_oauth_mode() {
 
     // @step Then a RefreshingClaudeClient should be created with OAuth ClaudeTokenMode
     // Verify the provider is in OAuth mode
-    assert!(
-        provider.is_oauth_mode(),
-        "Provider should be in OAuth mode"
-    );
+    assert!(provider.is_oauth_mode(), "Provider should be in OAuth mode");
 
     // @step And it should be passed as the HTTP client to rig anthropic::Client<RefreshingClaudeClient>
     // Verify the client is properly typed — the fact that .client() returns
@@ -652,7 +691,7 @@ async fn test_tokens_loaded_from_disk_trigger_immediate_refresh() {
     // @step Given OAuth tokens exist in claude_auth.json from a previous session
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     // @step When ClaudeProvider passes Some(0) for expires_in_secs to RefreshingClaudeClient
     let client = build_expired_oauth_client("valid_refresh_disk", &mock_server.uri());
@@ -665,8 +704,7 @@ async fn test_tokens_loaded_from_disk_trigger_immediate_refresh() {
 
     // @step Given the access token may be expired
     // Mount a successful refresh endpoint
-    mount_successful_refresh(&mock_server, "fresh_disk_tok", "fresh_refresh_tok")
-        .await;
+    mount_successful_refresh(&mock_server, "fresh_disk_tok", "fresh_refresh_tok").await;
 
     // Mount a backend to receive the API request
     Mock::given(method("POST"))
@@ -695,9 +733,16 @@ async fn test_tokens_loaded_from_disk_trigger_immediate_refresh() {
 
     // Verify the API request used the refreshed token
     let backend_reqs = backend.received_requests().await.unwrap();
-    assert_eq!(backend_reqs.len(), 1, "API request should be forwarded after refresh");
     assert_eq!(
-        backend_reqs[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        backend_reqs.len(),
+        1,
+        "API request should be forwarded after refresh"
+    );
+    assert_eq!(
+        backend_reqs[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some("Bearer fresh_disk_tok"),
         "Request should use the freshly refreshed token, not the stale disk token"
     );
@@ -718,15 +763,19 @@ async fn test_token_persistence_is_best_effort_and_does_not_fail_requests() {
     let backend = MockServer::start().await;
 
     // @step And token persistence to claude_auth.json will fail due to filesystem error
-    // Point CODELET_HOME to a non-existent/read-only path to cause persistence failure.
-    // We use setup_codelet_home() to get a valid guard, then override with a bad path.
-    let (_temp_dir, _guard) = setup_codelet_home();
-    std::env::set_var("CODELET_HOME", "/dev/null/nonexistent/path");
+    // Point FSPEC_HOME to a non-existent/read-only path to cause persistence failure.
+    // We use setup_fspec_home() to get a valid guard, then override with a bad path.
+    let (_temp_dir, _guard) = setup_fspec_home();
+    std::env::set_var("FSPEC_HOME", "/dev/null/nonexistent/path");
 
     let client = build_expired_oauth_client("valid_refresh_tok", &mock_server.uri());
 
-    mount_successful_refresh(&mock_server, "persistence_fail_tok", "persistence_fail_refresh")
-        .await;
+    mount_successful_refresh(
+        &mock_server,
+        "persistence_fail_tok",
+        "persistence_fail_refresh",
+    )
+    .await;
 
     // Mount a backend for the actual API request
     Mock::given(method("POST"))
@@ -743,17 +792,23 @@ async fn test_token_persistence_is_best_effort_and_does_not_fail_requests() {
     // @step Then the refresh should succeed and tokens should be updated in memory
     // @step And the persistence failure should be logged
     // @step And the request should still proceed with the refreshed token
-    assert!(result.is_ok(), "Request should succeed even if persistence fails");
+    assert!(
+        result.is_ok(),
+        "Request should succeed even if persistence fails"
+    );
 
     let backend_reqs = backend.received_requests().await.unwrap();
     assert_eq!(backend_reqs.len(), 1, "API request should be forwarded");
     assert_eq!(
-        backend_reqs[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        backend_reqs[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some("Bearer persistence_fail_tok"),
         "Refreshed token should be used despite persistence failure"
     );
 
-    // _guard restores CODELET_HOME on drop
+    // _guard restores FSPEC_HOME on drop
 }
 
 // =========================================================================
@@ -766,13 +821,12 @@ async fn test_claude_auth_persistence_writes_correct_json_structure() {
     // @step Given a RefreshingClaudeClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let client = build_expired_oauth_client("valid_refresh_persist", &mock_server.uri());
 
     // @step And a valid refresh token
-    mount_successful_refresh(&mock_server, "persist_access_tok", "persist_refresh_tok")
-        .await;
+    mount_successful_refresh(&mock_server, "persist_access_tok", "persist_refresh_tok").await;
 
     // Mount a backend for the actual API request
     Mock::given(method("POST"))

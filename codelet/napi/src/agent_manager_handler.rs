@@ -67,6 +67,11 @@ pub fn create_handler(
                     "await_idle must be dispatched through the async handler",
                 )
             }
+            AgentManagerAction::Profile { .. } => {
+                AgentManagerResult::invalid_parameter(
+                    "profile must be dispatched through the async handler",
+                )
+            }
         }
     })
 }
@@ -230,6 +235,11 @@ fn spawn_subordinate_forwarding_task(
         );
 
         loop {
+            // AMGR-017: instrumented hot-loop marker — sub-1ns cost when no profile session is active.
+            // This is the prime suspect for the PROV-053/054 CPU spike. The scope entry will appear
+            // in scopes_by_calls as `codelet_napi::agent_manager_handler::spawn_subordinate_forwarding_task::recv_loop`
+            // during any profile window so an AI agent can diagnose runaway iterations.
+            codelet_tools::profile_scope!("spawn_subordinate_forwarding_task::recv_loop");
             match sub_rx.recv().await {
                 Ok(chunk) => {
                     // Convert StreamChunk to JSON
@@ -247,6 +257,9 @@ fn spawn_subordinate_forwarding_task(
                     // Send to all registered relay connections for the root parent
                     let senders = codelet_tools::get_subordinate_chunk_senders(root_parent_id);
                     if senders.is_empty() {
+                        // AMGR-017: counter-only witness scope — if this scope shows high call_count
+                        // during a profile window, the subordinate is emitting chunks into the void.
+                        codelet_tools::profile_scope!("spawn_subordinate_forwarding_task::empty_senders_continue");
                         // No relay connections yet — this is fine for late bridge
                         // connections. Chunks emitted before Bridge connect are lost,
                         // but chunks after connect will be forwarded.
@@ -772,12 +785,62 @@ pub fn create_async_handler() -> AgentManagerAsyncHandler {
                         timeout,
                     ).await
                 }
+                AgentManagerAction::Profile {
+                    duration_secs,
+                    top_n,
+                    label_prefix,
+                    focus,
+                } => handle_profile(duration_secs, top_n, label_prefix, focus).await,
                 _ => AgentManagerResult::invalid_parameter(
-                    "Only await_idle should be dispatched to the async handler",
+                    "Only await_idle and profile should be dispatched to the async handler",
                 ),
             }
         })
     })
+}
+
+/// Handle the `profile` action — run a time-bounded profile window (AMGR-017)
+///
+/// Delegates to `codelet_tools::profile::session::ProfileSession::run()`, which enforces the
+/// single-session atomic gate, sleeps for the requested duration, and returns the aggregated
+/// `ProfileResult`. Any `ProfileRunError` is translated into the standard
+/// `AgentManagerResult::Error` envelope so the tool-call response shape is consistent.
+async fn handle_profile(
+    duration_secs: Option<u32>,
+    top_n: Option<usize>,
+    label_prefix: Option<String>,
+    focus: Option<String>,
+) -> AgentManagerResult {
+    use codelet_tools::profile::session::{ProfileRunError, ProfileSession};
+    match ProfileSession::run(duration_secs, top_n, label_prefix, focus).await {
+        Ok(profile) => match serde_json::to_value(&profile) {
+            Ok(value) => AgentManagerResult::Error {
+                error: false,
+                code: "profile_result".to_string(),
+                message: value.to_string(),
+            },
+            Err(e) => AgentManagerResult::invalid_parameter(&format!(
+                "failed to serialise ProfileResult: {e}"
+            )),
+        },
+        Err(ProfileRunError::AlreadyActive {
+            started_at,
+            ends_in_secs,
+        }) => AgentManagerResult::Error {
+            error: true,
+            code: "profile_session_active".to_string(),
+            message: format!(
+                "A profile session is already active (started_at={started_at}, ends_in_secs={ends_in_secs})"
+            ),
+        },
+        Err(ProfileRunError::InvalidDuration {
+            min,
+            max,
+            provided,
+        }) => AgentManagerResult::invalid_parameter(&format!(
+            "duration_secs must be between {min} and {max} (provided: {provided})"
+        )),
+    }
 }
 
 /// Handle the `await_idle` action — block until sessions reach idle (AMGR-015)
@@ -837,6 +900,11 @@ async fn handle_await_idle(
     for (id, mut rx) in pending {
         join_set.spawn(async move {
             loop {
+                // AMGR-017: instrumented hot-loop marker — sub-1ns cost when no profile session is active.
+                // One of the prime suspects from the PROV-053/054 CPU spike investigation. If this scope
+                // shows a high call_count during a profile window, the per-session broadcast receiver is
+                // spinning without making progress.
+                codelet_tools::profile_scope!("handle_await_idle::per_session_recv_loop");
                 match rx.recv().await {
                     Ok(chunk) => {
                         if let crate::types::StreamChunk::SessionStateChange { state } = &chunk {
@@ -849,6 +917,9 @@ async fn handle_await_idle(
                         return (id, AwaitOutcome::Destroyed);
                     }
                     Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                        // AMGR-017: counter-only witness scope — tracks silent-continue events so a
+                        // profile run can distinguish "spinning doing nothing" from "receiving chunks fast".
+                        codelet_tools::profile_scope!("handle_await_idle::lagged_continue");
                         continue;
                     }
                 }

@@ -15,6 +15,7 @@ import {
   initializeNewProfile,
   initializeEditProfile,
 } from '../utils/providerSettingsHelpers';
+import { startCopilotLogin } from '../utils/copilotLoginFlow';
 
 export interface ListModeHandlerOptions {
   input: string;
@@ -119,7 +120,12 @@ function handleActions(
     if (currentItem.type === 'provider') {
       providerSettings.toggleProviderExpansion(currentItem.providerId);
     } else if (currentItem.type === 'oauth-login') {
-      if (currentItem.method === 'browser') {
+      // PROV-054: GitHub Copilot routes through the deployment-type select
+      // mode rather than directly into browser/headless flows because the
+      // user must first pick github.com vs enterprise.
+      if (currentItem.providerId === 'github-copilot') {
+        startCopilotLogin(providerSettings, currentItem.providerId);
+      } else if (currentItem.method === 'browser') {
         providerSettings.startBrowserLogin(currentItem.providerId);
       } else if (currentItem.method === 'headless') {
         providerSettings.startDeviceLogin(currentItem.providerId);

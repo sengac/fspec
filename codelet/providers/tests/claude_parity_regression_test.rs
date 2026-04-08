@@ -11,7 +11,7 @@
 //! Tests use:
 //! - Unit assertions for pure-function parity (tool prefixing, URL rewriting, headers)
 //! - wiremock for token refresh and concurrent refresh scenarios
-//! - CODELET_HOME temp directories for persistence testing
+//! - FSPEC_HOME temp directories for persistence testing
 
 mod fixtures;
 
@@ -23,7 +23,7 @@ use codelet_providers::claude_oauth::{
 use codelet_providers::claude_refreshing_client::RefreshingClaudeClient;
 use codelet_providers::{AuthMode, ClaudeProvider};
 use codelet_tools::facade::CLAUDE_CODE_PROMPT_PREFIX;
-use fixtures::setup_codelet_home;
+use fixtures::setup_fspec_home;
 use http::Request;
 use rig::http_client::HttpClientExt;
 use serial_test::serial;
@@ -94,8 +94,7 @@ async fn mount_counted_successful_refresh(
     new_access_token: &str,
     new_refresh_token: &str,
 ) -> wiremock::MockGuard {
-    let token_body =
-        build_claude_token_response(new_access_token, new_refresh_token, 3600);
+    let token_body = build_claude_token_response(new_access_token, new_refresh_token, 3600);
 
     Mock::given(method("POST"))
         .and(path("/v1/oauth/token"))
@@ -114,8 +113,7 @@ async fn mount_successful_refresh(
     new_access_token: &str,
     new_refresh_token: &str,
 ) {
-    let token_body =
-        build_claude_token_response(new_access_token, new_refresh_token, 3600);
+    let token_body = build_claude_token_response(new_access_token, new_refresh_token, 3600);
 
     Mock::given(method("POST"))
         .and(path("/v1/oauth/token"))
@@ -154,8 +152,18 @@ fn test_parity_tool_names_prefixed_with_mcp_in_oauth_mode_requests() {
     // @step Then tool names in tool definitions should be prefixed with "mcp_"
     // Test all 12 codelet tools match opencode's behavior
     let tools = [
-        "Read", "Write", "Edit", "Bash", "Grep", "Glob", "Ls",
-        "AstGrep", "AstGrepRefactor", "Fspec", "Bridge", "WebSearch",
+        "Read",
+        "Write",
+        "Edit",
+        "Bash",
+        "Grep",
+        "Glob",
+        "Ls",
+        "AstGrep",
+        "AstGrepRefactor",
+        "Fspec",
+        "Bridge",
+        "WebSearch",
     ];
     for tool in &tools {
         let prefixed = prefix_tool_name(tool);
@@ -317,10 +325,7 @@ fn test_parity_oauth_requests_include_merged_beta_headers_and_bearer_auth() {
     );
 
     // Deduplication test: pass already-present required betas as existing
-    let with_dup = build_oauth_headers(
-        access_token,
-        Some("oauth-2025-04-20,custom-beta"),
-    );
+    let with_dup = build_oauth_headers(access_token, Some("oauth-2025-04-20,custom-beta"));
     let dup_beta = with_dup.get("anthropic-beta").unwrap();
     let dup_parts: Vec<&str> = dup_beta.split(',').collect();
     let dup_unique: std::collections::HashSet<&str> = dup_parts.iter().copied().collect();
@@ -353,11 +358,13 @@ fn test_parity_system_prompt_includes_claude_code_identity_prefix() {
     let prompt = provider.system_prompt();
 
     // @step Then the first system block should start with "You are Claude Code, Anthropic's official CLI for Claude."
-    assert!(prompt.is_some(), "OAuth mode must return a system prompt prefix");
+    assert!(
+        prompt.is_some(),
+        "OAuth mode must return a system prompt prefix"
+    );
     let prefix = prompt.unwrap();
     assert_eq!(
-        prefix,
-        "You are Claude Code, Anthropic's official CLI for Claude.",
+        prefix, "You are Claude Code, Anthropic's official CLI for Claude.",
         "Prefix must exactly match opencode's system.transform prefix"
     );
 
@@ -365,8 +372,7 @@ fn test_parity_system_prompt_includes_claude_code_identity_prefix() {
     // opencode replaces "OpenCode" → "Claude Code" and "opencode" → "Claude"
     // Our facade uses the CLAUDE_CODE_PROMPT_PREFIX constant directly
     assert_eq!(
-        CLAUDE_CODE_PROMPT_PREFIX,
-        "You are Claude Code, Anthropic's official CLI for Claude.",
+        CLAUDE_CODE_PROMPT_PREFIX, "You are Claude Code, Anthropic's official CLI for Claude.",
         "CLAUDE_CODE_PROMPT_PREFIX must match opencode's prefix"
     );
 
@@ -441,7 +447,7 @@ async fn test_regression_tokens_loaded_from_disk_force_immediate_refresh() {
     // @step Given claude_auth.json contains week-old tokens with expired access_token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     // Write simulated "week-old" tokens to claude_auth.json
     let old_auth = claude_auth::ClaudeAuthJson {
@@ -531,7 +537,7 @@ async fn test_regression_concurrent_requests_during_expired_token_only_refresh_o
     // @step Given I am authenticated with Claude via OAuth
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     // @step And the access token is expired
     let client = build_expired_oauth_client("concurrent_refresh_tok", &mock_server.uri());
@@ -565,16 +571,14 @@ async fn test_regression_concurrent_requests_during_expired_token_only_refresh_o
     let (result1, result2) = tokio::join!(
         async move {
             let req = make_request(&url1);
-            let r: rig::http_client::Result<
-                http::Response<rig::http_client::LazyBody<Vec<u8>>>,
-            > = client1.send(req).await;
+            let r: rig::http_client::Result<http::Response<rig::http_client::LazyBody<Vec<u8>>>> =
+                client1.send(req).await;
             r
         },
         async move {
             let req = make_request(&url2);
-            let r: rig::http_client::Result<
-                http::Response<rig::http_client::LazyBody<Vec<u8>>>,
-            > = client2.send(req).await;
+            let r: rig::http_client::Result<http::Response<rig::http_client::LazyBody<Vec<u8>>>> =
+                client2.send(req).await;
             r
         }
     );

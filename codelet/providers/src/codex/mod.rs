@@ -50,9 +50,7 @@ pub enum CodexAuthMode {
     /// Legacy mode: uses OpenAI API key from token exchange
     ApiKey,
     /// Direct Codex API mode: uses Bearer access_token to chatgpt.com/backend-api/codex
-    OAuthDirect {
-        account_id: String,
-    },
+    OAuthDirect { account_id: String },
 }
 
 /// Codex Provider for ChatGPT Backend API (using rig with OAuth)
@@ -304,17 +302,18 @@ impl CodexProvider {
         preamble: Option<&str>,
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<CodexResponsesModel> {
-        use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, ApplyPatchTool, WebSearchTool,
-            ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool, DeepSearchTool,
-            AgentManagerTool, ScheduleTool,
-        };
         use codelet_tools::facade::{
-            BashToolFacadeWrapper, CodexExecCommandFacade, CodexGrepFilesFacade, CodexListDirFacade,
-            CodexReadFileFacade, CodexRequestUserInputFacade, CodexShellCommandFacade,
-            CodexShellFacade, CodexViewImageFacade, CodexWriteStdinFacade,
-            ExecToolFacadeWrapper, FileToolFacadeWrapper, HitlToolFacadeWrapper,
-            LsToolFacadeWrapper, SearchToolFacadeWrapper, codex_bridge_tool, codex_fspec_tool,
+            codex_bridge_tool, codex_fspec_tool, BashToolFacadeWrapper, CodexExecCommandFacade,
+            CodexGrepFilesFacade, CodexListDirFacade, CodexReadFileFacade,
+            CodexRequestUserInputFacade, CodexShellCommandFacade, CodexShellFacade,
+            CodexViewImageFacade, CodexWriteStdinFacade, ExecToolFacadeWrapper,
+            FileToolFacadeWrapper, HitlToolFacadeWrapper, LsToolFacadeWrapper,
+            SearchToolFacadeWrapper,
+        };
+        use codelet_tools::{
+            AgentManagerTool, ApplyPatchTool, AstGrepRefactorTool, AstGrepTool, ConnectMcpTool,
+            DeepSearchTool, GraphSearchTool, InjectSummaryTool, ScheduleTool, SessionSearchTool,
+            WebSearchTool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -327,7 +326,8 @@ impl CodexProvider {
 
         // @step Then shell_command uses BashToolFacadeWrapper with CodexShellCommandFacade
         // Shell command facade: Bash → shell_command
-        let shell_command = BashToolFacadeWrapper::new(Arc::new(CodexShellCommandFacade), session_id);
+        let shell_command =
+            BashToolFacadeWrapper::new(Arc::new(CodexShellCommandFacade), session_id);
 
         // @step And read_file uses FileToolFacadeWrapper with CodexReadFileFacade
         // File read facade: Read → read_file
@@ -353,7 +353,8 @@ impl CodexProvider {
         // BUG-115: write_stdin: send input to running PTY session or poll for output
         let write_stdin = ExecToolFacadeWrapper::new(Arc::new(CodexWriteStdinFacade), session_id);
         // BUG-116: request_user_input: Codex-native HITL facade
-        let request_user_input = HitlToolFacadeWrapper::new(Arc::new(CodexRequestUserInputFacade), session_id);
+        let request_user_input =
+            HitlToolFacadeWrapper::new(Arc::new(CodexRequestUserInputFacade), session_id);
 
         // Build agent with Codex-native tools using rig's builder pattern
         // TOOL-015: Uses FacadeToolWrapper for tools with Codex equivalents
@@ -364,19 +365,19 @@ impl CodexProvider {
             .rig_client
             .agent(&self.model_name)
             // Codex-native facade tools
-            .tool(shell_command)   // Codex-native shell_command
-            .tool(read_file)       // Codex-native read_file
-            .tool(view_image)      // Codex-native view_image (BUG-112: facade, not standalone)
-            .tool(list_dir)        // Codex-native list_dir
-            .tool(grep_files)      // Codex-native grep_files
-            .tool(shell)           // BUG-114: Codex-native shell (execvp argv)
-            .tool(exec_command)    // BUG-114: Codex-native exec_command (PTY)
-            .tool(write_stdin)     // BUG-115: Codex-native write_stdin (send input to PTY session)
+            .tool(shell_command) // Codex-native shell_command
+            .tool(read_file) // Codex-native read_file
+            .tool(view_image) // Codex-native view_image (BUG-112: facade, not standalone)
+            .tool(list_dir) // Codex-native list_dir
+            .tool(grep_files) // Codex-native grep_files
+            .tool(shell) // BUG-114: Codex-native shell (execvp argv)
+            .tool(exec_command) // BUG-114: Codex-native exec_command (PTY)
+            .tool(write_stdin) // BUG-115: Codex-native write_stdin (send input to PTY session)
             // @step And AstGrep, AstGrepRefactor remain as direct tool registrations
             // BUG-105: Replace WriteTool + EditTool with Codex-native apply_patch.
             // Codex models are trained to use apply_patch for all file modifications.
             // Keeping Write/Edit would cause the model to choose between competing interfaces.
-            .tool(ApplyPatchTool::new(session_id))  // Codex-native apply_patch
+            .tool(ApplyPatchTool::new(session_id)) // Codex-native apply_patch
             .tool(AstGrepTool::new(session_id))
             .tool(AstGrepRefactorTool::new(session_id))
             .tool(WebSearchTool::new(session_id))
@@ -434,9 +435,11 @@ impl CodexProvider {
         let stop_reason = match response.raw_response.status {
             openai::responses_api::ResponseStatus::Completed => {
                 // Check if any output contains a function call (tool use)
-                let has_tool_calls = response.raw_response.output.iter().any(|o| {
-                    matches!(o, openai::responses_api::Output::FunctionCall(_))
-                });
+                let has_tool_calls = response
+                    .raw_response
+                    .output
+                    .iter()
+                    .any(|o| matches!(o, openai::responses_api::Output::FunctionCall(_)));
                 if has_tool_calls {
                     StopReason::ToolUse
                 } else {
@@ -636,8 +639,14 @@ mod tests {
         let tool_names: Vec<&str> = tool_defs.iter().map(|def| def.name.as_str()).collect();
 
         // @step Then the tool list does not contain "glob"
-        assert!(!tool_names.contains(&"glob"), "Codex agent should NOT expose non-native 'glob' tool, but found: {tool_names:?}");
-        assert!(!tool_names.contains(&"Glob"), "Codex agent should NOT expose 'Glob' tool either");
+        assert!(
+            !tool_names.contains(&"glob"),
+            "Codex agent should NOT expose non-native 'glob' tool, but found: {tool_names:?}"
+        );
+        assert!(
+            !tool_names.contains(&"Glob"),
+            "Codex agent should NOT expose 'Glob' tool either"
+        );
 
         // @step And the tool list contains "shell_command"
         assert!(tool_names.contains(&"shell_command"));
@@ -652,12 +661,21 @@ mod tests {
 
         // @step And the agent does not have "Write" or "Edit" tools registered
         // BUG-105 Rule [6]: WriteTool and EditTool removed to prevent competing edit interfaces
-        assert!(!tool_names.contains(&"Write"), "Codex agent should NOT expose 'Write' tool (BUG-105), but found: {tool_names:?}");
-        assert!(!tool_names.contains(&"Edit"), "Codex agent should NOT expose 'Edit' tool (BUG-105), but found: {tool_names:?}");
+        assert!(
+            !tool_names.contains(&"Write"),
+            "Codex agent should NOT expose 'Write' tool (BUG-105), but found: {tool_names:?}"
+        );
+        assert!(
+            !tool_names.contains(&"Edit"),
+            "Codex agent should NOT expose 'Edit' tool (BUG-105), but found: {tool_names:?}"
+        );
 
         // @step Then the agent's tool list includes a tool named "view_image"
         // BUG-112: Codex-native view_image tool for viewing local image files
-        assert!(tool_names.contains(&"view_image"), "Codex agent should expose 'view_image' tool (BUG-112), but found: {tool_names:?}");
+        assert!(
+            tool_names.contains(&"view_image"),
+            "Codex agent should expose 'view_image' tool (BUG-112), but found: {tool_names:?}"
+        );
     }
 
     /// Feature: spec/features/codex-shell-exec-facades.feature
@@ -682,15 +700,24 @@ mod tests {
         let tool_names: Vec<&str> = tool_defs.iter().map(|def| def.name.as_str()).collect();
 
         // @step Then the tool list contains "shell"
-        assert!(tool_names.contains(&"shell"), "Codex agent should expose 'shell' tool (BUG-114), but found: {tool_names:?}");
+        assert!(
+            tool_names.contains(&"shell"),
+            "Codex agent should expose 'shell' tool (BUG-114), but found: {tool_names:?}"
+        );
 
         // @step And the tool list contains "exec_command"
-        assert!(tool_names.contains(&"exec_command"), "Codex agent should expose 'exec_command' tool (BUG-114), but found: {tool_names:?}");
+        assert!(
+            tool_names.contains(&"exec_command"),
+            "Codex agent should expose 'exec_command' tool (BUG-114), but found: {tool_names:?}"
+        );
 
         // @step And shell uses ExecToolFacadeWrapper with CodexShellFacade
         // Verify shell tool has the correct schema (array command)
         let shell_def = tool_defs.iter().find(|d| d.name == "shell").unwrap();
-        assert_eq!(shell_def.parameters["properties"]["command"]["type"], "array");
+        assert_eq!(
+            shell_def.parameters["properties"]["command"]["type"],
+            "array"
+        );
         assert_eq!(shell_def.parameters["required"][0], "command");
 
         // @step And exec_command uses ExecToolFacadeWrapper with CodexExecCommandFacade
@@ -700,9 +727,15 @@ mod tests {
         assert_eq!(exec_def.parameters["required"][0], "cmd");
 
         // @step And write_stdin uses ExecToolFacadeWrapper with CodexWriteStdinFacade (BUG-115)
-        assert!(tool_names.contains(&"write_stdin"), "Codex agent should expose 'write_stdin' tool (BUG-115), but found: {tool_names:?}");
+        assert!(
+            tool_names.contains(&"write_stdin"),
+            "Codex agent should expose 'write_stdin' tool (BUG-115), but found: {tool_names:?}"
+        );
         let write_def = tool_defs.iter().find(|d| d.name == "write_stdin").unwrap();
-        assert_eq!(write_def.parameters["properties"]["session_id"]["type"], "string");
+        assert_eq!(
+            write_def.parameters["properties"]["session_id"]["type"],
+            "string"
+        );
         assert_eq!(write_def.parameters["required"][0], "session_id");
     }
 

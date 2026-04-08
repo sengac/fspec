@@ -36,7 +36,7 @@ use codelet_providers::claude_oauth_server::{
     claude_browser_oauth_login_inner, ClaudeOAuthServerConfig,
 };
 use codelet_providers::oauth_crypto::generate_pkce;
-use fixtures::{build_claude_token_response_json, setup_codelet_home};
+use fixtures::{build_claude_token_response_json, setup_fspec_home};
 use serial_test::serial;
 use tokio::net::TcpListener as TokioTcpListener;
 use wiremock::matchers::{header, method, path};
@@ -112,7 +112,7 @@ fn urlencoded(s: &str) -> String {
 #[serial]
 async fn test_successful_browser_oauth_login_via_napi() {
     // @step Given the Claude browser OAuth flow is configured with a test server
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let mock_server = MockServer::start().await;
     let token_body = build_claude_token_response_json("at_claude_browser", "rt_claude_browser", 3600);
@@ -187,7 +187,7 @@ async fn test_successful_browser_oauth_login_via_napi() {
 #[serial]
 async fn test_browser_oauth_login_times_out() {
     // @step Given the Claude browser OAuth flow is configured with a short timeout
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let (listener, _port) = ephemeral_listener().await;
     let login_handle = tokio::spawn(async move {
@@ -262,7 +262,7 @@ fn test_headless_login_start_returns_authorize_url_and_pkce_verifier() {
 #[serial]
 async fn test_headless_login_complete_exchanges_code_for_tokens() {
     // @step Given a headless login flow has been started with a known pkce_verifier
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let pkce = generate_pkce();
@@ -386,7 +386,7 @@ fn test_headless_login_complete_rejects_code_without_hash_separator() {
 #[serial]
 async fn test_token_refresh_returns_new_tokens() {
     // @step Given valid Claude OAuth tokens exist in claude_auth.json
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let original_auth = ClaudeAuthJson {
@@ -482,7 +482,7 @@ async fn test_token_refresh_fails_with_invalid_refresh_token() {
 #[serial]
 async fn test_get_tokens_returns_stored_tokens_from_claude_auth_json() {
     // @step Given valid Claude OAuth tokens exist in claude_auth.json
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let stored_auth = ClaudeAuthJson {
         access_token: "stored_access_xyz".to_string(),
@@ -524,7 +524,7 @@ async fn test_get_tokens_returns_stored_tokens_from_claude_auth_json() {
 #[serial]
 async fn test_get_tokens_returns_null_when_no_claude_auth_json_exists() {
     // @step Given no claude_auth.json file exists
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
     assert!(
         !auth_path.exists(),
@@ -551,7 +551,7 @@ async fn test_get_tokens_returns_null_when_no_claude_auth_json_exists() {
 #[serial]
 async fn test_clear_tokens_removes_stored_credentials() {
     // @step Given valid Claude OAuth tokens exist in claude_auth.json
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let auth = ClaudeAuthJson {
@@ -591,7 +591,7 @@ async fn test_clear_tokens_removes_stored_credentials() {
 #[serial]
 async fn test_clear_tokens_is_idempotent_when_no_credentials_exist() {
     // @step Given no claude_auth.json file exists
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
     assert!(
         !auth_path.exists(),

@@ -8,9 +8,9 @@
 //! - Coding Plan API: https://api.z.ai/api/coding/paas/v4 (uses ZAI_PLAN_API_KEY)
 
 use crate::{
-    convert_assistant_content, convert_tools_to_rig,
-    extract_prompt_data, extract_text_from_content, validate_api_key_static, CompletionResponse,
-    LlmProvider, ProviderAdapter, ProviderError, StopReason,
+    convert_assistant_content, convert_tools_to_rig, extract_prompt_data,
+    extract_text_from_content, validate_api_key_static, CompletionResponse, LlmProvider,
+    ProviderAdapter, ProviderError, StopReason,
 };
 use async_trait::async_trait;
 use codelet_common::{Message, MessageContent};
@@ -196,16 +196,21 @@ impl ZAIProvider {
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::facade::{
-            BashToolFacadeWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
-            SearchToolFacadeWrapper, zai_bridge_tool, zai_fspec_tool, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
-            ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
+            zai_bridge_tool, zai_fspec_tool, BashToolFacadeWrapper, FileToolFacadeWrapper,
+            LsToolFacadeWrapper, SearchToolFacadeWrapper, ZAIEditFileFacade, ZAIFindFilesFacade,
+            ZAIGrepFilesFacade, ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade,
+            ZAIWriteFileFacade,
         };
-        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool, ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool, DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool};
+        use codelet_tools::{
+            AgentManagerTool, AstGrepRefactorTool, AstGrepTool, ConnectMcpTool, DeepSearchTool,
+            GraphSearchTool, InjectSummaryTool, RequestUserInputTool, ScheduleTool,
+            SessionSearchTool, WebSearchTool,
+        };
         use std::sync::Arc;
 
         // Create Z.AI/GLM-specific tool facades (PROV-004)
         // These provide GLM-native tool names and flat schemas that GLM understands
-        
+
         // File operation facades
         // BLOCK-006: Pass session_id for notification emission
         let read_file = FileToolFacadeWrapper::new(Arc::new(ZAIReadFileFacade), session_id);

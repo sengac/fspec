@@ -44,7 +44,7 @@ Identify reusable functions and types from PROV-020 (claude_oauth.rs) and PROV-0
 
 ### `write_claude_auth(auth: &ClaudeAuthJson) -> Result<()>`
 - **File**: codelet/providers/src/claude_auth.rs:56-67
-- Writes to ~/.config/codelet/claude_auth.json (or CODELET_HOME)
+- Writes to ~/.fspec/credentials/claude_auth.json (or FSPEC_HOME)
 - Reused for persistence in headless flow
 
 ---
@@ -81,8 +81,8 @@ Identify reusable functions and types from PROV-020 (claude_oauth.rs) and PROV-0
 
 ### fixtures/mod.rs
 - **File**: codelet/providers/tests/fixtures/mod.rs
-- `setup_codelet_home()` — sets up temp CODELET_HOME for Claude auth tests
-- `CodeletHomeGuard` — RAII guard for env var restoration
+- `setup_fspec_home()` — sets up temp FSPEC_HOME for Claude auth tests
+- `FspecHomeGuard` — RAII guard for env var restoration
 - No Claude-specific token response builder needed (Claude returns access_token, refresh_token, expires_in directly — no JWT/id_token)
 
 ---

@@ -205,10 +205,7 @@ fn test_openai_finish_reason_string_mapping() {
     assert_eq!(stop_reason, StopReason::MaxTokens);
 
     // @step And the persisted AssistantMessage stop_reason is "max_tokens"
-    assert_eq!(
-        stop_reason_to_persistence_string(stop_reason),
-        "max_tokens"
-    );
+    assert_eq!(stop_reason_to_persistence_string(stop_reason), "max_tokens");
 
     // @step And the stop_reason is not hardcoded to "end_turn"
     assert_ne!(
@@ -243,7 +240,10 @@ fn test_provider_manager_openai_max_output_tokens_env_var() {
     );
 
     // @step And the returned value is not the compile-time constant 4096
-    assert_ne!(result, 4096, "Must not return hardcoded default when env var is set");
+    assert_ne!(
+        result, 4096,
+        "Must not return hardcoded default when env var is set"
+    );
 
     // Clean up
     std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");

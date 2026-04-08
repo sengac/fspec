@@ -1,4 +1,15 @@
-use codelet_tools::facade::{build_gemini_system_prompt, select_claude_facade};
+//! DeepSearch sub-agent request configuration per provider.
+//!
+//! Feature: spec/features/github-copilot-end-to-end-integration.feature
+//! Feature: spec/features/glm-zai-deepsearch-fails-with-500-internal-server-error.feature
+//!
+//! This module validates the acceptance criteria defined in those feature files.
+//! Scenarios map directly to Gherkin scenarios in the tests below.
+
+use codelet_tools::facade::{
+    build_gemini_system_prompt, select_claude_facade, BoxedSystemPromptFacade,
+    OpenAISystemPromptFacade,
+};
 use serde_json::json;
 
 pub(crate) const SUB_AGENT_MAX_TOKENS: u64 = 8192;
@@ -22,9 +33,39 @@ pub(crate) fn request_config_for_provider(
         "gemini" => Ok(gemini_request_config(model_name, system_prompt)),
         "codex" => Ok(codex_request_config(system_prompt)),
         "zai" => Ok(zai_request_config(system_prompt)),
+        "github-copilot" | "copilot" => Ok(copilot_request_config(model_name, system_prompt)),
         _ => Err(format!(
-            "Unsupported provider for DeepSearch sub-agent: {provider_name}. Supported: claude, openai, gemini, codex, zai"
+            "Unsupported provider for DeepSearch sub-agent: {provider_name}. Supported: claude, openai, gemini, codex, zai, github-copilot"
         )),
+    }
+}
+
+/// PROV-057 Layer 3 — Select the appropriate system-prompt facade for a
+/// GitHub Copilot model.
+///
+/// Copilot's `/chat/completions` endpoint is wire-compatible with OpenAI
+/// (see `codelet/providers/src/copilot/system_prompt_facade.rs`), so we
+/// reuse [`OpenAISystemPromptFacade`] here rather than introducing a
+/// parallel facade hierarchy. The `model_name` argument is accepted so
+/// this selector can grow a model-family-aware dispatch (mirroring
+/// `select_copilot_behavior_facade` in `codelet/providers/src/copilot/`)
+/// without changing the call-site signature.
+///
+/// Feature: spec/features/github-copilot-end-to-end-integration.feature
+#[must_use]
+pub(crate) fn select_copilot_facade(_model_name: &str) -> BoxedSystemPromptFacade {
+    Box::new(OpenAISystemPromptFacade)
+}
+
+fn copilot_request_config(
+    model_name: &str,
+    system_prompt: &str,
+) -> DeepSearchRequestConfig {
+    let facade = select_copilot_facade(model_name);
+    DeepSearchRequestConfig {
+        preamble: facade.transform_preamble(system_prompt),
+        additional_params: None,
+        max_tokens: Some(SUB_AGENT_MAX_TOKENS),
     }
 }
 
@@ -177,5 +218,75 @@ mod tests {
         let params = config.additional_params.as_ref().expect("params");
         assert!(params["system"].is_array());
         assert!(params["system"][0]["text"].as_str().expect("prefix").contains("Claude Code"));
+    }
+
+    // =========================================================================
+    // Feature: spec/features/github-copilot-end-to-end-integration.feature
+    // PROV-057 Layer 3 — DeepSearch sub-agent support for github-copilot
+    // =========================================================================
+
+    // Scenario: DeepSearch sub-agents can use github-copilot as their provider
+
+    // @step Given a session is configured with provider "github-copilot"
+    // @step When a DeepSearch sub-agent is spawned
+    // @step Then request_config_for_provider("github-copilot", model, prompt, false) returns Ok
+    // @step And the returned config preamble is built using select_copilot_facade
+    // @step And the returned config does NOT trigger the "Unsupported provider for DeepSearch sub-agent" error
+    #[test]
+    fn github_copilot_request_config_uses_select_copilot_facade() {
+        // @step Given a session is configured with provider "github-copilot"
+        // @step When a DeepSearch sub-agent is spawned
+        // @step Then request_config_for_provider("github-copilot", model, prompt, false) returns Ok
+        let config = request_config_for_provider(
+            "github-copilot",
+            "gpt-4o",
+            "deep search prompt",
+            false,
+        )
+        .expect("github-copilot config should build");
+
+        // @step And the returned config preamble is built using select_copilot_facade
+        // The preamble must match exactly what select_copilot_facade applied to
+        // the prompt would produce — this proves we routed through the
+        // facade instead of a trivial passthrough.
+        let facade = super::select_copilot_facade("gpt-4o");
+        let expected_preamble = facade.transform_preamble("deep search prompt");
+        assert_eq!(
+            config.preamble, expected_preamble,
+            "preamble must be built by select_copilot_facade"
+        );
+
+        // @step And the returned config does NOT trigger the "Unsupported provider for DeepSearch sub-agent" error
+        assert_eq!(config.max_tokens, Some(SUB_AGENT_MAX_TOKENS));
+    }
+
+    // @step Given a session is configured with provider "copilot"
+    // @step When a DeepSearch sub-agent is spawned
+    // @step Then request_config_for_provider("copilot", model, prompt, false) returns Ok
+    // @step And the returned config does NOT trigger the "Unsupported provider for DeepSearch sub-agent" error
+    #[test]
+    fn copilot_short_alias_request_config_builds_successfully() {
+        let config = request_config_for_provider(
+            "copilot",
+            "claude-sonnet-4.5",
+            "deep search prompt",
+            false,
+        )
+        .expect("copilot alias should build a config");
+
+        assert_eq!(config.max_tokens, Some(SUB_AGENT_MAX_TOKENS));
+        assert!(config.preamble.contains("deep search prompt"));
+    }
+
+    #[test]
+    fn unknown_provider_still_returns_unsupported_error() {
+        let result = request_config_for_provider(
+            "not-a-real-provider",
+            "gpt-4o",
+            "deep search prompt",
+            false,
+        );
+        let err = result.expect_err("unknown provider must return error");
+        assert!(err.contains("Unsupported provider for DeepSearch sub-agent"));
     }
 }

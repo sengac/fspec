@@ -12,11 +12,11 @@ use codelet_providers::claude_oauth_server::{
     claude_browser_oauth_login_inner, ClaudeOAuthServerConfig,
 };
 use codelet_providers::oauth_crypto::generate_pkce;
-use fixtures::setup_codelet_home;
+use fixtures::setup_fspec_home;
 use serial_test::serial;
 use tokio::net::TcpListener as TokioTcpListener;
-use wiremock::{Mock, MockServer, ResponseTemplate};
 use wiremock::matchers::{method, path};
+use wiremock::{Mock, MockServer, ResponseTemplate};
 
 // =========================================================================
 // Scenario: Claude browser OAuth server serves form page at root URL with auth link
@@ -26,7 +26,7 @@ use wiremock::matchers::{method, path};
 #[serial]
 async fn test_form_page_served_at_root_url_with_auth_link() {
     // @step Given the Claude browser OAuth server is started with a PKCE challenge
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
     let pkce = generate_pkce();
 
     // @step And the server binds to an ephemeral port

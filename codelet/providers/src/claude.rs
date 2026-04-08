@@ -15,8 +15,7 @@
 //! Beta headers are also model-specific based on official Anthropic documentation.
 
 use crate::{
-    claude_oauth::CLAUDE_USER_AGENT,
-    claude_refreshing_client::RefreshingClaudeClient,
+    claude_oauth::CLAUDE_USER_AGENT, claude_refreshing_client::RefreshingClaudeClient,
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_text_from_content, validate_api_key_static, CompletionResponse, LlmProvider,
     ProviderAdapter, ProviderError, StopReason,
@@ -198,12 +197,16 @@ impl ClaudeProvider {
     /// - `sk-ant-api` or other → API key → uses `x-api-key` header
     pub fn new_with_model(model: Option<&str>) -> Result<Self, ProviderError> {
         let model_name = model.ok_or_else(|| {
-            ProviderError::config("claude", "Model is required. Please select a model before creating a session.")
+            ProviderError::config(
+                "claude",
+                "Model is required. Please select a model before creating a session.",
+            )
         })?;
 
         // Check both env vars for credentials
-        let credential = detect_credential_from_env("claude", &["ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"]);
-        
+        let credential =
+            detect_credential_from_env("claude", &["ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"]);
+
         if let Ok(token) = credential {
             let auth_mode = Self::detect_auth_mode_from_token(&token);
             return Self::from_api_key_with_mode_and_model(&token, auth_mode, model_name);
@@ -214,7 +217,7 @@ impl ClaudeProvider {
             "No API key found. Set ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN environment variable",
         ))
     }
-    
+
     /// Detect auth mode from token prefix.
     /// OAuth tokens start with `sk-ant-oat`, API keys use other prefixes.
     fn detect_auth_mode_from_token(token: &str) -> AuthMode {
@@ -292,7 +295,10 @@ impl ClaudeProvider {
                 .http_client(http_client)
                 .build()
                 .map_err(|e| {
-                    ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
+                    ProviderError::config(
+                        "claude",
+                        format!("Failed to build Anthropic client: {e}"),
+                    )
                 })?
         } else {
             // Standard API key mode - x-api-key header is added automatically
@@ -302,7 +308,10 @@ impl ClaudeProvider {
                 .http_client(http_client)
                 .build()
                 .map_err(|e| {
-                    ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
+                    ProviderError::config(
+                        "claude",
+                        format!("Failed to build Anthropic client: {e}"),
+                    )
                 })?
         };
 
@@ -362,9 +371,8 @@ impl ClaudeProvider {
         let mut headers = HeaderMap::new();
         headers.insert(
             AUTHORIZATION,
-            HeaderValue::from_str(&format!("Bearer {access_token}")).map_err(|e| {
-                ProviderError::auth("claude", format!("Invalid OAuth token: {e}"))
-            })?,
+            HeaderValue::from_str(&format!("Bearer {access_token}"))
+                .map_err(|e| ProviderError::auth("claude", format!("Invalid OAuth token: {e}")))?,
         );
         headers.insert(
             reqwest::header::USER_AGENT,
@@ -382,7 +390,10 @@ impl ClaudeProvider {
             .http_client(http_client)
             .build()
             .map_err(|e| {
-                ProviderError::config("claude", format!("Failed to build Anthropic OAuth client: {e}"))
+                ProviderError::config(
+                    "claude",
+                    format!("Failed to build Anthropic OAuth client: {e}"),
+                )
             })?;
 
         let completion_model =
@@ -497,12 +508,13 @@ impl ClaudeProvider {
     ) -> rig::agent::Agent<ClaudeCompletionModel> {
         // TOOL-008: Use facade for system prompt formatting
         use codelet_tools::facade::{
-            claude_bridge_tool, claude_fspec_tool, select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
+            claude_bridge_tool, claude_fspec_tool, select_claude_facade, ClaudeWebSearchFacade,
+            FacadeToolWrapper,
         };
         use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-            ReadTool, WriteTool, ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool,
-            DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool,
+            AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
+            DeepSearchTool, EditTool, GlobTool, GraphSearchTool, GrepTool, InjectSummaryTool,
+            LsTool, ReadTool, RequestUserInputTool, ScheduleTool, SessionSearchTool, WriteTool,
         };
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -526,7 +538,10 @@ impl ClaudeProvider {
             .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(claude_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(claude_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade), session_id)) // TOOL-007: Claude web search facade
+            .tool(FacadeToolWrapper::new(
+                Arc::new(ClaudeWebSearchFacade),
+                session_id,
+            )) // TOOL-007: Claude web search facade
             .tool(ConnectMcpTool::new(session_id)) // MCP-001: Dynamic MCP connections
             .tool(SessionSearchTool::new(session_id)) // AMGR-001: SessionSearch tool
             .tool(GraphSearchTool::new(session_id)) // KGRAPH-003: GraphSearch tool
@@ -639,7 +654,7 @@ impl ClaudeProvider {
             raw_stop_reason,
             response.raw_response.content.len()
         );
-        
+
         let stop_reason = match raw_stop_reason {
             Some("tool_use") => StopReason::ToolUse,
             Some("max_tokens") => StopReason::MaxTokens,
@@ -738,7 +753,8 @@ mod oauth_header_tests {
             "sk-ant-oat01-test-token",
             AuthMode::OAuth,
             "claude-sonnet-4-20250514",
-        ).expect("Should create provider");
+        )
+        .expect("Should create provider");
 
         let headers = provider.client().headers();
 
@@ -749,25 +765,44 @@ mod oauth_header_tests {
         println!("=====================\n");
 
         // Check Authorization header
-        let auth = headers.get("authorization").expect("Should have authorization");
-        assert!(auth.to_str().unwrap().starts_with("Bearer "), "Should use Bearer auth");
+        let auth = headers
+            .get("authorization")
+            .expect("Should have authorization");
+        assert!(
+            auth.to_str().unwrap().starts_with("Bearer "),
+            "Should use Bearer auth"
+        );
 
         // Check User-Agent
         let ua = headers.get("user-agent").expect("Should have user-agent");
-        assert!(ua.to_str().unwrap().contains("claude-cli"), "User-Agent should contain claude-cli");
+        assert!(
+            ua.to_str().unwrap().contains("claude-cli"),
+            "User-Agent should contain claude-cli"
+        );
 
         // Check x-app
         let xapp = headers.get("x-app").expect("Should have x-app");
         assert_eq!(xapp.to_str().unwrap(), "cli");
 
         // Check anthropic-beta
-        let beta = headers.get("anthropic-beta").expect("Should have anthropic-beta");
+        let beta = headers
+            .get("anthropic-beta")
+            .expect("Should have anthropic-beta");
         let beta_str = beta.to_str().unwrap();
-        assert!(beta_str.contains("claude-code-20250219"), "anthropic-beta should contain claude-code-20250219");
-        assert!(beta_str.contains("oauth-2025-04-20"), "anthropic-beta should contain oauth-2025-04-20");
+        assert!(
+            beta_str.contains("claude-code-20250219"),
+            "anthropic-beta should contain claude-code-20250219"
+        );
+        assert!(
+            beta_str.contains("oauth-2025-04-20"),
+            "anthropic-beta should contain oauth-2025-04-20"
+        );
 
         // Check NO x-api-key
-        assert!(headers.get("x-api-key").is_none(), "Should NOT have x-api-key");
+        assert!(
+            headers.get("x-api-key").is_none(),
+            "Should NOT have x-api-key"
+        );
     }
 
     #[test]
@@ -776,7 +811,8 @@ mod oauth_header_tests {
             "sk-ant-oat01-test-token",
             AuthMode::OAuth,
             "claude-sonnet-4-20250514",
-        ).expect("Should create provider");
+        )
+        .expect("Should create provider");
 
         // Get the ext from the client to test build_uri
         let ext = provider.client().ext();
@@ -799,7 +835,8 @@ mod oauth_header_tests {
             "sk-ant-api03-test-key",
             AuthMode::ApiKey,
             "claude-sonnet-4-20250514",
-        ).expect("Should create provider");
+        )
+        .expect("Should create provider");
 
         // Get the ext from the client to test build_uri
         let ext = provider.client().ext();

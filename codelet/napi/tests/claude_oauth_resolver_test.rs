@@ -56,9 +56,9 @@ fn test_credential_resolver_finds_oauth_tokens_from_claude_auth() {
     use codelet_napi::credentials::{resolve_credential};
 
     // @step Given I have authenticated with Claude via OAuth
-    let original_home = env::var("CODELET_HOME").ok();
+    let original_home = env::var("FSPEC_HOME").ok();
     let temp_dir = tempfile::tempdir().unwrap();
-    env::set_var("CODELET_HOME", temp_dir.path());
+    env::set_var("FSPEC_HOME", temp_dir.path());
 
     // @step And claude_auth.json exists with access_token starting with sk-ant-oat
     setup_claude_auth("sk-ant-oat-resolver-test", "sk-ant-ort-resolver-refresh", 9999999999999).unwrap();
@@ -80,7 +80,7 @@ fn test_credential_resolver_finds_oauth_tokens_from_claude_auth() {
 
     // Restore
     restore_claude_env(orig_api_key, orig_oauth_token);
-    if let Some(home) = original_home { env::set_var("CODELET_HOME", home); } else { env::remove_var("CODELET_HOME"); }
+    if let Some(home) = original_home { env::set_var("FSPEC_HOME", home); } else { env::remove_var("FSPEC_HOME"); }
 }
 
 #[test]
@@ -89,9 +89,9 @@ fn test_credential_resolver_sets_claude_code_oauth_token_env_var() {
     use codelet_napi::credentials::resolve_and_set_env_var;
 
     // @step Given I have authenticated with Claude via OAuth
-    let original_home = env::var("CODELET_HOME").ok();
+    let original_home = env::var("FSPEC_HOME").ok();
     let temp_dir = tempfile::tempdir().unwrap();
-    env::set_var("CODELET_HOME", temp_dir.path());
+    env::set_var("FSPEC_HOME", temp_dir.path());
 
     // @step And claude_auth.json exists with access_token starting with sk-ant-oat
     setup_claude_auth("sk-ant-oat-resolver-env-test", "sk-ant-ort-resolver-refresh", 9999999999999).unwrap();
@@ -114,7 +114,7 @@ fn test_credential_resolver_sets_claude_code_oauth_token_env_var() {
 
     // Restore
     restore_claude_env(orig_api_key, orig_oauth_token);
-    if let Some(home) = original_home { env::set_var("CODELET_HOME", home); } else { env::remove_var("CODELET_HOME"); }
+    if let Some(home) = original_home { env::set_var("FSPEC_HOME", home); } else { env::remove_var("FSPEC_HOME"); }
 }
 
 #[test]
@@ -123,9 +123,9 @@ fn test_resolver_does_not_use_claude_auth_for_non_anthropic_providers() {
     use codelet_napi::credentials::resolve_credential;
 
     // @step Given claude_auth.json exists with valid OAuth tokens
-    let original_home = env::var("CODELET_HOME").ok();
+    let original_home = env::var("FSPEC_HOME").ok();
     let temp_dir = tempfile::tempdir().unwrap();
-    env::set_var("CODELET_HOME", temp_dir.path());
+    env::set_var("FSPEC_HOME", temp_dir.path());
     setup_claude_auth("sk-ant-oat-test", "sk-ant-ort-test", 9999999999999).unwrap();
 
     // @step And no OpenAI env vars exist
@@ -141,5 +141,5 @@ fn test_resolver_does_not_use_claude_auth_for_non_anthropic_providers() {
 
     // Restore
     if let Some(key) = orig_openai { env::set_var("OPENAI_API_KEY", key); } else { env::remove_var("OPENAI_API_KEY"); }
-    if let Some(home) = original_home { env::set_var("CODELET_HOME", home); } else { env::remove_var("CODELET_HOME"); }
+    if let Some(home) = original_home { env::set_var("FSPEC_HOME", home); } else { env::remove_var("FSPEC_HOME"); }
 }

@@ -13,8 +13,8 @@
 use codelet_providers::claude_oauth::{
     build_authorize_url, build_oauth_headers, calculate_expiry, exchange_authorization_code,
     parse_authorization_code, prefix_tool_name, refresh_access_token_at, rewrite_claude_url,
-    strip_tool_name_prefix, CLAUDE_CLIENT_ID, CLAUDE_REDIRECT_URI,
-    CLAUDE_SCOPE, CLAUDE_TOKEN_ENDPOINT, CLAUDE_USER_AGENT, REQUIRED_BETA_HEADERS, TOOL_NAME_PREFIX,
+    strip_tool_name_prefix, CLAUDE_CLIENT_ID, CLAUDE_REDIRECT_URI, CLAUDE_SCOPE,
+    CLAUDE_TOKEN_ENDPOINT, CLAUDE_USER_AGENT, REQUIRED_BETA_HEADERS, TOOL_NAME_PREFIX,
 };
 use codelet_providers::oauth_crypto::{generate_pkce, PkceCodes};
 
@@ -102,10 +102,7 @@ fn test_authorize_url_contains_all_required_parameters_for_max_mode() {
     );
 
     // @step And the URL should contain parameter "redirect_uri" with value "https://console.anthropic.com/oauth/code/callback"
-    assert!(
-        url.contains("redirect_uri="),
-        "Missing redirect_uri: {url}"
-    );
+    assert!(url.contains("redirect_uri="), "Missing redirect_uri: {url}");
 
     // @step And the URL should contain parameter "scope" with value "org:create_api_key user:profile user:inference"
     assert!(url.contains("scope="), "Missing scope: {url}");
@@ -208,8 +205,7 @@ async fn test_authorization_code_exchanged_for_tokens_at_token_endpoint() {
         .mount(&mock_server)
         .await;
 
-    let result =
-        exchange_authorization_code(&mock_server.uri(), code, state, code_verifier).await;
+    let result = exchange_authorization_code(&mock_server.uri(), code, state, code_verifier).await;
 
     // @step Then the exchange request should be a JSON POST to "https://console.anthropic.com/v1/oauth/token"
     // Verified by wiremock mock matching above
@@ -355,10 +351,7 @@ fn test_oauth_headers_built_with_required_beta_headers() {
     );
 
     // @step And the user-agent header should be "claude-cli/2.1.3 (external, cli)"
-    assert_eq!(
-        headers.get("user-agent").unwrap(),
-        CLAUDE_USER_AGENT
-    );
+    assert_eq!(headers.get("user-agent").unwrap(), CLAUDE_USER_AGENT);
 
     // @step And the x-api-key header should be removed
     // build_oauth_headers does not include x-api-key; callers must strip it
@@ -386,7 +379,10 @@ fn test_oauth_headers_preserve_existing_beta_headers() {
     let beta = headers.get("anthropic-beta").unwrap();
 
     // @step Then the anthropic-beta header should contain "oauth-2025-04-20"
-    assert!(beta.contains("oauth-2025-04-20"), "Missing oauth beta: {beta}");
+    assert!(
+        beta.contains("oauth-2025-04-20"),
+        "Missing oauth beta: {beta}"
+    );
 
     // @step And the anthropic-beta header should contain "interleaved-thinking-2025-05-14"
     assert!(
@@ -536,7 +532,10 @@ fn test_claude_oauth_constants() {
         CLAUDE_REDIRECT_URI,
         "https://console.anthropic.com/oauth/code/callback"
     );
-    assert_eq!(CLAUDE_SCOPE, "org:create_api_key user:profile user:inference");
+    assert_eq!(
+        CLAUDE_SCOPE,
+        "org:create_api_key user:profile user:inference"
+    );
     assert_eq!(CLAUDE_USER_AGENT, "claude-cli/2.1.3 (external, cli)");
     assert_eq!(TOOL_NAME_PREFIX, "mcp_");
     assert_eq!(REQUIRED_BETA_HEADERS.len(), 2);

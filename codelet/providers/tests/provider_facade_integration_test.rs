@@ -1,4 +1,3 @@
-
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/provider-integration-and-e2e-tests.feature
 //!
@@ -154,7 +153,8 @@ async fn test_claude_provider_agent_creation_succeeds() {
     env::set_var("ANTHROPIC_API_KEY", "test-claude-key-12345");
 
     // MODEL-001: new_with_model requires a model
-    let provider = ClaudeProvider::new_with_model(Some("claude-sonnet-4-20250514")).expect("ClaudeProvider should initialize");
+    let provider = ClaudeProvider::new_with_model(Some("claude-sonnet-4-20250514"))
+        .expect("ClaudeProvider should initialize");
 
     // Agent creation should not panic
     // TOOL-012: Pass session_id as first parameter
@@ -177,7 +177,8 @@ async fn test_gemini_provider_agent_creation_with_preamble() {
     // Agent creation with preamble should succeed
     // TOOL-012: Pass session_id as first parameter
     let session_id = Uuid::new_v4();
-    let _agent = provider.create_rig_agent(session_id, Some("Custom system prompt for testing"), None);
+    let _agent =
+        provider.create_rig_agent(session_id, Some("Custom system prompt for testing"), None);
 
     cleanup_test_env();
 }

@@ -187,6 +187,10 @@ import { selectModel } from '../services/modelSelectionService';
 import { configureProfileEnvironment } from '../services/profileEnvironmentService';
 // PROV-008: Import provider mapping from shared utility (DRY)
 import { mapProviderIdToInternal } from '../utils/provider-mapping';
+// PROV-057: Detect github-copilot model selection without credentials and
+// route to the OAuth login flow instead of surfacing a "requires credentials"
+// error toast.
+import { shouldDispatchCopilotLogin } from '../utils/copilotLoginDispatch';
 
 interface StreamChunk {
   type: string;
@@ -859,6 +863,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-034: Local screen visibility state
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [showSettingsTab, setShowSettingsTab] = useState(false);
+  // PROV-057: When the user picks a github-copilot/* model with no credentials
+  // we set this flag and open the settings tab; ProviderSettingsScreen reads
+  // it to auto-dispatch the Copilot OAuth login flow on mount.
+  const [autoStartCopilotLogin, setAutoStartCopilotLogin] = useState(false);
 
   // SESS-001: Session attachment state and actions from store
   // TUI-068: attachToWorkUnit and detachFromWorkUnit imported from sessionService
@@ -2914,9 +2922,21 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // Handle model selection from ModelSelectorScreen
   // PROV-008: Delegates to selectModel service for DRY/SOLID compliance
   // BUG-097: Now handles failure result and shows error to user
+  // PROV-057: When the user picks a github-copilot/* model and no credentials
+  // exist on disk yet, route into the Copilot OAuth login flow instead of
+  // surfacing a "requires credentials" error.
   const handleModelSelect = useCallback(
     async (selection: ModelSelection) => {
       setShowModelSelector(false);
+
+      // PROV-057: github-copilot + missing credentials → launch login flow
+      // via ProviderSettingsScreen (which owns the useProviderSettingsState
+      // hook needed by startCopilotLogin).
+      if (shouldDispatchCopilotLogin(providerSections, selection)) {
+        setAutoStartCopilotLogin(true);
+        setShowSettingsTab(true);
+        return;
+      }
 
       const result = await selectModel({
         sessionId: currentSessionId,
@@ -2930,7 +2950,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         setError(`Failed to switch model: ${result.error || 'Unknown error'}`);
       }
     },
-    [currentSessionId]
+    [currentSessionId, providerSections, refreshRustState, setCurrentModel]
   );
 
   // NAPI-006: Navigate to previous history entry (Shift+Arrow-Up)
@@ -4806,11 +4826,19 @@ export const AgentView: React.FC<AgentViewProps> = ({
       <ProviderSettingsScreen
         width={terminalWidth}
         height={terminalHeight}
-        onClose={() => setShowSettingsTab(false)}
+        onClose={() => {
+          setShowSettingsTab(false);
+          setAutoStartCopilotLogin(false);
+        }}
         onSwitchToModels={() => {
           setShowSettingsTab(false);
+          setAutoStartCopilotLogin(false);
           setShowModelSelector(true);
         }}
+        autoStartCopilotLogin={autoStartCopilotLogin}
+        onAutoStartCopilotLoginConsumed={() =>
+          setAutoStartCopilotLogin(false)
+        }
       />
     );
   }

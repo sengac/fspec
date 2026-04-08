@@ -157,7 +157,8 @@
       "workUnits": [
         "UX-001",
         "REV-004",
-        "REV-005"
+        "REV-005",
+        "FOUND-044"
       ]
     },
     "interactive-cli": {
@@ -478,7 +479,9 @@
         "TUI-082",
         "BUG-121",
         "TUI-083",
-        "AMGR-015"
+        "AMGR-015",
+        "AMGR-017",
+        "AMGR-018"
       ]
     },
     "hierarchical-compaction": {

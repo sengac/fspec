@@ -475,10 +475,41 @@ async fn build_and_run_agent(
             .map_err(|e| format!("Failed to build Z.AI DeepSearch config: {e}"))?;
             build_and_run!(provider, request_config, session_id, query, max_depth, provider_name, can_recurse, graph_available)
         }
+        "github-copilot" | "copilot" => {
+            // PROV-057 Layer 3 — DeepSearch sub-agent dispatch for GitHub
+            // Copilot. The request config is assembled here (proving the
+            // provider is registered and routed end-to-end through the
+            // DeepSearch config layer) but the actual rig agent build step
+            // depends on accessors on `CopilotProvider` that are being
+            // wired in parallel by the Layer 2 work. Until that lands this
+            // branch returns a distinct error message so callers can tell
+            // apart:
+            //   (a) the provider isn't registered at all
+            //       → "Unsupported provider for DeepSearch sub-agent: …"
+            //   (b) the provider is registered and config resolved but the
+            //       rig agent builder is not yet hooked up
+            //       → "github-copilot DeepSearch agent builder pending …"
+            //
+            // Scenario: DeepSearch sub-agents can use github-copilot as their provider
+            // Feature: spec/features/github-copilot-end-to-end-integration.feature
+            let provider = manager.get_github_copilot()
+                .map_err(|e| format!("Failed to get GitHub Copilot provider: {e}"))?;
+            let _request_config = request_config_for_provider(
+                provider_name,
+                provider.model(),
+                system_prompt,
+                false,
+            )
+            .map_err(|e| format!("Failed to build GitHub Copilot DeepSearch config: {e}"))?;
+            Err(
+                "github-copilot DeepSearch agent builder pending: CopilotProvider::client accessor not yet implemented (PROV-057 Layer 2 in progress)"
+                    .to_string(),
+            )
+        }
         _ => {
             Err(format!(
                 "Unsupported provider for DeepSearch sub-agent: {provider_name}. \
-                 Supported: claude, openai, gemini, codex, zai"
+                 Supported: claude, openai, gemini, codex, zai, github-copilot"
             ))
         }
     }

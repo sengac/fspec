@@ -4,7 +4,7 @@
 //! - Building test JWTs with known account IDs (Codex)
 //! - Constructing token endpoint response bodies (Codex + Claude)
 //! - Setting up isolated CODEX_HOME temp directories (Codex)
-//! - Setting up isolated CODELET_HOME temp directories (Claude)
+//! - Setting up isolated FSPEC_HOME temp directories (Claude)
 //!
 //! These mirror the fixtures from codelet-providers/tests/fixtures/mod.rs
 //! because test modules can't import across crate boundaries.
@@ -92,31 +92,31 @@ pub fn build_claude_token_response_json(
     })
 }
 
-/// RAII guard that restores the original CODELET_HOME env var on drop.
-pub struct CodeletHomeGuard {
+/// RAII guard that restores the original FSPEC_HOME env var on drop.
+pub struct FspecHomeGuard {
     original: Option<String>,
 }
 
-impl Drop for CodeletHomeGuard {
+impl Drop for FspecHomeGuard {
     fn drop(&mut self) {
         match &self.original {
-            Some(val) => std::env::set_var("CODELET_HOME", val),
-            None => std::env::remove_var("CODELET_HOME"),
+            Some(val) => std::env::set_var("FSPEC_HOME", val),
+            None => std::env::remove_var("FSPEC_HOME"),
         }
     }
 }
 
-/// Create a temp directory and point CODELET_HOME to it.
+/// Create a temp directory and point FSPEC_HOME to it.
 ///
-/// Returns `(TempDir, CodeletHomeGuard)` — keep both alive for the test duration.
-/// The guard restores the original CODELET_HOME on drop.
+/// Returns `(TempDir, FspecHomeGuard)` — keep both alive for the test duration.
+/// The guard restores the original FSPEC_HOME on drop.
 ///
-/// Claude uses CODELET_HOME (not CODEX_HOME) for claude_auth.json.
-pub fn setup_codelet_home() -> (tempfile::TempDir, CodeletHomeGuard) {
+/// Claude uses FSPEC_HOME (not CODEX_HOME) for claude_auth.json.
+pub fn setup_fspec_home() -> (tempfile::TempDir, FspecHomeGuard) {
     let temp_dir = tempfile::TempDir::new().expect("Should create temp dir");
-    let guard = CodeletHomeGuard {
-        original: std::env::var("CODELET_HOME").ok(),
+    let guard = FspecHomeGuard {
+        original: std::env::var("FSPEC_HOME").ok(),
     };
-    std::env::set_var("CODELET_HOME", temp_dir.path());
+    std::env::set_var("FSPEC_HOME", temp_dir.path());
     (temp_dir, guard)
 }

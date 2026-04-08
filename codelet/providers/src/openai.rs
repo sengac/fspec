@@ -7,10 +7,10 @@
 //! via OPENAI_BASE_URL environment variable.
 
 use crate::{
+    cache_optimization::{CacheOptimizationFacade, SessionAffinityConfig},
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_prompt_data, extract_text_from_content, validate_api_key_static, CompletionResponse,
     LlmProvider, ProviderAdapter, ProviderError, StopReason,
-    cache_optimization::{CacheOptimizationFacade, SessionAffinityConfig},
 };
 use async_trait::async_trait;
 use codelet_common::{Message, MessageContent};
@@ -102,11 +102,16 @@ impl OpenAIProvider {
 
         // Model is REQUIRED via OPENAI_MODEL env var
         let model_name = std::env::var("OPENAI_MODEL").map_err(|_| {
-            ProviderError::config("openai", "Model is required. Set OPENAI_MODEL environment variable.")
+            ProviderError::config(
+                "openai",
+                "Model is required. Set OPENAI_MODEL environment variable.",
+            )
         })?;
 
         // PROV-006: Check for custom base URL and normalize it
-        let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
+        let base_url = std::env::var("OPENAI_BASE_URL")
+            .ok()
+            .map(|url| normalize_base_url(&url));
 
         Self::from_api_key_with_options(&api_key, &model_name, base_url.as_deref(), None)
     }
@@ -118,7 +123,9 @@ impl OpenAIProvider {
     /// Use from_api_key_with_session for session-aware construction.
     pub fn from_api_key(api_key: &str, model: &str) -> Result<Self, ProviderError> {
         // Check for custom base URL from environment and normalize it
-        let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
+        let base_url = std::env::var("OPENAI_BASE_URL")
+            .ok()
+            .map(|url| normalize_base_url(&url));
         Self::from_api_key_with_options(api_key, model, base_url.as_deref(), None)
     }
 
@@ -131,7 +138,9 @@ impl OpenAIProvider {
         model: &str,
         session_id: uuid::Uuid,
     ) -> Result<Self, ProviderError> {
-        let base_url = std::env::var("OPENAI_BASE_URL").ok().map(|url| normalize_base_url(&url));
+        let base_url = std::env::var("OPENAI_BASE_URL")
+            .ok()
+            .map(|url| normalize_base_url(&url));
         Self::from_api_key_with_options(api_key, model, base_url.as_deref(), Some(session_id))
     }
 
@@ -183,7 +192,10 @@ impl OpenAIProvider {
                 builder = builder.http_headers(cache_headers);
             }
             builder.build().map_err(|e| {
-                ProviderError::config("openai", format!("Failed to build OpenAI client with custom base URL: {e}"))
+                ProviderError::config(
+                    "openai",
+                    format!("Failed to build OpenAI client with custom base URL: {e}"),
+                )
             })?
         } else {
             openai::CompletionsClient::builder()
@@ -292,15 +304,12 @@ impl OpenAIProvider {
         }
 
         // Make GET request
-        let response = request
-            .send()
-            .await
-            .map_err(|e| {
-                ProviderError::api(
-                    "openai",
-                    format!("Failed to connect to local server at {base_url}: {e}"),
-                )
-            })?;
+        let response = request.send().await.map_err(|e| {
+            ProviderError::api(
+                "openai",
+                format!("Failed to connect to local server at {base_url}: {e}"),
+            )
+        })?;
 
         // Check for successful response
         if !response.status().is_success() {
@@ -378,9 +387,10 @@ impl OpenAIProvider {
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::facade::{openai_bridge_tool, openai_fspec_tool};
         use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-            ReadTool, WebSearchTool, WriteTool, ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool,
-            DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool,
+            AgentManagerTool, AstGrepRefactorTool, AstGrepTool, BashTool, ConnectMcpTool,
+            DeepSearchTool, EditTool, GlobTool, GraphSearchTool, GrepTool, InjectSummaryTool,
+            LsTool, ReadTool, RequestUserInputTool, ScheduleTool, SessionSearchTool, WebSearchTool,
+            WriteTool,
         };
         use rig::client::CompletionClient;
 
@@ -546,12 +556,8 @@ mod tests {
         std::env::set_var("OPENAI_MAX_OUTPUT_TOKENS", "16384");
 
         // @step When an OpenAIProvider is created
-        let provider = OpenAIProvider::from_api_key_with_options(
-            "test-key",
-            "gpt-4o",
-            None,
-            None,
-        ).unwrap();
+        let provider =
+            OpenAIProvider::from_api_key_with_options("test-key", "gpt-4o", None, None).unwrap();
 
         // @step Then the instance max_output_tokens is 16384
         assert_eq!(provider.max_output_tokens(), 16384);
@@ -570,12 +576,8 @@ mod tests {
         // Ensure env var is not set
         std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
 
-        let provider = OpenAIProvider::from_api_key_with_options(
-            "test-key",
-            "gpt-4o",
-            None,
-            None,
-        ).unwrap();
+        let provider =
+            OpenAIProvider::from_api_key_with_options("test-key", "gpt-4o", None, None).unwrap();
 
         // Should use default
         assert_eq!(provider.max_output_tokens(), DEFAULT_MAX_OUTPUT_TOKENS);

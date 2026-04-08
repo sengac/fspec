@@ -16,7 +16,7 @@ use tracing::debug;
 
 use super::codex_auth::{write_codex_auth, CodexAuthJson, CodexTokens};
 use super::codex_oauth::{
-    extract_account_id, rewrite_codex_url, refresh_access_token_at, TokenRefreshResponse,
+    extract_account_id, refresh_access_token_at, rewrite_codex_url, TokenRefreshResponse,
 };
 
 /// Expiry buffer in seconds - refresh token this many seconds before actual expiry
@@ -143,9 +143,7 @@ impl RefreshingCodexClient {
             let response = refresh_access_token_at(&state.issuer_url, &state.refresh_token)
                 .await
                 .map_err(|e| {
-                    rig::http_client::Error::Instance(
-                        format!("Token refresh failed: {e}").into(),
-                    )
+                    rig::http_client::Error::Instance(format!("Token refresh failed: {e}").into())
                 })?;
 
             // Update in-memory state
@@ -175,10 +173,9 @@ fn update_token_state(state: &mut TokenState, response: &TokenRefreshResponse) {
     state.expires_at = Instant::now() + std::time::Duration::from_secs(expiry_secs);
 
     // Update account_id if extractable from new tokens
-    if let Some(new_account_id) = extract_account_id(
-        Some(&response.id_token),
-        Some(&response.access_token),
-    ) {
+    if let Some(new_account_id) =
+        extract_account_id(Some(&response.id_token), Some(&response.access_token))
+    {
         state.account_id = new_account_id;
     }
 }
@@ -295,8 +292,9 @@ impl rig::http_client::HttpClientExt for RefreshingCodexClient {
     fn send_streaming<T>(
         &self,
         req: http::Request<T>,
-    ) -> impl std::future::Future<Output = rig::http_client::Result<rig::http_client::StreamingResponse>>
-           + Send
+    ) -> impl std::future::Future<
+        Output = rig::http_client::Result<rig::http_client::StreamingResponse>,
+    > + Send
     where
         T: Into<bytes::Bytes>,
     {

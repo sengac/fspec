@@ -5,7 +5,7 @@
 Feature: Anthropic OAuth browser callback server and CSRF state validation
   """
   New file: codelet/providers/src/claude_oauth_server.rs — Hyper-based HTTP server for Anthropic browser OAuth flow. Routes: GET / (form page with authorize URL and code paste input), POST /submit (receives code, validates state, exchanges tokens), GET /cancel (abort flow), 404 for everything else. Mirrors codex_oauth_server.rs architecture.
-  New file: codelet/providers/src/claude_auth.rs — Claude auth persistence module (mirrors codex_auth.rs). ClaudeAuthJson struct with access_token, refresh_token, expires (ms timestamp). write_claude_auth() and read_claude_auth() functions. Path: ~/.config/codelet/claude_auth.json (not ~/.codex/ which is Codex-specific).
+  New file: codelet/providers/src/claude_auth.rs — Claude auth persistence module (mirrors codex_auth.rs). ClaudeAuthJson struct with access_token, refresh_token, expires (ms timestamp). write_claude_auth() and read_claude_auth() functions. Path: ~/.fspec/credentials/claude_auth.json (not ~/.codex/ which is Codex-specific).
   ClaudeOAuthServerConfig struct mirrors OAuthServerConfig from codex_oauth_server.rs — contains: listener (TcpListener), open_browser (bool), timeout_ms (u64), pkce (Option<PkceCodes>). Tests inject port-0 listeners and open_browser=false.
   Key difference from Codex server: instead of /auth/callback receiving a redirect, the server shows a form at GET / where user pastes the code#state string. POST /submit processes the form data. This is because Anthropic's redirect_uri is remote (console.anthropic.com), not local.
   """
@@ -20,7 +20,7 @@ Feature: Anthropic OAuth browser callback server and CSRF state validation
   #   3. Browser opens automatically to claude.ai/oauth/authorize with PKCE parameters using open crate (same as Codex PROV-013)
   #   4. Authorization code arrives in code#state format — state portion must match the PKCE verifier (PROV-020 rule: state=verifier for Anthropic, unlike Codex which uses separate state)
   #   5. Server has a configurable timeout (5 minutes default) — if no code submitted, server shuts down and login fails gracefully
-  #   6. After successful exchange, tokens persisted to ~/.config/codelet/claude_auth.json (analogous to Codex auth.json) with access_token, refresh_token, and expires timestamp
+  #   6. After successful exchange, tokens persisted to ~/.fspec/credentials/claude_auth.json (analogous to Codex auth.json) with access_token, refresh_token, and expires timestamp
   #   7. Server serves HTML success/error/cancel pages — reuse HTML template pattern from codex_oauth.rs (HTML_SUCCESS, html_error, HTML_CANCELLED)
   #   8. Single public entry point: async fn browser_oauth_login() -> Result<ClaudeAuthJson> — mirrors Codex codex_oauth_server::browser_oauth_login() pattern
   #   9. Uses existing PROV-020 functions: generate_pkce(), build_authorize_url(), parse_authorization_code(), exchange_authorization_code(), calculate_expiry() — no duplication

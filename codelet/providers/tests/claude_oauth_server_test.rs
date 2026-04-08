@@ -21,7 +21,7 @@ use codelet_providers::claude_oauth_server::{
     claude_browser_oauth_login_inner, ClaudeOAuthServerConfig, CLAUDE_OAUTH_TIMEOUT_MS,
 };
 use codelet_providers::oauth_crypto::generate_pkce;
-use fixtures::setup_codelet_home;
+use fixtures::setup_fspec_home;
 use serial_test::serial;
 use tokio::net::TcpListener as TokioTcpListener;
 use wiremock::matchers::{header, method, path};
@@ -69,9 +69,12 @@ fn urlencoded(s: &str) -> String {
 #[serial]
 async fn test_successful_browser_oauth_login_with_code_paste() {
     // @step Given no existing Claude credentials are available
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
-    assert!(!auth_path.exists(), "claude_auth.json should not exist initially");
+    assert!(
+        !auth_path.exists(),
+        "claude_auth.json should not exist initially"
+    );
 
     // @step When I initiate Claude browser OAuth login
     let pkce = generate_pkce();
@@ -160,7 +163,11 @@ async fn test_successful_browser_oauth_login_with_code_paste() {
     // @step And the OAuth server should shut down
     // @step And the login function should return the Claude tokens
     let result = login_handle.await.expect("Task should not panic");
-    assert!(result.is_ok(), "Login should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Login should succeed, got: {:?}",
+        result.err()
+    );
 
     let auth = result.unwrap();
     assert_eq!(auth.access_token, "at_happy_path");
@@ -168,7 +175,10 @@ async fn test_successful_browser_oauth_login_with_code_paste() {
     assert!(auth.expires > 0, "expires timestamp should be set");
 
     // Verify tokens were persisted
-    assert!(auth_path.exists(), "claude_auth.json should exist after successful login");
+    assert!(
+        auth_path.exists(),
+        "claude_auth.json should exist after successful login"
+    );
     let auth_content = std::fs::read_to_string(&auth_path).unwrap();
     let auth_json: serde_json::Value = serde_json::from_str(&auth_content).unwrap();
     assert_eq!(auth_json["access_token"], "at_happy_path");
@@ -184,7 +194,7 @@ async fn test_successful_browser_oauth_login_with_code_paste() {
 #[serial]
 async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -232,7 +242,10 @@ async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
 
     // @step And no tokens should be persisted to claude_auth.json
     let result = login_handle.await.expect("Task should not panic");
-    assert!(!auth_path.exists(), "No claude_auth.json should exist after CSRF rejection");
+    assert!(
+        !auth_path.exists(),
+        "No claude_auth.json should exist after CSRF rejection"
+    );
 
     // @step And the OAuth server should shut down
     // (handle completed)
@@ -254,7 +267,7 @@ async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
 #[serial]
 async fn test_login_times_out_after_5_minutes_without_code_submission() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let (listener, _port) = ephemeral_listener().await;
 
@@ -272,7 +285,10 @@ async fn test_login_times_out_after_5_minutes_without_code_submission() {
     });
 
     // Verify production timeout is 5 minutes
-    assert_eq!(CLAUDE_OAUTH_TIMEOUT_MS, 300_000, "Production timeout should be 5 minutes");
+    assert_eq!(
+        CLAUDE_OAUTH_TIMEOUT_MS, 300_000,
+        "Production timeout should be 5 minutes"
+    );
 
     // @step Then the OAuth server should shut down cleanly
     let result = login_handle.await.expect("Task should not panic");
@@ -294,7 +310,7 @@ async fn test_login_times_out_after_5_minutes_without_code_submission() {
 #[serial]
 async fn test_token_exchange_fails_after_valid_state_validation() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -341,13 +357,17 @@ async fn test_token_exchange_fails_after_valid_state_validation() {
     assert_eq!(submit_resp.status().as_u16(), 400);
     let submit_body = submit_resp.text().await.unwrap();
     assert!(
-        submit_body.contains("Token exchange failed") || submit_body.contains("Authorization Failed"),
+        submit_body.contains("Token exchange failed")
+            || submit_body.contains("Authorization Failed"),
         "Error page should indicate exchange failure: {submit_body}"
     );
 
     // @step And no tokens should be persisted to claude_auth.json
     let result = login_handle.await.expect("Task should not panic");
-    assert!(!auth_path.exists(), "No claude_auth.json on exchange failure");
+    assert!(
+        !auth_path.exists(),
+        "No claude_auth.json on exchange failure"
+    );
 
     // @step And the login function should return the exchange error
     assert!(result.is_err());
@@ -366,7 +386,7 @@ async fn test_token_exchange_fails_after_valid_state_validation() {
 #[serial]
 async fn test_user_cancels_oauth_flow_via_cancel_route() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -419,7 +439,7 @@ async fn test_user_cancels_oauth_flow_via_cancel_route() {
 #[serial]
 async fn test_code_without_state_hash_separator_is_rejected() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let (listener, port) = ephemeral_listener().await;
@@ -478,7 +498,7 @@ async fn test_code_without_state_hash_separator_is_rejected() {
 async fn test_browser_fails_to_open_but_server_still_shows_form_with_link() {
     // @step Given the browser open command will fail
     // (open_browser=false simulates this — the server should still function)
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -541,7 +561,7 @@ async fn test_browser_fails_to_open_but_server_still_shows_form_with_link() {
 #[serial]
 async fn test_server_handles_404_requests_without_shutting_down() {
     // @step Given the Claude OAuth server is running and waiting for code submission
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let (listener, port) = ephemeral_listener().await;
 
@@ -591,7 +611,7 @@ async fn test_server_handles_404_requests_without_shutting_down() {
 #[serial]
 async fn test_claude_auth_persistence_writes_correct_json_structure() {
     // @step Given a successful token exchange has returned tokens
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let expires = calculate_expiry(3600);
@@ -602,7 +622,9 @@ async fn test_claude_auth_persistence_writes_correct_json_structure() {
     };
 
     // @step When the tokens are persisted to claude_auth.json
-    write_claude_auth(&auth).await.expect("write_claude_auth should succeed");
+    write_claude_auth(&auth)
+        .await
+        .expect("write_claude_auth should succeed");
 
     // @step Then the file should exist at the codelet config directory
     assert!(auth_path.exists(), "claude_auth.json should exist");
@@ -628,7 +650,9 @@ async fn test_claude_auth_persistence_writes_correct_json_structure() {
     );
 
     // Also verify read_claude_auth round-trips correctly
-    let read_back = read_claude_auth().await.expect("read_claude_auth should succeed");
+    let read_back = read_claude_auth()
+        .await
+        .expect("read_claude_auth should succeed");
     assert!(read_back.is_some(), "Should find persisted auth");
     let read_auth = read_back.unwrap();
     assert_eq!(read_auth.access_token, "test_access_token");

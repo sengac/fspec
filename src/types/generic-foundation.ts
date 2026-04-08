@@ -84,18 +84,17 @@ export interface ProjectIdentity {
 
 /**
  * Project Type
- * Supports any kind of software project
+ * Freeform short descriptor (1-30 characters).
+ *
+ * Previously a 9-value enum (web-app, cli-tool, etc.), but ZERO business logic
+ * branches on specific values — it was purely input validation. Relaxed to a
+ * plain string alias so any short descriptor is valid (e.g. "saas-platform",
+ * "browser-extension"). Length is enforced by the JSON schema
+ * (minLength: 1, maxLength: 30) and by update-foundation at write time.
+ *
+ * See FOUND-044 architecture notes for the full impact analysis.
  */
-export type ProjectType =
-  | 'web-app'
-  | 'cli-tool'
-  | 'library'
-  | 'sdk'
-  | 'mobile-app'
-  | 'desktop-app'
-  | 'service'
-  | 'api'
-  | 'other';
+export type ProjectType = string;
 
 /**
  * Problem Space (WHY)

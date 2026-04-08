@@ -1,4 +1,9 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect
+)]
 //! Feature: spec/features/codex-refreshing-client.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
@@ -10,13 +15,13 @@
 
 mod fixtures;
 
+use codelet_providers::codex::codex_auth;
 use codelet_providers::codex::codex_oauth::{
     rewrite_codex_url, CODEX_API_ENDPOINT, CODEX_CLIENT_ID,
 };
 use codelet_providers::codex::refreshing_client::{
     RefreshingCodexClient, DEFAULT_EXPIRY_SECS, EXPIRY_BUFFER_SECS,
 };
-use codelet_providers::codex::codex_auth;
 use codelet_providers::codex::CodexAuthMode;
 use codelet_providers::{CodexProvider, LlmProvider};
 use fixtures::{build_test_jwt, build_token_response_json, setup_codex_home};
@@ -98,8 +103,7 @@ async fn mount_successful_refresh(
     new_refresh_token: &str,
 ) -> String {
     let id_token = build_test_jwt(account_id);
-    let token_body =
-        build_token_response_json(&id_token, new_access_token, new_refresh_token);
+    let token_body = build_token_response_json(&id_token, new_access_token, new_refresh_token);
 
     Mock::given(method("POST"))
         .and(path("/oauth/token"))
@@ -118,10 +122,9 @@ async fn mount_failed_refresh(mock_server: &MockServer) {
     Mock::given(method("POST"))
         .and(path("/oauth/token"))
         .and(body_string_contains("grant_type=refresh_token"))
-        .respond_with(
-            ResponseTemplate::new(401)
-                .set_body_string(r#"{"error":"invalid_grant","error_description":"Invalid refresh token"}"#),
-        )
+        .respond_with(ResponseTemplate::new(401).set_body_string(
+            r#"{"error":"invalid_grant","error_description":"Invalid refresh token"}"#,
+        ))
         .mount(mock_server)
         .await;
 }
@@ -167,22 +170,33 @@ async fn test_request_with_valid_token_passes_through_with_correct_headers() {
     // @step Then the request URL should be rewritten to "https://chatgpt.com/backend-api/codex/responses"
     // URL rewrite verified via rewrite_codex_url (the client calls this internally):
     let rewritten = rewrite_codex_url("https://api.openai.com/v1/chat/completions");
-    assert_eq!(rewritten, CODEX_API_ENDPOINT, "URL should be rewritten to Codex endpoint");
+    assert_eq!(
+        rewritten, CODEX_API_ENDPOINT,
+        "URL should be rewritten to Codex endpoint"
+    );
 
     // @step And the Authorization header should be "Bearer {access_token}"
     // @step And the ChatGPT-Account-Id header should be "acc_12345"
     // @step And the originator header should be "codelet"
     // Verify headers via the backend's received request
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
+    assert_eq!(
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
     let req = &received[0];
     assert_eq!(
-        req.headers.get("authorization").map(|v| v.to_str().unwrap()),
+        req.headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some(format!("Bearer {access_token}")).as_deref(),
         "Authorization header should be Bearer token"
     );
     assert_eq!(
-        req.headers.get("chatgpt-account-id").map(|v| v.to_str().unwrap()),
+        req.headers
+            .get("chatgpt-account-id")
+            .map(|v| v.to_str().unwrap()),
         Some(account_id),
         "ChatGPT-Account-Id header should be set"
     );
@@ -219,9 +233,13 @@ async fn test_expired_token_is_automatically_refreshed_before_request() {
     let client = build_expired_oauth_client("valid_refresh_tok", account_id, &mock_server.uri());
 
     // @step And a valid refresh token
-    let _new_access_token =
-        mount_successful_refresh(&mock_server, account_id, "new_access_tok", "new_refresh_tok")
-            .await;
+    let _new_access_token = mount_successful_refresh(
+        &mock_server,
+        account_id,
+        "new_access_tok",
+        "new_refresh_tok",
+    )
+    .await;
 
     // Mount a backend for the actual API request (non-rewritable path)
     Mock::given(method("POST"))
@@ -256,14 +274,27 @@ async fn test_expired_token_is_automatically_refreshed_before_request() {
     // @step And the refreshed tokens should be persisted to auth.json
     let persisted = codex_auth::read_codex_auth().unwrap().unwrap();
     let persisted_tokens = persisted.tokens.unwrap();
-    assert_eq!(persisted_tokens.access_token, "new_access_tok", "Persisted access_token should match refreshed value");
-    assert_eq!(persisted_tokens.refresh_token, "new_refresh_tok", "Persisted refresh_token should match refreshed value");
+    assert_eq!(
+        persisted_tokens.access_token, "new_access_tok",
+        "Persisted access_token should match refreshed value"
+    );
+    assert_eq!(
+        persisted_tokens.refresh_token, "new_refresh_tok",
+        "Persisted refresh_token should match refreshed value"
+    );
 
     // @step And the request should proceed with the new access token
     let backend_reqs = backend.received_requests().await.unwrap();
-    assert_eq!(backend_reqs.len(), 1, "API request should be forwarded after refresh");
     assert_eq!(
-        backend_reqs[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        backend_reqs.len(),
+        1,
+        "API request should be forwarded after refresh"
+    );
+    assert_eq!(
+        backend_reqs[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some("Bearer new_access_tok"),
         "Refreshed token should be used"
     );
@@ -282,8 +313,7 @@ async fn test_token_refresh_failure_propagates_error() {
     // @step Given a RefreshingCodexClient in OAuth mode with an expired access token
     let mock_server = MockServer::start().await;
     let backend = MockServer::start().await;
-    let client =
-        build_expired_oauth_client("invalid_refresh_tok", "acc_fail", &mock_server.uri());
+    let client = build_expired_oauth_client("invalid_refresh_tok", "acc_fail", &mock_server.uri());
 
     // @step And an invalid refresh token that returns a 401 error
     mount_failed_refresh(&mock_server).await;
@@ -377,7 +407,10 @@ async fn test_url_rewrite_for_v1_responses_path() {
     let received = backend.received_requests().await.unwrap();
     assert_eq!(received.len(), 1, "Backend should receive request");
     assert_eq!(
-        received[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        received[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some(format!("Bearer {access_token}")).as_deref(),
         "Auth header should be set"
     );
@@ -446,10 +479,7 @@ async fn test_non_api_urls_pass_through_without_rewrite() {
     let url_path = "/v1/models";
     let url = format!("{}{}", backend.uri(), url_path);
     let rewritten = rewrite_codex_url(&url);
-    assert_eq!(
-        rewritten, url,
-        "/v1/models should NOT be rewritten"
-    );
+    assert_eq!(rewritten, url, "/v1/models should NOT be rewritten");
 
     // Send request through client to verify pass-through + auth headers
     let req = make_request(&url);
@@ -458,19 +488,32 @@ async fn test_non_api_urls_pass_through_without_rewrite() {
 
     // @step And the auth headers should still be set correctly
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
     assert_eq!(
-        received[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
+    assert_eq!(
+        received[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some(format!("Bearer {access_token}")).as_deref(),
         "Authorization header should be set on non-rewritten URLs"
     );
     assert_eq!(
-        received[0].headers.get("chatgpt-account-id").map(|v| v.to_str().unwrap()),
+        received[0]
+            .headers
+            .get("chatgpt-account-id")
+            .map(|v| v.to_str().unwrap()),
         Some(account_id),
         "ChatGPT-Account-Id header should be set on non-rewritten URLs"
     );
     assert_eq!(
-        received[0].headers.get("originator").map(|v| v.to_str().unwrap()),
+        received[0]
+            .headers
+            .get("originator")
+            .map(|v| v.to_str().unwrap()),
         Some("codelet"),
         "originator header should be set on non-rewritten URLs"
     );
@@ -506,7 +549,9 @@ async fn test_streaming_request_with_expired_token_refreshes_before_streaming() 
         .respond_with(
             ResponseTemplate::new(200)
                 .insert_header("content-type", "text/event-stream")
-                .set_body_string("data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"}}]}\n\ndata: [DONE]\n\n"),
+                .set_body_string(
+                    "data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"}}]}\n\ndata: [DONE]\n\n",
+                ),
         )
         .mount(&backend)
         .await;
@@ -536,9 +581,16 @@ async fn test_streaming_request_with_expired_token_refreshes_before_streaming() 
 
     // @step And the streaming response should use the refreshed credentials
     let backend_reqs = backend.received_requests().await.unwrap();
-    assert_eq!(backend_reqs.len(), 1, "Streaming request should be forwarded");
     assert_eq!(
-        backend_reqs[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        backend_reqs.len(),
+        1,
+        "Streaming request should be forwarded"
+    );
+    assert_eq!(
+        backend_reqs[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some("Bearer stream_access_tok"),
         "Refreshed token should be used for streaming"
     );
@@ -590,9 +642,16 @@ async fn test_existing_authorization_header_is_replaced() {
     // @step Then the dummy Authorization header should be stripped
     // @step And replaced with "Bearer {current_access_token}"
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
     assert_eq!(
-        received[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
+    assert_eq!(
+        received[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some(format!("Bearer {access_token}")).as_deref(),
         "Dummy auth header should be replaced with real Bearer token"
     );
@@ -633,7 +692,10 @@ async fn test_codex_provider_uses_refreshing_client_for_oauth_mode() {
 
     // Verify provider metadata
     assert_eq!(provider.model(), "gpt-5.1-codex");
-    assert!(matches!(provider.auth_mode(), CodexAuthMode::OAuthDirect { .. }));
+    assert!(matches!(
+        provider.auth_mode(),
+        CodexAuthMode::OAuthDirect { .. }
+    ));
 }
 
 // =========================================================================
@@ -699,7 +761,11 @@ async fn test_api_key_mode_passes_requests_through_unchanged() {
     // @step And the original headers from rig should be preserved
     // @step And the request should be forwarded to reqwest as-is
     let received = backend.received_requests().await.unwrap();
-    assert_eq!(received.len(), 1, "Backend should receive exactly 1 request");
+    assert_eq!(
+        received.len(),
+        1,
+        "Backend should receive exactly 1 request"
+    );
     // No ChatGPT-Account-Id header injected in API key mode
     assert!(
         received[0].headers.get("chatgpt-account-id").is_none(),
@@ -803,8 +869,13 @@ async fn test_tokens_loaded_from_disk_trigger_immediate_refresh() {
     );
 
     // Mount a successful refresh endpoint
-    mount_successful_refresh(&mock_server, account_id, "fresh_disk_tok", "fresh_refresh_tok")
-        .await;
+    mount_successful_refresh(
+        &mock_server,
+        account_id,
+        "fresh_disk_tok",
+        "fresh_refresh_tok",
+    )
+    .await;
 
     // Mount a backend to receive the API request
     Mock::given(method("POST"))
@@ -833,9 +904,16 @@ async fn test_tokens_loaded_from_disk_trigger_immediate_refresh() {
 
     // Verify the API request used the refreshed token
     let backend_reqs = backend.received_requests().await.unwrap();
-    assert_eq!(backend_reqs.len(), 1, "API request should be forwarded after refresh");
     assert_eq!(
-        backend_reqs[0].headers.get("authorization").map(|v| v.to_str().unwrap()),
+        backend_reqs.len(),
+        1,
+        "API request should be forwarded after refresh"
+    );
+    assert_eq!(
+        backend_reqs[0]
+            .headers
+            .get("authorization")
+            .map(|v| v.to_str().unwrap()),
         Some("Bearer fresh_disk_tok"),
         "Request should use the freshly refreshed token, not the stale disk token"
     );

@@ -15,7 +15,7 @@ File: `codelet/providers/src/claude_auth.rs`
 
 | Function | Line | Signature | Sync/Async |
 |----------|------|-----------|------------|
-| `get_codelet_home()` | 29 | `fn get_codelet_home() -> PathBuf` | sync |
+| `get_fspec_home()` | 29 | `fn get_fspec_home() -> PathBuf` | sync |
 | `get_claude_auth_path()` | 39 | `pub fn get_claude_auth_path() -> PathBuf` | sync |
 | `read_claude_auth()` | 44 | `pub async fn read_claude_auth() -> Result<Option<ClaudeAuthJson>>` | **async** |
 | `write_claude_auth()` | 57 | `pub async fn write_claude_auth(auth: &ClaudeAuthJson) -> Result<()>` | **async** |

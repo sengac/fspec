@@ -117,6 +117,14 @@ dashmap = "6"
 # === MCP Protocol (MCP-001) ===
 rmcp = { version = "1.1", features = ["client", "transport-child-process", "transport-streamable-http-client-reqwest"] }
 
+# === Sampling Profiler (AMGR-017 rewrite) ===
+# pprof-rs uses SIGPROF + backtrace-rs to capture per-thread stack samples every
+# 1/frequency seconds across ALL threads in the process. This replaces the
+# opt-in profile_scope!() macro with a real sampling profiler so the AgentManager
+# profile action can see which Rust functions are actually burning CPU —
+# not just the ones that were manually tagged.
+pprof = { version = "0.14", default-features = false }
+
 # === Testing ===
 tempfile = "3"
 assert_cmd = "2"
@@ -171,8 +179,34 @@ unnecessary_to_owned = "deny"
 rig-core = { path = "patches/rig-core" }
 
 [profile.release]
+# AMGR-018: retain line-table DWARF info EMBEDDED inside the .dylib/.node
+# so the sampling profiler (pprof-rs + backtrace-rs) can resolve internal
+# Rust symbols to file:line, and so `AgentManager.profile` returns
+# meaningful attribution instead of phantom `_napi_register_module_v1`
+# hot spots.
+#
+# IMPORTANT: We explicitly set `split-debuginfo = "off"` (instead of the
+# macOS default of "packed") because the fspec binary is shipped as a
+# Node SEA (Single Executable Application). At launch, the SEA extracts
+# the embedded `.node` file to a random temp directory like
+# `/var/folders/.../T/fspec-sea-<pid>/codelet-napi.node`. macOS's
+# path-convention `.dSYM` lookup then searches for a sibling
+# `codelet-napi.node.dSYM` bundle in that temp dir — which never exists
+# — so symbol resolution silently fails and every pprof sample resolves
+# to a raw address.
+#
+# Setting `split-debuginfo = "off"` keeps the DWARF section inside the
+# Mach-O so the debug info travels with the binary through the SEA
+# temp-extract step. Combined with `debug = 1` (line-tables-only), the
+# bloat is bounded: only line number mappings are retained, not full
+# type info.
+#
+# `strip = "none"` keeps the symbol table inside the binary so
+# backtrace-rs can demangle Rust symbols at sample time.
 lto = "fat"
-strip = "symbols"
+strip = "none"
+debug = 1
+split-debuginfo = "off"
 codegen-units = 1
 
 [profile.ci-test]

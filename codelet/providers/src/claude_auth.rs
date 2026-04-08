@@ -1,7 +1,7 @@
 //! Claude OAuth Authentication Persistence Module (PROV-021, PROV-026)
 //!
 //! Handles reading/writing Claude OAuth credentials to
-//! ~/.config/codelet/claude_auth.json.
+//! ~/.fspec/credentials/claude_auth.json.
 //!
 //! Mirrors codex_auth.rs pattern but simpler — no keychain support,
 //! no id_token, no account_id.
@@ -26,20 +26,20 @@ pub struct ClaudeAuthJson {
     pub expires: u64,
 }
 
-/// Get the codelet config directory
-/// Uses CODELET_HOME env var if set, otherwise defaults to ~/.config/codelet
-fn get_codelet_home() -> PathBuf {
-    if let Ok(codelet_home) = std::env::var("CODELET_HOME") {
-        PathBuf::from(codelet_home)
+/// Get the fspec credentials directory
+/// Uses FSPEC_HOME env var if set, otherwise defaults to ~/.fspec/credentials
+fn get_fspec_home() -> PathBuf {
+    if let Ok(fspec_home) = std::env::var("FSPEC_HOME") {
+        PathBuf::from(fspec_home)
     } else {
         let home = std::env::var("HOME").unwrap_or_else(|_| String::from("/tmp"));
-        PathBuf::from(home).join(".config").join("codelet")
+        PathBuf::from(home).join(".fspec").join("credentials")
     }
 }
 
 /// Get the path to claude_auth.json
 pub fn get_claude_auth_path() -> PathBuf {
-    get_codelet_home().join("claude_auth.json")
+    get_fspec_home().join("claude_auth.json")
 }
 
 /// Read Claude auth credentials from file (async)

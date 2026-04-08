@@ -77,9 +77,9 @@ pub struct ClaudeOAuthServerConfig {
 ///
 /// Returns `ClaudeAuthJson` on success.
 pub async fn claude_browser_oauth_login() -> Result<ClaudeAuthJson> {
-    let listener = TcpListener::bind("127.0.0.1:0").await.map_err(|e| {
-        anyhow!("Failed to bind Claude OAuth server: {e}")
-    })?;
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .map_err(|e| anyhow!("Failed to bind Claude OAuth server: {e}"))?;
 
     let config = ClaudeOAuthServerConfig {
         token_endpoint_base: "https://console.anthropic.com".to_string(),
@@ -117,9 +117,7 @@ pub async fn claude_browser_oauth_login_inner(
     if config.open_browser {
         let form_url = format!("http://localhost:{port}/");
         if let Err(e) = open::that(&form_url) {
-            warn!(
-                "Failed to open browser: {e}. Please open this URL manually:\n{form_url}"
-            );
+            warn!("Failed to open browser: {e}. Please open this URL manually:\n{form_url}");
         }
     }
 
@@ -245,7 +243,12 @@ async fn handle_request(
         }
         (hyper::Method::POST, "/submit") => {
             handle_submit(
-                req, state, done, expected_state, token_endpoint_base, pkce_verifier,
+                req,
+                state,
+                done,
+                expected_state,
+                token_endpoint_base,
+                pkce_verifier,
             )
             .await
         }
@@ -309,23 +312,14 @@ async fn handle_submit(
     }
 
     // State validated — exchange code for tokens
-    let exchange_result = exchange_authorization_code(
-        &token_endpoint_base,
-        &code,
-        &received_state,
-        &pkce_verifier,
-    )
-    .await;
+    let exchange_result =
+        exchange_authorization_code(&token_endpoint_base, &code, &received_state, &pkce_verifier)
+            .await;
 
     match exchange_result {
         Err(e) => {
             let msg = format!("{e}");
-            send_result_and_notify(
-                &state,
-                &done,
-                SubmitResult::ExchangeError(msg.clone()),
-            )
-            .await;
+            send_result_and_notify(&state, &done, SubmitResult::ExchangeError(msg.clone())).await;
             let html = html_error(&format!("Token exchange failed: {msg}"));
             Ok(html_response(StatusCode::BAD_REQUEST, &html))
         }
@@ -339,12 +333,8 @@ async fn handle_submit(
 
             if let Err(e) = write_claude_auth(&auth).await {
                 let msg = format!("Failed to persist tokens: {e}");
-                send_result_and_notify(
-                    &state,
-                    &done,
-                    SubmitResult::ExchangeError(msg.clone()),
-                )
-                .await;
+                send_result_and_notify(&state, &done, SubmitResult::ExchangeError(msg.clone()))
+                    .await;
                 let html = html_error(&msg);
                 return Ok(html_response(StatusCode::INTERNAL_SERVER_ERROR, &html));
             }

@@ -226,6 +226,26 @@ impl Envelope {
             data: Some(data),
         }
     }
+
+    /// Build a session:created response envelope.
+    ///
+    /// SESS-017: Sent in response to a session:create request after the
+    /// SessionCreator callback has spawned a new codelet session.
+    pub fn session_created(
+        instance_id: &str,
+        request_id: &str,
+        session_id: &str,
+    ) -> Self {
+        Self {
+            service: Service::Session,
+            msg_type: "created".to_string(),
+            instance_id: Some(instance_id.to_string()),
+            session_id: Some(session_id.to_string()),
+            terminal_id: None,
+            request_id: Some(request_id.to_string()),
+            data: Some(serde_json::json!({ "session_id": session_id })),
+        }
+    }
 }
 
 /// Detect whether a URL targets a fspec-pro multiplexed endpoint.
@@ -264,6 +284,12 @@ pub enum InboundAction {
         session_id: String,
         action: String,
         response: Option<String>,
+    },
+    /// Session create: spawn a new codelet session and respond with session:created.
+    /// SESS-017: Dashboard "+ > New fspec Session" sends this; the bridge must
+    /// invoke the registered SessionCreator and emit a `session:created` response.
+    SessionCreate {
+        request_id: String,
     },
     /// fspec command execution request.
     FspecCommand {
@@ -365,6 +391,16 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                     action,
                     response,
                 }
+            }
+            "create" => {
+                // SESS-017: Route session:create to a SessionCreate action
+                // so the bridge can spawn a new codelet session via the
+                // registered SessionCreator and respond with session:created.
+                let request_id = envelope
+                    .request_id
+                    .clone()
+                    .unwrap_or_default();
+                InboundAction::SessionCreate { request_id }
             }
             other => InboundAction::Unknown {
                 service: "session".to_string(),
@@ -1090,5 +1126,54 @@ mod tests {
         let json = r#"{"service": "invalid", "type": "foo"}"#;
         let result = serde_json::from_str::<Envelope>(json);
         assert!(result.is_err());
+    }
+
+    // =========================================================================
+    // Feature: spec/features/session-tab-creation-bridge-handlers.feature
+    //
+    // Scenario: Bridge handles session:create envelope and responds with session:created
+    // =========================================================================
+
+    /// @step Given the fspec bridge has a registered SessionCreator callback
+    /// @step And a session:create envelope arrives with request_id "req-1" and instance_id "proj"
+    /// @step When the bridge routes the inbound envelope
+    /// @step Then the route should produce a SessionCreate action with request_id "req-1"
+    #[test]
+    fn test_route_session_create_produces_session_create_action() {
+        // @step And a session:create envelope arrives with request_id "req-1" and instance_id "proj"
+        let json = r#"{
+            "service": "session",
+            "type": "create",
+            "instance_id": "proj",
+            "request_id": "req-1"
+        }"#;
+        let env: Envelope = serde_json::from_str(json).unwrap();
+
+        // @step When the bridge routes the inbound envelope
+        let action = route_inbound(&env);
+
+        // @step Then the route should produce a SessionCreate action with request_id "req-1"
+        match action {
+            InboundAction::SessionCreate { request_id } => {
+                assert_eq!(request_id, "req-1");
+            }
+            other => panic!("Expected SessionCreate, got {other:?}"),
+        }
+    }
+
+    /// @step And the response envelope should contain the new session_id
+    /// @step And the response envelope should carry request_id "req-1"
+    #[test]
+    fn test_session_created_envelope_builder() {
+        // The bridge needs an Envelope::session_created builder so it can respond
+        // to session:create requests with the new session_id.
+        let env = Envelope::session_created("proj", "req-1", "sess-new");
+
+        assert_eq!(env.service, Service::Session);
+        assert_eq!(env.msg_type, "created");
+        assert_eq!(env.instance_id.as_deref(), Some("proj"));
+        assert_eq!(env.request_id.as_deref(), Some("req-1"));
+        let data = env.data.as_ref().unwrap();
+        assert_eq!(data["session_id"], "sess-new");
     }
 }

@@ -1,0 +1,501 @@
+{
+  "scenarios": [
+    {
+      "name": "Login to github.com Copilot deployment via OAuth device flow",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "47-92",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/credentials.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                73,
+                74,
+                75,
+                76,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Login to GitHub Enterprise Copilot deployment with enterprise URL",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "94-122",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/credentials.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                73,
+                74,
+                75,
+                76,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chat completion request to gpt-4o-copilot uses /chat/completions endpoint with Copilot headers",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "124-180",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gpt-5 model is routed to the /responses endpoint with reasoning_opaque round-trip",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "182-219",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gpt-5-mini is excluded from the Responses API rule and uses /chat/completions",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "221-241",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Image attachment triggers Copilot-Vision-Request header on claude-sonnet-4.5",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "243-285",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Logout deletes the github-copilot credential file",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "287-318",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/credentials.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                73,
+                74,
+                75,
+                76,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model picker fetches the live catalog from /models with no static merge",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/copilot_provider_manager_integration_test.rs",
+          "lines": "320-380",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/copilot/mod.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/copilot_provider_manager_integration_test.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/credentials.rs",
+      "codelet/providers/src/manager.rs",
+      "codelet/providers/src/copilot/mod.rs"
+    ],
+    "totalLinesCovered": 682
+  }
+}

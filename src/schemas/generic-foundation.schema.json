@@ -35,18 +35,9 @@
         },
         "projectType": {
           "type": "string",
-          "description": "Type of software project",
-          "enum": [
-            "web-app",
-            "cli-tool",
-            "library",
-            "sdk",
-            "mobile-app",
-            "desktop-app",
-            "service",
-            "api",
-            "other"
-          ]
+          "description": "Type of software project (freeform short descriptor, 1-30 characters). Examples: cli-tool, web-app, saas-platform",
+          "minLength": 1,
+          "maxLength": 30
         },
         "repository": {
           "type": "string",

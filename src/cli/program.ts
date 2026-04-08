@@ -131,6 +131,7 @@ import { registerShowEpicCommand } from '../commands/show-epic';
 import { registerShowEventStormCommand } from '../commands/show-event-storm';
 import { registerShowFeatureCommand } from '../commands/show-feature';
 import { registerShowFoundationCommand } from '../commands/show-foundation';
+import { registerListFoundationSectionsCommand } from '../commands/list-foundation-sections';
 import { registerShowFoundationEventStormCommand } from '../commands/show-foundation-event-storm';
 import { registerAddFoundationBoundedContextCommand } from '../commands/add-foundation-bounded-context';
 import { registerAddAggregateToFoundationCommand } from '../commands/add-aggregate-to-foundation';
@@ -321,6 +322,7 @@ export function createProgram(): Command {
   registerShowEventStormCommand(program);
   registerShowFeatureCommand(program);
   registerShowFoundationCommand(program);
+  registerListFoundationSectionsCommand(program);
   registerShowFoundationEventStormCommand(program);
   registerAddFoundationBoundedContextCommand(program);
   registerAddAggregateToFoundationCommand(program);

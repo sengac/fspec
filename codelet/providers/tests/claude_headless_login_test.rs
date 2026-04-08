@@ -1,4 +1,10 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect, clippy::type_complexity)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::needless_collect,
+    clippy::type_complexity
+)]
 //! Feature: spec/features/claude-headless-login.feature
 //!
 //! This test file validates the acceptance criteria defined in the feature file.
@@ -15,11 +21,9 @@
 mod fixtures;
 
 use codelet_providers::claude_auth::ClaudeAuthJson;
-use codelet_providers::claude_headless_login::{
-    claude_headless_login, ClaudeHeadlessLoginConfig,
-};
+use codelet_providers::claude_headless_login::{claude_headless_login, ClaudeHeadlessLoginConfig};
 use codelet_providers::oauth_crypto::generate_pkce;
-use fixtures::setup_codelet_home;
+use fixtures::setup_fspec_home;
 use serial_test::serial;
 use std::future::Future;
 use std::pin::Pin;
@@ -44,9 +48,7 @@ fn immediate_callback(
     code: String,
 ) -> Box<dyn FnOnce(String) -> Pin<Box<dyn Future<Output = anyhow::Result<String>> + Send>> + Send>
 {
-    Box::new(move |_authorize_url: String| {
-        Box::pin(async move { Ok(code) })
-    })
+    Box::new(move |_authorize_url: String| Box::pin(async move { Ok(code) }))
 }
 
 /// Create a code-entry callback that captures the authorize URL it receives.
@@ -82,12 +84,16 @@ fn blocking_callback(
 #[serial]
 async fn test_successful_headless_login_with_code_paste() {
     // @step Given no Claude credentials exist in claude_auth.json
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
-    assert!(!auth_path.exists(), "claude_auth.json should not exist initially");
+    assert!(
+        !auth_path.exists(),
+        "claude_auth.json should not exist initially"
+    );
 
     let mock_server = MockServer::start().await;
-    let token_body = build_claude_token_response_json("at_headless_happy", "rt_headless_happy", 3600);
+    let token_body =
+        build_claude_token_response_json("at_headless_happy", "rt_headless_happy", 3600);
 
     // @step When the user initiates headless Claude login
     // @step Then PKCE codes should be generated and an authorize URL built
@@ -128,7 +134,11 @@ async fn test_successful_headless_login_with_code_paste() {
     // (Verified by wiremock expect(1))
 
     // @step And the tokens should be persisted to claude_auth.json with access_token, refresh_token, and expires
-    assert!(result.is_ok(), "Headless login should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Headless login should succeed, got: {:?}",
+        result.err()
+    );
     let auth = result.unwrap();
     assert_eq!(auth.access_token, "at_headless_happy");
     assert_eq!(auth.refresh_token, "rt_headless_happy");
@@ -136,7 +146,10 @@ async fn test_successful_headless_login_with_code_paste() {
 
     // Verify the callback received the authorize URL
     let url = captured_url.lock().unwrap().clone();
-    assert!(url.is_some(), "Callback should have received an authorize URL");
+    assert!(
+        url.is_some(),
+        "Callback should have received an authorize URL"
+    );
     let url = url.unwrap();
     assert!(
         url.contains("claude.ai/oauth/authorize"),
@@ -149,7 +162,10 @@ async fn test_successful_headless_login_with_code_paste() {
 
     // @step And the function should return a ClaudeAuthJson
     // Verify persistence to file
-    assert!(auth_path.exists(), "claude_auth.json should exist after successful login");
+    assert!(
+        auth_path.exists(),
+        "claude_auth.json should exist after successful login"
+    );
     let content = std::fs::read_to_string(&auth_path).unwrap();
     let json: serde_json::Value = serde_json::from_str(&content).unwrap();
     assert_eq!(json["access_token"], "at_headless_happy");
@@ -165,7 +181,7 @@ async fn test_successful_headless_login_with_code_paste() {
 #[serial]
 async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -212,7 +228,7 @@ async fn test_code_paste_with_mismatched_state_is_rejected_as_csrf() {
 #[serial]
 async fn test_code_without_state_hash_separator_is_rejected() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -237,7 +253,10 @@ async fn test_code_without_state_hash_separator_is_rejected() {
     let result = claude_headless_login(config).await;
 
     // @step Then the login should fail with a missing state error
-    assert!(result.is_err(), "Login should fail with missing state error");
+    assert!(
+        result.is_err(),
+        "Login should fail with missing state error"
+    );
     let err_msg = result.unwrap_err().to_string();
     assert!(
         err_msg.contains("state") || err_msg.contains("missing") || err_msg.contains("#"),
@@ -259,7 +278,7 @@ async fn test_code_without_state_hash_separator_is_rejected() {
 #[serial]
 async fn test_headless_login_times_out_when_callback_blocks() {
     // @step Given a headless Claude login is configured with a short timeout
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     // @step When the code-entry callback blocks without returning
@@ -267,7 +286,7 @@ async fn test_headless_login_times_out_when_callback_blocks() {
 
     let config = ClaudeHeadlessLoginConfig {
         token_endpoint_base: "http://127.0.0.1:1".to_string(), // won't be reached
-        timeout_ms: 200, // very short timeout
+        timeout_ms: 200,                                       // very short timeout
         pkce: None,
         code_entry_fn: callback,
     };
@@ -297,7 +316,7 @@ async fn test_headless_login_times_out_when_callback_blocks() {
 #[serial]
 async fn test_token_exchange_failure_after_valid_state_validation() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -305,9 +324,7 @@ async fn test_token_exchange_failure_after_valid_state_validation() {
     // Token exchange will fail with 400
     Mock::given(method("POST"))
         .and(path("/v1/oauth/token"))
-        .respond_with(
-            ResponseTemplate::new(400).set_body_string(r#"{"error":"invalid_grant"}"#),
-        )
+        .respond_with(ResponseTemplate::new(400).set_body_string(r#"{"error":"invalid_grant"}"#))
         .expect(1)
         .mount(&mock_server)
         .await;
@@ -334,7 +351,10 @@ async fn test_token_exchange_failure_after_valid_state_validation() {
     assert!(result.is_err(), "Login should fail with exchange error");
     let err_msg = result.unwrap_err().to_string();
     assert!(
-        err_msg.contains("400") || err_msg.contains("failed") || err_msg.contains("exchange") || err_msg.contains("invalid_grant"),
+        err_msg.contains("400")
+            || err_msg.contains("failed")
+            || err_msg.contains("exchange")
+            || err_msg.contains("invalid_grant"),
         "Error should mention exchange failure: {err_msg}"
     );
 
@@ -353,7 +373,7 @@ async fn test_token_exchange_failure_after_valid_state_validation() {
 #[serial]
 async fn test_empty_code_string_is_rejected_before_validation() {
     // @step Given a headless Claude login is in progress
-    let (temp_dir, _guard) = setup_codelet_home();
+    let (temp_dir, _guard) = setup_fspec_home();
     let auth_path = temp_dir.path().join("claude_auth.json");
 
     let mock_server = MockServer::start().await;
@@ -401,7 +421,7 @@ async fn test_empty_code_string_is_rejected_before_validation() {
 #[serial]
 async fn test_headless_login_produces_same_claude_auth_json_output_as_browser_oauth() {
     // @step Given a headless Claude login completes successfully
-    let (_temp_dir, _guard) = setup_codelet_home();
+    let (_temp_dir, _guard) = setup_fspec_home();
 
     let mock_server = MockServer::start().await;
     let token_body = build_claude_token_response_json("at_struct_test", "rt_struct_test", 7200);
@@ -427,12 +447,22 @@ async fn test_headless_login_produces_same_claude_auth_json_output_as_browser_oa
 
     // @step When the tokens are returned
     let result = claude_headless_login(config).await;
-    assert!(result.is_ok(), "Headless login should succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Headless login should succeed: {:?}",
+        result.err()
+    );
     let auth = result.unwrap();
 
     // @step Then the output should be a ClaudeAuthJson with access_token, refresh_token, and expires
-    assert!(!auth.access_token.is_empty(), "access_token should be non-empty");
-    assert!(!auth.refresh_token.is_empty(), "refresh_token should be non-empty");
+    assert!(
+        !auth.access_token.is_empty(),
+        "access_token should be non-empty"
+    );
+    assert!(
+        !auth.refresh_token.is_empty(),
+        "refresh_token should be non-empty"
+    );
     assert!(auth.expires > 0, "expires should be a positive timestamp");
 
     // Verify specific values
@@ -446,8 +476,14 @@ async fn test_headless_login_produces_same_claude_auth_json_output_as_browser_oa
 
     // Verify all three fields are present in serialized form (identical structure to browser OAuth)
     let serialized = serde_json::to_value(&auth).unwrap();
-    assert!(serialized.get("access_token").is_some(), "Should have access_token");
-    assert!(serialized.get("refresh_token").is_some(), "Should have refresh_token");
+    assert!(
+        serialized.get("access_token").is_some(),
+        "Should have access_token"
+    );
+    assert!(
+        serialized.get("refresh_token").is_some(),
+        "Should have refresh_token"
+    );
     assert!(serialized.get("expires").is_some(), "Should have expires");
 
     // Verify expires is in the future (calculated from expires_in=7200 seconds)

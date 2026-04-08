@@ -92,6 +92,34 @@ pub enum AgentManagerAction {
         #[serde(default)]
         timeout: Option<u64>,
     },
+    /// Run a time-bounded runtime profiling window (AMGR-017)
+    ///
+    /// Flips the global `PROFILING_ACTIVE` atomic gate to `true`, resets per-scope counters,
+    /// sleeps for `duration_secs` seconds (default 10, range 1..=60), captures process and
+    /// runtime metrics at window boundaries, then returns an aggregated `ProfileResult`.
+    ///
+    /// This call BLOCKS the caller for the full duration — by design. Only one profile
+    /// session may be active at a time; overlapping calls are rejected with
+    /// `{ error: "profile_session_active", ... }` via the async handler.
+    Profile {
+        /// Length of the profiling window in seconds (1..=60, default 10)
+        #[serde(default)]
+        duration_secs: Option<u32>,
+        /// Cap for `scopes_by_calls` and `scopes_by_self_ms` lists (default 20, max 200)
+        #[serde(default)]
+        top_n: Option<usize>,
+        /// Optional label prefix filter; only scopes whose label starts with this string
+        /// appear in the result
+        #[serde(default)]
+        label_prefix: Option<String>,
+        /// AMGR-018: optional substring filter applied BEFORE per-leaf attribution.
+        /// Any sample whose full stack does not contain a frame whose symbol contains
+        /// this substring is dropped, so `hot_stacks`, `scopes_by_calls`,
+        /// `scopes_by_self_ms`, and `samples_by_thread` all reflect the narrowed view.
+        /// Use this to confirm or rule out a suspected hot function in one call.
+        #[serde(default)]
+        focus: Option<String>,
+    },
 }
 
 /// Context reference for quoting session history in messages (AMGR-011)

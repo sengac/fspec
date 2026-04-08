@@ -534,6 +534,60 @@ export interface ContextFillInfo {
 }
 
 /**
+ * Normalise a user-supplied enterprise URL to a bare host.
+ *
+ * Strips the scheme (`https://` / `http://`) and any trailing `/`.
+ * Exposed so the TS layer can preview the normalised host before
+ * submission, mirroring the Rust core to prevent drift.
+ */
+export declare function copilotNormalizeEnterpriseDomain(input: string): string;
+
+/**
+ * Delete the persisted Copilot credential. Idempotent.
+ *
+ * Used by the TUI's "Logout from OAuth" action.
+ */
+export declare function copilotOauthClearCredential(): Promise<void>;
+
+/**
+ * Phase 2: Poll the device-token endpoint until authorization completes.
+ *
+ * On success, persists the credential to `copilot_auth.json` (mode 0600)
+ * and returns it. On terminal error or timeout, returns a NAPI error
+ * with a human-readable message that the TUI can render in the
+ * `oauth-error` mode.
+ */
+export declare function copilotOauthDeviceLoginPoll(
+  deviceCode: string,
+  interval: number,
+  hostUrl: string,
+  enterpriseHost?: string | undefined | null
+): Promise<NapiCopilotCredential>;
+
+/**
+ * Phase 1: Start the Copilot device authorization flow.
+ *
+ * `enterprise_url` is the optional raw user-supplied enterprise URL. When
+ * provided, it is normalised via `normalize_enterprise_domain` before the
+ * device-code request is issued. When omitted/null, the request goes to
+ * `https://github.com/login/device/code`.
+ *
+ * Returns the user_code + verification_url + the device_code so the TUI
+ * can display the UX immediately and then drive polling.
+ */
+export declare function copilotOauthDeviceLoginStart(
+  enterpriseUrl?: string | undefined | null
+): Promise<NapiCopilotDeviceStartResult>;
+
+/**
+ * Read the persisted Copilot credential.
+ *
+ * Returns `null` if `~/.fspec/credentials/copilot_auth.json` does not exist.
+ * Used by the TUI to detect whether GitHub Copilot is currently authenticated.
+ */
+export declare function copilotOauthGetCredential(): Promise<NapiCopilotCredential | null>;
+
+/**
  * Create a ghost commit checkpoint capturing current working tree state
  *
  * Ghost commits are detached commits that capture complete working tree state
@@ -1332,6 +1386,52 @@ export declare function napiComputeEffectiveThinkingLevel(
   detectedLevel: number,
   forceOff: boolean
 ): number;
+
+/**
+ * Copilot OAuth credential exposed to TypeScript. Mirrors `CopilotAuthJson`.
+ *
+ * PROV-057: after the schema migration to the two-token model the
+ * `access_token`/`refresh_token`/`expires` fields are kept here for
+ * TypeScript backward compatibility. They are all populated from the
+ * `github_oauth_token` slot so existing TUI code keeps working while the
+ * TS layer migrates to reading the new field directly.
+ */
+export interface NapiCopilotCredential {
+  accessToken: string;
+  refreshToken: string;
+  /**
+   * Expiry timestamp in milliseconds since Unix epoch. 0 = never expires
+   * (the long-lived GitHub OAuth token does not expire on its own).
+   */
+  expires: number;
+  /** Some(normalised host) for GitHub Enterprise, null for github.com. */
+  enterpriseUrl?: string;
+}
+
+/**
+ * Result from `copilot_oauth_device_login_start` — phase 1 of the device flow.
+ *
+ * Returned synchronously to the TUI so the user_code + verification_url
+ * can be displayed before polling begins. The TUI then passes the
+ * device_code + interval + host_url back into
+ * `copilot_oauth_device_login_poll` to drive phase 2.
+ */
+export interface NapiCopilotDeviceStartResult {
+  userCode: string;
+  verificationUrl: string;
+  deviceCode: string;
+  /** Server-provided polling interval, in seconds. */
+  interval: number;
+  /**
+   * Resolved host URL the device-code request was issued against
+   * (`https://github.com` or `https://<ghe-host>`).
+   */
+  hostUrl: string;
+  /** `"github.com"` for the public deployment, `"enterprise"` otherwise. */
+  deploymentType: string;
+  /** Normalised enterprise host (present when deployment_type == "enterprise"). */
+  enterpriseHost?: string;
+}
 
 /**
  * Detect thinking level from prompt - NAPI export for TypeScript.

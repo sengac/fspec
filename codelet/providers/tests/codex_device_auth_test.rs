@@ -122,7 +122,11 @@ async fn test_successful_device_auth_login_completes_end_to_end() {
 
     // @step And the account_id should be extracted from the JWT id_token claims
     // @step And the tokens should be persisted to auth.json with refresh_token, access_token, and account_id
-    assert!(result.is_ok(), "Device auth login should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Device auth login should succeed, got: {:?}",
+        result.err()
+    );
     let tokens = result.unwrap();
     assert_eq!(tokens.access_token, "at_device_happy");
     assert_eq!(tokens.refresh_token, "rt_device_happy");
@@ -133,10 +137,16 @@ async fn test_successful_device_auth_login_completes_end_to_end() {
     let msgs = displayed.lock().unwrap();
     assert_eq!(msgs.len(), 1);
     assert!(msgs[0].contains("ABCD-1234"), "Should display user_code");
-    assert!(msgs[0].contains("/codex/device"), "Should display verification URL");
+    assert!(
+        msgs[0].contains("/codex/device"),
+        "Should display verification URL"
+    );
 
     // Verify tokens were persisted to auth.json
-    assert!(auth_path.exists(), "auth.json should exist after successful login");
+    assert!(
+        auth_path.exists(),
+        "auth.json should exist after successful login"
+    );
     let auth_content = std::fs::read_to_string(&auth_path).unwrap();
     let auth_json: serde_json::Value = serde_json::from_str(&auth_content).unwrap();
     let persisted_tokens = &auth_json["tokens"];
@@ -197,7 +207,11 @@ async fn test_polling_continues_on_authorization_pending_status() {
     let elapsed = start.elapsed();
 
     // Should succeed after polling through the pending responses
-    assert!(result.is_ok(), "Polling should eventually succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Polling should eventually succeed: {:?}",
+        result.err()
+    );
     let poll_result = result.unwrap();
     match poll_result {
         PollResult::Success {
@@ -268,13 +282,17 @@ async fn test_polling_backs_off_on_slow_down_response() {
     let poll_config = PollConfig {
         issuer_url: &uri,
         timeout_ms: 30_000,
-        poll_interval_override_ms: Some(50),  // 50ms base interval for test
+        poll_interval_override_ms: Some(50), // 50ms base interval for test
         slow_down_increment_override_ms: Some(200), // 200ms increment (instead of 5000ms production)
     };
     let result = poll_device_token(&poll_config, &device_code).await;
     let elapsed = start.elapsed();
 
-    assert!(result.is_ok(), "Polling should succeed after slow_down: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Polling should succeed after slow_down: {:?}",
+        result.err()
+    );
     let poll_result = result.unwrap();
     match poll_result {
         PollResult::Success {
@@ -332,7 +350,10 @@ async fn test_polling_stops_on_expired_token_error() {
     let result = poll_device_token(&poll_config, &device_code).await;
 
     // @step Then the device auth flow should terminate with an error
-    assert!(result.is_ok(), "poll_device_token should return Ok with terminal error");
+    assert!(
+        result.is_ok(),
+        "poll_device_token should return Ok with terminal error"
+    );
     let poll_result = result.unwrap();
 
     // @step And the error should indicate the device code has expired
@@ -383,7 +404,10 @@ async fn test_polling_stops_on_access_denied_error() {
     let result = poll_device_token(&poll_config, &device_code).await;
 
     // @step Then the device auth flow should terminate with an error
-    assert!(result.is_ok(), "poll_device_token should return Ok with terminal error");
+    assert!(
+        result.is_ok(),
+        "poll_device_token should return Ok with terminal error"
+    );
     let poll_result = result.unwrap();
 
     // @step And the error should indicate the user denied authorization
@@ -538,7 +562,9 @@ async fn test_token_exchange_uses_correct_parameters_without_redirect_uri() {
         .and(path("/oauth/token"))
         .and(body_string_contains("grant_type=authorization_code"))
         .and(body_string_contains("code=device_auth_code_xyz"))
-        .and(body_string_contains("code_verifier=device_code_verifier_xyz"))
+        .and(body_string_contains(
+            "code_verifier=device_code_verifier_xyz",
+        ))
         .and(body_string_contains(format!("client_id={CODEX_CLIENT_ID}")))
         .respond_with(ResponseTemplate::new(200).set_body_json(&token_body))
         .expect(1)
@@ -554,7 +580,11 @@ async fn test_token_exchange_uses_correct_parameters_without_redirect_uri() {
     };
 
     let result = device_auth_login(config).await;
-    assert!(result.is_ok(), "Device auth login should succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Device auth login should succeed: {:?}",
+        result.err()
+    );
 
     // @step And the response should contain id_token, access_token, and refresh_token
     let tokens = result.unwrap();
@@ -573,7 +603,11 @@ async fn test_token_exchange_uses_correct_parameters_without_redirect_uri() {
         .iter()
         .filter(|r| r.url.path() == "/oauth/token")
         .collect();
-    assert_eq!(token_requests.len(), 1, "Should have exactly 1 token exchange request");
+    assert_eq!(
+        token_requests.len(),
+        1,
+        "Should have exactly 1 token exchange request"
+    );
     let body = String::from_utf8_lossy(&token_requests[0].body);
     assert!(
         !body.contains("redirect_uri"),
@@ -637,15 +671,28 @@ async fn test_device_auth_produces_same_codex_tokens_output_as_browser_oauth() {
 
     // @step When the tokens are returned
     let result = device_auth_login(config).await;
-    assert!(result.is_ok(), "Device auth should succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Device auth should succeed: {:?}",
+        result.err()
+    );
     let tokens = result.unwrap();
 
     // @step Then the output should be a CodexTokens with id_token, access_token, refresh_token, and account_id
     // Verify all four fields are present and non-empty
     assert!(!tokens.id_token.is_empty(), "id_token should be non-empty");
-    assert!(!tokens.access_token.is_empty(), "access_token should be non-empty");
-    assert!(!tokens.refresh_token.is_empty(), "refresh_token should be non-empty");
-    assert!(!tokens.account_id.is_empty(), "account_id should be non-empty");
+    assert!(
+        !tokens.access_token.is_empty(),
+        "access_token should be non-empty"
+    );
+    assert!(
+        !tokens.refresh_token.is_empty(),
+        "refresh_token should be non-empty"
+    );
+    assert!(
+        !tokens.account_id.is_empty(),
+        "account_id should be non-empty"
+    );
 
     // @step And the output should be identical in structure to browser OAuth login output
     // Verify the type IS CodexTokens (same struct used by browser OAuth)
@@ -654,10 +701,22 @@ async fn test_device_auth_produces_same_codex_tokens_output_as_browser_oauth() {
 
     // Verify we can serialize/deserialize identically to browser OAuth format
     let serialized = serde_json::to_value(&tokens).unwrap();
-    assert!(serialized.get("id_token").is_some(), "Serialized should have id_token");
-    assert!(serialized.get("access_token").is_some(), "Serialized should have access_token");
-    assert!(serialized.get("refresh_token").is_some(), "Serialized should have refresh_token");
-    assert!(serialized.get("account_id").is_some(), "Serialized should have account_id");
+    assert!(
+        serialized.get("id_token").is_some(),
+        "Serialized should have id_token"
+    );
+    assert!(
+        serialized.get("access_token").is_some(),
+        "Serialized should have access_token"
+    );
+    assert!(
+        serialized.get("refresh_token").is_some(),
+        "Serialized should have refresh_token"
+    );
+    assert!(
+        serialized.get("account_id").is_some(),
+        "Serialized should have account_id"
+    );
 
     // Verify the field values match what we sent
     assert_eq!(tokens.access_token, "at_struct");
@@ -687,7 +746,11 @@ async fn test_request_device_code_sends_correct_request() {
         .await;
 
     let result = request_device_code(&mock_server.uri()).await;
-    assert!(result.is_ok(), "request_device_code should succeed: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "request_device_code should succeed: {:?}",
+        result.err()
+    );
 
     let device_code = result.unwrap();
     assert_eq!(device_code.device_auth_id, "dev_unit_test");

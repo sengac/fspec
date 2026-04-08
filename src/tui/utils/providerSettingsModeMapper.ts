@@ -57,12 +57,16 @@ export function mapToEffectivePanelMode(
   }
 
   // OAuth modes pass through directly (they are already PanelMode-compatible)
+  // PROV-054: includes the new Copilot deployment-type-select and
+  // enterprise-url-entry modes.
   if (
     hookMode.type === 'oauth-browser-waiting' ||
     hookMode.type === 'oauth-device-waiting' ||
     hookMode.type === 'oauth-headless-code-entry' ||
     hookMode.type === 'oauth-success' ||
-    hookMode.type === 'oauth-error'
+    hookMode.type === 'oauth-error' ||
+    hookMode.type === 'oauth-deployment-type-select' ||
+    hookMode.type === 'oauth-enterprise-url-entry'
   ) {
     return hookMode;
   }

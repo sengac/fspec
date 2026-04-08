@@ -15,8 +15,8 @@ use anyhow::{anyhow, Result};
 use serde::Deserialize;
 use tracing::debug;
 
-use super::codex_auth::{CodexAuthJson, CodexTokens, write_codex_auth};
-use super::codex_oauth::{CODEX_CLIENT_ID, exchange_authorization_code, extract_account_id};
+use super::codex_auth::{write_codex_auth, CodexAuthJson, CodexTokens};
+use super::codex_oauth::{exchange_authorization_code, extract_account_id, CODEX_CLIENT_ID};
 
 /// Response from the device authorization usercode endpoint
 #[derive(Debug, Clone, Deserialize)]

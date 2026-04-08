@@ -38,6 +38,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@parser` | Gherkin Parser Integration |
 | `@persistence` | Session persistence and storage functionality |
 | `@popup` | Extension popup UI scenarios |
+| `@profiling` | Runtime profiling and instrumentation features |
 | `@providers` | Provider integration and LLM provider implementations |
 | `@scheduler` | Scheduling service infrastructure and schedule management |
 | `@session` | Session management and state tracking |
@@ -284,6 +285,7 @@ Tags for specific technical concerns or architectural patterns.
 | Tag | Description |
 |-----|-------------|
 | `@adaptive-thinking` | Adaptive thinking mode for Claude 4.6+ models |
+| `@agent-loop` | Agent loop dispatch and provider routing in session_manager |
 | `@ai-agent` | AI agent integration features |
 | `@ai-assisted` | Features using AI-driven analysis and interaction |
 | `@ai-driven` | AI-driven interactive and conversational commands |
@@ -297,6 +299,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@astgrep-refactor` | AstGrepRefactor tool operations |
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |
 | `@auth-methods` | Authentication method handling |
+| `@auth-schema` | Authentication credential file schema scenarios |
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |
 | `@automation` | Automated workflow operations and state transitions |
 | `@azure` | Azure OpenAI provider |
@@ -334,6 +337,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@content-type` | Content type classification for message persistence |
 | `@context` | Context preservation scenarios |
 | `@context-preservation` | Context preservation before retries near context window limits |
+| `@copilot` | GitHub Copilot provider integration scenarios |
 | `@credential-resolution` | Credential resolution and priority chain |
 | `@credentials` | Credential storage and management features |
 | `@cross-compile` | Cross-compilation builds |
@@ -345,14 +349,18 @@ Tags for specific technical concerns or architectural patterns.
 | `@ddd` | Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates |
 | `@debugging` | Debugging and diagnostic features for troubleshooting |
 | `@deduplication` | Content deduplication scenarios |
+| `@deep-search` | DeepSearch sub-agent provider configuration |
 | `@default` | Scenarios testing default behavior or state |
 | `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
 | `@development-tools` | Development tooling and utilities |
 | `@disconnect` | Disconnection handling scenarios |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
+| `@dispatch` | Provider dispatch and routing logic |
 | `@document` | Document content type scenarios |
 | `@edit` | Edit tool operations |
 | `@email` | Email-related functionality |
+| `@endpoints-api` | Dynamic API endpoint resolution from provider responses (enterprise vs SaaS) |
+| `@enterprise` | Enterprise deployment scenarios with custom hosts and endpoints |
 | `@env-vars` | Environment variable handling |
 | `@envelope` | Message envelope metadata scenarios |
 | `@error-handling` | Error Handling |
@@ -424,6 +432,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@native` | Native platform builds |
 | `@no-logging` | Ensuring secrets are not logged |
 | `@non-isolated` | Non-isolated session scenarios |
+| `@oauth` | OAuth authentication flows including device-code grants |
 | `@ollama` | Ollama local provider |
 | `@openai` | OpenAI AI provider integration |
 | `@outbound` | Outbound message flow scenarios |
@@ -472,6 +481,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@smart-scroll` | Scenarios testing smart scrolling with sticky scroll behavior |
 | `@sms` | SMS-related functionality |
 | `@stable-indices` | Stable indices system for maintaining unique IDs across soft-delete operations |
+| `@stale-cache` | Stale credential cache detection and re-detection scenarios |
 | `@state` | Session state scenarios |
 | `@step-validation` | Step-level validation and Gherkin step matching |
 | `@stop-reason` | Response stop reason scenarios |
@@ -492,6 +502,8 @@ Tags for specific technical concerns or architectural patterns.
 | `@threshold` | Threshold boundary scenarios |
 | `@timeout` | Timeout handling and time limit scenarios |
 | `@timestamp` | Timestamp-related functionality for temporal ordering and history |
+| `@token-exchange` | Token exchange flows where one credential is exchanged for another (e.g. GitHub OAuth → Copilot API token) |
+| `@token-refresh` | Token refresh and expiry handling scenarios |
 | `@tokens` | Token tracking scenarios |
 | `@toml` | TOML configuration file parsing and manipulation |
 | `@tool-call` | Tool call content type scenarios |
@@ -604,6 +616,7 @@ Tags for test-related scenarios and requirements.
 | `@e2e-test` | End-to-End Test Required |
 | `@edge-case` | Edge case tests - validation of boundary conditions and unusual scenarios |
 | `@empty` | Empty state scenarios |
+| `@end-to-end` | End-to-end integration scenarios spanning multiple subsystems |
 | `@equivalence` | Functional equivalence scenarios |
 | `@error` | Error handling and error state scenarios |
 | `@error-cherry-pick-insufficient-context` | Error handling for cherry-pick |
@@ -880,7 +893,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-03-22T01:08:36.749Z_
+_Last updated: 2026-04-08T01:35:03.748Z_
 
 **Update Command**: `fspec tag-stats`
 

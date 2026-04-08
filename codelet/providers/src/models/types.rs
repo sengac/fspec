@@ -75,9 +75,9 @@ pub struct ModelInfo {
 
     /// Model status
     pub status: Option<ModelStatus>,
-    /// Whether the model is experimental
+    /// Whether the model is experimental (can be boolean or config object)
     #[serde(default)]
-    pub experimental: Option<bool>,
+    pub experimental: Option<ExperimentalConfig>,
 
     /// Provider-specific options
     #[serde(default)]
@@ -85,6 +85,28 @@ pub struct ModelInfo {
     /// Provider-specific headers
     #[serde(default)]
     pub headers: HashMap<String, String>,
+}
+
+/// Experimental configuration - can be a simple boolean or a config object
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum ExperimentalConfig {
+    /// Simple boolean flag
+    Boolean(bool),
+    /// Configuration with modes and provider settings
+    Config {
+        modes: Option<serde_json::Value>,
+    },
+}
+
+impl ExperimentalConfig {
+    /// Returns true if the model is experimental (boolean true or has config)
+    pub fn is_experimental(&self) -> bool {
+        match self {
+            ExperimentalConfig::Boolean(b) => *b,
+            ExperimentalConfig::Config { .. } => true,
+        }
+    }
 }
 
 /// Interleaved thinking configuration

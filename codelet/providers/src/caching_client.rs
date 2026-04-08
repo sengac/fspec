@@ -173,7 +173,10 @@ mod tests {
         assert_eq!(array[0]["type"], "text");
         // fspec guidance is prepended to all preambles
         let text = array[0]["text"].as_str().unwrap();
-        assert!(text.contains("You are helpful"), "Text should contain the preamble");
+        assert!(
+            text.contains("You are helpful"),
+            "Text should contain the preamble"
+        );
         assert!(text.contains("fspec"), "fspec guidance should be prepended");
         assert_eq!(array[0]["cache_control"]["type"], "ephemeral");
     }
@@ -193,7 +196,10 @@ mod tests {
         assert!(array[0].get("cache_control").is_none());
         // Second block: additional text with fspec guidance prepended, with cache_control
         let text = array[1]["text"].as_str().unwrap();
-        assert!(text.contains("Additional text"), "Text should contain the additional text");
+        assert!(
+            text.contains("Additional text"),
+            "Text should contain the additional text"
+        );
         assert!(text.contains("fspec"), "fspec guidance should be prepended");
         assert_eq!(array[1]["cache_control"]["type"], "ephemeral");
     }

@@ -86,8 +86,12 @@ dirs.workspace = true
 rmcp.workspace = true
 
 # Unix process management (for process group killing)
+# Sampling Profiler (AMGR-017 rewrite) — pprof relies on SIGPROF which is not
+# available on Windows. On Windows the profile action degrades to a scope-only
+# view with no stack samples.
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+pprof = { workspace = true }
 
 [dev-dependencies]
 tempfile.workspace = true

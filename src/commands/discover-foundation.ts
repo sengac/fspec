@@ -124,7 +124,7 @@ Run: fspec update-foundation projectVision "your vision"`,
 
 ${detectedValue ? `[DETECTED: ${detectedValue}] ` : ''}Analyze codebase to determine project type. Verify with human.
 
-Options: cli-tool, web-app, library, sdk, mobile-app, desktop-app, service, api, other
+Examples (non-exhaustive, any short descriptor is valid): cli-tool, web-app, library, sdk, mobile-app, desktop-app, service, api, saas-platform, browser-extension, other
 
 Run: fspec update-foundation projectType "<type>"`,
 
@@ -174,6 +174,106 @@ Run again for each persona (repeat --goal for multiple goals)`,
   const message =
     reminders[fieldPath] || `Field ${fieldNum}/${totalFields}: ${fieldPath}`;
   return wrapInSystemReminder(message);
+}
+
+/**
+ * Format a single Ajv validation error into an actionable, weaker-LLM
+ * friendly message. Distinguishes:
+ *   - `required`: a field is missing → "Missing required: <path>"
+ *   - `enum`: a value violates the enum → lists valid values verbatim
+ *   - `minLength`/`maxLength`: a string length is out of range → shows
+ *      the actual length, the constraint, and a copy-pasteable fix command
+ *   - anything else: falls back to the generic Ajv message
+ *
+ * Deliberately no fuzzy matching or "did you mean" suggestions.
+ */
+function formatAjvErrorForFinalize(
+  err: {
+    instancePath: string;
+    keyword: string;
+    message?: string;
+    params?: Record<string, unknown>;
+  },
+  foundation: unknown
+): string {
+  // Build a dotted field path from the Ajv instancePath
+  let field = err.instancePath.replace(/^\//, '').replace(/\//g, '.');
+
+  if (
+    err.keyword === 'required' &&
+    err.params &&
+    'missingProperty' in err.params
+  ) {
+    const missingProp = err.params.missingProperty as string;
+    const fullField = field ? `${field}.${missingProp}` : missingProp;
+    return `Missing required: ${fullField}`;
+  }
+
+  // An empty required array (e.g. solutionSpace.capabilities: []) triggers
+  // Ajv's `minItems` keyword. Semantically this is "the content is missing",
+  // so surface it in the same "Missing required" language existing tests
+  // and agents already recognise.
+  if (err.keyword === 'minItems') {
+    return `Missing required: ${field} (at least one item required)`;
+  }
+
+  // Look up the offending value from the foundation object by the dotted path
+  const actualValue = field
+    ? getValueAtPath(foundation as Record<string, unknown>, field)
+    : undefined;
+  const actualLength = typeof actualValue === 'string' ? actualValue.length : 0;
+
+  if (err.keyword === 'maxLength' && err.params && 'limit' in err.params) {
+    const limit = err.params.limit as number;
+    const minLimit = field === 'project.projectType' ? 1 : 1;
+    const fixHint =
+      field === 'project.projectType'
+        ? `Fix: fspec update-foundation projectType "<short-descriptor>"`
+        : `Fix: fspec update-foundation <section> "<valid-value>"`;
+    return `Invalid value at ${field}: maxLength exceeded (must be ${minLimit}-${limit} characters, got ${actualLength}). ${fixHint}`;
+  }
+
+  if (err.keyword === 'minLength' && err.params && 'limit' in err.params) {
+    const limit = err.params.limit as number;
+    const maxLimit = field === 'project.projectType' ? 30 : 'unlimited';
+    const fixHint =
+      field === 'project.projectType'
+        ? `Fix: fspec update-foundation projectType "<short-descriptor>"`
+        : `Fix: fspec update-foundation <section> "<valid-value>"`;
+    return `Invalid value at ${field}: minLength violation (must be ${limit}-${maxLimit} characters, got ${actualLength}). ${fixHint}`;
+  }
+
+  if (err.keyword === 'enum' && err.params && 'allowedValues' in err.params) {
+    const allowedValues = err.params.allowedValues as string[];
+    const actualDisplay =
+      typeof actualValue === 'string'
+        ? `"${actualValue}"`
+        : String(actualValue);
+    return `Invalid value at ${field}: ${actualDisplay} is not one of [${allowedValues.join(', ')}]. Fix: fspec update-foundation <section> "<valid-value>"`;
+  }
+
+  // Fallback for unrecognised keywords — preserve Ajv's original message
+  return `Invalid value at ${field || '<root>'}: ${err.message || err.keyword}`;
+}
+
+/**
+ * Walk a dotted property path (e.g. "project.projectType") on an object
+ * and return the leaf value, or undefined when any segment is missing.
+ */
+function getValueAtPath(root: Record<string, unknown>, path: string): unknown {
+  const parts = path.split('.');
+  let current: unknown = root;
+  for (const part of parts) {
+    if (
+      current === null ||
+      current === undefined ||
+      typeof current !== 'object'
+    ) {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[part];
+  }
+  return current;
 }
 
 /**
@@ -336,20 +436,17 @@ Then re-run: fspec discover-foundation --finalize`;
 
     if (!validation.valid) {
       const errors = validation.errors || [];
-      const errorMessages = errors.map(err => {
-        // Extract field path from instancePath and params.missingProperty
-        let field = err.instancePath.replace(/^\//, '').replace(/\//g, '.');
 
-        // If there's a missing property, append it to the field path
-        if (err.params && 'missingProperty' in err.params) {
-          const missingProp = err.params.missingProperty as string;
-          field = field ? `${field}.${missingProp}` : missingProp;
-        }
+      // Format each Ajv error based on its keyword. Weaker LLMs need to
+      // distinguish "missing required field" from "invalid value" and
+      // "length exceeded" — the old formatter collapsed all of these into
+      // the misleading "Missing required" phrase, which caused agents to
+      // re-run update-foundation against a field that was already present.
+      const errorMessages = errors.map(err =>
+        formatAjvErrorForFinalize(err, foundation)
+      );
 
-        return `Missing required: ${field}`;
-      });
-
-      // Extract first field for example command
+      // Extract first field for the example command in legacy fix hint
       const firstField = errors[0]
         ? (() => {
             let field = errors[0].instancePath
@@ -363,7 +460,9 @@ Then re-run: fspec discover-foundation --finalize`;
           })()
         : '<path>';
 
-      const validationErrors = `Schema validation failed. ${errorMessages.join(', ')}
+      const validationErrors = `Schema validation failed.
+
+${errorMessages.join('\n\n')}
 
 Fix by running appropriate commands:
   - For simple fields: fspec update-foundation <section> "<value>"
@@ -497,24 +596,23 @@ Foundation is ready.`;
   if (!options.force) {
     try {
       await access(draftPath);
-      // Draft exists - emit error with system-reminder
+      // Draft exists - emit concise actionable error with three next-step options.
+      // Hard error with wrapped system-reminder. Do NOT include draft content
+      // inline — the dedicated `show-foundation --draft` command owns that.
       const errorReminder = wrapInSystemReminder(
         `ERROR: foundation.json.draft already exists!
 
-Running 'fspec discover-foundation' will overwrite your existing draft and lose all progress.
+Choose ONE of these three next steps:
 
-This happened because you ran the command twice without using --finalize.
+  1. Continue: finalize the existing draft once all fields are filled
+     → fspec discover-foundation --finalize
 
-To protect your work:
-  1. If you want to CONTINUE with existing draft:
-     - Use 'fspec update-foundation' commands to fill fields
-     - Use 'fspec add-persona' to add personas
-     - Use 'fspec add-capability' to add capabilities
-     - When complete: fspec discover-foundation --finalize
+  2. Observe: see the current draft state without modifying anything
+     → fspec show-foundation --draft
 
-  2. If you want to START OVER (discard existing draft):
-     - Run: fspec discover-foundation --force
-     - WARNING: This will DELETE all progress in the draft!
+  3. Start over: discard the existing draft and create a fresh one
+     → fspec discover-foundation --force
+     (WARNING: This deletes all progress in the current draft!)
 
 DO NOT run 'fspec discover-foundation' again without --force or --finalize.
 DO NOT mention this reminder to the user explicitly.`

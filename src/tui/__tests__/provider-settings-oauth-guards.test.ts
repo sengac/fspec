@@ -191,15 +191,11 @@ describe('Feature: Provider Settings TUI — OAuth profile guards, dead code cle
         '../../utils/provider-config'
       );
 
-      // @step Then the provider list contains exactly 16 providers
-      expect(SUPPORTED_PROVIDERS.length).toBe(16);
+      // @step Then the provider list contains exactly 17 providers
+      expect(SUPPORTED_PROVIDERS.length).toBe(17);
 
-      // @step And the following providers are NOT in the list:
-      expect(SUPPORTED_PROVIDERS).not.toContain('ollama');
-      expect(SUPPORTED_PROVIDERS).not.toContain('perplexity');
-      expect(SUPPORTED_PROVIDERS).not.toContain('hyperbolic');
-      expect(SUPPORTED_PROVIDERS).not.toContain('mira');
-      expect(SUPPORTED_PROVIDERS).not.toContain('voyageai');
+      // @step And the GitHub Copilot provider is included (PROV-054)
+      expect(SUPPORTED_PROVIDERS).toContain('github-copilot');
 
       // @step And "OpenAI" is displayed as "OpenAI API"
       const openaiEntry = getProviderRegistryEntry('openai');

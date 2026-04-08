@@ -11,7 +11,7 @@ use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::path::Path;
 
-use super::codex_oauth::{CODEX_CLIENT_ID, CODEX_ISSUER, TokenRefreshResponse};
+use super::codex_oauth::{TokenRefreshResponse, CODEX_CLIENT_ID, CODEX_ISSUER};
 
 /// Keyring service name for macOS keychain
 #[cfg(target_os = "macos")]

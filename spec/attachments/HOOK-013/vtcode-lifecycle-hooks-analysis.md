@@ -307,7 +307,7 @@ Given that fspec already patches rig-core, option 2 or 4 may be viable. Option 1
 ### 3.1 Configuration
 
 Adopt a similar TOML structure in fspec's configuration. The config could live in:
-- `~/.config/codelet/hooks.toml` (user-level)
+- `~/.fspec/credentials/hooks.toml` (user-level)
 - `.codelet/hooks.toml` (project-level, takes precedence)
 - Or a `[hooks]` section in an existing config file
 

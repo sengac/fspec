@@ -12,6 +12,11 @@ import { Box, Text } from 'ink';
 import type { ProfileConfig } from '../../utils/provider-config';
 import { getProviderRegistryEntry } from '../../utils/provider-config';
 import { getFooterHints } from '../utils/providerSettingsHelpers';
+import { getOauthProviderLabels } from '../utils/oauthProviderLabels';
+import {
+  renderCopilotDeploymentTypeSelect,
+  renderCopilotEnterpriseUrlEntry,
+} from './CopilotOauthRender';
 
 /**
  * Provider status for display
@@ -19,7 +24,7 @@ import { getFooterHints } from '../utils/providerSettingsHelpers';
 export interface ProviderDisplayStatus {
   hasKey: boolean;
   maskedKey?: string;
-  source?: 'env' | 'file' | 'dotenv' | 'ChatGPT' | 'Claude';
+  source?: 'env' | 'file' | 'dotenv' | string;
 }
 
 /**
@@ -96,6 +101,17 @@ export type PanelMode =
       authorizeUrl: string;
       pkceVerifier: string;
       codeInput: string;
+    }
+  | {
+      type: 'oauth-deployment-type-select';
+      providerId: string;
+      selectedIndex: 0 | 1;
+    }
+  | {
+      type: 'oauth-enterprise-url-entry';
+      providerId: string;
+      urlInput: string;
+      validationError?: string;
     };
 
 /**
@@ -218,8 +234,7 @@ export function ProviderSettingsPanel({
 
   // Render disconnect-oauth confirmation
   if (mode.type === 'disconnect-oauth') {
-    const provider = providers.find(p => p.id === mode.providerId);
-    const oauthLabel = mode.providerId === 'anthropic' ? 'Claude' : 'ChatGPT';
+    const labels = getOauthProviderLabels(mode.providerId);
     return (
       <Box
         flexDirection="column"
@@ -232,9 +247,7 @@ export function ProviderSettingsPanel({
             Disconnect OAuth
           </Text>
           <Box marginTop={1}>
-            <Text>
-              Disconnect {oauthLabel} OAuth? (y/n)
-            </Text>
+            <Text>{labels.disconnectLabel} (y/n)</Text>
           </Box>
           <Box marginTop={1}>
             <Text dimColor>Press 'y' to confirm, 'n' or Esc to cancel</Text>
@@ -357,10 +370,7 @@ export function ProviderSettingsPanel({
 
   // Render OAuth browser waiting
   if (mode.type === 'oauth-browser-waiting') {
-    const oauthTitle =
-      mode.providerId === 'anthropic'
-        ? 'Claude OAuth Login'
-        : 'Codex OAuth Login';
+    const oauthTitle = getOauthProviderLabels(mode.providerId).browserWaitingTitle;
     return (
       <Box
         flexDirection="column"
@@ -386,6 +396,7 @@ export function ProviderSettingsPanel({
 
   // Render OAuth device waiting
   if (mode.type === 'oauth-device-waiting') {
+    const deviceTitle = getOauthProviderLabels(mode.providerId).deviceWaitingTitle;
     return (
       <Box
         flexDirection="column"
@@ -395,7 +406,7 @@ export function ProviderSettingsPanel({
       >
         <Box flexDirection="column" padding={2}>
           <Text bold color="yellow">
-            Codex Device Login
+            {deviceTitle}
           </Text>
           <Box marginTop={1}>
             <Text>Your code: </Text>
@@ -421,10 +432,7 @@ export function ProviderSettingsPanel({
 
   // Render OAuth success
   if (mode.type === 'oauth-success') {
-    const successLabel =
-      mode.providerId === 'anthropic'
-        ? '✓ Connected to Claude'
-        : '✓ Connected to ChatGPT';
+    const successLabel = getOauthProviderLabels(mode.providerId).successLabel;
     return (
       <Box
         flexDirection="column"
@@ -477,6 +485,25 @@ export function ProviderSettingsPanel({
         </Box>
       </Box>
     );
+  }
+
+  // PROV-054: Copilot deployment-type selection
+  if (mode.type === 'oauth-deployment-type-select') {
+    return renderCopilotDeploymentTypeSelect({
+      width,
+      height,
+      selectedIndex: mode.selectedIndex,
+    });
+  }
+
+  // PROV-054: Copilot enterprise URL entry
+  if (mode.type === 'oauth-enterprise-url-entry') {
+    return renderCopilotEnterpriseUrlEntry({
+      width,
+      height,
+      urlInput: mode.urlInput,
+      validationError: mode.validationError,
+    });
   }
 
   // Render OAuth error

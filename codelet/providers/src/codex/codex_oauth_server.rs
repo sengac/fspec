@@ -34,8 +34,8 @@ use tracing::{error, info};
 use super::codex_auth::{write_codex_auth, CodexAuthJson, CodexTokens};
 use super::codex_oauth::{
     build_authorize_url, exchange_authorization_code, extract_account_id, generate_pkce,
-    generate_state, html_error, PkceCodes, CODEX_ISSUER, HTML_CANCELLED,
-    HTML_SUCCESS, OAUTH_PORT, OAUTH_TIMEOUT_MS,
+    generate_state, html_error, PkceCodes, CODEX_ISSUER, HTML_CANCELLED, HTML_SUCCESS, OAUTH_PORT,
+    OAUTH_TIMEOUT_MS,
 };
 use crate::oauth_http_utils::{html_response, parse_urlencoded_params};
 
@@ -264,7 +264,7 @@ async fn handle_request(
                     .get("error_description")
                     .cloned()
                     .unwrap_or_else(|| err.clone());
-                
+
                 // Send error through channel BEFORE notifying done
                 {
                     let mut guard = state.lock().await;
@@ -275,7 +275,7 @@ async fn handle_request(
                         });
                     }
                 }
-                
+
                 done.notify_one();
                 let html = html_error(&error_desc);
                 return Ok(html_response(StatusCode::BAD_REQUEST, &html));
@@ -295,11 +295,9 @@ async fn handle_request(
                                 });
                             }
                         }
-                        
+
                         done.notify_one();
-                        let html = html_error(
-                            "CSRF validation failed. State mismatch detected."
-                        );
+                        let html = html_error("CSRF validation failed. State mismatch detected.");
                         return Ok(html_response(StatusCode::BAD_REQUEST, &html));
                     }
 
@@ -313,7 +311,7 @@ async fn handle_request(
                             });
                         }
                     }
-                    
+
                     done.notify_one();
                     Ok(html_response(StatusCode::OK, HTML_SUCCESS))
                 }
@@ -333,7 +331,7 @@ async fn handle_request(
                     let _ = tx.send(CallbackResult::Cancelled);
                 }
             }
-            
+
             done.notify_one();
             Ok(html_response(StatusCode::OK, HTML_CANCELLED))
         }

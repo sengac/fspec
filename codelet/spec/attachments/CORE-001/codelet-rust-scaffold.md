@@ -602,7 +602,7 @@ impl InputManager {
 | `CODELET_PROVIDER` | Default provider | anthropic |
 | `CODELET_MODEL` | Default model | (provider default) |
 | `CODELET_LOG_LEVEL` | Log level | info |
-| `CODELET_HOME` | Config directory | ~/.config/codelet |
+| `FSPEC_HOME` | Config directory | ~/.fspec/credentials |
 
 ---
 

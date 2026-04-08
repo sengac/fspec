@@ -20,11 +20,11 @@ mod fixtures;
 use base64::Engine;
 use codelet_providers::codex::codex_oauth::{
     build_authorize_url, exchange_authorization_code, extract_account_id, generate_pkce,
-    generate_state, html_error, is_oauth_timeout_expired, PkceCodes,
-    CODEX_CLIENT_ID, OAUTH_PORT, OAUTH_TIMEOUT_MS,
+    generate_state, html_error, is_oauth_timeout_expired, PkceCodes, CODEX_CLIENT_ID, OAUTH_PORT,
+    OAUTH_TIMEOUT_MS,
 };
-use codelet_providers::codex::codex_oauth_server::OAuthServerConfig;
 use codelet_providers::codex::codex_oauth_server::browser_oauth_login_inner;
+use codelet_providers::codex::codex_oauth_server::OAuthServerConfig;
 use fixtures::{build_test_jwt, build_token_response_json, setup_codex_home};
 use serial_test::serial;
 use std::net::TcpListener;
@@ -102,9 +102,8 @@ async fn test_successful_browser_oauth_login_with_pkce() {
     // (open_browser=false in test; URL construction verified by URL scenario below)
 
     // @step When the OAuth callback receives an authorization code with valid state
-    let callback_url = format!(
-        "http://127.0.0.1:{port}/auth/callback?code=test_auth_code&state={known_state}"
-    );
+    let callback_url =
+        format!("http://127.0.0.1:{port}/auth/callback?code=test_auth_code&state={known_state}");
     let client = reqwest::Client::new();
     let resp = client
         .get(&callback_url)
@@ -122,7 +121,11 @@ async fn test_successful_browser_oauth_login_with_pkce() {
     // @step And the OAuth server should shut down
     // @step And the login function should return the OAuth tokens
     let result = login_handle.await.expect("Task should not panic");
-    assert!(result.is_ok(), "Login should succeed, got: {:?}", result.err());
+    assert!(
+        result.is_ok(),
+        "Login should succeed, got: {:?}",
+        result.err()
+    );
 
     let tokens = result.unwrap();
     assert_eq!(tokens.access_token, "at_happy_path");
@@ -131,7 +134,10 @@ async fn test_successful_browser_oauth_login_with_pkce() {
     assert!(!tokens.id_token.is_empty());
 
     // Verify tokens were persisted to auth.json
-    assert!(auth_path.exists(), "auth.json should exist after successful login");
+    assert!(
+        auth_path.exists(),
+        "auth.json should exist after successful login"
+    );
     let auth_content = std::fs::read_to_string(&auth_path).unwrap();
     let auth_json: serde_json::Value = serde_json::from_str(&auth_content).unwrap();
     let persisted_tokens = &auth_json["tokens"];
@@ -234,12 +240,20 @@ async fn test_oauth_callback_rejects_mismatched_state_parameter() {
     let callback_url =
         format!("http://127.0.0.1:{port}/auth/callback?code=some_code&state=wrong-state-xyz");
     let client = reqwest::Client::new();
-    let resp = client.get(&callback_url).send().await.expect("Should reach server");
+    let resp = client
+        .get(&callback_url)
+        .send()
+        .await
+        .expect("Should reach server");
 
     // @step Then the server should return an HTML error page with CSRF warning
     // State validation now happens at the HTTP layer, so the server returns 400 with error HTML
-    assert_eq!(resp.status().as_u16(), 400, "CSRF rejection should return 400 BAD_REQUEST");
-    
+    assert_eq!(
+        resp.status().as_u16(),
+        400,
+        "CSRF rejection should return 400 BAD_REQUEST"
+    );
+
     let body = resp.text().await.expect("Should have body");
     assert!(
         body.contains("Authorization Failed") || body.contains("CSRF"),
@@ -256,7 +270,10 @@ async fn test_oauth_callback_rejects_mismatched_state_parameter() {
     );
 
     // @step And no tokens should be persisted
-    assert!(!auth_path.exists(), "No auth.json should exist after CSRF rejection");
+    assert!(
+        !auth_path.exists(),
+        "No auth.json should exist after CSRF rejection"
+    );
 
     // @step And the OAuth server should shut down
     // (handle completed)
@@ -292,7 +309,10 @@ async fn test_oauth_login_times_out() {
 
     // @step When 5 minutes elapse without receiving a callback
     // (Using 100ms timeout in test)
-    assert_eq!(OAUTH_TIMEOUT_MS, 300_000, "Production timeout should be 5 minutes");
+    assert_eq!(
+        OAUTH_TIMEOUT_MS, 300_000,
+        "Production timeout should be 5 minutes"
+    );
 
     // Verify boundary semantics of is_oauth_timeout_expired
     assert!(!is_oauth_timeout_expired(OAUTH_TIMEOUT_MS - 1));
@@ -327,7 +347,10 @@ async fn test_port_1455_already_in_use() {
     // Call the real browser_oauth_login_inner with a listener that fails to bind
     // because the port is already occupied.
     let conflict_result = TokioTcpListener::bind(format!("127.0.0.1:{bound_port}")).await;
-    assert!(conflict_result.is_err(), "Binding to occupied port should fail");
+    assert!(
+        conflict_result.is_err(),
+        "Binding to occupied port should fail"
+    );
 
     // Verify the error is AddrInUse (what the OS reports)
     let err = conflict_result.unwrap_err();
@@ -410,9 +433,8 @@ async fn test_token_exchange_fails_due_to_network_error() {
     tokio::time::sleep(std::time::Duration::from_millis(50)).await;
 
     // Send callback with matching state — state validation passes, exchange fails
-    let callback_url = format!(
-        "http://127.0.0.1:{port}/auth/callback?code=test_auth_code&state={known_state}"
-    );
+    let callback_url =
+        format!("http://127.0.0.1:{port}/auth/callback?code=test_auth_code&state={known_state}");
     let client = reqwest::Client::new();
     let resp = client
         .get(&callback_url)
@@ -472,12 +494,19 @@ async fn test_user_cancels_oauth_flow_via_cancel_route() {
     // @step When a request is made to the /cancel route
     let cancel_url = format!("http://127.0.0.1:{port}/cancel");
     let client = reqwest::Client::new();
-    let resp = client.get(&cancel_url).send().await.expect("Should reach server");
+    let resp = client
+        .get(&cancel_url)
+        .send()
+        .await
+        .expect("Should reach server");
 
     // @step Then the server should return a cancel confirmation page
     assert_eq!(resp.status().as_u16(), 200);
     let body = resp.text().await.unwrap();
-    assert!(body.contains("Login Cancelled"), "Cancel page should have Login Cancelled title");
+    assert!(
+        body.contains("Login Cancelled"),
+        "Cancel page should have Login Cancelled title"
+    );
 
     // @step And the OAuth server should shut down
     let result = login_handle.await.expect("Task should not panic");
@@ -614,8 +643,14 @@ fn test_oauth_authorize_url_contains_all_required_parameters() {
     );
 
     // @step And the URL should contain the redirect_uri for port 1455
-    assert!(url.contains("redirect_uri="), "URL must contain redirect_uri: {url}");
-    assert!(url.contains("1455"), "redirect_uri must reference port 1455: {url}");
+    assert!(
+        url.contains("redirect_uri="),
+        "URL must contain redirect_uri: {url}"
+    );
+    assert!(
+        url.contains("1455"),
+        "redirect_uri must reference port 1455: {url}"
+    );
 
     // @step And the URL should contain the PKCE code challenge
     assert!(
@@ -667,10 +702,18 @@ async fn test_oauth_callback_receives_authorization_error() {
         "http://127.0.0.1:{port}/auth/callback?error=access_denied&error_description=User%20denied%20permission"
     );
     let client = reqwest::Client::new();
-    let resp = client.get(&callback_url).send().await.expect("Should reach server");
+    let resp = client
+        .get(&callback_url)
+        .send()
+        .await
+        .expect("Should reach server");
 
     // @step Then the server should return an HTML error page
-    assert_eq!(resp.status().as_u16(), 400, "Auth error should return 400 BAD_REQUEST");
+    assert_eq!(
+        resp.status().as_u16(),
+        400,
+        "Auth error should return 400 BAD_REQUEST"
+    );
     let body = resp.text().await.expect("Should have body");
     assert!(
         body.contains("Authorization Failed"),
@@ -695,5 +738,8 @@ async fn test_oauth_callback_receives_authorization_error() {
     );
 
     // @step And no tokens should be persisted
-    assert!(!auth_path.exists(), "No auth.json should exist after auth error");
+    assert!(
+        !auth_path.exists(),
+        "No auth.json should exist after auth error"
+    );
 }

@@ -93,7 +93,7 @@ codex_auth.rs:34:1: pub struct CodexTokens { id_token, access_token, refresh_tok
 
 ### Claude equivalent (new claude_auth.rs):
 - `ClaudeAuthJson { access_token, refresh_token, expires }`
-- Path: `~/.config/codelet/claude_auth.json`
+- Path: `~/.fspec/credentials/claude_auth.json`
 - `write_claude_auth()` / `read_claude_auth()`
 - No keychain support needed initially
 - No `id_token` or `account_id` — simpler than Codex
@@ -118,7 +118,7 @@ Additionally needs a form page HTML template for code paste (new, unique to Clau
 | Port | Fixed 1455 | Ephemeral (port 0) |
 | State validation | At HTTP layer from query params | Parse code#state from form input |
 | Token response | id_token + access_token + refresh_token | access_token + refresh_token + expires_in |
-| Persistence | ~/.codex/auth.json | ~/.config/codelet/claude_auth.json |
+| Persistence | ~/.codex/auth.json | ~/.fspec/credentials/claude_auth.json |
 | Account ID | Extracted from JWT | Not needed |
 
 ## 6. Test Infrastructure (from codex_oauth_server_test.rs)
@@ -126,7 +126,7 @@ Additionally needs a form page HTML template for code paste (new, unique to Clau
 ### Shared fixtures (tests/fixtures/mod.rs):
 - `build_test_jwt(account_id)` — not needed for Claude
 - `build_token_response_json()` — needs Claude variant (no id_token)
-- `setup_codex_home()` — needs Claude equivalent (CODELET_HOME)
+- `setup_codex_home()` — needs Claude equivalent (FSPEC_HOME)
 
 ### Test patterns to replicate:
 - `ephemeral_listener()` — bind to port 0

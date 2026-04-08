@@ -25,21 +25,21 @@ import {
 
 describe('E2E NAPI: Claude OAuth flows (TypeScript → Rust → TypeScript)', () => {
   let tempDir: string;
-  let originalCodeletHome: string | undefined;
+  let originalFspecHome: string | undefined;
 
   beforeEach(async () => {
-    // Create isolated temp dir for CODELET_HOME
+    // Create isolated temp dir for FSPEC_HOME
     tempDir = await mkdtemp(join(tmpdir(), 'fspec-claude-oauth-e2e-'));
-    originalCodeletHome = process.env['CODELET_HOME'];
-    process.env['CODELET_HOME'] = tempDir;
+    originalFspecHome = process.env['FSPEC_HOME'];
+    process.env['FSPEC_HOME'] = tempDir;
   });
 
   afterEach(async () => {
-    // Restore original CODELET_HOME
-    if (originalCodeletHome !== undefined) {
-      process.env['CODELET_HOME'] = originalCodeletHome;
+    // Restore original FSPEC_HOME
+    if (originalFspecHome !== undefined) {
+      process.env['FSPEC_HOME'] = originalFspecHome;
     } else {
-      delete process.env['CODELET_HOME'];
+      delete process.env['FSPEC_HOME'];
     }
     // Clean up temp dir
     await rm(tempDir, { recursive: true, force: true });
@@ -112,7 +112,7 @@ describe('E2E NAPI: Claude OAuth flows (TypeScript → Rust → TypeScript)', ()
 
   describe('claudeOauthGetTokens (async, file I/O)', () => {
     it('should return null when no claude_auth.json exists', async () => {
-      // @step Given CODELET_HOME points to an empty temp directory
+      // @step Given FSPEC_HOME points to an empty temp directory
       // @step When I call claudeOauthGetTokens
       const tokens = await claudeOauthGetTokens();
 

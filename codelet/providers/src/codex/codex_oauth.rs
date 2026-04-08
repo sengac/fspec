@@ -44,7 +44,10 @@ pub fn generate_state() -> String {
 pub fn parse_jwt_claims(token: &str) -> Result<serde_json::Value> {
     let parts: Vec<&str> = token.split('.').collect();
     if parts.len() != 3 {
-        return Err(anyhow!("Invalid JWT: expected 3 parts, got {}", parts.len()));
+        return Err(anyhow!(
+            "Invalid JWT: expected 3 parts, got {}",
+            parts.len()
+        ));
     }
 
     let payload_bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD
@@ -215,7 +218,9 @@ pub(crate) async fn post_to_token_endpoint(
     if !response.status().is_success() {
         let status = response.status();
         let body = response.text().await.unwrap_or_default();
-        return Err(anyhow!("{error_context} failed with status {status}: {body}"));
+        return Err(anyhow!(
+            "{error_context} failed with status {status}: {body}"
+        ));
     }
 
     let token_response: TokenRefreshResponse = response.json().await?;

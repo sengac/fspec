@@ -104,7 +104,11 @@ pub fn remove_bridge_session_context(session_id: Uuid) {
 }
 
 /// Get session context for a session
-fn get_bridge_session_context(session_id: Uuid) -> Option<Arc<BridgeSessionContext>> {
+///
+/// SESS-018: Made public so the bridge's inbound handler can route
+/// session:input / session:control envelopes to the correct per-session
+/// injector/handler instead of always using the connection owner's.
+pub fn get_bridge_session_context(session_id: Uuid) -> Option<Arc<BridgeSessionContext>> {
     BRIDGE_SESSION_CONTEXTS
         .read()
         .ok()

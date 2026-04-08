@@ -8,11 +8,16 @@
 
 // Import from PRODUCTION code - no local redefinitions
 use codelet_tools::facade::{
-    ClaudeThinkingFacade, ThinkingLevel,
-    // Model constants
-    CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_OPUS_4_5, CLAUDE_SONNET_4_5,
     // Model detection helpers
-    is_adaptive_thinking_model, supports_1m_context,
+    is_adaptive_thinking_model,
+    supports_1m_context,
+    ClaudeThinkingFacade,
+    ThinkingLevel,
+    CLAUDE_OPUS_4_5,
+    // Model constants
+    CLAUDE_OPUS_4_6,
+    CLAUDE_SONNET_4_5,
+    CLAUDE_SONNET_4_6,
 };
 
 // Import beta header builder from claude provider
@@ -505,10 +510,7 @@ mod tests {
         let config = facade.request_config_for_model(model, level);
 
         // @step Then the request should NOT contain a thinking configuration
-        assert!(
-            config.is_none(),
-            "Off should disable thinking for Opus 4.6"
-        );
+        assert!(config.is_none(), "Off should disable thinking for Opus 4.6");
     }
 
     // =========================================================================
@@ -558,7 +560,7 @@ mod tests {
         assert!(supports_1m_context(CLAUDE_SONNET_4_6));
         assert!(supports_1m_context(CLAUDE_SONNET_4_5));
         assert!(supports_1m_context("claude-sonnet-4-5-20250929")); // Versioned model in list
-        // Opus 4.5 does NOT support 1M
+                                                                    // Opus 4.5 does NOT support 1M
         assert!(!supports_1m_context(CLAUDE_OPUS_4_5));
         // Unknown models do not match
         assert!(!supports_1m_context("claude-opus-4-7"));

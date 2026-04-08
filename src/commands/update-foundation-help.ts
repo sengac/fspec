@@ -3,10 +3,10 @@ import type { CommandHelpConfig } from '../utils/help-formatter';
 const config: CommandHelpConfig = {
   name: 'update-foundation',
   description:
-    'Update section content in foundation.json or foundation.json.draft during discovery',
+    'Update a field in foundation.json (or foundation.json.draft during discovery)',
   usage: 'fspec update-foundation <section> <content>',
   whenToUse:
-    'Use this command during draft-driven discovery workflow (fspec discover-foundation) to fill placeholder fields, OR to update an existing foundation.json. The command automatically detects which file to update.',
+    'Use this command during draft-driven discovery workflow (fspec discover-foundation) to fill placeholder fields, OR to update an existing foundation.json. The command automatically detects which file to update (draft takes precedence over final foundation).',
   prerequisites: [
     'EITHER spec/foundation.json.draft (during discovery) OR spec/foundation.json (after discovery) exists',
   ],
@@ -14,7 +14,7 @@ const config: CommandHelpConfig = {
     {
       name: 'section',
       description:
-        'Section name or field path (e.g., "projectVision", "problemDefinition", "solutionOverview")',
+        'Section name (one of: projectName, projectVision, projectType, problemTitle, problemDefinition, problemImpact, solutionOverview)',
       required: true,
     },
     {
@@ -28,28 +28,49 @@ const config: CommandHelpConfig = {
     {
       command: 'fspec update-foundation projectName "My Project"',
       description:
-        'Update project name during discovery (updates draft if it exists)',
+        'Update the project name (updates draft if one exists, otherwise updates foundation.json)',
       output:
         '✓ Updated "projectName" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
     },
     {
       command:
         'fspec update-foundation projectVision "CLI tool for AI agents to manage Gherkin specs using ACDD"',
-      description: 'Update project vision (after discovery completes)',
+      description: 'Update the project vision',
       output:
         '✓ Updated "projectVision" section in FOUNDATION.md\n  Updated: spec/foundation.json\n  Regenerated: spec/FOUNDATION.md',
     },
     {
+      command: 'fspec update-foundation projectType "cli-tool"',
+      description:
+        'Update the project type (freeform short descriptor, 1-30 characters)',
+      output:
+        '✓ Updated "projectType" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
+    },
+    {
+      command:
+        'fspec update-foundation problemTitle "Specification Management"',
+      description: 'Update the primary problem title',
+      output:
+        '✓ Updated "problemTitle" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
+    },
+    {
       command:
         'fspec update-foundation problemDefinition "AI agents lack structured workflow for spec management"',
-      description: 'Update problem definition during discovery',
+      description: 'Update the primary problem description',
       output:
         '✓ Updated "problemDefinition" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
     },
     {
+      command: 'fspec update-foundation problemImpact "high"',
+      description:
+        'Update the problem impact (must be one of: high, medium, low)',
+      output:
+        '✓ Updated "problemImpact" in foundation.json.draft\n  Updated: spec/foundation.json.draft',
+    },
+    {
       command:
         'fspec update-foundation solutionOverview "Standardized CLI with Gherkin specs and ACDD workflow"',
-      description: 'Update solution overview',
+      description: 'Update the solution overview',
       output:
         '✓ Updated "solutionOverview" section in FOUNDATION.md\n  Updated: spec/foundation.json\n  Regenerated: spec/FOUNDATION.md',
     },
@@ -57,8 +78,23 @@ const config: CommandHelpConfig = {
   commonErrors: [
     {
       error:
-        'Error: Unknown section: "invalidSection". Use field names like: projectOverview, problemDefinition, etc.',
-      fix: 'Use valid section names. Common sections: projectName, projectVision, projectType, problemDefinition, problemImpact, solutionOverview',
+        'Error: Invalid projectType: "" (must be 1-30 characters, got 0). Fix: fspec update-foundation projectType "<short-descriptor>"',
+      fix: 'Provide a non-empty projectType (e.g. "cli-tool", "web-app", "saas-platform")',
+    },
+    {
+      error:
+        'Error: Invalid projectType: too long (must be 1-30 characters, got N). Fix: fspec update-foundation projectType "<short-descriptor>"',
+      fix: 'Shorten the projectType value to 30 characters or fewer',
+    },
+    {
+      error:
+        'Error: Invalid value for problemImpact: "critical". Valid values: high, medium, low. Fix: fspec update-foundation problemImpact "<valid-value>"',
+      fix: 'Use one of the exact values: high, medium, low',
+    },
+    {
+      error:
+        'Error: Unknown section: "invalidSection". Use field names like: projectName, projectVision, projectType, problemTitle, problemDefinition, problemImpact, solutionOverview',
+      fix: 'Run `fspec list-foundation-sections` to see every valid section name with its JSON path and constraint',
     },
     {
       error: 'Error: Section name cannot be empty',
@@ -67,10 +103,6 @@ const config: CommandHelpConfig = {
     {
       error: 'Error: Section content cannot be empty',
       fix: 'Provide content as the second argument (use quotes for multi-word content)',
-    },
-    {
-      error: 'Error: Updated foundation.json failed schema validation: ...',
-      fix: 'Content must comply with foundation schema. Check error message for specific validation issue.',
     },
   ],
   typicalWorkflow:
@@ -84,14 +116,17 @@ const config: CommandHelpConfig = {
     {
       pattern: 'Update Problem/Solution Space',
       example:
-        'fspec update-foundation problemDefinition "AI agents lack structured workflow"\nfspec update-foundation solutionOverview "CLI tool with Gherkin specs and ACDD workflow"',
+        'fspec update-foundation problemTitle "Spec Management"\nfspec update-foundation problemDefinition "AI agents lack structured workflow"\nfspec update-foundation problemImpact "high"\nfspec update-foundation solutionOverview "CLI tool with Gherkin specs and ACDD workflow"',
     },
   ],
   relatedCommands: [
     'show-foundation',
+    'list-foundation-sections',
     'validate-foundation-schema',
     'generate-foundation-md',
     'discover-foundation',
+    'add-capability',
+    'add-persona',
   ],
   notes: [
     'CRITICAL: Command automatically detects which file to update (draft vs final)',
@@ -99,8 +134,12 @@ const config: CommandHelpConfig = {
     'If foundation.json.draft does NOT exist: Updates foundation.json and regenerates FOUNDATION.md',
     'Draft workflow: Use during discovery to fill [QUESTION:] placeholders',
     'Final workflow: Use after discovery to update existing foundation',
-    'Supported section names: projectName, projectVision, projectType, problemDefinition, problemImpact, solutionOverview',
-    'Legacy section names (testingStrategy, developmentTools, etc.) map to solutionOverview for backward compatibility',
+    'Valid section names (exhaustive list): projectName, projectVision, projectType, problemTitle, problemDefinition, problemImpact, solutionOverview',
+    'NOT supported by update-foundation: capabilities are managed via the `add-capability` command (with matching remove-capability)',
+    'NOT supported by update-foundation: personas are managed via the `add-persona` command (with matching remove-persona)',
+    'To see every valid section with its JSON path and constraints, run: fspec list-foundation-sections',
+    'projectType is a freeform short string (1-30 characters); examples include cli-tool, web-app, saas-platform',
+    'problemImpact is a strict enum with exactly three valid values: high, medium, low',
     'Use quotes around multi-word content: "This is the content"',
   ],
 };

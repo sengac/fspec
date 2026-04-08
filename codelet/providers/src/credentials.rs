@@ -2,7 +2,7 @@
 //!
 //! Detects available LLM provider credentials from:
 //! - Environment variables (ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN, OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, ZAI_API_KEY, ZAI_PLAN_API_KEY)
-//! - Auth files (~/.codex/auth.json for Codex OAuth, ~/.config/codelet/claude_auth.json for Claude OAuth)
+//! - Auth files (~/.codex/auth.json for Codex OAuth, ~/.fspec/credentials/claude_auth.json for Claude OAuth, ~/.fspec/credentials/copilot_auth.json for GitHub Copilot OAuth)
 
 /// Provider credentials detected from environment variables and auth files
 #[derive(Debug, Clone)]
@@ -12,6 +12,7 @@ pub struct ProviderCredentials {
     pub codex_available: bool,
     pub gemini_available: bool,
     pub zai_available: bool,
+    pub github_copilot_available: bool,
 }
 
 impl ProviderCredentials {
@@ -27,6 +28,10 @@ impl ProviderCredentials {
             // Z.AI: Check both ZAI_PLAN_API_KEY (preferred) and ZAI_API_KEY
             zai_available: std::env::var("ZAI_PLAN_API_KEY").is_ok()
                 || std::env::var("ZAI_API_KEY").is_ok(),
+            // PROV-053: GitHub Copilot — auth file lives at
+            // ~/.fspec/credentials/copilot_auth.json (mode 0600), written by
+            // the OAuth device flow in PROV-054.
+            github_copilot_available: has_github_copilot_auth(),
         }
     }
 
@@ -37,6 +42,7 @@ impl ProviderCredentials {
             || self.codex_available
             || self.gemini_available
             || self.zai_available
+            || self.github_copilot_available
     }
 
     /// Check if Claude credentials are available
@@ -64,6 +70,11 @@ impl ProviderCredentials {
         self.zai_available
     }
 
+    /// Check if GitHub Copilot credentials are available (PROV-053)
+    pub fn has_github_copilot(&self) -> bool {
+        self.github_copilot_available
+    }
+
     /// List all available provider names
     pub fn available_providers(&self) -> Vec<String> {
         let mut providers = Vec::new();
@@ -81,6 +92,9 @@ impl ProviderCredentials {
         }
         if self.openai_available {
             providers.push("openai".to_string());
+        }
+        if self.github_copilot_available {
+            providers.push("github-copilot".to_string());
         }
         providers
     }
@@ -110,6 +124,20 @@ fn has_claude_auth() -> bool {
 
     if let Ok(Some(auth)) = read_claude_auth_sync() {
         return !auth.access_token.is_empty() && !auth.refresh_token.is_empty();
+    }
+    false
+}
+
+/// Check if copilot_auth.json exists with a valid OAuth access token (PROV-053).
+///
+/// Mirrors `has_claude_auth()` and `has_codex_auth()`. The Copilot credential
+/// file lives at `~/.fspec/credentials/copilot_auth.json` (or under `FSPEC_HOME`
+/// if set) and is created by the device authorization flow in PROV-054.
+fn has_github_copilot_auth() -> bool {
+    use crate::copilot::auth::read_copilot_auth_sync;
+
+    if let Ok(Some(auth)) = read_copilot_auth_sync() {
+        return !auth.github_oauth_token.is_empty();
     }
     false
 }

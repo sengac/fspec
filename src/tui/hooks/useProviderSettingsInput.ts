@@ -14,6 +14,7 @@ import {
   handleFilterMode,
   handleListMode,
   handleOauthMode,
+  handleCopilotOauthMode,
 } from '../inputHandlers';
 
 export interface UseProviderSettingsInputOptions {
@@ -40,6 +41,9 @@ export function useProviderSettingsInput({
       const { mode } = providerSettings;
 
       // Handle each mode in priority order
+      if (handleCopilotOauthMode(input, key, providerSettings)) {
+        return;
+      }
       if (handleOauthMode(input, key, providerSettings)) {
         return;
       }

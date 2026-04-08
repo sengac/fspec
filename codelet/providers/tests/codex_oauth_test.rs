@@ -90,10 +90,7 @@ fn test_browser_oauth_login_with_pkce_completes_successfully() {
         auth_url.contains("code_challenge="),
         "URL missing code_challenge: {auth_url}"
     );
-    assert!(
-        auth_url.contains("state="),
-        "URL missing state: {auth_url}"
-    );
+    assert!(auth_url.contains("state="), "URL missing state: {auth_url}");
     assert!(
         auth_url.contains(&pkce.challenge),
         "URL missing actual challenge value"
@@ -223,10 +220,7 @@ fn test_account_id_extracted_from_jwt_id_token_claims() {
 
     // @step And subsequent API requests should include the ChatGPT-Account-Id header
     let headers = build_codex_headers("token", "acct_abc123");
-    assert_eq!(
-        headers.get("ChatGPT-Account-Id").unwrap(),
-        "acct_abc123"
-    );
+    assert_eq!(headers.get("ChatGPT-Account-Id").unwrap(), "acct_abc123");
 }
 
 // =========================================================================

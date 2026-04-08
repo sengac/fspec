@@ -35,8 +35,12 @@ import {
   claudeOauthHeadlessComplete,
   claudeOauthGetTokens,
   claudeOauthClearTokens,
+  copilotOauthGetCredential,
+  copilotOauthClearCredential,
 } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
+import { buildOauthLoginNavItems } from '../utils/oauthLoginLabels';
+import { getOauthProviderLabels } from '../utils/oauthProviderLabels';
 import type {
   ProviderDisplayInfo,
   ProviderDisplayStatus,
@@ -162,26 +166,11 @@ export function buildNavItems(
 
       // Add OAuth login options for OAuth providers
       // Show when no tokens exist (initial login) OR when tokens exist (re-login)
+      // PROV-054: Labels and per-provider login methods come from the
+      // shared registry — no more hard-coded binary ternaries.
       if (isOAuthProvider(provider.id)) {
-        const isAnthropic = provider.id === 'anthropic';
-        const browserLabel = isAnthropic
-          ? 'Login with Claude (browser)'
-          : 'Login with ChatGPT (browser)';
-        const headlessLabel = isAnthropic
-          ? 'Login with Claude (headless)'
-          : 'Login with ChatGPT (headless)';
-        items.push({
-          type: 'oauth-login',
-          providerId: provider.id,
-          method: 'browser',
-          label: browserLabel,
-        });
-        items.push({
-          type: 'oauth-login',
-          providerId: provider.id,
-          method: 'headless',
-          label: headlessLabel,
-        });
+        const loginItems = buildOauthLoginNavItems(provider.id);
+        items.push(...loginItems);
       }
 
       // API key row: show for providers with requiresApiKey or envVar, NOT for openai (profile-only)
@@ -298,10 +287,25 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
                 status = {
                   hasKey: true,
                   maskedKey: 'OAuth',
-                  source: 'Claude',
+                  source: getOauthProviderLabels('anthropic').source,
                 };
               }
-            } else {
+            } else if (providerId === 'github-copilot') {
+              // PROV-054: Copilot credential lives in copilot_auth.json
+              const credential = await copilotOauthGetCredential();
+              if (credential) {
+                hasOAuthTokens = true;
+                const baseLabel =
+                  getOauthProviderLabels('github-copilot').source;
+                status = {
+                  hasKey: true,
+                  maskedKey: 'OAuth',
+                  source: credential.enterpriseUrl
+                    ? `${baseLabel} (${credential.enterpriseUrl})`
+                    : baseLabel,
+                };
+              }
+            } else if (providerId === 'codex') {
               // Codex tokens are sync
               const tokens = codexOauthGetTokens();
               if (tokens) {
@@ -309,7 +313,7 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
                 status = {
                   hasKey: true,
                   maskedKey: 'OAuth',
-                  source: 'ChatGPT',
+                  source: getOauthProviderLabels('codex').source,
                 };
               }
             }
@@ -680,6 +684,8 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
   /**
    * Disconnect OAuth (clear stored tokens)
    * PROV-036: Sets navigateToProviderRef so cursor moves to provider row after reload
+   * PROV-054: Adds explicit github-copilot branch — falls back to codex
+   * for the legacy single-OAuth-provider case.
    */
   const disconnectOauth = useCallback(
     async (providerId: string): Promise<void> => {
@@ -687,6 +693,8 @@ export function useProviderSettingsState(): UseProviderSettingsStateReturn {
         if (isOAuthProvider(providerId)) {
           if (providerId === 'anthropic') {
             await claudeOauthClearTokens();
+          } else if (providerId === 'github-copilot') {
+            await copilotOauthClearCredential();
           } else {
             codexOauthClearTokens();
           }

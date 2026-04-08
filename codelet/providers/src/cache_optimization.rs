@@ -99,10 +99,7 @@ impl CacheOptimizationFacade {
         if config.should_apply() {
             let value = config.affinity_value();
             if let Ok(header_value) = HeaderValue::from_str(&value) {
-                headers.insert(
-                    HeaderName::from_static("x-session-affinity"),
-                    header_value,
-                );
+                headers.insert(HeaderName::from_static("x-session-affinity"), header_value);
             }
         }
 
@@ -240,17 +237,17 @@ mod tests {
     fn test_affinity_value_defaults_to_session_id() {
         let session_id = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
         let config = SessionAffinityConfig::new(session_id, None, true);
-        assert_eq!(config.affinity_value(), "550e8400-e29b-41d4-a716-446655440000");
+        assert_eq!(
+            config.affinity_value(),
+            "550e8400-e29b-41d4-a716-446655440000"
+        );
     }
 
     #[test]
     fn test_affinity_value_uses_override() {
         let session_id = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
-        let config = SessionAffinityConfig::new(
-            session_id,
-            Some("custom-affinity".to_string()),
-            true,
-        );
+        let config =
+            SessionAffinityConfig::new(session_id, Some("custom-affinity".to_string()), true);
         assert_eq!(config.affinity_value(), "custom-affinity");
     }
 

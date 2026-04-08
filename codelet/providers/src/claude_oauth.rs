@@ -54,8 +54,7 @@ pub const CLAUDE_SCOPE: &str = "org:create_api_key user:profile user:inference";
 pub const CLAUDE_USER_AGENT: &str = "claude-cli/2.1.3 (external, cli)";
 
 /// Required beta headers for OAuth mode
-pub const REQUIRED_BETA_HEADERS: &[&str] =
-    &["oauth-2025-04-20", "interleaved-thinking-2025-05-14"];
+pub const REQUIRED_BETA_HEADERS: &[&str] = &["oauth-2025-04-20", "interleaved-thinking-2025-05-14"];
 
 /// Tool name prefix for OAuth mode
 pub const TOOL_NAME_PREFIX: &str = "mcp_";

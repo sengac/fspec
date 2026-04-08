@@ -38,6 +38,7 @@ pub mod ls;
 pub mod mcp;
 pub mod page_fetcher;
 pub mod pdf;
+pub mod profile;
 pub mod read;
 pub mod request_user_input;
 pub mod schedule;
@@ -105,13 +106,15 @@ pub use bridge::{
 pub use bridge_handler::{
     execute_bridge_command, handle_bridge_action, has_bridge_handler_for_session,
     set_bridge_handler, set_bridge_session_context, remove_bridge_session_context,
-    BridgeHandler, BridgeRequest, BroadcastReceiverFactory,
+    get_bridge_session_context,
+    BridgeHandler, BridgeRequest, BridgeSessionContext, BroadcastReceiverFactory,
 };
 pub use bridge_relay::{spawn_relay_task, InputInjector, InjectedInput, ImageData, ControlHandler, CommandEmitter,
     handle_multiplexed_inbound, process_outbound_envelope, get_instance_metadata, OutboundEnvelopeAction,
     set_session_list_provider, set_model_info_provider, broadcast_metadata_update,
     SessionListProvider, ModelInfoProvider, OutboundControlTx,
-    SubordinateChunkTx, get_subordinate_chunk_senders};
+    SubordinateChunkTx, get_subordinate_chunk_senders,
+    SessionCreator, set_session_creator, set_pty_registry};
 pub use bridge_multiplexed::{
     Envelope, Service as MultiplexedService, InstanceMetadata,
     InboundAction, route_inbound, is_multiplexed_endpoint,

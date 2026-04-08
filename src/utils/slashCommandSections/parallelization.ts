@@ -102,6 +102,13 @@ AgentManager(action='set_role', session_id='<my-session-id>',
 
 # Close a subordinate when done
 AgentManager(action='close', session_id='<worker-id>')
+
+# Run a time-bounded runtime profiling window (AMGR-017)
+# BLOCKS for duration_secs seconds (1..=60, default 10) — this is by design.
+# Use to diagnose CPU spikes, runaway loops, or channel backpressure inside the
+# stripped production NAPI binary without dtrace/sample.
+AgentManager(action='profile', duration_secs=10)
+AgentManager(action='profile', duration_secs=5, top_n=10, label_prefix='handle_await_idle')
 \`\`\`
 
 ### Parallelization Patterns for ACDD

@@ -91,6 +91,7 @@ export const SUPPORTED_PROVIDERS = [
   'azure',
   'zai',
   'codex',
+  'github-copilot',
 ] as const;
 
 export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number];
@@ -260,6 +261,17 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     authType: 'oauth',
     requiresApiKey: false,
     description: 'OpenAI Codex via ChatGPT Pro/Plus OAuth',
+  },
+  {
+    id: 'github-copilot',
+    name: 'GitHub Copilot',
+    baseUrl: 'https://api.githubcopilot.com',
+    envVar: '',
+    authMethod: 'bearer',
+    authType: 'oauth',
+    requiresApiKey: false,
+    description:
+      'GitHub Copilot via OAuth device flow (RFC 8628). Supports github.com and GitHub Enterprise deployments. Tokens are stored in ~/.fspec/credentials/copilot_auth.json and never expire.',
   },
 ];
 

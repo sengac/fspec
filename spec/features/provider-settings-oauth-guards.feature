@@ -24,7 +24,7 @@ Feature: Provider Settings TUI — OAuth profile guards, dead code cleanup, keyb
 
   # --- Provider list composition ---
   Scenario: Provider list contains only providers with tool calling support
-    Then the provider list contains exactly 16 providers
+    Then the provider list contains exactly 17 providers
     And the following providers are NOT in the list:
       | provider   | reason                  |
       | Ollama     | Use OpenAI API profiles |

@@ -41,6 +41,28 @@ export async function updateFoundation(
     };
   }
 
+  // Fail-fast validation: projectType has its own length-based rule
+  // (freeform 1-30 chars) that must be enforced at write time, BEFORE the
+  // generic empty-content guard. Empty strings are rejected with an
+  // actionable length error instead of the generic "Section content cannot
+  // be empty" message.
+  if (section === 'projectType') {
+    const ptError = validateProjectTypeLength(content);
+    if (ptError) {
+      return { success: false, error: ptError };
+    }
+  }
+
+  // Fail-fast validation: problemImpact must be one of the enum values
+  // (high, medium, low). Reject invalid values at write time with an
+  // actionable error that lists valid values verbatim — no fuzzy matching.
+  if (section === 'problemImpact') {
+    const impactError = validateProblemImpact(content);
+    if (impactError) {
+      return { success: false, error: impactError };
+    }
+  }
+
   if (
     content === undefined ||
     content === null ||
@@ -182,9 +204,9 @@ function updateJsonField(
       return true;
 
     case 'problemImpact':
-      if (!['high', 'medium', 'low'].includes(content)) {
-        return false;
-      }
+      // Enum validation already ran at the entry point of updateFoundation.
+      // By the time we reach here, `content` is guaranteed to be one of
+      // 'high' | 'medium' | 'low'. No additional guard needed.
       foundation.problemSpace = foundation.problemSpace || {};
       foundation.problemSpace.primaryProblem =
         foundation.problemSpace.primaryProblem || {};
@@ -212,6 +234,46 @@ function updateJsonField(
     default:
       return false;
   }
+}
+
+/**
+ * Validate projectType length against the freeform 1-30 character rule.
+ *
+ * Returns an actionable error string when the value is invalid, or null
+ * when the value is acceptable. The error format deliberately includes
+ * both the invalid value and a copy-pasteable fix command so weaker LLMs
+ * (and humans) can recover without reading the full spec.
+ */
+function validateProjectTypeLength(content: string): string | null {
+  if (content === undefined || content === null) {
+    return `Invalid projectType: "" (must be 1-30 characters, got 0). Fix: fspec update-foundation projectType "<short-descriptor>"`;
+  }
+  const length = content.length;
+  if (length === 0) {
+    return `Invalid projectType: "" (must be 1-30 characters, got 0). Fix: fspec update-foundation projectType "<short-descriptor>"`;
+  }
+  if (length > 30) {
+    return `Invalid projectType: too long (must be 1-30 characters, got ${length}). Fix: fspec update-foundation projectType "<short-descriptor>"`;
+  }
+  return null;
+}
+
+/**
+ * Validate problemImpact against the fixed enum (high, medium, low).
+ *
+ * Returns an actionable error string when the value is invalid, or null
+ * when the value is acceptable. The error format lists valid values
+ * verbatim — NO fuzzy matching, NO "did you mean" suggestions.
+ */
+function validateProblemImpact(content: string): string | null {
+  const validValues = ['high', 'medium', 'low'] as const;
+  if (content === undefined || content === null || content.length === 0) {
+    return `Invalid value for problemImpact: "". Valid values: ${validValues.join(', ')}. Fix: fspec update-foundation problemImpact "<valid-value>"`;
+  }
+  if (!validValues.includes(content as (typeof validValues)[number])) {
+    return `Invalid value for problemImpact: "${content}". Valid values: ${validValues.join(', ')}. Fix: fspec update-foundation problemImpact "<valid-value>"`;
+  }
+  return null;
 }
 
 export async function updateFoundationCommand(

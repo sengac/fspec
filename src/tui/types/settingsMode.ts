@@ -38,4 +38,27 @@ export type HookMode =
       authorizeUrl: string;
       pkceVerifier: string;
       codeInput: string;
+    }
+  /**
+   * PROV-054: Step 1 of the GitHub Copilot device flow. The user is
+   * choosing between a github.com deployment and a self-hosted GitHub
+   * Enterprise deployment. `selectedIndex` indexes into ['github.com',
+   * 'enterprise'].
+   */
+  | {
+      type: 'oauth-deployment-type-select';
+      providerId: string;
+      selectedIndex: 0 | 1;
+    }
+  /**
+   * PROV-054: Step 2 of the GitHub Copilot device flow (Enterprise only).
+   * The user is typing the enterprise host. The raw input is held verbatim
+   * in `urlInput` and normalised via `copilotNormalizeEnterpriseDomain`
+   * only at submission time.
+   */
+  | {
+      type: 'oauth-enterprise-url-entry';
+      providerId: string;
+      urlInput: string;
+      validationError?: string;
     };

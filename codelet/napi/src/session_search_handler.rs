@@ -1522,7 +1522,7 @@ mod tests {
     #[test]
     fn test_search_restricts_matches_to_turn_range() {
         // Simulate 50 messages; "compaction" appears at turns 3, 15, and 42
-        let match_indices = vec![3usize, 15, 42];
+        let match_indices = [3usize, 15, 42];
         let all_indices: Vec<usize> = (0..50).collect();
 
         // Apply turn range filter (0..=5)

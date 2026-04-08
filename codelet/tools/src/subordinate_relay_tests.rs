@@ -6,7 +6,12 @@
 //! the parent's relay connection to the dashboard.
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::module_inception
+)]
 mod subordinate_relay_tests {
     use crate::bridge_multiplexed::Service;
     use crate::bridge_relay::{
@@ -43,7 +48,7 @@ mod subordinate_relay_tests {
                 assert_eq!(data["type"], "text");
                 assert_eq!(data["text"], "Hello from subordinate");
             }
-            other => panic!("Expected RelayChunk, got {:?}", other),
+            other => panic!("Expected RelayChunk, got {other:?}"),
         }
     }
 
@@ -67,7 +72,7 @@ mod subordinate_relay_tests {
             OutboundEnvelopeAction::RelayChunk(env) => {
                 assert_eq!(env.session_id.as_deref(), Some("parent-session-xyz"));
             }
-            other => panic!("Expected RelayChunk, got {:?}", other),
+            other => panic!("Expected RelayChunk, got {other:?}"),
         }
     }
 
@@ -206,7 +211,7 @@ mod subordinate_relay_tests {
                 assert_eq!(env.service, Service::Relay);
                 assert_eq!(env.msg_type, "chunk");
             }
-            other => panic!("Expected RelayChunk, got {:?}", other),
+            other => panic!("Expected RelayChunk, got {other:?}"),
         }
     }
 
@@ -283,7 +288,7 @@ mod subordinate_relay_tests {
                 OutboundEnvelopeAction::RelayChunk(env) => {
                     assert_eq!(env.session_id.as_deref(), Some(sub_id.to_string().as_str()));
                 }
-                _ => panic!("Expected RelayChunk for chunk {}", i),
+                _ => panic!("Expected RelayChunk for chunk {i}"),
             }
         }
     }
@@ -445,7 +450,7 @@ mod subordinate_relay_tests {
             OutboundEnvelopeAction::RelayChunk(env) => {
                 assert_eq!(env.session_id.as_deref(), Some(sub_id.to_string().as_str()));
             }
-            other => panic!("Expected RelayChunk, got {:?}", other),
+            other => panic!("Expected RelayChunk, got {other:?}"),
         }
     }
 

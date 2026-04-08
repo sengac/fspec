@@ -49,7 +49,10 @@ impl GeminiProvider {
 
         // Model is REQUIRED via GEMINI_MODEL env var
         let model_name = std::env::var("GEMINI_MODEL").map_err(|_| {
-            ProviderError::config("gemini", "Model is required. Set GEMINI_MODEL environment variable.")
+            ProviderError::config(
+                "gemini",
+                "Model is required. Set GEMINI_MODEL environment variable.",
+            )
         })?;
 
         Self::from_api_key(&api_key, &model_name)
@@ -105,18 +108,24 @@ impl GeminiProvider {
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
         use codelet_tools::facade::{
-            build_gemini_system_prompt, BashToolFacadeWrapper, FacadeToolWrapper,
-            FileToolFacadeWrapper, gemini_bridge_tool, gemini_fspec_tool, GeminiGlobFacade, GeminiGoogleWebSearchFacade,
-            GeminiListDirectoryFacade, GeminiReadFileFacade, GeminiReplaceFacade,
-            GeminiRunShellCommandFacade, GeminiSearchFileContentFacade, GeminiWebFetchFacade,
-            GeminiWriteFileFacade, LsToolFacadeWrapper, SearchToolFacadeWrapper,
+            build_gemini_system_prompt, gemini_bridge_tool, gemini_fspec_tool,
+            BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper, GeminiGlobFacade,
+            GeminiGoogleWebSearchFacade, GeminiListDirectoryFacade, GeminiReadFileFacade,
+            GeminiReplaceFacade, GeminiRunShellCommandFacade, GeminiSearchFileContentFacade,
+            GeminiWebFetchFacade, GeminiWriteFileFacade, LsToolFacadeWrapper,
+            SearchToolFacadeWrapper,
         };
-        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, ConnectMcpTool, SessionSearchTool, GraphSearchTool, InjectSummaryTool, DeepSearchTool, RequestUserInputTool, AgentManagerTool, ScheduleTool};
+        use codelet_tools::{
+            AgentManagerTool, AstGrepRefactorTool, AstGrepTool, ConnectMcpTool, DeepSearchTool,
+            GraphSearchTool, InjectSummaryTool, RequestUserInputTool, ScheduleTool,
+            SessionSearchTool,
+        };
         use std::sync::Arc;
 
         // Create Gemini-specific web search facades (TOOL-001)
         // These provide Gemini-native tool names and flat schemas
-        let google_web_search = FacadeToolWrapper::new(Arc::new(GeminiGoogleWebSearchFacade), session_id);
+        let google_web_search =
+            FacadeToolWrapper::new(Arc::new(GeminiGoogleWebSearchFacade), session_id);
         let web_fetch = FacadeToolWrapper::new(Arc::new(GeminiWebFetchFacade), session_id);
 
         // Create Gemini-specific file operation facades (TOOL-003)
@@ -129,7 +138,8 @@ impl GeminiProvider {
         // Create Gemini-specific bash facade (TOOL-004)
         // Provides Gemini-native tool name: run_shell_command
         // BLOCK-006: Pass session_id for notification emission
-        let run_shell_command = BashToolFacadeWrapper::new(Arc::new(GeminiRunShellCommandFacade), session_id);
+        let run_shell_command =
+            BashToolFacadeWrapper::new(Arc::new(GeminiRunShellCommandFacade), session_id);
 
         // Create Gemini-specific search facades (TOOL-005)
         // Provides Gemini-native tool names: search_file_content, find_files
@@ -141,7 +151,8 @@ impl GeminiProvider {
         // Create Gemini-specific directory listing facade (TOOL-006)
         // Provides Gemini-native tool name: list_directory
         // TOOL-014: Pass session_id for worktree isolation
-        let list_directory = LsToolFacadeWrapper::new(Arc::new(GeminiListDirectoryFacade), session_id);
+        let list_directory =
+            LsToolFacadeWrapper::new(Arc::new(GeminiListDirectoryFacade), session_id);
 
         // Build agent with all tools using rig's builder pattern
         // TOOL-001: Use facade wrappers for web search instead of generic WebSearchTool

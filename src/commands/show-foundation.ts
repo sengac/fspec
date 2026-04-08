@@ -1,5 +1,6 @@
-import { writeFile } from 'fs/promises';
+import { writeFile, readFile, access } from 'fs/promises';
 import type { Command } from 'commander';
+import { join } from 'path';
 import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
 import { ensureFoundationFile } from '../utils/ensure-files';
@@ -10,6 +11,12 @@ interface ShowFoundationOptions {
   format?: 'text' | 'json';
   output?: string;
   cwd?: string;
+  /**
+   * When true, read spec/foundation.json.draft instead of spec/foundation.json.
+   * Used during the discovery workflow to observe the in-progress draft
+   * state without bypassing fspec.
+   */
+  draft?: boolean;
 }
 
 interface ShowFoundationResult {
@@ -42,11 +49,31 @@ export async function showFoundation(
     format = 'text',
     output: outputPath,
     cwd = process.cwd(),
+    draft = false,
   } = options;
 
   try {
-    // Load or create foundation.json using ensureFoundationFile (generic schema v2.0.0)
-    const foundationData: any = await ensureFoundationFile(cwd);
+    // Load draft or final foundation depending on the --draft flag.
+    // When --draft is set we read spec/foundation.json.draft directly
+    // so agents can observe in-progress discovery state without having
+    // to bypass fspec.
+    let foundationData: any;
+    if (draft) {
+      const draftPath = join(cwd, 'spec/foundation.json.draft');
+      try {
+        await access(draftPath);
+      } catch {
+        return {
+          success: false,
+          error: `No draft found at spec/foundation.json.draft. Run \`fspec discover-foundation\` to create one.`,
+        };
+      }
+      const draftContent = await readFile(draftPath, 'utf-8');
+      foundationData = JSON.parse(draftContent);
+    } else {
+      // Load or create foundation.json using ensureFoundationFile (generic schema v2.0.0)
+      foundationData = await ensureFoundationFile(cwd);
+    }
 
     // Get specific field or entire foundation
     let displayData: any;
@@ -191,6 +218,7 @@ export async function showFoundationCommand(
     section?: string;
     format?: string;
     output?: string;
+    draft?: boolean;
   }
 ): Promise<void> {
   try {
@@ -198,6 +226,7 @@ export async function showFoundationCommand(
       section: section || options?.section,
       format: (options?.format as 'text' | 'json') || 'text',
       output: options?.output,
+      draft: options?.draft === true,
     });
 
     if (!result.success) {
@@ -230,6 +259,11 @@ export function registerShowFoundationCommand(program: Command): void {
       'text'
     )
     .option('--output <file>', 'Write output to file')
+    .option(
+      '--draft',
+      'Read foundation.json.draft (discovery draft) instead of foundation.json',
+      false
+    )
     .option('--list-sections', 'List section names only', false)
     .option('--line-numbers', 'Show line numbers', false)
     .action(showFoundationCommand);

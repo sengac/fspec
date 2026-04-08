@@ -1,0 +1,512 @@
+{
+  "scenarios": [
+    {
+      "name": "Profile a runaway hot loop within a 10-second window",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "28-78",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/session.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect tokio task leak via runtime metrics during the profile window",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "84-120",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/session.rs",
+              "lines": [
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter scopes by label_prefix to narrow diagnosis to one module",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "126-167",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/registry.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject overlapping profile sessions with profile_session_active error",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "173-214",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/session.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Diagnose channel backpressure via lagged_during_window count",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "220-261",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/channels.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invoke profile action via rig::tool::Tool from a subordinate LLM agent",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "267-316",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/agent_manager/types.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Validate duration_secs is within the allowed 1 to 60 second range",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "322-370",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/session.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Counters reset to zero at the start of each profile session",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "376-412",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/registry.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Steady-state instrumentation overhead is sub-1ns when no profile session is active",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/profile/tests.rs",
+          "lines": "418-452",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/profile/scope.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/profile/tests.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/profile/session.rs",
+      "codelet/tools/src/profile/registry.rs",
+      "codelet/tools/src/profile/channels.rs",
+      "codelet/tools/src/agent_manager/types.rs",
+      "codelet/tools/src/profile/scope.rs"
+    ],
+    "totalLinesCovered": 733
+  }
+}

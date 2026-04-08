@@ -11,8 +11,7 @@ use rand::Rng;
 use sha2::{Digest, Sha256};
 
 /// Characters allowed in PKCE code verifier per RFC 7636 Section 4.1
-const PKCE_CHARSET: &[u8] =
-    b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+const PKCE_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
 
 /// PKCE code challenge and verifier pair
 #[derive(Debug, Clone)]

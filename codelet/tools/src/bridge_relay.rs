@@ -145,6 +145,53 @@ static OUTBOUND_CONTROL_SENDERS: once_cell::sync::Lazy<
     RwLock<HashMap<Uuid, Vec<OutboundControlTx>>>,
 > = once_cell::sync::Lazy::new(|| RwLock::new(HashMap::new()));
 
+// ── SESS-017: Session creator + PTY registry providers ─────────────────────
+
+/// Callback that spawns a new codelet session and returns the new session_id.
+///
+/// SESS-017: Registered by the NAPI layer (`init_bridge_session_creator()`).
+/// The bridge calls this when a `session:create` envelope arrives so the
+/// dashboard's "+ > New fspec Session" click can actually spawn a session.
+pub type SessionCreator =
+    Arc<dyn Fn() -> Result<String, String> + Send + Sync>;
+
+/// Global session creator. Set once at startup by the NAPI layer.
+static SESSION_CREATOR: RwLock<Option<SessionCreator>> = RwLock::new(None);
+
+/// Register the global session creator.
+pub fn set_session_creator(creator: Option<SessionCreator>) {
+    if let Ok(mut guard) = SESSION_CREATOR.write() {
+        *guard = creator;
+    }
+}
+
+/// Query the registered session creator (returns a clone of the Arc).
+fn query_session_creator() -> Option<SessionCreator> {
+    SESSION_CREATOR
+        .read()
+        .ok()
+        .and_then(|guard| guard.clone())
+}
+
+/// Global PTY registry. Set once at startup so the bridge can spawn
+/// PTYs in response to terminal:create envelopes (SESS-017 / FIX 2).
+static PTY_REGISTRY: RwLock<Option<Arc<crate::PtyRegistry>>> = RwLock::new(None);
+
+/// Register the global PTY registry.
+pub fn set_pty_registry(registry: Option<Arc<crate::PtyRegistry>>) {
+    if let Ok(mut guard) = PTY_REGISTRY.write() {
+        *guard = registry;
+    }
+}
+
+/// Query the registered PTY registry.
+fn query_pty_registry() -> Option<Arc<crate::PtyRegistry>> {
+    PTY_REGISTRY
+        .read()
+        .ok()
+        .and_then(|guard| guard.clone())
+}
+
 /// Register an outbound control sender for a session's bridge connection.
 fn register_outbound_control(session_id: Uuid, tx: OutboundControlTx) {
     if let Ok(mut guard) = OUTBOUND_CONTROL_SENDERS.write() {
@@ -455,11 +502,130 @@ pub async fn handle_multiplexed_inbound(
             tracing::info!("Auth response: success={}, data={:?}", success, data);
             Ok(None)
         }
-        InboundAction::TerminalCreate { .. }
-        | InboundAction::TerminalInput { .. }
+        InboundAction::SessionCreate { request_id } => {
+            // SESS-017 FIX 1: Invoke the registered SessionCreator and respond
+            // with a session:created envelope so the dashboard's "+ > New fspec
+            // Session" click can actually create a session.
+            let metadata = get_instance_metadata();
+            let instance_id = metadata.name;
+
+            match query_session_creator() {
+                Some(creator) => match creator() {
+                    Ok(new_session_id) => {
+                        tracing::info!(
+                            "session:create handled — new session {}",
+                            new_session_id
+                        );
+                        Ok(Some(Envelope::session_created(
+                            &instance_id,
+                            &request_id,
+                            &new_session_id,
+                        )))
+                    }
+                    Err(e) => {
+                        tracing::warn!(
+                            "session:create failed: {} — sending error envelope",
+                            e
+                        );
+                        // Reply with a session:created envelope carrying empty
+                        // session_id + an error field so the dashboard can
+                        // surface the failure rather than hang forever.
+                        Ok(Some(Envelope {
+                            service: Service::Session,
+                            msg_type: "created".to_string(),
+                            instance_id: Some(instance_id),
+                            session_id: None,
+                            terminal_id: None,
+                            request_id: Some(request_id),
+                            data: Some(serde_json::json!({
+                                "session_id": "",
+                                "error": e,
+                            })),
+                        }))
+                    }
+                },
+                None => {
+                    tracing::warn!(
+                        "session:create received but no SessionCreator registered"
+                    );
+                    Ok(Some(Envelope {
+                        service: Service::Session,
+                        msg_type: "created".to_string(),
+                        instance_id: Some(instance_id),
+                        session_id: None,
+                        terminal_id: None,
+                        request_id: Some(request_id),
+                        data: Some(serde_json::json!({
+                            "session_id": "",
+                            "error": "No SessionCreator registered on bridge",
+                        })),
+                    }))
+                }
+            }
+        }
+        InboundAction::TerminalCreate { request_id, cols, rows, shell, cwd } => {
+            // SESS-017 FIX 2: Spawn a PTY via the registered PtyRegistry and
+            // respond with a terminal:created envelope. Without this the
+            // dashboard's "+ > New Terminal" click hangs forever.
+            let metadata = get_instance_metadata();
+            let instance_id = metadata.name;
+
+            match query_pty_registry() {
+                Some(registry) => {
+                    let opts = crate::CreateTerminalOpts { cols, rows, shell, cwd };
+                    match crate::create_terminal(&registry, &opts) {
+                        Ok((terminal_id, _entry)) => {
+                            tracing::info!(
+                                "terminal:create handled — new terminal {}",
+                                terminal_id
+                            );
+                            Ok(Some(Envelope::terminal_created(
+                                &instance_id,
+                                &request_id,
+                                &terminal_id,
+                            )))
+                        }
+                        Err(e) => {
+                            tracing::warn!("terminal:create failed: {}", e);
+                            Ok(Some(Envelope {
+                                service: Service::Terminal,
+                                msg_type: "created".to_string(),
+                                instance_id: Some(instance_id),
+                                session_id: None,
+                                terminal_id: None,
+                                request_id: Some(request_id),
+                                data: Some(serde_json::json!({
+                                    "terminal_id": "",
+                                    "error": e,
+                                })),
+                            }))
+                        }
+                    }
+                }
+                None => {
+                    tracing::warn!(
+                        "terminal:create received but no PtyRegistry registered"
+                    );
+                    Ok(Some(Envelope {
+                        service: Service::Terminal,
+                        msg_type: "created".to_string(),
+                        instance_id: Some(instance_id),
+                        session_id: None,
+                        terminal_id: None,
+                        request_id: Some(request_id),
+                        data: Some(serde_json::json!({
+                            "terminal_id": "",
+                            "error": "No PtyRegistry registered on bridge",
+                        })),
+                    }))
+                }
+            }
+        }
+        InboundAction::TerminalInput { .. }
         | InboundAction::TerminalResize { .. }
         | InboundAction::TerminalDestroy { .. } => {
-            // Terminal actions handled by bridge_pty — not dispatched here
+            // Other terminal actions still require PTY-side wiring beyond
+            // the scope of SESS-017 (which only fixes the create handshake).
             tracing::warn!("Terminal action received but not yet wired to PtyRegistry");
             Ok(None)
         }
@@ -508,6 +674,10 @@ async fn relay_loop(
     let mut reconnect_delay = Duration::from_secs(INITIAL_RECONNECT_DELAY_SECS);
 
     loop {
+        // AMGR-017: instrumented hot-loop marker — sub-1ns cost when no profile session is active.
+        // This wraps the reconnect loop; a high call_count during a profile window indicates the
+        // bridge is flapping reconnect attempts.
+        crate::profile_scope!("relay_loop::reconnect_iter");
         match connect_and_relay(
             session_id,
             &url,
@@ -630,6 +800,15 @@ async fn connect_and_relay(
     let inbound_control_handler = control_handler.clone();
     let inbound_command_emitter = command_emitter.clone();
     let inbound_pending_commands = pending_commands.clone();
+    // SESS-017: Inbound responses (e.g. session:created, terminal:created,
+    // pong) are forwarded to the outbound write loop via control_tx.
+    let inbound_response_tx = {
+        let guard = OUTBOUND_CONTROL_SENDERS.read().ok();
+        guard
+            .as_ref()
+            .and_then(|g| g.get(&session_id))
+            .and_then(|v| v.last().cloned())
+    };
     let inbound_handle = tokio::spawn(async move {
         while let Some(msg_result) = ws_read.next().await {
             match msg_result {
@@ -645,13 +824,20 @@ async fn connect_and_relay(
                     .await
                     {
                         Ok(Some(response_env)) => {
-                            // Need to send response (e.g., pong) — can't write from
-                            // inbound task since ws_write is in the outbound loop.
-                            // For now, log. Real pong needs channel to outbound.
-                            tracing::debug!(
-                                "Inbound produced response: {:?}",
-                                response_env.msg_type
-                            );
+                            // SESS-017: Forward the response envelope to the
+                            // outbound writer via the control channel.
+                            if let Some(tx) = &inbound_response_tx {
+                                if let Err(e) = tx.send(response_env) {
+                                    tracing::warn!(
+                                        "Failed to forward inbound response: {}",
+                                        e
+                                    );
+                                }
+                            } else {
+                                tracing::warn!(
+                                    "Inbound produced response but no outbound channel available"
+                                );
+                            }
                         }
                         Ok(None) => {}
                         Err(e) => {
@@ -792,7 +978,7 @@ async fn update_connection_state(session_id: Uuid, url: &str, state: BridgeConne
 // ── Tests ───────────────────────────────────────────────────────────────────
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -840,7 +1026,7 @@ mod tests {
                 assert_eq!(env.instance_id.as_deref(), Some("proj"));
                 assert_eq!(env.session_id.as_deref(), Some("s1"));
             }
-            other => panic!("Expected RelayChunk, got {:?}", other),
+            other => panic!("Expected RelayChunk, got {other:?}"),
         }
     }
 
@@ -872,7 +1058,7 @@ mod tests {
                 assert_eq!(env.service, Service::Fspec);
                 assert_eq!(env.request_id.as_deref(), Some("r1"));
             }
-            other => panic!("Expected CommandResponse, got {:?}", other),
+            other => panic!("Expected CommandResponse, got {other:?}"),
         }
     }
 
@@ -902,7 +1088,625 @@ mod tests {
                 assert_eq!(env.service, Service::System);
                 assert_eq!(env.msg_type, "pong");
             }
-            other => panic!("Expected pong envelope, got {:?}", other),
+            other => panic!("Expected pong envelope, got {other:?}"),
         }
+    }
+
+    // =========================================================================
+    // Feature: spec/features/session-tab-creation-bridge-handlers.feature
+    //
+    // Scenario: Bridge handles session:create envelope and responds with session:created
+    // =========================================================================
+
+    /// @step Given the fspec bridge has a registered SessionCreator callback
+    /// @step And a session:create envelope arrives with request_id "req-1" and instance_id "proj"
+    /// @step When the bridge routes the inbound envelope
+    /// @step Then the route should produce a SessionCreate action with request_id "req-1"
+    /// @step And the SessionCreator callback should be invoked
+    /// @step And the bridge should send back a session:created envelope on the outbound channel
+    /// @step And the response envelope should contain the new session_id
+    /// @step And the response envelope should carry request_id "req-1"
+    #[tokio::test]
+    async fn test_handle_inbound_session_create_invokes_creator_and_responds() {
+        // @step Given the fspec bridge has a registered SessionCreator callback
+        let invoked = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let invoked_clone = invoked.clone();
+        let creator: SessionCreator = Arc::new(move || {
+            invoked_clone.store(true, std::sync::atomic::Ordering::SeqCst);
+            Ok("sess-new-123".to_string())
+        });
+        set_session_creator(Some(creator));
+
+        // @step And a session:create envelope arrives with request_id "req-1" and instance_id "proj"
+        let text = r#"{
+            "service": "session",
+            "type": "create",
+            "instance_id": "proj",
+            "request_id": "req-1"
+        }"#;
+
+        let injector: InputInjector = Arc::new(|_| {});
+
+        // @step When the bridge routes the inbound envelope
+        let result = handle_multiplexed_inbound(
+            text,
+            Uuid::new_v4(),
+            injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+
+        // @step And the SessionCreator callback should be invoked
+        assert!(
+            invoked.load(std::sync::atomic::Ordering::SeqCst),
+            "SessionCreator should have been invoked"
+        );
+
+        // @step And the bridge should send back a session:created envelope on the outbound channel
+        // @step And the response envelope should contain the new session_id
+        // @step And the response envelope should carry request_id "req-1"
+        match result {
+            Ok(Some(env)) => {
+                assert_eq!(env.service, Service::Session);
+                assert_eq!(env.msg_type, "created");
+                assert_eq!(env.request_id.as_deref(), Some("req-1"));
+                let data = env.data.as_ref().expect("data");
+                assert_eq!(data["session_id"], "sess-new-123");
+            }
+            other => panic!("Expected session:created response, got {other:?}"),
+        }
+
+        // Cleanup global state
+        set_session_creator(None);
+    }
+
+    // =========================================================================
+    // Scenario: Bridge handles terminal:create envelope and spawns PTY
+    // =========================================================================
+
+    /// @step Given the fspec bridge has a registered PtyRegistry
+    /// @step And a terminal:create envelope arrives with request_id "req-2", cols 80, rows 24
+    /// @step When the bridge routes the inbound envelope
+    /// @step Then a TerminalCreate action should be produced with request_id "req-2"
+    /// @step And the bridge should spawn a PTY via the registry
+    /// @step And the bridge should send back a terminal:created envelope on the outbound channel
+    /// @step And the response envelope should contain the spawned terminal_id
+    /// @step And the response envelope should carry request_id "req-2"
+    #[tokio::test]
+    async fn test_handle_inbound_terminal_create_spawns_pty_and_responds() {
+        // @step Given the fspec bridge has a registered PtyRegistry
+        let registry = Arc::new(crate::PtyRegistry::new());
+        set_pty_registry(Some(registry.clone()));
+
+        // @step And a terminal:create envelope arrives with request_id "req-2", cols 80, rows 24
+        let text = r#"{
+            "service": "terminal",
+            "type": "create",
+            "instance_id": "proj",
+            "request_id": "req-2",
+            "data": {"cols": 80, "rows": 24}
+        }"#;
+
+        let injector: InputInjector = Arc::new(|_| {});
+
+        // @step When the bridge routes the inbound envelope
+        let result = handle_multiplexed_inbound(
+            text,
+            Uuid::new_v4(),
+            injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+
+        // @step And the bridge should spawn a PTY via the registry
+        assert!(!registry.is_empty(), "PtyRegistry should contain spawned PTY");
+
+        // @step And the bridge should send back a terminal:created envelope on the outbound channel
+        // @step And the response envelope should contain the spawned terminal_id
+        // @step And the response envelope should carry request_id "req-2"
+        match result {
+            Ok(Some(env)) => {
+                assert_eq!(env.service, Service::Terminal);
+                assert_eq!(env.msg_type, "created");
+                assert_eq!(env.request_id.as_deref(), Some("req-2"));
+                let term_id = env.terminal_id.as_deref().expect("terminal_id");
+                assert!(!term_id.is_empty(), "terminal_id must be non-empty");
+                assert!(
+                    registry.get(term_id).is_some(),
+                    "registry must contain the new terminal"
+                );
+            }
+            other => panic!("Expected terminal:created response, got {other:?}"),
+        }
+
+        // Cleanup
+        registry.shutdown_all().await;
+        set_pty_registry(None);
+    }
+
+    // =========================================================================
+    // Feature: spec/features/bridge-multi-session-routing-and-terminal-io.feature
+    //
+    // SESS-018: Multi-session routing + terminal I/O wiring
+    // =========================================================================
+
+    /// Tests for SESS-018 must verify that session:input is routed to the
+    /// correct injector based on the envelope's session_id, not the closure
+    /// parameter. These tests are the red phase — they fail against the
+    /// current implementation which discards session_id and always uses the
+    /// fallback closure.
+
+    /// @step Given the dashboard is connected to the fspec instance via the relay
+    /// @step And the user has an existing fspec session tab #1
+    /// @step When the user clicks the + dropdown and selects "New fspec Session"
+    /// @step Then the bridge should spawn a new codelet session with a unique session_id
+    /// @step And the bridge should register a BridgeSessionContext for the new session_id
+    /// @step And the bridge should send a session:created response carrying the new session_id
+    /// @step And a metadataUpdate envelope should list both sessions
+    /// @step And a new tab #2 should appear in the dashboard session tab bar
+    /// @step When the user activates tab #2 and sends the message "what is 4 + 3?"
+    /// @step Then the bridge should route the session:input envelope to the new session's input_injector
+    /// @step And the new session's agent_loop should receive the message
+    /// @step And the response chunks should stream only into tab #2
+    /// @step And tab #1 should remain unchanged
+    #[tokio::test]
+    async fn test_sess018_session_input_routes_by_envelope_session_id() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        // Given two registered injectors for two different session ids
+        let supervisor_id = Uuid::new_v4();
+        let new_session_id = Uuid::new_v4();
+
+        let supervisor_hits = Arc::new(AtomicUsize::new(0));
+        let new_hits = Arc::new(AtomicUsize::new(0));
+
+        // Supervisor injector (fallback passed to handle_multiplexed_inbound)
+        let supervisor_hits_clone = supervisor_hits.clone();
+        let supervisor_injector: InputInjector = Arc::new(move |_input: InjectedInput| {
+            supervisor_hits_clone.fetch_add(1, Ordering::SeqCst);
+        });
+
+        // New session injector (registered via BRIDGE_SESSION_CONTEXTS)
+        let new_hits_clone = new_hits.clone();
+        let new_injector: InputInjector = Arc::new(move |_input: InjectedInput| {
+            new_hits_clone.fetch_add(1, Ordering::SeqCst);
+        });
+
+        // Register a BridgeSessionContext for the new session
+        // A dummy broadcast_rx_factory is sufficient for routing tests
+        let (_dummy_tx, _dummy_rx) = tokio::sync::broadcast::channel::<serde_json::Value>(1);
+        let dummy_tx_for_factory = _dummy_tx.clone();
+        let broadcast_rx_factory: crate::BroadcastReceiverFactory =
+            Arc::new(move || dummy_tx_for_factory.subscribe());
+        crate::set_bridge_session_context(
+            new_session_id,
+            broadcast_rx_factory,
+            new_injector,
+            None,
+            None,
+        );
+
+        // When a session:input envelope targets the NEW session
+        let text = format!(
+            r#"{{"service":"session","type":"input","session_id":"{}","data":{{"message":"what is 4 + 3?"}}}}"#,
+            new_session_id
+        );
+        let result = handle_multiplexed_inbound(
+            &text,
+            supervisor_id,
+            supervisor_injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+
+        assert!(result.is_ok(), "handle_multiplexed_inbound must succeed");
+
+        // Then the new session's injector must be called — NOT the supervisor's
+        assert_eq!(
+            new_hits.load(Ordering::SeqCst),
+            1,
+            "new session injector should receive the input"
+        );
+        assert_eq!(
+            supervisor_hits.load(Ordering::SeqCst),
+            0,
+            "supervisor injector must NOT receive input targeted at another session"
+        );
+
+        crate::remove_bridge_session_context(new_session_id);
+    }
+
+    /// @step Given the dashboard has the original supervisor tab #1 and a newly-created tab #2
+    /// @step When the user sends "are you there?" in tab #1
+    /// @step Then the bridge should route the session:input envelope to the supervisor's input_injector
+    /// @step And the supervisor session should receive the message and respond
+    /// @step And the response should stream only into tab #1
+    /// @step And tab #2 should remain untouched
+    #[tokio::test]
+    async fn test_sess018_session_input_without_context_falls_back_to_parameter_injector() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let supervisor_id = Uuid::new_v4();
+        let supervisor_hits = Arc::new(AtomicUsize::new(0));
+        let supervisor_hits_clone = supervisor_hits.clone();
+        let supervisor_injector: InputInjector = Arc::new(move |_input: InjectedInput| {
+            supervisor_hits_clone.fetch_add(1, Ordering::SeqCst);
+        });
+
+        // No BridgeSessionContext registered for this session_id
+        let unregistered_sid = Uuid::new_v4();
+        let text = format!(
+            r#"{{"service":"session","type":"input","session_id":"{}","data":{{"message":"hi"}}}}"#,
+            unregistered_sid
+        );
+        let result = handle_multiplexed_inbound(
+            &text,
+            supervisor_id,
+            supervisor_injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+        assert!(result.is_ok());
+
+        // Fallback to the parameter injector
+        assert_eq!(
+            supervisor_hits.load(Ordering::SeqCst),
+            1,
+            "fallback injector must be invoked when no per-session context exists"
+        );
+    }
+
+    /// @step Given the dashboard has two active fspec session tabs #1 and #2
+    /// @step And tab #2's agent is currently generating a response
+    /// @step When the user clicks the Interrupt button on tab #2
+    /// @step Then the bridge should receive a session:control envelope with session_id of tab #2
+    /// @step And the bridge should look up the BridgeSessionContext for tab #2's session_id
+    /// @step And the bridge should invoke that context's control_handler with action "interrupt"
+    /// @step And only tab #2's session should stop generating
+    /// @step And tab #1 should continue its response uninterrupted
+    #[tokio::test]
+    async fn test_sess018_session_control_routes_by_envelope_session_id() {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+
+        let supervisor_id = Uuid::new_v4();
+        let new_session_id = Uuid::new_v4();
+
+        let supervisor_hits = Arc::new(AtomicUsize::new(0));
+        let new_hits = Arc::new(AtomicUsize::new(0));
+
+        let supervisor_hits_clone = supervisor_hits.clone();
+        let supervisor_handler: ControlHandler =
+            Arc::new(move |_action: &str, _response: Option<&str>| {
+                supervisor_hits_clone.fetch_add(1, Ordering::SeqCst);
+            });
+
+        let new_hits_clone = new_hits.clone();
+        let new_handler: ControlHandler =
+            Arc::new(move |_action: &str, _response: Option<&str>| {
+                new_hits_clone.fetch_add(1, Ordering::SeqCst);
+            });
+
+        // Register context for new session with its own control handler
+        let (_dummy_tx, _dummy_rx) = tokio::sync::broadcast::channel::<serde_json::Value>(1);
+        let dummy_tx_for_factory = _dummy_tx.clone();
+        let broadcast_rx_factory: crate::BroadcastReceiverFactory =
+            Arc::new(move || dummy_tx_for_factory.subscribe());
+        let injector: InputInjector = Arc::new(|_| {});
+        crate::set_bridge_session_context(
+            new_session_id,
+            broadcast_rx_factory,
+            injector,
+            Some(new_handler),
+            None,
+        );
+
+        let text = format!(
+            r#"{{"service":"session","type":"control","session_id":"{}","data":{{"action":"interrupt"}}}}"#,
+            new_session_id
+        );
+        let fallback_injector: InputInjector = Arc::new(|_| {});
+        let result = handle_multiplexed_inbound(
+            &text,
+            supervisor_id,
+            fallback_injector,
+            Some(supervisor_handler),
+            None,
+            None,
+        )
+        .await;
+        assert!(result.is_ok());
+
+        assert_eq!(
+            new_hits.load(Ordering::SeqCst),
+            1,
+            "new session control handler should receive the interrupt"
+        );
+        assert_eq!(
+            supervisor_hits.load(Ordering::SeqCst),
+            0,
+            "supervisor control handler must NOT be invoked for another session's interrupt"
+        );
+
+        crate::remove_bridge_session_context(new_session_id);
+    }
+
+    /// @step Given a Terminal tab is open with a live shell prompt
+    /// @step When the user types "ls" and presses Enter
+    /// @step Then the dashboard should send a terminal:input envelope with base64-encoded "ls\n"
+    /// @step And the bridge should decode the base64 payload
+    /// @step And the bridge should invoke PtyRegistry::write_terminal_input with the decoded bytes
+    /// @step And the shell should execute ls and print the directory listing
+    /// @step And the directory listing should stream back as terminal:data envelopes
+    /// @step And the output should render inside the Terminal tab
+    #[tokio::test]
+    async fn test_sess018_terminal_input_writes_to_pty() {
+        use base64::Engine;
+        use std::io::Read;
+        use std::time::Duration;
+
+        // Given a registered PtyRegistry with one active terminal
+        let registry = Arc::new(crate::PtyRegistry::new());
+        set_pty_registry(Some(registry.clone()));
+
+        let (term_id, entry) = crate::create_terminal(
+            &registry,
+            &crate::CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        )
+        .expect("create terminal");
+
+        // Clone the reader so we can verify the written bytes hit the PTY
+        // (the shell echoes typed characters back on its output stream).
+        let reader = {
+            let master = entry.master.lock().await;
+            master.try_clone_reader().expect("clone reader")
+        };
+
+        // When a terminal:input envelope arrives with a sentinel string
+        let sentinel = "echo SESS018_SENTINEL_OUTPUT\n";
+        let b64 = base64::engine::general_purpose::STANDARD.encode(sentinel);
+        let text = format!(
+            r#"{{"service":"terminal","type":"input","terminal_id":"{}","data":{{"base64":"{}"}}}}"#,
+            term_id, b64
+        );
+
+        let injector: InputInjector = Arc::new(|_| {});
+        let result = handle_multiplexed_inbound(
+            &text,
+            Uuid::new_v4(),
+            injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+        assert!(
+            result.is_ok(),
+            "terminal:input must dispatch cleanly, got: {:?}",
+            result
+        );
+
+        // Then — and this is the critical assertion — the sentinel bytes
+        // must actually have been written to the PTY. We verify this by
+        // reading from the cloned reader: a working shell echoes typed
+        // characters and prints the result of `echo`. If the handler is
+        // still the unwired `Ok(None)` stub, nothing is written and the
+        // reader will block until the timeout.
+        let saw_sentinel = tokio::task::spawn_blocking(move || {
+            let mut reader = reader;
+            let mut accumulated = String::new();
+            // Poll-read for up to ~2 seconds
+            let deadline = std::time::Instant::now() + Duration::from_secs(2);
+            let mut buf = [0u8; 4096];
+            while std::time::Instant::now() < deadline {
+                match reader.read(&mut buf) {
+                    Ok(0) => break,
+                    Ok(n) => {
+                        accumulated.push_str(&String::from_utf8_lossy(&buf[..n]));
+                        if accumulated.contains("SESS018_SENTINEL_OUTPUT") {
+                            return true;
+                        }
+                    }
+                    Err(_) => break,
+                }
+            }
+            accumulated.contains("SESS018_SENTINEL_OUTPUT")
+        })
+        .await
+        .unwrap_or(false);
+
+        assert!(
+            saw_sentinel,
+            "expected PTY output to contain the sentinel — this proves terminal:input was actually written to the shell's stdin"
+        );
+
+        registry.shutdown_all().await;
+        set_pty_registry(None);
+    }
+
+    /// @step Given a Terminal tab is open with cols=80 rows=24
+    /// @step When the user resizes the browser pane so xterm.js fits to cols=120 rows=40
+    /// @step Then the dashboard should send a terminal:resize envelope with cols=120 rows=40
+    /// @step And the bridge should invoke PtyRegistry::resize_terminal with the new dimensions
+    /// @step And the shell should be notified via SIGWINCH
+    /// @step And running "stty size" inside the shell should report "40 120"
+    #[tokio::test]
+    async fn test_sess018_terminal_resize_updates_pty_size() {
+        let registry = Arc::new(crate::PtyRegistry::new());
+        set_pty_registry(Some(registry.clone()));
+
+        let (term_id, entry) = crate::create_terminal(
+            &registry,
+            &crate::CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        )
+        .expect("create terminal");
+
+        let text = format!(
+            r#"{{"service":"terminal","type":"resize","terminal_id":"{}","data":{{"cols":120,"rows":40}}}}"#,
+            term_id
+        );
+        let injector: InputInjector = Arc::new(|_| {});
+        let result = handle_multiplexed_inbound(
+            &text,
+            Uuid::new_v4(),
+            injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+        assert!(result.is_ok(), "terminal:resize must succeed");
+
+        let size = entry.size.lock().await;
+        assert_eq!(size.cols, 120, "PTY cols should be updated to 120");
+        assert_eq!(size.rows, 40, "PTY rows should be updated to 40");
+        drop(size);
+
+        registry.shutdown_all().await;
+        set_pty_registry(None);
+    }
+
+    /// @step Given a Terminal tab is open with a running shell
+    /// @step When the user clicks the X button on the Terminal tab
+    /// @step Then the dashboard should send a terminal:destroy envelope with a request_id
+    /// @step And the bridge should invoke PtyRegistry::destroy_terminal
+    /// @step And the shell process should be killed
+    /// @step And the terminal should be removed from the PtyRegistry
+    /// @step And the bridge should reply with a terminal:destroyed envelope carrying the same request_id
+    #[tokio::test]
+    async fn test_sess018_terminal_destroy_removes_and_responds() {
+        let registry = Arc::new(crate::PtyRegistry::new());
+        set_pty_registry(Some(registry.clone()));
+
+        let (term_id, _entry) = crate::create_terminal(
+            &registry,
+            &crate::CreateTerminalOpts {
+                cols: 80,
+                rows: 24,
+                shell: None,
+                cwd: Some("/tmp".to_string()),
+            },
+        )
+        .expect("create terminal");
+
+        assert_eq!(registry.len(), 1);
+
+        let text = format!(
+            r#"{{"service":"terminal","type":"destroy","terminal_id":"{}","request_id":"destroy-1"}}"#,
+            term_id
+        );
+        let injector: InputInjector = Arc::new(|_| {});
+        let result = handle_multiplexed_inbound(
+            &text,
+            Uuid::new_v4(),
+            injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+
+        match result {
+            Ok(Some(env)) => {
+                assert_eq!(env.service, Service::Terminal);
+                assert_eq!(env.msg_type, "destroyed");
+                assert_eq!(env.request_id.as_deref(), Some("destroy-1"));
+                assert_eq!(env.terminal_id.as_deref(), Some(term_id.as_str()));
+            }
+            other => panic!("Expected terminal:destroyed response, got {other:?}"),
+        }
+
+        assert_eq!(registry.len(), 0, "PTY should have been removed");
+        set_pty_registry(None);
+    }
+
+    /// @step Given the dashboard is connected to the fspec instance via the relay
+    /// @step When the user clicks the + dropdown and selects "New Terminal"
+    /// @step Then the bridge should spawn a new PTY via PtyRegistry::create_terminal
+    /// @step And the bridge should send a terminal:created response carrying the new terminal_id
+    /// @step And the bridge should spawn a background reader task on the PTY master
+    /// @step And the background reader task should forward each chunk of PTY output as a terminal:data envelope
+    /// @step And the dashboard should receive the terminal:data envelopes and write them to xterm.js
+    /// @step And a live shell prompt should render inside the new Terminal tab
+    #[tokio::test]
+    async fn test_sess018_terminal_create_spawns_reader_emitting_data_envelopes() {
+        use std::time::Duration;
+        use tokio::sync::mpsc;
+
+        // Given a registered OutboundControlTx that the reader task will drain
+        let (outbound_tx, mut outbound_rx) = mpsc::unbounded_channel::<Envelope>();
+        // SESS-018: register the outbound tx under a synthesized connection owner
+        // so the handler can look it up via OUTBOUND_CONTROL_SENDERS (same plumbing
+        // real connections use at connect_and_relay:792).
+        let connection_owner = Uuid::new_v4();
+        register_outbound_control(connection_owner, outbound_tx);
+
+        let registry = Arc::new(crate::PtyRegistry::new());
+        set_pty_registry(Some(registry.clone()));
+
+        // When a terminal:create envelope arrives
+        let text = r#"{
+            "service": "terminal",
+            "type": "create",
+            "instance_id": "proj",
+            "request_id": "create-1",
+            "data": {"cols": 80, "rows": 24}
+        }"#;
+        let injector: InputInjector = Arc::new(|_| {});
+        let result = handle_multiplexed_inbound(
+            text,
+            connection_owner,
+            injector,
+            None,
+            None,
+            None,
+        )
+        .await;
+
+        match result {
+            Ok(Some(env)) => assert_eq!(env.msg_type, "created"),
+            other => panic!("Expected terminal:created, got {other:?}"),
+        }
+
+        // Then the reader task must push at least one terminal:data envelope
+        // Most shells emit a prompt (e.g. "$ ") on startup — that's our signal.
+        let mut saw_data = false;
+        for _ in 0..20 {
+            match tokio::time::timeout(Duration::from_millis(250), outbound_rx.recv()).await {
+                Ok(Some(env)) => {
+                    if env.service == Service::Terminal && env.msg_type == "data" {
+                        saw_data = true;
+                        break;
+                    }
+                }
+                Ok(None) => break,
+                Err(_) => continue,
+            }
+        }
+        assert!(
+            saw_data,
+            "expected at least one terminal:data envelope from the spawned PTY reader"
+        );
+
+        registry.shutdown_all().await;
+        set_pty_registry(None);
+        remove_outbound_controls(connection_owner);
     }
 }

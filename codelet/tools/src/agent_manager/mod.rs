@@ -83,7 +83,8 @@ impl Tool for AgentManagerTool {
                 "'close' (terminate a subordinate session — spawner only), ",
                 "'message' (send a message to any session by ID, with optional context references), ",
                 "'set_role' (set or replace the system prompt overlay on a session), ",
-                "'await_idle' (block until one or more sessions become idle — use instead of polling get_status with sleep). ",
+                "'await_idle' (block until one or more sessions become idle — use instead of polling get_status with sleep), ",
+                "'profile' (run a time-bounded runtime profiling window — BLOCKS for duration_secs seconds, default 10). ",
                 "Spawned sessions inherit the spawner's model and start idle. ",
                 "Use 'spawn' to create workers, send them tasks via 'message', ",
                 "monitor with 'list'/'get_status', and clean up with 'close'. ",
@@ -97,7 +98,7 @@ impl Tool for AgentManagerTool {
                 "properties": {
                     "action": {
                         "type": "string",
-                        "enum": ["spawn", "list", "get_status", "close", "message", "set_role", "await_idle"],
+                        "enum": ["spawn", "list", "get_status", "close", "message", "set_role", "await_idle", "profile"],
                         "description": "The action to perform"
                     },
                     "role": {
@@ -150,6 +151,26 @@ impl Tool for AgentManagerTool {
                         "type": ["integer", "null"],
                         "description": "Optional maximum wait time in seconds for await_idle. If omitted, waits indefinitely until all sessions are idle.",
                         "minimum": 0
+                    },
+                    "duration_secs": {
+                        "type": ["integer", "null"],
+                        "description": "For 'profile' action: length of the profiling window in seconds (1..=60, default 10). The tool call BLOCKS for this entire duration — callers must expect the wait and not interpret it as a hang.",
+                        "minimum": 1,
+                        "maximum": 60
+                    },
+                    "top_n": {
+                        "type": ["integer", "null"],
+                        "description": "For 'profile' action: cap on the number of scopes returned in scopes_by_calls and scopes_by_self_ms (default 20, max 200).",
+                        "minimum": 1,
+                        "maximum": 200
+                    },
+                    "label_prefix": {
+                        "type": ["string", "null"],
+                        "description": "For 'profile' action: only scopes whose label starts with this string appear in the result."
+                    },
+                    "focus": {
+                        "type": ["string", "null"],
+                        "description": "For 'profile' action (AMGR-018): optional substring filter applied BEFORE attribution. Any sample whose stack does not contain a frame whose symbol contains this substring is dropped, so hot_stacks, scopes_by_calls, scopes_by_self_ms and samples_by_thread all reflect the narrowed view. Use this to confirm or rule out a suspected hot function in one call."
                     }
                 },
                 "required": ["action"]
@@ -170,9 +191,9 @@ impl Tool for AgentManagerTool {
             });
         }
 
-        // AMGR-015: Route await_idle to the async handler, all others to sync
+        // AMGR-015/AMGR-017: Route await_idle and profile to the async handler, all others to sync
         let result = match &args.action {
-            AgentManagerAction::AwaitIdle { .. } => {
+            AgentManagerAction::AwaitIdle { .. } | AgentManagerAction::Profile { .. } => {
                 execute_agent_manager_async(self.session_id, args.action).await
             }
             _ => execute_agent_manager(self.session_id, args.action),

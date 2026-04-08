@@ -150,6 +150,11 @@ fn mock_handler_with_messaging(
                     "await_idle must be dispatched through async handler",
                 )
             }
+            AgentManagerAction::Profile { .. } => {
+                AgentManagerResult::invalid_parameter(
+                    "profile must be dispatched through async handler",
+                )
+            }
         }
     });
 
