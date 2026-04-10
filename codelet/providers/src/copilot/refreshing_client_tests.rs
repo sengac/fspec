@@ -7,7 +7,7 @@ use serde_json::json;
 
 #[test]
 fn classify_empty_body_returns_default() {
-    let classification = classify_body(&bytes::Bytes::new());
+    let (classification, _) = classify_and_cache_body(bytes::Bytes::new());
     assert!(!classification.is_vision);
     assert!(!classification.is_agent);
 }
@@ -19,7 +19,7 @@ fn classify_text_only_body_is_neither() {
         "messages": [{ "role": "user", "content": "hi" }]
     });
     let bytes = bytes::Bytes::from(serde_json::to_vec(&body).unwrap());
-    let c = classify_body(&bytes);
+    let (c, _) = classify_and_cache_body(bytes);
     assert!(!c.is_vision);
     assert!(!c.is_agent);
 }
@@ -37,7 +37,7 @@ fn classify_vision_body_is_vision() {
         }]
     });
     let bytes = bytes::Bytes::from(serde_json::to_vec(&body).unwrap());
-    let c = classify_body(&bytes);
+    let (c, _) = classify_and_cache_body(bytes);
     assert!(c.is_vision);
 }
 
@@ -49,15 +49,61 @@ fn classify_agent_metadata_is_agent() {
         "metadata": { "mode": "agent" }
     });
     let bytes = bytes::Bytes::from(serde_json::to_vec(&body).unwrap());
-    let c = classify_body(&bytes);
+    let (c, _) = classify_and_cache_body(bytes);
     assert!(c.is_agent);
 }
 
 #[test]
 fn classify_invalid_json_falls_back_to_default() {
-    let c = classify_body(&bytes::Bytes::from_static(b"not json at all"));
+    let (c, _) = classify_and_cache_body(bytes::Bytes::from_static(b"not json at all"));
     assert!(!c.is_vision);
     assert!(!c.is_agent);
+}
+
+#[test]
+fn classify_and_cache_injects_cache_control_for_claude() {
+    let body = json!({
+        "model": "claude-sonnet-4",
+        "messages": [
+            { "role": "system", "content": "You are helpful." },
+            { "role": "user", "content": "Hello" }
+        ],
+        "tools": [
+            { "type": "function", "function": { "name": "read", "description": "Read" } }
+        ]
+    });
+    let bytes = bytes::Bytes::from(serde_json::to_vec(&body).unwrap());
+    let (_, new_body) = classify_and_cache_body(bytes);
+    let result: serde_json::Value = serde_json::from_slice(&new_body).unwrap();
+    assert_eq!(
+        result["messages"][0].get("copilot_cache_control"),
+        Some(&json!({ "type": "ephemeral" })),
+        "Claude system message should get copilot_cache_control"
+    );
+    assert_eq!(
+        result["tools"][0].get("copilot_cache_control"),
+        Some(&json!({ "type": "ephemeral" })),
+        "Last tool should get copilot_cache_control"
+    );
+}
+
+#[test]
+fn classify_and_cache_does_not_inject_for_gpt() {
+    let body = json!({
+        "model": "gpt-5",
+        "messages": [
+            { "role": "system", "content": "You are helpful." },
+            { "role": "user", "content": "Hello" }
+        ]
+    });
+    let original_bytes = serde_json::to_vec(&body).unwrap();
+    let bytes = bytes::Bytes::from(original_bytes.clone());
+    let (_, new_body) = classify_and_cache_body(bytes);
+    let result: serde_json::Value = serde_json::from_slice(&new_body).unwrap();
+    assert!(
+        result["messages"][0].get("copilot_cache_control").is_none(),
+        "GPT system message should NOT get copilot_cache_control"
+    );
 }
 
 #[test]

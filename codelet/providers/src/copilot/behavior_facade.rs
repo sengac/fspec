@@ -18,6 +18,8 @@
 use serde_json::Value;
 use tracing::warn;
 
+use super::model_family;
+
 /// Behaviour trait for Copilot model families.
 pub trait CopilotBehaviorFacade: Send + Sync {
     /// The short family identifier returned by [`select_copilot_behavior_facade`]:
@@ -146,11 +148,11 @@ impl CopilotBehaviorFacade for CopilotGeminiBehaviorFacade {
 /// before a behaviour facade exists for them (PROV-055 review W5).
 #[must_use]
 pub fn select_copilot_behavior_facade(model_id: &str) -> BoxedCopilotBehaviorFacade {
-    if model_id.starts_with("gpt-") {
+    if model_family::is_gpt_model(model_id) {
         Box::new(CopilotGptBehaviorFacade)
-    } else if model_id.starts_with("claude-") {
+    } else if model_family::is_claude_model(model_id) {
         Box::new(CopilotClaudeBehaviorFacade)
-    } else if model_id.starts_with("gemini-") {
+    } else if model_family::is_gemini_model(model_id) {
         Box::new(CopilotGeminiBehaviorFacade)
     } else {
         warn!(

@@ -27,6 +27,7 @@ use tracing::debug;
 
 use crate::copilot::classifier::{CopilotRequestClassifier, RequestClassification};
 use crate::copilot::header_facade::CopilotHeaderFacade;
+use crate::copilot::prompt_cache;
 
 /// HTTP middleware that injects Copilot headers on every outgoing request.
 ///
@@ -76,22 +77,34 @@ impl Default for CopilotHttpClient {
     }
 }
 
-/// Parse the request body as JSON and return a [`RequestClassification`].
+/// Parse the request body as JSON, inject prompt cache control if the model
+/// is a Claude-family model, and return the classification plus the
+/// (possibly-mutated) body bytes.
 ///
-/// Returns the default classification (`{is_vision: false, is_agent: false}`)
-/// if the body is empty, not JSON, or malformed. This matches the
-/// [`CopilotRequestClassifier`] contract: unknown shapes classify as neither.
-fn classify_body(body: &bytes::Bytes) -> RequestClassification {
+/// Returns the default classification and the **original** body bytes if the
+/// body is empty, not JSON, or malformed. This avoids double-parsing: the
+/// JSON is deserialized once, classified, cache-control-injected, then
+/// re-serialized.
+fn classify_and_cache_body(body: bytes::Bytes) -> (RequestClassification, bytes::Bytes) {
     if body.is_empty() {
-        return RequestClassification::default();
+        return (RequestClassification::default(), body);
     }
-    match serde_json::from_slice::<serde_json::Value>(body) {
-        Ok(value) => CopilotRequestClassifier::classify(&value),
+    match serde_json::from_slice::<serde_json::Value>(&body) {
+        Ok(mut value) => {
+            let classification = CopilotRequestClassifier::classify(&value);
+            // Inject copilot_cache_control for Claude models (PROV-058).
+            prompt_cache::inject_cache_control(&mut value);
+            // Re-serialize the (possibly mutated) body.
+            let new_body = serde_json::to_vec(&value)
+                .map(bytes::Bytes::from)
+                .expect("serde_json::to_vec on a Value should never fail");
+            (classification, new_body)
+        }
         Err(e) => {
             debug!(
                 "CopilotHttpClient: body is not JSON — falling back to default classification: {e}"
             );
-            RequestClassification::default()
+            (RequestClassification::default(), body)
         }
     }
 }
@@ -136,7 +149,11 @@ impl rig::http_client::HttpClientExt for CopilotHttpClient {
         let req = req.map(Into::into);
 
         async move {
-            let classification = classify_body(req.body());
+            let (classification, new_body) = classify_and_cache_body(req.body().clone());
+            let req = {
+                let (parts, _) = req.into_parts();
+                Request::from_parts(parts, new_body)
+            };
             let req = inject_copilot_headers(req, &classification, &access_token);
             inner.send(req).await
         }
@@ -185,7 +202,11 @@ impl rig::http_client::HttpClientExt for CopilotHttpClient {
         let req = req.map(Into::into);
 
         async move {
-            let classification = classify_body(req.body());
+            let (classification, new_body) = classify_and_cache_body(req.body().clone());
+            let req = {
+                let (parts, _) = req.into_parts();
+                Request::from_parts(parts, new_body)
+            };
             let req = inject_copilot_headers(req, &classification, &access_token);
             inner.send_streaming(req).await
         }
