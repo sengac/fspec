@@ -16,7 +16,7 @@ use std::time::Duration;
 /// the stream loop aborts with a stall timeout error.
 ///
 /// Public for testing and configuration — Rule [3].
-pub const STALL_TIMEOUT_SECS: u64 = 300;
+pub const STALL_TIMEOUT_SECS: u64 = 600;
 
 /// Default DeepSearch sub-agent wall-clock timeout in seconds.
 /// The entire sub-agent execution (including all tool calls and LLM generations)
@@ -87,7 +87,7 @@ mod tests {
 
     // @step Given a subordinate agent is running and has received a tool result
     // @step And the agent's stream loop is awaiting the next LLM chunk
-    // @step When the LLM SSE stream produces no chunks for 300 seconds
+    // @step When the LLM SSE stream produces no chunks for 600 seconds
     // @step Then the stream loop should abort with a stall timeout error
     #[tokio::test]
     async fn stall_timeout_fires_when_stream_produces_no_chunks() {
@@ -109,13 +109,13 @@ mod tests {
     // @step And an error message indicating "generation stalled" should be emitted
     #[test]
     fn stall_timeout_error_message_indicates_generation_stalled() {
-        let msg = build_stall_timeout_message(300);
+        let msg = build_stall_timeout_message(600);
         assert!(
             msg.starts_with("Generation stalled"),
             "Error message must start with 'Generation stalled', got: {msg}"
         );
         assert!(
-            msg.contains("300s"),
+            msg.contains("600s"),
             "Error message must include the timeout duration"
         );
         assert!(
@@ -132,7 +132,7 @@ mod tests {
     // ====================================================================
 
     // @step Given a subordinate agent is running and generating a response
-    // @step When the LLM produces tokens continuously with less than 300 seconds between each
+    // @step When the LLM produces tokens continuously with less than 600 seconds between each
     // @step Then no stall timeout should fire
     // @step And the agent should complete its response normally
     // @step And the agent should transition to idle status
@@ -170,7 +170,7 @@ mod tests {
 
     // @step Given a subordinate agent is running and generating a response
     // @step When the LLM pauses for 60 seconds between tokens
-    // @step And the stall timeout is configured to 300 seconds
+    // @step And the stall timeout is configured to 600 seconds
     // @step Then no stall timeout should fire
     // @step And the agent should complete its response successfully
     #[tokio::test]
@@ -214,7 +214,7 @@ mod tests {
     // ====================================================================
 
     // @step Given a subordinate agent is running and has received partial response tokens
-    // @step When the LLM stops producing tokens for 300 seconds mid-sentence
+    // @step When the LLM stops producing tokens for 600 seconds mid-sentence
     // @step Then the stall timeout should fire and abort the generation
     // @step And the partial response text should be preserved in the session history
     // @step And the agent should transition to idle status
@@ -389,9 +389,9 @@ mod tests {
     // ====================================================================
 
     #[test]
-    fn stall_timeout_defaults_to_300_seconds() {
-        assert_eq!(STALL_TIMEOUT_SECS, 300);
-        assert_eq!(stall_timeout_duration(), std::time::Duration::from_secs(300));
+    fn stall_timeout_defaults_to_600_seconds() {
+        assert_eq!(STALL_TIMEOUT_SECS, 600);
+        assert_eq!(stall_timeout_duration(), std::time::Duration::from_secs(600));
     }
 
     // ====================================================================
@@ -405,7 +405,7 @@ mod tests {
     // @step And the stream loop should break immediately with a terminal error
     #[test]
     fn stall_timeout_error_is_identified_by_dedicated_classifier() {
-        let stall_msg = build_stall_timeout_message(300);
+        let stall_msg = build_stall_timeout_message(600);
 
         assert!(
             is_stall_timeout_error(&stall_msg),
@@ -415,7 +415,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_network_classifier() {
-        let stall_msg = build_stall_timeout_message(300);
+        let stall_msg = build_stall_timeout_message(600);
 
         assert!(
             !is_transient_network_error(&stall_msg),
@@ -425,7 +425,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_truncation_classifier() {
-        let stall_msg = build_stall_timeout_message(300);
+        let stall_msg = build_stall_timeout_message(600);
 
         assert!(
             !is_truncated_tool_call_error(&stall_msg),
@@ -435,7 +435,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_prompt_too_long_classifier() {
-        let stall_msg = build_stall_timeout_message(300);
+        let stall_msg = build_stall_timeout_message(600);
 
         assert!(
             !is_prompt_too_long_error(&stall_msg),
@@ -445,7 +445,7 @@ mod tests {
 
     #[test]
     fn stall_timeout_error_not_caught_by_image_content_classifier() {
-        let stall_msg = build_stall_timeout_message(300);
+        let stall_msg = build_stall_timeout_message(600);
 
         assert!(
             !is_image_content_error(&stall_msg),
