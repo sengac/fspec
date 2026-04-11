@@ -1,3 +1,4 @@
+@done
 @high
 @json-schema
 @draft-driven
@@ -8,7 +9,6 @@
 @foundation-management
 @cli
 @foundation
-@wip
 @FOUND-044
 Feature: Fail-Fast Foundation Workflow for Weaker LLMs
 
