@@ -94,6 +94,8 @@ pub async fn call_learnings_extraction_llm(
     let manager = codelet_providers::ProviderManager::with_provider_and_model(
         provider_name,
         model_id,
+        None,
+        None,
     ).map_err(|e| {
         tracing::warn!("[KGRAPH] Failed to create ProviderManager for learnings extraction: {e}");
         e

@@ -82,6 +82,8 @@ fn execute_deep_search_owned(
     model_id: Option<String>,
     depth: usize,
     max_recursion_depth: usize,
+    context_window: Option<usize>,
+    max_output_tokens: Option<usize>,
 ) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>> {
     Box::pin(async move {
         execute_deep_search(
@@ -93,6 +95,8 @@ fn execute_deep_search_owned(
             model_id.as_deref(),
             depth,
             max_recursion_depth,
+            context_window,
+            max_output_tokens,
         )
         .await
     })
@@ -121,6 +125,8 @@ pub async fn execute_deep_search(
     model_id: Option<&str>,
     depth: usize,
     max_recursion_depth: usize,
+    context_window: Option<usize>,
+    max_output_tokens: Option<usize>,
 ) -> Result<String, String> {
     // 1. Create ephemeral session_id — NOT shared with parent
     let ephemeral_session_id = Uuid::new_v4();
@@ -146,6 +152,8 @@ pub async fn execute_deep_search(
         let child_provider = provider_name.to_string();
         let child_model = model_id.map(|s| s.to_string());
         let child_depth = depth + 1;
+        let child_context_window = context_window;
+        let child_max_output_tokens = max_output_tokens;
 
         let child_handler: codelet_tools::DeepSearchHandler =
             Arc::new(move |query, scope, max_depth, max_recursion_depth| {
@@ -161,6 +169,8 @@ pub async fn execute_deep_search(
                     model,
                     child_depth,
                     max_recursion_depth,
+                    child_context_window,
+                    child_max_output_tokens,
                 )
             });
         set_deep_search_handler(ephemeral_session_id, Some(child_handler));
@@ -221,6 +231,8 @@ pub async fn execute_deep_search(
         model_id,
         can_recurse,
         graph_available,
+        context_window,  // MODEL-005: Propagated from parent session
+        max_output_tokens, // MODEL-005: Propagated from parent session
     )).await {
         Ok(result) => result,
         Err(_elapsed) => {
@@ -397,6 +409,8 @@ async fn build_and_run_agent(
     model_id: Option<&str>,
     can_recurse: bool,
     graph_available: bool,
+    context_window: Option<usize>,
+    max_output_tokens: Option<usize>,
 ) -> Result<String, String> {
     // Compile-time assertion: base tool count must be 7.
     // When can_recurse, we add DeepSearch as the 8th tool at runtime.
@@ -409,6 +423,8 @@ async fn build_and_run_agent(
     let manager = codelet_providers::ProviderManager::with_provider_and_model(
         provider_name,
         model_id,
+        context_window,
+        max_output_tokens,
     ).map_err(|e| format!("Failed to create ProviderManager: {e}"))?;
 
     // BUG-102: Get provider dynamically based on the parent session's provider type.

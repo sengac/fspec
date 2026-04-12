@@ -3334,12 +3334,12 @@ impl SessionManager {
             // Profile model: use set_model_direct to bypass registry validation
             // Profile models are served by local servers (vLLM, Ollama, etc.)
             tracing::info!("PROV-007: Profile model detected, using set_model_direct for {}", model);
-            provider_manager.set_model_direct(registry_provider, model_part)
+            provider_manager.set_model_direct(registry_provider, model_part, None, None, None)
                 .map_err(|e| Error::from_reason(format!("Failed to set model: {}", e)))?;
         } else if is_codex_model {
             // PROV-018: Codex model: bypass registry (codex is not a models.dev provider)
             tracing::info!("PROV-018: Codex model detected, using set_model_direct for {}", model);
-            provider_manager.set_model_direct(registry_provider, model_part)
+            provider_manager.set_model_direct(registry_provider, model_part, None, None, None)
                 .map_err(|e| Error::from_reason(format!("Failed to set codex model: {}", e)))?;
         } else {
             // Cloud model: validate against registry
@@ -3581,12 +3581,12 @@ impl SessionManager {
         // by TypeScript before calling this function.
         let provider_manager = if is_profile_model {
             tracing::info!("PROV-007: Profile model detected, skipping registry validation for {}", model);
-            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part))
+            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part), None, None)
                 .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?
         } else if is_codex_model {
             // PROV-018: Codex model: bypass registry (codex is not a models.dev provider)
             tracing::info!("PROV-018: Codex model detected, skipping registry validation for {}", model);
-            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part))
+            codelet_providers::ProviderManager::with_provider_and_model(registry_provider, Some(model_part), None, None)
                 .map_err(|e| Error::from_reason(format!("Failed to create codex provider manager: {}", e)))?
         } else {
             // Cloud model: use model registry for validation
@@ -4665,7 +4665,13 @@ async fn agent_loop(
             // not just the provider name, to trigger adaptive thinking in get_thinking_config().
             let (current_provider, current_model) = {
                 let inner = session.inner.lock().await;
-                let provider = inner.current_provider_name().to_string();
+                // MODEL-004: Check facade_override first — if set, dispatch to that
+                // provider instead of the current_provider. This allows custom models
+                // to route API calls through a different provider backend.
+                let provider = inner.provider_manager()
+                    .facade_override()
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| inner.current_provider_name().to_string());
                 let model = inner.current_model_id().map(|s| s.to_string());
                 tracing::debug!("[AGENT-LOOP] current_provider={}, current_model={:?}", provider, model);
                 (provider, model)
@@ -4867,10 +4873,14 @@ async fn agent_loop(
             // RLM-001: Register DeepSearch handler for this session
             // BUG-102: Capture provider and model from current session so the
             // sub-agent inherits the same LLM configuration.
+            // MODEL-005: Capture context window and max output from parent session
+            // so DeepSearch sub-agents use per-model limits instead of provider constants.
             // Returns a Future (not sync) because the sub-agent makes async LLM API calls
             let deep_search_project_path = std::path::PathBuf::from(&session.project);
             let deep_search_provider = inner_session.current_provider_name().to_string();
             let deep_search_model = inner_session.current_model_id().map(|s| s.to_string());
+            let deep_search_context_window = inner_session.provider_manager().raw_model_context_window();
+            let deep_search_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
             let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(move |query, scope, max_depth, max_recursion_depth| {
                 let path = deep_search_project_path.clone();
                 let provider = deep_search_provider.clone();
@@ -4885,6 +4895,8 @@ async fn agent_loop(
                         model.as_deref(),
                         0, // RLM-002: Parent session starts at depth 0
                         max_recursion_depth,
+                        deep_search_context_window,
+                        deep_search_max_output,
                     ).await
                 })
             });
@@ -4895,12 +4907,18 @@ async fn agent_loop(
             // AMGR-013: Use selected_model_string() which preserves the original
             // "provider/model" registry format (e.g. "anthropic/claude-opus-4-6")
             // instead of current_provider_name() which returns the internal name ("claude").
+            // MODEL-005: Capture per-model context window and max output tokens from parent
+            // session so subordinate agents inherit per-model limits.
             {
                 let full_model_string = inner_session.provider_manager().selected_model_string()
                     .map(|s| s.to_string());
+                let spawner_context_window = inner_session.provider_manager().raw_model_context_window();
+                let spawner_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
                 let agent_manager_handler = crate::agent_manager_handler::create_handler(
                     session.project.clone(),
                     full_model_string,
+                    spawner_context_window,
+                    spawner_max_output,
                 );
                 codelet_tools::set_agent_manager_handler(session.id, Some(agent_manager_handler));
             }
@@ -6421,9 +6439,9 @@ pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Re
 }
 
 #[napi]
-pub async fn session_set_model(session_id: String, provider_id: String, model_id: String) -> Result<()> {
-    tracing::debug!("session_set_model called: session_id={}, provider_id={}, model_id={}", 
-          session_id, provider_id, model_id);
+pub async fn session_set_model(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>) -> Result<()> {
+    tracing::debug!("session_set_model called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}", 
+          session_id, provider_id, model_id, context_window, max_output_tokens);
     
     let session = SessionManager::instance().get_session(&session_id)?;
 
@@ -6437,9 +6455,23 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     let mut inner = session.inner.lock().await;
     // PROV-018: Codex models bypass registry validation (not in models.dev under 'codex')
     let result = if provider_id == "codex" {
-        inner.provider_manager_mut().set_model_direct(&provider_id, &model_id)
+        inner.provider_manager_mut().set_model_direct(
+            &provider_id,
+            &model_id,
+            context_window.map(|v| v as usize),
+            max_output_tokens.map(|v| v as usize),
+            None,
+        )
     } else {
-        inner.provider_manager_mut().select_model(&model_string).map(|_| ())
+        let select_result = inner.provider_manager_mut().select_model(&model_string).map(|_| ());
+        // MODEL-005: NAPI override takes priority over models.dev metadata
+        if select_result.is_ok() {
+            inner.provider_manager_mut().override_model_limits(
+                context_window.map(|v| v as usize),
+                max_output_tokens.map(|v| v as usize),
+            );
+        }
+        select_result
     };
     match result {
         Ok(()) => {
@@ -6458,10 +6490,16 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 /// This function sets the model without validating against the models.dev registry.
 /// Use this for profile-based models where OPENAI_BASE_URL points to a local server.
 /// The caller must ensure OPENAI_BASE_URL and OPENAI_API_KEY are set before calling.
+///
+/// MODEL-005: Accepts optional context_window and max_output_tokens to propagate
+/// per-model limits from TypeScript ModelSelection through to ProviderManager.
+///
+/// MODEL-004: Accepts optional facade_override for custom models that need
+/// agent loop dispatch through a different provider backend.
 #[napi]
-pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String) -> Result<()> {
-    tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}", 
-          session_id, provider_id, model_id);
+pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, facade_override: Option<String>) -> Result<()> {
+    tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, facade_override={:?}",
+          session_id, provider_id, model_id, context_window, max_output_tokens, facade_override);
     
     let session = SessionManager::instance().get_session(&session_id)?;
 
@@ -6469,8 +6507,16 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
     session.set_model(Some(provider_id.clone()), Some(model_id.clone()));
 
     // Use set_model_direct which skips registry validation
+    // MODEL-005: Pass context params through to ProviderManager
+    // MODEL-004: Pass facade_override through to ProviderManager
     let mut inner = session.inner.lock().await;
-    match inner.provider_manager_mut().set_model_direct(&provider_id, &model_id) {
+    match inner.provider_manager_mut().set_model_direct(
+        &provider_id,
+        &model_id,
+        context_window.map(|v| v as usize),
+        max_output_tokens.map(|v| v as usize),
+        facade_override,
+    ) {
         Ok(()) => {
             tracing::debug!("session_set_model_profile: model set successfully");
             Ok(())

@@ -133,9 +133,9 @@ fn test_get_openai_accepts_session_id_parameter() {
     std::env::set_var("OPENAI_BASE_URL", "http://localhost:9999");
     std::env::remove_var("OPENAI_SESSION_AFFINITY");
 
-    let mut manager = ProviderManager::for_testing(ProviderType::OpenAI);
+    let mut manager = ProviderManager::for_testing(ProviderType::OpenAI, None, None);
     manager
-        .set_model_direct("openai", "test-model")
+        .set_model_direct("openai", "test-model", None, None, None)
         .expect("set_model_direct should succeed");
 
     // @step And a session with UUID "550e8400-e29b-41d4-a716-446655440000"
@@ -211,9 +211,9 @@ fn test_get_openai_default_endpoint_no_affinity() {
     std::env::remove_var("OPENAI_BASE_URL");
     std::env::remove_var("OPENAI_SESSION_AFFINITY");
 
-    let mut manager = ProviderManager::for_testing(ProviderType::OpenAI);
+    let mut manager = ProviderManager::for_testing(ProviderType::OpenAI, None, None);
     manager
-        .set_model_direct("openai", "gpt-4o")
+        .set_model_direct("openai", "gpt-4o", None, None, None)
         .expect("set_model_direct should succeed");
 
     let session_id = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();

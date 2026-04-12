@@ -271,7 +271,9 @@ describe('Feature: Model Selection Service', () => {
       expect(napiMocks.sessionSetModel).toHaveBeenCalledWith(
         'session-123',
         'anthropic',
-        'claude-sonnet-4'
+        'claude-sonnet-4',
+        200000,
+        16000
       );
 
       // @step And the model store should be updated
@@ -330,7 +332,10 @@ describe('Feature: Model Selection Service', () => {
       expect(napiMocks.sessionSetModelProfile).toHaveBeenCalledWith(
         'session-123',
         'openai',
-        'Qwen3-80B'
+        'Qwen3-80B',
+        128000,
+        16384,
+        null
       );
       expect(napiMocks.sessionSetModel).not.toHaveBeenCalled();
 
@@ -440,6 +445,107 @@ describe('Feature: Model Selection Service', () => {
       // @step And the Zustand store should NOT be updated (BUG-097: only update on success)
       expect(onSetCurrentModel).not.toHaveBeenCalled();
       expect(onSetCurrentProvider).not.toHaveBeenCalled();
+    });
+  });
+
+  // ===========================================================================
+  // MODEL-005: modelSelectionService passes contextWindow and maxOutput to NAPI
+  // Feature: spec/features/per-model-context-window-and-max-output-configuration.feature
+  // ===========================================================================
+
+  describe('Scenario: modelSelectionService passes contextWindow and maxOutput to sessionSetModel', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      napiMocks.sessionSetModel.mockResolvedValue(undefined);
+      napiMocks.sessionSetModelProfile.mockResolvedValue(undefined);
+      configMocks.loadConfig.mockResolvedValue({});
+      configMocks.writeConfig.mockResolvedValue(undefined);
+    });
+
+    it('should pass contextWindow and maxOutput to sessionSetModel', async () => {
+      // @step Given a ModelSelection with providerId="openai" and modelId="o3" and contextWindow=200000 and maxOutput=100000
+      const selection: ModelSelection = {
+        providerId: 'openai',
+        modelId: 'o3',
+        apiModelId: 'o3',
+        displayName: 'o3',
+        reasoning: true,
+        hasVision: false,
+        contextWindow: 200000,
+        maxOutput: 100000,
+      };
+
+      // @step And an active session exists
+      const sessionId = 'session-456';
+
+      // @step When selectModel is called
+      const result = await selectModel({
+        sessionId,
+        selection,
+      });
+
+      expect(result.success).toBe(true);
+
+      // @step Then sessionSetModel is called with context_window=200000 and max_output_tokens=100000
+      expect(napiMocks.sessionSetModel).toHaveBeenCalledWith(
+        'session-456',
+        'openai',
+        'o3',
+        200000,
+        100000
+      );
+    });
+  });
+
+  describe('Scenario: modelSelectionService passes contextWindow and maxOutput to sessionSetModelProfile', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      napiMocks.sessionSetModel.mockResolvedValue(undefined);
+      napiMocks.sessionSetModelProfile.mockResolvedValue(undefined);
+      configMocks.loadConfig.mockResolvedValue({});
+      configMocks.writeConfig.mockResolvedValue(undefined);
+    });
+
+    it('should pass contextWindow and maxOutput to sessionSetModelProfile', async () => {
+      // @step Given a ModelSelection with profileConfig and contextWindow=32000 and maxOutput=4096
+      const selection: ModelSelection = {
+        providerId: 'openai',
+        modelId: 'local-model',
+        apiModelId: 'local-model',
+        displayName: 'Local Model',
+        reasoning: false,
+        hasVision: false,
+        contextWindow: 32000,
+        maxOutput: 4096,
+        profileName: 'local-vllm',
+        profileConfig: {
+          baseUrl: 'http://localhost:8080',
+          apiKey: 'test-key',
+          contextWindow: 32000,
+          maxOutputTokens: 4096,
+        },
+      };
+
+      // @step And an active session exists
+      const sessionId = 'session-789';
+
+      // @step When selectModel is called
+      const result = await selectModel({
+        sessionId,
+        selection,
+      });
+
+      expect(result.success).toBe(true);
+
+      // @step Then sessionSetModelProfile is called with context_window=32000 and max_output_tokens=4096
+      expect(napiMocks.sessionSetModelProfile).toHaveBeenCalledWith(
+        'session-789',
+        'openai',
+        'local-model',
+        32000,
+        4096,
+        null
+      );
     });
   });
 });

@@ -438,6 +438,8 @@ async fn provider_manager_get_github_copilot_returns_llm_provider() {
     let manager = ProviderManager::with_provider_and_model(
         "github-copilot",
         Some("gpt-4o-copilot"),
+        None,
+        None,
     )
     .expect("manager should accept github-copilot with a model");
 
@@ -466,6 +468,8 @@ async fn provider_manager_get_github_copilot_honors_enterprise_deployment() {
     let manager = ProviderManager::with_provider_and_model(
         "github-copilot",
         Some("gpt-4o-copilot"),
+        None,
+        None,
     )
     .expect("manager should accept enterprise github-copilot with a model");
 
@@ -511,6 +515,8 @@ async fn provider_manager_get_github_copilot_rejects_wrong_current_provider() {
     let manager = ProviderManager::with_provider_and_model(
         "claude",
         Some("claude-sonnet-4.5"),
+        None,
+        None,
     )
     .expect("manager should accept claude with ANTHROPIC_API_KEY set");
     std::env::remove_var("ANTHROPIC_API_KEY");

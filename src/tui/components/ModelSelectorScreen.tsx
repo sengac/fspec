@@ -3,14 +3,22 @@
  *
  * TUI-073: Extracts model selector from AgentView.tsx.
  * Composes useModelSelectorState (state) + useInput (keyboard) + ModelSelectorView (UI).
+ * MODEL-004: Adds 'a', 'e', 'd' keybinds for custom model CRUD.
  *
  * Feature: spec/features/model-selector-screen.feature
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { useInput } from 'ink';
 import { ModelSelectorView } from './ModelSelectorView';
+import { CustomModelFormView } from './CustomModelFormView';
+import { DeleteCustomModelConfirmView } from './DeleteCustomModelConfirmView';
 import { useModelSelectorState } from '../hooks/useModelSelectorState';
+import { prefillCustomModelValues } from '../constants/customModelForm';
+import {
+  handleDeleteConfirmInput,
+  handleCustomModelFormInput,
+} from '../inputHandlers/customModelFormHandler';
 import type { ModelSelection } from '../types/provider';
 
 export interface ModelSelectorScreenProps {
@@ -36,48 +44,45 @@ export function ModelSelectorScreen({
   onClose,
   onSwitchToSettings,
 }: ModelSelectorScreenProps): React.ReactElement {
-  // Destructure hook return for stable references
-  // React useState setters are stable (same reference across renders)
-  // useCallback functions are stable when their deps don't change
+  const state = useModelSelectorState();
+
   const {
-    // Data
     providerSections,
     filteredFlatItems,
     isRefreshing,
     modelsInitialized,
-    // Selection state
     selectedSectionIdx,
     selectedModelIdx,
     expandedProviders,
-    // Scroll/filter state
     scrollOffset,
     visibleHeight,
     filter,
     isFilterMode,
-    // Actions (stable setters from useState)
+    customModelMode,
+    customModelForm,
     setSelectedSectionIdx,
     setSelectedModelIdx,
     setVisibleHeight,
     setFilter,
     setIsFilterMode,
     setIsVisible,
-    // Operations (stable from useCallback)
     toggleSectionExpansion,
     refreshModels,
     selectModel,
     navigateUp,
     navigateDown,
     getCurrentFlatIndex,
-  } = useModelSelectorState();
+    setCustomModelMode,
+    setCustomModelFormValues,
+    setCustomModelFormFieldIndex,
+  } = state;
 
   const hasAutoExpanded = useRef(false);
 
-  // Set visible height based on terminal height (account for header/footer)
   useEffect(() => {
     setVisibleHeight(height - 6);
   }, [height, setVisibleHeight]);
 
-  // Mark as visible when mounted, reset on unmount
   useEffect(() => {
     setIsVisible(true);
     return () => {
@@ -87,27 +92,18 @@ export function ModelSelectorScreen({
 
   // Auto-expand section containing currentModelId when screen opens
   useEffect(() => {
-    // Only auto-expand once per mount, and only after models are loaded
     if (hasAutoExpanded.current || !modelsInitialized || !currentModelId) {
       return;
     }
-
-    // Find the section containing the current model
-    for (
-      let sectionIdx = 0;
-      sectionIdx < providerSections.length;
-      sectionIdx++
-    ) {
-      const section = providerSections[sectionIdx];
-      const modelIdx = section.models.findIndex(m => m.id === currentModelId);
-
-      if (modelIdx !== -1) {
-        // Found the model - expand its section and navigate to it
+    for (let si = 0; si < providerSections.length; si++) {
+      const section = providerSections[si];
+      const mi = section.models.findIndex(m => m.id === currentModelId);
+      if (mi !== -1) {
         if (!expandedProviders.has(section.providerId)) {
           toggleSectionExpansion(section.providerId);
         }
-        setSelectedSectionIdx(sectionIdx);
-        setSelectedModelIdx(modelIdx);
+        setSelectedSectionIdx(si);
+        setSelectedModelIdx(mi);
         hasAutoExpanded.current = true;
         break;
       }
@@ -125,134 +121,133 @@ export function ModelSelectorScreen({
   // Keyboard handling
   useInput(
     (input, key) => {
-      // ===========================================
-      // FILTER MODE
-      // ===========================================
+      // Custom model delete confirmation
+      if (handleDeleteConfirmInput(input, key, state)) {
+        return;
+      }
+      // Custom model add/edit form
+      if (handleCustomModelFormInput(input, key, state)) {
+        return;
+      }
+
+      // Filter mode
       if (isFilterMode) {
-        // Escape in filter mode: clear filter and exit mode
-        if (key.escape) {
-          setIsFilterMode(false);
-          setFilter('');
-          return;
-        }
-        // Enter in filter mode: exit mode, keep filter
-        if (key.return) {
-          setIsFilterMode(false);
-          return;
-        }
-        // Backspace: remove last character
-        if (key.backspace || key.delete) {
-          setFilter(filter.slice(0, -1));
-          return;
-        }
-        // Accept printable characters (ASCII 32-126)
-        const clean = input
-          .split('')
-          .filter(ch => {
-            const code = ch.charCodeAt(0);
-            return code >= 32 && code <= 126;
-          })
-          .join('');
-        if (clean) {
-          setFilter(filter + clean);
+        if (key.escape) { setIsFilterMode(false); setFilter(''); return; }
+        if (key.return) { setIsFilterMode(false); return; }
+        if (key.backspace || key.delete) { setFilter(filter.slice(0, -1)); return; }
+        const clean = input.split('').filter(ch => { const c = ch.charCodeAt(0); return c >= 32 && c <= 126; }).join('');
+        if (clean) { setFilter(filter + clean); }
+        return;
+      }
+
+      // Normal mode
+      if (key.escape) { if (filter) { setFilter(''); return; } onClose(); return; }
+      if (key.tab) { onSwitchToSettings(); return; }
+      if (input === '/') { setIsFilterMode(true); return; }
+      if (input === 'r' || input === 'R') { void refreshModels(); return; }
+
+      // MODEL-004: 'a' — add custom model (only on profile section headers)
+      if (input === 'a') {
+        const sec = providerSections[selectedSectionIdx];
+        if (sec?.profileName) {
+          setCustomModelMode({ type: 'add-custom-model', providerId: sec.providerId, profileName: sec.profileName });
+          setCustomModelFormValues({});
+          setCustomModelFormFieldIndex(0);
         }
         return;
       }
 
-      // ===========================================
-      // NORMAL MODE
-      // ===========================================
-
-      // Escape: clear filter if active, otherwise close
-      if (key.escape) {
-        if (filter) {
-          setFilter('');
-          return;
+      // MODEL-004: 'e' — edit custom model
+      if (input === 'e') {
+        const sec = providerSections[selectedSectionIdx];
+        if (sec?.profileName && selectedModelIdx >= 0 && sec.customModelIds) {
+          const model = sec.models[selectedModelIdx];
+          if (model && sec.customModelIds.has(model.id)) {
+            const customDef = sec.profileConfig?.customModels?.find(c => c.id === model.id);
+            if (customDef) {
+              setCustomModelMode({ type: 'edit-custom-model', providerId: sec.providerId, profileName: sec.profileName, originalModelId: customDef.id });
+              setCustomModelFormValues(prefillCustomModelValues(customDef));
+              setCustomModelFormFieldIndex(0);
+            }
+          }
         }
-        onClose();
         return;
       }
 
-      // Tab: switch to provider settings
-      if (key.tab) {
-        onSwitchToSettings();
+      // MODEL-004: 'd' — delete custom model
+      if (input === 'd') {
+        const sec = providerSections[selectedSectionIdx];
+        if (sec?.profileName && selectedModelIdx >= 0 && sec.customModelIds) {
+          const model = sec.models[selectedModelIdx];
+          if (model && sec.customModelIds.has(model.id)) {
+            setCustomModelMode({ type: 'delete-custom-model-confirm', providerId: sec.providerId, profileName: sec.profileName, modelId: model.id, displayName: model.name });
+          }
+        }
         return;
       }
 
-      // Slash: enter filter mode
-      if (input === '/') {
-        setIsFilterMode(true);
-        return;
-      }
+      if (key.upArrow) { navigateUp(); return; }
+      if (key.downArrow) { navigateDown(); return; }
 
-      // Refresh models with 'r' or 'R'
-      if (input === 'r' || input === 'R') {
-        void refreshModels();
-        return;
-      }
-
-      // Navigation: Up arrow
-      if (key.upArrow) {
-        navigateUp();
-        return;
-      }
-
-      // Navigation: Down arrow
-      if (key.downArrow) {
-        navigateDown();
-        return;
-      }
-
-      // Left arrow: collapse section and move to section header
       if (key.leftArrow) {
-        const currentSection = providerSections[selectedSectionIdx];
-        if (
-          currentSection &&
-          expandedProviders.has(currentSection.providerId)
-        ) {
-          toggleSectionExpansion(currentSection.providerId);
-          setSelectedModelIdx(-1); // Move to section header
-        }
+        const sec = providerSections[selectedSectionIdx];
+        if (sec && expandedProviders.has(sec.providerId)) { toggleSectionExpansion(sec.providerId); setSelectedModelIdx(-1); }
         return;
       }
-
-      // Right arrow: expand section
       if (key.rightArrow) {
-        const currentSection = providerSections[selectedSectionIdx];
-        if (
-          currentSection &&
-          !expandedProviders.has(currentSection.providerId)
-        ) {
-          toggleSectionExpansion(currentSection.providerId);
-        }
+        const sec = providerSections[selectedSectionIdx];
+        if (sec && !expandedProviders.has(sec.providerId)) { toggleSectionExpansion(sec.providerId); }
         return;
       }
 
-      // Enter: select model or toggle section expansion
       if (key.return) {
         const flatIdx = getCurrentFlatIndex();
         const item = filteredFlatItems[flatIdx];
-
-        if (!item) {
-          return;
-        }
-
-        if (item.type === 'section') {
-          // Toggle section expansion
-          toggleSectionExpansion(item.section.providerId);
-        } else if (item.type === 'model') {
-          // Select model and close
-          const selection = selectModel(item.section, item.model);
-          onSelectModel(selection);
-          onClose();
-        }
+        if (!item) { return; }
+        if (item.type === 'section') { toggleSectionExpansion(item.section.providerId); }
+        else if (item.type === 'model') { const sel = selectModel(item.section, item.model); onSelectModel(sel); onClose(); }
         return;
       }
     },
     { isActive: true }
   );
 
-  // Render the presentation component
+  // Build custom model IDs map for [C] badge
+  const customModelIdsBySection = useMemo(() => {
+    const map = new Map<number, Set<string>>();
+    for (let i = 0; i < providerSections.length; i++) {
+      const section = providerSections[i];
+      if (section.customModelIds && section.customModelIds.size > 0) {
+        map.set(i, section.customModelIds);
+      }
+    }
+    return map.size > 0 ? map : undefined;
+  }, [providerSections]);
+
+  // Render custom model form overlay
+  if (customModelMode.type === 'add-custom-model' || customModelMode.type === 'edit-custom-model') {
+    return (
+      <CustomModelFormView
+        title={customModelMode.type === 'add-custom-model' ? 'Add Custom Model' : 'Edit Custom Model'}
+        profileName={customModelMode.profileName}
+        values={customModelForm.values}
+        fieldIndex={customModelForm.fieldIndex}
+        width={width}
+      />
+    );
+  }
+
+  // Render delete confirmation overlay
+  if (customModelMode.type === 'delete-custom-model-confirm') {
+    return (
+      <DeleteCustomModelConfirmView
+        modelId={customModelMode.modelId}
+        displayName={customModelMode.displayName}
+        profileName={customModelMode.profileName}
+      />
+    );
+  }
+
   return (
     <ModelSelectorView
       width={width}
@@ -267,6 +262,7 @@ export function ModelSelectorScreen({
       isFilterMode={isFilterMode}
       currentModelId={currentModelId}
       isRefreshing={isRefreshing}
+      customModelIdsBySection={customModelIdsBySection}
     />
   );
 }

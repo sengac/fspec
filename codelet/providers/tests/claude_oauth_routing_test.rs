@@ -153,6 +153,8 @@ fn test_session_creation_routes_to_oauth_when_tokens_exist() {
     let manager = codelet_providers::ProviderManager::with_provider_and_model(
         "claude",
         Some("claude-sonnet-4-20250514"),
+        None,
+        None,
     );
 
     // @step Then the provider manager should use from_oauth_tokens constructor
@@ -201,6 +203,8 @@ fn test_session_creation_falls_back_to_env_var() {
     let manager = codelet_providers::ProviderManager::with_provider_and_model(
         "claude",
         Some("claude-sonnet-4-20250514"),
+        None,
+        None,
     );
 
     // @step Then the provider manager should use new_with_model constructor
@@ -257,6 +261,8 @@ fn test_oauth_takes_precedence_over_api_key() {
     let manager = codelet_providers::ProviderManager::with_provider_and_model(
         "claude",
         Some("claude-sonnet-4-20250514"),
+        None,
+        None,
     )
     .unwrap();
 

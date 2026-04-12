@@ -3,6 +3,7 @@
  *
  * TUI-072: Extracts model selector state from AgentView.tsx into a dedicated hook.
  * TUI-075: Uses shared Zustand store for model data (providerSections, currentModel, etc.)
+ * MODEL-004: Composes useCustomModelFormState for custom model CRUD.
  *
  * UI-only state (selection, scroll, filter) remains local to the hook.
  * Shared data (models, loading state) comes from the modelStore.
@@ -28,6 +29,17 @@ import {
   initializeModels,
   extractModelIdForRegistry,
 } from '../services/modelInitializationService';
+import { lookupFacadeOverride } from '../utils/custom-model-utils';
+import {
+  buildFlatModelList,
+  flatIndexToSectionModel,
+  sectionModelToFlatIndex,
+  filterFlatItems,
+} from '../utils/flat-model-list';
+import {
+  useCustomModelFormState,
+  type UseCustomModelFormStateReturn,
+} from './useCustomModelFormState';
 
 // PROV-008: Import provider mapping from shared utility (DRY)
 import {
@@ -46,81 +58,19 @@ export {
 // Re-export from service — DRY: single authoritative implementation (FIX-3)
 export { extractModelIdForRegistry } from '../services/modelInitializationService';
 
-// =============================================================================
-// HELPER FUNCTIONS (Pure functions for flat list operations)
-// =============================================================================
-
-/**
- * Build flattened list from sections and expanded state
- */
-export const buildFlatModelList = (
-  sections: ProviderSection[],
-  expandedProviders: Set<string>
-): ModelSelectorItem[] => {
-  const items: ModelSelectorItem[] = [];
-  sections.forEach((section, sectionIdx) => {
-    const isExpanded = expandedProviders.has(section.providerId);
-    items.push({ type: 'section', sectionIdx, section, isExpanded });
-    if (isExpanded) {
-      section.models.forEach((model, modelIdx) => {
-        items.push({ type: 'model', sectionIdx, modelIdx, section, model });
-      });
-    }
-  });
-  return items;
-};
-
-/**
- * Convert flat index to (sectionIdx, modelIdx)
- * modelIdx is -1 for section headers
- */
-export const flatIndexToSectionModel = (
-  flatIndex: number,
-  items: ModelSelectorItem[]
-): { sectionIdx: number; modelIdx: number } => {
-  const item = items[flatIndex];
-  if (!item) {
-    return { sectionIdx: 0, modelIdx: -1 };
-  }
-  if (item.type === 'section') {
-    return { sectionIdx: item.sectionIdx, modelIdx: -1 };
-  }
-  return { sectionIdx: item.sectionIdx, modelIdx: item.modelIdx };
-};
-
-/**
- * Convert (sectionIdx, modelIdx) to flat index
- */
-export const sectionModelToFlatIndex = (
-  sectionIdx: number,
-  modelIdx: number,
-  items: ModelSelectorItem[]
-): number => {
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (
-      item.type === 'section' &&
-      item.sectionIdx === sectionIdx &&
-      modelIdx === -1
-    ) {
-      return i;
-    }
-    if (
-      item.type === 'model' &&
-      item.sectionIdx === sectionIdx &&
-      item.modelIdx === modelIdx
-    ) {
-      return i;
-    }
-  }
-  return 0;
-};
+// Re-export flat list utilities for backwards compatibility
+export {
+  buildFlatModelList,
+  flatIndexToSectionModel,
+  sectionModelToFlatIndex,
+} from '../utils/flat-model-list';
 
 // =============================================================================
 // HOOK INTERFACE
 // =============================================================================
 
-export interface UseModelSelectorStateReturn {
+export interface UseModelSelectorStateReturn
+  extends UseCustomModelFormStateReturn {
   // Data
   currentModel: ModelSelection | null;
   providerSections: ProviderSection[];
@@ -178,124 +128,63 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
   // SHARED STATE (from Zustand store)
   // -------------------------------------------------------------------------
 
-  // TUI-075: Model data comes from shared store
   const currentModel = useCurrentModel();
   const providerSections = useProviderSections();
   const modelsInitialized = useModelsInitialized();
   const isLoading = useIsModelsLoading();
   const isRefreshing = useIsModelsRefreshing();
 
-  // Store actions for updating shared state
   const store = useModelStore.getState();
 
   // -------------------------------------------------------------------------
   // LOCAL UI STATE (selection, scroll, filter - not shared)
   // -------------------------------------------------------------------------
 
-  // Selection state
   const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
-  const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = section header
+  const [selectedModelIdx, setSelectedModelIdx] = useState(-1);
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(
     new Set()
   );
-
-  // Scroll/filter state
   const [scrollOffset, setScrollOffset] = useState(0);
   const [visibleHeight, setVisibleHeight] = useState(10);
   const [filter, setFilter] = useState('');
   const [isFilterMode, setIsFilterMode] = useState(false);
-
-  // Visibility state
   const [isVisible, setIsVisible] = useState(false);
 
-  // Track previous visibility for reset on open
   const prevIsVisible = useRef(isVisible);
 
   // -------------------------------------------------------------------------
-  // COMPUTED VALUES
+  // MODEL-004: CUSTOM MODEL FORM STATE (composed hook)
   // -------------------------------------------------------------------------
 
-  /**
-   * Build flat list from sections and expanded providers
-   */
+  const customModelFormState = useCustomModelFormState();
+
+  // -------------------------------------------------------------------------
+  // COMPUTED VALUES (delegates to flat-model-list utilities)
+  // -------------------------------------------------------------------------
+
   const flatItems = useMemo(
     () => buildFlatModelList(providerSections, expandedProviders),
     [providerSections, expandedProviders]
   );
 
-  /**
-   * Filter flat items by filter string (case-insensitive)
-   * Matches provider name, model ID, or model name
-   */
-  const filteredFlatItems = useMemo(() => {
-    if (!filter) {
-      return flatItems;
-    }
-
-    const filterLower = filter.toLowerCase();
-    const matchingSectionIdxs = new Set<number>();
-
-    // First pass: find matching sections and models
-    flatItems.forEach(item => {
-      if (item.type === 'section') {
-        // Check provider name and ID
-        if (
-          item.section.providerName.toLowerCase().includes(filterLower) ||
-          item.section.providerId.toLowerCase().includes(filterLower)
-        ) {
-          matchingSectionIdxs.add(item.sectionIdx);
-        }
-      } else if (item.type === 'model') {
-        // Check model ID and name
-        if (
-          item.model.id.toLowerCase().includes(filterLower) ||
-          item.model.name.toLowerCase().includes(filterLower)
-        ) {
-          matchingSectionIdxs.add(item.sectionIdx);
-        }
-      }
-    });
-
-    // Second pass: build filtered list
-    return flatItems.filter(item => {
-      if (item.type === 'section') {
-        return matchingSectionIdxs.has(item.sectionIdx);
-      }
-      // For models, check if model itself matches
-      if (item.type === 'model') {
-        const modelMatches =
-          item.model.id.toLowerCase().includes(filterLower) ||
-          item.model.name.toLowerCase().includes(filterLower);
-        const sectionMatches =
-          item.section.providerName.toLowerCase().includes(filterLower) ||
-          item.section.providerId.toLowerCase().includes(filterLower);
-        return modelMatches || sectionMatches;
-      }
-      return false;
-    });
-  }, [flatItems, filter]);
+  const filteredFlatItems = useMemo(
+    () => filterFlatItems(flatItems, filter),
+    [flatItems, filter]
+  );
 
   // -------------------------------------------------------------------------
   // OPERATIONS
   // -------------------------------------------------------------------------
 
-  /**
-   * Load models from NAPI (both cloud and local profiles)
-   * TUI-075: Uses shared initializeModels function from modelInitializationService
-   */
   const loadModels = useCallback(async () => {
     await initializeModels();
   }, []);
 
-  /**
-   * Refresh models (clear cache and reload)
-   * TUI-075: Updates shared store instead of local state
-   */
   const refreshModels = useCallback(async () => {
     store.setIsRefreshing(true);
     try {
       await modelsRefreshCache();
-      // Reset initialized flag so initializeModels re-fetches
       store.setModelsInitialized(false);
       await loadModels();
     } finally {
@@ -303,9 +192,6 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     }
   }, [loadModels, store]);
 
-  /**
-   * Toggle section expansion
-   */
   const toggleSectionExpansion = useCallback((providerId: string) => {
     setExpandedProviders(prev => {
       const next = new Set(prev);
@@ -318,9 +204,6 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     });
   }, []);
 
-  /**
-   * Get current flat index from section/model indices
-   */
   const getCurrentFlatIndex = useCallback(() => {
     return sectionModelToFlatIndex(
       selectedSectionIdx,
@@ -329,9 +212,6 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     );
   }, [selectedSectionIdx, selectedModelIdx, filteredFlatItems]);
 
-  /**
-   * Navigate down in the list
-   */
   const navigateDown = useCallback(() => {
     const currentIdx = getCurrentFlatIndex();
     const newIdx = Math.min(currentIdx + 1, filteredFlatItems.length - 1);
@@ -342,15 +222,11 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     setSelectedSectionIdx(sectionIdx);
     setSelectedModelIdx(modelIdx);
 
-    // Auto-scroll: keep selection visible (Rule [12])
     if (newIdx >= scrollOffset + visibleHeight) {
       setScrollOffset(newIdx - visibleHeight + 1);
     }
   }, [getCurrentFlatIndex, filteredFlatItems, scrollOffset, visibleHeight]);
 
-  /**
-   * Navigate up in the list
-   */
   const navigateUp = useCallback(() => {
     const currentIdx = getCurrentFlatIndex();
     const newIdx = Math.max(currentIdx - 1, 0);
@@ -361,17 +237,19 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     setSelectedSectionIdx(sectionIdx);
     setSelectedModelIdx(modelIdx);
 
-    // Auto-scroll: keep selection visible
     if (newIdx < scrollOffset) {
       setScrollOffset(newIdx);
     }
   }, [getCurrentFlatIndex, filteredFlatItems, scrollOffset]);
 
   /**
-   * Build ModelSelection from section and model
+   * Build ModelSelection from section and model.
+   * MODEL-004: Also looks up facade from custom model config.
    */
   const selectModel = useCallback(
     (section: ProviderSection, model: NapiModelInfo): ModelSelection => {
+      const facade = lookupFacadeOverride(section, model.id);
+
       return {
         providerId: section.providerId,
         modelId: extractModelIdForRegistry(model.id),
@@ -383,6 +261,7 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
         maxOutput: model.maxOutput,
         profileName: section.profileName,
         profileConfig: section.profileConfig,
+        facade,
       };
     },
     []
@@ -392,18 +271,14 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
   // EFFECTS
   // -------------------------------------------------------------------------
 
-  // Load models on mount (only if not already initialized)
-  // TUI-075: Models are shared via store, so only load once
   useEffect(() => {
     if (!modelsInitialized && !isLoading) {
       void loadModels();
     }
   }, [loadModels, modelsInitialized, isLoading]);
 
-  // Reset scroll/filter when model selector opens
   useEffect(() => {
     if (isVisible && !prevIsVisible.current) {
-      // Selector just opened
       setScrollOffset(0);
       setFilter('');
       setIsFilterMode(false);
@@ -411,10 +286,8 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     prevIsVisible.current = isVisible;
   }, [isVisible]);
 
-  // Reset selection when filter changes
   useEffect(() => {
     if (filter && filteredFlatItems.length > 0) {
-      // Move selection to first item
       const { sectionIdx, modelIdx } = flatIndexToSectionModel(
         0,
         filteredFlatItems
@@ -430,7 +303,6 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
   // -------------------------------------------------------------------------
 
   return {
-    // Data (from shared store)
     currentModel,
     providerSections,
     flatItems,
@@ -438,22 +310,16 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     isLoading,
     isRefreshing,
     modelsInitialized,
-
-    // Selection state (local)
     selectedSectionIdx,
     selectedModelIdx,
     expandedProviders,
-
-    // Scroll/filter state (local)
     scrollOffset,
     visibleHeight,
     filter,
     isFilterMode,
-
-    // Visibility (local)
     isVisible,
-
-    // Actions - TUI-075: setCurrentModel uses shared store
+    // MODEL-004: Custom model form state (spread from composed hook)
+    ...customModelFormState,
     setCurrentModel: store.setCurrentModel,
     setSelectedSectionIdx,
     setSelectedModelIdx,
@@ -462,14 +328,10 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
     setFilter,
     setIsFilterMode,
     setIsVisible,
-
-    // Operations
     toggleSectionExpansion,
     refreshModels,
     loadModels,
     selectModel,
-
-    // Navigation helpers
     navigateUp,
     navigateDown,
     getCurrentFlatIndex,

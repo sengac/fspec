@@ -2468,7 +2468,9 @@ export declare function sessionSetGlobalChunkCallback(
 export declare function sessionSetModel(
   sessionId: string,
   providerId: string,
-  modelId: string
+  modelId: string,
+  contextWindow?: number | undefined | null,
+  maxOutputTokens?: number | undefined | null
 ): Promise<void>;
 
 /**
@@ -2477,11 +2479,20 @@ export declare function sessionSetModel(
  * This function sets the model without validating against the models.dev registry.
  * Use this for profile-based models where OPENAI_BASE_URL points to a local server.
  * The caller must ensure OPENAI_BASE_URL and OPENAI_API_KEY are set before calling.
+ *
+ * MODEL-005: Accepts optional context_window and max_output_tokens to propagate
+ * per-model limits from TypeScript ModelSelection through to ProviderManager.
+ *
+ * MODEL-004: Accepts optional facade_override for custom models that need
+ * agent loop dispatch through a different provider backend.
  */
 export declare function sessionSetModelProfile(
   sessionId: string,
   providerId: string,
-  modelId: string
+  modelId: string,
+  contextWindow?: number | undefined | null,
+  maxOutputTokens?: number | undefined | null,
+  facadeOverride?: string | undefined | null
 ): Promise<void>;
 
 /**

@@ -72,6 +72,8 @@ async fn select_model_re_detects_copilot_credentials_in_running_session() {
     let manager = ProviderManager::with_provider_and_model(
         "github-copilot",
         Some("gpt-4o-copilot"),
+        None,
+        None,
     )
     .expect("manager should accept github-copilot once copilot_auth.json exists");
 
@@ -107,6 +109,8 @@ async fn end_to_end_select_model_after_login_succeeds() {
     let manager = ProviderManager::with_provider_and_model(
         "github-copilot",
         Some("gpt-4o-copilot"),
+        None,
+        None,
     )
     .expect("select_model must succeed once copilot_auth.json is on disk");
 

@@ -44,6 +44,8 @@ export interface ModelSelectorViewProps {
   currentModelId?: string;
   /** Whether models are being refreshed */
   isRefreshing: boolean;
+  /** MODEL-004: Set of custom model IDs per section (for [C] badge) */
+  customModelIdsBySection?: Map<number, Set<string>>;
 }
 
 /**
@@ -106,6 +108,7 @@ export function ModelSelectorView({
   isFilterMode,
   currentModelId,
   isRefreshing,
+  customModelIdsBySection,
 }: ModelSelectorViewProps): React.ReactElement {
   // Calculate content width
   const contentWidth = width - 4 - 3;
@@ -198,6 +201,9 @@ export function ModelSelectorView({
                 // Model item
                 const isCurrent = currentModelId === item.model.id;
                 const modelDisplay = extractModelIdForDisplay(item.model.id);
+                const isCustom = customModelIdsBySection
+                  ?.get(item.sectionIdx)
+                  ?.has(item.model.id) ?? false;
 
                 return (
                   <Box key={`model-${item.model.id}`} width={contentWidth}>
@@ -208,6 +214,12 @@ export function ModelSelectorView({
                     >
                       {isSelected ? '  > ' : '    '}
                       {modelDisplay}
+                      {isCustom && (
+                        <Text color={isSelected ? 'black' : 'yellow'}>
+                          {' '}
+                          [C]
+                        </Text>
+                      )}
                       {item.model.reasoning && (
                         <Text color={isSelected ? 'black' : 'magenta'}>
                           {' '}
@@ -259,7 +271,7 @@ export function ModelSelectorView({
         <Box marginTop={1}>
           <Text dimColor>
             {
-              'Enter: select | ←→: collapse/expand | r: refresh | Tab: Switch to providers | / filter | Esc: close'
+              'Enter: select | ←→: collapse/expand | r: refresh | a: add model | e: edit | d: delete | / filter | Esc: close'
             }
           </Text>
         </Box>
@@ -267,7 +279,7 @@ export function ModelSelectorView({
         {/* Legend */}
         <Box marginTop={0}>
           <Text dimColor>
-            [R] Reasoning | [V] Vision | 📁 Profile (local server)
+            [R] Reasoning | [V] Vision | [C] Custom | 📁 Profile (local server)
           </Text>
         </Box>
       </Box>

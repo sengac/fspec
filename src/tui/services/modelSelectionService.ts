@@ -93,24 +93,36 @@ export async function selectModel(
     try {
       if (selection.profileConfig) {
         // Profile-based model: use sessionSetModelProfile (bypasses registry)
+        // MODEL-005: Pass context window and max output tokens
+        // MODEL-004: Pass facade override for custom model dispatch
         await sessionSetModelProfile(
           sessionId,
           selection.providerId,
-          selection.modelId
+          selection.modelId,
+          selection.contextWindow,
+          selection.maxOutput,
+          selection.facade ?? null
         );
       } else if (selection.providerId === 'codex') {
         // PROV-018: Codex models bypass registry (not in models.dev under 'codex')
+        // MODEL-005: Pass context window and max output tokens
         await sessionSetModelProfile(
           sessionId,
           selection.providerId,
-          selection.modelId
+          selection.modelId,
+          selection.contextWindow,
+          selection.maxOutput,
+          null
         );
       } else {
         // Cloud provider: use sessionSetModel (uses registry validation)
+        // MODEL-005: Pass context window and max output tokens
         await sessionSetModel(
           sessionId,
           selection.providerId,
-          selection.modelId
+          selection.modelId,
+          selection.contextWindow,
+          selection.maxOutput
         );
       }
       onRefreshRustState?.(sessionId);

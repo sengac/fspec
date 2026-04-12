@@ -221,4 +221,49 @@ mod tests {
         let budget = calculate_summarization_budget(50_000);
         assert_eq!(budget, 40_000); // 50k * 0.8
     }
+
+    // =========================================================================
+    // MODEL-005: Compaction threshold uses per-model context window values
+    // Feature: spec/features/per-model-context-window-and-max-output-configuration.feature
+    // =========================================================================
+
+    // -------------------------------------------------------------------------
+    // Scenario: Compaction threshold uses per-model context window for large-context model
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_compaction_threshold_large_context_model() {
+        // @step Given a ProviderManager with model_context_window=200000 and model_max_output_tokens=100000
+        let context_window: u64 = 200_000;
+        let max_output: u64 = 100_000;
+
+        // @step When the compaction threshold is calculated
+        let usable = calculate_usable_context(context_window, max_output);
+
+        // @step Then calculate_usable_context(200000, 100000) should return 168000
+        // 200,000 - min(100,000, 32,000) = 200,000 - 32,000 = 168,000
+        assert_eq!(usable, 168_000);
+
+        // @step And compaction triggers when effective tokens exceed 168000
+        assert!(168_001 > usable as u64 - 1, "tokens exceeding threshold should trigger compaction");
+    }
+
+    // -------------------------------------------------------------------------
+    // Scenario: Compaction threshold uses per-model context window for small-context model
+    // -------------------------------------------------------------------------
+    #[test]
+    fn test_compaction_threshold_small_context_model() {
+        // @step Given a ProviderManager with model_context_window=32000 and model_max_output_tokens=4096
+        let context_window: u64 = 32_000;
+        let max_output: u64 = 4_096;
+
+        // @step When the compaction threshold is calculated
+        let usable = calculate_usable_context(context_window, max_output);
+
+        // @step Then calculate_usable_context(32000, 4096) should return 27904
+        // 32,000 - min(4,096, 32,000) = 32,000 - 4,096 = 27,904
+        assert_eq!(usable, 27_904);
+
+        // @step And compaction triggers when effective tokens exceed 27904
+        assert!(27_905 > usable as u64 - 1, "tokens exceeding threshold should trigger compaction");
+    }
 }

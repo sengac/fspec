@@ -17,6 +17,6 @@
     "sourceMap": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "codelet/**/*", "bridge/**/*", "vite.config.ts", "vitest.config.ts", "vitest.e2e.config.ts"],
+  "include": ["src/**/*", "codelet/**/*"],
   "exclude": ["node_modules", "dist"]
 }

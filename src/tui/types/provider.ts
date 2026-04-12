@@ -5,7 +5,10 @@
  * Used by ModelSelectorView and related hooks.
  */
 
-import type { ProfileConfig } from '../../utils/provider-config';
+import type {
+  ProfileConfig,
+  CustomModelDefinition,
+} from '../../utils/provider-config';
 import type { NapiModelInfo } from '@sengac/codelet-napi';
 
 // Re-export NapiModelInfo as ProviderModel for component compatibility
@@ -27,6 +30,8 @@ export interface ProviderSection {
   profileConfig?: ProfileConfig;
   /** Whether the local server is unreachable */
   isUnreachable?: boolean;
+  /** MODEL-004: Set of custom model IDs in this section */
+  customModelIds?: Set<string>;
 }
 
 // ============================================================================
@@ -72,6 +77,9 @@ export interface ModelSelection {
 
   /** Profile config for local servers (PROV-007) */
   profileConfig?: ProfileConfig;
+
+  /** MODEL-004: Facade override for tool schema selection */
+  facade?: string;
 }
 
 /**

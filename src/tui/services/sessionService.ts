@@ -12,6 +12,8 @@ import {
   sessionManagerDestroy,
   sessionRestoreMessages,
   sessionRestoreTokenState,
+  sessionSetModel,
+  sessionSetModelProfile,
   persistenceCreateSessionWithProvider,
   persistenceLoadSession,
   persistenceGetSessionMessageEnvelopes,
@@ -66,6 +68,21 @@ export interface CreateSessionOptions {
   name?: string;
   /** If true, create an isolated session with a git worktree (GIT-029) */
   isolated?: boolean;
+  /** MODEL-005: Optional ModelSelection to propagate context window and max output tokens */
+  modelSelection?: {
+    /** Provider ID (e.g., "anthropic", "openai") */
+    providerId: string;
+    /** Model ID (e.g., "claude-sonnet-4") */
+    modelId: string;
+    /** Context window size in tokens */
+    contextWindow: number;
+    /** Maximum output tokens */
+    maxOutput: number;
+    /** Profile config if model is from a local profile (PROV-007) */
+    profileConfig?: { baseUrl: string };
+    /** MODEL-004: Facade override for custom model dispatch */
+    facade?: string;
+  };
 }
 
 /**
@@ -85,13 +102,17 @@ export function extractProviderId(modelPath: string): string {
  * This is the canonical way to create a session that's immediately usable.
  * Credentials are resolved internally by Rust.
  *
+ * MODEL-005: After creating the Rust session, propagates per-model context window
+ * and max output tokens from ModelSelection to the ProviderManager via NAPI.
+ * This ensures compaction uses the correct per-model limits from the start.
+ *
  * @returns The created session info
  * @throws If session creation fails
  */
 export async function createSession(
   options: CreateSessionOptions
 ): Promise<CreateSessionResult> {
-  const { modelPath, project, name } = options;
+  const { modelPath, project, name, modelSelection } = options;
   const sessionName = name || `New Session ${new Date().toLocaleString()}`;
 
   // Create persisted session first (gives us the ID)
@@ -113,6 +134,40 @@ export async function createSession(
     project,
     sessionName
   );
+
+  // MODEL-005: Propagate per-model context window and max output tokens to ProviderManager.
+  // sessionManagerCreateWithId doesn't accept these parameters, so we push them
+  // via sessionSetModel/sessionSetModelProfile after session creation.
+  if (modelSelection) {
+    try {
+      if (
+        modelSelection.profileConfig ||
+        modelSelection.providerId === 'codex'
+      ) {
+        await sessionSetModelProfile(
+          persistedSession.id,
+          modelSelection.providerId,
+          modelSelection.modelId,
+          modelSelection.contextWindow,
+          modelSelection.maxOutput,
+          modelSelection.facade ?? null
+        );
+      } else {
+        await sessionSetModel(
+          persistedSession.id,
+          modelSelection.providerId,
+          modelSelection.modelId,
+          modelSelection.contextWindow,
+          modelSelection.maxOutput
+        );
+      }
+    } catch (err) {
+      // MODEL-005: Log but don't fail — session is usable with provider-constant fallback
+      logger.error('MODEL-005: Failed to propagate model limits to session', {
+        error: err,
+      });
+    }
+  }
 
   return {
     sessionId: persistedSession.id,
@@ -303,13 +358,16 @@ export async function restoreSession(
  * allowing the AI agent to make file changes without affecting the main project.
  * The worktree is created at `.fspec/worktrees/<session-id>/`.
  *
+ * MODEL-005: After creating the Rust session, propagates per-model context window
+ * and max output tokens from ModelSelection to the ProviderManager via NAPI.
+ *
  * @returns The created session info with worktree path
  * @throws If session creation fails
  */
 export async function createIsolatedSession(
   options: CreateSessionOptions
 ): Promise<CreateIsolatedSessionResult> {
-  const { modelPath, project, name } = options;
+  const { modelPath, project, name, modelSelection } = options;
   const sessionName = name || `Isolated Session ${new Date().toLocaleString()}`;
 
   // Create persisted session first (gives us the ID)
@@ -331,6 +389,41 @@ export async function createIsolatedSession(
     project,
     sessionName
   );
+
+  // MODEL-005: Propagate per-model context window and max output tokens to ProviderManager.
+  // sessionManagerCreateIsolated doesn't accept these parameters, so we push them
+  // via sessionSetModel/sessionSetModelProfile after session creation.
+  if (modelSelection) {
+    try {
+      if (
+        modelSelection.profileConfig ||
+        modelSelection.providerId === 'codex'
+      ) {
+        await sessionSetModelProfile(
+          persistedSession.id,
+          modelSelection.providerId,
+          modelSelection.modelId,
+          modelSelection.contextWindow,
+          modelSelection.maxOutput,
+          modelSelection.facade ?? null
+        );
+      } else {
+        await sessionSetModel(
+          persistedSession.id,
+          modelSelection.providerId,
+          modelSelection.modelId,
+          modelSelection.contextWindow,
+          modelSelection.maxOutput
+        );
+      }
+    } catch (err) {
+      // MODEL-005: Log but don't fail — session is usable with provider-constant fallback
+      logger.error(
+        'MODEL-005: Failed to propagate model limits to isolated session',
+        { error: err }
+      );
+    }
+  }
 
   return {
     sessionId: persistedSession.id,

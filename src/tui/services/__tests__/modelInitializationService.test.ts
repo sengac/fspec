@@ -35,18 +35,14 @@ const napiMocks = vi.hoisted(() => ({
   claudeOauthGetTokens: vi.fn(),
 }));
 
-vi.mock('@sengac/codelet-napi', async importOriginal => {
-  const original =
-    await importOriginal<typeof import('@sengac/codelet-napi')>();
-  return {
-    ...original,
-    modelsListAll: () => napiMocks.modelsListAll(),
-    modelsListLocalOpenai: (baseUrl: string) =>
-      napiMocks.modelsListLocalOpenai(baseUrl),
-    codexOauthGetTokens: () => napiMocks.codexOauthGetTokens(),
-    claudeOauthGetTokens: () => napiMocks.claudeOauthGetTokens(),
-  };
-});
+vi.mock('@sengac/codelet-napi', () => ({
+  modelsListAll: () => napiMocks.modelsListAll(),
+  modelsListLocalOpenai: (baseUrl: string) =>
+    napiMocks.modelsListLocalOpenai(baseUrl),
+  codexOauthGetTokens: () => napiMocks.codexOauthGetTokens(),
+  claudeOauthGetTokens: () => napiMocks.claudeOauthGetTokens(),
+  credentialsReload: vi.fn().mockResolvedValue(true),
+}));
 
 // Logger mock - silence output
 vi.mock('../../../utils/logger', () => ({

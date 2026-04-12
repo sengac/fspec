@@ -230,7 +230,7 @@ fn test_provider_manager_openai_max_output_tokens_env_var() {
     std::env::set_var("OPENAI_MAX_OUTPUT_TOKENS", "16384");
 
     // @step When ProviderManager::max_output_tokens() is called for the OpenAI provider
-    let manager = ProviderManager::for_testing(ProviderType::OpenAI);
+    let manager = ProviderManager::for_testing(ProviderType::OpenAI, None, None);
     let result = manager.max_output_tokens();
 
     // @step Then the returned value is 16384
@@ -256,7 +256,7 @@ fn test_provider_manager_openai_max_output_tokens_default() {
     // Ensure env var is not set
     std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
 
-    let manager = ProviderManager::for_testing(ProviderType::OpenAI);
+    let manager = ProviderManager::for_testing(ProviderType::OpenAI, None, None);
     let result = manager.max_output_tokens();
 
     // Should return the default when no env var is set
@@ -272,7 +272,7 @@ fn test_provider_manager_openai_max_output_tokens_default() {
 fn test_provider_manager_openai_max_output_tokens_invalid_env_var() {
     std::env::set_var("OPENAI_MAX_OUTPUT_TOKENS", "not_a_number");
 
-    let manager = ProviderManager::for_testing(ProviderType::OpenAI);
+    let manager = ProviderManager::for_testing(ProviderType::OpenAI, None, None);
     let result = manager.max_output_tokens();
 
     // Should fall back to default when env var is not parseable

@@ -4,12 +4,30 @@
  * Provider settings (enabled, defaultModel, baseUrl, authMethod) are stored
  * in ~/.fspec/fspec-config.json under the "providers" key.
  *
- * This module supports all 19 rig providers with their specific configuration needs.
+ * This module contains interfaces and core config load/save functions.
+ * Static registry data is in provider-registry.ts.
+ * Profile management is in profile-management.ts.
  */
 
 import { loadConfig, writeConfig, getFspecUserDir } from './config';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
+
+// Re-export everything from extracted modules for backward compatibility
+export {
+  SUPPORTED_PROVIDERS,
+  type ProviderId,
+  getProviderRegistry,
+  getProviderRegistryEntry,
+  isOAuthProvider,
+} from './provider-registry';
+
+export {
+  loadProviderProfiles,
+  saveProfile,
+  deleteProfile,
+  getProfile,
+} from './profile-management';
 
 /**
  * Provider authentication method
@@ -48,11 +66,34 @@ export interface ProfileConfig {
   contextWindow?: number;
   /** Max output tokens (optional) */
   maxOutputTokens?: number;
+  /** MODEL-004: Custom models for this profile (optional, backward-compatible) */
+  customModels?: CustomModelDefinition[];
 }
 
 /**
- * Provider registry entry
+ * MODEL-004: Custom model definition for profile-based models.
+ *
+ * Allows users to manually register models that aren't listed by /v1/models,
+ * configure per-model context windows, and override the facade type for
+ * tool schema selection.
  */
+export interface CustomModelDefinition {
+  /** Model ID string sent to the API (required) */
+  id: string;
+  /** Human-readable display name (optional) */
+  displayName?: string;
+  /** Facade override for tool schema selection (optional) */
+  facade?: 'openai' | 'codex' | 'claude' | 'gemini' | 'zai';
+  /** Context window size in tokens (optional) */
+  contextWindow?: number;
+  /** Maximum output tokens (optional) */
+  maxOutputTokens?: number;
+  /** Whether model supports reasoning/thinking (optional) */
+  reasoning?: boolean;
+  /** Whether model supports vision/image input (optional) */
+  hasVision?: boolean;
+}
+
 /**
  * Provider authentication type (credential acquisition strategy)
  * - 'api-key': Traditional API key authentication
@@ -60,6 +101,9 @@ export interface ProfileConfig {
  */
 export type AuthType = 'api-key' | 'oauth';
 
+/**
+ * Provider registry entry
+ */
 export interface ProviderRegistryEntry {
   id: string;
   name: string;
@@ -69,234 +113,6 @@ export interface ProviderRegistryEntry {
   authType: AuthType;
   requiresApiKey: boolean;
   description: string;
-}
-
-/**
- * Supported providers (those with tool calling support)
- */
-export const SUPPORTED_PROVIDERS = [
-  'openai',
-  'anthropic',
-  'cohere',
-  'gemini',
-  'mistral',
-  'xai',
-  'together',
-  'huggingface',
-  'openrouter',
-  'groq',
-  'deepseek',
-  'moonshot',
-  'galadriel',
-  'azure',
-  'zai',
-  'codex',
-  'github-copilot',
-] as const;
-
-export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number];
-
-/**
- * Provider registry with configuration details for each provider
- */
-const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
-  {
-    id: 'openai',
-    name: 'OpenAI API',
-    baseUrl: 'https://api.openai.com/v1',
-    envVar: '',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: false,
-    description:
-      'OpenAI-compatible API for local models (vLLM, Ollama, etc.). Cloud OpenAI models use Codex credentials.',
-  },
-  {
-    id: 'anthropic',
-    name: 'Anthropic',
-    baseUrl: 'https://api.anthropic.com/v1',
-    envVar: 'ANTHROPIC_API_KEY',
-    authMethod: 'x-api-key',
-    authType: 'oauth',
-    requiresApiKey: true,
-    description: 'Anthropic Claude models',
-  },
-  {
-    id: 'cohere',
-    name: 'Cohere',
-    baseUrl: 'https://api.cohere.ai/v1',
-    envVar: 'COHERE_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Cohere language models',
-  },
-  {
-    id: 'gemini',
-    name: 'Google Gemini',
-    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-    envVar: 'GOOGLE_GENERATIVE_AI_API_KEY',
-    authMethod: 'query_param',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Google Gemini models',
-  },
-  {
-    id: 'mistral',
-    name: 'Mistral AI',
-    baseUrl: 'https://api.mistral.ai/v1',
-    envVar: 'MISTRAL_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Mistral AI models',
-  },
-  {
-    id: 'xai',
-    name: 'xAI',
-    baseUrl: 'https://api.x.ai/v1',
-    envVar: 'XAI_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'xAI Grok models',
-  },
-  {
-    id: 'together',
-    name: 'Together AI',
-    baseUrl: 'https://api.together.xyz/v1',
-    envVar: 'TOGETHER_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Together AI hosted models',
-  },
-  {
-    id: 'huggingface',
-    name: 'Hugging Face',
-    baseUrl: 'https://api-inference.huggingface.co/models',
-    envVar: 'HUGGINGFACE_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Hugging Face inference API',
-  },
-  {
-    id: 'openrouter',
-    name: 'OpenRouter',
-    baseUrl: 'https://openrouter.ai/api/v1',
-    envVar: 'OPENROUTER_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'OpenRouter unified API',
-  },
-  {
-    id: 'groq',
-    name: 'Groq',
-    baseUrl: 'https://api.groq.com/openai/v1',
-    envVar: 'GROQ_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Groq fast inference',
-  },
-  {
-    id: 'deepseek',
-    name: 'DeepSeek',
-    baseUrl: 'https://api.deepseek.com/v1',
-    envVar: 'DEEPSEEK_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'DeepSeek models',
-  },
-  {
-    id: 'moonshot',
-    name: 'Moonshot',
-    baseUrl: 'https://api.moonshot.cn/v1',
-    envVar: 'MOONSHOT_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Moonshot AI models',
-  },
-  {
-    id: 'galadriel',
-    name: 'Galadriel',
-    baseUrl: 'https://api.galadriel.com/v1',
-    envVar: 'GALADRIEL_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Galadriel AI models',
-  },
-  {
-    id: 'azure',
-    name: 'Azure OpenAI',
-    baseUrl: '', // Requires custom endpoint
-    envVar: 'AZURE_OPENAI_API_KEY',
-    authMethod: 'x-api-key',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description: 'Azure OpenAI Service',
-  },
-  {
-    id: 'zai',
-    name: 'Z.AI',
-    baseUrl: 'https://api.z.ai/api/paas/v4',
-    envVar: 'ZAI_API_KEY',
-    authMethod: 'bearer',
-    authType: 'api-key',
-    requiresApiKey: true,
-    description:
-      'Z.AI GLM models. Use ZAI_API_KEY for normal API, ZAI_PLAN_API_KEY for coding plan API (https://api.z.ai/api/coding/paas/v4)',
-  },
-  {
-    id: 'codex',
-    name: 'Codex (ChatGPT)',
-    baseUrl: 'https://api.openai.com/v1',
-    envVar: 'CODEX_API_KEY',
-    authMethod: 'bearer',
-    authType: 'oauth',
-    requiresApiKey: false,
-    description: 'OpenAI Codex via ChatGPT Pro/Plus OAuth',
-  },
-  {
-    id: 'github-copilot',
-    name: 'GitHub Copilot',
-    baseUrl: 'https://api.githubcopilot.com',
-    envVar: '',
-    authMethod: 'bearer',
-    authType: 'oauth',
-    requiresApiKey: false,
-    description:
-      'GitHub Copilot via OAuth device flow (RFC 8628). Supports github.com and GitHub Enterprise deployments. Tokens are stored in ~/.fspec/credentials/copilot_auth.json and never expire.',
-  },
-];
-
-/**
- * Get the provider registry (list of provider IDs)
- */
-export function getProviderRegistry(): string[] {
-  return [...SUPPORTED_PROVIDERS];
-}
-
-/**
- * Get detailed registry entry for a provider
- */
-export function getProviderRegistryEntry(
-  providerId: string
-): ProviderRegistryEntry | undefined {
-  return PROVIDER_REGISTRY.find(p => p.id === providerId);
-}
-
-/**
- * Check if a provider uses OAuth authentication
- */
-export function isOAuthProvider(providerId: string): boolean {
-  const entry = getProviderRegistryEntry(providerId);
-  return entry?.authType === 'oauth';
 }
 
 /**
@@ -325,12 +141,12 @@ export async function saveProviderConfig(
 ): Promise<void> {
   // Load existing user config
   const userConfigPath = join(getFspecUserDir(), 'fspec-config.json');
-  let config: any = {};
+  let config: Record<string, unknown> = {};
 
   try {
     const content = await readFile(userConfigPath, 'utf-8');
     if (content.trim()) {
-      config = JSON.parse(content);
+      config = JSON.parse(content) as Record<string, unknown>;
     }
   } catch {
     // File doesn't exist, start with empty config
@@ -341,9 +157,11 @@ export async function saveProviderConfig(
     config.providers = {};
   }
 
+  const providers = config.providers as Record<string, Record<string, unknown>>;
+
   // Merge new config with existing provider config
-  config.providers[providerId] = {
-    ...config.providers[providerId],
+  providers[providerId] = {
+    ...providers[providerId],
     ...providerConfig,
   };
 
@@ -358,6 +176,9 @@ export async function isProviderConfigured(
   providerId: string
 ): Promise<boolean> {
   const config = await loadProviderConfig(providerId);
+
+  // Lazy import to avoid circular dependency
+  const { getProviderRegistryEntry } = await import('./provider-registry');
   const registry = getProviderRegistryEntry(providerId);
 
   if (!registry) {
@@ -390,9 +211,16 @@ export async function getAllProvidersWithStatus(): Promise<
     config: ProviderConfig;
   }>
 > {
+  // Lazy import to avoid circular dependency
+  const { getProviderRegistryEntry, SUPPORTED_PROVIDERS: providers } =
+    await import('./provider-registry');
   const results = [];
 
-  for (const entry of PROVIDER_REGISTRY) {
+  for (const id of providers) {
+    const entry = getProviderRegistryEntry(id);
+    if (!entry) {
+      continue;
+    }
     const config = await loadProviderConfig(entry.id);
     const configured = await isProviderConfigured(entry.id);
 
@@ -406,140 +234,4 @@ export async function getAllProvidersWithStatus(): Promise<
   }
 
   return results;
-}
-
-// ============================================
-// PROV-007: Profile Management Functions
-// ============================================
-
-/**
- * Load all profiles for a provider
- *
- * @param providerId - The provider ID (e.g., "openai")
- * @returns Record of profile name to ProfileConfig
- */
-export async function loadProviderProfiles(
-  providerId: string
-): Promise<Record<string, ProfileConfig>> {
-  const config = await loadProviderConfig(providerId);
-  return config.profiles || {};
-}
-
-/**
- * Save a profile for a provider
- *
- * Creates or updates a profile with the given name.
- *
- * @param providerId - The provider ID (e.g., "openai")
- * @param profileName - The profile name (e.g., "work-vllm")
- * @param profileConfig - The profile configuration
- */
-export async function saveProfile(
-  providerId: string,
-  profileName: string,
-  profileConfig: ProfileConfig
-): Promise<void> {
-  // Guard: profiles are only supported for OpenAI API provider
-  if (providerId !== 'openai') {
-    throw new Error('Profiles are only supported for OpenAI API provider');
-  }
-
-  // Load existing user config
-  const userConfigPath = join(getFspecUserDir(), 'fspec-config.json');
-  let config: Record<string, unknown> = {};
-
-  try {
-    const content = await readFile(userConfigPath, 'utf-8');
-    if (content.trim()) {
-      config = JSON.parse(content) as Record<string, unknown>;
-    }
-  } catch {
-    // File doesn't exist, start with empty config
-  }
-
-  // Ensure providers object exists
-  if (!config.providers) {
-    config.providers = {};
-  }
-
-  const providers = config.providers as Record<string, Record<string, unknown>>;
-
-  // Ensure provider object exists
-  if (!providers[providerId]) {
-    providers[providerId] = {};
-  }
-
-  // Ensure profiles object exists
-  if (!providers[providerId].profiles) {
-    providers[providerId].profiles = {};
-  }
-
-  const profiles = providers[providerId].profiles as Record<
-    string,
-    ProfileConfig
-  >;
-
-  // Save the profile
-  profiles[profileName] = profileConfig;
-
-  // Write updated config
-  await writeConfig('user', config);
-}
-
-/**
- * Delete a profile from a provider
- *
- * @param providerId - The provider ID (e.g., "openai")
- * @param profileName - The profile name to delete
- */
-export async function deleteProfile(
-  providerId: string,
-  profileName: string
-): Promise<void> {
-  // Load existing user config
-  const userConfigPath = join(getFspecUserDir(), 'fspec-config.json');
-  let config: Record<string, unknown> = {};
-
-  try {
-    const content = await readFile(userConfigPath, 'utf-8');
-    if (content.trim()) {
-      config = JSON.parse(content) as Record<string, unknown>;
-    }
-  } catch {
-    // File doesn't exist, nothing to delete
-    return;
-  }
-
-  const providers = config.providers as
-    | Record<string, Record<string, unknown>>
-    | undefined;
-  if (!providers?.[providerId]?.profiles) {
-    return;
-  }
-
-  const profiles = providers[providerId].profiles as Record<
-    string,
-    ProfileConfig
-  >;
-
-  // Delete the profile
-  delete profiles[profileName];
-
-  // Write updated config
-  await writeConfig('user', config);
-}
-
-/**
- * Get a specific profile for a provider
- *
- * @param providerId - The provider ID (e.g., "openai")
- * @param profileName - The profile name
- * @returns The profile configuration or undefined if not found
- */
-export async function getProfile(
-  providerId: string,
-  profileName: string
-): Promise<ProfileConfig | undefined> {
-  const profiles = await loadProviderProfiles(providerId);
-  return profiles[profileName];
 }

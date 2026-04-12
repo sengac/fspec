@@ -30,9 +30,13 @@ use crate::session_search_handler::resolve_message_content;
 /// * `project` - Project path for spawned sessions
 /// * `spawner_model_string` - Full model string in registry format (e.g. "anthropic/claude-opus-4-6")
 ///   from ProviderManager::selected_model_string(). Passed directly to create_session_with_id.
+/// * `spawner_context_window` - MODEL-005: Per-model context window from spawner session
+/// * `spawner_max_output_tokens` - MODEL-005: Per-model max output tokens from spawner session
 pub fn create_handler(
     project: String,
     spawner_model_string: Option<String>,
+    spawner_context_window: Option<usize>,
+    spawner_max_output_tokens: Option<usize>,
 ) -> AgentManagerHandler {
     Arc::new(move |action: AgentManagerAction, calling_session_id: Uuid| {
         let session_manager = SessionManager::instance();
@@ -45,6 +49,8 @@ pub fn create_handler(
                     &project,
                     spawner_model_string.as_deref(),
                     role,
+                    spawner_context_window,
+                    spawner_max_output_tokens,
                 )
             }
             AgentManagerAction::List => {
@@ -80,12 +86,17 @@ pub fn create_handler(
 ///
 /// AMGR-013: Takes the full model string directly from ProviderManager::selected_model_string()
 /// in registry format (e.g. "anthropic/claude-opus-4-6"). No provider name translation needed.
+///
+/// MODEL-005: Accepts spawner's per-model context window and max output tokens so that
+/// subordinate sessions inherit per-model limits from the parent.
 fn handle_spawn(
     session_manager: &SessionManager,
     spawner_id: Uuid,
     project: &str,
     model_string: Option<&str>,
     role: Option<String>,
+    spawner_context_window: Option<usize>,
+    spawner_max_output_tokens: Option<usize>,
 ) -> AgentManagerResult {
     let subordinate_id = Uuid::new_v4();
     let name = format!("Agent {}", &subordinate_id.to_string()[..8]);
@@ -156,6 +167,28 @@ fn handle_spawn(
             code: "internal_error".to_string(),
             message: format!("Failed to create subordinate session: {e}"),
         };
+    }
+
+    // MODEL-005: Propagate spawner's per-model context window and max output tokens
+    // to the subordinate session's ProviderManager. create_session_with_id passes None
+    // for profile/codex models, so we override them here from the spawner's values.
+    if spawner_context_window.is_some() || spawner_max_output_tokens.is_some() {
+        if let Ok(sub_session) = session_manager.get_session(&subordinate_id.to_string()) {
+            let rt = tokio::runtime::Handle::current();
+            tokio::task::block_in_place(|| {
+                rt.block_on(async {
+                    let mut inner = sub_session.inner.lock().await;
+                    inner.provider_manager_mut().override_model_limits(
+                        spawner_context_window,
+                        spawner_max_output_tokens,
+                    );
+                });
+            });
+            tracing::debug!(
+                "MODEL-005: Propagated context_window={:?}, max_output={:?} to subordinate {}",
+                spawner_context_window, spawner_max_output_tokens, subordinate_id
+            );
+        }
     }
 
     // Register the spawner→subordinate relationship in ChainOfCommand

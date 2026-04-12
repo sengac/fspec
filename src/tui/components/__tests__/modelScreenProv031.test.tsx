@@ -39,18 +39,14 @@ const napiMocks = vi.hoisted(() => ({
   claudeOauthGetTokens: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock('@sengac/codelet-napi', async importOriginal => {
-  const original =
-    await importOriginal<typeof import('@sengac/codelet-napi')>();
-  return {
-    ...original,
-    modelsListAll: () => napiMocks.modelsListAll(),
-    modelsListLocalOpenai: (baseUrl: string) =>
-      napiMocks.modelsListLocalOpenai(baseUrl),
-    codexOauthGetTokens: () => napiMocks.codexOauthGetTokens(),
-    claudeOauthGetTokens: () => napiMocks.claudeOauthGetTokens(),
-  };
-});
+vi.mock('@sengac/codelet-napi', () => ({
+  modelsListAll: () => napiMocks.modelsListAll(),
+  modelsListLocalOpenai: (baseUrl: string) =>
+    napiMocks.modelsListLocalOpenai(baseUrl),
+  codexOauthGetTokens: () => napiMocks.codexOauthGetTokens(),
+  claudeOauthGetTokens: () => napiMocks.claudeOauthGetTokens(),
+  credentialsReload: vi.fn().mockResolvedValue(true),
+}));
 
 vi.mock('../../../utils/logger', () => ({
   logger: { debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() },
@@ -398,15 +394,15 @@ describe('Feature: Model Screen — PROV-031 bug fixes', () => {
       const frame = lastFrame() ?? '';
 
       // @step When the footer is displayed
-      // @step Then the footer text reads 'Enter: select | ←→: collapse/expand | r: refresh | Tab: Switch to providers | / filter | Esc: close'
-      expect(frame).toContain('Tab: Switch to providers');
+      // @step Then the footer text reads 'Enter: select | ←→: collapse/expand | r: refresh | a: add model | e: edit | d: delete | / filter | Esc: close'
+      expect(frame).toContain('a: add model');
       expect(frame).not.toContain('Tab: settings');
       expect(frame).toContain('Enter: select');
       expect(frame).toContain('r: refresh');
       expect(frame).toContain('Esc: close');
       // Full footer string from the spec (FIX-5: assert complete string, not just one fragment)
       expect(frame).toContain(
-        'r: refresh | Tab: Switch to providers | / filter | Esc: close'
+        'r: refresh | a: add model | e: edit | d: delete | / filter | Esc: close'
       );
     });
   });

@@ -86,6 +86,9 @@ import {
   sessionGetStatus,
   sessionManagerList,
   sessionManagerCreateWithId,
+  // MODEL-005: sessionSetModel/Profile for propagating per-model limits after deferred creation
+  sessionSetModel as napiSessionSetModel,
+  sessionSetModelProfile as napiSessionSetModelProfile,
   // TUI-068: session destroy REMOVED - use destroySession from sessionService
   sessionSetPendingInput,
   sessionGetPendingInput,
@@ -1746,6 +1749,39 @@ export const AgentView: React.FC<AgentViewProps> = ({
           throw new Error(
             `Session registration failed: ${err instanceof Error ? err.message : String(err)}`
           );
+        }
+
+        // MODEL-005: Propagate per-model context window and max output tokens to ProviderManager.
+        // sessionManagerCreateWithId only passes the model string — for profile/codex models
+        // set_model_direct is called with None context params. For cloud models, select_model
+        // sets values from the models.dev registry. Either way, we push the TypeScript-side
+        // ModelSelection values to ensure they take priority.
+        if (currentModel) {
+          try {
+            if (currentModel.profileConfig || currentModel.providerId === 'codex') {
+              await napiSessionSetModelProfile(
+                activeSessionId,
+                currentModel.providerId,
+                currentModel.modelId,
+                currentModel.contextWindow,
+                currentModel.maxOutput,
+                currentModel.facade ?? null
+              );
+            } else {
+              await napiSessionSetModel(
+                activeSessionId,
+                currentModel.providerId,
+                currentModel.modelId,
+                currentModel.contextWindow,
+                currentModel.maxOutput
+              );
+            }
+          } catch (err) {
+            // MODEL-005: Log but don't fail — session works with provider-constant fallback
+            logger.error('MODEL-005: Failed to propagate model limits after deferred session creation', {
+              error: err,
+            });
+          }
         }
 
         // If debug was enabled before session was created, sync debug state to session
@@ -3568,16 +3604,33 @@ export const AgentView: React.FC<AgentViewProps> = ({
         );
 
         // GIT-029: Use isolated session creation when requested
+        // MODEL-005: Pass modelSelection to propagate per-model context window and max output
         let result;
         if (isolated) {
           result = await createIsolatedSession({
             modelPath,
             project,
+            modelSelection: {
+              providerId: currentModel.providerId,
+              modelId: currentModel.modelId,
+              contextWindow: currentModel.contextWindow,
+              maxOutput: currentModel.maxOutput,
+              profileConfig: currentModel.profileConfig,
+              facade: currentModel.facade,
+            },
           });
         } else {
           result = await createSession({
             modelPath,
             project,
+            modelSelection: {
+              providerId: currentModel.providerId,
+              modelId: currentModel.modelId,
+              contextWindow: currentModel.contextWindow,
+              maxOutput: currentModel.maxOutput,
+              profileConfig: currentModel.profileConfig,
+              facade: currentModel.facade,
+            },
           });
         }
 
@@ -3768,11 +3821,20 @@ export const AgentView: React.FC<AgentViewProps> = ({
         );
 
         // GIT-031: Use pendingIsolatedSession to determine if isolated session should be created
+        // MODEL-005: Pass modelSelection to propagate per-model context window and max output
         let result;
         if (pendingIsolatedSession) {
           result = await createIsolatedSession({
             modelPath,
             project,
+            modelSelection: {
+              providerId: currentModel.providerId,
+              modelId: currentModel.modelId,
+              contextWindow: currentModel.contextWindow,
+              maxOutput: currentModel.maxOutput,
+              profileConfig: currentModel.profileConfig,
+              facade: currentModel.facade,
+            },
           });
           logger.debug(
             `GIT-031: Auto-created isolated session ${result.sessionId} at ${result.worktreePath}`
@@ -3781,6 +3843,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
           result = await createSession({
             modelPath,
             project,
+            modelSelection: {
+              providerId: currentModel.providerId,
+              modelId: currentModel.modelId,
+              contextWindow: currentModel.contextWindow,
+              maxOutput: currentModel.maxOutput,
+              profileConfig: currentModel.profileConfig,
+              facade: currentModel.facade,
+            },
           });
         }
 

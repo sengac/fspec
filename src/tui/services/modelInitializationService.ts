@@ -13,18 +13,7 @@
  * This runs on AgentView mount to ensure models are available for session creation.
  */
 
-import {
-  modelsListAll,
-  modelsListLocalOpenai,
-  codexOauthGetTokens,
-  claudeOauthGetTokens,
-} from '@sengac/codelet-napi';
-import type { NapiModelInfo, NapiProviderModels } from '@sengac/codelet-napi';
-import {
-  loadProviderProfiles,
-  getProviderRegistryEntry,
-} from '../../utils/provider-config';
-import { getProviderConfig } from '../../utils/credentials';
+import type { NapiModelInfo } from '@sengac/codelet-napi';
 import { loadConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import {
@@ -32,19 +21,14 @@ import {
   type ProviderSection,
   type ModelSelection,
 } from '../store/modelStore';
-import {
-  mapProviderIdToInternal,
-  mapModelsDevToRegistryId,
-} from '../utils/provider-mapping';
+import { mapProviderIdToInternal } from '../utils/provider-mapping';
 import {
   parseModelString,
   findSectionForPersistedModel,
 } from '../utils/model-selection';
-import {
-  loadCodexAllowlist,
-  filterByCodexAllowlist,
-} from './codexAllowlistService';
-import type { CodexModelEntry } from './codexAllowlistService';
+import { lookupFacadeOverride } from '../utils/custom-model-utils';
+import { loadCloudModels, buildCloudSections } from './cloudSectionBuilder';
+import { loadProfileSections } from './profileSectionBuilder';
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -76,253 +60,8 @@ export interface ModelInitializationResult {
 }
 
 // =============================================================================
-// CORE SERVICE FUNCTIONS
+// MODEL SELECTION HELPERS
 // =============================================================================
-
-/**
- * Load cloud provider models from models.dev
- */
-async function loadCloudModels(): Promise<NapiProviderModels[]> {
-  try {
-    const allModels = await modelsListAll();
-    logger.debug(`Loaded ${allModels.length} providers from models.dev`);
-    return allModels;
-  } catch (err) {
-    const errorMsg = err instanceof Error ? err.message : String(err);
-    logger.error(`Failed to load models from models.dev: ${errorMsg}`);
-    return [];
-  }
-}
-
-/**
- * Build provider sections from cloud models with credentials check
- *
- * IMPORTANT: OpenAI cloud models (from models.dev) are ONLY accessible via
- * Codex credentials (OAuth tokens or CODEX_API_KEY). The 'openai' registry
- * entry has requiresApiKey: false because it's designed for local profiles
- * (vLLM, Ollama), but cloud models need explicit Codex credentials.
- * When Codex credentials exist, all OpenAI cloud models are shown under
- * "Codex (ChatGPT)" — never as a bare "OpenAI" section.
- */
-async function buildCloudSections(
-  allModels: NapiProviderModels[]
-): Promise<ProviderSection[]> {
-  // PROV-018: Check for Codex OAuth tokens once, reuse across all providers
-  const hasCodexOAuth = checkCodexOAuthTokens();
-  // Check for Codex API key (CODEX_API_KEY env var or credentials file)
-  const codexConfig = await getProviderConfig('codex');
-  const hasCodexApiKey = !!codexConfig.apiKey;
-  const hasCodexCredentials = hasCodexOAuth || hasCodexApiKey;
-  // PROV-026: Check for Claude OAuth tokens (async — claude_auth.json uses tokio::fs)
-  const hasClaudeOAuth = await checkClaudeOAuthTokens();
-
-  const sectionsWithCreds = await Promise.all(
-    allModels.map(async pm => {
-      const internalName = mapProviderIdToInternal(pm.providerId);
-      const registryId = mapModelsDevToRegistryId(pm.providerId);
-      const registryEntry = getProviderRegistryEntry(registryId);
-      const providerConfig = await getProviderConfig(registryId);
-      let hasCredentials =
-        registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
-      const toolCallModels = pm.models.filter(m => m.toolCall);
-
-      // OpenAI cloud models require Codex credentials (OAuth or CODEX_API_KEY).
-      // The 'openai' registry has requiresApiKey: false (for local profiles),
-      // but cloud models must never appear without explicit Codex credentials.
-      if (pm.providerId === 'openai') {
-        hasCredentials = hasCodexCredentials;
-      }
-
-      // PROV-026: Override hasCredentials for anthropic when Claude OAuth tokens exist
-      if (pm.providerId === 'anthropic' && hasClaudeOAuth) {
-        hasCredentials = true;
-      }
-
-      logger.debug(
-        `Provider ${pm.providerId}: registryId=${registryId}, hasApiKey=${!!providerConfig.apiKey}, source=${providerConfig.source}, hasCredentials=${hasCredentials}`
-      );
-
-      return {
-        providerId: pm.providerId,
-        providerName: pm.providerName,
-        internalName,
-        models: toolCallModels,
-        hasCredentials,
-      };
-    })
-  );
-
-  const credentialSections = sectionsWithCreds.filter(s => s.hasCredentials);
-
-  // PROV-018/PROV-033: Extract OpenAI models into synthetic "Codex (ChatGPT)"
-  // section when ANY Codex credentials exist (OAuth tokens OR CODEX_API_KEY).
-  // PROV-034: Load allowlist for filtering to Codex-supported models only.
-  if (hasCodexCredentials) {
-    const codexAllowlist = await loadCodexAllowlist();
-    return extractCodexSection(
-      credentialSections,
-      sectionsWithCreds,
-      codexAllowlist
-    );
-  }
-
-  return credentialSections;
-}
-
-/**
- * PROV-018: Check if Codex OAuth tokens exist.
- * Pure boolean check — isolates NAPI call for testability.
- */
-function checkCodexOAuthTokens(): boolean {
-  try {
-    const tokens = codexOauthGetTokens();
-    return tokens !== null && tokens !== undefined;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * PROV-026: Check if Claude OAuth tokens exist.
- * Async because claudeOauthGetTokens() reads claude_auth.json via tokio::fs.
- * Returns true if tokens exist, false otherwise.
- */
-async function checkClaudeOAuthTokens(): Promise<boolean> {
-  try {
-    const tokens = await claudeOauthGetTokens();
-    return tokens !== null && tokens !== undefined;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * PROV-018/PROV-033/PROV-034: Extract models from the OpenAI provider section
- * into a synthetic "Codex (ChatGPT)" section, filtered by the Codex allowlist.
- *
- * When Codex OAuth tokens exist, OpenAI cloud models are accessed via
- * Codex OAuth. PROV-033 removed the broken isCodexModel() filter.
- * PROV-034 adds allowlist-based filtering so only Codex-supported models
- * (from codex-models.json) appear — unsupported models like o3-pro,
- * gpt-4.1, etc. are hidden.
- *
- * @param credentialSections - Sections that already passed credentials check
- * @param allSections - All sections (including those without credentials)
- * @param codexAllowlist - Array of CodexModelEntry objects with slug, visibility, priority
- * @returns Updated sections array with synthetic Codex section, OpenAI section removed
- */
-function extractCodexSection(
-  credentialSections: ProviderSection[],
-  allSections: ProviderSection[],
-  codexAllowlist: CodexModelEntry[]
-): ProviderSection[] {
-  // Find the OpenAI section — may or may not have credentials
-  const openaiSection = allSections.find(s => s.providerId === 'openai');
-
-  if (!openaiSection || openaiSection.models.length === 0) {
-    return credentialSections;
-  }
-
-  // PROV-034: Filter OpenAI models against the Codex allowlist using prefix matching
-  const codexModels = filterByCodexAllowlist(
-    openaiSection.models,
-    codexAllowlist
-  );
-
-  if (codexModels.length === 0) {
-    // No models match the allowlist — don't create an empty section
-    return credentialSections.filter(s => s.providerId !== 'openai');
-  }
-
-  // Build the synthetic Codex section
-  const codexSection: ProviderSection = {
-    providerId: 'codex',
-    providerName: 'Codex (ChatGPT)',
-    internalName: mapProviderIdToInternal('codex'),
-    models: codexModels,
-    hasCredentials: true,
-  };
-
-  // PROV-033: Remove the OpenAI cloud section entirely — all models moved to Codex
-  const filteredSections = credentialSections.filter(
-    s => s.providerId !== 'openai'
-  );
-
-  logger.debug(
-    `PROV-034: Extracted ${codexModels.length} models into synthetic Codex section (filtered from ${openaiSection.models.length} total)`
-  );
-
-  return [...filteredSections, codexSection];
-}
-
-/**
- * Load profile sections for local servers (vLLM, Ollama, etc.)
- *
- * PROV-040: Now passes API key to modelsListLocalOpenai for servers that
- * require authentication (e.g., Fireworks AI, Together AI).
- */
-async function loadProfileSections(): Promise<ProviderSection[]> {
-  const profileSections: ProviderSection[] = [];
-
-  for (const providerId of ['openai'] as const) {
-    try {
-      const profiles = await loadProviderProfiles(providerId);
-      const profileNames = Object.keys(profiles);
-
-      for (const profileName of profileNames) {
-        const profile = profiles[profileName];
-        const displayName = `${providerId}: ${profileName}`;
-
-        // Fetch models from local server
-        let localModels: NapiModelInfo[] = [];
-        let isUnreachable = false;
-
-        try {
-          // PROV-040: Pass API key for servers requiring authentication
-          const modelIds = await modelsListLocalOpenai(
-            profile.baseUrl,
-            profile.apiKey || null
-          );
-          localModels = modelIds.map(id => ({
-            id,
-            name: id,
-            reasoning: false,
-            toolCall: true,
-            attachment: false,
-            temperature: true,
-            contextWindow: profile.contextWindow || 128000,
-            maxOutput: profile.maxOutputTokens || 16384,
-            hasVision: false,
-          }));
-        } catch (err) {
-          logger.warn(
-            `Failed to fetch models from ${profile.baseUrl}: ${err instanceof Error ? err.message : String(err)}`
-          );
-          isUnreachable = true;
-        }
-
-        profileSections.push({
-          providerId,
-          providerName: isUnreachable
-            ? `${displayName} (unreachable)`
-            : displayName,
-          internalName: mapProviderIdToInternal(providerId),
-          models: localModels,
-          hasCredentials: true,
-          profileName,
-          profileConfig: profile,
-          isUnreachable,
-        });
-      }
-    } catch (err) {
-      logger.warn(
-        `Failed to load profiles for ${providerId}: ${err instanceof Error ? err.message : String(err)}`
-      );
-    }
-  }
-
-  return profileSections;
-}
 
 /**
  * Load persisted model string from config
@@ -344,6 +83,8 @@ function createModelSelection(
   section: ProviderSection,
   model: NapiModelInfo
 ): ModelSelection {
+  const facade = lookupFacadeOverride(section, model.id);
+
   return {
     providerId: section.providerId,
     modelId: extractModelIdForRegistry(model.id),
@@ -355,6 +96,7 @@ function createModelSelection(
     maxOutput: model.maxOutput,
     profileName: section.profileName,
     profileConfig: section.profileConfig,
+    facade,
   };
 }
 
@@ -368,6 +110,42 @@ function selectDefaultModel(
     if (section.models.length > 0) {
       return { section, model: section.models[0] };
     }
+  }
+  return null;
+}
+
+/**
+ * Restore persisted model from sections
+ */
+function restorePersistedModel(
+  persistedModelString: string,
+  sections: ProviderSection[]
+): { currentModel: ModelSelection; currentProvider: string } | null {
+  try {
+    const parsed = parseModelString(persistedModelString);
+    const section = findSectionForPersistedModel(
+      sections,
+      persistedModelString
+    );
+
+    if (section && section.hasCredentials) {
+      const normalizedModelId = extractModelIdForRegistry(parsed.modelId);
+      const model = section.models.find(
+        m => extractModelIdForRegistry(m.id) === normalizedModelId
+      );
+
+      if (model) {
+        return {
+          currentModel: createModelSelection(section, model),
+          currentProvider: section.internalName,
+        };
+      }
+    }
+  } catch (err) {
+    logger.error('Invalid persisted model string format', {
+      modelString: persistedModelString,
+      error: err,
+    });
   }
   return null;
 }
@@ -404,12 +182,12 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
   store.setIsLoading(true);
 
   try {
-    // Load cloud models
-    const cloudModels = await loadCloudModels();
+    // Load cloud and profile models in parallel
+    const [cloudModels, profileSections] = await Promise.all([
+      loadCloudModels(),
+      loadProfileSections(),
+    ]);
     const cloudSections = await buildCloudSections(cloudModels);
-
-    // Load profile sections
-    const profileSections = await loadProfileSections();
 
     // Combine: profiles first, then cloud; filter out unreachable + 0-model sections
     const sections: ProviderSection[] = [
@@ -426,35 +204,11 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
     let persistedModelRestored = false;
 
     if (persistedModelString) {
-      try {
-        // BUG-097: Use parseModelString to correctly handle profile format
-        // 'provider:profile/modelId' (e.g., 'openai:work-vllm/Qwen/Qwen3-80B')
-        const parsed = parseModelString(persistedModelString);
-
-        // BUG-097: Use findSectionForPersistedModel to match by BOTH providerId AND profileName
-        const section = findSectionForPersistedModel(
-          sections,
-          persistedModelString
-        );
-
-        if (section && section.hasCredentials) {
-          // Find the model within the section
-          const normalizedModelId = extractModelIdForRegistry(parsed.modelId);
-          const model = section.models.find(
-            m => extractModelIdForRegistry(m.id) === normalizedModelId
-          );
-
-          if (model) {
-            currentModel = createModelSelection(section, model);
-            currentProvider = section.internalName;
-            persistedModelRestored = true;
-          }
-        }
-      } catch (err) {
-        logger.error('Invalid persisted model string format', {
-          modelString: persistedModelString,
-          error: err,
-        });
+      const restored = restorePersistedModel(persistedModelString, sections);
+      if (restored) {
+        currentModel = restored.currentModel;
+        currentProvider = restored.currentProvider;
+        persistedModelRestored = true;
       }
     }
 
