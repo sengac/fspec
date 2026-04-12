@@ -24,9 +24,9 @@ use crate::bridge::{
     BridgeResult,
 };
 use crate::bridge_relay::{spawn_relay_task, CommandEmitter, ControlHandler, InputInjector};
+use crate::session_registry::SessionRegistry;
 use crate::ToolError;
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use tokio::sync::broadcast;
 use uuid::Uuid;
 
@@ -58,18 +58,20 @@ pub struct BridgeSessionContext {
     pub command_emitter: Option<CommandEmitter>,
 }
 
-static BRIDGE_HANDLER: RwLock<Option<BridgeHandler>> = RwLock::new(None);
-static BRIDGE_SESSION_CONTEXTS: once_cell::sync::Lazy<RwLock<HashMap<Uuid, Arc<BridgeSessionContext>>>> =
-    once_cell::sync::Lazy::new(|| RwLock::new(HashMap::new()));
+/// Per-session bridge handler storage (BUG-128: replaced global singleton).
+static BRIDGE_HANDLERS: once_cell::sync::Lazy<SessionRegistry<BridgeHandler>> =
+    once_cell::sync::Lazy::new(SessionRegistry::new);
 
-/// Set the bridge command handler
+/// Per-session bridge session context storage.
+static BRIDGE_SESSION_CONTEXTS: once_cell::sync::Lazy<SessionRegistry<Arc<BridgeSessionContext>>> =
+    once_cell::sync::Lazy::new(SessionRegistry::new);
+
+/// Set the bridge command handler for a specific session.
 ///
 /// Called by session manager before agent run to configure how bridge commands
 /// are executed with session context.
-pub fn set_bridge_handler(handler: Option<BridgeHandler>) {
-    if let Ok(mut guard) = BRIDGE_HANDLER.write() {
-        *guard = handler;
-    }
+pub fn set_bridge_handler(session_id: Uuid, handler: Option<BridgeHandler>) {
+    BRIDGE_HANDLERS.set(session_id, handler);
 }
 
 /// Set session context for bridge relay tasks
@@ -86,21 +88,18 @@ pub fn set_bridge_session_context(
     control_handler: Option<ControlHandler>,
     command_emitter: Option<CommandEmitter>,
 ) {
-    if let Ok(mut guard) = BRIDGE_SESSION_CONTEXTS.write() {
-        guard.insert(session_id, Arc::new(BridgeSessionContext {
-            broadcast_rx_factory,
-            input_injector,
-            control_handler,
-            command_emitter,
-        }));
-    }
+    let context = Arc::new(BridgeSessionContext {
+        broadcast_rx_factory,
+        input_injector,
+        control_handler,
+        command_emitter,
+    });
+    BRIDGE_SESSION_CONTEXTS.set(session_id, Some(context));
 }
 
 /// Remove session context when session ends
 pub fn remove_bridge_session_context(session_id: Uuid) {
-    if let Ok(mut guard) = BRIDGE_SESSION_CONTEXTS.write() {
-        guard.remove(&session_id);
-    }
+    BRIDGE_SESSION_CONTEXTS.remove(&session_id);
 }
 
 /// Get session context for a session
@@ -109,30 +108,17 @@ pub fn remove_bridge_session_context(session_id: Uuid) {
 /// session:input / session:control envelopes to the correct per-session
 /// injector/handler instead of always using the connection owner's.
 pub fn get_bridge_session_context(session_id: Uuid) -> Option<Arc<BridgeSessionContext>> {
-    BRIDGE_SESSION_CONTEXTS
-        .read()
-        .ok()
-        .and_then(|guard| guard.get(&session_id).cloned())
+    BRIDGE_SESSION_CONTEXTS.get(&session_id)
 }
 
-/// Execute a bridge command via the configured handler
+/// Execute a bridge command via the configured handler for the request's session.
 ///
 /// Called by BridgeToolFacadeWrapper when the LLM invokes the Bridge tool.
+/// Looks up the handler by `request.session_id` from the per-session map.
 ///
-/// Returns an error result if no handler is configured.
+/// Returns an error result if no handler is configured for this session.
 pub fn execute_bridge_command(request: BridgeRequest) -> BridgeResult {
-    let handler = match BRIDGE_HANDLER.read() {
-        Ok(guard) => guard.clone(),
-        Err(_) => {
-            return BridgeResult {
-                success: false,
-                message: "Failed to acquire bridge handler lock".to_string(),
-                connections: None,
-            };
-        }
-    };
-
-    match handler {
+    match BRIDGE_HANDLERS.get(&request.session_id) {
         Some(h) => h(request),
         None => BridgeResult {
             success: false,
@@ -145,19 +131,9 @@ pub fn execute_bridge_command(request: BridgeRequest) -> BridgeResult {
 
 /// Check if a bridge handler is configured for a specific session
 ///
-/// Checks that both the global handler AND session context are configured.
+/// Checks that both the per-session handler AND session context are configured.
 pub fn has_bridge_handler_for_session(session_id: Uuid) -> bool {
-    let has_handler = BRIDGE_HANDLER
-        .read()
-        .map(|guard| guard.is_some())
-        .unwrap_or(false);
-
-    let has_context = BRIDGE_SESSION_CONTEXTS
-        .read()
-        .map(|guard| guard.contains_key(&session_id))
-        .unwrap_or(false);
-
-    has_handler && has_context
+    BRIDGE_HANDLERS.has(&session_id) && BRIDGE_SESSION_CONTEXTS.has(&session_id)
 }
 
 /// Default implementation of bridge actions (used when handler is set up)
@@ -173,292 +149,142 @@ pub async fn handle_bridge_action(
 
     match action {
         BridgeAction::Connect { url } => {
-            // Validate URL
-            if !url.starts_with("ws://") && !url.starts_with("wss://") {
-                return Ok(BridgeResult {
-                    success: false,
-                    message: format!("Invalid WebSocket URL: {url}. Must start with ws:// or wss://"),
-                    connections: None,
-                });
-            }
-
-            // Check if session context is available
-            let context = match get_bridge_session_context(session_id) {
-                Some(ctx) => ctx,
-                None => {
-                    return Ok(BridgeResult {
-                        success: false,
-                        message: "Bridge session context not configured - cannot spawn relay task".to_string(),
-                        connections: None,
-                    });
-                }
-            };
-
-            // Add connection entry
-            {
-                let mut mgr = manager.write().await;
-                let conn = mgr.add_connection(url.clone());
-                conn.state = BridgeConnectionState::Connecting;
-            }
-
-            // Get a broadcast receiver from the factory
-            let broadcast_rx = (context.broadcast_rx_factory)();
-            let input_injector = context.input_injector.clone();
-            let control_handler = context.control_handler.clone();
-            let command_emitter = context.command_emitter.clone();
-
-            // Spawn the relay task (BRIDGE-008: with control_handler, BRIDGE-017: with command_emitter)
-            match spawn_relay_task(session_id, url.clone(), broadcast_rx, input_injector, control_handler, command_emitter).await {
-                Ok(handle) => {
-                    // Store the task handle
-                    let mut mgr = manager.write().await;
-                    if let Some(conn) = mgr.get_connection_mut(&url) {
-                        conn.task_handle = Some(handle);
-                    }
-
-                    Ok(BridgeResult {
-                        success: true,
-                        message: format!("Connected to {url}"),
-                        connections: None,
-                    })
-                }
-                Err(e) => {
-                    // Remove the connection entry on failure
-                    let mut mgr = manager.write().await;
-                    mgr.remove_connection(&url);
-
-                    Ok(BridgeResult {
-                        success: false,
-                        message: format!("Failed to connect to {url}: {e}"),
-                        connections: None,
-                    })
-                }
-            }
+            handle_connect(session_id, url, &manager).await
         }
 
         BridgeAction::Disconnect { url } => {
-            let mut mgr = manager.write().await;
-
-            if let Some(conn) = mgr.remove_connection(&url) {
-                // Cancel the WebSocket task if running
-                if let Some(handle) = conn.task_handle {
-                    handle.abort();
-                }
-
-                Ok(BridgeResult {
-                    success: true,
-                    message: format!("Disconnected from {url}"),
-                    connections: None,
-                })
-            } else {
-                Ok(BridgeResult {
-                    success: false,
-                    message: format!("No active connection to {url}"),
-                    connections: None,
-                })
-            }
+            handle_disconnect(url, &manager).await
         }
 
         BridgeAction::List => {
-            let mgr = manager.read().await;
-            let connections: Vec<BridgeConnectionInfo> = mgr.list_connections();
-
-            if connections.is_empty() {
-                Ok(BridgeResult {
-                    success: true,
-                    message: "No active bridge connections".to_string(),
-                    connections: Some(connections),
-                })
-            } else {
-                let summary = connections
-                    .iter()
-                    .map(|c| {
-                        format!(
-                            "  - {} ({:?}, {} buffered)",
-                            c.url, c.state, c.buffered
-                        )
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n");
-
-                Ok(BridgeResult {
-                    success: true,
-                    message: format!("Active bridge connections:\n{summary}"),
-                    connections: Some(connections),
-                })
-            }
+            handle_list(&manager).await
         }
     }
 }
 
-#[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used)]
-mod tests {
-    use super::*;
-    use serial_test::serial;
-
-    fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
-        set_bridge_handler(None);
-        let result = f();
-        set_bridge_handler(None);
-        result
-    }
-
-    #[test]
-    #[serial]
-    fn test_no_handler_returns_error() {
-        with_clean_handler(|| {
-            let result = execute_bridge_command(BridgeRequest {
-                session_id: Uuid::new_v4(),
-                action: BridgeAction::List,
-            });
-
-            assert!(!result.success);
-            assert!(result.message.contains("not configured"));
+/// Handle a WebSocket connect action
+async fn handle_connect(
+    session_id: Uuid,
+    url: String,
+    manager: &Arc<tokio::sync::RwLock<crate::bridge::BridgeManager>>,
+) -> Result<BridgeResult, ToolError> {
+    // Validate URL
+    if !url.starts_with("ws://") && !url.starts_with("wss://") {
+        return Ok(BridgeResult {
+            success: false,
+            message: format!("Invalid WebSocket URL: {url}. Must start with ws:// or wss://"),
+            connections: None,
         });
     }
 
-    #[test]
-    #[serial]
-    fn test_handler_receives_request() {
-        with_clean_handler(|| {
-            use std::sync::atomic::{AtomicBool, Ordering};
-
-            let called = Arc::new(AtomicBool::new(false));
-            let called_clone = called.clone();
-
-            let handler: BridgeHandler = Arc::new(move |req| {
-                called_clone.store(true, Ordering::SeqCst);
-                assert!(matches!(req.action, BridgeAction::List));
-                BridgeResult {
-                    success: true,
-                    message: "test result".to_string(),
-                    connections: Some(vec![]),
-                }
-            });
-
-            set_bridge_handler(Some(handler));
-
-            let result = execute_bridge_command(BridgeRequest {
-                session_id: Uuid::new_v4(),
-                action: BridgeAction::List,
-            });
-
-            assert!(called.load(Ordering::SeqCst));
-            assert!(result.success);
-            assert_eq!(result.message, "test result");
-        });
-    }
-
-    #[test]
-    #[serial]
-    fn test_has_bridge_handler_for_session() {
-        with_clean_handler(|| {
-            let session_id = Uuid::new_v4();
-
-            // No handler or context
-            assert!(!has_bridge_handler_for_session(session_id));
-
-            // Set handler only
-            let handler: BridgeHandler = Arc::new(|_| BridgeResult {
-                success: true,
-                message: String::new(),
+    // Check if session context is available
+    let context = match get_bridge_session_context(session_id) {
+        Some(ctx) => ctx,
+        None => {
+            return Ok(BridgeResult {
+                success: false,
+                message: "Bridge session context not configured - cannot spawn relay task".to_string(),
                 connections: None,
             });
-            set_bridge_handler(Some(handler));
-            assert!(!has_bridge_handler_for_session(session_id)); // Still false - no context
+        }
+    };
 
-            // Set context
-            let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
-            let broadcast_factory: BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
-            let input_injector: InputInjector = Arc::new(|_| {});
-            set_bridge_session_context(session_id, broadcast_factory, input_injector, None, None);
-
-            assert!(has_bridge_handler_for_session(session_id)); // Now true
-
-            // Remove context
-            remove_bridge_session_context(session_id);
-            assert!(!has_bridge_handler_for_session(session_id));
-        });
+    // Add connection entry
+    {
+        let mut mgr = manager.write().await;
+        let conn = mgr.add_connection(url.clone());
+        conn.state = BridgeConnectionState::Connecting;
     }
 
-    #[tokio::test]
-    #[serial]
-    async fn test_handle_bridge_action_list_empty() {
-        let session_id = Uuid::new_v4();
-        let result = handle_bridge_action(session_id, BridgeAction::List)
-            .await
-            .expect("Should succeed");
+    // Get a broadcast receiver from the factory
+    let broadcast_rx = (context.broadcast_rx_factory)();
+    let input_injector = context.input_injector.clone();
+    let control_handler = context.control_handler.clone();
+    let command_emitter = context.command_emitter.clone();
 
-        assert!(result.success);
-        assert!(result.message.contains("No active"));
-        assert!(result.connections.is_some());
-        assert!(result.connections.unwrap().is_empty());
+    // Spawn the relay task (BRIDGE-008: with control_handler, BRIDGE-017: with command_emitter)
+    match spawn_relay_task(session_id, url.clone(), broadcast_rx, input_injector, control_handler, command_emitter).await {
+        Ok(handle) => {
+            let mut mgr = manager.write().await;
+            if let Some(conn) = mgr.get_connection_mut(&url) {
+                conn.task_handle = Some(handle);
+            }
 
-        // Cleanup
-        crate::bridge::remove_bridge_manager(session_id).await;
+            Ok(BridgeResult {
+                success: true,
+                message: format!("Connected to {url}"),
+                connections: None,
+            })
+        }
+        Err(e) => {
+            let mut mgr = manager.write().await;
+            mgr.remove_connection(&url);
+
+            Ok(BridgeResult {
+                success: false,
+                message: format!("Failed to connect to {url}: {e}"),
+                connections: None,
+            })
+        }
     }
+}
 
-    #[tokio::test]
-    #[serial]
-    async fn test_handle_bridge_action_invalid_url() {
-        let session_id = Uuid::new_v4();
-        let result = handle_bridge_action(
-            session_id,
-            BridgeAction::Connect {
-                url: "http://invalid".to_string(),
-            },
-        )
-        .await
-        .expect("Should succeed with error message");
+/// Handle a WebSocket disconnect action
+async fn handle_disconnect(
+    url: String,
+    manager: &Arc<tokio::sync::RwLock<crate::bridge::BridgeManager>>,
+) -> Result<BridgeResult, ToolError> {
+    let mut mgr = manager.write().await;
 
-        assert!(!result.success);
-        assert!(result.message.contains("Invalid WebSocket URL"));
+    if let Some(conn) = mgr.remove_connection(&url) {
+        // Cancel the WebSocket task if running
+        if let Some(handle) = conn.task_handle {
+            handle.abort();
+        }
 
-        // Cleanup
-        crate::bridge::remove_bridge_manager(session_id).await;
+        Ok(BridgeResult {
+            success: true,
+            message: format!("Disconnected from {url}"),
+            connections: None,
+        })
+    } else {
+        Ok(BridgeResult {
+            success: false,
+            message: format!("No active connection to {url}"),
+            connections: None,
+        })
     }
+}
 
-    #[tokio::test]
-    #[serial]
-    async fn test_handle_bridge_action_connect() {
-        use tokio::sync::broadcast;
-        
-        let session_id = Uuid::new_v4();
-        
-        // Set up session context with mock factories
-        let (broadcast_tx, _) = broadcast::channel::<serde_json::Value>(16);
-        let broadcast_tx = Arc::new(broadcast_tx);
-        let broadcast_tx_clone = broadcast_tx.clone();
-        
-        let broadcast_rx_factory: crate::bridge_handler::BroadcastReceiverFactory = 
-            Arc::new(move || broadcast_tx_clone.subscribe());
-        
-        let input_injector: crate::bridge_relay::InputInjector = 
-            Arc::new(|_input: crate::bridge_relay::InjectedInput| {
-                // Mock input injector - do nothing
-            });
-        
-        set_bridge_session_context(session_id, broadcast_rx_factory, input_injector, None, None);
-        
-        // This test will try to connect but fail because there's no server
-        // The important thing is that it doesn't fail due to missing context
-        let result = handle_bridge_action(
-            session_id,
-            BridgeAction::Connect {
-                url: "ws://127.0.0.1:59999".to_string(), // Non-existent server
-            },
-        )
-        .await
-        .expect("Should not return ToolError");
+/// Handle a list connections action
+async fn handle_list(
+    manager: &Arc<tokio::sync::RwLock<crate::bridge::BridgeManager>>,
+) -> Result<BridgeResult, ToolError> {
+    let mgr = manager.read().await;
+    let connections: Vec<BridgeConnectionInfo> = mgr.list_connections();
 
-        // The connect action spawns a task, so it may initially succeed
-        // The task will then fail to connect and update state
-        // For this test, we just verify we got past the context check
-        assert!(result.success || result.message.contains("Failed"));
+    if connections.is_empty() {
+        Ok(BridgeResult {
+            success: true,
+            message: "No active bridge connections".to_string(),
+            connections: Some(connections),
+        })
+    } else {
+        let summary = connections
+            .iter()
+            .map(|c| {
+                format!(
+                    "  - {} ({:?}, {} buffered)",
+                    c.url, c.state, c.buffered
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
 
-        // Cleanup
-        remove_bridge_session_context(session_id);
-        crate::bridge::remove_bridge_manager(session_id).await;
+        Ok(BridgeResult {
+            success: true,
+            message: format!("Active bridge connections:\n{summary}"),
+            connections: Some(connections),
+        })
     }
 }

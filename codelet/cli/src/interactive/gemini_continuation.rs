@@ -200,7 +200,7 @@ where
                 handle_final_response(text, &mut session.messages)?;
             }
             update_token_tracker(session, display);
-            set_tool_progress_callback(None);
+            set_tool_progress_callback(uuid::Uuid::nil(), None);
             output.emit_done_with_stop_reason(final_stop_reason.take());
             return Ok(GeminiContinuationResult::Completed);
         }
@@ -322,7 +322,7 @@ where
                 );
                 session.token_tracker.update_from_usage(&cont_usage, cont_final.output_tokens);
 
-                set_tool_progress_callback(None);
+                set_tool_progress_callback(uuid::Uuid::nil(), None);
                 output.emit_done_with_stop_reason(final_stop_reason.take());
                 return Ok(GeminiContinuationResult::Completed);
             }
@@ -341,11 +341,11 @@ where
                     output.emit_compaction_started();
                     let total_turns = session.messages.len() as u32 / 2;
                     output.emit_compaction_progress("Context limit reached", 0, total_turns.max(1));
-                    set_tool_progress_callback(None);
+                    set_tool_progress_callback(uuid::Uuid::nil(), None);
                     return Ok(GeminiContinuationResult::CompactionNeeded);
                 }
 
-                set_tool_progress_callback(None);
+                set_tool_progress_callback(uuid::Uuid::nil(), None);
                 output.emit_error(&e.to_string());
                 return Err(anyhow::anyhow!("Gemini continuation error: {e}"));
             }
@@ -364,7 +364,7 @@ where
                     return Ok(GeminiContinuationResult::CompactionNeeded);
                 }
 
-                set_tool_progress_callback(None);
+                set_tool_progress_callback(uuid::Uuid::nil(), None);
                 output.emit_done_with_stop_reason(final_stop_reason.take());
                 return Ok(GeminiContinuationResult::Completed);
             }

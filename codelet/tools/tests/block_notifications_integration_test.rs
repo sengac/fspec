@@ -94,7 +94,7 @@ mod blocklist_integration {
         init_blocklist(Some(tmp.path()));
 
         // @step When the AI runs "git checkout main" via Bash
-        let result = check_bash_command("git checkout main");
+        let result = check_bash_command("git checkout main", uuid::Uuid::nil());
 
         // @step Then the command should be blocked
         assert!(result.is_err(), "Command should be blocked");
@@ -148,7 +148,7 @@ mod blocklist_integration {
         init_blocklist(Some(tmp.path()));
 
         // @step When the AI runs a command not matching any rule
-        let result = check_bash_command("npm install");
+        let result = check_bash_command("npm install", uuid::Uuid::nil());
 
         // @step Then the command should be allowed
         assert!(result.is_ok(), "npm install should be allowed");
@@ -288,7 +288,7 @@ mod notification_format {
         init_blocklist(Some(tmp.path()));
 
         // @step When the AI runs "cat src/file.ts"
-        let result = check_bash_command("cat src/file.ts");
+        let result = check_bash_command("cat src/file.ts", uuid::Uuid::nil());
 
         // @step Then the error should contain the reason for the notification
         assert!(result.is_err());

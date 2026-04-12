@@ -329,7 +329,7 @@ async fn test_bridge_tool_stores_session_id() {
             connections: Some(vec![]),
         }
     });
-    set_bridge_handler(Some(handler));
+    set_bridge_handler(session_c, Some(handler));
 
     // @step When the session manager creates a Bridge tool with claude_bridge_tool(session_id)
     let tool = claude_bridge_tool(session_c);
@@ -352,7 +352,7 @@ async fn test_bridge_tool_stores_session_id() {
     assert!(output.message.contains("bridge_handler_called"));
 
     // Cleanup
-    set_bridge_handler(None);
+    set_bridge_handler(session_c, None);
     remove_bridge_session_context(session_c);
 }
 

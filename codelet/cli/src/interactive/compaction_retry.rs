@@ -371,7 +371,7 @@ where
     }
 
     // Clear tool progress callback
-    set_tool_progress_callback(None);
+    set_tool_progress_callback(uuid::Uuid::nil(), None);
 
     Ok(())
 }

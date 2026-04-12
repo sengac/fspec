@@ -2,14 +2,14 @@
 //! PAUSE-001: Stream Loop Pause Handler Integration Tests
 //!
 //! These tests verify that run_agent_stream correctly integrates with the
-//! pause handler mechanism using global RwLock via set_pause_handler().
+//! pause handler mechanism using per-session RwLock via set_pause_handler(session_id, ...).
 //!
 //! Key behaviors tested:
-//! 1. set_pause_handler() sets the global handler
+//! 1. set_pause_handler() sets the per-session handler
 //! 2. The handler captures session context for per-session isolation
 //! 3. The handler correctly sets session pause state and waits for response
 //!
-//! NOTE: All tests use #[serial] because they modify global PAUSE_HANDLER state.
+//! NOTE: All tests use #[serial] because they modify per-session PAUSE_HANDLERS state.
 
 use codelet_tools::tool_pause::{
     has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
@@ -73,10 +73,11 @@ impl MockSession {
 }
 
 // Helper to ensure tests don't interfere with each other
-fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
-    set_pause_handler(None);
-    let result = f();
-    set_pause_handler(None);
+fn with_clean_handler<T>(f: impl FnOnce(uuid::Uuid) -> T) -> T {
+    let sid = uuid::Uuid::new_v4();
+    set_pause_handler(sid, None);
+    let result = f(sid);
+    set_pause_handler(sid, None);
     result
 }
 
@@ -88,7 +89,7 @@ fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
 #[test]
 #[serial]
 fn test_handler_invoked_with_request_returns_response() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler_invoked = Arc::new(AtomicBool::new(false));
         let invoked_clone = handler_invoked.clone();
 
@@ -99,9 +100,9 @@ fn test_handler_invoked_with_request_returns_response() {
             PauseResponse::Resumed
         });
 
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
         
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -120,7 +121,7 @@ fn test_handler_invoked_with_request_returns_response() {
 #[test]
 #[serial]
 fn test_handler_sets_session_pause_state() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let session = Arc::new(MockSession::new());
         let session_clone = session.clone();
 
@@ -140,9 +141,9 @@ fn test_handler_sets_session_pause_state() {
             PauseResponse::Resumed
         });
 
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
-        pause_for_user(PauseRequest {
+        pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -167,7 +168,7 @@ fn test_handler_sets_session_pause_state() {
 #[test]
 #[serial]
 fn test_handler_blocks_until_response() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let session = Arc::new(MockSession::new());
         let session_for_handler = session.clone();
         let session_for_signaler = session.clone();
@@ -196,9 +197,9 @@ fn test_handler_blocks_until_response() {
             session_for_signaler.send_pause_response(PauseResponse::Resumed);
         });
 
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -219,8 +220,8 @@ fn test_handler_blocks_until_response() {
 #[test]
 #[serial]
 fn test_no_handler_returns_resumed() {
-    with_clean_handler(|| {
-        let response = pause_for_user(PauseRequest {
+    with_clean_handler(|sid| {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "Test".to_string(),
             message: "Test".to_string(),
@@ -233,18 +234,18 @@ fn test_no_handler_returns_resumed() {
 
 /// @scenario: Handler can be cleared
 /// @step: Given a handler is set
-/// @step: When set_pause_handler(None) is called
+/// @step: When set_pause_handler(sid, None) is called
 /// @step: Then has_pause_handler returns false
 #[test]
 #[serial]
 fn test_handler_can_be_cleared() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Resumed);
         
-        set_pause_handler(Some(handler));
-        assert!(has_pause_handler());
+        set_pause_handler(sid, Some(handler));
+        assert!(has_pause_handler(sid));
         
-        set_pause_handler(None);
-        assert!(!has_pause_handler());
+        set_pause_handler(sid, None);
+        assert!(!has_pause_handler(sid));
     });
 }

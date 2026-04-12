@@ -81,7 +81,7 @@ impl rig::tool::Tool for WriteTool {
         let file_path_str = resolved_path.to_string_lossy().to_string();
 
         // Check file path against blocklist before any I/O
-        if let Err(blocked) = check_file_path(&file_path_str) {
+        if let Err(blocked) = check_file_path(&file_path_str, self.session_id) {
             return Err(ToolError::Blocked {
                 tool: "write",
                 message: blocked.to_string(),

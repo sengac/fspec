@@ -256,7 +256,7 @@ async fn test_abort_running_bash_command() {
     let collector = MockStreamCollector::new();
 
     // Clear any previous abort state
-    clear_bash_abort();
+    clear_bash_abort(uuid::Uuid::nil());
 
     // Spawn task to run a long-running command
     let callback = collector.create_callback();
@@ -275,7 +275,7 @@ async fn test_abort_running_bash_command() {
     // @step When the abort flag is set after 100ms
     tokio::time::sleep(Duration::from_millis(100)).await;
     let start = Instant::now();
-    request_bash_abort();
+    request_bash_abort(uuid::Uuid::nil());
 
     // @step Then the command should terminate within 200ms (well before 10 seconds)
     let result = handle.await.unwrap();
@@ -301,7 +301,7 @@ async fn test_abort_running_bash_command() {
     );
 
     // Clean up
-    clear_bash_abort();
+    clear_bash_abort(uuid::Uuid::nil());
 }
 
 /// Scenario: Abort flag is cleared before new command
@@ -316,10 +316,10 @@ async fn test_clear_abort_allows_new_commands() {
     use codelet_tools::{clear_bash_abort, request_bash_abort};
 
     // @step Given the abort flag was previously set
-    request_bash_abort();
+    request_bash_abort(uuid::Uuid::nil());
 
     // @step When we clear the abort flag
-    clear_bash_abort();
+    clear_bash_abort(uuid::Uuid::nil());
 
     // @step Then a new command should run successfully
     let tool = BashTool::new(Uuid::nil());

@@ -142,7 +142,7 @@ impl UnifiedExecTool {
 
         // Check blocklist
         let check_str = command.blocklist_check_string();
-        if let Err(blocked) = check_bash_command(&check_str) {
+        if let Err(blocked) = check_bash_command(&check_str, self.session_id) {
             return Err(ToolError::Blocked {
                 tool: "unified_exec",
                 message: blocked.to_string(),

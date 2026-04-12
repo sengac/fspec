@@ -1247,7 +1247,7 @@ impl BackgroundSession {
     pub fn interrupt(&self) {
         self.is_interrupted.store(true, Ordering::Release);
         // Also request bash tool abortion for any running commands
-        request_bash_abort();
+        request_bash_abort(self.id);
         self.interrupt_notify.notify_one();
     }
 
@@ -1257,7 +1257,7 @@ impl BackgroundSession {
     pub fn reset_interrupt(&self) {
         self.is_interrupted.store(false, Ordering::Release);
         // Also clear bash abort flag
-        clear_bash_abort();
+        clear_bash_abort(self.id);
     }
 
     /// Get a clone of the interrupt notify handle (AMGR-015)
@@ -3882,6 +3882,8 @@ impl SessionManager {
             codelet_tools::cleanup_mcp_session(uuid);
             // HOOK-013: Unregister pre_tool_use hook handler
             unregister_pre_tool_hook(uuid);
+            // BUG-129: Remove per-session bash abort flag to prevent memory leaks
+            codelet_tools::unregister_bash_abort_flag(uuid);
             // Drop the input sender to signal the loop to exit
             // (happens automatically when session is dropped)
             
@@ -4786,7 +4788,7 @@ async fn agent_loop(
                 response
             });
 
-            set_pause_handler(Some(pause_handler));
+            set_pause_handler(session.id, Some(pause_handler));
 
             // CODE-009: Set fspec handler for TypeScript command execution
             // Similar to pause handler - blocks until TypeScript executes and responds
@@ -5141,7 +5143,7 @@ async fn agent_loop(
                 })
             });
             
-            codelet_tools::set_bridge_handler(Some(bridge_handler));
+            codelet_tools::set_bridge_handler(session.id, Some(bridge_handler));
             
             // BRIDGE-007: Convert BridgeImageData to BridgeImage for run_agent_stream_with_images
             let bridge_images: Option<Vec<codelet_cli::interactive::BridgeImage>> = input_with_images.images.map(|imgs| {
@@ -5432,7 +5434,7 @@ Use SessionSearch to recover context.
                 }
             }
 
-            set_pause_handler(None);
+            set_pause_handler(session.id, None);
             // Clean up per-session handlers
             codelet_tools::set_fspec_handler_for_session(session.id, None);
             codelet_tools::set_session_search_handler(session.id, None);
@@ -5443,7 +5445,7 @@ Use SessionSearch to recover context.
             codelet_tools::set_agent_manager_async_handler(session.id, None); // AMGR-015: Cleanup
             codelet_tools::set_schedule_handler(session.id, None); // SCHED-009: Cleanup
             codelet_tools::set_hitl_handler(session.id, None); // BUG-117: Cleanup HITL handler
-            codelet_tools::set_bridge_handler(None);
+            codelet_tools::set_bridge_handler(session.id, None);
             codelet_tools::remove_bridge_session_context(session.id);
 
             // Handle result

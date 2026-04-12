@@ -1,17 +1,20 @@
-//! Tool pause mechanism
+//! Tool pause mechanism (BUG-127: per-session isolation)
 //!
 //! Provides a generic pause/resume API for tools that need user interaction.
 //! Supports two pause kinds:
 //! - Continue: Press Enter to resume
 //! - Confirm: Press Y to approve, N to deny
 //!
-//! Pause state is PER-SESSION. This module provides type definitions shared 
-//! between tools and session manager, plus a global handler mechanism.
-//!
-//! Uses a global `RwLock<Option<PauseHandler>>` because Rig spawns tool 
-//! execution on separate tokio tasks where task-local storage doesn't propagate.
+//! Pause state is PER-SESSION. Handlers are keyed by `session_id: Uuid` via
+//! [`SessionRegistry`] to prevent concurrent sessions from overwriting each
+//! other's handlers.
 
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+
+use once_cell::sync::Lazy;
+use uuid::Uuid;
+
+use crate::session_registry::SessionRegistry;
 
 /// Kind of pause requested by a tool
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -63,30 +66,29 @@ impl From<PauseRequest> for PauseState {
 
 pub type PauseHandler = Arc<dyn Fn(PauseRequest) -> PauseResponse + Send + Sync>;
 
-static PAUSE_HANDLER: RwLock<Option<PauseHandler>> = RwLock::new(None);
+/// Per-session handler storage (BUG-127: replaced global singleton).
+static PAUSE_HANDLERS: Lazy<SessionRegistry<PauseHandler>> =
+    Lazy::new(SessionRegistry::new);
 
-pub fn set_pause_handler(handler: Option<PauseHandler>) {
-    if let Ok(mut guard) = PAUSE_HANDLER.write() {
-        *guard = handler;
-    }
+/// Register or clear a pause handler for a specific session.
+pub fn set_pause_handler(session_id: Uuid, handler: Option<PauseHandler>) {
+    PAUSE_HANDLERS.set(session_id, handler);
 }
 
-pub fn pause_for_user(request: PauseRequest) -> PauseResponse {
-    let handler = match PAUSE_HANDLER.read() {
-        Ok(guard) => guard.clone(),
-        Err(_) => return PauseResponse::Resumed,
-    };
-    
-    match handler {
+/// Pause tool execution and wait for user response (per-session).
+///
+/// If a handler is registered for the given session_id, calls it.
+/// If no handler is registered, returns `PauseResponse::Resumed`.
+pub fn pause_for_user(session_id: Uuid, request: PauseRequest) -> PauseResponse {
+    match PAUSE_HANDLERS.get(&session_id) {
         Some(h) => h(request),
         None => PauseResponse::Resumed,
     }
 }
 
-pub fn has_pause_handler() -> bool {
-    PAUSE_HANDLER.read()
-        .map(|guard| guard.is_some())
-        .unwrap_or(false)
+/// Check if a pause handler is registered for a specific session.
+pub fn has_pause_handler(session_id: Uuid) -> bool {
+    PAUSE_HANDLERS.has(&session_id)
 }
 
 #[cfg(test)]
@@ -95,10 +97,11 @@ mod tests {
     use serial_test::serial;
     use std::sync::atomic::{AtomicBool, Ordering};
 
-    fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
-        set_pause_handler(None);
-        let result = f();
-        set_pause_handler(None);
+    fn with_clean_handler<T>(f: impl FnOnce(Uuid) -> T) -> T {
+        let sid = Uuid::new_v4();
+        set_pause_handler(sid, None);
+        let result = f(sid);
+        set_pause_handler(sid, None);
         result
     }
 
@@ -109,11 +112,8 @@ mod tests {
         assert_ne!(PauseKind::Continue, PauseKind::Confirm);
     }
 
-    // BLOCK-007: Test Triple pause kind
     #[test]
     fn test_pause_kind_triple() {
-        // @step Given PauseKind::Triple variant exists
-        // @step Then it should be distinguishable from other kinds
         assert_eq!(PauseKind::Triple, PauseKind::Triple);
         assert_ne!(PauseKind::Triple, PauseKind::Continue);
         assert_ne!(PauseKind::Triple, PauseKind::Confirm);
@@ -127,11 +127,8 @@ mod tests {
         assert_eq!(PauseResponse::Interrupted, PauseResponse::Interrupted);
     }
 
-    // BLOCK-007: Test AllowOnce and AllowSession responses
     #[test]
     fn test_pause_response_triple_variants() {
-        // @step Given PauseResponse::AllowOnce and AllowSession variants exist
-        // @step Then they should be distinguishable from each other and other responses
         assert_eq!(PauseResponse::AllowOnce, PauseResponse::AllowOnce);
         assert_eq!(PauseResponse::AllowSession, PauseResponse::AllowSession);
         assert_ne!(PauseResponse::AllowOnce, PauseResponse::AllowSession);
@@ -157,8 +154,8 @@ mod tests {
     #[test]
     #[serial]
     fn test_no_handler_returns_resumed() {
-        with_clean_handler(|| {
-            let response = pause_for_user(PauseRequest {
+        with_clean_handler(|sid| {
+            let response = pause_for_user(sid, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),
@@ -171,15 +168,15 @@ mod tests {
     #[test]
     #[serial]
     fn test_has_pause_handler_when_not_set() {
-        with_clean_handler(|| {
-            assert!(!has_pause_handler());
+        with_clean_handler(|sid| {
+            assert!(!has_pause_handler(sid));
         });
     }
 
     #[test]
     #[serial]
     fn test_set_pause_handler_sets_handler() {
-        with_clean_handler(|| {
+        with_clean_handler(|sid| {
             let called = Arc::new(AtomicBool::new(false));
             let called_clone = called.clone();
 
@@ -188,10 +185,10 @@ mod tests {
                 PauseResponse::Resumed
             });
 
-            set_pause_handler(Some(handler));
-            assert!(has_pause_handler());
+            set_pause_handler(sid, Some(handler));
+            assert!(has_pause_handler(sid));
 
-            let response = pause_for_user(PauseRequest {
+            let response = pause_for_user(sid, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "WebSearch".to_string(),
                 message: "Page loaded".to_string(),
@@ -201,15 +198,15 @@ mod tests {
             assert_eq!(response, PauseResponse::Resumed);
             assert!(called.load(Ordering::SeqCst));
 
-            set_pause_handler(None);
-            assert!(!has_pause_handler());
+            set_pause_handler(sid, None);
+            assert!(!has_pause_handler(sid));
         });
     }
 
     #[test]
     #[serial]
     fn test_handler_receives_correct_request() {
-        with_clean_handler(|| {
+        with_clean_handler(|sid| {
             let handler: PauseHandler = Arc::new(|request| {
                 assert_eq!(request.kind, PauseKind::Continue);
                 assert_eq!(request.tool_name, "WebSearch");
@@ -217,8 +214,8 @@ mod tests {
                 PauseResponse::Resumed
             });
 
-            set_pause_handler(Some(handler));
-            pause_for_user(PauseRequest {
+            set_pause_handler(sid, Some(handler));
+            pause_for_user(sid, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "WebSearch".to_string(),
                 message: "Page loaded".to_string(),
@@ -230,10 +227,10 @@ mod tests {
     #[test]
     #[serial]
     fn test_handler_can_return_different_responses() {
-        with_clean_handler(|| {
+        with_clean_handler(|sid| {
             let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
-            set_pause_handler(Some(handler));
-            let response = pause_for_user(PauseRequest {
+            set_pause_handler(sid, Some(handler));
+            let response = pause_for_user(sid, PauseRequest {
                 kind: PauseKind::Confirm,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),
@@ -242,8 +239,8 @@ mod tests {
             assert_eq!(response, PauseResponse::Approved);
 
             let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
-            set_pause_handler(Some(handler));
-            let response = pause_for_user(PauseRequest {
+            set_pause_handler(sid, Some(handler));
+            let response = pause_for_user(sid, PauseRequest {
                 kind: PauseKind::Confirm,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),
@@ -252,8 +249,8 @@ mod tests {
             assert_eq!(response, PauseResponse::Denied);
 
             let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
-            set_pause_handler(Some(handler));
-            let response = pause_for_user(PauseRequest {
+            set_pause_handler(sid, Some(handler));
+            let response = pause_for_user(sid, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),

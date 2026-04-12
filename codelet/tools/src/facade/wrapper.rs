@@ -2193,7 +2193,7 @@ mod bridge_wrapper_tests {
                 connections: Some(vec![]),
             }
         });
-        set_bridge_handler(Some(handler));
+        set_bridge_handler(uuid::Uuid::nil(), Some(handler));
 
         // @step And a session ID is created
         let expected_session_id = uuid::Uuid::new_v4();
@@ -2226,14 +2226,14 @@ mod bridge_wrapper_tests {
         );
 
         // Cleanup
-        set_bridge_handler(None);
+        set_bridge_handler(uuid::Uuid::nil(), None);
         remove_bridge_session_context(expected_session_id);
     }
 
     #[tokio::test]
     #[serial]
     async fn test_bridge_wrapper_fails_without_handler() {
-        set_bridge_handler(None);
+        set_bridge_handler(uuid::Uuid::nil(), None);
         let session_id = uuid::Uuid::new_v4();
 
         let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade), session_id);

@@ -430,7 +430,9 @@ where
     // which runs on the tokio runtime and can make I/O calls (print for CLI, or
     // ThreadsafeFunction::call for NAPI which is NonBlocking).
     if let Some(emitter) = output.progress_emitter() {
-        set_tool_progress_callback(Some(Arc::new(move |chunk: &str, is_stderr: bool| {
+        // BUG-126: Use Uuid::nil() for CLI mode (single-session; no cross-session risk)
+        let cli_session_id = Uuid::nil();
+        set_tool_progress_callback(cli_session_id, Some(Arc::new(move |chunk: &str, is_stderr: bool| {
             emitter.emit_tool_progress("", "bash", chunk, is_stderr);
         })));
     }
@@ -1482,8 +1484,8 @@ where
         }
     }
 
-    // TOOL-011: Clear the tool progress callback
-    set_tool_progress_callback(None);
+    // TOOL-011/BUG-126: Clear the tool progress callback
+    set_tool_progress_callback(Uuid::nil(), None);
 
     // Check if hook triggered compaction
     let compaction_needed = token_state

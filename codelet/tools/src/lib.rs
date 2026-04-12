@@ -10,6 +10,10 @@ pub mod astgrep;
 pub mod astgrep_refactor;
 pub mod apply_patch;
 pub mod bash;
+pub mod bash_abort;
+pub mod bash_output;
+pub mod bash_process;
+pub mod bash_streams;
 pub mod blocklist;
 pub mod bridge;
 pub mod bridge_multiplexed;
@@ -51,6 +55,7 @@ pub mod validation;
 pub mod unified_exec;
 pub mod web_search;
 pub mod session_search;
+pub mod session_registry;
 pub mod write;
 
 // Test fixtures for integration tests
@@ -87,7 +92,7 @@ pub use astgrep::AstGrepTool;
 pub use astgrep_refactor::AstGrepRefactorTool;
 pub use apply_patch::ApplyPatchTool;
 pub use bash::BashTool;
-pub use bash::{clear_bash_abort, request_bash_abort};
+pub use bash_abort::{clear_bash_abort, is_bash_abort_requested, request_bash_abort, unregister_bash_abort_flag};
 pub use blocklist::{
     check_bash_command, check_command_raw, check_file_path, init_blocklist, load_blocklist_config,
     project_config_path, reload_blocklist, system_config_path, BlockedError,

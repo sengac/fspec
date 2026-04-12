@@ -51,7 +51,7 @@ fn test_notify_user_when_ai_command_is_blocked() {
     init_blocklist(Some(tmp.path()));
 
     // @step When the AI runs "git checkout main" via Bash
-    let result = check_bash_command("git checkout main");
+    let result = check_bash_command("git checkout main", uuid::Uuid::nil());
 
     // @step Then the command should be blocked
     assert!(result.is_err(), "Command should be blocked");
@@ -178,7 +178,7 @@ fn test_block_notification_message_format() {
     init_blocklist(Some(tmp.path()));
 
     // @step When the AI runs "cat src/file.ts"
-    let result = check_bash_command("cat src/file.ts");
+    let result = check_bash_command("cat src/file.ts", uuid::Uuid::nil());
 
     // @step Then the error should follow format "Blocked: [reason] [guidance]"
     assert!(result.is_err());

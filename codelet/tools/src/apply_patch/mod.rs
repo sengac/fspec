@@ -39,7 +39,7 @@ fn validate_patch_path(
 ) -> Result<std::path::PathBuf, ToolError> {
     let resolved = validate_and_resolve_path(session_id, path, "apply_patch")?;
     let p = resolved.to_string_lossy().to_string();
-    if let Err(blocked) = check_file_path(&p) {
+    if let Err(blocked) = check_file_path(&p, session_id) {
         return Err(ToolError::Blocked {
             tool: "apply_patch",
             message: blocked.to_string(),

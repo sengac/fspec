@@ -2,14 +2,14 @@
 //! PAUSE-001: End-to-End Pause Integration Tests
 //!
 //! These tests verify the pause mechanism integration:
-//! 1. Tool pause handler mechanism works correctly with global RwLock
+//! 1. Tool pause handler mechanism works correctly with per-session RwLock
 //! 2. WebSearchAction has pause field
 //! 3. Pause types are properly exported
 //!
 //! NOTE: These tests don't use BackgroundSession directly as it requires NAPI runtime.
 //! Instead, we test the pattern used (AtomicU8 status + RwLock<Option<PauseState>>).
 //!
-//! IMPORTANT: Tests using global pause handler must be serialized to avoid race conditions.
+//! IMPORTANT: Tests using per-session pause handler must be serialized to avoid race conditions.
 
 use codelet_tools::tool_pause::{
     has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
@@ -64,10 +64,11 @@ impl SimulatedSession {
 }
 
 // Helper to ensure tests don't interfere with each other
-fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
-    set_pause_handler(None);
-    let result = f();
-    set_pause_handler(None);
+fn with_clean_handler<T>(f: impl FnOnce(uuid::Uuid) -> T) -> T {
+    let sid = uuid::Uuid::new_v4();
+    set_pause_handler(sid, None);
+    let result = f(sid);
+    set_pause_handler(sid, None);
     result
 }
 
@@ -83,7 +84,7 @@ fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_pause_state_is_per_session() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let session_a = Arc::new(SimulatedSession::new());
         let session_b = Arc::new(SimulatedSession::new());
 
@@ -117,7 +118,7 @@ fn test_pause_state_is_per_session() {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_handler_sets_session_state() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let session = Arc::new(SimulatedSession::new());
         let session_clone = session.clone();
 
@@ -136,10 +137,10 @@ fn test_handler_sets_session_state() {
             PauseResponse::Resumed
         });
 
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
         // Call pause_for_user
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -165,7 +166,7 @@ fn test_handler_sets_session_state() {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_handler_is_scoped() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler_called = Arc::new(AtomicBool::new(false));
         let handler_called_clone = handler_called.clone();
 
@@ -175,14 +176,14 @@ fn test_handler_is_scoped() {
         });
 
         // Before setting handler
-        assert!(!has_pause_handler());
+        assert!(!has_pause_handler(sid));
 
         // Set handler
-        set_pause_handler(Some(handler));
-        assert!(has_pause_handler());
+        set_pause_handler(sid, Some(handler));
+        assert!(has_pause_handler(sid));
 
         // Call pause_for_user
-        pause_for_user(PauseRequest {
+        pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "Test".to_string(),
             message: "Test".to_string(),
@@ -192,8 +193,8 @@ fn test_handler_is_scoped() {
         assert!(handler_called.load(Ordering::SeqCst));
 
         // Clear handler
-        set_pause_handler(None);
-        assert!(!has_pause_handler());
+        set_pause_handler(sid, None);
+        assert!(!has_pause_handler(sid));
     });
 }
 
@@ -206,7 +207,7 @@ fn test_handler_is_scoped() {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_full_pause_flow_with_blocking() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let session = Arc::new(SimulatedSession::new());
         // Set initial status to running
         session.set_status(STATUS_RUNNING);
@@ -255,10 +256,10 @@ fn test_full_pause_flow_with_blocking() {
             cvar.notify_one();
         });
 
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
         // Tool calls pause_for_user (will block)
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -272,7 +273,7 @@ fn test_full_pause_flow_with_blocking() {
         assert_eq!(session.get_status(), STATUS_RUNNING);
         
         // Clean up
-        set_pause_handler(None);
+        set_pause_handler(sid, None);
     });
 }
 
@@ -284,11 +285,11 @@ fn test_full_pause_flow_with_blocking() {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_handler_returns_approved() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Confirm,
             tool_name: "Test".to_string(),
             message: "Test".to_string(),
@@ -303,17 +304,17 @@ fn test_handler_returns_approved() {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_handler_returns_denied() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         // Ensure no handler first
-        assert!(!has_pause_handler());
+        assert!(!has_pause_handler(sid));
         
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
         
         // Verify handler is set
-        assert!(has_pause_handler());
+        assert!(has_pause_handler(sid));
 
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Confirm,
             tool_name: "Test".to_string(),
             message: "Test".to_string(),
@@ -323,8 +324,8 @@ fn test_handler_returns_denied() {
         assert_eq!(response, PauseResponse::Denied);
         
         // Clean up explicitly
-        set_pause_handler(None);
-        assert!(!has_pause_handler());
+        set_pause_handler(sid, None);
+        assert!(!has_pause_handler(sid));
     });
 }
 
@@ -332,11 +333,11 @@ fn test_handler_returns_denied() {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_handler_returns_interrupted() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "Test".to_string(),
             message: "Test".to_string(),
@@ -446,7 +447,7 @@ fn test_pause_types_are_exported() {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_session_handler_pattern() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let session = Arc::new(SimulatedSession::new());
         let response_condvar: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
             Arc::new((Mutex::new(None), Condvar::new()));
@@ -483,7 +484,7 @@ fn test_session_handler_pattern() {
         });
 
         // Set the handler
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
         // Spawn thread to send response (simulates TypeScript UI)
         let condvar_for_ui = response_condvar.clone();
@@ -495,7 +496,7 @@ fn test_session_handler_pattern() {
         });
 
         // Call pause_for_user within the scope
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded: https://example.com".to_string(),

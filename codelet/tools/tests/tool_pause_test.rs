@@ -8,10 +8,11 @@ use std::sync::{Arc, Condvar, Mutex, PoisonError};
 use std::thread;
 use std::time::Duration;
 
-fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
-    set_pause_handler(None);
-    let result = f();
-    set_pause_handler(None);
+fn with_clean_handler<T>(f: impl FnOnce(uuid::Uuid) -> T) -> T {
+    let sid = uuid::Uuid::new_v4();
+    set_pause_handler(sid, None);
+    let result = f(sid);
+    set_pause_handler(sid, None);
     result
 }
 
@@ -32,8 +33,8 @@ fn wait_for_response<'a>(
 #[test]
 #[serial]
 fn test_no_handler_returns_resumed_immediately() {
-    with_clean_handler(|| {
-        let response = pause_for_user(PauseRequest {
+    with_clean_handler(|sid| {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -51,7 +52,7 @@ fn test_no_handler_returns_resumed_immediately() {
 #[test]
 #[serial]
 fn test_handler_is_invoked_with_request() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler_called = Arc::new(AtomicBool::new(false));
         let handler_called_clone = handler_called.clone();
 
@@ -66,8 +67,8 @@ fn test_handler_is_invoked_with_request() {
             PauseResponse::Resumed
         });
 
-        set_pause_handler(Some(handler));
-        let response = pause_for_user(PauseRequest {
+        set_pause_handler(sid, Some(handler));
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -85,11 +86,11 @@ fn test_handler_is_invoked_with_request() {
 #[test]
 #[serial]
 fn test_handler_returns_approved() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Confirm,
             tool_name: "Bash".to_string(),
             message: "Dangerous command".to_string(),
@@ -103,11 +104,11 @@ fn test_handler_returns_approved() {
 #[test]
 #[serial]
 fn test_handler_returns_denied() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Confirm,
             tool_name: "Bash".to_string(),
             message: "Dangerous command".to_string(),
@@ -121,11 +122,11 @@ fn test_handler_returns_denied() {
 #[test]
 #[serial]
 fn test_handler_returns_interrupted() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -139,7 +140,7 @@ fn test_handler_returns_interrupted() {
 #[test]
 #[serial]
 fn test_handler_can_block_and_resume() -> anyhow::Result<()> {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let response_signal: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
             Arc::new((Mutex::new(None), Condvar::new()));
         let signal_clone = Arc::clone(&response_signal);
@@ -170,8 +171,8 @@ fn test_handler_can_block_and_resume() -> anyhow::Result<()> {
             Ok(())
         });
 
-        set_pause_handler(Some(handler));
-        let response = pause_for_user(PauseRequest {
+        set_pause_handler(sid, Some(handler));
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -194,7 +195,7 @@ fn test_handler_can_block_and_resume() -> anyhow::Result<()> {
 #[test]
 #[serial]
 fn test_handler_can_be_interrupted() -> anyhow::Result<()> {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let response_signal: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
             Arc::new((Mutex::new(None), Condvar::new()));
         let signal_clone = Arc::clone(&response_signal);
@@ -225,8 +226,8 @@ fn test_handler_can_be_interrupted() -> anyhow::Result<()> {
             Ok(())
         });
 
-        set_pause_handler(Some(handler));
-        let response = pause_for_user(PauseRequest {
+        set_pause_handler(sid, Some(handler));
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "WebSearch".to_string(),
             message: "Page loaded".to_string(),
@@ -245,19 +246,19 @@ fn test_handler_can_be_interrupted() -> anyhow::Result<()> {
 #[test]
 #[serial]
 fn test_has_pause_handler() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         assert!(
-            !has_pause_handler(),
+            !has_pause_handler(sid),
             "Should return false when no handler set"
         );
 
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Resumed);
-        set_pause_handler(Some(handler));
-        assert!(has_pause_handler(), "Should return true when handler is set");
+        set_pause_handler(sid, Some(handler));
+        assert!(has_pause_handler(sid), "Should return true when handler is set");
 
-        set_pause_handler(None);
+        set_pause_handler(sid, None);
         assert!(
-            !has_pause_handler(),
+            !has_pause_handler(sid),
             "Should return false after clearing handler"
         );
     });
@@ -283,7 +284,7 @@ fn test_pause_state_from_request() {
 #[test]
 #[serial]
 fn test_confirm_pause_with_details() -> anyhow::Result<()> {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let captured_details: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
         let captured_clone = Arc::clone(&captured_details);
 
@@ -294,8 +295,8 @@ fn test_confirm_pause_with_details() -> anyhow::Result<()> {
             PauseResponse::Approved
         });
 
-        set_pause_handler(Some(handler));
-        pause_for_user(PauseRequest {
+        set_pause_handler(sid, Some(handler));
+        pause_for_user(sid, PauseRequest {
             kind: PauseKind::Confirm,
             tool_name: "Bash".to_string(),
             message: "Dangerous command".to_string(),
@@ -311,7 +312,7 @@ fn test_confirm_pause_with_details() -> anyhow::Result<()> {
 #[test]
 #[serial]
 fn test_multiple_pause_calls() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let call_count = Arc::new(AtomicU32::new(0));
         let count_clone = Arc::clone(&call_count);
 
@@ -320,10 +321,10 @@ fn test_multiple_pause_calls() {
             PauseResponse::Resumed
         });
 
-        set_pause_handler(Some(handler));
+        set_pause_handler(sid, Some(handler));
 
         for _ in 0..3 {
-            let response = pause_for_user(PauseRequest {
+            let response = pause_for_user(sid, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),
@@ -339,12 +340,12 @@ fn test_multiple_pause_calls() {
 #[test]
 #[serial]
 fn test_handler_replacement() {
-    with_clean_handler(|| {
+    with_clean_handler(|sid| {
         let first_handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
         let second_handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
 
-        set_pause_handler(Some(first_handler));
-        let response = pause_for_user(PauseRequest {
+        set_pause_handler(sid, Some(first_handler));
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Confirm,
             tool_name: "Test".to_string(),
             message: "First".to_string(),
@@ -352,8 +353,8 @@ fn test_handler_replacement() {
         });
         assert_eq!(response, PauseResponse::Approved);
 
-        set_pause_handler(Some(second_handler));
-        let response = pause_for_user(PauseRequest {
+        set_pause_handler(sid, Some(second_handler));
+        let response = pause_for_user(sid, PauseRequest {
             kind: PauseKind::Confirm,
             tool_name: "Test".to_string(),
             message: "Second".to_string(),

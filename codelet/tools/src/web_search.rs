@@ -486,7 +486,7 @@ impl Tool for WebSearchTool {
                 }
                 let effective_headless = if *pause { false } else { *headless };
                 
-                match fetch_page_content(url, effective_headless, *pause) {
+                match fetch_page_content(url, effective_headless, *pause, self.session_id) {
                     Ok((content, was_interrupted)) => {
                         if was_interrupted {
                             return Err(ToolError::Execution {
@@ -516,7 +516,7 @@ impl Tool for WebSearchTool {
                 }
                 let effective_headless = if *pause { false } else { *headless };
                 
-                match find_pattern_in_page(url, pattern, effective_headless, *pause) {
+                match find_pattern_in_page(url, pattern, effective_headless, *pause, self.session_id) {
                     Ok((found, was_interrupted)) => {
                         if was_interrupted {
                             return Err(ToolError::Execution {
@@ -549,7 +549,7 @@ impl Tool for WebSearchTool {
                 let full_page = full_page.unwrap_or(false);
                 let effective_headless = if *pause { false } else { *headless };
                 
-                match capture_page_screenshot(url, output_path.clone(), full_page, effective_headless, *pause) {
+                match capture_page_screenshot(url, output_path.clone(), full_page, effective_headless, *pause, self.session_id) {
                     Ok((file_path, was_interrupted)) => {
                         if was_interrupted {
                             return Err(ToolError::Execution {
@@ -622,7 +622,7 @@ fn perform_web_search(query: &str) -> Result<String, ChromeError> {
 }
 
 /// Fetch content from a web page, with optional pause for user interaction
-fn fetch_page_content(url: &str, headless: bool, pause: bool) -> Result<(String, bool), ChromeError> {
+fn fetch_page_content(url: &str, headless: bool, pause: bool, session_id: Uuid) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     with_browser_mode(headless, |browser| {
         let tab = browser.new_tab()?;
@@ -643,7 +643,7 @@ fn fetch_page_content(url: &str, headless: bool, pause: bool) -> Result<(String,
         
         let was_interrupted = if pause {
             use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(PauseRequest {
+            let response = pause_for_user(session_id, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "WebSearch".to_string(),
                 message: format!("Page loaded: {url}"),
@@ -707,6 +707,7 @@ fn capture_page_screenshot(
     full_page: bool,
     headless: bool,
     pause: bool,
+    session_id: Uuid,
 ) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     with_browser_mode(headless, |browser| {
@@ -719,7 +720,7 @@ fn capture_page_screenshot(
         
         let was_interrupted = if pause {
             use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(PauseRequest {
+            let response = pause_for_user(session_id, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "WebSearch".to_string(),
                 message: format!("Page loaded at {url}. Interact with the page, then press Enter to capture screenshot."),
@@ -749,7 +750,7 @@ fn capture_page_screenshot(
 }
 
 /// Find a pattern in a web page with optional pause for user inspection
-fn find_pattern_in_page(url: &str, pattern: &str, headless: bool, pause: bool) -> Result<(String, bool), ChromeError> {
+fn find_pattern_in_page(url: &str, pattern: &str, headless: bool, pause: bool, session_id: Uuid) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     let pattern = pattern.to_string();
     with_browser_mode(headless, |browser| {
@@ -801,7 +802,7 @@ fn find_pattern_in_page(url: &str, pattern: &str, headless: bool, pause: bool) -
         
         let was_interrupted = if pause {
             use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-            let response = pause_for_user(PauseRequest {
+            let response = pause_for_user(session_id, PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "WebSearch".to_string(),
                 message: format!("Pattern search complete on: {url}"),

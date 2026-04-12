@@ -130,7 +130,7 @@ fn get_project_root() -> Option<PathBuf> {
 /// Check a bash command against the blocklist.
 /// Returns Ok(()) if the command is allowed, Err(BlockedError) if blocked.
 /// Reloads config on every check to pick up changes without restart.
-pub fn check_bash_command(command: &str) -> Result<(), BlockedError> {
+pub fn check_bash_command(command: &str, session_id: uuid::Uuid) -> Result<(), BlockedError> {
     use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
     
     let project_root = get_project_root();
@@ -162,7 +162,7 @@ pub fn check_bash_command(command: &str) -> Result<(), BlockedError> {
         }
         
         // Pause for user decision
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(session_id, PauseRequest {
             kind: PauseKind::Triple,
             tool_name: "Bash".to_string(),
             message: result.reason.unwrap_or_else(|| "Command requires approval".to_string()),
@@ -193,7 +193,7 @@ pub fn check_bash_command(command: &str) -> Result<(), BlockedError> {
 /// Returns Ok(()) if the path is allowed, Err(BlockedError) if blocked.
 /// Reloads config on every check to pick up changes without restart.
 /// Used by Read, Write, and Edit tools to protect sensitive files.
-pub fn check_file_path(file_path: &str) -> Result<(), BlockedError> {
+pub fn check_file_path(file_path: &str, session_id: uuid::Uuid) -> Result<(), BlockedError> {
     use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
     
     let project_root = get_project_root();
@@ -225,7 +225,7 @@ pub fn check_file_path(file_path: &str) -> Result<(), BlockedError> {
         }
         
         // Pause for user decision
-        let response = pause_for_user(PauseRequest {
+        let response = pause_for_user(session_id, PauseRequest {
             kind: PauseKind::Triple,
             tool_name: "Read".to_string(),
             message: result.reason.unwrap_or_else(|| "Sensitive file access".to_string()),
@@ -348,7 +348,7 @@ mod tests {
         // The matcher should match system config only (if any)
         // We test that no project config is loaded by checking that 
         // a command not in system config is not blocked
-        let result = check_bash_command("this_command_does_not_exist_in_any_blocklist");
+        let result = check_bash_command("this_command_does_not_exist_in_any_blocklist", uuid::Uuid::nil());
         assert!(result.is_ok(), "Random command should not be blocked when no project config exists");
         
         // Cleanup
@@ -373,7 +373,7 @@ mod tests {
         init_blocklist(Some(tmp.path()));
         
         // The project rule should be loaded and active
-        let result = check_bash_command("testcmd123 arg1");
+        let result = check_bash_command("testcmd123 arg1", uuid::Uuid::nil());
         assert!(result.is_err(), "Command matching project rule should be blocked");
         
         let blocked = result.unwrap_err();
@@ -519,7 +519,7 @@ mod tests {
         
         // Start with clean state
         clear_session_allowances();
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         
         // Track if pause handler was called
         let pause_called = Arc::new(AtomicBool::new(false));
@@ -530,7 +530,7 @@ mod tests {
             pause_called_clone.store(true, Ordering::SeqCst);
             PauseResponse::AllowOnce
         });
-        set_pause_handler(Some(handler));
+        set_pause_handler(uuid::Uuid::nil(), Some(handler));
         
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
@@ -547,10 +547,10 @@ mod tests {
         allow_for_session("env-prompt");
         
         // @step When the AI attempts to read "~/.env"
-        let result = check_file_path("~/.env");
+        let result = check_file_path("~/.env", uuid::Uuid::nil());
         
         // Clean up before assertions
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         clear_session_allowances();
         init_blocklist(None);
         
@@ -569,7 +569,7 @@ mod tests {
         
         // Start with clean state
         clear_session_allowances();
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         
         // Track pause handler calls and verify Triple kind
         let pause_called = Arc::new(AtomicBool::new(false));
@@ -585,7 +585,7 @@ mod tests {
             }
             PauseResponse::AllowOnce
         });
-        set_pause_handler(Some(handler));
+        set_pause_handler(uuid::Uuid::nil(), Some(handler));
         
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
@@ -602,10 +602,10 @@ mod tests {
         // (session is implicitly active when we can call check_file_path)
         
         // @step When the AI attempts to read "~/.env"
-        let result = check_file_path("~/.env");
+        let result = check_file_path("~/.env", uuid::Uuid::nil());
         
         // Clean up
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         init_blocklist(None);
         
         // @step Then the TUI should show an inline triple pause with message "Sensitive file access (.env)"
@@ -635,11 +635,11 @@ mod tests {
         
         // Start with clean state  
         clear_session_allowances();
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         
         // @step When the user navigates right and selects "Allow Session"
         let handler: PauseHandler = Arc::new(|_| PauseResponse::AllowSession);
-        set_pause_handler(Some(handler));
+        set_pause_handler(uuid::Uuid::nil(), Some(handler));
         
         // @step Given a blocklist rule with action "prompt" exists for "~/.ssh" access
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
@@ -656,10 +656,10 @@ mod tests {
         // (session is implicitly active when we can call check_file_path)
         
         // @step When the AI attempts to read "~/.ssh/config"
-        let result = check_file_path("~/.ssh/config");
+        let result = check_file_path("~/.ssh/config", uuid::Uuid::nil());
         
         // Clean up handler but NOT session allowances yet
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         init_blocklist(None);
         
         // @step Then the TUI should show an inline triple pause
@@ -685,11 +685,11 @@ mod tests {
         
         // Start with clean state
         clear_session_allowances();
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         
         // @step When the user navigates to "Deny" and presses Enter
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
-        set_pause_handler(Some(handler));
+        set_pause_handler(uuid::Uuid::nil(), Some(handler));
         
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
@@ -706,10 +706,10 @@ mod tests {
         // (session is implicitly active when we can call check_file_path)
         
         // @step When the AI attempts to read "~/.env"
-        let result = check_file_path("~/.env");
+        let result = check_file_path("~/.env", uuid::Uuid::nil());
         
         // Clean up
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         clear_session_allowances();
         init_blocklist(None);
         
@@ -735,7 +735,7 @@ mod tests {
         
         // Start with clean state
         clear_session_allowances();
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         
         // Track how many times pause handler is called
         let pause_count = Arc::new(AtomicUsize::new(0));
@@ -745,7 +745,7 @@ mod tests {
             pause_count_clone.fetch_add(1, Ordering::SeqCst);
             PauseResponse::AllowSession
         });
-        set_pause_handler(Some(handler));
+        set_pause_handler(uuid::Uuid::nil(), Some(handler));
         
         // @step Given a blocklist rule with action "prompt" exists for ".env" files
         let tmp = tempfile::TempDir::new().expect("failed to create temp dir");
@@ -771,13 +771,13 @@ mod tests {
         assert!(!is_session_allowed("env-prompt"), "Pattern should NOT be allowed after restart");
         
         // @step And the AI attempts to read "~/.env"
-        let _result = check_file_path("~/.env");
+        let _result = check_file_path("~/.env", uuid::Uuid::nil());
         
         // @step Then the TUI should prompt again
         assert!(pause_count.load(Ordering::SeqCst) > 0, "Pause handler should be called after restart");
         
         // Cleanup
-        set_pause_handler(None);
+        set_pause_handler(uuid::Uuid::nil(), None);
         clear_session_allowances();
         init_blocklist(None);
     }
