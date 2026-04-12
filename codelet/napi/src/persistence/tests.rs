@@ -16,7 +16,7 @@ use std::sync::Mutex;
 // Global mutex to ensure tests run sequentially since they share global state
 // (MESSAGE_STORE, SESSION_STORE, DATA_DIRECTORY are all global singletons)
 lazy_static::lazy_static! {
-    static ref TEST_MUTEX: Mutex<()> = Mutex::new(());
+    pub(super) static ref TEST_MUTEX: Mutex<()> = Mutex::new(());
 }
 
 /// Setup an isolated temp directory for a test.

@@ -1,10 +1,12 @@
-# BUG-122: persistenceGetHistory() Blocks UI for 3.8s
+# BUG-122: persistenceGetHistory() Blocks UI for ~5s
 
 ## Discovery Method
 
-Used `@microsoft/tui-test` E2E framework to measure actual "Loading..." duration in a real PTY, then added `performance.now()` timers to `initSession()` and `initializeModels()`.
+Used `@microsoft/tui-test` E2E framework to measure actual "Loading..." duration
+in a real PTY, then added `performance.now()` timers to `initSession()` and
+`initializeModels()`.
 
-## Measured Timings (tui-test diagnosis)
+## Original Measured Timings (tui-test diagnosis, 2026-03-18)
 
 **"Loading..." visible for 3,785ms on a brand new session via Enter key.**
 
@@ -14,7 +16,7 @@ Used `@microsoft/tui-test` E2E framework to measure actual "Loading..." duration
 VISIBLE DURATION: 3785ms
 ```
 
-## Perf Breakdown (from fspec.log)
+## Original Perf Breakdown (from fspec.log)
 
 ```
 persistenceSetDataDirectory:      0.1ms
@@ -33,51 +35,78 @@ persistenceGetHistory:         3775.8ms  ← THE BOTTLENECK
 initSession TOTAL:             3809.1ms
 ```
 
+## Current Scale (2026-04-12 — significantly worse)
+
+| File | Size | Lines |
+|------|------|-------|
+| `messages/messages.jsonl` | **1.0 GB** | 362,303 |
+| `sessions/` | 4,586 files | — |
+| `history.jsonl` | 2.6 MB | 8,732 |
+
+The messages file has grown substantially since initial diagnosis. User reports
+startup now takes ~5 seconds, consistent with linear growth of MessageStore::load_all().
+
 ## Root Cause
 
-In `AgentView.tsx` line ~1389, `initSession()` is a single async function that:
+In `AgentView.tsx` line ~1413, `initSession()` is a single async function that:
 
 1. `persistenceSetDataDirectory()` — 0.1ms ✓
 2. `blocklistInit()` — 4.8ms ✓
 3. `initializeModels()` — 28ms ✓ (calls `setCurrentProvider()`)
-4. `persistenceGetHistory()` — **3,776ms** ← blocks event loop
+4. `persistenceGetHistory()` — **~5,000ms** ← blocks event loop
 5. `setError(null)` — triggers final re-render
 
-`setCurrentProvider()` is called at step 3, but React can't re-render because `persistenceGetHistory()` at step 4 is a **synchronous NAPI call** that blocks the JavaScript event loop for 3.8 seconds. React state updates are batched and only flush when the event loop is free.
+`setCurrentProvider()` is called at step 3, but React can't re-render because
+`persistenceGetHistory()` at step 4 is a **synchronous NAPI call** that blocks
+the JavaScript event loop. React state updates are batched and only flush when
+the event loop is free.
 
-So the model name is resolved at 28ms but doesn't appear in the header until 3,809ms — after the history call finishes and the function returns.
+## Why Does persistenceGetHistory() Even Run Here?
 
-## Key Question: Why Does persistenceGetHistory() Even Run Here?
+`persistenceGetHistory()` loads the last 100 command history entries for the
+current project from `HistoryStore` (history.jsonl, 2.6 MB). This populates
+Shift+↑/↓ shell-style recall and the /search command.
 
-`persistenceGetHistory()` loads the last 100 session history entries for the current project. This populates the history dropdown in the agent input area.
+The HistoryStore itself is fast (~50ms for 8,732 entries). But calling
+`get_history()` triggers `init_stores()` which **also** loads:
+- MessageStore (1 GB, 362K messages) — **NOT NEEDED** by history
+- SessionStore (4,586 files) — **NOT NEEDED** by history
+- BlobStore (just a path) — cheap
 
-But:
-- This is not needed to display the model name
-- This is not needed to create or resume a session
-- This could load lazily (after the UI is interactive)
-- This could run in a separate useEffect
-- This could run in a web worker / off the main thread
-- For a NEW session, there may be few/no history entries that matter
+## Three Store Access Patterns (Corrected Understanding)
 
-## Proposed Fixes
+### HistoryStore (history.jsonl, 2.6 MB)
+- **Used by**: Shift+↑/↓ (handleHistoryPrev/Next), /search (persistenceSearchHistory)
+- **Access pattern**: Load ALL entries, filter by current project, in-memory substring search
+- **Cross-session**: YES — shows history from ALL sessions for this project
+- **Can stay in memory**: YES — 2.6 MB is trivial
 
-### Option A: Separate useEffect (simplest, no NAPI changes)
-Move `persistenceGetHistory()` to its own `useEffect` that runs independently of model initialization. This lets React re-render with the model name immediately after `initializeModels()` completes.
+### MessageStore (messages.jsonl, 1.0 GB)
+- **Used by**: SessionSearch tool (LLM agent), session resume (get_session_messages)
+- **Access pattern**: Look up specific messages by UUID via SessionManifest.messages[]
+- **Cross-session**: Messages are content-addressed by UUID; shared across sessions
+  via Forked/Imported MessageSource. NO session_id field on StoredMessage.
+- **Cannot stay in memory**: NO — 1 GB in HashMap consumes ~2 GB with overhead
 
-### Option B: Defer to idle callback
-Use `requestIdleCallback` or `setTimeout(fn, 0)` before the history call to yield to React's render cycle.
+### SessionStore (sessions/*.json, 4,586 files)
+- **Used by**: Session list, session resume, session creation
+- **Access pattern**: Individual file read by session ID
+- **Can lazy-load**: YES — read individual files on demand
 
-### Option C: Investigate why it takes 3.8 seconds
-100 history entries should not take 3.8 seconds. The Rust implementation likely has a performance issue (reading too many files, O(N) scan, etc.).
+## Proposed Fix (Three Layers)
 
-### Option D: Combination
-Fix the Rust performance issue AND separate the effects so model display is never blocked by history loading.
+### Layer 1: Lazy per-store initialization (Rust) — biggest impact on startup
+Replace monolithic `init_stores()` with per-store lazy init. `get_history()`
+should only init `HistoryStore`, not all four stores. This eliminates the
+side-effect that drags in MessageStore.
 
-## Reproduction
+### Layer 2: Binary index + on-demand loading for MessageStore (Rust)
+Keep the monolithic messages.jsonl (content-addressing requires it). Replace
+the eager `load_all()` → `HashMap` with:
+- A persisted binary index file (`messages.idx`) mapping UUID → byte offset
+- On-demand `seek()` to load individual messages
+- An LRU cache for recently accessed messages
 
-```bash
-npm run build
-npx @microsoft/tui-test --trace e2e/loading-diagnosis.test.ts
-cat /tmp/fspec-loading-diag.log
-grep '\[PERF' ~/.fspec/fspec.log | tail -20
-```
+### Layer 3: TypeScript deferral — defense in depth
+Move `persistenceGetHistory()` to its own `useEffect` with `setTimeout(fn, 0)`
+so model display is never blocked by history loading.

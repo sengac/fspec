@@ -1,58 +1,103 @@
-//! File system storage for messages and sessions
+//! File system storage for messages and sessions (BUG-122 Layer 2)
+//!
+//! MessageStore uses a binary index file (`messages.idx`) with on-demand
+//! seek() and an LRU cache instead of loading the entire `messages.jsonl`
+//! into a HashMap.
 
+use super::message_index::{self, IndexEntry};
 use super::types::*;
 use super::{ensure_directories, get_data_dir};
 use chrono::Utc;
 use codelet_common::token_estimator::count_tokens;
+use lru::LruCache;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
-use std::io::{BufRead, BufReader, Write};
+use std::io::Write;
+use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use tracing::warn;
 use uuid::Uuid;
 
-/// Message store - handles storing and retrieving messages
+/// Default LRU cache capacity for deserialized messages
+const LRU_CACHE_CAPACITY: usize = 4000;
+
+/// Message store — binary-indexed, on-demand loading with LRU cache.
+///
+/// Instead of reading the entire `messages.jsonl` into memory, this struct
+/// maintains a lightweight in-memory index (`UUID → (offset, length)`) loaded
+/// from a binary `messages.idx` file, and fetches individual messages on
+/// demand via `seek()`.
 pub struct MessageStore {
     messages_dir: PathBuf,
-    /// In-memory cache of messages by ID
-    cache: HashMap<Uuid, StoredMessage>,
+    messages_file: PathBuf,
+    index_file: PathBuf,
+    /// UUID → (byte_offset, byte_length) — loaded from binary .idx file
+    index: HashMap<Uuid, IndexEntry>,
+    /// LRU cache for recently accessed deserialized messages
+    cache: std::sync::Mutex<LruCache<Uuid, StoredMessage>>,
 }
 
 impl MessageStore {
-    /// Create a new message store
+    /// Create a new message store with binary index
     pub fn new() -> Result<Self, String> {
         ensure_directories()?;
         let messages_dir = get_data_dir()?.join("messages");
+        let messages_file = messages_dir.join("messages.jsonl");
+        let index_file = messages_dir.join("messages.idx");
+
+        let capacity = NonZeroUsize::new(LRU_CACHE_CAPACITY)
+            .ok_or("Invalid LRU cache capacity")?;
+
         let mut store = Self {
             messages_dir,
-            cache: HashMap::new(),
+            messages_file,
+            index_file,
+            index: HashMap::new(),
+            cache: std::sync::Mutex::new(LruCache::new(capacity)),
         };
-        store.load_all()?;
+        store.load_or_build_index()?;
         Ok(store)
     }
 
-    /// Load all messages from disk into cache
-    fn load_all(&mut self) -> Result<(), String> {
-        let messages_file = self.messages_dir.join("messages.jsonl");
-        if !messages_file.exists() {
+    /// Load the binary index or build it from scratch.
+    ///
+    /// 1. If `messages.idx` exists: load it, compare stored data_file_size
+    ///    - Equal: index is current — done
+    ///    - Actual > stored: incrementally scan only new bytes
+    ///    - Actual < stored or corrupt: full rebuild
+    /// 2. If missing: full scan, then save to `messages.idx`
+    fn load_or_build_index(&mut self) -> Result<(), String> {
+        if !self.messages_file.exists() {
             return Ok(());
         }
 
-        let file = File::open(&messages_file)
-            .map_err(|e| format!("Failed to open messages file: {}", e))?;
-        let reader = BufReader::new(file);
+        let actual_size = fs::metadata(&self.messages_file)
+            .map_err(|e| format!("Failed to stat messages file: {e}"))?
+            .len();
 
-        for line in reader.lines() {
-            let line = line.map_err(|e| format!("Failed to read line: {}", e))?;
-            if line.trim().is_empty() {
-                continue;
+        if let Some((loaded_index, recorded_size)) = message_index::load_index(&self.index_file) {
+            if recorded_size == actual_size {
+                // Index is current
+                self.index = loaded_index;
+                return Ok(());
+            } else if actual_size > recorded_size {
+                // Incremental scan from where we left off
+                self.index = loaded_index;
+                let (new_entries, final_size) =
+                    message_index::scan_jsonl_range(&self.messages_file, recorded_size)?;
+                self.index.extend(new_entries);
+                message_index::save_index(&self.index_file, &self.index, final_size)?;
+                return Ok(());
             }
-            let msg: StoredMessage = serde_json::from_str(&line)
-                .map_err(|e| format!("Failed to parse message: {}", e))?;
-            self.cache.insert(msg.id, msg);
+            // actual < recorded or corrupt — fall through to full rebuild
+            warn!("Index file stale (actual {actual_size} < recorded {recorded_size}), rebuilding");
         }
 
+        // Full scan
+        let (entries, final_size) = message_index::scan_jsonl_range(&self.messages_file, 0)?;
+        self.index = entries;
+        message_index::save_index(&self.index_file, &self.index, final_size)?;
         Ok(())
     }
 
@@ -94,42 +139,121 @@ impl MessageStore {
             metadata,
         };
 
+        // Record byte offset before writing
+        let byte_offset = if self.messages_file.exists() {
+            fs::metadata(&self.messages_file)
+                .map_err(|e| format!("Failed to stat messages file: {e}"))?
+                .len()
+        } else {
+            0
+        };
+
         // Append to JSONL file
-        let messages_file = self.messages_dir.join("messages.jsonl");
         let mut file = OpenOptions::new()
             .create(true)
             .append(true)
-            .open(&messages_file)
-            .map_err(|e| format!("Failed to open messages file: {}", e))?;
+            .open(&self.messages_file)
+            .map_err(|e| format!("Failed to open messages file: {e}"))?;
 
         let json = serde_json::to_string(&msg)
-            .map_err(|e| format!("Failed to serialize message: {}", e))?;
-        writeln!(file, "{}", json).map_err(|e| format!("Failed to write message: {}", e))?;
+            .map_err(|e| format!("Failed to serialize message: {e}"))?;
+        let line = format!("{json}\n");
+        file.write_all(line.as_bytes())
+            .map_err(|e| format!("Failed to write message: {e}"))?;
 
-        self.cache.insert(id, msg);
+        let byte_length = line.len() as u32;
+
+        // Update in-memory index
+        self.index.insert(id, IndexEntry { byte_offset, byte_length });
+
+        // Update LRU cache
+        if let Ok(mut cache) = self.cache.lock() {
+            cache.put(id, msg);
+        }
+
+        // Persist index (record the new file size)
+        let new_data_size = byte_offset + byte_length as u64;
+        message_index::save_index(&self.index_file, &self.index, new_data_size)?;
+
         Ok(id)
     }
 
-    /// Get a message by ID
-    pub fn get(&self, id: Uuid) -> Option<&StoredMessage> {
-        self.cache.get(&id)
+    /// Get a message by ID (on-demand loading with LRU cache)
+    pub fn get(&self, id: Uuid) -> Option<StoredMessage> {
+        // Check LRU cache first
+        if let Ok(mut cache) = self.cache.lock() {
+            if let Some(msg) = cache.get(&id) {
+                return Some(msg.clone());
+            }
+        }
+
+        // Look up in index
+        let entry = self.index.get(&id)?;
+
+        // Read from disk
+        let msg = message_index::read_message_at(&self.messages_file, entry).ok()?;
+
+        // Insert into LRU cache
+        if let Ok(mut cache) = self.cache.lock() {
+            cache.put(id, msg.clone());
+        }
+
+        Some(msg)
     }
 
     /// Update metadata on an existing stored message.
     ///
-    /// Merges the provided entries into the message's metadata map and
-    /// rewrites the messages file to persist the change.
+    /// Re-appends the message with updated metadata and updates the index
+    /// to point to the new position. The old entry becomes dead space
+    /// (reclaimed on next cleanup_orphans).
     pub fn update_metadata(
         &mut self,
         id: Uuid,
         entries: HashMap<String, serde_json::Value>,
     ) -> Result<(), String> {
-        let msg = self
-            .cache
-            .get_mut(&id)
-            .ok_or_else(|| format!("Message {} not found", id))?;
+        // Read current message
+        let mut msg = self.get(id)
+            .ok_or_else(|| format!("Message {id} not found"))?;
+
         msg.metadata.extend(entries);
-        self.rewrite_messages_file()
+
+        // Record new byte offset
+        let byte_offset = if self.messages_file.exists() {
+            fs::metadata(&self.messages_file)
+                .map_err(|e| format!("Failed to stat messages file: {e}"))?
+                .len()
+        } else {
+            0
+        };
+
+        // Re-append with updated metadata
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.messages_file)
+            .map_err(|e| format!("Failed to open messages file: {e}"))?;
+
+        let json = serde_json::to_string(&msg)
+            .map_err(|e| format!("Failed to serialize message: {e}"))?;
+        let line = format!("{json}\n");
+        file.write_all(line.as_bytes())
+            .map_err(|e| format!("Failed to write message: {e}"))?;
+
+        let byte_length = line.len() as u32;
+
+        // Update index to point to the new position
+        self.index.insert(id, IndexEntry { byte_offset, byte_length });
+
+        // Update LRU cache
+        if let Ok(mut cache) = self.cache.lock() {
+            cache.put(id, msg);
+        }
+
+        // Persist index
+        let new_data_size = byte_offset + byte_length as u64;
+        message_index::save_index(&self.index_file, &self.index, new_data_size)?;
+
+        Ok(())
     }
 
     /// Get all message IDs referenced by any session
@@ -144,45 +268,83 @@ impl MessageStore {
     }
 
     /// Remove orphaned messages (not referenced by any session)
+    ///
+    /// Rewrites `messages.jsonl` to contain only referenced messages,
+    /// then rebuilds the binary index.
     pub fn cleanup_orphans(
         &mut self,
         referenced_ids: &std::collections::HashSet<Uuid>,
     ) -> Result<usize, String> {
-        let all_ids: Vec<Uuid> = self.cache.keys().cloned().collect();
+        let all_ids: Vec<Uuid> = self.index.keys().copied().collect();
         let orphans: Vec<Uuid> = all_ids
             .into_iter()
             .filter(|id| !referenced_ids.contains(id))
             .collect();
 
         let count = orphans.len();
-        for id in orphans {
-            self.cache.remove(&id);
+        if count == 0 {
+            return Ok(0);
         }
 
-        // Rewrite the messages file without orphans
-        self.rewrite_messages_file()?;
+        // Rewrite the messages file, keeping only non-orphan entries
+        let temp_file = self.messages_dir.join("messages.jsonl.tmp");
+        let mut out = File::create(&temp_file)
+            .map_err(|e| format!("Failed to create temp file: {e}"))?;
+
+        let mut new_index: HashMap<Uuid, IndexEntry> = HashMap::new();
+        let mut current_offset: u64 = 0;
+
+        // Iterate over index entries, reading each referenced message from disk
+        for (id, entry) in &self.index {
+            if !referenced_ids.contains(id) {
+                continue;
+            }
+            let msg = message_index::read_message_at(&self.messages_file, entry)
+                .map_err(|e| format!("Failed to read message {id} during cleanup: {e}"))?;
+            let json = serde_json::to_string(&msg)
+                .map_err(|e| format!("Failed to serialize message: {e}"))?;
+            let line = format!("{json}\n");
+            out.write_all(line.as_bytes())
+                .map_err(|e| format!("Failed to write message: {e}"))?;
+
+            let byte_length = line.len() as u32;
+            new_index.insert(*id, IndexEntry {
+                byte_offset: current_offset,
+                byte_length,
+            });
+            current_offset += byte_length as u64;
+        }
+
+        out.flush()
+            .map_err(|e| format!("Failed to flush temp file: {e}"))?;
+
+        fs::rename(&temp_file, &self.messages_file)
+            .map_err(|e| format!("Failed to rename temp file: {e}"))?;
+
+        // Update in-memory state
+        self.index = new_index;
+
+        // Clear orphans from LRU cache
+        if let Ok(mut cache) = self.cache.lock() {
+            for id in &orphans {
+                cache.pop(id);
+            }
+        }
+
+        // Persist rebuilt index
+        message_index::save_index(&self.index_file, &self.index, current_offset)?;
 
         Ok(count)
     }
 
-    /// Rewrite the messages file with current cache
-    fn rewrite_messages_file(&self) -> Result<(), String> {
-        let messages_file = self.messages_dir.join("messages.jsonl");
-        let temp_file = self.messages_dir.join("messages.jsonl.tmp");
+    /// Number of entries in the index (for testing)
+    pub fn index_len(&self) -> usize {
+        self.index.len()
+    }
 
-        let mut file =
-            File::create(&temp_file).map_err(|e| format!("Failed to create temp file: {}", e))?;
-
-        for msg in self.cache.values() {
-            let json = serde_json::to_string(msg)
-                .map_err(|e| format!("Failed to serialize message: {}", e))?;
-            writeln!(file, "{}", json).map_err(|e| format!("Failed to write message: {}", e))?;
-        }
-
-        fs::rename(&temp_file, &messages_file)
-            .map_err(|e| format!("Failed to rename temp file: {}", e))?;
-
-        Ok(())
+    /// Number of entries currently in the LRU cache (for testing)
+    pub fn cache_len(&self) -> usize {
+        self.cache.lock().map(|c| c.len()).unwrap_or(0)
     }
 }
 
@@ -216,9 +378,9 @@ impl SessionStore {
         }
 
         for entry in fs::read_dir(&self.sessions_dir)
-            .map_err(|e| format!("Failed to read sessions dir: {}", e))?
+            .map_err(|e| format!("Failed to read sessions dir: {e}"))?
         {
-            let entry = entry.map_err(|e| format!("Failed to read entry: {}", e))?;
+            let entry = entry.map_err(|e| format!("Failed to read entry: {e}"))?;
             let path = entry.path();
 
             if path.extension().is_some_and(|e| e == "json") {
@@ -276,9 +438,9 @@ impl SessionStore {
         let path = self.sessions_dir.join(&filename);
 
         let json = serde_json::to_string_pretty(session)
-            .map_err(|e| format!("Failed to serialize session: {}", e))?;
+            .map_err(|e| format!("Failed to serialize session: {e}"))?;
 
-        fs::write(&path, json).map_err(|e| format!("Failed to write session file: {}", e))?;
+        fs::write(&path, json).map_err(|e| format!("Failed to write session file: {e}"))?;
 
         self.cache.insert(session.id, session.clone());
         self.last_session
@@ -302,7 +464,7 @@ impl SessionStore {
         self.cache
             .get(&id)
             .cloned()
-            .ok_or_else(|| format!("Session {} not found", id))
+            .ok_or_else(|| format!("Session {id} not found"))
     }
 
     /// Get the last active session for a project
@@ -316,7 +478,7 @@ impl SessionStore {
     pub fn resume_last(&self, project: &Path) -> Result<SessionManifest, String> {
         self.get_last_session(project)
             .cloned()
-            .ok_or_else(|| format!("No session found for project {:?}", project))
+            .ok_or_else(|| format!("No session found for project {project:?}"))
     }
 
     /// List all sessions for a project
@@ -342,11 +504,11 @@ impl SessionStore {
             }
 
             // Delete the file
-            let filename = format!("{}.json", id);
+            let filename = format!("{id}.json");
             let path = self.sessions_dir.join(&filename);
             if path.exists() {
                 fs::remove_file(&path)
-                    .map_err(|e| format!("Failed to delete session file: {}", e))?;
+                    .map_err(|e| format!("Failed to delete session file: {e}"))?;
             }
         }
         Ok(())
@@ -357,7 +519,7 @@ impl SessionStore {
         let session = self
             .cache
             .get_mut(&id)
-            .ok_or_else(|| format!("Session {} not found", id))?;
+            .ok_or_else(|| format!("Session {id} not found"))?;
         session.name = new_name.to_string();
         session.updated_at = Utc::now();
 

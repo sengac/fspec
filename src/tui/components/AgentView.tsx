@@ -1459,32 +1459,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
           logger.error('Failed to initialize models:', err);
         }
 
-        // NAPI-006: Load history for current project
-        try {
-          const history = persistenceGetHistory(currentProjectRef.current, 100);
-
-          // Convert NAPI history entries (camelCase from NAPI-RS) to our interface
-          const entries: HistoryEntry[] = history.map(
-            (h: {
-              display: string;
-              timestamp: string;
-              project: string;
-              sessionId: string;
-              hasPastedContent?: boolean;
-            }) => ({
-              display: h.display,
-              timestamp: h.timestamp,
-              project: h.project,
-              sessionId: h.sessionId,
-              hasPastedContent: h.hasPastedContent ?? false,
-            })
-          );
-          setHistoryEntries(entries);
-        } catch (err) {
-          logger.error(
-            `Failed to load history: ${err instanceof Error ? err.message : String(err)}`
-          );
-        }
+        // BUG-122: History loading moved to separate deferred useEffect below.
+        // persistenceGetHistory() triggers init_stores() which was loading the
+        // entire 1GB messages.jsonl. Even with lazy per-store init (Layer 1),
+        // keeping it separate ensures model name renders at ~28ms, not blocked
+        // by any persistence I/O.
 
         setError(null);
       } catch (err) {
@@ -1497,6 +1476,42 @@ export const AgentView: React.FC<AgentViewProps> = ({
     };
 
     void initSession();
+  }, []);
+
+  // BUG-122 Layer 3: Deferred history loading — does not block model name rendering.
+  // persistenceGetHistory() only needs HistoryStore (2.6MB history.jsonl),
+  // not MessageStore (1GB). With Layer 1 lazy init this is fast (~50ms),
+  // but keeping it deferred means even that I/O never blocks the first render.
+  // Shift+↑/↓ gracefully degrades to no-op if history hasn't loaded yet.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        const history = persistenceGetHistory(currentProjectRef.current, 100);
+
+        // Convert NAPI history entries (camelCase from NAPI-RS) to our interface
+        const entries: HistoryEntry[] = history.map(
+          (h: {
+            display: string;
+            timestamp: string;
+            project: string;
+            sessionId: string;
+            hasPastedContent?: boolean;
+          }) => ({
+            display: h.display,
+            timestamp: h.timestamp,
+            project: h.project,
+            sessionId: h.sessionId,
+            hasPastedContent: h.hasPastedContent ?? false,
+          })
+        );
+        setHistoryEntries(entries);
+      } catch (err) {
+        logger.error(
+          `Failed to load history: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // SESS-001: Set current work unit ID on mount/unmount

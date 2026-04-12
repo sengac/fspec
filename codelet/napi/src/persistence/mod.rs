@@ -13,6 +13,7 @@ mod blob;
 mod blob_processing;
 mod history;
 mod message_envelope;
+mod message_index;
 mod storage;
 mod types;
 
@@ -22,6 +23,9 @@ mod napi_bindings;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod lazy_init_tests;
 
 pub use blob::*;
 pub use blob_processing::*;
@@ -109,28 +113,39 @@ pub fn ensure_directories() -> Result<(), String> {
     Ok(())
 }
 
-/// Initialize all stores (call once at startup)
-fn init_stores() -> Result<(), String> {
-    let mut msg = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
-    if msg.is_none() {
-        *msg = Some(MessageStore::new()?);
+/// Initialize MessageStore lazily (only when message operations are needed)
+fn init_message_store() -> Result<(), String> {
+    let mut store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
+    if store.is_none() {
+        *store = Some(MessageStore::new()?);
     }
+    Ok(())
+}
 
-    let mut sess = SESSION_STORE.lock().map_err(|e| e.to_string())?;
-    if sess.is_none() {
-        *sess = Some(SessionStore::new()?);
+/// Initialize SessionStore lazily (only when session operations are needed)
+fn init_session_store() -> Result<(), String> {
+    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    if store.is_none() {
+        *store = Some(SessionStore::new()?);
     }
+    Ok(())
+}
 
-    let mut blob = BLOB_STORE.lock().map_err(|e| e.to_string())?;
-    if blob.is_none() {
-        *blob = Some(BlobStore::new()?);
+/// Initialize BlobStore lazily (only when blob operations are needed)
+fn init_blob_store() -> Result<(), String> {
+    let mut store = BLOB_STORE.lock().map_err(|e| e.to_string())?;
+    if store.is_none() {
+        *store = Some(BlobStore::new()?);
     }
+    Ok(())
+}
 
-    let mut hist = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
-    if hist.is_none() {
-        *hist = Some(HistoryStore::new()?);
+/// Initialize HistoryStore lazily (only when history operations are needed)
+fn init_history_store() -> Result<(), String> {
+    let mut store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
+    if store.is_none() {
+        *store = Some(HistoryStore::new()?);
     }
-
     Ok(())
 }
 
@@ -140,7 +155,7 @@ fn init_stores() -> Result<(), String> {
 
 /// Create a new session
 pub fn create_session(name: &str, project: &Path) -> Result<SessionManifest, String> {
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -154,7 +169,7 @@ pub fn create_session_with_provider(
     project: &Path,
     provider: &str,
 ) -> Result<SessionManifest, String> {
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -167,7 +182,7 @@ pub fn create_session_with_provider(
 /// Used by AgentManager to persist subordinate sessions that are created
 /// entirely in Rust without TypeScript involvement.
 pub fn save_session(session: &SessionManifest) -> Result<(), String> {
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -177,7 +192,7 @@ pub fn save_session(session: &SessionManifest) -> Result<(), String> {
 
 /// Load a session by ID
 pub fn load_session(id: Uuid) -> Result<SessionManifest, String> {
-    init_stores()?;
+    init_session_store()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_ref()
@@ -187,7 +202,7 @@ pub fn load_session(id: Uuid) -> Result<SessionManifest, String> {
 
 /// Resume the last session for a project
 pub fn resume_last_session(project: &Path) -> Result<SessionManifest, String> {
-    init_stores()?;
+    init_session_store()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_ref()
@@ -201,7 +216,7 @@ pub fn fork_session(
     at_index: usize,
     name: &str,
 ) -> Result<SessionManifest, String> {
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -215,7 +230,7 @@ pub fn merge_messages(
     source_id: Uuid,
     indices: &[usize],
 ) -> Result<(), String> {
-    init_stores()?;
+    init_session_store()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     let store_ref = store.as_ref().ok_or("Session store not initialized")?;
 
@@ -275,7 +290,7 @@ pub fn cherry_pick(
     index: usize,
     context: usize,
 ) -> Result<Vec<usize>, String> {
-    init_stores()?;
+    init_session_store()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     let store_ref = store.as_ref().ok_or("Session store not initialized")?;
 
@@ -338,7 +353,7 @@ pub fn cherry_pick(
 /// Only compiled when NAPI bindings are enabled or during tests.
 #[cfg(any(not(feature = "noop"), test))]
 pub(crate) fn list_sessions(project: &Path) -> Result<Vec<SessionManifest>, String> {
-    init_stores()?;
+    init_session_store()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store
         .as_ref()
@@ -356,7 +371,7 @@ pub fn switch_session(id: Uuid) -> Result<SessionManifest, String> {
 
 /// Delete a session
 pub fn delete_session(id: Uuid) -> Result<(), String> {
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -366,7 +381,7 @@ pub fn delete_session(id: Uuid) -> Result<(), String> {
 
 /// Rename a session
 pub fn rename_session(id: Uuid, new_name: &str) -> Result<(), String> {
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -380,7 +395,8 @@ pub fn append_message(
     role: &str,
     content: &str,
 ) -> Result<Uuid, String> {
-    init_stores()?;
+    init_message_store()?;
+    init_session_store()?;
 
     // Store the message
     let mut msg_store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
@@ -410,7 +426,8 @@ pub fn append_message_with_metadata(
     content: &str,
     metadata: std::collections::HashMap<String, serde_json::Value>,
 ) -> Result<Uuid, String> {
-    init_stores()?;
+    init_message_store()?;
+    init_session_store()?;
 
     // Store the message with metadata
     let mut msg_store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
@@ -441,7 +458,7 @@ pub fn update_message_metadata(
     id: Uuid,
     entries: std::collections::HashMap<String, serde_json::Value>,
 ) -> Result<(), String> {
-    init_stores()?;
+    init_message_store()?;
     let mut msg_store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
     msg_store
         .as_mut()
@@ -451,7 +468,7 @@ pub fn update_message_metadata(
 
 /// Store content in blob storage
 pub fn store_blob(content: &[u8]) -> Result<String, String> {
-    init_stores()?;
+    init_blob_store()?;
     let store = BLOB_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_ref()
@@ -461,7 +478,7 @@ pub fn store_blob(content: &[u8]) -> Result<String, String> {
 
 /// Get content from blob storage
 pub fn get_blob(hash: &str) -> Result<Vec<u8>, String> {
-    init_stores()?;
+    init_blob_store()?;
     let store = BLOB_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_ref()
@@ -471,7 +488,7 @@ pub fn get_blob(hash: &str) -> Result<Vec<u8>, String> {
 
 /// Check if a blob exists
 pub fn blob_exists(hash: &str) -> Result<bool, String> {
-    init_stores()?;
+    init_blob_store()?;
     let store = BLOB_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store
         .as_ref()
@@ -481,7 +498,8 @@ pub fn blob_exists(hash: &str) -> Result<bool, String> {
 
 /// Cleanup orphaned messages (not referenced by any session)
 pub fn cleanup_orphaned_messages() -> Result<usize, String> {
-    init_stores()?;
+    init_message_store()?;
+    init_session_store()?;
 
     // Get all sessions
     let sess_store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
@@ -505,7 +523,7 @@ pub fn cleanup_orphaned_messages() -> Result<usize, String> {
 
 /// Add a history entry
 pub fn add_history_entry(entry: HistoryEntry) -> Result<(), String> {
-    init_stores()?;
+    init_history_store()?;
     let mut store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -518,7 +536,7 @@ pub fn get_history(
     project: Option<&Path>,
     limit: Option<usize>,
 ) -> Result<Vec<HistoryEntry>, String> {
-    init_stores()?;
+    init_history_store()?;
     let store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store
         .as_ref()
@@ -531,7 +549,7 @@ pub fn get_history(
 
 /// Search history entries
 pub fn search_history(query: &str, project: Option<&Path>) -> Result<Vec<HistoryEntry>, String> {
-    init_stores()?;
+    init_history_store()?;
     let store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store
         .as_ref()
@@ -544,13 +562,12 @@ pub fn search_history(query: &str, project: Option<&Path>) -> Result<Vec<History
 
 /// Get a stored message by ID
 pub fn get_message(id: Uuid) -> Result<Option<StoredMessage>, String> {
-    init_stores()?;
+    init_message_store()?;
     let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store
         .as_ref()
         .ok_or("Message store not initialized")?
-        .get(id)
-        .cloned())
+        .get(id))
 }
 
 /// Get all messages for a session, respecting compaction state
@@ -562,7 +579,7 @@ pub fn get_message(id: Uuid) -> Result<Option<StoredMessage>, String> {
 /// This ensures restored sessions use the compacted context, not the full history.
 /// Pattern borrowed from OpenCode's SummaryMessageID approach.
 pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessage>, String> {
-    init_stores()?;
+    init_message_store()?;
     let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
     let store_ref = store.as_ref().ok_or("Message store not initialized")?;
 
@@ -606,14 +623,14 @@ pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessa
         // Only load messages FROM the compaction boundary onward
         for msg_ref in session.messages.iter().skip(compaction.compacted_before_index) {
             if let Some(msg) = store_ref.get(msg_ref.message_id) {
-                messages.push(msg.clone());
+                messages.push(msg);
             }
         }
     } else {
         // No compaction - load all messages
         for msg_ref in &session.messages {
             if let Some(msg) = store_ref.get(msg_ref.message_id) {
-                messages.push(msg.clone());
+                messages.push(msg);
             }
         }
     }
@@ -626,14 +643,14 @@ pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessa
 /// Use this for debugging, admin, export, or when you need the full history.
 /// For LLM context, use `get_session_messages()` which respects compaction.
 pub fn get_session_messages_full(session: &SessionManifest) -> Result<Vec<StoredMessage>, String> {
-    init_stores()?;
+    init_message_store()?;
     let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
     let store_ref = store.as_ref().ok_or("Message store not initialized")?;
 
     let mut messages = Vec::new();
     for msg_ref in &session.messages {
         if let Some(msg) = store_ref.get(msg_ref.message_id) {
-            messages.push(msg.clone());
+            messages.push(msg);
         }
     }
     Ok(messages)
@@ -649,7 +666,7 @@ pub fn update_session_tokens(
 ) -> Result<(), String> {
     session.update_token_usage(input, output, cache_read, cache_create);
 
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -681,7 +698,7 @@ pub fn set_session_tokens(
     session.token_usage.cache_read_tokens = cache_read;
     session.token_usage.cache_creation_tokens = cache_create;
 
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -703,7 +720,7 @@ pub fn set_compaction_state(
         compacted_at: chrono::Utc::now(),
     });
 
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -717,7 +734,7 @@ pub fn set_compaction_state(
 pub fn clear_compaction_state(session: &mut SessionManifest) -> Result<(), String> {
     session.compaction = None;
 
-    init_stores()?;
+    init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
@@ -748,7 +765,7 @@ pub struct SessionLineage {
 ///
 /// AMGR-001: Used by SessionSearch handler for recent/search actions
 pub fn list_sessions_for_project(project: &Path) -> Result<Vec<SessionManifest>, String> {
-    init_stores()?;
+    init_session_store()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store
         .as_ref()
@@ -763,7 +780,7 @@ pub fn list_sessions_for_project(project: &Path) -> Result<Vec<SessionManifest>,
 ///
 /// AMGR-001: Used by SessionSearch handler for cross-project search
 pub fn list_all_sessions() -> Result<Vec<SessionManifest>, String> {
-    init_stores()?;
+    init_session_store()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store
         .as_ref()

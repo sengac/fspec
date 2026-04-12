@@ -1134,6 +1134,7 @@ dependencies = [
  "ignore",
  "indexmap",
  "lazy_static",
+ "lru",
  "nanograph",
  "napi",
  "napi-build",
