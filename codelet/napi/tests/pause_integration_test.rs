@@ -84,7 +84,7 @@ fn with_clean_handler<T>(f: impl FnOnce(uuid::Uuid) -> T) -> T {
 #[serial]
 #[ignore = "PAUSE-001: Test isolation issue with global pause handler - needs investigation"]
 fn test_pause_state_is_per_session() {
-    with_clean_handler(|sid| {
+    with_clean_handler(|_sid| {
         let session_a = Arc::new(SimulatedSession::new());
         let session_b = Arc::new(SimulatedSession::new());
 

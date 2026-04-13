@@ -244,7 +244,7 @@ mod tests {
         assert_eq!(usable, 168_000);
 
         // @step And compaction triggers when effective tokens exceed 168000
-        assert!(168_001 > usable as u64 - 1, "tokens exceeding threshold should trigger compaction");
+        assert!(168_001 > usable - 1, "tokens exceeding threshold should trigger compaction");
     }
 
     // -------------------------------------------------------------------------
@@ -264,6 +264,6 @@ mod tests {
         assert_eq!(usable, 27_904);
 
         // @step And compaction triggers when effective tokens exceed 27904
-        assert!(27_905 > usable as u64 - 1, "tokens exceeding threshold should trigger compaction");
+        assert!(27_905 > usable - 1, "tokens exceeding threshold should trigger compaction");
     }
 }

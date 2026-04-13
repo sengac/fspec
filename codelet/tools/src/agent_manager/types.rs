@@ -89,7 +89,7 @@ pub enum AgentManagerAction {
         /// Target session ID(s) — accepts a single string or array of strings
         session_id: SessionIdParam,
         /// Optional maximum wait time in seconds. If omitted, waits indefinitely.
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_u64")]
         timeout: Option<u64>,
     },
     /// Run a time-bounded runtime profiling window (AMGR-017)
@@ -103,10 +103,10 @@ pub enum AgentManagerAction {
     /// `{ error: "profile_session_active", ... }` via the async handler.
     Profile {
         /// Length of the profiling window in seconds (1..=60, default 10)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_u32")]
         duration_secs: Option<u32>,
         /// Cap for `scopes_by_calls` and `scopes_by_self_ms` lists (default 20, max 200)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         top_n: Option<usize>,
         /// Optional label prefix filter; only scopes whose label starts with this string
         /// appear in the result
@@ -137,12 +137,15 @@ pub enum ContextReference {
     /// Reference specific turns by index: { session_id, turns: [0, 1, 2] }
     Turns {
         session_id: String,
+        #[serde(deserialize_with = "crate::serde_coerce::deser_vec_usize")]
         turns: Vec<usize>,
     },
     /// Reference a contiguous range of turns: { session_id, start_turn: 0, end_turn: 5 }
     TurnRange {
         session_id: String,
+        #[serde(deserialize_with = "crate::serde_coerce::deser_usize")]
         start_turn: usize,
+        #[serde(deserialize_with = "crate::serde_coerce::deser_usize")]
         end_turn: usize,
     },
     /// Reference turns matching a search query: { session_id, query: "SQL injection" }

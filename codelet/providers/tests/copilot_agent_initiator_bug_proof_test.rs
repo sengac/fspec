@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/copilot-agent-initiator-classification.feature
 //!
 //! PROV-059: Integration tests that verify the classifier correctly

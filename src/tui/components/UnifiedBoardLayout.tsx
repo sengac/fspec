@@ -8,7 +8,7 @@
  */
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { Box, Text, useStdout, useStdin } from 'ink';
+import { Box, Text, useStdin } from 'ink';
 import chalk from 'chalk';
 import { Logo } from './Logo';
 import { getVisualWidth, fitToWidth } from '../utils/stringWidth';
@@ -20,6 +20,7 @@ import { WorkUnitDescription } from './WorkUnitDescription';
 import { WorkUnitMetadata } from './WorkUnitMetadata';
 import { WorkUnitAttachments } from './WorkUnitAttachments';
 import { useFspecStore } from '../store/fspecStore';
+import { useTerminalSize } from '../hooks/useTerminalSize';
 
 interface StateHistoryEntry {
   state: string;
@@ -118,9 +119,9 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   terminalHeight: propTerminalHeight,
   isDialogOpen = false,
 }) => {
-  const { stdout } = useStdout();
-  const terminalWidth = propTerminalWidth ?? (stdout?.columns || 80);
-  const terminalHeight = propTerminalHeight ?? (stdout?.rows || 24);
+  const { width: hookWidth, height: hookHeight } = useTerminalSize();
+  const terminalWidth = propTerminalWidth ?? hookWidth;
+  const terminalHeight = propTerminalHeight ?? hookHeight;
 
   // Read checkpoint counts from Zustand store (updated via IPC)
   const checkpointCounts = useFspecStore(state => state.checkpointCounts);

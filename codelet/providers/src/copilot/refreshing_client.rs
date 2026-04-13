@@ -115,7 +115,7 @@ fn classify_and_cache_body(body: bytes::Bytes) -> (RequestClassification, bytes:
 /// is only **one** place in the codebase that owns the Copilot header rules.
 fn inject_copilot_headers(
     mut req: Request<bytes::Bytes>,
-    classification: &RequestClassification,
+    classification: RequestClassification,
     access_token: &str,
 ) -> Request<bytes::Bytes> {
     // CopilotHeaderFacade::build_headers returns a fresh HeaderMap containing
@@ -123,7 +123,7 @@ fn inject_copilot_headers(
     // header map, replacing any existing value so stale rig-injected headers
     // are overwritten (rather than duplicated, which is valid HTTP for some
     // headers but would confuse the Copilot API).
-    let headers = CopilotHeaderFacade::build_headers(classification, access_token);
+    let headers = CopilotHeaderFacade::build_headers(&classification, access_token);
     let req_headers = req.headers_mut();
     for (name, value) in headers.iter() {
         req_headers.insert(name.clone(), value.clone());
@@ -154,7 +154,7 @@ impl rig::http_client::HttpClientExt for CopilotHttpClient {
                 let (parts, _) = req.into_parts();
                 Request::from_parts(parts, new_body)
             };
-            let req = inject_copilot_headers(req, &classification, &access_token);
+            let req = inject_copilot_headers(req, classification, &access_token);
             inner.send(req).await
         }
     }
@@ -207,7 +207,7 @@ impl rig::http_client::HttpClientExt for CopilotHttpClient {
                 let (parts, _) = req.into_parts();
                 Request::from_parts(parts, new_body)
             };
-            let req = inject_copilot_headers(req, &classification, &access_token);
+            let req = inject_copilot_headers(req, classification, &access_token);
             inner.send_streaming(req).await
         }
     }

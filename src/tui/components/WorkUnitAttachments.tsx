@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Text, useStdout } from 'ink';
+import { Box, Text } from 'ink';
 import { basename } from 'path';
 import cliTruncate from 'cli-truncate';
+import { useTerminalSize } from '../hooks/useTerminalSize';
 
 export interface WorkUnitAttachmentsProps {
   attachments?: string[];
@@ -12,8 +13,8 @@ export const WorkUnitAttachments: React.FC<WorkUnitAttachmentsProps> = ({
   attachments,
   width: propWidth,
 }) => {
-  const { stdout } = useStdout();
-  const terminalWidth = propWidth ?? (stdout?.columns || 80);
+  const { width: hookWidth } = useTerminalSize();
+  const terminalWidth = propWidth ?? hookWidth;
 
   // Calculate available width (terminal width - borders and padding)
   const availableWidth = Math.max(10, terminalWidth - 4);

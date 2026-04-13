@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Text, useStdout } from 'ink';
+import { Box, Text } from 'ink';
 import cliTruncate from 'cli-truncate';
+import { useTerminalSize } from '../hooks/useTerminalSize';
 
 export interface WorkUnitDescriptionProps {
   description: string;
@@ -11,8 +12,8 @@ export const WorkUnitDescription: React.FC<WorkUnitDescriptionProps> = ({
   description,
   width: propWidth,
 }) => {
-  const { stdout } = useStdout();
-  const terminalWidth = propWidth ?? (stdout?.columns || 80);
+  const { width: hookWidth } = useTerminalSize();
+  const terminalWidth = propWidth ?? hookWidth;
 
   // Normalize newlines to spaces for wrapping
   const normalized = description.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();

@@ -7,12 +7,18 @@ use serde_json::{json, Value};
 /// Default headless mode for browser operations
 const DEFAULT_HEADLESS: bool = true;
 
-/// Extract the headless parameter from JSON input with a default of true
+/// Extract the headless parameter from JSON input with a default of true.
+/// Accepts native booleans, boolean strings, and numeric 0/1.
 fn extract_headless(input: &Value) -> bool {
-    input
-        .get("headless")
-        .and_then(serde_json::Value::as_bool)
-        .unwrap_or(DEFAULT_HEADLESS)
+    match input.get("headless") {
+        Some(Value::Bool(b)) => *b,
+        Some(Value::String(s)) => match s.trim().to_lowercase().as_str() {
+            "false" | "0" | "no" => false,
+            _ => DEFAULT_HEADLESS,
+        },
+        Some(Value::Number(n)) => n.as_u64().map_or(DEFAULT_HEADLESS, |n| n != 0),
+        _ => DEFAULT_HEADLESS,
+    }
 }
 
 /// Extract a string field from JSON input, returning empty string if missing
@@ -32,12 +38,19 @@ fn extract_optional_string(input: &Value, field: &str) -> Option<String> {
         .map(std::string::ToString::to_string)
 }
 
-/// Extract a boolean field from JSON input with a default value
+/// Extract a boolean field from JSON input with a default value.
+/// Accepts native booleans, boolean strings (`"true"`/`"false"`), and numeric `0`/`1`.
 fn extract_bool(input: &Value, field: &str, default: bool) -> bool {
-    input
-        .get(field)
-        .and_then(serde_json::Value::as_bool)
-        .unwrap_or(default)
+    match input.get(field) {
+        Some(Value::Bool(b)) => *b,
+        Some(Value::String(s)) => match s.trim().to_lowercase().as_str() {
+            "true" | "1" | "yes" => true,
+            "false" | "0" | "no" => false,
+            _ => default,
+        },
+        Some(Value::Number(n)) => n.as_u64().map_or(default, |n| n != 0),
+        _ => default,
+    }
 }
 
 /// Validate and extract a URL from JSON input

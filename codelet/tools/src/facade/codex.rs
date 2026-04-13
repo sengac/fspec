@@ -96,7 +96,7 @@ impl BashToolFacade for CodexShellCommandFacade {
     fn map_params(&self, input: Value) -> Result<InternalBashParams, ToolError> {
         let command = extract_required_string(&input, "command", "shell_command")?;
         let cwd = extract_optional_string(&input, "workdir");
-        let timeout_ms = input.get("timeout_ms").and_then(Value::as_u64);
+        let timeout_ms = input.get("timeout_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
         Ok(InternalBashParams::Execute { command, cwd, timeout_ms })
     }
 }
@@ -482,7 +482,7 @@ impl ExecToolFacade for CodexShellFacade {
         }
 
         let workdir = extract_optional_string(&input, "workdir");
-        let timeout_ms = input.get("timeout_ms").and_then(Value::as_u64);
+        let timeout_ms = input.get("timeout_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
         let timeout_secs = timeout_ms.map(|ms| ms / 1000);
 
         Ok(InternalExecParams::Run {
@@ -573,8 +573,8 @@ impl ExecToolFacade for CodexExecCommandFacade {
         let cmd = extract_required_string(&input, "cmd", "exec_command")?;
         let workdir = extract_optional_string(&input, "workdir");
         let tty = extract_optional_bool(&input, "tty").unwrap_or(false);
-        let yield_time_ms = input.get("yield_time_ms").and_then(Value::as_u64);
-        let max_output_tokens = input.get("max_output_tokens").and_then(Value::as_u64);
+        let yield_time_ms = input.get("yield_time_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
+        let max_output_tokens = input.get("max_output_tokens").and_then(crate::facade::param_extract::value_as_u64_lenient);
         // shell and login params are silently ignored
 
         Ok(InternalExecParams::Run {
@@ -678,8 +678,8 @@ impl ExecToolFacade for CodexWriteStdinFacade {
         };
 
         let chars = extract_optional_string(&input, "chars").unwrap_or_default();
-        let yield_time_ms = input.get("yield_time_ms").and_then(Value::as_u64);
-        let max_output_tokens = input.get("max_output_tokens").and_then(Value::as_u64);
+        let yield_time_ms = input.get("yield_time_ms").and_then(crate::facade::param_extract::value_as_u64_lenient);
+        let max_output_tokens = input.get("max_output_tokens").and_then(crate::facade::param_extract::value_as_u64_lenient);
 
         // Empty chars = poll, non-empty chars = write
         if chars.is_empty() {

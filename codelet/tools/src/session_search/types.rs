@@ -17,7 +17,7 @@ pub enum SessionSearchAction {
     /// List recent sessions for discovery
     Recent {
         /// Number of sessions to return (default: 10)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         count: Option<usize>,
     },
     /// Search across all session content by keyword
@@ -25,19 +25,19 @@ pub enum SessionSearchAction {
         /// The search query (supports ripgrep regex)
         query: String,
         /// Number of context turns around each match (default: 0)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         context_turns: Option<usize>,
         /// Maximum number of matches to return (default: 20)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         limit: Option<usize>,
         /// Search across all projects, not just current (default: false)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_bool")]
         all_projects: Option<bool>,
         /// Only search sessions updated in the last N hours
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_u64")]
         last_hours: Option<u64>,
         /// Only search sessions updated in the last N days
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_u64")]
         last_days: Option<u64>,
         /// Only search sessions updated after this ISO timestamp
         #[serde(default)]
@@ -46,10 +46,10 @@ pub enum SessionSearchAction {
         #[serde(default)]
         before: Option<String>,
         /// Start of turn range (inclusive, 0-based) to restrict search results
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         start_turn: Option<usize>,
         /// End of turn range (inclusive, 0-based) to restrict search results
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         end_turn: Option<usize>,
     },
     /// Show a specific session's full conversation
@@ -58,16 +58,16 @@ pub enum SessionSearchAction {
         #[serde(default)]
         session_id: Option<String>,
         /// Only include user messages (default: false)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_bool")]
         user_only: Option<bool>,
         /// Maximum number of turns to include (from the end)
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         max_turns: Option<usize>,
         /// Start of turn range (inclusive, 0-based) to restrict results
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         start_turn: Option<usize>,
         /// End of turn range (inclusive, 0-based) to restrict results
-        #[serde(default)]
+        #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
         end_turn: Option<usize>,
     },
 }

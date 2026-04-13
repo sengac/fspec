@@ -59,6 +59,7 @@ pub struct GlobArgs {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
     /// Whether to perform case-insensitive matching (optional, defaults to false)
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_bool")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub case_insensitive: Option<bool>,
 }

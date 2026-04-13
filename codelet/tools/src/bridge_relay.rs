@@ -1239,7 +1239,6 @@ mod tests {
     /// parameter. These tests are the red phase — they fail against the
     /// current implementation which discards session_id and always uses the
     /// fallback closure.
-
     /// @step Given the dashboard is connected to the fspec instance via the relay
     /// @step And the user has an existing fspec session tab #1
     /// @step When the user clicks the + dropdown and selects "New fspec Session"
@@ -1292,8 +1291,7 @@ mod tests {
 
         // When a session:input envelope targets the NEW session
         let text = format!(
-            r#"{{"service":"session","type":"input","session_id":"{}","data":{{"message":"what is 4 + 3?"}}}}"#,
-            new_session_id
+            r#"{{"service":"session","type":"input","session_id":"{new_session_id}","data":{{"message":"what is 4 + 3?"}}}}"#,
         );
         let result = handle_multiplexed_inbound(
             &text,
@@ -1342,8 +1340,7 @@ mod tests {
         // No BridgeSessionContext registered for this session_id
         let unregistered_sid = Uuid::new_v4();
         let text = format!(
-            r#"{{"service":"session","type":"input","session_id":"{}","data":{{"message":"hi"}}}}"#,
-            unregistered_sid
+            r#"{{"service":"session","type":"input","session_id":"{unregistered_sid}","data":{{"message":"hi"}}}}"#,
         );
         let result = handle_multiplexed_inbound(
             &text,
@@ -1409,8 +1406,7 @@ mod tests {
         );
 
         let text = format!(
-            r#"{{"service":"session","type":"control","session_id":"{}","data":{{"action":"interrupt"}}}}"#,
-            new_session_id
+            r#"{{"service":"session","type":"control","session_id":"{new_session_id}","data":{{"action":"interrupt"}}}}"#,
         );
         let fallback_injector: InputInjector = Arc::new(|_| {});
         let result = handle_multiplexed_inbound(
@@ -1478,8 +1474,7 @@ mod tests {
         let sentinel = "echo SESS018_SENTINEL_OUTPUT\n";
         let b64 = base64::engine::general_purpose::STANDARD.encode(sentinel);
         let text = format!(
-            r#"{{"service":"terminal","type":"input","terminal_id":"{}","data":{{"base64":"{}"}}}}"#,
-            term_id, b64
+            r#"{{"service":"terminal","type":"input","terminal_id":"{term_id}","data":{{"base64":"{b64}"}}}}"#,
         );
 
         let injector: InputInjector = Arc::new(|_| {});
@@ -1494,8 +1489,7 @@ mod tests {
         .await;
         assert!(
             result.is_ok(),
-            "terminal:input must dispatch cleanly, got: {:?}",
-            result
+            "terminal:input must dispatch cleanly, got: {result:?}",
         );
 
         // Then — and this is the critical assertion — the sentinel bytes
@@ -1559,8 +1553,7 @@ mod tests {
         .expect("create terminal");
 
         let text = format!(
-            r#"{{"service":"terminal","type":"resize","terminal_id":"{}","data":{{"cols":120,"rows":40}}}}"#,
-            term_id
+            r#"{{"service":"terminal","type":"resize","terminal_id":"{term_id}","data":{{"cols":120,"rows":40}}}}"#,
         );
         let injector: InputInjector = Arc::new(|_| {});
         let result = handle_multiplexed_inbound(
@@ -1609,8 +1602,7 @@ mod tests {
         assert_eq!(registry.len(), 1);
 
         let text = format!(
-            r#"{{"service":"terminal","type":"destroy","terminal_id":"{}","request_id":"destroy-1"}}"#,
-            term_id
+            r#"{{"service":"terminal","type":"destroy","terminal_id":"{term_id}","request_id":"destroy-1"}}"#,
         );
         let injector: InputInjector = Arc::new(|_| {});
         let result = handle_multiplexed_inbound(

@@ -9,8 +9,7 @@
  * Normal mode (with session number and work unit):
  *   #1 (AUTH-001: implementing): claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *
- * NOTE: The bottom border separator is rendered by AgentView AFTER the RoleBanner,
- * so the visual order is: header → role banner (if any) → separator → conversation.
+ * Uses a dark grey background (#333333) to visually separate from the conversation area below.
  *
  * Badge Colors:
  *   - [R] = magenta (reasoning)
@@ -173,7 +172,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
 
   return (
     <Box flexDirection="column" width="100%">
-      <Box height={1} width="100%" flexDirection="row">
+      <Box height={1} width="100%" flexDirection="row" backgroundColor="#333333">
         {/* Left side: single Text element with truncation to avoid flex positioning issues */}
         <Box flexGrow={1} flexShrink={1} minWidth={0}>
           <Text wrap="truncate-end">{leftContent}</Text>

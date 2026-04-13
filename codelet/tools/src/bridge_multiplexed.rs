@@ -444,11 +444,11 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                     .unwrap_or_default();
                 let cols = data
                     .and_then(|d| d.get("cols"))
-                    .and_then(serde_json::Value::as_u64)
+                    .and_then(crate::facade::param_extract::value_as_u64_lenient)
                     .unwrap_or(80) as u16;
                 let rows = data
                     .and_then(|d| d.get("rows"))
-                    .and_then(serde_json::Value::as_u64)
+                    .and_then(crate::facade::param_extract::value_as_u64_lenient)
                     .unwrap_or(24) as u16;
                 let shell = data
                     .and_then(|d| d.get("shell"))
@@ -491,11 +491,11 @@ pub fn route_inbound(envelope: &Envelope) -> InboundAction {
                 let data = envelope.data.as_ref();
                 let cols = data
                     .and_then(|d| d.get("cols"))
-                    .and_then(serde_json::Value::as_u64)
+                    .and_then(crate::facade::param_extract::value_as_u64_lenient)
                     .unwrap_or(80) as u16;
                 let rows = data
                     .and_then(|d| d.get("rows"))
-                    .and_then(serde_json::Value::as_u64)
+                    .and_then(crate::facade::param_extract::value_as_u64_lenient)
                     .unwrap_or(24) as u16;
                 InboundAction::TerminalResize {
                     terminal_id,

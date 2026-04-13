@@ -191,28 +191,28 @@ impl GrepTool {
 
         let case_insensitive = args
             .get("-i")
-            .and_then(serde_json::Value::as_bool)
+            .and_then(crate::facade::param_extract::value_as_bool_lenient)
             .unwrap_or(false);
 
         let multiline = args
             .get("multiline")
-            .and_then(serde_json::Value::as_bool)
+            .and_then(crate::facade::param_extract::value_as_bool_lenient)
             .unwrap_or(false);
 
         // Context lines (only used in content mode)
         let context_c = args
             .get("-C")
-            .and_then(serde_json::Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .map(|v| v as usize)
             .unwrap_or(0);
         let context_before = args
             .get("-B")
-            .and_then(serde_json::Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .map(|v| v as usize)
             .unwrap_or(context_c);
         let context_after = args
             .get("-A")
-            .and_then(serde_json::Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .map(|v| v as usize)
             .unwrap_or(context_c);
 
@@ -220,7 +220,7 @@ impl GrepTool {
         let file_type = args.get("type").and_then(|v| v.as_str());
         let result_limit = args
             .get("limit")
-            .and_then(serde_json::Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .map(|v| v as usize);
 
         // Build matcher
@@ -386,6 +386,7 @@ pub struct GrepArgs {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub glob: Option<String>,
     /// Maximum number of result entries to return
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
 }

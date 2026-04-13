@@ -97,7 +97,7 @@ fn classify_and_cache_does_not_inject_for_gpt() {
         ]
     });
     let original_bytes = serde_json::to_vec(&body).unwrap();
-    let bytes = bytes::Bytes::from(original_bytes.clone());
+    let bytes = bytes::Bytes::from(original_bytes);
     let (_, new_body) = classify_and_cache_body(bytes);
     let result: serde_json::Value = serde_json::from_slice(&new_body).unwrap();
     assert!(
@@ -114,7 +114,7 @@ fn inject_headers_strips_stale_authorization() {
         .body(bytes::Bytes::new())
         .unwrap();
     let classification = RequestClassification::default();
-    let req = inject_copilot_headers(req, &classification, "fresh_token");
+    let req = inject_copilot_headers(req, classification, "fresh_token");
     assert_eq!(
         req.headers().get(http::header::AUTHORIZATION).unwrap(),
         "Bearer fresh_token"
@@ -128,7 +128,7 @@ fn inject_headers_adds_all_required_copilot_headers_for_user_text() {
         .body(bytes::Bytes::new())
         .unwrap();
     let classification = RequestClassification::default();
-    let req = inject_copilot_headers(req, &classification, "ghu_tok");
+    let req = inject_copilot_headers(req, classification, "ghu_tok");
     let headers = req.headers();
     assert_eq!(headers.get("x-initiator").unwrap(), "user");
     assert!(headers
@@ -152,7 +152,7 @@ fn inject_headers_adds_vision_header_when_classification_is_vision() {
         is_vision: true,
         is_agent: false,
     };
-    let req = inject_copilot_headers(req, &classification, "ghu_tok");
+    let req = inject_copilot_headers(req, classification, "ghu_tok");
     assert_eq!(req.headers().get("copilot-vision-request").unwrap(), "true");
 }
 
@@ -166,7 +166,7 @@ fn inject_headers_sets_agent_initiator_for_agent_classification() {
         is_vision: false,
         is_agent: true,
     };
-    let req = inject_copilot_headers(req, &classification, "ghu_tok");
+    let req = inject_copilot_headers(req, classification, "ghu_tok");
     assert_eq!(req.headers().get("x-initiator").unwrap(), "agent");
 }
 

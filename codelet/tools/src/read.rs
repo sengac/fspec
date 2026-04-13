@@ -225,9 +225,11 @@ pub struct ReadArgs {
     /// Absolute path to the file to read
     pub file_path: String,
     /// 1-based line number to start reading from (optional)
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<usize>,
     /// Number of lines to read (optional)
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
     /// PDF reading mode: "visual" (default), "text", or "images"

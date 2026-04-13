@@ -33,6 +33,12 @@ pub struct SessionRegistry<T> {
     inner: RwLock<HashMap<Uuid, T>>,
 }
 
+impl<T> Default for SessionRegistry<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> SessionRegistry<T> {
     /// Create an empty registry.
     pub fn new() -> Self {

@@ -54,11 +54,20 @@ export function useTerminalSize(): TerminalDimensions {
       return;
     }
 
-    // Handler that updates dimensions on resize
+    // Handler that updates dimensions on resize ONLY if values actually changed.
+    // Uses functional setState so React can compare the previous reference:
+    // returning the same object reference causes React to skip the re-render.
+    // This prevents unnecessary layout recalculations (e.g., AgentView's
+    // conversationLines useMemo which re-wraps ALL messages on width change).
     const handleResize = () => {
-      const width = stdout.columns || 80;
-      const height = stdout.rows || 24;
-      setDimensions({ width, height });
+      const newWidth = stdout.columns || 80;
+      const newHeight = stdout.rows || 24;
+      setDimensions(prev => {
+        if (prev.width === newWidth && prev.height === newHeight) {
+          return prev;
+        }
+        return { width: newWidth, height: newHeight };
+      });
     };
 
     // Register resize listener

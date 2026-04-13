@@ -58,11 +58,11 @@ impl FileToolFacade for GeminiReadFileFacade {
 
         let offset = input
             .get("offset")
-            .and_then(serde_json::Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .map(|o| o as usize);
         let limit = input
             .get("limit")
-            .and_then(serde_json::Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .map(|l| l as usize);
 
         Ok(InternalFileParams::Read {

@@ -112,6 +112,7 @@ pub struct McpConnectArgs {
     /// HTTP headers (http transport)
     pub headers: Option<HashMap<String, String>>,
     /// Connection timeout in seconds (default: 10)
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_u64")]
     pub timeout: Option<u64>,
 }
 

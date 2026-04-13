@@ -314,6 +314,31 @@ where
         obj.insert("type".to_string(), Value::String(normalized.to_string()));
     }
 
+    // Coerce string booleans to native booleans (lower-powered LLMs send "true"/"false")
+    for key in &["headless", "pause"] {
+        if let Some(Value::String(s)) = obj.get(*key) {
+            let coerced = match s.trim().to_lowercase().as_str() {
+                "true" | "1" | "yes" => Some(true),
+                "false" | "0" | "no" => Some(false),
+                _ => None,
+            };
+            if let Some(b) = coerced {
+                obj.insert((*key).to_string(), Value::Bool(b));
+            }
+        }
+    }
+    // Coerce full_page (Option<bool>)
+    if let Some(Value::String(s)) = obj.get("full_page") {
+        let coerced = match s.trim().to_lowercase().as_str() {
+            "true" | "1" | "yes" => Some(true),
+            "false" | "0" | "no" => Some(false),
+            _ => None,
+        };
+        if let Some(b) = coerced {
+            obj.insert("full_page".to_string(), Value::Bool(b));
+        }
+    }
+
     // Deserialize the normalized object
     WebSearchAction::deserialize(Value::Object(obj)).map_err(D::Error::custom)
 }

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for `copilot::prompt_cache` — PROV-058 prompt cache control injection.
 //!
 //! Feature: spec/features/copilot-prompt-caching.feature
@@ -40,8 +41,8 @@ fn claude_multi_turn_gets_cache_control_on_system_last_tool_and_last_assistant()
     // @step When the CopilotHttpClient middleware processes the request
     inject_cache_control(&mut body);
 
-    let messages = body["messages"].as_array().unwrap();
-    let tools = body["tools"].as_array().unwrap();
+    let messages = body["messages"].as_array().expect("messages must be an array");
+    let tools = body["tools"].as_array().expect("tools must be an array");
 
     // @step Then the system message should have copilot_cache_control set to ephemeral
     assert_eq!(
@@ -69,9 +70,9 @@ fn claude_multi_turn_gets_cache_control_on_system_last_tool_and_last_assistant()
     assert!(messages[2].get(CACHE_CONTROL).is_none(), "assistant msg 1 must not have cache control");
     assert!(messages[3].get(CACHE_CONTROL).is_none(), "user msg 2 must not have cache control");
     assert!(messages[5].get(CACHE_CONTROL).is_none(), "final user msg must not have cache control");
-    for i in 0..4 {
+    for (i, tool) in tools.iter().enumerate().take(4) {
         assert!(
-            tools[i].get(CACHE_CONTROL).is_none(),
+            tool.get(CACHE_CONTROL).is_none(),
             "tool {i} must not have cache control"
         );
     }
@@ -155,7 +156,7 @@ fn single_turn_claude_only_caches_system() {
     // @step When the CopilotHttpClient middleware processes the request
     inject_cache_control(&mut body);
 
-    let messages = body["messages"].as_array().unwrap();
+    let messages = body["messages"].as_array().expect("messages must be an array");
 
     // @step Then the system message should have copilot_cache_control set to ephemeral
     assert_eq!(
@@ -192,7 +193,7 @@ fn claude_empty_tools_no_crash() {
     // @step When the CopilotHttpClient middleware processes the request
     inject_cache_control(&mut body);
 
-    let messages = body["messages"].as_array().unwrap();
+    let messages = body["messages"].as_array().expect("messages must be an array");
 
     // @step Then the system message should have copilot_cache_control set to ephemeral
     assert_eq!(
@@ -208,7 +209,7 @@ fn claude_empty_tools_no_crash() {
 
     // @step And no error should occur from the empty tools array
     assert!(
-        body["tools"].as_array().unwrap().is_empty(),
+        body["tools"].as_array().expect("tools must be an array").is_empty(),
         "tools array should remain empty without error"
     );
 }

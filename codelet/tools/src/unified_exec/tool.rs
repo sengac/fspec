@@ -149,9 +149,9 @@ impl UnifiedExecTool {
             });
         }
 
-        let tty = params.get("tty").and_then(Value::as_bool).unwrap_or(false);
+        let tty = params.get("tty").and_then(crate::facade::param_extract::value_as_bool_lenient).unwrap_or(false);
         let yield_time_ms = params.get("yield_time_ms")
-            .and_then(Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .unwrap_or(DEFAULT_YIELD_TIME_MS);
         let yield_time_ms = clamp_yield_time(yield_time_ms);
         let workdir = self.resolve_workdir(params.get("workdir").and_then(Value::as_str));
@@ -246,7 +246,7 @@ impl UnifiedExecTool {
 
         // Empty write uses poll-level minimum yield time
         let yield_time_ms = params.get("yield_time_ms")
-            .and_then(Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .unwrap_or(DEFAULT_YIELD_TIME_MS);
         let yield_time_ms = if input.is_empty() {
             clamp_poll_yield_time(yield_time_ms)
@@ -267,7 +267,7 @@ impl UnifiedExecTool {
             })?;
 
         let yield_time_ms = params.get("yield_time_ms")
-            .and_then(Value::as_u64)
+            .and_then(crate::facade::param_extract::value_as_u64_lenient)
             .unwrap_or(DEFAULT_YIELD_TIME_MS);
         let yield_time_ms = clamp_poll_yield_time(yield_time_ms);
 

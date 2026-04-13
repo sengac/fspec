@@ -198,26 +198,26 @@ fn test_many_sessions_concurrent_registration() {
     }
 
     // @step When tool progress is emitted for each session with a unique message
-    for i in 0..session_count {
-        emit_tool_progress(sessions[i], &format!("msg-{}", i), false);
+    for (i, &session) in sessions.iter().enumerate().take(session_count) {
+        emit_tool_progress(session, &format!("msg-{i}"), false);
     }
 
     // @step Then each session's callback received only its own message
-    for i in 0..session_count {
-        let contents = buffers[i].lock().unwrap();
-        assert_eq!(contents.len(), 1, "Session {} should have exactly 1 message", i);
-        assert_eq!(contents[0], format!("msg-{}", i));
+    for (i, buffer) in buffers.iter().enumerate().take(session_count) {
+        let contents = buffer.lock().unwrap();
+        assert_eq!(contents.len(), 1, "Session {i} should have exactly 1 message");
+        assert_eq!(contents[0], format!("msg-{i}"));
     }
 
     // @step And clearing all callbacks leaves the registry empty
-    for i in 0..session_count {
-        set_tool_progress_callback(sessions[i], None);
+    for &session in sessions.iter().take(session_count) {
+        set_tool_progress_callback(session, None);
     }
 
     // Verify all are cleared — emit should be no-ops
-    for i in 0..session_count {
-        emit_tool_progress(sessions[i], "should not arrive", false);
-        let contents = buffers[i].lock().unwrap();
-        assert_eq!(contents.len(), 1, "Session {} should still have only its 1 original message after clear", i);
+    for (i, (&session, buffer)) in sessions.iter().zip(buffers.iter()).enumerate().take(session_count) {
+        emit_tool_progress(session, "should not arrive", false);
+        let contents = buffer.lock().unwrap();
+        assert_eq!(contents.len(), 1, "Session {i} should still have only its 1 original message after clear");
     }
 }

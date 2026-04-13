@@ -179,11 +179,11 @@ impl AstGrepRefactorTool {
             .and_then(|v| serde_json::from_value(v.clone()).ok());
         let batch = args
             .get("batch")
-            .and_then(serde_json::Value::as_bool)
+            .and_then(crate::facade::param_extract::value_as_bool_lenient)
             .unwrap_or(false);
         let preview = args
             .get("preview")
-            .and_then(serde_json::Value::as_bool)
+            .and_then(crate::facade::param_extract::value_as_bool_lenient)
             .unwrap_or(false);
 
         // Validate: exactly one of target_file or replacement must be provided
@@ -963,10 +963,12 @@ pub struct AstGrepRefactorArgs {
     pub transforms: Option<HashMap<String, Transform>>,
     /// Enable batch mode to replace ALL matches instead of requiring exactly one.
     /// Only applies to replace mode, not extract mode.
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_bool")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub batch: Option<bool>,
     /// Enable preview/dry-run mode to see what would change without modifying files.
     /// Returns match locations, original code, and proposed replacements.
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_bool")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub preview: Option<bool>,
 }

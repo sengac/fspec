@@ -46,6 +46,7 @@ pub mod profile;
 pub mod read;
 pub mod request_user_input;
 pub mod schedule;
+pub mod serde_coerce;
 pub mod search_engine;
 pub mod tool_pause;
 pub mod tool_progress;

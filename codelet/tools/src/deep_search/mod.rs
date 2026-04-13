@@ -79,13 +79,13 @@ pub struct DeepSearchArgs {
 
     /// Maximum tool call depth before stopping (default: 50).
     /// Prevents runaway sub-agents.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
     pub max_depth: Option<usize>,
 
     /// Maximum recursion depth for nested DeepSearch calls (default: 2).
     /// Controls how many levels of DeepSearch-within-DeepSearch are allowed.
     /// Separate from max_depth which controls tool-call rounds per agent.
-    #[serde(default)]
+    #[serde(default, deserialize_with = "crate::serde_coerce::deser_option_usize")]
     pub max_recursion_depth: Option<usize>,
 }
 

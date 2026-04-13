@@ -23,7 +23,7 @@ import React, {
   useMemo,
 } from 'react';
 import fs from 'fs';
-import { Box, Text, useStdout } from 'ink';
+import { Box, Text } from 'ink';
 import { VirtualList } from './VirtualList';
 import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
@@ -45,6 +45,7 @@ import {
 import { calculatePaneWidth } from '../utils/textWrap';
 import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
 import { useFileSearchInput } from '../hooks/useFileSearchInput';
+import { useTerminalSize } from '../hooks/useTerminalSize';
 import { useInputCompat, InputPriority } from '../input/index';
 import {
   attachToSession,
@@ -809,7 +810,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
   workUnitId,
   initialSessionId,
 }) => {
-  const { stdout } = useStdout();
+  // Use useTerminalSize for reactive, deduplicated resize tracking.
+  // Ink's core resize handler only recalculates Yoga layout — it does NOT
+  // trigger React re-renders. useTerminalSize provides the explicit resize
+  // subscription, and its functional setState deduplicates: if the terminal
+  // size hasn't actually changed, no re-render occurs. This is critical
+  // because terminalWidth is a dependency of the conversationLines useMemo,
+  // which re-wraps ALL messages on width change.
+  const { width: terminalWidth, height: terminalHeight } = useTerminalSize();
 
   // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
   const [error, setError] = useState<string | null>(null);
@@ -1314,10 +1322,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // This caused Write/Edit tool results to not display until a forced re-render
   // (e.g. session switch). The line cache (lineCacheRef) already handles perf.
   const deferredConversation = conversation;
-
-  // Get terminal dimensions for full-screen layout
-  const terminalWidth = stdout?.columns ?? 80;
-  const terminalHeight = stdout?.rows ?? 24;
 
   // TUI-055: File search popup following the EXACT same architecture as slash commands
   // GIT-033: Pass sessionId for worktree path resolution in isolated sessions
@@ -5264,16 +5268,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
           return null;
         }
       })()}
-      />
-
-      {/* Bottom border separator - below header and role banner, above conversation */}
-      <Box
-        width="100%"
-        borderStyle="single"
-        borderBottom
-        borderTop={false}
-        borderLeft={false}
-        borderRight={false}
       />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
