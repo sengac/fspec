@@ -52,6 +52,7 @@ pub mod tool_progress;
 pub mod pre_tool_hook;
 pub mod truncation;
 pub mod validation;
+pub mod unicode_path;
 pub mod unified_exec;
 pub mod web_search;
 pub mod session_search;

@@ -59,21 +59,52 @@ describe('Feature: Replace diff-worker.ts with native Rust NAPI diff operations'
       expect(diff).toContain('+modified line 2');
       expect(diff).toContain('+new line 4');
 
-      // @step And the diff header contains line count information
-      expect(diff).toMatch(/lines/i);
+      // @step And the diff header contains standard unified diff file headers and hunk markers
+      expect(diff).toContain('--- a/example.ts');
+      expect(diff).toContain('+++ b/example.ts');
+      expect(diff).toMatch(/^@@\s/m);
 
-      // @step And the result is identical in format to the previous TypeScript implementation
-      // Verify unified diff format: header lines + content lines with +/-/space prefix
+      // @step And the result uses standard unified diff format with context lines
+      // Verify unified diff format: header lines + hunk headers + content lines with +/-/space prefix
       const lines = diff!.split('\n');
       const contentLines = lines.filter(
         (l: string) =>
           l.startsWith('+') ||
           l.startsWith('-') ||
           l.startsWith(' ') ||
-          l.startsWith('---') ||
-          l.startsWith('+++')
+          l.startsWith('@@')
       );
       expect(contentLines.length).toBeGreaterThan(0);
+    });
+
+    it('should return unified diff with removals for files in nested directories', async () => {
+      // @step Given a git repository with a tracked file in a nested directory
+      await mkdir(join(tempDir, 'src', 'components'), { recursive: true });
+      await writeFile(
+        join(tempDir, 'src', 'components', 'App.tsx'),
+        'const App = () => {\n  return <div>Hello</div>;\n};\n'
+      );
+      execSync('git add .', { cwd: tempDir, stdio: 'pipe' });
+      execSync('git commit -m "initial"', { cwd: tempDir, stdio: 'pipe' });
+
+      // @step When the file in the nested directory is modified
+      await writeFile(
+        join(tempDir, 'src', 'components', 'App.tsx'),
+        'const App = () => {\n  return <div>Hello World</div>;\n};\nexport default App;\n'
+      );
+
+      // @step And the NAPI getFileDiff function is called with the nested file path
+      const diff = getFileDiff(tempDir, 'src/components/App.tsx');
+
+      // @step Then it returns a unified diff showing both removed and added lines
+      expect(diff).not.toBeNull();
+      expect(diff).toContain('-  return <div>Hello</div>;');
+      expect(diff).toContain('+  return <div>Hello World</div>;');
+      expect(diff).toContain('+export default App;');
+
+      // @step And the hunk header shows the old file had content (not @@ -0,0)
+      expect(diff).not.toMatch(/@@ -0,0/);
+      expect(diff).toMatch(/@@ -\d+,\d+ \+\d+,\d+ @@/);
     });
   });
 
@@ -188,9 +219,9 @@ describe('Feature: Replace diff-worker.ts with native Rust NAPI diff operations'
       // @step Then the diff output contains no more than 20000 content lines
       expect(diff).not.toBeNull();
       const diffLines = diff!.split('\n');
-      // The total lines should be less than the full diff would be
-      // (header + 20000 content + truncation message)
-      expect(diffLines.length).toBeLessThan(25000);
+      // The total lines should be bounded by truncation (header + hunks + content + truncation message)
+      // With unified format, line count is much smaller since only context around changes is shown
+      expect(diffLines.length).toBeLessThan(25005);
 
       // @step And the output ends with a "[File truncated" message
       expect(diff).toContain('[File truncated');

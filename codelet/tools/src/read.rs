@@ -298,13 +298,15 @@ impl rig::tool::Tool for ReadTool {
             message: e.content,
         })?;
 
-        // Check file exists (async)
-        require_file_exists(path, &file_path_str)
+        // Check file exists (async) — BUG-130: may resolve via Unicode fallback
+        let resolved_file = require_file_exists(path, &file_path_str)
             .await
             .map_err(|e| ToolError::Validation {
                 tool: "read",
                 message: e.content,
             })?;
+        let path = resolved_file.as_path();
+        let file_path_str = path.to_string_lossy().to_string();
 
         // Read file as binary first to detect type
         let binary_content = Self::read_binary(path).await?;

@@ -1,6 +1,5 @@
 import { mkdir, copyFile, access, unlink } from 'fs/promises';
 import { join, basename, relative, dirname, resolve } from 'path';
-import chalk from 'chalk';
 import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
@@ -10,6 +9,7 @@ import {
   shouldValidateMermaid,
   validateMermaidAttachment,
 } from '../utils/attachment-mermaid-validation';
+import { resolveFilePath } from '../utils/normalize-path';
 
 export interface AddAttachmentOptions {
   workUnitId: string;
@@ -32,20 +32,20 @@ export async function addAttachment(
     throw new Error(`Work unit '${options.workUnitId}' does not exist`);
   }
 
-  // Validate source file exists
+  // BUG-130: Use resolveFilePath to handle Unicode whitespace variants
+  // (e.g. user types regular space but file has U+202F from macOS screenshot)
+  const resolvedPath = await resolveFilePath(options.filePath);
   try {
-    await access(options.filePath);
+    await access(resolvedPath);
   } catch {
     throw new Error(`Source file '${options.filePath}' does not exist`);
   }
 
   // Validate Mermaid syntax if file is a Mermaid diagram
-  if (shouldValidateMermaid(options.filePath)) {
-    const fileName = basename(options.filePath);
+  if (shouldValidateMermaid(resolvedPath)) {
+    const fileName = basename(resolvedPath);
     try {
-      const validationResult = await validateMermaidAttachment(
-        options.filePath
-      );
+      const validationResult = await validateMermaidAttachment(resolvedPath);
       if (!validationResult.valid) {
         throw new Error(
           `Failed to attach ${fileName}: ${validationResult.error}`
@@ -64,20 +64,20 @@ export async function addAttachment(
   const attachmentsDir = join(cwd, 'spec', 'attachments', options.workUnitId);
   await mkdir(attachmentsDir, { recursive: true });
 
-  // Copy file to attachments directory
-  const fileName = basename(options.filePath);
+  // Copy file to attachments directory (use resolved path for the actual file)
+  const fileName = basename(resolvedPath);
   const destPath = join(attachmentsDir, fileName);
-  await copyFile(options.filePath, destPath);
+  await copyFile(resolvedPath, destPath);
 
   // BUG-055: Check if source file is in spec/attachments/ root directory
   // If so, delete it after successful copy to prevent duplication
-  const sourceAbsPath = resolve(options.filePath);
+  const sourceAbsPath = resolve(resolvedPath);
   const attachmentsRootDir = resolve(cwd, 'spec', 'attachments');
   const sourceDir = dirname(sourceAbsPath);
 
   if (sourceDir === attachmentsRootDir) {
     // Source is in spec/attachments/ root - delete it to prevent duplication
-    await unlink(options.filePath);
+    await unlink(resolvedPath);
   }
 
   // Get relative path from project root

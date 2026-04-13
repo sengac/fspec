@@ -148,13 +148,13 @@ impl rig::tool::Tool for ApplyPatchTool {
                 PatchOp::Update { path, hunks } => {
                     let abs = validate_patch_path(self.session_id, path)?;
                     let p = abs.to_string_lossy().to_string();
-                    require_file_exists(&abs, &p)
+                    let resolved = require_file_exists(&abs, &p)
                         .await
                         .map_err(|e| ToolError::Validation {
                             tool: "apply_patch",
                             message: e.content,
                         })?;
-                    let content = read_file_contents(&abs)
+                    let content = read_file_contents(&resolved)
                         .await
                         .map_err(|e| ToolError::File {
                             tool: "apply_patch",
@@ -165,7 +165,7 @@ impl rig::tool::Tool for ApplyPatchTool {
                             tool: "apply_patch",
                             message: e,
                         })?;
-                    write_file_contents(&abs, &new_content)
+                    write_file_contents(&resolved, &new_content)
                         .await
                         .map_err(|e| ToolError::File {
                             tool: "apply_patch",
@@ -177,13 +177,13 @@ impl rig::tool::Tool for ApplyPatchTool {
                 PatchOp::Delete { path } => {
                     let abs = validate_patch_path(self.session_id, path)?;
                     let p = abs.to_string_lossy().to_string();
-                    require_file_exists(&abs, &p)
+                    let resolved = require_file_exists(&abs, &p)
                         .await
                         .map_err(|e| ToolError::Validation {
                             tool: "apply_patch",
                             message: e.content,
                         })?;
-                    tokio::fs::remove_file(&abs)
+                    tokio::fs::remove_file(&resolved)
                         .await
                         .map_err(|e| ToolError::File {
                             tool: "apply_patch",

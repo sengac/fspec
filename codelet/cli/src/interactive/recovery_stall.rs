@@ -23,7 +23,7 @@ pub const STALL_TIMEOUT_SECS: u64 = 600;
 /// must complete within this duration — Rule [6].
 ///
 /// Public for testing and configuration.
-pub const DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS: u64 = 300;
+pub const DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS: u64 = 600;
 
 /// Canonical prefix for stall timeout error messages.
 /// Used by both the stream loop (to create the error) and the error classifier
@@ -265,7 +265,7 @@ mod tests {
 
     // @step Given a subordinate agent invokes a DeepSearch tool
     // @step And the DeepSearch sub-agent's LLM generation stalls indefinitely
-    // @step When the DeepSearch wall-clock timeout of 300 seconds expires
+    // @step When the DeepSearch wall-clock timeout of 600 seconds expires
     // @step Then the parent agent should receive a timeout error as the tool result string
     // @step And the parent agent should continue processing with the error result
     // @step And the parent agent should not hang or remain in running state
@@ -288,9 +288,9 @@ mod tests {
         assert!(result.is_err(), "Wall-clock timeout must fire on stalled sub-agent");
 
         // The error message returned to the parent must be descriptive
-        let timeout_msg = build_deep_search_timeout_message(300);
+        let timeout_msg = build_deep_search_timeout_message(600);
         assert!(
-            timeout_msg.contains("timed out after 300s"),
+            timeout_msg.contains("timed out after 600s"),
             "Timeout message must include duration"
         );
         assert!(
@@ -300,11 +300,11 @@ mod tests {
     }
 
     #[test]
-    fn deep_search_wall_clock_timeout_defaults_to_300_seconds() {
-        assert_eq!(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, 300);
+    fn deep_search_wall_clock_timeout_defaults_to_600_seconds() {
+        assert_eq!(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, 600);
         assert_eq!(
             deep_search_wall_clock_timeout(),
-            std::time::Duration::from_secs(300)
+            std::time::Duration::from_secs(600)
         );
     }
 

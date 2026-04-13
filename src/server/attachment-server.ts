@@ -12,6 +12,7 @@ import express, { type Express, type Request, type Response } from 'express';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { logger } from '../utils/logger';
+import { normalizeFilePath, resolveFilePath } from '../utils/normalize-path';
 import { renderMarkdown } from './utils/markdown-renderer';
 import { getViewerTemplate } from './templates/viewer-template';
 import type { Server } from 'http';
@@ -71,14 +72,18 @@ export async function startAttachmentServer(
       const rawPath = Array.isArray(filepathParam)
         ? filepathParam.join('/')
         : String(filepathParam || '');
-      const filePath = decodeURIComponent(rawPath);
+      const normalizedPath = normalizeFilePath(decodeURIComponent(rawPath));
 
-      // Validate path
-      const absolutePath = validatePath(filePath);
-      if (!absolutePath) {
+      // Validate path (using normalized path for security check)
+      const validatedPath = validatePath(normalizedPath);
+      if (!validatedPath) {
         res.status(403).send('Forbidden: Invalid file path');
         return;
       }
+
+      // BUG-130: Use resolveFilePath for directory scan fallback
+      // (e.g. user types regular space but file on disk has U+202F)
+      const absolutePath = await resolveFilePath(validatedPath);
 
       // Determine file extension first to decide how to read
       const fileExtension = path.extname(absolutePath).toLowerCase();

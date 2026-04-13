@@ -102,9 +102,8 @@ describe('Feature: Enter key on board bypasses Create Session dialog - no isolat
       const onEnterMatch = boardViewSource.match(/onEnter=\{[^}]+\}/s);
       expect(onEnterMatch).toBeDefined();
 
-      // @step Then the Create Session dialog should appear with Normal/Isolated toggle
-      // Currently FAILS: onEnter calls navigateToNewSession() which bypasses dialog
-      // Should call openCreateSessionDialog() instead
+      // @step Then the Create Session dialog should appear with Yes/Yes-Isolated/Cancel options
+      // TUI-090: Dialog now shows 3 flat options instead of Yes/No + toggle
       expect(boardViewSource).toContain('openCreateSessionDialog');
       
       // Verify that when no attached session, the code calls openCreateSessionDialog
@@ -146,8 +145,8 @@ describe('Feature: BoardView CreateSessionDialog callback ignores isolated param
       expect(dialogMatch).toBeDefined();
 
       // @step Then an isolated session should be created with a git worktree
-      // Currently FAILS: onConfirm={() => { ... }) doesn't accept isolated parameter
-      // Should be: onConfirm={(isolated) => { ... })
+      // TUI-090: User selects "Yes - Isolated" option (no toggle, flat 3-option dialog)
+      // The onConfirm handler should accept a parameter (isolated: boolean)
       const onConfirmHandler = dialogMatch ? dialogMatch[1] : '';
       
       // The handler should accept a parameter (isolated: boolean)

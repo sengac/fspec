@@ -3,7 +3,7 @@
 use crate::error::{GitError, Result};
 use crate::open_repo;
 use crate::utils::is_binary_content;
-use similar::{ChangeTag, TextDiff};
+use similar::TextDiff;
 use std::path::Path;
 
 /// Get unified diff for a file comparing working directory to HEAD
@@ -78,14 +78,23 @@ fn get_head_file_content(repo: &gix::Repository, filepath: &str) -> Result<Strin
 
     let tree = head.tree().map_err(|e| GitError::Head(e.to_string()))?;
 
+    // Use lookup_entry_by_path to properly traverse nested directories
+    // e.g. "codelet/git/src/diff.rs" needs to traverse codelet -> git -> src -> diff.rs
+    // find_entry() only searches the immediate root tree level and fails for nested paths.
     let entry = tree
-        .find_entry(filepath)
+        .lookup_entry_by_path(filepath)
+        .map_err(|e| GitError::ReadBlob {
+            path: filepath.to_string(),
+            source: e.into(),
+        })?
         .ok_or_else(|| GitError::FileNotFound(filepath.to_string()))?;
 
-    let object = entry.object().map_err(|e| GitError::ReadBlob {
-        path: filepath.to_string(),
-        source: e.into(),
-    })?;
+    let object = repo
+        .find_object(entry.id())
+        .map_err(|e| GitError::ReadBlob {
+            path: filepath.to_string(),
+            source: e.into(),
+        })?;
 
     let blob = object.into_blob();
     let content = String::from_utf8_lossy(blob.data.as_ref()).to_string();
@@ -113,14 +122,19 @@ fn get_ref_file_content(
         .tree()
         .map_err(|e| GitError::Other(format!("Failed to get tree for '{}': {}", commit_ref, e)))?;
 
+    // Use lookup_entry_by_path to properly traverse nested directories
+    // find_entry() only searches the immediate root tree level and fails for nested paths.
     let entry = tree
-        .find_entry(filepath)
+        .lookup_entry_by_path(filepath)
+        .map_err(|e| GitError::Other(format!("Failed to look up '{}': {}", filepath, e)))?
         .ok_or_else(|| GitError::FileNotFound(filepath.to_string()))?;
 
-    let object = entry.object().map_err(|e| GitError::ReadBlob {
-        path: filepath.to_string(),
-        source: e.into(),
-    })?;
+    let object = repo
+        .find_object(entry.id())
+        .map_err(|e| GitError::ReadBlob {
+            path: filepath.to_string(),
+            source: e.into(),
+        })?;
 
     let blob = object.into_blob();
     let content = String::from_utf8_lossy(blob.data.as_ref()).to_string();
@@ -191,56 +205,34 @@ pub fn get_checkpoint_file_diff(
 }
 
 /// Generate unified diff format from two strings
-fn generate_unified_diff(_filepath: &str, old_content: &str, new_content: &str) -> String {
+///
+/// Uses the `similar` crate's built-in unified diff formatter to produce
+/// standard unified diff output with `@@` hunk headers and 3 lines of context
+/// around each change. This keeps diffs compact and readable — changes are
+/// immediately visible rather than buried in hundreds of unchanged lines.
+fn generate_unified_diff(filepath: &str, old_content: &str, new_content: &str) -> String {
     let diff = TextDiff::from_lines(old_content, new_content);
 
-    let mut added = 0;
-    let mut removed = 0;
-    let mut lines = Vec::new();
-
-    for change in diff.iter_all_changes() {
-        match change.tag() {
-            ChangeTag::Delete => {
-                removed += 1;
-                lines.push(format!("-{}", change.value().trim_end_matches('\n')));
-            }
-            ChangeTag::Insert => {
-                added += 1;
-                lines.push(format!("+{}", change.value().trim_end_matches('\n')));
-            }
-            ChangeTag::Equal => {
-                lines.push(format!(" {}", change.value().trim_end_matches('\n')));
-            }
-        }
-    }
+    // Use similar's built-in unified diff formatter with 3 lines of context
+    let unified = diff
+        .unified_diff()
+        .context_radius(3)
+        .missing_newline_hint(true)
+        .header(&format!("a/{}", filepath), &format!("b/{}", filepath))
+        .to_string();
 
     // Truncate if more than 20,000 lines
     const MAX_LINES: usize = 20000;
+    let lines: Vec<&str> = unified.lines().collect();
     let total_lines = lines.len();
-    let truncated = total_lines > MAX_LINES;
 
-    if truncated {
-        lines.truncate(MAX_LINES);
+    if total_lines > MAX_LINES {
+        let truncated: String = lines[..MAX_LINES].join("\n");
+        format!(
+            "{}\n\n[File truncated - showing first {} of {} lines]",
+            truncated, MAX_LINES, total_lines
+        )
+    } else {
+        unified
     }
-
-    let mut result = Vec::new();
-    result.push(format!(
-        "--- Lines that will be REMOVED on restore: {} lines",
-        removed
-    ));
-    result.push(format!(
-        "+++ Lines that will be ADDED on restore: {} lines",
-        added
-    ));
-    result.extend(lines);
-
-    if truncated {
-        result.push(String::new());
-        result.push(format!(
-            "[File truncated - showing first {} of {} lines]",
-            MAX_LINES, total_lines
-        ));
-    }
-
-    result.join("\n")
 }

@@ -368,9 +368,9 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
         false
       );
 
-      // @step And useSupervisorHeaderInfo hook exists (still used for header display)
+      // @step And useSupervisorHeaderInfo hook was removed (TUI-087: dead code removal)
       expect(existsSync(join(TUI_HOOKS, 'useSupervisorHeaderInfo.ts'))).toBe(
-        true
+        false
       );
       expect(existsSync(join(TUI_HOOKS, 'useWatcherHeaderInfo.ts'))).toBe(
         false

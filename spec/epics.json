@@ -366,7 +366,8 @@
         "BUG-098",
         "BUG-099",
         "GIT-039",
-        "GIT-040"
+        "GIT-040",
+        "TUI-090"
       ]
     },
     "codex-oauth": {
@@ -635,6 +636,24 @@
       "description": "Improvements to fspec's Z.AI GLM provider integration for better tool-calling accuracy, reasoning support, and runtime configurability. Based on analysis of the official GLM-5 reference repository.",
       "workUnits": [
         "PROV-052"
+      ]
+    },
+    "session-header-review": {
+      "id": "session-header-review",
+      "title": "SessionHeader & sessionStore Critical Review Fixes",
+      "createdAt": "2026-04-12T11:20:52.315Z",
+      "description": "Address code quality, DRY violations, dead code, test quality, and state management issues identified in the SessionHeader critical review report (REPORT.md). 10 critical issues investigated by 3 parallel agents — 9 confirmed, 1 refuted (C4 ANSI injection).",
+      "workUnits": [
+        "TUI-085",
+        "TUI-086",
+        "TUI-087",
+        "TUI-088",
+        "TEST-036",
+        "TEST-037",
+        "TEST-038",
+        "TUI-089",
+        "TEST-039",
+        "TEST-040"
       ]
     }
   }

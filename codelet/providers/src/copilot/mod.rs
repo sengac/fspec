@@ -43,6 +43,7 @@ pub mod oauth_types;
 pub mod prompt_cache;
 pub mod provider;
 pub mod provider_options;
+pub mod token_refresh;
 pub mod refreshing_client;
 pub mod response;
 pub mod rig_agent;

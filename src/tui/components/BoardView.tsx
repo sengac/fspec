@@ -26,6 +26,7 @@ import type { Server } from 'net';
 import type { Server as HttpServer } from 'http';
 import { logger } from '../../utils/logger';
 import { openInBrowser } from '../../utils/openBrowser';
+import { pathToFileURL } from 'url';
 import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
@@ -81,7 +82,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     openCreateSessionDialog,
     prepareForNewSession,
     navigateToNewSession,
-    navigateToNewSessionIsolated,
   } = useSessionActions();
 
   // VIEWNV-001: Session navigation hook for Shift+Arrow navigation
@@ -594,14 +594,15 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           attachments={currentlySelectedWorkUnit!.attachments!}
           onSelect={(attachment) => {
             // REFAC-004: Use HTTP URL if attachment server is running, otherwise fall back to file://
+            // BUG-130: Encode attachment path for URL safety (handles spaces, U+202F, etc.)
             let url: string;
             if (attachmentServerPort) {
-              url = `http://localhost:${attachmentServerPort}/view/${attachment}`;
+              url = `http://localhost:${attachmentServerPort}/view/${encodeURI(attachment)}`;
             } else {
               const absolutePath = path.isAbsolute(attachment)
                 ? attachment
                 : path.resolve(cwd || process.cwd(), attachment);
-              url = `file://${absolutePath}`;
+              url = pathToFileURL(absolutePath).href;
             }
 
             openInBrowser({ url, wait: false }).catch((error: Error) => {
@@ -619,7 +620,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           onConfirm={(isolated) => {
             // GIT-031: Accept isolated parameter and pass to navigateToNewSession
             // AgentView will read pendingIsolatedSession from store when auto-creating
-            navigateToNewSessionIsolated(isolated);
+            navigateToNewSession(isolated);
             // Note: Don't clear selectedWorkUnit here - it was intentionally set in onEnter
             // when user pressed Enter on a work unit. AgentView needs it for auto-attach.
             setViewMode('agent');

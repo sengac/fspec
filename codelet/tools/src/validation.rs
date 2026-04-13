@@ -4,7 +4,7 @@
 //! All I/O operations use tokio::fs for non-blocking async execution.
 
 use super::ToolOutput;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Validate that a file path is absolute
 ///
@@ -22,13 +22,28 @@ pub fn require_absolute_path(file_path: &str) -> Result<&Path, ToolOutput> {
 
 /// Validate that a file exists at the given path (async, non-blocking)
 ///
-/// Returns Ok(()) on success, or a ToolOutput error if file not found.
-pub async fn require_file_exists(path: &Path, file_path: &str) -> Result<(), ToolOutput> {
+/// BUG-130: When the exact path is not found, performs a Unicode whitespace
+/// directory-scan fallback via `resolve_unicode_path`. This handles the case
+/// where macOS creates files with U+202F but users type regular ASCII spaces.
+///
+/// Returns the resolved path on success (may differ from input if found via
+/// Unicode fallback), or a ToolOutput error if file not found.
+pub async fn require_file_exists(path: &Path, file_path: &str) -> Result<PathBuf, ToolOutput> {
     match tokio::fs::try_exists(path).await {
-        Ok(true) => Ok(()),
-        Ok(false) => Err(ToolOutput::error(format!(
-            "Error: File not found: {file_path}"
-        ))),
+        Ok(true) => Ok(path.to_path_buf()),
+        Ok(false) => {
+            // BUG-130: Try Unicode whitespace fallback before giving up.
+            // The path may have been normalized by validate_and_resolve_path
+            // but the file on disk has U+202F — directory scan finds it.
+            if let Some(resolved) = crate::unicode_path::resolve_unicode_path(path).await {
+                if tokio::fs::try_exists(&resolved).await.unwrap_or(false) {
+                    return Ok(resolved);
+                }
+            }
+            Err(ToolOutput::error(format!(
+                "Error: File not found: {file_path}"
+            )))
+        }
         Err(e) => Err(ToolOutput::error(format!(
             "Error checking file existence: {e}"
         ))),

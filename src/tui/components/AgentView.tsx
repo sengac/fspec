@@ -21,7 +21,6 @@ import React, {
   useCallback,
   useRef,
   useMemo,
-  useDeferredValue,
 } from 'react';
 import fs from 'fs';
 import { Box, Text, useStdout } from 'ink';
@@ -1310,9 +1309,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-043: Ref to store current conversationLines for use in callbacks (avoids stale closure)
   const conversationLinesRef = useRef<ConversationLine[]>([]);
 
-  // PERF-003: Use deferred value for conversation to prioritize user input
-  // This tells React that conversation updates are lower priority than user interactions
-  const deferredConversation = useDeferredValue(conversation);
+  // PERF-003: Previously used useDeferredValue here, but Ink uses LegacyRoot
+  // (synchronous rendering) which means deferred values always lag one render behind.
+  // This caused Write/Edit tool results to not display until a forced re-render
+  // (e.g. session switch). The line cache (lineCacheRef) already handles perf.
+  const deferredConversation = conversation;
 
   // Get terminal dimensions for full-screen layout
   const terminalWidth = stdout?.columns ?? 80;
@@ -3176,8 +3177,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
+      let parsedInput: unknown;
       try {
-        const parsedInput = JSON.parse(toolCall.input);
+        parsedInput = JSON.parse(toolCall.input);
         if (typeof parsedInput === 'object' && parsedInput !== null) {
           const inputObj = parsedInput as Record<string, unknown>;
           argsDisplay = extractToolArgsDisplay(toolCall.name, inputObj);
@@ -3187,6 +3189,45 @@ export const AgentView: React.FC<AgentViewProps> = ({
         logger.error('Failed to parse tool call input JSON for display:', err);
         argsDisplay = toolCall.input;
       }
+
+      // TUI-038: Store Edit/Write tool inputs for diff display (same as handleSubmit)
+      if (typeof parsedInput === 'object' && parsedInput !== null) {
+        const inputObj = parsedInput as Record<string, unknown>;
+        const toolNameLower = toolCall.name.toLowerCase();
+        if (
+          (toolNameLower === 'edit' || toolNameLower === 'replace') &&
+          typeof inputObj.old_string === 'string' &&
+          typeof inputObj.new_string === 'string'
+        ) {
+          const filePath =
+            typeof inputObj.file_path === 'string'
+              ? inputObj.file_path
+              : undefined;
+          const startLine = calculateStartLine(
+            filePath,
+            inputObj.old_string,
+            inputObj.new_string
+          );
+          pendingToolDiffsRef.current.set(toolCall.id, {
+            toolName: 'Edit',
+            toolCallId: toolCall.id,
+            filePath,
+            oldString: inputObj.old_string,
+            newString: inputObj.new_string,
+            startLine,
+          });
+        } else if (
+          (toolNameLower === 'write' || toolNameLower === 'write_file') &&
+          typeof inputObj.content === 'string'
+        ) {
+          pendingToolDiffsRef.current.set(toolCall.id, {
+            toolName: 'Write',
+            toolCallId: toolCall.id,
+            content: inputObj.content,
+          });
+        }
+      }
+
       const toolContent = formatToolHeader(toolCall.name, argsDisplay);
       setConversation(prev => {
         const updated = [...prev];
@@ -3211,8 +3252,57 @@ export const AgentView: React.FC<AgentViewProps> = ({
       });
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
       const result = chunk.toolResult;
-      const sanitizedContent = result.content.replace(/\t/g, '  ');
-      const toolResultContent = formatCollapsedOutput(sanitizedContent);
+
+      // TUI-038: Check for Edit/Write tool diff display (same as handleSubmit)
+      const pendingDiff = pendingToolDiffsRef.current.get(
+        result.toolCallId
+      );
+      let toolResultContent: string;
+      let toolResultFullContent: string;
+
+      if (pendingDiff) {
+        pendingToolDiffsRef.current.delete(result.toolCallId);
+        if (
+          pendingDiff.toolName === 'Edit' &&
+          pendingDiff.oldString !== undefined &&
+          pendingDiff.newString !== undefined
+        ) {
+          const diffLines = formatEditDiff(
+            pendingDiff.oldString,
+            pendingDiff.newString
+          );
+          const startLine = pendingDiff.startLine ?? 1;
+          toolResultContent = formatDiffForDisplay(
+            diffLines,
+            DIFF_COLLAPSED_LINES,
+            startLine
+          );
+          toolResultFullContent = formatDiffForDisplay(
+            diffLines,
+            diffLines.length,
+            startLine
+          );
+        } else if (
+          pendingDiff.toolName === 'Write' &&
+          pendingDiff.content !== undefined
+        ) {
+          const diffLines = formatWriteDiff(pendingDiff.content);
+          toolResultContent = formatDiffForDisplay(diffLines);
+          toolResultFullContent = formatDiffForDisplay(
+            diffLines,
+            diffLines.length
+          );
+        } else {
+          const sanitizedContent = result.content.replace(/\t/g, '  ');
+          toolResultContent = formatCollapsedOutput(sanitizedContent);
+          toolResultFullContent = formatFullOutput(sanitizedContent);
+        }
+      } else {
+        const sanitizedContent = result.content.replace(/\t/g, '  ');
+        toolResultContent = formatCollapsedOutput(sanitizedContent);
+        toolResultFullContent = formatFullOutput(sanitizedContent);
+      }
+
       setConversation(prev => {
         const updated = [...prev];
         // Find tool header and combine with result
@@ -3226,6 +3316,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
               ...msg,
               content: hasContent
                 ? `${headerLine}\n${toolResultContent}`
+                : headerLine,
+              // TUI-043: Set fullContent for expansion
+              fullContent: hasContent
+                ? `${headerLine}\n${toolResultFullContent}`
                 : headerLine,
               isError: result.isError,
             };

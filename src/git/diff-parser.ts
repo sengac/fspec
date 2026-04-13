@@ -39,6 +39,10 @@ export function parseDiff(diffContent: string): DiffLine[] {
   for (const line of lines) {
     if (line.startsWith('@@')) {
       parsed.push({ content: line, type: 'hunk', changeGroup: null });
+    } else if (line.startsWith('--- ') || line.startsWith('+++ ')) {
+      // Standard unified diff file headers (e.g. "--- a/file.ts", "+++ b/file.ts")
+      // Treat as header metadata, not as actual removed/added content
+      parsed.push({ content: line, type: 'hunk', changeGroup: null });
     } else if (line.startsWith('-')) {
       parsed.push({ content: line, type: 'removed', changeGroup: null });
     } else if (line.startsWith('+')) {

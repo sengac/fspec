@@ -10,11 +10,19 @@
 
 /**
  * Format context window size for display
- * @example 200000 → "200k", 1000000 → "1M"
+ * @param contextWindow - Token count
+ * @param precision - 'compact' (default): no decimals for M values, 'precise': 1 decimal for M values
+ * @example formatContextWindow(200000) → "200k"
+ * @example formatContextWindow(1000000) → "1M"
+ * @example formatContextWindow(1500000, 'precise') → "1.5M"
  */
-export const formatContextWindow = (contextWindow: number): string => {
+export const formatContextWindow = (
+  contextWindow: number,
+  precision: 'compact' | 'precise' = 'compact'
+): string => {
   if (contextWindow >= 1000000) {
-    return `${(contextWindow / 1000000).toFixed(0)}M`;
+    const decimals = precision === 'precise' ? 1 : 0;
+    return `${(contextWindow / 1000000).toFixed(decimals)}M`;
   }
   return `${Math.round(contextWindow / 1000)}k`;
 };

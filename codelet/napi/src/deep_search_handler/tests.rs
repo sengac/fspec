@@ -140,7 +140,7 @@ async fn collect_final_response_from_stream_propagates_stream_errors() {
 
 // @step Given a subordinate agent invokes a DeepSearch tool
 // @step And the DeepSearch sub-agent's LLM generation stalls indefinitely
-// @step When the DeepSearch wall-clock timeout of 300 seconds expires
+// @step When the DeepSearch wall-clock timeout of 600 seconds expires
 // @step Then the parent agent should receive a timeout error as the tool result string
 // @step And the parent agent should continue processing with the error result
 // @step And the parent agent should not hang or remain in running state
@@ -165,7 +165,7 @@ async fn deep_search_wall_clock_timeout_fires_on_stalled_sub_agent() {
     // When timeout fires, the error message returned to the parent must be descriptive
     let timeout_msg = build_deep_search_timeout_message(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS);
     assert!(
-        timeout_msg.contains("timed out after 300s"),
+        timeout_msg.contains("timed out after 600s"),
         "Timeout message must include the duration"
     );
     assert!(
@@ -175,11 +175,11 @@ async fn deep_search_wall_clock_timeout_fires_on_stalled_sub_agent() {
 }
 
 #[test]
-fn deep_search_wall_clock_timeout_defaults_to_300_seconds() {
-    assert_eq!(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, 300);
+fn deep_search_wall_clock_timeout_defaults_to_600_seconds() {
+    assert_eq!(DEEP_SEARCH_WALL_CLOCK_TIMEOUT_SECS, 600);
     assert_eq!(
         deep_search_wall_clock_timeout(),
-        std::time::Duration::from_secs(300)
+        std::time::Duration::from_secs(600)
     );
 }
 
@@ -188,7 +188,7 @@ fn deep_search_timeout_message_is_not_classified_as_stall_timeout() {
     // The DeepSearch timeout message is returned as a TOOL RESULT string,
     // not as a stream error. But verify it doesn't accidentally match
     // the stall timeout classifier if it ever reaches error handling.
-    let timeout_msg = build_deep_search_timeout_message(300);
+    let timeout_msg = build_deep_search_timeout_message(600);
     assert!(
         !is_stall_timeout_error(&timeout_msg),
         "DeepSearch timeout message must NOT match the stall timeout classifier \

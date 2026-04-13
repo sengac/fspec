@@ -1,0 +1,365 @@
+{
+  "scenarios": [
+    {
+      "name": "Resolve file with U+202F on disk when user types regular space",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "54-85",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/unicode_path.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolve file with regular space on disk when user pastes U+00A0",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "88-116",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/unicode_path.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "validate_and_resolve_path normalizes Unicode whitespace before canonicalization",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "122-148",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726,
+                727,
+                728,
+                729,
+                730,
+                731
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "require_file_exists finds file via directory scan when normalized path also fails",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "154-184",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/validation.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Read tool reads file with U+202F when user provides regular space path",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "192-225",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Read tool reads image with U+202F when user provides regular space path",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "228-283",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Edit tool edits file with U+202F when user provides regular space path",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "289-325",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/edit.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Write tool normalizes Unicode whitespace in file path for new files",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "331-368",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                720,
+                721,
+                722,
+                723,
+                724,
+                725,
+                726,
+                727,
+                728,
+                729,
+                730,
+                731
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ls tool lists directory when path contains Unicode whitespace",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/unicode_path_test.rs",
+          "lines": "374-407",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/ls.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/unicode_path_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/unicode_path.rs",
+      "codelet/tools/src/facade/wrapper.rs",
+      "codelet/tools/src/validation.rs",
+      "codelet/tools/src/read.rs",
+      "codelet/tools/src/edit.rs",
+      "codelet/tools/src/ls.rs"
+    ],
+    "totalLinesCovered": 518
+  }
+}

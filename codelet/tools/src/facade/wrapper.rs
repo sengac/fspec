@@ -722,8 +722,11 @@ pub fn validate_and_resolve_path(
     path: &str,
     tool_name: &'static str,
 ) -> Result<PathBuf, ToolError> {
+    // BUG-130: Normalize Unicode whitespace (U+202F, U+00A0, etc.) to ASCII space
+    // BEFORE any path resolution. This is the single gateway for all file tools.
+    let normalized = crate::unicode_path::normalize_unicode_whitespace(path);
     let isolation_ctx = get_isolation_context(session_id);
-    validate_and_resolve_path_with_isolation(path, isolation_ctx.as_ref(), tool_name)
+    validate_and_resolve_path_with_isolation(&normalized, isolation_ctx.as_ref(), tool_name)
 }
 
 /// Internal path validation with explicit isolation context.

@@ -97,7 +97,7 @@ fn classify_and_cache_body(body: bytes::Bytes) -> (RequestClassification, bytes:
             // Re-serialize the (possibly mutated) body.
             let new_body = serde_json::to_vec(&value)
                 .map(bytes::Bytes::from)
-                .expect("serde_json::to_vec on a Value should never fail");
+                .unwrap_or_else(|_| body.clone());
             (classification, new_body)
         }
         Err(e) => {

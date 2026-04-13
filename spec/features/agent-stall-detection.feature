@@ -21,14 +21,14 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   #   4. The timeout duration should be configurable but default to 600 seconds
   #   5. After a stall timeout, the error emitted to the UI must clearly indicate it was a stall (not a network error or API error)
   #   6. The existing error classifier cascade must NOT catch stall timeouts — stall is a distinct terminal error that always breaks the loop
-  #   7. DeepSearch sub-agent execution must be wrapped in a wall-clock timeout (default 300s) so stalled sub-agents don't block the parent forever
+  #   7. DeepSearch sub-agent execution must be wrapped in a wall-clock timeout (default 600s) so stalled sub-agents don't block the parent forever
   #   8. The agent_loop post-stream cleanup (set_status(Idle) + emit Done) must ALWAYS execute even if the stream loop panics — use a drop guard or equivalent
   #
   # EXAMPLES:
   #   1. LLM SSE stream stalls after DeepSearch result is injected — stream.next() blocks for 600s — timeout fires — agent transitions to Idle — error message emitted — await_idle caller gets idle result
   #   2. LLM generates tokens normally — each token resets the idle timeout — no timeout fires — agent completes and transitions to Idle normally
   #   3. LLM pauses for 60s between tokens (slow generation) — timeout is 600s — no timeout fires — agent completes successfully
-  #   4. DeepSearch sub-agent's LLM stalls during its own generation — wall-clock timeout (300s) fires — parent agent receives timeout error as tool result string — parent continues processing
+  #   4. DeepSearch sub-agent's LLM stalls during its own generation — wall-clock timeout (600s) fires — parent agent receives timeout error as tool result string — parent continues processing
   #   5. Network error during streaming triggers existing NET-001 retry logic — stall timeout does NOT interfere — retries succeed — agent completes normally
   #   6. Stream loop panics during processing — drop guard fires — agent_loop sets status to Idle — await_idle returns idle
   #   7. LLM starts responding with tokens, then stops mid-sentence for 600s — stall timeout fires — partial text is preserved in history — agent transitions to Idle
@@ -70,7 +70,7 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   Scenario: DeepSearch sub-agent stall triggers wall-clock timeout
     Given a subordinate agent invokes a DeepSearch tool
     And the DeepSearch sub-agent's LLM generation stalls indefinitely
-    When the DeepSearch wall-clock timeout of 300 seconds expires
+    When the DeepSearch wall-clock timeout of 600 seconds expires
     Then the parent agent should receive a timeout error as the tool result string
     And the parent agent should continue processing with the error result
     And the parent agent should not hang or remain in running state

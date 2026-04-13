@@ -12,6 +12,7 @@ import {
   clearFspecPositionalArgs,
   stripAnsi,
 } from './output';
+import { normalizeFilePath } from './normalize-path';
 
 // Commands that are excluded from FspecTool (must use CLI directly)
 const EXCLUDED_COMMANDS = ['bootstrap', 'init'];
@@ -954,21 +955,23 @@ export async function fspecCallback(
 
     // Handle positional arguments via special '_' key (array of positional args in order)
     // This follows the convention used by minimist/yargs
+    // BUG-130: Normalize Unicode whitespace (e.g. macOS U+202F) to ASCII space
     const positionalArgs = args._ as unknown[] | undefined;
     if (Array.isArray(positionalArgs)) {
       for (const arg of positionalArgs) {
         if (arg !== undefined && arg !== null) {
-          argv.push(String(arg));
+          argv.push(normalizeFilePath(String(arg)));
         }
       }
     }
 
     // RES-022: Set positional args for commands that need them (like research)
     // This allows commands to access the args without using process.argv
+    // BUG-130: Normalize Unicode whitespace here too (not just in argv above)
     const positionalArgsStrings = Array.isArray(positionalArgs)
       ? positionalArgs
           .filter(a => a !== undefined && a !== null)
-          .map(a => String(a))
+          .map(a => normalizeFilePath(String(a)))
       : [];
     setFspecPositionalArgs(positionalArgsStrings);
 
@@ -1010,7 +1013,8 @@ export async function fspecCallback(
       if (typeof value === 'boolean') {
         if (value) argv.push(flagName);
       } else if (value !== undefined && value !== null) {
-        argv.push(flagName, String(value));
+        // BUG-130: Normalize Unicode whitespace in named option values
+        argv.push(flagName, normalizeFilePath(String(value)));
       }
     }
 

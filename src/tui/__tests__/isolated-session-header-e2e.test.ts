@@ -1,12 +1,15 @@
 /**
  * Feature: spec/features/isolated-session-header-display.feature
  *
- * End-to-end tests for the [ISOLATED] badge display in SessionHeader.
- * These tests verify the entire data flow from session creation to UI state.
+ * Integration tests for the [ISOLATED] badge display in SessionHeader.
+ * These tests verify the data flow from session creation to UI state.
  *
  * GIT-029: IsolationStateChange handling must work regardless of timing
  *
- * NO MOCKS - uses real NAPI bindings and fixtures
+ * Uses real NAPI bindings for session management.
+ * Chunk delivery uses GlobalSessionStreamManager.simulateChunk()
+ * to feed chunks through the real JS handler pipeline without
+ * requiring a running agent loop for chunk emission.
  */
 
 import {
@@ -27,7 +30,6 @@ import { randomUUID } from 'crypto';
 import {
   sessionManagerCreateIsolated,
   sessionManagerDestroy,
-  listWorktrees,
   removeWorktree,
   persistenceSetDataDirectory,
   sessionManagerList,

@@ -9,9 +9,6 @@
  * Normal mode (with session number and work unit):
  *   #1 (AUTH-001: implementing): claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *
- * Supervisor mode:
- *   Supervisor: security-reviewer #1 | #2: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
- *
  * NOTE: The bottom border separator is rendered by AgentView AFTER the RoleBanner,
  * so the visual order is: header → role banner (if any) → separator → conversation.
  *
@@ -40,16 +37,6 @@ import {
 } from '../utils/sessionHeaderUtils';
 import { JsThinkingLevel } from '@sengac/codelet-napi';
 import { useCurrentWorkUnitId, useCurrentWorkUnitStatus } from '../store/sessionStore';
-
-/**
- * Supervisor info for header display
- */
-export interface SupervisorHeaderInfo {
-  /** Template slug (e.g., "security-reviewer") */
-  slug: string;
-  /** Instance number (1-based) */
-  instanceNumber: number;
-}
 
 export interface SessionHeaderProps {
   /** Model ID to display */
@@ -80,8 +67,6 @@ export interface SessionHeaderProps {
   contextFillPercentage?: number;
   /** Compaction reduction percentage (shown after compaction) */
   compactionReduction?: number | null;
-  /** Supervisor info - if present, shows supervisor prefix */
-  supervisorInfo?: SupervisorHeaderInfo;
   /** Session number (1-based index in session list) - helps identify session when switching */
   sessionNumber?: number;
   /** GIT-029: Whether session is isolated (has a git worktree) */
@@ -107,6 +92,14 @@ const getThinkingLevelLabel = (level: JsThinkingLevel): string | null => {
   }
 };
 
+/**
+ * Format percentage with up to 2 decimal places, removing trailing zeros
+ * @example 45.678 → "45.68", 50.0 → "50", 22.10 → "22.1"
+ */
+const formatPercentage = (num: number): string => {
+  return parseFloat(num.toFixed(2)).toString();
+};
+
 export const SessionHeader: React.FC<SessionHeaderProps> = ({
   modelId,
   hasReasoning = false,
@@ -122,7 +115,6 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   rustTokens = { inputTokens: 0, outputTokens: 0 },
   contextFillPercentage = 0,
   compactionReduction = null,
-  supervisorInfo,
   sessionNumber,
   isIsolated = false,
 }) => {
@@ -131,11 +123,6 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   const workUnitStatus = useCurrentWorkUnitStatus();
 
   const { inputTokens, outputTokens, reasoningTokens } = getMaxTokens(tokenUsage, rustTokens);
-
-  // Format percentage with 2 decimal places, removing trailing zeros
-  const formatPercentage = (num: number): string => {
-    return parseFloat(num.toFixed(2)).toString();
-  };
 
   const percentText =
     compactionReduction !== null
@@ -157,12 +144,6 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   // with multiple Text elements and overflow="hidden". Using chalk ensures ANSI
   // codes are handled properly by cli-truncate when textWrap="truncate-end".
   let leftContent = '';
-
-  // Supervisor prefix (if applicable) - blue bold
-  if (supervisorInfo) {
-    leftContent += chalk.blue.bold(`Supervisor: ${supervisorInfo.slug} #${supervisorInfo.instanceNumber}`);
-    leftContent += ' | ';
-  }
 
   // Session number, work unit, and model - cyan bold
   leftContent += chalk.cyan.bold(`${sessionPrefix}${workUnitText}${separator}${modelId || 'Loading...'}`);

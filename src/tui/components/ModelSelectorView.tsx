@@ -15,6 +15,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import type { ModelSelectorItem } from '../types/provider';
+import { formatContextWindow } from '../utils/sessionHeaderUtils';
 
 /**
  * Props for ModelSelectorView (presentational - receives all state from parent)
@@ -46,19 +47,6 @@ export interface ModelSelectorViewProps {
   isRefreshing: boolean;
   /** MODEL-004: Set of custom model IDs per section (for [C] badge) */
   customModelIdsBySection?: Map<number, Set<string>>;
-}
-
-/**
- * Format context window for display
- */
-function formatContextWindow(tokens: number): string {
-  if (tokens >= 1000000) {
-    return `${(tokens / 1000000).toFixed(1)}M`;
-  }
-  if (tokens >= 1000) {
-    return `${Math.round(tokens / 1000)}k`;
-  }
-  return String(tokens);
 }
 
 /**
@@ -231,7 +219,7 @@ export function ModelSelectorView({
                       )}
                       <Text color={isSelected ? 'black' : 'gray'}>
                         {' '}
-                        [{formatContextWindow(item.model.contextWindow)}]
+                        [{formatContextWindow(item.model.contextWindow, 'precise')}]
                       </Text>
                       {isCurrent && (
                         <Text color={isSelected ? 'black' : 'green'}>

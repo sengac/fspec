@@ -64,7 +64,9 @@ fn copilot_request_config(
     let facade = select_copilot_facade(model_name);
     DeepSearchRequestConfig {
         preamble: facade.transform_preamble(system_prompt),
-        additional_params: None,
+        additional_params: Some(json!({
+            "metadata": { "mode": "agent" }
+        })),
         max_tokens: Some(SUB_AGENT_MAX_TOKENS),
     }
 }

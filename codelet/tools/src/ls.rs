@@ -163,14 +163,19 @@ impl rig::tool::Tool for LsTool {
         let dir_path = resolved_path.to_string_lossy().to_string();
         let path = Path::new(&dir_path);
 
-        // Check if path exists (async)
-        match tokio::fs::try_exists(path).await {
-            Ok(true) => {}
+        // Check if path exists (async) — BUG-130: Unicode whitespace fallback
+        let final_path = match tokio::fs::try_exists(path).await {
+            Ok(true) => path.to_path_buf(),
             Ok(false) => {
-                return Err(ToolError::NotFound {
-                    tool: "ls",
-                    message: format!("Directory not found: {dir_path}"),
-                })
+                // Try Unicode whitespace directory scan fallback
+                if let Some(resolved) = crate::unicode_path::resolve_unicode_path(path).await {
+                    resolved
+                } else {
+                    return Err(ToolError::NotFound {
+                        tool: "ls",
+                        message: format!("Directory not found: {dir_path}"),
+                    });
+                }
             }
             Err(e) => {
                 return Err(ToolError::File {
@@ -178,7 +183,9 @@ impl rig::tool::Tool for LsTool {
                     message: e.to_string(),
                 })
             }
-        }
+        };
+        let path = final_path.as_path();
+        let dir_path = path.to_string_lossy().to_string();
 
         // Check if path is a directory (async)
         let metadata = tokio::fs::metadata(path)

@@ -82,17 +82,70 @@ fn detect_vision_content(body: &Value) -> bool {
     false
 }
 
-/// Detect whether the caller has explicitly flagged this request as coming
-/// from an autonomous agent workflow.
+/// Detect whether the request should be classified as agent-initiated.
 ///
-/// The contract is simple and explicit: a top-level `metadata.mode` field
-/// set to the literal string `"agent"`. This keeps the classifier pure and
-/// auditable — no hidden heuristics on message content.
+/// A request is agent-initiated when:
+/// 1. The caller has explicitly set `metadata.mode = "agent"` (DeepSearch,
+///    subordinate sessions, scheduled jobs), OR
+/// 2. The last message in the conversation is a tool result (`role: "tool"`
+///    for OpenAI format, or `role: "user"` with only `tool_result` content
+///    for Anthropic format), which means this is an automated follow-up
+///    after a tool call — not a genuine user-initiated message.
+///
+/// This mirrors the VSCode Copilot Chat reference implementation:
+/// `userInitiatedRequest: iterationNumber === 0 && !isContinuation && !isSubagent`
 fn detect_agent_mode(body: &Value) -> bool {
-    body.get("metadata")
+    // Check 1: Explicit metadata.mode = "agent" flag
+    if body
+        .get("metadata")
         .and_then(|m| m.get("mode"))
         .and_then(Value::as_str)
         .is_some_and(|s| s == "agent")
+    {
+        return true;
+    }
+
+    // Check 2: Last message is a tool result (OpenAI format: role = "tool")
+    // This catches agent loop follow-up iterations where rig sends tool
+    // results back to the API for the next assistant turn.
+    if let Some(messages) = body.get("messages").and_then(Value::as_array) {
+        if let Some(last) = messages.last() {
+            if let Some(role) = last.get("role").and_then(Value::as_str) {
+                // OpenAI format: tool results have role = "tool"
+                if role == "tool" {
+                    return true;
+                }
+                // Anthropic format: tool results are in a "user" message
+                // with content items of type "tool_result" only.
+                if role == "user" {
+                    if let Some(content) = last.get("content").and_then(Value::as_array) {
+                        let all_tool_results = !content.is_empty()
+                            && content.iter().all(|item| {
+                                item.get("type")
+                                    .and_then(Value::as_str)
+                                    .is_some_and(|t| t == "tool_result")
+                            });
+                        if all_tool_results {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Check 3: OpenAI /responses format — last input item is a function_call_output
+    if let Some(input) = body.get("input").and_then(Value::as_array) {
+        if let Some(last) = input.last() {
+            if let Some(t) = last.get("type").and_then(Value::as_str) {
+                if t == "function_call_output" {
+                    return true;
+                }
+            }
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]
@@ -171,5 +224,86 @@ mod tests {
             "messages": [{ "role": "user", "content": "hi" }]
         });
         assert!(!CopilotRequestClassifier::classify(&body).is_agent);
+    }
+
+    // PROV-059: Tool result follow-ups are agent-initiated
+    #[test]
+    fn last_message_tool_result_is_agent() {
+        let body = json!({
+            "model": "gpt-4o",
+            "messages": [
+                { "role": "user", "content": "fix the bug" },
+                { "role": "assistant", "content": "I'll read the file." },
+                { "role": "tool", "content": "file content here", "tool_call_id": "call_1" }
+            ]
+        });
+        assert!(
+            CopilotRequestClassifier::classify(&body).is_agent,
+            "tool result as last message must be classified as agent-initiated"
+        );
+    }
+
+    #[test]
+    fn last_message_user_text_is_not_agent() {
+        let body = json!({
+            "model": "gpt-4o",
+            "messages": [
+                { "role": "assistant", "content": "How can I help?" },
+                { "role": "user", "content": "fix the bug" }
+            ]
+        });
+        assert!(
+            !CopilotRequestClassifier::classify(&body).is_agent,
+            "user text as last message must NOT be agent-initiated"
+        );
+    }
+
+    #[test]
+    fn anthropic_tool_result_only_user_message_is_agent() {
+        let body = json!({
+            "model": "claude-sonnet-4.5",
+            "messages": [
+                { "role": "user", "content": [
+                    { "type": "tool_result", "tool_use_id": "tu_1", "content": "result" }
+                ]}
+            ]
+        });
+        assert!(
+            CopilotRequestClassifier::classify(&body).is_agent,
+            "Anthropic tool_result-only user message must be agent-initiated"
+        );
+    }
+
+    #[test]
+    fn anthropic_mixed_user_message_is_not_agent() {
+        let body = json!({
+            "model": "claude-sonnet-4.5",
+            "messages": [
+                { "role": "user", "content": [
+                    { "type": "tool_result", "tool_use_id": "tu_1", "content": "result" },
+                    { "type": "text", "text": "Now fix it" }
+                ]}
+            ]
+        });
+        assert!(
+            !CopilotRequestClassifier::classify(&body).is_agent,
+            "user message with mixed content (text + tool_result) should be user-initiated"
+        );
+    }
+
+    #[test]
+    fn responses_api_function_call_output_is_agent() {
+        let body = json!({
+            "model": "gpt-5",
+            "input": [
+                { "type": "message", "role": "user", "content": "run task" },
+                { "type": "function_call", "name": "read", "call_id": "c1", "arguments": "{}" },
+                { "type": "function_call_output", "call_id": "c1", "output": "file content" }
+            ]
+        });
+        assert!(
+            CopilotRequestClassifier::classify(&body).is_agent,
+            "Responses API function_call_output as last input must be agent-initiated"
+        );
     }
 }
