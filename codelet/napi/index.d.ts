@@ -2708,6 +2708,13 @@ export type StreamChunk =
       type: 'IsolationStateChange' /** Whether the session is isolated (has a git worktree) */;
       isIsolated: boolean /** Path to the worktree (if isolated) */;
       worktreePath?: string;
+    }
+  | {
+      type: 'FooterStateUpdate' /** Effective working directory for this session */;
+      cwd: string /** Display path (with ~ substitution) */;
+      displayPath: string /** Whether the directory is a git repository */;
+      isGitRepo: boolean /** Current branch name, or null for detached HEAD */;
+      branch?: string;
     };
 
 /**

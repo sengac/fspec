@@ -368,6 +368,21 @@ pub enum StreamChunk {
         #[napi(js_name = "worktreePath")]
         worktree_path: Option<String>,
     },
+
+    /// TUI-091: Footer state update - emitted by background poller with CWD + git branch name
+    /// TypeScript should update footerStore when this is received
+    FooterStateUpdate {
+        /// Effective working directory for this session
+        cwd: String,
+        /// Display path (with ~ substitution)
+        #[napi(js_name = "displayPath")]
+        display_path: String,
+        /// Whether the directory is a git repository
+        #[napi(js_name = "isGitRepo")]
+        is_git_repo: bool,
+        /// Current branch name, or null for detached HEAD
+        branch: Option<String>,
+    },
 }
 
 impl StreamChunk {
@@ -532,6 +547,21 @@ impl StreamChunk {
         }
     }
 
+    /// TUI-091: Footer state update - emitted by per-session background poller
+    pub fn footer_state_update(
+        cwd: String,
+        display_path: String,
+        is_git_repo: bool,
+        branch: Option<String>,
+    ) -> Self {
+        Self::FooterStateUpdate {
+            cwd,
+            display_path,
+            is_git_repo,
+            branch,
+        }
+    }
+
     /// Convert StreamChunk to serde_json::Value for bridge relay (BRIDGE-001)
     ///
     /// This manual serialization is needed because StreamChunk uses NAPI's
@@ -689,6 +719,13 @@ impl StreamChunk {
                 "type": "isolationStateChange",
                 "isIsolated": is_isolated,
                 "worktreePath": worktree_path,
+            }),
+            Self::FooterStateUpdate { cwd, display_path, is_git_repo, branch } => json!({
+                "type": "footerStateUpdate",
+                "cwd": cwd,
+                "displayPath": display_path,
+                "isGitRepo": is_git_repo,
+                "branch": branch,
             }),
         }
     }

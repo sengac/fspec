@@ -103,6 +103,7 @@ describe('Background Session Management', () => {
           name: 'Running Task',
           project: '/project',
           messageCount: 5,
+          isIsolated: false,
         },
         {
           id: 'session-2',
@@ -110,6 +111,7 @@ describe('Background Session Management', () => {
           name: 'Finished Task',
           project: '/project',
           messageCount: 10,
+          isIsolated: false,
         },
       ]);
 
@@ -126,9 +128,9 @@ describe('Background Session Management', () => {
       // @step Given I have a session that ran while I was viewing another session
       const sessionId = 'session-with-output';
       vi.mocked(sessionGetBufferedOutput).mockReturnValue([
-        { chunkType: 'Text', text: 'Output line 1' },
-        { chunkType: 'Text', text: 'Output line 2' },
-        { chunkType: 'Done' },
+        { type: 'Text', text: 'Output line 1' },
+        { type: 'Text', text: 'Output line 2' },
+        { type: 'Done' },
       ]);
 
       // @step When I select the session from /resume
@@ -136,8 +138,12 @@ describe('Background Session Management', () => {
 
       // @step Then I see all the buffered output
       expect(bufferedOutput).toHaveLength(3);
-      expect(bufferedOutput[0].text).toBe('Output line 1');
-      expect(bufferedOutput[1].text).toBe('Output line 2');
+      expect(bufferedOutput[0]).toEqual(
+        expect.objectContaining({ type: 'Text', text: 'Output line 1' })
+      );
+      expect(bufferedOutput[1]).toEqual(
+        expect.objectContaining({ type: 'Text', text: 'Output line 2' })
+      );
 
       // GlobalSessionStreamManager will route future chunks to the TUI handler
     });
@@ -283,6 +289,7 @@ describe('Background Session Management', () => {
           name: 'My Task',
           project: '/project',
           messageCount: 1,
+          isIsolated: false,
         },
       ]);
       const sessions = sessionManagerList();
@@ -293,8 +300,8 @@ describe('Background Session Management', () => {
       // @step When I switch back to this session via /resume
       vi.mocked(sessionGetStatus).mockReturnValue('idle'); // Task finished
       vi.mocked(sessionGetBufferedOutput).mockReturnValue([
-        { chunkType: 'Text', text: 'Task completed!' },
-        { chunkType: 'Done' },
+        { type: 'Text', text: 'Task completed!' },
+        { type: 'Done' },
       ]);
 
       const buffered = sessionGetBufferedOutput(sessionId, 1000);

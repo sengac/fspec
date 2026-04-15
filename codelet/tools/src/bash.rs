@@ -84,6 +84,22 @@ impl BashTool {
             .or(args_cwd)
     }
 
+    /// Resolve CWD and update the footer registry so the poller shows the actual directory.
+    fn resolve_and_track_cwd(&self, args_cwd: Option<String>) -> Option<String> {
+        let resolved = self.resolve_cwd(args_cwd);
+        // Write the actual CWD to the per-session footer registry.
+        // If resolved is None, the command inherits process CWD — record that.
+        let cwd_for_footer = resolved.clone().or_else(|| {
+            std::env::current_dir()
+                .ok()
+                .map(|p| p.to_string_lossy().to_string())
+        });
+        if let Some(cwd) = cwd_for_footer {
+            crate::footer_cwd::update_footer_cwd(self.session_id, cwd);
+        }
+        resolved
+    }
+
     /// Execute command with streaming output to UI.
     ///
     /// Streams output line-by-line via callback while buffering complete output for LLM.
@@ -121,7 +137,8 @@ impl BashTool {
         }
 
         // TOOL-013: Determine effective working directory
-        let cwd = self.resolve_cwd(args.cwd);
+        // TUI-091: Also update footer CWD registry for dynamic display
+        let cwd = self.resolve_and_track_cwd(args.cwd);
 
         // Spawn process
         let mut child = spawn_command(&args.command, cwd.as_deref())?;
@@ -211,7 +228,8 @@ impl rig::tool::Tool for BashTool {
         }
 
         // TOOL-013: Determine effective working directory
-        let cwd = self.resolve_cwd(args.cwd);
+        // TUI-091: Also update footer CWD registry for dynamic display
+        let cwd = self.resolve_and_track_cwd(args.cwd);
 
         // Spawn process
         let mut child = spawn_command(&args.command, cwd.as_deref())?;

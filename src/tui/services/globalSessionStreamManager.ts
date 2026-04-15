@@ -18,6 +18,7 @@ import type {
   GlobalChunkCallbackArgs,
 } from '@sengac/codelet-napi';
 import { useSessionStore } from '../store/sessionStore';
+import { useFooterStore } from '../store/footerStore';
 
 export type SessionChunkHandler = (chunk: StreamChunk) => void;
 export type GlobalChunkHandler = (
@@ -306,6 +307,21 @@ export class GlobalSessionStreamManager {
         );
       }
       // Don't return - allow the chunk to be forwarded to session handlers as well
+    }
+
+    // TUI-091: Handle FooterStateUpdate globally to sync footer store
+    if (chunk.type === 'FooterStateUpdate') {
+      useFooterStore
+        .getState()
+        .updateFooterState(
+          sessionId,
+          chunk.cwd,
+          chunk.displayPath,
+          chunk.isGitRepo,
+          chunk.branch ?? null
+        );
+      // Don't forward to session handlers — footer state is store-only
+      return;
     }
 
     if (chunk.type === 'FspecCommandRequest' && chunk.fspecRequest) {

@@ -16,6 +16,14 @@ pub enum GitError {
         source: Box<gix::open::Error>,
     },
 
+    /// Failed to discover repository (walking up parent directories)
+    #[error("Failed to discover repository from '{path}': {source}")]
+    DiscoverRepository {
+        path: String,
+        #[source]
+        source: Box<gix::discover::Error>,
+    },
+
     /// Failed to get repository status
     #[error("Failed to get repository status: {0}")]
     Status(String),

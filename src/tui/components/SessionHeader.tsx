@@ -172,7 +172,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
 
   return (
     <Box flexDirection="column" width="100%">
-      <Box height={1} width="100%" flexDirection="row" backgroundColor="#333333">
+      <Box height={1} width="100%" flexDirection="row" backgroundColor="#333333" paddingLeft={1} paddingRight={1}>
         {/* Left side: single Text element with truncation to avoid flex positioning issues */}
         <Box flexGrow={1} flexShrink={1} minWidth={0}>
           <Text wrap="truncate-end">{leftContent}</Text>

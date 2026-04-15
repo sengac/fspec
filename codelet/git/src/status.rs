@@ -1,7 +1,7 @@
 //! Git status operations using gitoxide
 
 use crate::error::{GitError, Result};
-use crate::open_repo;
+use crate::{discover_repo, open_repo};
 use gix::bstr::BStr;
 use std::path::Path;
 
@@ -157,12 +157,13 @@ pub fn get_untracked_files(dir: impl AsRef<Path>) -> Result<Vec<String>> {
 /// Get current branch name
 ///
 /// # Arguments
-/// * `dir` - Path to the repository root
+/// * `dir` - Path to the repository root, or any subdirectory within a git repo.
+///   Uses `gix::discover` to walk up parent directories to find the enclosing repo.
 ///
 /// # Returns
 /// Branch name, or None if in detached HEAD state
 pub fn get_current_branch(dir: impl AsRef<Path>) -> Result<Option<String>> {
-    let repo = open_repo(dir.as_ref())?;
+    let repo = discover_repo(dir.as_ref())?;
 
     let head = repo.head().map_err(|e| GitError::Head(e.to_string()))?;
 

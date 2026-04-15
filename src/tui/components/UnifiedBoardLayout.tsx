@@ -96,8 +96,8 @@ const calculateViewportHeight = (terminalHeight: number): number => {
   // 1 (top border) + 4 (header) + 1 (header separator) +
   // 5 (details) + 1 (details separator with ┬) + 1 (column headers) +
   // 1 (column separator with ┼) + 1 (footer separator with ┴) +
-  // 1 (footer) + 1 (bottom border) + 1 (bottom padding) = 18
-  const fixedRows = 18;
+  // 1 (footer) + 1 (bottom border) = 17
+  const fixedRows = 17;
   return Math.max(5, terminalHeight - fixedRows);
 };
 
@@ -523,9 +523,6 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
       {/* Bottom border */}
       <Text>{'└' + '─'.repeat(totalWidth) + '┘'}</Text>
-
-      {/* Bottom padding to prevent cutoff */}
-      <Text>{''}</Text>
     </Box>
   );
 };

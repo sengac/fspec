@@ -123,6 +123,7 @@ import {
 } from '../utils/model-selection';
 import { BlocklistListView, type BlocklistRule } from './BlocklistListView';
 import { SessionHeader } from './SessionHeader';
+import { SessionFooter } from './SessionFooter';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
 import { computeLineDiff, changesToDiffLines } from '../../git/diff-parser';
 import { useCompaction } from '../hooks/useCompaction';
@@ -925,6 +926,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // Ref to track current session ID for use in callbacks without stale closures
   const currentSessionIdRef = useRef<string | null>(null);
   const currentProjectRef = useRef<string>(process.cwd());
+
+  // TUI-091: Footer state (CWD + git info) is now handled by useFooterState hook
+  // inside SessionFooter component — no polling or NAPI calls needed here.
 
   // TUI-059: Work unit context hook - sets context in Rust when entering AgentView
   // This enables environment info to display "Current work unit: ID" and
@@ -5442,13 +5446,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
         />
       </Box>
 
+      {/* TUI-091: Session footer with CWD and git branch info */}
+      <SessionFooter sessionId={currentSessionId} />
+
       {/* Input area */}
       <Box
-        borderStyle="single"
-        borderTop={true}
-        borderBottom={false}
-        borderLeft={false}
-        borderRight={false}
         paddingX={1}
       >
         <Text color="green">&gt; </Text>

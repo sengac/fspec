@@ -49,9 +49,23 @@ pub use worktree::{
 /// Open a git repository at the given path
 ///
 /// This is a shared helper used by status and diff operations.
+/// Expects `dir` to be the repository root (containing `.git/`).
 pub(crate) fn open_repo(dir: impl AsRef<Path>) -> Result<gix::Repository> {
     let path = dir.as_ref();
     gix::open(path).map_err(|e| GitError::OpenRepository {
+        path: path.to_string_lossy().to_string(),
+        source: Box::new(e),
+    })
+}
+
+/// Discover a git repository by walking up from the given path.
+///
+/// Unlike `open_repo`, this traverses parent directories to find
+/// the enclosing repository — just like `git` itself does when
+/// you run a command from a subdirectory.
+pub(crate) fn discover_repo(dir: impl AsRef<Path>) -> Result<gix::Repository> {
+    let path = dir.as_ref();
+    gix::discover(path).map_err(|e| GitError::DiscoverRepository {
         path: path.to_string_lossy().to_string(),
         source: Box::new(e),
     })

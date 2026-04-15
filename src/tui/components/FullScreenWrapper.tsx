@@ -6,10 +6,11 @@
  * Ensures the BoardView fills the entire terminal screen with no wasted space.
  * Uses useTerminalSize hook to reactively track terminal dimensions on resize.
  *
- * Key optimization: Sets height to (rows - 1) to enable Ink's incremental rendering.
- * When output height >= terminal rows, Ink falls back to clearTerminal on every render.
- * By keeping height at rows-1, we stay below that threshold and Ink uses line-by-line
- * diffing instead, dramatically reducing flicker.
+ * Uses the full terminal height (stdout.rows). When output height >= terminal rows,
+ * Ink falls back to clearTerminal on every render instead of incremental line diffing.
+ * This is acceptable for a full-screen TUI — the entire screen is rewritten each frame
+ * anyway, so clearTerminal + full write behaves identically to alternate-screen-buffer
+ * TUI frameworks (vim, htop, etc.).
  *
  * Note: Ink's core resize handler (Ink.resized) recalculates Yoga layout and repaints,
  * but does NOT trigger React re-renders. useTerminalSize provides the explicit resize
@@ -27,7 +28,7 @@ interface FullScreenWrapperProps {
 /**
  * A full-screen wrapper that ensures the content fills the entire terminal.
  * - Full terminal width
- * - Height set to rows-1 to enable Ink's incremental rendering
+ * - Full terminal height (stdout.rows)
  * - Responsive to terminal resize events via useTerminalSize
  *
  * Note: We intentionally do NOT manage alternate screen buffer or cursor visibility
@@ -41,10 +42,7 @@ export const FullScreenWrapper: React.FC<FullScreenWrapperProps> = ({
 }) => {
   const { width, height: rawHeight } = useTerminalSize();
 
-  // Use height-1 to keep output below terminal rows threshold
-  // This enables Ink's incremental rendering instead of full clearTerminal
-  // See ink.tsx line 270: if (lastOutputHeight >= stdout.rows) { clearTerminal... }
-  const height = Math.max(1, rawHeight - 1);
+  const height = Math.max(1, rawHeight);
 
   return (
     <Box

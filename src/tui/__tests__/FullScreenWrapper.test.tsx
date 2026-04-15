@@ -207,7 +207,7 @@ describe('Feature: Full-Screen TUI Layout', () => {
       // @step And it should read stdout.rows for terminal height
       // Verify that the board uses the provided dimensions
       const lines = frame.split('\n');
-      expect(lines.length).toBeLessThanOrEqual(29); // rows - 1
+      expect(lines.length).toBeLessThanOrEqual(30); // full terminal rows
 
       // @step And it should set Box width to stdout.columns
       // Verify content width matches terminal width
@@ -217,7 +217,7 @@ describe('Feature: Full-Screen TUI Layout', () => {
       });
       expect(hasCorrectWidth).toBe(true);
 
-      // @step And it should set Box height to stdout.rows minus 1
+      // @step And it should set Box height to stdout.rows
       // This is tested by checking line count above
     });
   });

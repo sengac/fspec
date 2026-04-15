@@ -233,7 +233,8 @@
         "BUG-046",
         "BOARD-012",
         "ITF-007",
-        "TUI-038"
+        "TUI-038",
+        "TUI-091"
       ]
     },
     "domain-knowledge-graph": {
@@ -655,6 +656,18 @@
         "TUI-089",
         "TEST-039",
         "TEST-040"
+      ]
+    },
+    "context-window-unification": {
+      "id": "context-window-unification",
+      "title": "Unified Context Window and Configurable Compaction Thresholds",
+      "createdAt": "2026-04-15T05:27:01.131Z",
+      "description": "Establish Rust as the single source of truth for context window size across all models, and make compaction thresholds independently configurable per-model (absolute tokens or percentage of context window). Currently, the TUI sources context_window from models.dev in TypeScript while Rust has its own resolution chain — they can disagree (e.g., models.dev says 1M for Opus 4.6 but the API actually limits to 200k without the beta header). Additionally, compaction thresholds are mathematically coupled to context_window with no per-model override capability. This epic decouples display context window from compaction trigger threshold and ensures both flow from a single authority in Rust.",
+      "workUnits": [
+        "CTX-005",
+        "CTX-006",
+        "CTX-007",
+        "CTX-008"
       ]
     }
   }
