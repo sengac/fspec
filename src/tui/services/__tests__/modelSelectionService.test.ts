@@ -273,7 +273,9 @@ describe('Feature: Model Selection Service', () => {
         'anthropic',
         'claude-sonnet-4',
         200000,
-        16000
+        16000,
+        null,
+        null
       );
 
       // @step And the model store should be updated
@@ -335,6 +337,8 @@ describe('Feature: Model Selection Service', () => {
         'Qwen3-80B',
         128000,
         16384,
+        null,
+        null,
         null
       );
       expect(napiMocks.sessionSetModel).not.toHaveBeenCalled();
@@ -492,7 +496,9 @@ describe('Feature: Model Selection Service', () => {
         'openai',
         'o3',
         200000,
-        100000
+        100000,
+        null,
+        null
       );
     });
   });
@@ -544,6 +550,8 @@ describe('Feature: Model Selection Service', () => {
         'local-model',
         32000,
         4096,
+        null,
+        null,
         null
       );
     });

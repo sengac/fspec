@@ -2292,6 +2292,12 @@ export interface SessionModel {
   providerId?: string;
   /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
   modelId?: string;
+  /** CTX-006: Rust-resolved context window from ProviderManager (single source of truth) */
+  contextWindow?: number;
+  /** CTX-006: Rust-resolved max output tokens from ProviderManager */
+  maxOutputTokens?: number;
+  /** CTX-007: Resolved compaction threshold (per-model, considering user override and family defaults) */
+  compactionThreshold?: number;
 }
 
 /**
@@ -2470,7 +2476,9 @@ export declare function sessionSetModel(
   providerId: string,
   modelId: string,
   contextWindow?: number | undefined | null,
-  maxOutputTokens?: number | undefined | null
+  maxOutputTokens?: number | undefined | null,
+  compactionThresholdType?: string | undefined | null,
+  compactionThresholdValue?: number | undefined | null
 ): Promise<void>;
 
 /**
@@ -2492,7 +2500,9 @@ export declare function sessionSetModelProfile(
   modelId: string,
   contextWindow?: number | undefined | null,
   maxOutputTokens?: number | undefined | null,
-  facadeOverride?: string | undefined | null
+  facadeOverride?: string | undefined | null,
+  compactionThresholdType?: string | undefined | null,
+  compactionThresholdValue?: number | undefined | null
 ): Promise<void>;
 
 /**

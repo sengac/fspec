@@ -1,6 +1,5 @@
 @TUI-091
 Feature: Footer CWD Registry — per-session dynamic working directory tracking
-
   """
   SessionRegistry<String> in codelet_tools stores the last known CWD for each
   session (keyed by UUID). BashTool writes after resolve_cwd(). The footer poller

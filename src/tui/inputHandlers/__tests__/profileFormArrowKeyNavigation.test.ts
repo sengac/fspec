@@ -172,10 +172,10 @@ describe('Feature: Profile form arrow key navigation', () => {
 
   describe('Edge cases', () => {
     it('should not navigate past the last field with Down arrow', () => {
-      // Given we're on the last field (maxOutputTokens, index 3)
+      // Given we're on the last field (compactionThreshold, index 4)
       const setFormFieldIndex = vi.fn();
       const providerSettings = createMockProviderSettings({
-        formFieldIndex: 3, // Last field
+        formFieldIndex: 4, // Last field (CTX-008: added compactionThreshold)
         isEditingName: false,
         setFormFieldIndex,
       });

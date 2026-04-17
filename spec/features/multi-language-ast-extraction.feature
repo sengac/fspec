@@ -1,4 +1,16 @@
-@KGRAPH-025 @KGRAPH-030 @KGRAPH-031 @KGRAPH-032 @KGRAPH-033 @KGRAPH-034 @KGRAPH-035 @KGRAPH-036 @KGRAPH-037 @KGRAPH-038 @KGRAPH-039 @KGRAPH-040 @knowledge-graph
+@KGRAPH-025
+@KGRAPH-030
+@KGRAPH-031
+@KGRAPH-032
+@KGRAPH-033
+@KGRAPH-034
+@KGRAPH-035
+@KGRAPH-036
+@KGRAPH-037
+@KGRAPH-038
+@KGRAPH-039
+@KGRAPH-040
+@knowledge-graph
 Feature: Multi-Language AST Extraction
   As a developer using fspec on a polyglot codebase
   I want the AST extraction pipeline to support Python, Go, Java, C, C++, C#, Ruby, Kotlin, Swift, Scala, and PHP

@@ -421,7 +421,7 @@ fn read_linux_rss() -> Option<u64> {
     let status = read_to_string("/proc/self/status").ok()?;
     for line in status.lines() {
         if let Some(kb_str) = line.strip_prefix("VmRSS:") {
-            let kb: u64 = kb_str.trim().split_whitespace().next()?.parse().ok()?;
+            let kb: u64 = kb_str.split_whitespace().next()?.parse().ok()?;
             return Some(kb * 1024);
         }
     }

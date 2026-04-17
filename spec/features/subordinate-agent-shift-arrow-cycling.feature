@@ -7,7 +7,6 @@
 @navigation
 @BUG-124
 Feature: Shift+Arrow navigation skips sessions when supervisor has multiple subordinates
-
   """
   Fix lives in codelet/napi/src/navigation.rs build_navigation_list() — replace hierarchy-aware traversal with sessions.keys().copied().collect()
   chain_of_command parameter remains in the signature but is unused (prefix with underscore) — preserves ABI/test compatibility
@@ -36,7 +35,6 @@ Feature: Shift+Arrow navigation skips sessions when supervisor has multiple subo
   #   7. Supervisor on the first session in spawn order presses Shift+Left and lands back on the board
   #
   # ========================================
-
   Background: User Story
     As a supervisor agent with multiple spawned subordinates
     I want to press Shift+Left or Shift+Right to cycle through sessions

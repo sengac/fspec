@@ -223,10 +223,10 @@ where
         }
 
         // For OAuth mode, don't send temperature (Claude Code doesn't send it)
-        if !self.client.ext().oauth_mode {
-            if let Some(temperature) = completion_request.temperature {
-                merge_inplace(&mut body, json!({ "temperature": temperature }));
-            }
+        if !self.client.ext().oauth_mode
+            && let Some(temperature) = completion_request.temperature
+        {
+            merge_inplace(&mut body, json!({ "temperature": temperature }));
         }
 
         // Always include tools array (even if empty for OAuth mode)
@@ -436,19 +436,19 @@ where
             // PROV-039: After loop exit, if stop_reason is max_tokens and there's a pending
             // tool call that was never closed (ContentBlockStop never sent), emit an enriched
             // truncation error. This handles the case where Anthropic ends the stream mid-tool-call.
-            if captured_stop_reason.as_deref() == Some("max_tokens") {
-                if let Some(tool_call) = Option::take(&mut current_tool_call) {
-                    yield Err(CompletionError::ResponseError(
-                        format!(
-                            "Tool call truncated due to output token limit. \
-                             Tool '{}' received incomplete JSON arguments. \
-                             The model hit max_tokens while generating the tool call. \
-                             Partial arguments: {}",
-                            tool_call.name,
-                            if tool_call.input_json.is_empty() { "(empty)" } else { &tool_call.input_json }
-                        )
-                    ));
-                }
+            if captured_stop_reason.as_deref() == Some("max_tokens")
+                && let Some(tool_call) = Option::take(&mut current_tool_call)
+            {
+                yield Err(CompletionError::ResponseError(
+                    format!(
+                        "Tool call truncated due to output token limit. \
+                         Tool '{}' received incomplete JSON arguments. \
+                         The model hit max_tokens while generating the tool call. \
+                         Partial arguments: {}",
+                        tool_call.name,
+                        if tool_call.input_json.is_empty() { "(empty)" } else { &tool_call.input_json }
+                    )
+                ));
             }
 
             yield Ok(RawStreamingChoice::FinalResponse(StreamingCompletionResponse {

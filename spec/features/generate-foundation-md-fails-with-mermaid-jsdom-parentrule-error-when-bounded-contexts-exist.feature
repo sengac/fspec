@@ -1,6 +1,5 @@
 @BUG-123
 Feature: generate-foundation-md fails with mermaid JSDOM parentRule error when bounded contexts exist
-
   """
   Redefines CSSStyleDeclaration.prototype.parentRule with getter+setter before mermaid import
   """
@@ -20,7 +19,6 @@ Feature: generate-foundation-md fails with mermaid JSDOM parentRule error when b
   #   3. Invalid mermaid diagrams are still correctly rejected after the fix
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to generate foundation markdown when bounded contexts exist
@@ -31,16 +29,13 @@ Feature: generate-foundation-md fails with mermaid JSDOM parentRule error when b
     When I validate the diagram using validateMermaidSyntax
     Then the validation result should be valid
 
-
   Scenario: Mermaid validation still rejects invalid diagrams after parentRule fix
     Given an invalid mermaid diagram with syntax errors
     When I validate the diagram using validateMermaidSyntax
     Then the validation result should not be valid
     Then the error message should describe the syntax problem
 
-
   Scenario: Bounded context mermaid diagram renders successfully
     Given a mermaid diagram with bounded context subgraphs
     When I validate the diagram using validateMermaidSyntax
     Then the validation result should be valid
-

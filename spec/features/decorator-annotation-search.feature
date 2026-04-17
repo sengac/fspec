@@ -1,7 +1,6 @@
 @done
 @KGRAPH-068
 Feature: Decorator and Annotation Search
-
   """
   This feature was largely implemented across KGRAPH-063 (metadata storage/extraction)
   and KGRAPH-067 (decorator/parameter query filters). Remaining gap: Scala and PHP
@@ -22,7 +21,6 @@ Feature: Decorator and Annotation Search
   #   5. Parameter filter does contains matching against parameters property
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to find functions by decorator/annotation and by parameter name across all supported languages

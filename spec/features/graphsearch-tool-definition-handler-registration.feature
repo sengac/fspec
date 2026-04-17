@@ -1,6 +1,5 @@
 @KGRAPH-003
 Feature: GraphSearch Tool Definition & Handler Registration
-
   """
   Tool definition in codelet-tools, handler in codelet-napi. Follows SessionSearch pattern. Serde-tagged enum with 8 action types. Handler registered per-session, cleaned up on session end. codelet-tools has no nanograph dependency.
   """
@@ -25,7 +24,6 @@ Feature: GraphSearch Tool Definition & Handler Registration
   #   4. Calling GraphSearch without a registered handler returns descriptive error — not a panic or crash
   #
   # ========================================
-
   Background: User Story
     As an agent developer
     I want to query the knowledge graph from any agent session using a GraphSearch tool
@@ -38,13 +36,11 @@ Feature: GraphSearch Tool Definition & Handler Registration
     And the graph database is empty
     And no error is returned
 
-
   Scenario: Search action returns matching concepts
     Given the GraphSearch handler is registered for a session
     When the agent calls GraphSearch with action_type 'search' and query 'authentication'
     Then the result contains a JSON array of matching Concept nodes
     And each result includes the concept name, category, and summary
-
 
   Scenario: Tool is available when agent session starts
     Given an agent session is started
@@ -52,10 +48,8 @@ Feature: GraphSearch Tool Definition & Handler Registration
     Then GraphSearch appears in the list with its JSON schema
     And the schema describes all 8 action types with their parameters
 
-
   Scenario: Unregistered handler returns descriptive error
     Given no GraphSearch handler is registered for the current session
     When the agent calls GraphSearch with any action
     Then the result is a descriptive error message indicating the handler is not available
     And no panic or crash occurs
-

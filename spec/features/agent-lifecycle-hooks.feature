@@ -433,14 +433,12 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool should return ToolError::Blocked with the deny reason
     Then the command should never have executed
 
-
   @HOOK-017
   Scenario: pre_tool_use hook fires for ReadTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the ReadTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the file should never have been read
-
 
   @HOOK-017
   Scenario: pre_tool_use hook fires for WriteTool
@@ -449,14 +447,12 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool should return ToolError::Blocked with the deny reason
     Then the file should never have been written
 
-
   @HOOK-017
   Scenario: pre_tool_use hook fires for EditTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the EditTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the file should never have been modified
-
 
   @HOOK-017
   Scenario: pre_tool_use hook fires for LsTool
@@ -465,14 +461,12 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool should return ToolError::Blocked with the deny reason
     Then the directory should never have been listed
 
-
   @HOOK-017
   Scenario: pre_tool_use hook fires for GlobTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the GlobTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the glob should never have been executed
-
 
   @HOOK-017
   Scenario: pre_tool_use hook fires for GrepTool
@@ -481,14 +475,12 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool should return ToolError::Blocked with the deny reason
     Then the search should never have been executed
 
-
   @HOOK-017
   Scenario: pre_tool_use hook fires for AstGrepTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the AstGrepTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the AST search should never have been executed
-
 
   @HOOK-017
   Scenario: pre_tool_use hook fires for AstGrepRefactorTool
@@ -497,14 +489,12 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool should return ToolError::Blocked with the deny reason
     Then the refactor should never have been executed
 
-
   @HOOK-017
   Scenario: pre_tool_use hook fires for FspecTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the FspecTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the fspec command should never have been executed
-
 
   @HOOK-017
   Scenario: pre_tool_use hook fires for BridgeTool
@@ -513,14 +503,12 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the tool should return ToolError::Blocked with the deny reason
     Then the bridge action should never have been executed
 
-
   @HOOK-017
   Scenario: pre_tool_use hook fires for ApplyPatchTool
     Given a registered pre_tool_use Deny hook handler for the session
     When the ApplyPatchTool.call() method is invoked
     Then the tool should return ToolError::Blocked with the deny reason
     Then the patch should never have been applied
-
 
   @HOOK-017
   Scenario: pre_tool_use Allow handler lets native tool proceed
@@ -529,10 +517,8 @@ Feature: Agent Lifecycle Hooks — Extend fspec-hooks.json with Rust Agent Core 
     Then the command should execute successfully
     Then the output should contain the command result
 
-
   @HOOK-017
   Scenario: No registered handler lets native tool proceed without overhead
     Given no pre_tool_use hook handler is registered for the session
     When the BashTool.call() method is invoked
     Then the command should execute successfully with no hook overhead
-

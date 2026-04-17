@@ -11,37 +11,36 @@
 @foundation
 @FOUND-044
 Feature: Fail-Fast Foundation Workflow for Weaker LLMs
-
   """
   CRITICAL CONSTRAINT: 100% deterministic behavior — NO fuzzy/semantic matching anywhere. No Levenshtein distance, no 'did you mean' suggestions, no similarity scoring on user input. All error messages must list valid values verbatim using the established pattern: `Invalid <field>: <value>. Valid values: <comma-separated-list>. Fix: fspec <command> <args>`. Reference implementations: update-work-unit-status.ts:119, update-work-unit-estimate.ts:35, work-unit.ts:737.
   Convention: list-foundation-sections is a standalone command (like list-features, list-epics, list-tags, list-prefixes). 12 existing standalone list-* commands in src/commands/ vs 1 --list-sections flag. Match the established pattern.
   Draft-exists error is a hard error (valid: false) with a wrapped system-reminder — matches existing pattern at discover-foundation.ts:501-527. Do NOT return draft content inline; the dedicated `show-foundation --draft` command owns that responsibility. One command = one purpose.
   IMPACT ANALYSIS for removing the projectType enum (performed via direct code search, not DeepSearch):
 
-1. ZERO business logic depends on specific projectType values. Searched for projectType === '...', switch statements, case branches, if-checks across all of src/. Only src/commands/update-foundation.ts:163 has `case 'projectType':` which matches the SECTION NAME, not a value.
+  1. ZERO business logic depends on specific projectType values. Searched for projectType === '...', switch statements, case branches, if-checks across all of src/. Only src/commands/update-foundation.ts:163 has `case 'projectType':` which matches the SECTION NAME, not a value.
 
-2. Consumers that read project.projectType:
-   - src/commands/show-foundation.ts:130 → `Type: ${foundation.project.projectType || 'N/A'}` — displays verbatim
-   - src/commands/discover-foundation.ts:265 → extracts `[DETECTED: X]` placeholder via regex (unaffected by enum removal)
-   - src/generators/foundation-md.ts → does NOT reference projectType at all
+  2. Consumers that read project.projectType:
+  - src/commands/show-foundation.ts:130 → `Type: ${foundation.project.projectType || 'N/A'}` — displays verbatim
+  - src/commands/discover-foundation.ts:265 → extracts `[DETECTED: X]` placeholder via regex (unaffected by enum removal)
+  - src/generators/foundation-md.ts → does NOT reference projectType at all
 
-3. Files that write projectType:
-   - src/schemas/generic-foundation.schema.json lines 36-50 (the enum itself — REMOVE)
-   - src/types/generic-foundation.ts lines 89-98 (the ProjectType union — CHANGE to `type ProjectType = string`)
-   - src/utils/ensure-files.ts:208 (default 'cli-tool' — keep, still valid)
-   - src/commands/discover-foundation.ts:127 (system-reminder prompt 'Options:' — change to 'Examples:')
-   - src/commands/discover-foundation.ts:588 (placeholder '[DETECTED: cli-tool]' — keep, still valid)
-   - src/commands/update-foundation.ts:163-166 (writes the value — ADD length validation)
-   - 9 event-storm command files use `projectType: 'other' as const` for default foundation initialization — these keep working; the `as const` assertions become superfluous but remain valid TypeScript
+  3. Files that write projectType:
+  - src/schemas/generic-foundation.schema.json lines 36-50 (the enum itself — REMOVE)
+  - src/types/generic-foundation.ts lines 89-98 (the ProjectType union — CHANGE to `type ProjectType = string`)
+  - src/utils/ensure-files.ts:208 (default 'cli-tool' — keep, still valid)
+  - src/commands/discover-foundation.ts:127 (system-reminder prompt 'Options:' — change to 'Examples:')
+  - src/commands/discover-foundation.ts:588 (placeholder '[DETECTED: cli-tool]' — keep, still valid)
+  - src/commands/update-foundation.ts:163-166 (writes the value — ADD length validation)
+  - 9 event-storm command files use `projectType: 'other' as const` for default foundation initialization — these keep working; the `as const` assertions become superfluous but remain valid TypeScript
 
-4. Test fixtures: ~60 occurrences of `projectType: 'cli-tool'` (or 'web-app', 'library', etc.) across test files. All continue to work unchanged because these values are still valid strings.
+  4. Test fixtures: ~60 occurrences of `projectType: 'cli-tool'` (or 'web-app', 'library', etc.) across test files. All continue to work unchanged because these values are still valid strings.
 
-5. Tests that specifically assert enum membership:
-   - src/types/__tests__/foundation-schema.test.ts lines 129-140: tests `validProjectTypes: ProjectType[] = [...]`. NEEDS UPDATE — replace with test that any short string validates, plus minLength/maxLength boundary tests.
+  5. Tests that specifically assert enum membership:
+  - src/types/__tests__/foundation-schema.test.ts lines 129-140: tests `validProjectTypes: ProjectType[] = [...]`. NEEDS UPDATE — replace with test that any short string validates, plus minLength/maxLength boundary tests.
 
-6. No test currently asserts that an invalid projectType enum value is rejected at schema level — verified via grep for 'projectType.*invalid|reject.*projectType'. Zero matches. So no negative tests to remove.
+  6. No test currently asserts that an invalid projectType enum value is rejected at schema level — verified via grep for 'projectType.*invalid|reject.*projectType'. Zero matches. So no negative tests to remove.
 
-CONCLUSION: Removing the enum is a low-blast-radius change. Only 3 source files and 1 test file need modification (plus new tests for length-limit behavior). The remaining ~60 test fixtures work without modification.
+  CONCLUSION: Removing the enum is a low-blast-radius change. Only 3 source files and 1 test file need modification (plus new tests for length-limit behavior). The remaining ~60 test fixtures work without modification.
   """
 
   # ========================================
@@ -89,7 +88,6 @@ CONCLUSION: Removing the enum is a low-blast-radius change. Only 3 source files 
   #   A: Hard error with actionable system-reminder. See rule [10] for full evidence and reasoning — this matches the existing convention at discover-foundation.ts:501-527 and keeps observability responsibility on the dedicated show-foundation --draft command.
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec to create a project foundation
     I want to receive immediate, actionable feedback when I enter invalid values or need to observe draft state

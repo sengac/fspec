@@ -1,0 +1,291 @@
+{
+  "scenarios": [
+    {
+      "name": "Direct PromptError::PromptCancelled is detected",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "lines": "288-315",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": ".context()-wrapped PromptCancelled is detected via chain traversal",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "lines": "317-334",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StreamingError::Prompt-wrapped PromptCancelled is detected",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "lines": "336-352",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bare string errors that merely say PromptCancelled are rejected",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "lines": "354-365",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Other PromptError variants are not mistaken for cancellation",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/interactive/error_classifiers.rs",
+          "lines": "367-387",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/src/interactive/error_classifiers.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/error_classifiers.rs"
+    ],
+    "totalLinesCovered": 291
+  }
+}

@@ -1,7 +1,6 @@
 @done
 @KGRAPH-063
 Feature: Source Code and Metadata Storage in Graph Nodes
-
   """
   DRY approach: Create a single metadata.rs module under ast_pipeline/ with data-driven
   per-language configs for docstring patterns, decorator patterns, and parameter extraction.

@@ -1,6 +1,5 @@
 @KGRAPH-050
 Feature: Calls/Imports/TypeRef edges — Kotlin
-
   """
   Uses KindMatcher and edge_helpers shared functions.
   Kotlin colon-based type annotations for TypeRef.

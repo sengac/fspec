@@ -1,6 +1,5 @@
 @BUG-126
 Feature: TOOL_PROGRESS_CALLBACK global singleton causes tool output to leak between concurrent sessions
-
   """
   Uses the same Lazy<RwLock<HashMap<Uuid, T>>> pattern as FSPEC_HANDLERS, SESSION_SEARCH_HANDLERS, etc.
   Primary file: codelet/tools/src/tool_progress.rs. Callers: bash.rs (emit), stream_loop.rs (set/clear), gemini_continuation.rs (clear x5), compaction_retry.rs (clear x1). Re-exports: lib.rs:169.
@@ -27,7 +26,6 @@ Feature: TOOL_PROGRESS_CALLBACK global singleton causes tool output to leak betw
   #   5. Multiple callbacks can be registered and active concurrently without interfering with each other
   #
   # ========================================
-
   Background: User Story
     As a developer running multiple concurrent agent sessions
     I want to have tool progress streaming isolated per-session

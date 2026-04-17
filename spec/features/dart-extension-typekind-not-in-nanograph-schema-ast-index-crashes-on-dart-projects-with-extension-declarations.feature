@@ -1,6 +1,5 @@
 @KGRAPH-070
 Feature: Dart extension typeKind not in nanograph schema — ast_index crashes on Dart projects with extension declarations
-
   """
   Single-line fix: add 'extension' to typeKind enum in codelet/napi/schemas/ast-code.pg. No extractor or dispatch changes needed.
   """
@@ -18,7 +17,6 @@ Feature: Dart extension typeKind not in nanograph schema — ast_index crashes o
   #   2. ast_index on the fspec codebase (which contains Rust files including the Dart extractor) still succeeds — no regression
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to index a Dart project with extension declarations via ast_index
@@ -30,9 +28,7 @@ Feature: Dart extension typeKind not in nanograph schema — ast_index crashes o
     Then the index completes without schema violation errors
     Then the extension types are stored with typeKind extension in the graph
 
-
   Scenario: Non-Dart indexing is not affected
     Given a project with no Dart files
     When I run ast_index on the project directory
     Then the index completes successfully with no errors
-

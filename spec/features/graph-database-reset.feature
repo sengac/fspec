@@ -1,6 +1,5 @@
 @KGRAPH-071
 Feature: GraphSearch ast_index has no way to force-rebuild database after schema changes — stale on-disk and in-memory graph causes repeated failures
-
   """
   The schema is embedded via include_str!() at compile time — the binary always has the correct schema, but the on-disk DB preserves the schema from when it was first created
   KGRAPH-010 added schema hash comparison on open but blocks breaking changes with an error — this card needs to provide the rebuild path that KGRAPH-010 is missing
@@ -29,7 +28,6 @@ Feature: GraphSearch ast_index has no way to force-rebuild database after schema
   #   4. After reset + re-index of fspec codebase, ast_search for 'function' immediately returns results (no process restart needed)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to force-rebuild the graph database after schema changes
@@ -61,7 +59,8 @@ Feature: GraphSearch ast_index has no way to force-rebuild database after schema
     Then the error message includes "Schema has changed"
     And the error message tells the user to re-index with reset set to true
 
-  @reset @queries
+  @reset
+  @queries
   Scenario: Queries work immediately after reset and re-index
     Given an AST graph database has been reset and re-indexed
     When I run ast_search with query "function"

@@ -1,14 +1,13 @@
 @BUG-122
 Feature: Lazy persistence initialization
-
   """
   THREE STORES, THREE ACCESS PATTERNS:
   (1) HistoryStore (history.jsonl, 2.6MB) — used by Shift+↑/↓ and /search,
-      loads ALL entries cross-session, small enough to keep in memory.
+  loads ALL entries cross-session, small enough to keep in memory.
   (2) MessageStore (messages.jsonl, 1GB) — used by SessionSearch and session
-      resume, content-addressed by UUID, needs index+seek+LRU.
+  resume, content-addressed by UUID, needs index+seek+LRU.
   (3) SessionStore (4,586 files) — used by session list/resume, individual
-      file reads are fine.
+  file reads are fine.
 
   Per-session message sharding was REJECTED because StoredMessage has no
   session_id field — it's content-addressed by UUID. Messages can be shared
@@ -16,9 +15,9 @@ Feature: Lazy persistence initialization
 
   The correct approach is:
   1. Per-store lazy initialization (don't init MessageStore when only
-     HistoryStore is needed)
+  HistoryStore is needed)
   2. Binary index file (messages.idx) mapping UUID → byte offset for
-     on-demand seek() loading with LRU cache
+  on-demand seek() loading with LRU cache
   3. TypeScript deferral of persistenceGetHistory() out of initSession()
 
   Key files: persistence/mod.rs, persistence/storage.rs, AgentView.tsx

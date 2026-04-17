@@ -1,6 +1,5 @@
 @KGRAPH-043
 Feature: Calls/Imports/TypeRef edges — Python
-
   """
   Uses edge_helpers for shared call/typeref extraction.
   Python import resolution: dot-separated modules to slash-separated paths + .py.
@@ -20,7 +19,6 @@ Feature: Calls/Imports/TypeRef edges — Python
   #   2. `def main():` calling `validate_config()` in same file → Calls edge from main to validate_config
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to get Imports, Calls, and TypeRef edges extracted from Python source files

@@ -1,7 +1,6 @@
 @done
 @SCHED-012
 Feature: Schedule Job Log
-
   """
   New module codelet/napi/src/scheduler/job_log.rs — provides append_log_entry() and check_rotation() functions, called from trigger_and_update() and state overlap/defer paths in engine.rs
   Log entry struct is serialized via serde_json — no custom StreamChunk variant needed, this is file I/O only
@@ -31,7 +30,6 @@ Feature: Schedule Job Log
   #   8. Overlap policy=queue causes a job to be queued → appends entry with event='queued'
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec's scheduler
     I want to see a log of what scheduled jobs have run, when they triggered, and whether they succeeded or failed

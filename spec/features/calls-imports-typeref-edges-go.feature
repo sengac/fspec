@@ -1,6 +1,5 @@
 @KGRAPH-044
 Feature: Calls/Imports/TypeRef edges — Go
-
   """
   Uses edge_helpers for call extraction. Go imports are string paths; local imports
   start with . or match known project files. External packages (github.com/*, stdlib)

@@ -1,0 +1,376 @@
+{
+  "scenarios": [
+    {
+      "name": "Claude model retains legacy threshold behavior",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "89-115",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini model uses 80% built-in default",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "121-147",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI model uses 80% built-in default",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "153-178",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User-configured absolute token threshold",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "184-215",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User-configured percentage threshold",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "221-247",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown model falls through to legacy formula",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "253-283",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User threshold exceeding context window is clamped",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "289-320",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Context fill percentage uses compaction threshold",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "326-360",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream loop uses ProviderManager compaction threshold",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "405-431",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Threshold resolution priority chain",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/per-model-compaction-threshold.test.ts",
+          "lines": "366-399",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/per-model-compaction-threshold.test.ts"
+    ],
+    "implFiles": [
+      "codelet/cli/src/compaction_threshold.rs",
+      "codelet/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 497
+  }
+}

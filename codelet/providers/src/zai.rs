@@ -57,6 +57,32 @@ impl ProviderAdapter for ZAIProvider {
     }
 }
 
+// ---------------------------------------------------------------------------
+// LIMITS-003: ModelLimitsResolver for Z.AI
+// ---------------------------------------------------------------------------
+
+impl crate::model_limits::ModelLimitsResolver for ZAIProvider {
+    /// Z.AI trusts registry values — no hard ceiling.
+    fn max_context_window(&self) -> Option<usize> {
+        None
+    }
+
+    /// Z.AI trusts registry values — no hard ceiling.
+    fn max_output_tokens_limit(&self) -> Option<usize> {
+        None
+    }
+
+    /// Default context window when no registry data is available.
+    fn default_context_window(&self) -> usize {
+        CONTEXT_WINDOW
+    }
+
+    /// Default max output tokens when no registry data is available.
+    fn default_max_output_tokens(&self) -> usize {
+        MAX_OUTPUT_TOKENS
+    }
+}
+
 impl ZAIProvider {
     /// Create a new ZAIProvider with required model
     ///

@@ -29,7 +29,10 @@ import {
   initializeModels,
   extractModelIdForRegistry,
 } from '../services/modelInitializationService';
-import { lookupFacadeOverride } from '../utils/custom-model-utils';
+import {
+  lookupFacadeOverride,
+  lookupCompactionThreshold,
+} from '../utils/custom-model-utils';
 import {
   buildFlatModelList,
   flatIndexToSectionModel,
@@ -245,10 +248,12 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
   /**
    * Build ModelSelection from section and model.
    * MODEL-004: Also looks up facade from custom model config.
+   * CTX-008: Also looks up compaction threshold from custom model / profile config.
    */
   const selectModel = useCallback(
     (section: ProviderSection, model: NapiModelInfo): ModelSelection => {
       const facade = lookupFacadeOverride(section, model.id);
+      const compactionThreshold = lookupCompactionThreshold(section, model.id);
 
       return {
         providerId: section.providerId,
@@ -262,6 +267,7 @@ export function useModelSelectorState(): UseModelSelectorStateReturn {
         profileName: section.profileName,
         profileConfig: section.profileConfig,
         facade,
+        compactionThreshold,
       };
     },
     []

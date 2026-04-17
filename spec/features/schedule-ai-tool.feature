@@ -1,7 +1,6 @@
 @done
 @SCHED-009
 Feature: Schedule AI Tool
-
   """
   Create codelet/tools/src/schedule/mod.rs — ScheduleTool struct with session_id, impl Tool for ScheduleTool with ScheduleArgs (action, name, cron, timezone, job_type, role, prompt, command, overlap_policy)
   Create codelet/tools/src/schedule/handler.rs — ScheduleHandler type alias, static SCHEDULE_HANDLERS registry, set_schedule_handler, execute_schedule_command, has_schedule_handler, clear_all_schedule_handlers
@@ -10,7 +9,7 @@ Feature: Schedule AI Tool
   Create facade files for multi-provider support — schedule_facade.rs with ClaudeScheduleFacade, GeminiScheduleFacade, OpenAIScheduleFacade, ZAIScheduleFacade. Register in ProviderToolRegistry
   """
 
-  Background:
+  Background: 
     Given a session with a registered schedule handler
     And an empty schedules.json file
 
@@ -87,4 +86,3 @@ Feature: Schedule AI Tool
     Given each provider's create_rig_agent method is called with a session_id
     When the agent is built with the tool chain
     Then the tool definitions should include a Schedule tool for Claude, Gemini, OpenAI, Z.AI, and Codex providers
-

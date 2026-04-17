@@ -4,7 +4,6 @@
 @providers
 @PROV-055
 Feature: GitHub Copilot HTTP middleware, facades & endpoint routing
-
   """
   Module layout: codelet/providers/src/copilot/{refreshing_client.rs (CopilotHttpClient middleware), header_facade.rs (CopilotHeaderFacade), classifier.rs (CopilotRequestClassifier), endpoint.rs (CopilotEndpointFacade), behavior_facade.rs (CopilotBehaviorFacade trait + 3 impls + selector)}
   Facade pattern references: CacheOptimizationFacade::build_headers (cache_optimization.rs:96) as template for CopilotHeaderFacade; ThinkingConfigFacade + select_claude_facade(is_oauth) (thinking_config.rs, system_prompt.rs:427) as template for CopilotBehaviorFacade + select_copilot_behavior_facade(model_id); RefreshingClaudeClient / RefreshingCodexClient as template for CopilotHttpClient middleware
@@ -37,7 +36,6 @@ Feature: GitHub Copilot HTTP middleware, facades & endpoint routing
   #   6. User runs codelet as an autonomous agent workflow against gpt-5-codex → each outgoing request carries x-initiator: agent (not user) so GitHub can correctly bill/rate-limit as agent traffic
   #
   # ========================================
-
   Background: User Story
     As a codelet user authenticated with GitHub Copilot
     I want to send chat requests to Copilot models from the codelet TUI

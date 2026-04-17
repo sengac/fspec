@@ -1,7 +1,6 @@
 @done
 @NET-001
 Feature: SSE Disconnection Retry — transient network error recovery in stream loop
-
   """
   Retry at stream_loop level (not SSE level), matching existing PROV-040 truncation and PROV-041 thinking exhaustion recovery patterns
   New module recovery_network.rs with MAX_NETWORK_RETRIES (3) and network_retry_delay() (exponential: 1s→2s→4s). Error classifier is_transient_network_error() in error_classifiers.rs detects 17+ patterns.
@@ -33,7 +32,6 @@ Feature: SSE Disconnection Retry — transient network error recovery in stream 
   #   9. Successful streaming after earlier retry — retry counter resets so future errors get full 3 attempts again
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to have my session automatically recover from transient network disconnections during SSE streaming
@@ -48,7 +46,8 @@ Feature: SSE Disconnection Retry — transient network error recovery in stream 
     And a Continue re-prompt is sent to the LLM
     And the model resumes generating from where it left off
 
-  @network-recovery @exhaustion
+  @network-recovery
+  @exhaustion
   Scenario: All retry attempts exhausted after consecutive failures
     Given an active SSE streaming session with the LLM
     When three consecutive DNS timeout errors occur
@@ -56,7 +55,8 @@ Feature: SSE Disconnection Retry — transient network error recovery in stream 
     And after all 3 retries are exhausted the original error propagates as fatal
     And the session terminates with an error message
 
-  @network-recovery @partial-text
+  @network-recovery
+  @partial-text
   Scenario: Partial text preserved on network error during streaming
     Given an active SSE streaming session that has already received partial text
     When a transient network error occurs
@@ -64,7 +64,8 @@ Feature: SSE Disconnection Retry — transient network error recovery in stream 
     And the retry succeeds with a Continue re-prompt
     And the model continues from where it left off
 
-  @network-recovery @backoff
+  @network-recovery
+  @backoff
   Scenario: Retry succeeds on second attempt with increasing backoff
     Given an active SSE streaming session with the LLM
     When a transient network error occurs and the first retry also fails
@@ -73,13 +74,15 @@ Feature: SSE Disconnection Retry — transient network error recovery in stream 
     And the second retry succeeds
     And the session recovers
 
-  @network-recovery @interruption
+  @network-recovery
+  @interruption
   Scenario: User interruption during retry backoff aborts immediately
     Given the system is waiting during retry backoff after a network error
     When the user presses Esc
     Then the retry loop aborts immediately without waiting for the full delay
 
-  @network-recovery @classifier
+  @network-recovery
+  @classifier
   Scenario: Non-network API errors are not retried
     Given an active SSE streaming session with the LLM
     When a non-transient error occurs such as 400 bad request or 401 unauthorized
@@ -87,28 +90,32 @@ Feature: SSE Disconnection Retry — transient network error recovery in stream 
     And no retry is attempted
     And the error propagates immediately
 
-  @network-recovery @compaction
+  @network-recovery
+  @compaction
   Scenario: Network retry works in post-compaction retry streams
     Given a post-compaction retry stream is active
     When a transient network error occurs during the compaction retry stream
     Then the same retry logic applies with exponential backoff
     And the compaction retry stream recovers
 
-  @network-recovery @deepsearch
+  @network-recovery
+  @deepsearch
   Scenario: Network retry works in DeepSearch sub-agent streams
     Given a DeepSearch sub-agent is streaming a response
     When a transient network error occurs in the sub-agent stream
     Then the sub-agent retries independently
     And the parent session is not crashed
 
-  @network-recovery @counter-reset
+  @network-recovery
+  @counter-reset
   Scenario: Retry counter resets after successful data receipt
     Given a session that previously recovered from a network error
     When the stream successfully receives data events
     Then the retry counter resets to zero
     And future network errors get the full 3 retry attempts again
 
-  @network-recovery @classifier
+  @network-recovery
+  @classifier
   Scenario: Transient network error patterns are correctly detected
     Given the error classifier for transient network errors
     When various error messages are evaluated for transient classification

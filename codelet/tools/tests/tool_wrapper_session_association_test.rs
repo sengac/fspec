@@ -391,8 +391,10 @@ fn test_registration_functions_accept_session_id() {
 #[test]
 #[serial]
 fn test_session_id_at_construction() {
+    // @step Given the new session-at-construction architecture is implemented
     let session_id = Uuid::new_v4();
 
+    // @step But set_fspec_handler_for_session() should still exist
     // Handler registration still uses session_id
     let handler: FspecHandler = Arc::new(|_| FspecResult {
         success: true,
@@ -402,16 +404,20 @@ fn test_session_id_at_construction() {
     });
     set_fspec_handler_for_session(session_id, Some(handler));
 
+    // @step And set_bridge_session_context() should still exist
     // Bridge context still uses session_id
     let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
     let broadcast_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
     let input_injector: codelet_tools::InputInjector = Arc::new(|_| {});
     set_bridge_session_context(session_id, broadcast_factory, input_injector, None, None);
 
-    // Tools store session_id at construction
+    // @step Then tools work without calling set_current_fspec_session()
+    // Tools store session_id at construction (no set_current_fspec_session needed)
     let fspec_tool = claude_fspec_tool(session_id);
     assert_eq!(fspec_tool.session_id(), session_id);
 
+    // @step And tools work without calling set_current_bridge_session()
+    // Bridge tool also stores session_id at construction (no set_current_bridge_session needed)
     let bridge_tool = claude_bridge_tool(session_id);
     assert_eq!(bridge_tool.session_id(), session_id);
 

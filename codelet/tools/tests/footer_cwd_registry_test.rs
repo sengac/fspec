@@ -166,7 +166,7 @@ fn test_initial_cwd_seeding() {
         FOOTER_CWD.get(&session_id).unwrap(),
         "/Users/rquast/projects/fspec"
     );
-    let cwd_via_with = FOOTER_CWD.with(&session_id, |v| v.clone());
+    let cwd_via_with = FOOTER_CWD.with(&session_id, Clone::clone);
     assert_eq!(cwd_via_with, Some("/Users/rquast/projects/fspec".to_string()));
 
     // Cleanup

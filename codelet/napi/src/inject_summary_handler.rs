@@ -283,7 +283,7 @@ pub fn apply_pending_dag(
             .collect();
 
         // Also check for existing dag-files in the previous DAG (for merge on incremental)
-        let existing_dag_files_str = codelet_cli::interactive_helpers::detect_existing_dag(
+        let existing_dag_files_str = codelet_cli::compaction_dag::detect_existing_dag(
             &session.messages,
         )
         .and_then(|(content, _)| {
@@ -434,7 +434,7 @@ mod tests {
     // (Updated for CMPCT-019: uses COMPACTION_INSTRUCTION_FRESH constant)
     #[test]
     fn test_compaction_instruction_content() {
-        use codelet_cli::interactive_helpers::COMPACTION_INSTRUCTION_FRESH;
+        use codelet_cli::compaction_dag::COMPACTION_INSTRUCTION_FRESH;
 
         let instruction = COMPACTION_INSTRUCTION_FRESH;
         assert!(!instruction.is_empty(), "Instruction should not be empty");
@@ -451,7 +451,7 @@ mod tests {
     // (Updated for CMPCT-019: uses COMPACTION_INSTRUCTION_FRESH constant)
     #[test]
     fn test_compaction_instruction_specifies_dag_node_format() {
-        use codelet_cli::interactive_helpers::COMPACTION_INSTRUCTION_FRESH;
+        use codelet_cli::compaction_dag::COMPACTION_INSTRUCTION_FRESH;
 
         // @step When the compaction system instruction is loaded
         let instruction = COMPACTION_INSTRUCTION_FRESH;

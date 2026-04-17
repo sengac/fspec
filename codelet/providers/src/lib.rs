@@ -18,6 +18,7 @@ mod credentials;
 pub mod error;
 pub mod gemini;
 mod manager;
+pub mod model_limits;
 pub mod models;
 pub mod oauth_crypto;
 pub mod oauth_http_utils;
@@ -50,6 +51,9 @@ pub use codex::CODEX_BASE_INSTRUCTIONS; // PROV-019: Codex backend requires inst
 pub use credentials::ProviderCredentials;
 pub use gemini::GeminiProvider;
 pub use manager::{ProviderManager, ProviderType};
+pub use model_limits::{
+    resolve_context_window, resolve_max_output_tokens, resolve_model_limits, ModelLimitsResolver,
+};
 pub use openai::OpenAIProvider;
 pub use zai::ZAIProvider;
 

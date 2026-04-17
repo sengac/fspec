@@ -1,6 +1,5 @@
 @TUI-084
 Feature: Profile form uses Tab for field navigation instead of Arrow keys Up/Down
-
   """
   Changes profileFormModeHandler.ts to use key.downArrow/key.upArrow instead of key.tab. Updates ProviderSettingsPanel.tsx footer hint text. Updates parent feature spec provider-settings-screen.feature scenario accordingly.
   """
@@ -22,7 +21,6 @@ Feature: Profile form uses Tab for field navigation instead of Arrow keys Up/Dow
   #   4. Footer text shows '↑/↓: switch field | Enter: save | Esc: cancel'
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to navigate profile form fields with Arrow keys Up/Down
@@ -33,20 +31,16 @@ Feature: Profile form uses Tab for field navigation instead of Arrow keys Up/Dow
     When the user presses the Down arrow key
     Then the focus moves to the API Key field
 
-
   Scenario: Navigate to previous field with Up arrow
     Given the user is in profile form mode on the API Key field
     When the user presses the Up arrow key
     Then the focus moves back to the Base URL field
-
 
   Scenario: Tab key does not navigate form fields
     Given the user is in profile form mode on the Base URL field
     When the user presses the Tab key
     Then the focus remains on the Base URL field
 
-
   Scenario: Footer shows arrow key navigation hints
     Given the user is in profile form mode
     Then the footer shows arrow-key switch field and Enter save and Esc cancel hints
-

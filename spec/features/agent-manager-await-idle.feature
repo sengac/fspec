@@ -1,7 +1,6 @@
 @done
 @AMGR-015
 Feature: AgentManager await_idle action — efficient blocking wait for subordinate agents to finish
-
   """
   The handler in agent_manager_handler.rs must subscribe to each target session's supervisor_broadcast channel (tokio::broadcast::Receiver<StreamChunk>) and use tokio::select! to wait for SessionStateChange(Idle) events rather than polling get_status()
   The handler must be async — unlike other AgentManager actions which are sync closures, await_idle needs to .await on broadcast receivers and tokio::time::timeout. The AgentManagerHandler type signature may need to return a Future or the handler dispatch must special-case await_idle as async
@@ -39,7 +38,6 @@ Feature: AgentManager await_idle action — efficient blocking wait for subordin
   #   9. Supervisor calls await_idle with a single string session_id (not array) → works the same as passing a single-element array
   #
   # ========================================
-
   Background: User Story
     As a supervisor agent
     I want to await one or more subordinate agents becoming idle

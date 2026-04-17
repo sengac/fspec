@@ -197,6 +197,3 @@ Feature: Scheduled Workflow Automation
     Then the job fails immediately
     And the failure is recorded in the session history
     And the failure is discoverable via SessionSearch
-
-  # NOTE: Bridge notification scenarios removed — SCHED-010 was deleted.
-  # If bridge notifications are needed in the future, create a new child work unit.

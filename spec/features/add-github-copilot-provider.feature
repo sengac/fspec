@@ -119,4 +119,3 @@ Feature: Add GitHub Copilot provider
     Then codelet should fetch the model catalog from "api.githubcopilot.com/models"
     And the catalog should contain only models with "model_picker_enabled: true"
     And the catalog should be exactly what the endpoint returned, with no merging or static fallback
-

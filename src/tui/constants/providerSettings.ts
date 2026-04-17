@@ -14,6 +14,7 @@ export const PROFILE_FORM_FIELDS: Array<keyof ProfileConfig> = [
   'apiKey',
   'contextWindow',
   'maxOutputTokens',
+  'compactionThreshold',
 ];
 
 /**

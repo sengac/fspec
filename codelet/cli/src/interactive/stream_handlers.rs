@@ -55,9 +55,9 @@ pub(super) fn detect_tool_error(raw_result: &str) -> bool {
         "Invalid pattern:",                // Pattern errors (grep, glob)
         "Unsupported language:",           // AstGrep language errors
         "Tool not found:",                 // ToolSet errors
-        "Toolset error:",                  // ToolServerError wrapper (legacy)
-        "ToolCallError:",                  // ToolSetError wrapper (legacy)
-        "ToolServerError:",                // RequestError wrapper (legacy)
+        "Toolset error:",                  // ToolServerError wrapper
+        "ToolCallError:",                  // ToolSetError wrapper
+        "ToolServerError:",                // RequestError wrapper
     ];
 
     for pattern in error_patterns {

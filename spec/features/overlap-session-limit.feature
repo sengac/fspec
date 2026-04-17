@@ -1,7 +1,6 @@
 @done
 @SCHED-006
 Feature: Overlap & Session Limit Management
-
   """
   Create SchedulerState struct with active_runs, queued_jobs, deferred_jobs.
   Insert overlap check in evaluate_and_run BEFORE trigger_and_update.
@@ -35,7 +34,6 @@ Feature: Overlap & Session Limit Management
   #   8. A schedule with overlap_policy='queue' already has a queued job. Another trigger fires while still queued. The queue holds the most recent enqueue (replaces, doesn't duplicate).
   #
   # ========================================
-
   Background: User Story
     As a system operator
     I want to have overlap policies and session limit handling for scheduled jobs

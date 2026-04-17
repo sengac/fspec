@@ -149,7 +149,7 @@ fn test_authenticate_using_oauth_with_custom_headers() {
     // Verify OAuth-specific headers would be added
     // (In actual implementation, rig handles this via custom headers)
     // Note: The beta header may include different features depending on OAuth mode
-    let beta_header = provider.get_anthropic_beta_header();
+    let beta_header = provider.get_anthropic_beta_header_for_model();
     assert!(
         beta_header.contains("oauth-2025-04-20"),
         "Beta header should include oauth feature"
@@ -187,7 +187,7 @@ fn test_support_extended_thinking_with_reasoning_chunks() {
     );
 
     // Verify beta header includes extended thinking
-    let beta_header = provider.get_anthropic_beta_header();
+    let beta_header = provider.get_anthropic_beta_header_for_model();
     assert!(
         beta_header.contains("interleaved-thinking-2025-05-14"),
         "Beta header should include extended thinking feature flag"

@@ -108,7 +108,15 @@ function modelEqual(a: SessionModel | null, b: SessionModel | null): boolean {
   if (a === null || b === null) {
     return false;
   }
-  return a.providerId === b.providerId && a.modelId === b.modelId;
+  // CTX-006: Compare context_window and max_output_tokens to detect model limit changes
+  // CTX-007: Also compare compaction_threshold for per-model threshold changes
+  return (
+    a.providerId === b.providerId &&
+    a.modelId === b.modelId &&
+    a.contextWindow === b.contextWindow &&
+    a.maxOutputTokens === b.maxOutputTokens &&
+    a.compactionThreshold === b.compactionThreshold
+  );
 }
 
 function compactionProgressEqual(

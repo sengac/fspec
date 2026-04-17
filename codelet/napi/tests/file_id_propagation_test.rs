@@ -214,7 +214,7 @@ fn test_no_dag_files_when_no_modifications() {
 #[test]
 fn test_incremental_instruction_mentions_dag_files() {
     // @step Given the COMPACTION_INSTRUCTION_INCREMENTAL constant
-    use codelet_cli::interactive_helpers::COMPACTION_INSTRUCTION_INCREMENTAL;
+    use codelet_cli::compaction_dag::COMPACTION_INSTRUCTION_INCREMENTAL;
 
     // @step When the instruction text is examined
     let instruction = COMPACTION_INSTRUCTION_INCREMENTAL;
@@ -271,7 +271,7 @@ fn test_parse_dag_files_block() {
 #[test]
 fn test_fresh_instruction_mentions_dag_files() {
     // @step Given the COMPACTION_INSTRUCTION_FRESH constant
-    use codelet_cli::interactive_helpers::COMPACTION_INSTRUCTION_FRESH;
+    use codelet_cli::compaction_dag::COMPACTION_INSTRUCTION_FRESH;
 
     // @step When the instruction text is examined
     let instruction = COMPACTION_INSTRUCTION_FRESH;

@@ -24,6 +24,7 @@ use codelet_core::lifecycle_hooks::{
 };
 use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
 use codelet_cli::session::context_gathering::gather_environment_info;
+use codelet_cli::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
 };
@@ -398,6 +399,12 @@ pub struct SessionModel {
     pub provider_id: Option<String>,
     /// Model ID (e.g., "claude-sonnet-4", "gpt-4o")
     pub model_id: Option<String>,
+    /// CTX-006: Rust-resolved context window from ProviderManager (single source of truth)
+    pub context_window: Option<u32>,
+    /// CTX-006: Rust-resolved max output tokens from ProviderManager
+    pub max_output_tokens: Option<u32>,
+    /// CTX-007: Resolved compaction threshold (per-model, considering user override and family defaults)
+    pub compaction_threshold: Option<u32>,
 }
 
 /// Token info returned by session_get_tokens
@@ -489,6 +496,14 @@ pub struct BackgroundSession {
     cached_input_tokens: AtomicU32,
     cached_output_tokens: AtomicU32,
     cached_reasoning_tokens: AtomicU32,
+
+    /// CTX-006: Cached model limits for quick sync access
+    /// Updated when model is set via session_set_model/session_set_model_profile
+    /// 0 means not yet resolved (Option<u32> is not available in AtomicU32)
+    cached_context_window: AtomicU32,
+    cached_max_output_tokens: AtomicU32,
+    /// CTX-007: Cached resolved compaction threshold
+    cached_compaction_threshold: AtomicU32,
 
     /// Inner codelet session (protected by async mutex for agent operations)
     pub inner: Arc<Mutex<codelet_cli::session::Session>>,
@@ -642,6 +657,9 @@ impl BackgroundSession {
             cached_input_tokens: AtomicU32::new(0),
             cached_output_tokens: AtomicU32::new(0),
             cached_reasoning_tokens: AtomicU32::new(0),
+            cached_context_window: AtomicU32::new(0),
+            cached_max_output_tokens: AtomicU32::new(0),
+            cached_compaction_threshold: AtomicU32::new(0),
             inner: Arc::new(Mutex::new(inner)),
             status: AtomicU8::new(SessionStatus::Idle as u8),
             input_tx,
@@ -878,6 +896,14 @@ impl BackgroundSession {
     pub fn set_model(&self, provider_id: Option<String>, model_id: Option<String>) {
         *self.provider_id.write().expect("provider_id lock poisoned") = provider_id;
         *self.model_id.write().expect("model_id lock poisoned") = model_id;
+    }
+
+    /// CTX-006: Update the cached model limits from Rust-resolved ProviderManager values
+    /// CTX-007: Also caches the resolved compaction threshold
+    pub fn set_model_limits(&self, context_window: u32, max_output_tokens: u32, compaction_threshold: u32) {
+        self.cached_context_window.store(context_window, Ordering::Release);
+        self.cached_max_output_tokens.store(max_output_tokens, Ordering::Release);
+        self.cached_compaction_threshold.store(compaction_threshold, Ordering::Release);
     }
     
     /// Get current status
@@ -3347,6 +3373,10 @@ impl SessionManager {
                 .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
         }
 
+        // CTX-006: Capture resolved model limits before provider_manager is consumed
+        let initial_context_window = provider_manager.context_window() as u32;
+        let initial_max_output_tokens = provider_manager.max_output_tokens() as u32;
+
         // Create session from the configured provider manager
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
@@ -3396,6 +3426,18 @@ impl SessionManager {
             None, // GIT-019: base_commit (non-isolated by default)
             lifecycle_hooks.clone(),
         ));
+
+        // CTX-006: Cache initial model limits for sync access via session_get_model
+        // CTX-007: Also resolve and cache compaction threshold
+        // Note: model_id was moved into BackgroundSession::new above, use selected_model from ProviderManager
+        let initial_model_id = session.model_id.read().expect("model_id lock poisoned").clone();
+        let initial_compaction_threshold = resolve_compaction_threshold(
+            initial_context_window as u64,
+            initial_max_output_tokens as u64,
+            initial_model_id.as_deref(),
+            None, // No user config at creation time
+        ) as u32;
+        session.set_model_limits(initial_context_window, initial_max_output_tokens, initial_compaction_threshold);
 
         // HOOK-013: Register pre_tool_use hook handler for this session.
         // The handler runs the lifecycle hook engine via block_in_place + block_on
@@ -3603,6 +3645,10 @@ impl SessionManager {
             pm
         };
 
+        // CTX-006: Capture resolved model limits before provider_manager is consumed
+        let initial_context_window = provider_manager.context_window() as u32;
+        let initial_max_output_tokens = provider_manager.max_output_tokens() as u32;
+
         // Create session from the configured provider manager
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
@@ -3647,6 +3693,17 @@ impl SessionManager {
             Some(base_commit.clone()),    // GIT-028: Base commit for isolation
             lifecycle_hooks.clone(),
         ));
+
+        // CTX-006: Cache initial model limits for sync access via session_get_model
+        // CTX-007: Also resolve and cache compaction threshold for isolated sessions
+        let isolated_model_id = session.model_id.read().expect("model_id lock poisoned").clone();
+        let isolated_compaction_threshold = resolve_compaction_threshold(
+            initial_context_window as u64,
+            initial_max_output_tokens as u64,
+            isolated_model_id.as_deref(),
+            None,
+        ) as u32;
+        session.set_model_limits(initial_context_window, initial_max_output_tokens, isolated_compaction_threshold);
 
         // HOOK-013: Register pre_tool_use hook handler for isolated session too
         if let Some(ref hooks) = lifecycle_hooks {
@@ -5375,7 +5432,7 @@ async fn agent_loop(
                     tracing::warn!("[AGENT-LOOP] Compaction watchdog: Level 2 — injecting escalation message");
                     inner_session.messages.push(rig::message::Message::User {
                         content: rig::OneOrMany::one(rig::message::UserContent::text(
-                            codelet_cli::interactive_helpers::COMPACTION_ESCALATION_MESSAGE,
+                            codelet_cli::compaction_dag::COMPACTION_ESCALATION_MESSAGE,
                         )),
                     });
 
@@ -5389,7 +5446,7 @@ async fn agent_loop(
                     tracing::warn!("[AGENT-LOOP] Compaction watchdog: Level 3 — force-injecting fallback DAG");
 
                     // Extract any partial dag-nodes from recent messages
-                    let partial_nodes = codelet_cli::interactive_helpers::extract_partial_dag_nodes(
+                    let partial_nodes = codelet_cli::compaction_dag::extract_partial_dag_nodes(
                         &inner_session.messages,
                     );
 
@@ -5414,7 +5471,7 @@ Use SessionSearch to recover context.
                         )
                     };
 
-                    codelet_cli::interactive_helpers::force_inject_fallback_dag(
+                    codelet_cli::compaction_dag::force_inject_fallback_dag(
                         &mut inner_session,
                         &session.compaction_in_progress,
                         &fallback_dag,
@@ -5878,7 +5935,7 @@ fn spawn_footer_poller(session_id: String, cwd: String, worktree_path: Option<St
             // TUI-091: Read the current CWD from the per-session registry.
             // BashTool writes here after every invocation.
             let current_cwd = session_uuid
-                .and_then(|uuid| codelet_tools::footer_cwd::get_footer_cwd(uuid))
+                .and_then(codelet_tools::footer_cwd::get_footer_cwd)
                 .unwrap_or_else(|| initial_cwd.clone());
 
             // Recompute display_path if CWD changed
@@ -6599,9 +6656,9 @@ pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Re
 }
 
 #[napi]
-pub async fn session_set_model(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>) -> Result<()> {
-    tracing::debug!("session_set_model called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}", 
-          session_id, provider_id, model_id, context_window, max_output_tokens);
+pub async fn session_set_model(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, compaction_threshold_type: Option<String>, compaction_threshold_value: Option<u32>) -> Result<()> {
+    tracing::debug!("session_set_model called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, compaction_threshold_type={:?}, compaction_threshold_value={:?}", 
+          session_id, provider_id, model_id, context_window, max_output_tokens, compaction_threshold_type, compaction_threshold_value);
     
     let session = SessionManager::instance().get_session(&session_id)?;
 
@@ -6613,6 +6670,16 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     tracing::debug!("session_set_model: selecting model_string={}", model_string);
     
     let mut inner = session.inner.lock().await;
+
+    // CTX-008: Set compaction threshold override from TUI configuration
+    if let (Some(ct_type), Some(ct_value)) = (&compaction_threshold_type, compaction_threshold_value) {
+        inner.provider_manager_mut().set_compaction_threshold_override(
+            Some((ct_type.clone(), ct_value as u64))
+        );
+    } else {
+        inner.provider_manager_mut().set_compaction_threshold_override(None);
+    }
+
     // PROV-018: Codex models bypass registry validation (not in models.dev under 'codex')
     let result = if provider_id == "codex" {
         inner.provider_manager_mut().set_model_direct(
@@ -6635,7 +6702,19 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     };
     match result {
         Ok(()) => {
-            tracing::debug!("session_set_model: model set successfully");
+            // CTX-006: Cache resolved model limits from ProviderManager for sync access
+            let context_window = inner.provider_manager().context_window() as u32;
+            let max_output = inner.provider_manager().max_output_tokens() as u32;
+            // CTX-007: Resolve and cache compaction threshold
+            let model_id_str = inner.current_model_id();
+            let user_config = inner.provider_manager().compaction_threshold_override()
+                .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
+            let compaction_thresh = resolve_compaction_threshold(
+                context_window as u64, max_output as u64,
+                model_id_str.as_deref(), user_config.as_ref(),
+            ) as u32;
+            session.set_model_limits(context_window, max_output, compaction_thresh);
+            tracing::debug!("session_set_model: model set successfully (context_window={}, max_output={}, compaction_threshold={})", context_window, max_output, compaction_thresh);
             Ok(())
         }
         Err(e) => {
@@ -6657,9 +6736,10 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 /// MODEL-004: Accepts optional facade_override for custom models that need
 /// agent loop dispatch through a different provider backend.
 #[napi]
-pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, facade_override: Option<String>) -> Result<()> {
-    tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, facade_override={:?}",
-          session_id, provider_id, model_id, context_window, max_output_tokens, facade_override);
+#[allow(clippy::too_many_arguments)] // NAPI boundary requires flat parameters
+pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, facade_override: Option<String>, compaction_threshold_type: Option<String>, compaction_threshold_value: Option<u32>) -> Result<()> {
+    tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, facade_override={:?}, compaction_threshold_type={:?}, compaction_threshold_value={:?}",
+          session_id, provider_id, model_id, context_window, max_output_tokens, facade_override, compaction_threshold_type, compaction_threshold_value);
     
     let session = SessionManager::instance().get_session(&session_id)?;
 
@@ -6670,6 +6750,16 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
     // MODEL-005: Pass context params through to ProviderManager
     // MODEL-004: Pass facade_override through to ProviderManager
     let mut inner = session.inner.lock().await;
+
+    // CTX-008: Set compaction threshold override from TUI configuration
+    if let (Some(ct_type), Some(ct_value)) = (&compaction_threshold_type, compaction_threshold_value) {
+        inner.provider_manager_mut().set_compaction_threshold_override(
+            Some((ct_type.clone(), ct_value as u64))
+        );
+    } else {
+        inner.provider_manager_mut().set_compaction_threshold_override(None);
+    }
+
     match inner.provider_manager_mut().set_model_direct(
         &provider_id,
         &model_id,
@@ -6678,7 +6768,19 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
         facade_override,
     ) {
         Ok(()) => {
-            tracing::debug!("session_set_model_profile: model set successfully");
+            // CTX-006: Cache resolved model limits from ProviderManager for sync access
+            let resolved_context_window = inner.provider_manager().context_window() as u32;
+            let resolved_max_output = inner.provider_manager().max_output_tokens() as u32;
+            // CTX-007: Resolve and cache compaction threshold for profile models
+            let profile_model_id = inner.current_model_id();
+            let profile_user_config = inner.provider_manager().compaction_threshold_override()
+                .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
+            let profile_compaction_thresh = resolve_compaction_threshold(
+                resolved_context_window as u64, resolved_max_output as u64,
+                profile_model_id.as_deref(), profile_user_config.as_ref(),
+            ) as u32;
+            session.set_model_limits(resolved_context_window, resolved_max_output, profile_compaction_thresh);
+            tracing::debug!("session_set_model_profile: model set successfully (context_window={}, max_output={}, compaction_threshold={})", resolved_context_window, resolved_max_output, profile_compaction_thresh);
             Ok(())
         }
         Err(e) => {
@@ -6698,9 +6800,17 @@ pub fn session_get_model(session_id: String) -> Result<SessionModel> {
     let model_id = session.model_id.read()
         .map_err(|e| Error::from_reason(format!("Failed to read model_id: {}", e)))?
         .clone();
+    // CTX-006: Read cached model limits (0 means not yet resolved)
+    let context_window = session.cached_context_window.load(Ordering::Acquire);
+    let max_output_tokens = session.cached_max_output_tokens.load(Ordering::Acquire);
+    // CTX-007: Read cached compaction threshold
+    let compaction_threshold = session.cached_compaction_threshold.load(Ordering::Acquire);
     Ok(SessionModel {
         provider_id,
         model_id,
+        context_window: if context_window > 0 { Some(context_window) } else { None },
+        max_output_tokens: if max_output_tokens > 0 { Some(max_output_tokens) } else { None },
+        compaction_threshold: if compaction_threshold > 0 { Some(compaction_threshold) } else { None },
     })
 }
 
@@ -6713,9 +6823,23 @@ pub async fn session_get_internal_provider(session_id: String) -> Result<Session
     let inner = session.inner.lock().await;
     let provider_name = inner.current_provider_name().to_string();
     let model_id = inner.current_model_id();
+    // CTX-006: Also read resolved limits from the inner ProviderManager
+    let context_window = inner.provider_manager().context_window() as u32;
+    let max_output_tokens = inner.provider_manager().max_output_tokens() as u32;
+    // CTX-007: Resolve compaction threshold from inner ProviderManager
+    let internal_model_id = inner.current_model_id();
+    let internal_user_config = inner.provider_manager().compaction_threshold_override()
+        .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
+    let compaction_threshold = resolve_compaction_threshold(
+        context_window as u64, max_output_tokens as u64,
+        internal_model_id.as_deref(), internal_user_config.as_ref(),
+    ) as u32;
     Ok(SessionModel {
         provider_id: Some(provider_name),
         model_id,
+        context_window: if context_window > 0 { Some(context_window) } else { None },
+        max_output_tokens: if max_output_tokens > 0 { Some(max_output_tokens) } else { None },
+        compaction_threshold: if compaction_threshold > 0 { Some(compaction_threshold) } else { None },
     })
 }
 

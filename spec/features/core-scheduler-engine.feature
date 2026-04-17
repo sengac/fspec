@@ -3,7 +3,6 @@
 @scheduler
 @SCHED-003
 Feature: Core Scheduler Engine
-
   """
   Scheduler lives in codelet/napi/src/scheduler/ module with engine.rs and types.rs
   SessionManager stores scheduler_handle: RwLock<Option<JoinHandle<()>>> for graceful shutdown
@@ -43,14 +42,12 @@ Feature: Core Scheduler Engine
   #   12. Shell job type delegates to SCHED-005 trigger_shell_job function
   #
   # ========================================
-
   Background: User Story
     As a system operator
     I want to have schedules automatically evaluated on a 30-second interval
     So that scheduled jobs trigger at the configured cron times without manual intervention
 
   # --- Scheduler Lifecycle ---
-
   Scenario: Scheduler spawns on first session creation
     Given a project with spec/schedules.json containing active schedules
     When I create a new session in that project
@@ -58,7 +55,6 @@ Feature: Core Scheduler Engine
     And the scheduler should run on a 30-second interval
 
   # --- Cron Trigger Evaluation ---
-
   Scenario: Schedule triggers when last run is older than previous cron time
     Given a schedule with cron expression "0 * * * *"
     And the schedule's last_run_at is 1 hour ago
@@ -78,7 +74,6 @@ Feature: Core Scheduler Engine
     Then the schedule should trigger
 
   # --- Paused Schedules ---
-
   Scenario: Paused schedule is skipped during evaluation
     Given a schedule with cron expression "0 * * * *"
     And the schedule status is "paused"
@@ -87,7 +82,6 @@ Feature: Core Scheduler Engine
     Then the schedule should not trigger
 
   # --- Timezone Handling ---
-
   Scenario: Schedule respects configured timezone
     Given a schedule with cron expression "0 2 * * *"
     And the schedule timezone is "America/New_York"
@@ -96,7 +90,6 @@ Feature: Core Scheduler Engine
     And not in UTC time
 
   # --- Error Resilience ---
-
   Scenario: Scheduler handles missing schedules file gracefully
     Given a project without spec/schedules.json
     When the scheduler tick runs
@@ -110,7 +103,6 @@ Feature: Core Scheduler Engine
     And the scheduler should continue running
 
   # --- Timestamp Updates ---
-
   Scenario: Job completion updates last run timestamp
     Given a schedule that is ready to trigger
     When the job executes successfully
@@ -118,7 +110,6 @@ Feature: Core Scheduler Engine
     And last_run_status should be set to "success"
 
   # --- Dynamic Schedule Discovery ---
-
   Scenario: New schedule is picked up without restart
     Given the scheduler is already running
     And spec/schedules.json contains no schedules
@@ -127,7 +118,6 @@ Feature: Core Scheduler Engine
     Then the new schedule should be evaluated
 
   # --- Job Type Delegation ---
-
   Scenario: Agent job type delegates to agent execution
     Given a schedule with job type "agent"
     When the schedule triggers

@@ -1,6 +1,5 @@
 @KGRAPH-041
 Feature: Cross-Language Calls/Imports/TypeRef Edge Extraction for Dead Code Detection
-
   """
   Parent story for edge extraction across 12 non-TypeScript languages.
   Each language extractor emits Imports, Calls, and TypeRef edges.

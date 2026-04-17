@@ -14,6 +14,7 @@ use super::{
     OpenAIProvider, ProviderError, ZAIProvider,
 };
 use super::copilot::{CopilotDeploymentType, CopilotProvider};
+use crate::model_limits::{resolve_context_window, resolve_max_output_tokens, ModelLimitsResolver};
 use std::str::FromStr;
 
 /// Provider type enum
@@ -78,6 +79,36 @@ impl ProviderType {
 /// Provider Manager for dynamic provider selection
 ///
 /// Includes optional ModelRegistry for dynamic model selection
+// ---------------------------------------------------------------------------
+// LIMITS-004: Lightweight resolver stub for ProviderManager
+// ---------------------------------------------------------------------------
+/// A lightweight `ModelLimitsResolver` that mirrors provider constants without
+/// requiring a full provider instance (which needs credentials / API keys).
+///
+/// Used by `ProviderManager::provider_limits_resolver()` to build a resolver
+/// for the current provider at resolution time.
+struct ConstantResolver {
+    max_ctx: Option<usize>,
+    default_ctx: usize,
+    max_out: Option<usize>,
+    default_out: usize,
+}
+
+impl ModelLimitsResolver for ConstantResolver {
+    fn max_context_window(&self) -> Option<usize> {
+        self.max_ctx
+    }
+    fn max_output_tokens_limit(&self) -> Option<usize> {
+        self.max_out
+    }
+    fn default_context_window(&self) -> usize {
+        self.default_ctx
+    }
+    fn default_max_output_tokens(&self) -> usize {
+        self.default_out
+    }
+}
+
 pub struct ProviderManager {
     credentials: ProviderCredentials,
     current_provider: ProviderType,
@@ -85,10 +116,17 @@ pub struct ProviderManager {
     model_registry: Option<ModelRegistry>,
     /// Selected model string (provider/model-id format)
     selected_model: Option<String>,
-    /// MODEL-005: Per-model context window from models.dev or NAPI override
-    pub(crate) model_context_window: Option<usize>,
-    /// MODEL-005: Per-model max output tokens from models.dev or NAPI override
-    pub(crate) model_max_output_tokens: Option<usize>,
+    /// LIMITS-004: Raw context window from models.dev registry (before clamping).
+    /// Stored by `select_model()`. Clamped at resolution time by the provider's
+    /// `ModelLimitsResolver`.
+    pub(crate) registry_context_window: Option<usize>,
+    /// LIMITS-004: Raw max output tokens from models.dev registry (before clamping).
+    pub(crate) registry_max_output_tokens: Option<usize>,
+    /// LIMITS-004: User-configured context window override (from NAPI).
+    /// Takes priority over registry values but is still clamped by provider max.
+    user_context_window: Option<usize>,
+    /// LIMITS-004: User-configured max output tokens override (from NAPI).
+    user_max_output_tokens: Option<usize>,
     /// MODEL-004: Facade override for agent loop dispatch.
     ///
     /// When set, the agent loop dispatches to this provider's get_*() method
@@ -96,6 +134,12 @@ pub struct ProviderManager {
     /// in profiles to route API calls through a different provider backend
     /// (e.g., a vLLM model using the Codex facade for tool schema).
     facade_override: Option<String>,
+    /// CTX-007: Per-model compaction threshold override.
+    /// Stored as (type, value) where type is "tokens" or "percentage".
+    /// When None, threshold falls through to builtin defaults or legacy formula.
+    /// This is a simple data field — the resolution logic lives in codelet-cli's
+    /// compaction_threshold module to avoid circular crate dependencies.
+    compaction_threshold_override: Option<(String, u64)>,
 }
 
 impl std::fmt::Debug for ProviderManager {
@@ -130,9 +174,12 @@ impl ProviderManager {
             current_provider,
             model_registry: None,
             selected_model: None,
-            model_context_window: None,
-            model_max_output_tokens: None,
+            registry_context_window: None,
+            registry_max_output_tokens: None,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         })
     }
 
@@ -159,9 +206,12 @@ impl ProviderManager {
             current_provider: requested_provider,
             model_registry: None,
             selected_model: None,
-            model_context_window: None,
-            model_max_output_tokens: None,
+            registry_context_window: None,
+            registry_max_output_tokens: None,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         })
     }
 
@@ -171,8 +221,9 @@ impl ProviderManager {
     /// recreate a provider manager with the same settings without async model registry.
     /// The model_id is stored directly without registry validation.
     ///
-    /// MODEL-005: Accepts optional context_window and max_output_tokens for
-    /// propagating per-model values to sub-agents and internal operations.
+    /// LIMITS-004: `with_provider_and_model` receives already-resolved values
+    /// from a parent ProviderManager (via `context_window()` / `max_output_tokens()`).
+    /// These are stored as registry values (already clamped by the parent).
     pub fn with_provider_and_model(
         provider_name: &str,
         model_id: Option<&str>,
@@ -200,9 +251,12 @@ impl ProviderManager {
             current_provider: requested_provider,
             model_registry: None,
             selected_model: model_id.map(String::from),
-            model_context_window: context_window,
-            model_max_output_tokens: max_output_tokens,
+            registry_context_window: context_window,
+            registry_max_output_tokens: max_output_tokens,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         })
     }
 
@@ -232,9 +286,12 @@ impl ProviderManager {
             current_provider,
             model_registry: Some(registry),
             selected_model: None,
-            model_context_window: None,
-            model_max_output_tokens: None,
+            registry_context_window: None,
+            registry_max_output_tokens: None,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         })
     }
 
@@ -287,9 +344,13 @@ impl ProviderManager {
         // Validate model exists and has tool_call capability
         let model_info = registry.validate_model_for_use(&provider_id, &model_id)?;
 
-        // MODEL-005: Store per-model context limits from models.dev registry
-        self.model_context_window = Some(model_info.limit.context as usize);
-        self.model_max_output_tokens = Some(model_info.limit.output as usize);
+        // LIMITS-004: Store raw registry values. Clamping happens at resolution time
+        // via the provider's ModelLimitsResolver in context_window() / max_output_tokens().
+        self.registry_context_window = Some(model_info.limit.context as usize);
+        self.registry_max_output_tokens = Some(model_info.limit.output as usize);
+        // Clear any previous user overrides — new model selection resets them.
+        self.user_context_window = None;
+        self.user_max_output_tokens = None;
 
         // Update state
         self.current_provider = provider_type;
@@ -339,9 +400,12 @@ impl ProviderManager {
         // Update state - store the model_id directly (no provider/ prefix needed for local models)
         self.current_provider = provider_type;
         self.selected_model = Some(model_id.to_string());
-        // MODEL-005: Store per-model context limits from NAPI parameters
-        self.model_context_window = context_window;
-        self.model_max_output_tokens = max_output_tokens;
+        // LIMITS-004: Profile models pass values as user overrides (from NAPI).
+        // They have no registry data. The resolver clamps them at resolution time.
+        self.user_context_window = context_window;
+        self.user_max_output_tokens = max_output_tokens;
+        self.registry_context_window = None;
+        self.registry_max_output_tokens = None;
         // MODEL-004: Store facade override for agent loop dispatch
         self.facade_override = facade_override;
 
@@ -665,100 +729,139 @@ impl ProviderManager {
         format!("[{}] > ", self.current_provider.as_str())
     }
 
-    /// Get context window size for the current provider
+    /// LIMITS-004: Get the `ModelLimitsResolver` for the current provider.
     ///
-    /// MODEL-005: Returns per-model context window if set, falling back to
-    /// provider-level constant (including env var reads for OpenAI).
-    ///
-    /// Priority: model-specific value > env var override > provider compile-time constant
-    pub fn context_window(&self) -> usize {
-        self.model_context_window
-            .unwrap_or_else(|| self.provider_constant_context_window())
-    }
-
-    /// Get the provider-level constant context window (fallback).
-    ///
-    /// MODEL-005: Extracted from context_window() to keep fallback chain clean.
-    /// Includes env var reads for OpenAI (OPENAI_CONTEXT_WINDOW).
-    fn provider_constant_context_window(&self) -> usize {
+    /// Returns a boxed resolver that declares the provider's hard limits and
+    /// defaults. This avoids constructing a full provider (which requires
+    /// credentials / API keys) — instead we build a lightweight resolver stub
+    /// that mirrors the constants from each provider's `ModelLimitsResolver`
+    /// impl.
+    fn provider_limits_resolver(&self) -> Box<dyn ModelLimitsResolver> {
         match self.current_provider {
-            ProviderType::Claude => claude::CONTEXT_WINDOW,
+            ProviderType::Claude => Box::new(ConstantResolver {
+                max_ctx: Some(claude::CONTEXT_WINDOW),
+                default_ctx: claude::CONTEXT_WINDOW,
+                max_out: Some(claude::MAX_OUTPUT_TOKENS),
+                default_out: claude::MAX_OUTPUT_TOKENS,
+            }),
             ProviderType::OpenAI => {
-                std::env::var("OPENAI_CONTEXT_WINDOW")
+                // OpenAI trusts registry; defaults come from env vars or constants.
+                let ctx = std::env::var("OPENAI_CONTEXT_WINDOW")
                     .ok()
                     .and_then(|s| s.parse().ok())
-                    .unwrap_or(openai::CONTEXT_WINDOW)
-            }
-            ProviderType::Gemini => gemini::CONTEXT_WINDOW,
-            ProviderType::Codex => codex::CONTEXT_WINDOW,
-            ProviderType::ZAI => zai::CONTEXT_WINDOW,
-            ProviderType::GitHubCopilot => copilot::CONTEXT_WINDOW,
-        }
-    }
-
-    /// Get max output tokens for the current provider (CTX-002)
-    ///
-    /// MODEL-005: Returns per-model max output if set, falling back to
-    /// provider-level constant (including env var reads for OpenAI).
-    ///
-    /// Priority: model-specific value > env var override > provider compile-time constant
-    pub fn max_output_tokens(&self) -> usize {
-        self.model_max_output_tokens
-            .unwrap_or_else(|| self.provider_constant_max_output_tokens())
-    }
-
-    /// Get the provider-level constant max output tokens (fallback).
-    ///
-    /// MODEL-005: Extracted from max_output_tokens() to keep fallback chain clean.
-    /// PROV-039: Reads runtime env vars for OpenAI instead of compile-time constants.
-    fn provider_constant_max_output_tokens(&self) -> usize {
-        match self.current_provider {
-            ProviderType::Claude => claude::MAX_OUTPUT_TOKENS,
-            ProviderType::OpenAI => {
-                // PROV-039: Read OPENAI_MAX_OUTPUT_TOKENS env var at runtime
-                std::env::var("OPENAI_MAX_OUTPUT_TOKENS")
+                    .unwrap_or(openai::CONTEXT_WINDOW);
+                let out = std::env::var("OPENAI_MAX_OUTPUT_TOKENS")
                     .ok()
-                    .and_then(|v| v.parse().ok())
-                    .unwrap_or(openai::MAX_OUTPUT_TOKENS)
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(openai::MAX_OUTPUT_TOKENS);
+                Box::new(ConstantResolver {
+                    max_ctx: None,
+                    default_ctx: ctx,
+                    max_out: None,
+                    default_out: out,
+                })
             }
-            ProviderType::Gemini => gemini::MAX_OUTPUT_TOKENS,
-            ProviderType::Codex => codex::MAX_OUTPUT_TOKENS,
-            ProviderType::ZAI => zai::MAX_OUTPUT_TOKENS,
-            ProviderType::GitHubCopilot => copilot::MAX_OUTPUT_TOKENS,
+            ProviderType::Gemini => Box::new(ConstantResolver {
+                max_ctx: None,
+                default_ctx: gemini::CONTEXT_WINDOW,
+                max_out: None,
+                default_out: gemini::MAX_OUTPUT_TOKENS,
+            }),
+            ProviderType::Codex => Box::new(ConstantResolver {
+                max_ctx: None,
+                default_ctx: codex::CONTEXT_WINDOW,
+                max_out: None,
+                default_out: codex::MAX_OUTPUT_TOKENS,
+            }),
+            ProviderType::ZAI => Box::new(ConstantResolver {
+                max_ctx: None,
+                default_ctx: zai::CONTEXT_WINDOW,
+                max_out: None,
+                default_out: zai::MAX_OUTPUT_TOKENS,
+            }),
+            ProviderType::GitHubCopilot => Box::new(ConstantResolver {
+                max_ctx: None,
+                default_ctx: copilot::CONTEXT_WINDOW,
+                max_out: None,
+                default_out: copilot::MAX_OUTPUT_TOKENS,
+            }),
         }
     }
 
-    /// MODEL-005: Override the per-model context window and max output tokens.
+    /// Get context window size for the current provider.
+    ///
+    /// LIMITS-004: Resolves through `ModelLimitsResolver` so that provider
+    /// hard limits clamp registry and user-override values.
+    ///
+    /// Priority chain (highest → lowest):
+    /// 1. User override — clamped by provider max
+    /// 2. Registry value — clamped by provider max
+    /// 3. Provider default
+    pub fn context_window(&self) -> usize {
+        let resolver = self.provider_limits_resolver();
+        resolve_context_window(
+            self.registry_context_window,
+            self.user_context_window,
+            resolver.as_ref(),
+        )
+    }
+
+    /// Get max output tokens for the current provider.
+    ///
+    /// LIMITS-004: Resolves through `ModelLimitsResolver` so that provider
+    /// hard limits clamp registry and user-override values.
+    pub fn max_output_tokens(&self) -> usize {
+        let resolver = self.provider_limits_resolver();
+        resolve_max_output_tokens(
+            self.registry_max_output_tokens,
+            self.user_max_output_tokens,
+            resolver.as_ref(),
+        )
+    }
+
+    /// LIMITS-004: Override the per-model context window and max output tokens.
     ///
     /// Used by the NAPI layer to apply TypeScript overrides on top of
-    /// models.dev registry data. Only overwrites if the parameter is Some.
+    /// models.dev registry data. Stored as user overrides so the resolver
+    /// can clamp them by the provider's hard maximum.
     pub fn override_model_limits(
         &mut self,
         context_window: Option<usize>,
         max_output_tokens: Option<usize>,
     ) {
         if let Some(cw) = context_window {
-            self.model_context_window = Some(cw);
+            self.user_context_window = Some(cw);
         }
         if let Some(mot) = max_output_tokens {
-            self.model_max_output_tokens = Some(mot);
+            self.user_max_output_tokens = Some(mot);
         }
     }
 
-    /// MODEL-005: Get the raw per-model context window (before fallback).
+    /// LIMITS-004: Get the resolved context window for sub-agent propagation.
     ///
-    /// Returns the stored per-model value or None if not set.
-    /// Used by DeepSearch handler to propagate parent session limits to sub-agents.
+    /// Returns `Some(context_window())` when any registry or user data exists,
+    /// `None` when no model-specific data is available (sub-agent should use
+    /// its own provider defaults).
+    ///
+    /// The returned value is always clamped by the provider's hard maximum.
     pub fn raw_model_context_window(&self) -> Option<usize> {
-        self.model_context_window
+        if self.registry_context_window.is_some() || self.user_context_window.is_some() {
+            Some(self.context_window())
+        } else {
+            None
+        }
     }
 
-    /// MODEL-005: Get the raw per-model max output tokens (before fallback).
+    /// LIMITS-004: Get the resolved max output tokens for sub-agent propagation.
     ///
-    /// Returns the stored per-model value or None if not set.
-    /// Used by DeepSearch handler to propagate parent session limits to sub-agents.
+    /// Same semantics as `raw_model_context_window()` — returns clamped value
+    /// or `None` when no model-specific data exists.
     pub fn raw_model_max_output_tokens(&self) -> Option<usize> {
-        self.model_max_output_tokens
+        if self.registry_max_output_tokens.is_some() || self.user_max_output_tokens.is_some() {
+            Some(self.max_output_tokens())
+        } else {
+            None
+        }
     }
 
     /// MODEL-004: Get the facade override for agent loop dispatch.
@@ -775,11 +878,24 @@ impl ProviderManager {
         self.facade_override = facade;
     }
 
+    /// CTX-007: Get the compaction threshold override (type, value).
+    /// Returns None if no user-configured override exists.
+    pub fn compaction_threshold_override(&self) -> Option<(&str, u64)> {
+        self.compaction_threshold_override.as_ref().map(|(t, v)| (t.as_str(), *v))
+    }
+
+    /// CTX-007: Set the compaction threshold override.
+    /// type_str should be "tokens" or "percentage".
+    pub fn set_compaction_threshold_override(&mut self, config: Option<(String, u64)>) {
+        self.compaction_threshold_override = config;
+    }
+
     /// Test-only constructor that creates a ProviderManager without requiring credentials.
     /// Exposed for workspace-level integration tests that need to call methods like
     /// `max_output_tokens()` without a real provider backend.
     ///
-    /// MODEL-005: Accepts optional context_window and max_output_tokens for test setup.
+    /// LIMITS-004: context_window and max_output_tokens are stored as registry values
+    /// and resolved through the provider's ModelLimitsResolver.
     #[doc(hidden)]
     pub fn for_testing(
         provider: ProviderType,
@@ -798,9 +914,12 @@ impl ProviderManager {
             current_provider: provider,
             model_registry: None,
             selected_model: None,
-            model_context_window: context_window,
-            model_max_output_tokens: max_output_tokens,
+            registry_context_window: context_window,
+            registry_max_output_tokens: max_output_tokens,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         }
     }
 
@@ -874,9 +993,12 @@ mod tests {
             current_provider: provider,
             model_registry: None,
             selected_model: None,
-            model_context_window: None,
-            model_max_output_tokens: None,
+            registry_context_window: None,
+            registry_max_output_tokens: None,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         }
     }
 
@@ -971,9 +1093,12 @@ mod tests {
             current_provider: ProviderType::Claude,
             model_registry: Some(build_github_copilot_registry()),
             selected_model: None,
-            model_context_window: None,
-            model_max_output_tokens: None,
+            registry_context_window: None,
+            registry_max_output_tokens: None,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         }
     }
 
@@ -1264,9 +1389,12 @@ mod tests {
             current_provider: ProviderType::Claude,
             model_registry: Some(build_multi_provider_registry()),
             selected_model: None,
-            model_context_window: None,
-            model_max_output_tokens: None,
+            registry_context_window: None,
+            registry_max_output_tokens: None,
+            user_context_window: None,
+            user_max_output_tokens: None,
             facade_override: None,
+            compaction_threshold_override: None,
         }
     }
 
@@ -1291,10 +1419,10 @@ mod tests {
         assert!(result.is_ok(), "select_model should succeed: {:?}", result.err());
 
         // @step Then model_context_window should be 200000
-        assert_eq!(manager.model_context_window, Some(200_000));
+        assert_eq!(manager.registry_context_window, Some(200_000));
 
         // @step And model_max_output_tokens should be 100000
-        assert_eq!(manager.model_max_output_tokens, Some(100_000));
+        assert_eq!(manager.registry_max_output_tokens, Some(100_000));
 
         // @step And context_window() should return 200000
         assert_eq!(manager.context_window(), 200_000);
@@ -1354,7 +1482,7 @@ mod tests {
         assert!(result.is_ok(), "select_model should succeed: {:?}", result.err());
 
         // @step Then model_context_window should be 200000
-        assert_eq!(manager.model_context_window, Some(200_000));
+        assert_eq!(manager.registry_context_window, Some(200_000));
 
         // @step And context_window() should return 200000
         assert_eq!(manager.context_window(), 200_000);
@@ -1374,7 +1502,7 @@ mod tests {
         assert!(manager.selected_model.is_none());
 
         // @step Then model_context_window should be None
-        assert_eq!(manager.model_context_window, None);
+        assert_eq!(manager.registry_context_window, None);
 
         // @step And context_window() should return 200000
         assert_eq!(manager.context_window(), claude::CONTEXT_WINDOW);
@@ -1391,7 +1519,7 @@ mod tests {
     fn test_context_window_returns_model_specific_value() {
         // @step Given a ProviderManager with model_context_window=200000
         let mut manager = test_manager(ProviderType::OpenAI);
-        manager.model_context_window = Some(200_000);
+        manager.registry_context_window = Some(200_000);
 
         // @step Then context_window() should return 200000
         assert_eq!(manager.context_window(), 200_000);
@@ -1410,7 +1538,7 @@ mod tests {
         // @step Given a ProviderManager with model_max_output_tokens=100000
         std::env::remove_var("OPENAI_MAX_OUTPUT_TOKENS");
         let mut manager = test_manager(ProviderType::OpenAI);
-        manager.model_max_output_tokens = Some(100_000);
+        manager.registry_max_output_tokens = Some(100_000);
 
         // @step Then max_output_tokens() should return 100000
         assert_eq!(manager.max_output_tokens(), 100_000);
@@ -1439,7 +1567,7 @@ mod tests {
         std::env::set_var("OPENAI_MAX_OUTPUT_TOKENS", "8192");
 
         // @step Then model_context_window should be None
-        assert_eq!(manager.model_context_window, None);
+        assert_eq!(manager.registry_context_window, None);
 
         // @step And context_window() should return 32000
         assert_eq!(manager.context_window(), 32_000);
@@ -1472,8 +1600,8 @@ mod tests {
         assert!(result.is_ok());
 
         // @step Then set_model_direct stores model_context_window=32000 and model_max_output_tokens=4096
-        assert_eq!(manager.model_context_window, Some(32_000));
-        assert_eq!(manager.model_max_output_tokens, Some(4_096));
+        assert_eq!(manager.user_context_window, Some(32_000));
+        assert_eq!(manager.user_max_output_tokens, Some(4_096));
 
         // @step And context_window() should return 32000
         assert_eq!(manager.context_window(), 32_000);
@@ -1502,8 +1630,8 @@ mod tests {
         assert!(result.is_ok());
 
         // @step Then set_model_direct stores model_context_window=272000 and model_max_output_tokens=4096
-        assert_eq!(manager.model_context_window, Some(272_000));
-        assert_eq!(manager.model_max_output_tokens, Some(4_096));
+        assert_eq!(manager.user_context_window, Some(272_000));
+        assert_eq!(manager.user_max_output_tokens, Some(4_096));
 
         // @step And context_window() should return 272000
         assert_eq!(manager.context_window(), 272_000);
@@ -1529,10 +1657,10 @@ mod tests {
         assert!(result.is_ok());
 
         // @step Then model_context_window should remain None
-        assert_eq!(manager.model_context_window, None);
+        assert_eq!(manager.user_context_window, None);
 
         // @step And model_max_output_tokens should remain None
-        assert_eq!(manager.model_max_output_tokens, None);
+        assert_eq!(manager.user_max_output_tokens, None);
     }
 
     // -------------------------------------------------------------------------
@@ -1627,8 +1755,8 @@ mod tests {
         assert!(result.is_ok());
 
         // Verify registry values are stored
-        assert_eq!(manager.model_context_window, Some(128_000));
-        assert_eq!(manager.model_max_output_tokens, Some(16_384));
+        assert_eq!(manager.registry_context_window, Some(128_000));
+        assert_eq!(manager.registry_max_output_tokens, Some(16_384));
 
         // Simulate NAPI override (the NAPI layer calls select_model first,
         // then overwrites with NAPI params if Some)
@@ -1675,8 +1803,8 @@ mod tests {
     fn test_compaction_threshold_large_context_model() {
         // @step Given a ProviderManager with model_context_window=200000 and model_max_output_tokens=100000
         let mut manager = test_manager(ProviderType::OpenAI);
-        manager.model_context_window = Some(200_000);
-        manager.model_max_output_tokens = Some(100_000);
+        manager.registry_context_window = Some(200_000);
+        manager.registry_max_output_tokens = Some(100_000);
 
         // @step When the compaction threshold is calculated
         let cw = manager.context_window() as u64;
@@ -1700,8 +1828,8 @@ mod tests {
     fn test_compaction_threshold_small_context_model() {
         // @step Given a ProviderManager with model_context_window=32000 and model_max_output_tokens=4096
         let mut manager = test_manager(ProviderType::OpenAI);
-        manager.model_context_window = Some(32_000);
-        manager.model_max_output_tokens = Some(4_096);
+        manager.registry_context_window = Some(32_000);
+        manager.registry_max_output_tokens = Some(4_096);
 
         // @step When the compaction threshold is calculated
         let cw = manager.context_window() as u64;
@@ -1737,8 +1865,8 @@ mod tests {
         assert!(result.is_ok());
 
         // Simulate NAPI override
-        manager.model_context_window = Some(200_000);
-        manager.model_max_output_tokens = Some(100_000);
+        manager.registry_context_window = Some(200_000);
+        manager.registry_max_output_tokens = Some(100_000);
 
         // @step Then sessionSetModel is called with context_window=200000 and max_output_tokens=100000
         assert_eq!(manager.context_window(), 200_000);
@@ -1844,5 +1972,170 @@ mod tests {
         // for_testing constructor
         let mgr = ProviderManager::for_testing(ProviderType::OpenAI, None, None);
         assert_eq!(mgr.facade_override(), None);
+    }
+
+    // =========================================================================
+    // LIMITS-004: ProviderManager resolves through ModelLimitsResolver
+    // Feature: spec/features/fix-providermanager-resolution-chain-use-modellimitsresolver.feature
+    // =========================================================================
+
+    /// Scenario: Claude context window is clamped from 1M registry to 200k
+    #[test]
+    fn test_claude_context_window_clamped_from_1m_to_200k() {
+        // @step Given a ProviderManager configured for the Claude provider
+        let mut manager = test_manager(ProviderType::Claude);
+
+        // @step And select_model stores a registry context window of 1000000
+        manager.registry_context_window = Some(1_000_000);
+
+        // @step And the Claude resolver declares max_context_window as 200000
+        // (built into the resolver — ClaudeProvider::max_context_window() returns Some(200_000))
+
+        // @step When context_window() is called
+        let result = manager.context_window();
+
+        // @step Then the result should be 200000
+        assert_eq!(result, 200_000);
+    }
+
+    /// Scenario: Claude max output tokens clamped from 128k registry to 8192
+    #[test]
+    fn test_claude_max_output_clamped_from_128k_to_8192() {
+        // @step Given a ProviderManager configured for the Claude provider
+        let mut manager = test_manager(ProviderType::Claude);
+
+        // @step And select_model stores a registry max output of 128000
+        manager.registry_max_output_tokens = Some(128_000);
+
+        // @step And the Claude resolver declares max_output_tokens_limit as 8192
+        // (built into the resolver)
+
+        // @step When max_output_tokens() is called
+        let result = manager.max_output_tokens();
+
+        // @step Then the result should be 8192
+        assert_eq!(result, 8_192);
+    }
+
+    /// Scenario: OpenAI context window passes through unclamped
+    #[test]
+    fn test_openai_context_window_passes_through_unclamped() {
+        // @step Given a ProviderManager configured for the OpenAI provider
+        let mut manager = test_manager(ProviderType::OpenAI);
+
+        // @step And select_model stores a registry context window of 128000
+        manager.registry_context_window = Some(128_000);
+
+        // @step And the OpenAI resolver declares max_context_window as None
+        // (built into the resolver — OpenAI trusts registry)
+
+        // @step When context_window() is called
+        let result = manager.context_window();
+
+        // @step Then the result should be 128000
+        assert_eq!(result, 128_000);
+    }
+
+    /// Scenario: Codex with no registry data returns provider default
+    #[test]
+    fn test_codex_no_registry_returns_default() {
+        // @step Given a ProviderManager configured for the Codex provider
+        let manager = test_manager(ProviderType::Codex);
+
+        // @step And no registry context window is set
+        assert_eq!(manager.registry_context_window, None);
+
+        // @step And no user context window override is set
+        assert_eq!(manager.user_context_window, None);
+
+        // @step When context_window() is called
+        let result = manager.context_window();
+
+        // @step Then the result should be 272000
+        assert_eq!(result, 272_000);
+    }
+
+    /// Scenario: User override is clamped by provider max
+    #[test]
+    fn test_user_override_clamped_by_provider_max() {
+        // @step Given a ProviderManager configured for the Claude provider
+        let mut manager = test_manager(ProviderType::Claude);
+
+        // @step And the user overrides context window to 500000 via NAPI
+        manager.override_model_limits(Some(500_000), None);
+
+        // @step And the Claude resolver declares max_context_window as 200000
+        // (built into the resolver)
+
+        // @step When context_window() is called
+        let result = manager.context_window();
+
+        // @step Then the result should be 200000
+        assert_eq!(result, 200_000);
+    }
+
+    /// Scenario: User override takes priority over registry value
+    #[test]
+    #[serial_test::serial]
+    fn test_user_override_takes_priority_over_registry() {
+        // @step Given a ProviderManager configured for the OpenAI provider
+        std::env::remove_var("OPENAI_CONTEXT_WINDOW");
+        let mut manager = test_manager(ProviderType::OpenAI);
+
+        // @step And select_model stores a registry context window of 128000
+        manager.registry_context_window = Some(128_000);
+
+        // @step And the user overrides context window to 64000 via NAPI
+        manager.override_model_limits(Some(64_000), None);
+
+        // @step When context_window() is called
+        let result = manager.context_window();
+
+        // @step Then the result should be 64000
+        assert_eq!(result, 64_000);
+    }
+
+    /// Scenario: Sub-agent propagation returns clamped values
+    #[test]
+    fn test_sub_agent_propagation_returns_clamped_values() {
+        // @step Given a ProviderManager configured for the Claude provider
+        let mut manager = test_manager(ProviderType::Claude);
+
+        // @step And select_model stores a registry context window of 1000000
+        manager.registry_context_window = Some(1_000_000);
+
+        // @step When raw_model_context_window() is called for sub-agent propagation
+        let raw = manager.raw_model_context_window();
+
+        // @step Then the result should be 200000
+        assert_eq!(raw, Some(200_000));
+
+        // @step And it should equal the value from context_window()
+        assert_eq!(raw, Some(manager.context_window()));
+    }
+
+    /// Scenario: OpenAI env var fallback when no registry data
+    #[test]
+    #[serial_test::serial]
+    fn test_openai_env_var_fallback_when_no_registry() {
+        // @step Given a ProviderManager configured for the OpenAI provider
+        let manager = test_manager(ProviderType::OpenAI);
+
+        // @step And no registry context window is set
+        assert_eq!(manager.registry_context_window, None);
+
+        // @step And no user context window override is set
+        assert_eq!(manager.user_context_window, None);
+
+        // @step And the OPENAI_CONTEXT_WINDOW environment variable is set to 256000
+        std::env::set_var("OPENAI_CONTEXT_WINDOW", "256000");
+
+        // @step When context_window() is called
+        let result = manager.context_window();
+
+        // @step Then the result should be 256000
+        assert_eq!(result, 256_000);
+
+        std::env::remove_var("OPENAI_CONTEXT_WINDOW");
     }
 }

@@ -1,7 +1,6 @@
 @done
 @PROV-040
 Feature: Truncated tool call recovery — auto-chunk large writes and retry on max_tokens
-
   """
   Recovery logic goes in stream_loop.rs at the point where truncated tool call errors are received — after the PROV-039 enriched error is emitted from the provider layer but before it's sent back to the model.
   Key detection point: the error message from PROV-039 contains 'Tool call truncated due to output token limit' — use this as the reliable signal to trigger recovery.
@@ -22,7 +21,6 @@ Feature: Truncated tool call recovery — auto-chunk large writes and retry on m
   #   6. Normal end_turn completions and non-truncation errors must be completely unaffected by the recovery logic
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to write large files without hitting an infinite truncation error loop

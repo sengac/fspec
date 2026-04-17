@@ -1,6 +1,5 @@
 @KGRAPH-020
 Feature: Learnings Graph Data Model & Schema
-
   """
   Uses nanograph PG schema format. Schema stored at codelet/napi/schemas/learnings.pg, bundled via include_str!. Registry in registry.rs manages the singleton.
   """
@@ -26,7 +25,6 @@ Feature: Learnings Graph Data Model & Schema
   #   4. Verify Learnings graph is registered in registry.rs as a named instance alongside agent-memory and ast-code
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to persist and query accumulated learnings (conventions, decisions, patterns, anti-patterns) across sessions

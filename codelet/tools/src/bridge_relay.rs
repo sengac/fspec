@@ -417,9 +417,14 @@ pub fn process_outbound_envelope(
 /// Parses the text as an Envelope, routes via route_inbound(), and dispatches
 /// to the appropriate callback. Returns Ok(Some(envelope)) when a response
 /// needs to be sent back (e.g., pong), Ok(None) otherwise.
+///
+/// SESS-018: `connection_owner` identifies the WebSocket connection owner and
+/// is used to (a) scope `OUTBOUND_CONTROL_SENDERS` lookups for the PTY reader
+/// task spawned in `TerminalCreate` and (b) act as the fallback routing target
+/// when an envelope's `session_id` has no registered `BridgeSessionContext`.
 pub async fn handle_multiplexed_inbound(
     text: &str,
-    _session_id: Uuid,
+    connection_owner: Uuid,
     input_injector: InputInjector,
     control_handler: Option<ControlHandler>,
     command_emitter: Option<CommandEmitter>,
@@ -432,7 +437,7 @@ pub async fn handle_multiplexed_inbound(
 
     match action {
         InboundAction::SessionInput {
-            session_id: _,
+            session_id,
             message,
             images,
         } => {
@@ -446,19 +451,48 @@ pub async fn handle_multiplexed_inbound(
                     InjectedInput::text_only(message)
                 }
             };
-            input_injector(injected);
+
+            // SESS-018: Route to the per-session injector registered via
+            // `set_bridge_session_context(sid, ...)` when one exists for the
+            // envelope's session_id. Fall back to the parameter `input_injector`
+            // (the supervisor/connection-owner) for legacy single-session
+            // traffic and when no context is registered for the target id.
+            let per_session_injector = Uuid::parse_str(&session_id)
+                .ok()
+                .and_then(crate::get_bridge_session_context)
+                .map(|ctx| ctx.input_injector.clone());
+
+            if let Some(injector) = per_session_injector {
+                injector(injected);
+            } else {
+                input_injector(injected);
+            }
             Ok(None)
         }
         InboundAction::SessionControl {
-            session_id: _,
+            session_id,
             action,
             response,
         } => {
-            if let Some(handler) = control_handler {
+            // SESS-018: Same per-session dispatch as SessionInput. Only fall
+            // back to the parameter `control_handler` when no per-session
+            // context has its own `control_handler` registered.
+            let per_session_handler = Uuid::parse_str(&session_id)
+                .ok()
+                .and_then(crate::get_bridge_session_context)
+                .and_then(|ctx| ctx.control_handler.clone());
+
+            if let Some(handler) = per_session_handler {
+                tracing::info!("Handling control action (per-session): {}", action);
+                handler(&action, response.as_deref());
+            } else if let Some(handler) = control_handler {
                 tracing::info!("Handling control action: {}", action);
                 handler(&action, response.as_deref());
             } else {
-                tracing::warn!("Received control '{}' but no handler configured", action);
+                tracing::warn!(
+                    "Received control '{}' but no handler configured",
+                    action
+                );
             }
             Ok(None)
         }
@@ -567,6 +601,11 @@ pub async fn handle_multiplexed_inbound(
             // SESS-017 FIX 2: Spawn a PTY via the registered PtyRegistry and
             // respond with a terminal:created envelope. Without this the
             // dashboard's "+ > New Terminal" click hangs forever.
+            //
+            // SESS-018: After successfully creating the PTY, spawn a reader
+            // task that drains the PTY master and forwards each chunk as a
+            // `terminal:data` envelope through OUTBOUND_CONTROL_SENDERS keyed
+            // by the connection owner (the Uuid of this relay connection).
             let metadata = get_instance_metadata();
             let instance_id = metadata.name;
 
@@ -574,10 +613,16 @@ pub async fn handle_multiplexed_inbound(
                 Some(registry) => {
                     let opts = crate::CreateTerminalOpts { cols, rows, shell, cwd };
                     match crate::create_terminal(&registry, &opts) {
-                        Ok((terminal_id, _entry)) => {
+                        Ok((terminal_id, entry)) => {
                             tracing::info!(
                                 "terminal:create handled — new terminal {}",
                                 terminal_id
+                            );
+                            spawn_pty_reader_task(
+                                connection_owner,
+                                instance_id.clone(),
+                                terminal_id.clone(),
+                                entry,
                             );
                             Ok(Some(Envelope::terminal_created(
                                 &instance_id,
@@ -621,13 +666,94 @@ pub async fn handle_multiplexed_inbound(
                 }
             }
         }
-        InboundAction::TerminalInput { .. }
-        | InboundAction::TerminalResize { .. }
-        | InboundAction::TerminalDestroy { .. } => {
-            // Other terminal actions still require PTY-side wiring beyond
-            // the scope of SESS-017 (which only fixes the create handshake).
-            tracing::warn!("Terminal action received but not yet wired to PtyRegistry");
+        InboundAction::TerminalInput { terminal_id, base64_data } => {
+            // SESS-018: Decode the base64 payload and write the bytes to the
+            // PTY's stdin via PtyRegistry. The shell echoes typed characters
+            // on its output stream, which the spawned reader task forwards as
+            // terminal:data envelopes.
+            use base64::Engine;
+
+            let Some(registry) = query_pty_registry() else {
+                tracing::warn!(
+                    "terminal:input received but no PtyRegistry registered"
+                );
+                return Ok(None);
+            };
+            let Some(entry) = registry.get(&terminal_id) else {
+                tracing::warn!(
+                    "terminal:input for unknown terminal {}",
+                    terminal_id
+                );
+                return Ok(None);
+            };
+            let bytes = match base64::engine::general_purpose::STANDARD.decode(&base64_data) {
+                Ok(b) => b,
+                Err(e) => {
+                    tracing::warn!(
+                        "terminal:input base64 decode failed for {}: {}",
+                        terminal_id,
+                        e
+                    );
+                    return Ok(None);
+                }
+            };
+            if let Err(e) = crate::write_terminal_input(&entry, &bytes).await {
+                tracing::warn!("terminal:input write failed: {}", e);
+            }
             Ok(None)
+        }
+        InboundAction::TerminalResize { terminal_id, cols, rows } => {
+            // SESS-018: Resize the PTY via PtyRegistry so the shell receives
+            // SIGWINCH and reflows output to the new dimensions.
+            let Some(registry) = query_pty_registry() else {
+                tracing::warn!(
+                    "terminal:resize received but no PtyRegistry registered"
+                );
+                return Ok(None);
+            };
+            let Some(entry) = registry.get(&terminal_id) else {
+                tracing::warn!(
+                    "terminal:resize for unknown terminal {}",
+                    terminal_id
+                );
+                return Ok(None);
+            };
+            if let Err(e) = crate::resize_terminal(&entry, cols, rows).await {
+                tracing::warn!("terminal:resize failed: {}", e);
+            }
+            Ok(None)
+        }
+        InboundAction::TerminalDestroy { terminal_id, request_id } => {
+            // SESS-018: Kill the PTY process, remove it from the registry, and
+            // respond with a terminal:destroyed envelope so the dashboard can
+            // unmount the tab. Always responds — even if the registry is
+            // missing or the terminal is unknown — so the client does not
+            // hang on the close handshake.
+            let metadata = get_instance_metadata();
+            let instance_id = metadata.name;
+
+            match query_pty_registry() {
+                Some(registry) => {
+                    if let Err(e) = crate::destroy_terminal(&registry, &terminal_id).await {
+                        tracing::warn!(
+                            "terminal:destroy failed for {}: {}",
+                            terminal_id,
+                            e
+                        );
+                    }
+                }
+                None => {
+                    tracing::warn!(
+                        "terminal:destroy received but no PtyRegistry registered"
+                    );
+                }
+            }
+
+            Ok(Some(Envelope::terminal_destroyed(
+                &instance_id,
+                &request_id,
+                &terminal_id,
+            )))
         }
         InboundAction::Unknown { service, msg_type } => {
             tracing::warn!("Unknown inbound: service={}, type={}", service, msg_type);
@@ -637,6 +763,95 @@ pub async fn handle_multiplexed_inbound(
 }
 
 // ── Relay task ──────────────────────────────────────────────────────────────
+
+/// Spawn a background reader that drains a PTY master and emits
+/// `terminal:data` envelopes through `OUTBOUND_CONTROL_SENDERS` keyed by
+/// the connection owner.
+///
+/// SESS-018: `TerminalCreate` must not only spawn the shell but also wire
+/// its output back to the dashboard. Each read chunk is base64-encoded,
+/// wrapped in a `terminal:data` envelope, and fanned out to every registered
+/// outbound control sender for the connection owner. The reader exits on
+/// EOF, read error, or when no outbound senders remain (the connection
+/// owner has disconnected and any further output would be lost anyway).
+///
+/// The outer task clones the PTY reader under an async lock, then hands the
+/// synchronous `Read` object to a blocking thread so the sync read loop
+/// does not stall the tokio runtime.
+fn spawn_pty_reader_task(
+    connection_owner: Uuid,
+    instance_id: String,
+    terminal_id: String,
+    entry: Arc<crate::PtyEntry>,
+) {
+    tokio::spawn(async move {
+        // Clone the blocking reader under the async master lock. We drop the
+        // guard before spawn_blocking so the write path (which also locks
+        // the master for resize) is not serialized behind the read loop.
+        let reader = {
+            let master = entry.master.lock().await;
+            match master.try_clone_reader() {
+                Ok(r) => r,
+                Err(e) => {
+                    tracing::warn!(
+                        "failed to clone PTY reader for {}: {}",
+                        terminal_id,
+                        e
+                    );
+                    return;
+                }
+            }
+        };
+
+        let terminal_id_for_task = terminal_id.clone();
+        let _ = tokio::task::spawn_blocking(move || {
+            use base64::Engine;
+            use std::io::Read;
+
+            let mut reader = reader;
+            let mut buf = [0u8; 4096];
+            loop {
+                match reader.read(&mut buf) {
+                    Ok(0) => break, // EOF — shell exited
+                    Ok(n) => {
+                        let b64 = base64::engine::general_purpose::STANDARD
+                            .encode(&buf[..n]);
+                        let env = Envelope::terminal_data(
+                            &instance_id,
+                            &terminal_id_for_task,
+                            &b64,
+                        );
+
+                        // Snapshot senders for this connection_owner and fan out.
+                        let senders: Vec<OutboundControlTx> =
+                            match OUTBOUND_CONTROL_SENDERS.read() {
+                                Ok(guard) => guard
+                                    .get(&connection_owner)
+                                    .cloned()
+                                    .unwrap_or_default(),
+                                Err(_) => break,
+                            };
+                        if senders.is_empty() {
+                            // Connection owner gone — terminal output is
+                            // orphaned, drop the loop so the PTY can be
+                            // collected on shutdown.
+                            break;
+                        }
+                        for tx in senders {
+                            let _ = tx.send(env.clone());
+                        }
+                    }
+                    Err(_) => break,
+                }
+            }
+            tracing::debug!(
+                "PTY reader for {} exiting",
+                terminal_id_for_task
+            );
+        })
+        .await;
+    });
+}
 
 /// Spawn a WebSocket relay task for a bridge connection.
 pub async fn spawn_relay_task(
@@ -981,6 +1196,7 @@ async fn update_connection_state(session_id: Uuid, url: &str, state: BridgeConne
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     #[test]
     fn test_injected_input_text_only() {
@@ -1175,6 +1391,7 @@ mod tests {
     /// @step And the response envelope should contain the spawned terminal_id
     /// @step And the response envelope should carry request_id "req-2"
     #[tokio::test]
+    #[serial]
     async fn test_handle_inbound_terminal_create_spawns_pty_and_responds() {
         // @step Given the fspec bridge has a registered PtyRegistry
         let registry = Arc::new(crate::PtyRegistry::new());
@@ -1443,6 +1660,7 @@ mod tests {
     /// @step And the directory listing should stream back as terminal:data envelopes
     /// @step And the output should render inside the Terminal tab
     #[tokio::test]
+    #[serial]
     async fn test_sess018_terminal_input_writes_to_pty() {
         use base64::Engine;
         use std::io::Read;
@@ -1537,6 +1755,7 @@ mod tests {
     /// @step And the shell should be notified via SIGWINCH
     /// @step And running "stty size" inside the shell should report "40 120"
     #[tokio::test]
+    #[serial]
     async fn test_sess018_terminal_resize_updates_pty_size() {
         let registry = Arc::new(crate::PtyRegistry::new());
         set_pty_registry(Some(registry.clone()));
@@ -1584,6 +1803,7 @@ mod tests {
     /// @step And the terminal should be removed from the PtyRegistry
     /// @step And the bridge should reply with a terminal:destroyed envelope carrying the same request_id
     #[tokio::test]
+    #[serial]
     async fn test_sess018_terminal_destroy_removes_and_responds() {
         let registry = Arc::new(crate::PtyRegistry::new());
         set_pty_registry(Some(registry.clone()));
@@ -1638,6 +1858,7 @@ mod tests {
     /// @step And the dashboard should receive the terminal:data envelopes and write them to xterm.js
     /// @step And a live shell prompt should render inside the new Terminal tab
     #[tokio::test]
+    #[serial]
     async fn test_sess018_terminal_create_spawns_reader_emitting_data_envelopes() {
         use std::time::Duration;
         use tokio::sync::mpsc;

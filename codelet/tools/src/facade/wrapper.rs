@@ -2184,7 +2184,10 @@ mod bridge_wrapper_tests {
     #[tokio::test]
     #[serial]
     async fn test_bridge_wrapper_uses_session_id_from_construction() {
-        // @step Given the bridge handler is configured
+        // @step Given a session ID is created
+        let expected_session_id = uuid::Uuid::new_v4();
+
+        // @step And the bridge handler is configured for this session
         let received_session_id = Arc::new(std::sync::Mutex::new(None));
         let received_session_id_clone = received_session_id.clone();
 
@@ -2196,10 +2199,7 @@ mod bridge_wrapper_tests {
                 connections: Some(vec![]),
             }
         });
-        set_bridge_handler(uuid::Uuid::nil(), Some(handler));
-
-        // @step And a session ID is created
-        let expected_session_id = uuid::Uuid::new_v4();
+        set_bridge_handler(expected_session_id, Some(handler));
 
         // @step And bridge session context is set for the session
         let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
@@ -2229,7 +2229,7 @@ mod bridge_wrapper_tests {
         );
 
         // Cleanup
-        set_bridge_handler(uuid::Uuid::nil(), None);
+        set_bridge_handler(expected_session_id, None);
         remove_bridge_session_context(expected_session_id);
     }
 

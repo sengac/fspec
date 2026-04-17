@@ -1,6 +1,5 @@
 @KGRAPH-045
 Feature: Calls/Imports/TypeRef edges — Rust
-
   """
   Follows PHP extractor pattern: extract_functions returns HashSet, extract_imports returns
   import_map, then extract_calls and extract_type_refs use shared edge_helpers.
@@ -13,7 +12,6 @@ Feature: Calls/Imports/TypeRef edges — Rust
   #   2. Rust extractor must emit Calls edges from function bodies resolved against same-file functions
   #   3. Rust extractor must emit TypeRef edges from `: Type` and `-> Type` in signatures against local types
   #   4. External crate imports must NOT generate edges
-
   Background: User Story
     As a developer
     I want to get Imports, Calls, and TypeRef edges extracted from Rust source files

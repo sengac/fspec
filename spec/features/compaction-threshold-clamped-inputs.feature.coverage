@@ -1,0 +1,340 @@
+{
+  "scenarios": [
+    {
+      "name": "Claude Opus 4.6 compaction threshold uses clamped context window",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/compaction_threshold.rs",
+          "lines": "560-590",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Context fill percentage is accurate with clamped threshold",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/compaction_threshold.rs",
+          "lines": "592-617",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction fires before API limit with clamped threshold",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/compaction_threshold.rs",
+          "lines": "617-645",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction_hook.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini 2.5 Pro compaction threshold uses 80 percent of context window",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/compaction_threshold.rs",
+          "lines": "645-666",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GPT-4o compaction threshold uses 80 percent of context window",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/compaction_threshold.rs",
+          "lines": "666-687",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sub-agent propagation uses clamped context window",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/compaction_threshold.rs",
+          "lines": "766-795",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                840,
+                841,
+                842,
+                843,
+                844,
+                845,
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Summarization budget uses clamped context window",
+      "testMappings": [
+        {
+          "file": "codelet/cli/src/compaction_threshold.rs",
+          "lines": "687-707",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/compaction_threshold.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/src/compaction_threshold.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/compaction_threshold.rs",
+      "codelet/cli/src/interactive/stream_loop.rs",
+      "codelet/core/src/compaction_hook.rs",
+      "codelet/providers/src/manager.rs"
+    ],
+    "totalLinesCovered": 390
+  }
+}

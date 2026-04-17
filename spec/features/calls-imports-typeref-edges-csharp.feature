@@ -1,6 +1,5 @@
 @KGRAPH-048
 Feature: Calls/Imports/TypeRef edges — C#
-
   """
   Uses KindMatcher for method extraction. Resolves C# using statements
   via namespace-to-path conversion.

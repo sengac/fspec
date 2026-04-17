@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "PromptCancelled with flag true routes to recovery",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_single_source_of_truth_test.rs",
+          "lines": "45-77",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PromptCancelled with flag false still recovers",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_single_source_of_truth_test.rs",
+          "lines": "79-113",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unrelated error with flag true does not trigger recovery",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_single_source_of_truth_test.rs",
+          "lines": "115-147",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/error_classifiers.rs",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/compaction_single_source_of_truth_test.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/error_classifiers.rs"
+    ],
+    "totalLinesCovered": 209
+  }
+}

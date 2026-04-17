@@ -168,4 +168,3 @@ Feature: Relay Server — Local WebSocket hub for routing messages between relay
     When client A sends a sessionControl message for session_id "sess-1"
     Then client B should receive the exact same JSON message
     And client A should NOT receive the message back
-

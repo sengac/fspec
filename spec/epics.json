@@ -332,7 +332,8 @@
         "BRIDGE-017",
         "BRIDGE-018",
         "MCP-001",
-        "BRIDGE-019"
+        "BRIDGE-019",
+        "BRIDGE-020"
       ]
     },
     "gitoxide-integration": {
@@ -612,7 +613,16 @@
         "PROV-048",
         "PROV-049",
         "PROV-050",
-        "PROV-042"
+        "PROV-042",
+        "CMPCT-022",
+        "CMPCT-023",
+        "CMPCT-024",
+        "CMPCT-025",
+        "CMPCT-026",
+        "CMPCT-027",
+        "CMPCT-028",
+        "CMPCT-029",
+        "CMPCT-030"
       ]
     },
     "local-change-protocols": {
@@ -667,7 +677,23 @@
         "CTX-005",
         "CTX-006",
         "CTX-007",
-        "CTX-008"
+        "CTX-008",
+        "CTX-009"
+      ]
+    },
+    "model-limits-resolution": {
+      "id": "model-limits-resolution",
+      "title": "Centralised Model Limits Resolution",
+      "createdAt": "2026-04-15T23:13:58.945Z",
+      "description": "Centralise model limits resolution (context_window, max_output_tokens, compaction_threshold) into a single SOLID architecture that gives providers veto authority over external registries. Replaces the broken CTX-005 approach where models.dev unconditionally overrides provider constants.",
+      "workUnits": [
+        "LIMITS-001",
+        "LIMITS-002",
+        "LIMITS-003",
+        "LIMITS-004",
+        "LIMITS-005",
+        "LIMITS-006",
+        "LIMITS-007"
       ]
     }
   }

@@ -10,12 +10,16 @@
 //! Uses rig's StreamingPromptHook to capture per-request token usage and
 //! check compaction thresholds before each internal API call.
 
+use super::message_helpers::add_assistant_tool_calls_message;
 use super::output::{ContextFillInfo, StreamOutput};
 use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
-use crate::compaction_threshold::calculate_usable_context;
-use crate::interactive_helpers::{convert_messages_to_turns, execute_compaction};
+use crate::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
+use crate::interactive_helpers::{
+    convert_messages_to_turns, execute_compaction, inject_synthetic_tool_results_for_orphans,
+    reconcile_session_messages,
+};
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
@@ -71,7 +75,7 @@ fn process_turn_annotations(
 }
 
 // Error classifiers moved to error_classifiers.rs
-use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_compaction_cancelled, is_transient_network_error, is_stall_timeout_error};
+use super::error_classifiers::{is_prompt_too_long_error, is_image_content_error, is_truncated_tool_call_error, is_transient_network_error, is_stall_timeout_error, classify_compaction_branch, extract_prompt_cancelled, CompactionBranch};
 
 // Image recovery moved to recovery_image.rs
 use super::recovery_image::sanitize_image_content;
@@ -93,8 +97,14 @@ use super::recovery_network::{MAX_NETWORK_RETRIES, network_retry_delay};
 // Stall timeout recovery moved to recovery_stall.rs
 use super::recovery_stall::{build_stall_timeout_message, stall_timeout_duration};
 
+// CMPCT-027: Compaction retry circuit breaker — bound cascaded compaction
+// rounds per user turn. See `recovery_compaction::MAX_COMPACTION_RETRIES`.
+use super::recovery_compaction::MAX_COMPACTION_RETRIES;
+
 /// Emit context fill information from API token usage.
-/// Extracted as a standalone function so it can be shared with compaction_retry.
+/// Extracted as a standalone function so it can be shared with the in-loop
+/// compaction restart (`in_loop_compaction_restart!()` macro) and related
+/// recovery handlers.
 pub(super) fn emit_context_fill_from_usage<O: StreamOutput>(
     output: &O,
     usage: &ApiTokenUsage,
@@ -115,18 +125,11 @@ pub(super) fn emit_context_fill_from_usage<O: StreamOutput>(
     });
 }
 
-/// CMPCT-002: Signal that compaction is needed by setting the flag in token state
-/// This allows the post-loop compaction logic to detect and handle it
-pub(super) fn signal_compaction_needed(token_state: &Arc<Mutex<TokenState>>) {
-    // PROV-009-DEBUG: Log when signal_compaction_needed is called with backtrace
-    debug!(
-        "[signal_compaction_needed] CALLED - setting compaction_needed=true - BACKTRACE:\n{:?}",
-        std::backtrace::Backtrace::capture()
-    );
-    if let Ok(mut state) = token_state.lock() {
-        state.compaction_needed = true;
-    }
-}
+// CMPCT-002 / CMPCT-023: `signal_compaction_needed(...)` used to live here.
+// As of the compaction-recovery unification, all production entry paths
+// (B, C, D) set `compaction_needed` through
+// `recovery_compaction::begin_compaction_recovery`. Tests that need to
+// flip the flag should do so directly on `TokenState::compaction_needed`.
 
 /// Run agent stream with CLI event handling
 ///
@@ -275,8 +278,17 @@ where
     // HOOK-BASED COMPACTION (CTX-002: Optimized compaction trigger)
     let context_window = session.provider_manager().context_window() as u64;
     let max_output_tokens = session.provider_manager().max_output_tokens() as u64;
-    // CTX-002: Use usable_context (context_window - output_reservation) instead of 90% threshold
-    let threshold = calculate_usable_context(context_window, max_output_tokens);
+    // CTX-007: Resolve per-model compaction threshold through priority chain:
+    // 1. User-configured override > 2. Built-in model family default > 3. Legacy formula
+    let model_id = session.current_model_id();
+    let user_config = session.provider_manager().compaction_threshold_override()
+        .map(|(t, v)| CompactionThresholdConfig::from_type_value(t, v));
+    let threshold = resolve_compaction_threshold(
+        context_window,
+        max_output_tokens,
+        model_id.as_deref(),
+        user_config.as_ref(),
+    );
 
     // DIAG: Log compaction parameters for debugging
     debug!(
@@ -499,6 +511,11 @@ where
     let mut thinking_exhaustion_retry_count: u32 = 0;
     // NET-001: Track consecutive network error retries to prevent infinite loops
     let mut network_retry_count: u32 = 0;
+    // CMPCT-027: Track consecutive compaction retry rounds to prevent infinite
+    // cascades. Incremented BEFORE each in-loop post-compaction restart
+    // (Paths B/C/D). When it exceeds `MAX_COMPACTION_RETRIES` the loop
+    // returns a structured budget-exhausted error.
+    let mut compaction_retry_count: u32 = 0;
     // NET-001: Track whether we're recovering from a network retry (for UX feedback)
     let mut network_retry_in_progress = false;
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
@@ -545,6 +562,134 @@ where
     // PROV-001: Create initial usage with prev_input_tokens as raw (cache already counted in it)
     let initial_usage = ApiTokenUsage::new(prev_input_tokens, 0, 0, 0);
     emit_context_fill_from_usage(output, &initial_usage, threshold, context_window);
+
+    // CMPCT-027: In-loop compaction-restart block shared by Paths B, C, and D.
+    //
+    // Caller contract:
+    // - `begin_compaction_recovery` MUST have been called upstream (either in
+    //   this match arm for Paths B/C, or inside `handle_gemini_continuation`
+    //   for Path D) so partial assistant text has been saved, the trailing
+    //   User prompt has been popped (if applicable), and the compaction
+    //   lifecycle start events have been emitted.
+    // - `compaction_in_progress: Arc<AtomicBool>` is in scope.
+    //
+    // Behavior:
+    // 1. Circuit breaker: increment `compaction_retry_count`, return a
+    //    structured `build_compaction_budget_exhausted_message` error if the
+    //    budget is exceeded.
+    // 2. Run the DAG-condensation compaction plus its debug capture events
+    //    via `execute_compaction_and_capture_events`.
+    // 3. Reset the outer `token_state` in place (not a new Arc) so the branch
+    //    classifier continues to see the same state and the new
+    //    `CompactionHook` watches the same Arc.
+    // 4. Re-issue the stream with a `"Continue"` prompt — the caller is
+    //    responsible for the following `continue;` so control stays in the
+    //    primary loop and the same error cascade governs the retry.
+    // 5. Reset per-turn locals so a subsequent FinalResponse / truncation /
+    //    image handler sees a fresh state machine.
+    //
+    // CMPCT-028: The macro now takes an explicit `CompactionRecoveryPolicy`
+    // expression. The retry prompt string is obtained via
+    // `compaction_retry_prompt(policy)` instead of being hardcoded to
+    // "Continue", so when partial Assistant text was preserved by
+    // `flush_partial_state_before_compaction` the agent receives a resume
+    // prompt that references the preserved work instead of the ambiguous
+    // "Continue" signal. Path A (pre-prompt compaction) is unchanged because
+    // it cannot have preserved partial text.
+    //
+    // Followed by `continue;` at each call site (Paths B, C, D).
+    macro_rules! in_loop_compaction_restart {
+        ($policy:expr) => {{
+            compaction_retry_count += 1;
+            if compaction_retry_count > MAX_COMPACTION_RETRIES {
+                let msg = super::recovery_compaction::build_compaction_budget_exhausted_message(
+                    MAX_COMPACTION_RETRIES,
+                );
+                warn!(
+                    "CMPCT-027: Compaction retry budget exhausted after {} attempts",
+                    MAX_COMPACTION_RETRIES
+                );
+                output.emit_error(&msg);
+                return Err(anyhow::anyhow!(
+                    "Compaction retry budget exhausted after {} attempts",
+                    MAX_COMPACTION_RETRIES
+                ));
+            }
+
+            super::recovery_compaction::execute_compaction_and_capture_events(
+                session,
+                compaction_in_progress.clone(),
+                prompt,
+                threshold,
+                context_window,
+                &token_state,
+                output,
+            )
+            .await?;
+
+            // Reset outer token_state in-place so the new hook watches the
+            // same Arc. Cleared flag + fresh counters let the next error
+            // classifier pass correctly (classify_compaction_branch reads
+            // this same Arc).
+            if let Ok(mut state) = token_state.lock() {
+                state.compaction_needed = false;
+                state.input_tokens = session.token_tracker.input_tokens;
+                state.cache_read_input_tokens = 0;
+                state.cache_creation_input_tokens = 0;
+                state.output_tokens = 0;
+            }
+            let new_hook = CompactionHook::new(Arc::clone(&token_state), threshold);
+
+            // CMPCT-028: pick the retry prompt from the caller-supplied
+            // policy and log the selection so operators can audit which
+            // branch fired. The string returned by `compaction_retry_prompt`
+            // is static (`&'static str`), so forwarding it into rig is
+            // zero-cost.
+            let selected_policy: super::recovery_compaction::CompactionRecoveryPolicy = $policy;
+            let retry_prompt =
+                super::recovery_compaction::compaction_retry_prompt(selected_policy);
+            debug!(
+                policy = ?selected_policy,
+                retry_prompt = retry_prompt,
+                compaction_retry_count = compaction_retry_count,
+                max_compaction_retries = MAX_COMPACTION_RETRIES,
+                "[stream_loop] CMPCT-028: issuing in-loop post-compaction retry stream with policy-selected prompt"
+            );
+
+            debug!(
+                "API REQUEST (compaction retry {}/{}) - Provider: {}, Model: {}",
+                compaction_retry_count,
+                MAX_COMPACTION_RETRIES,
+                session.current_provider_name(),
+                session.current_model_id().as_deref().unwrap_or("NONE")
+            );
+
+            // Re-issue the stream in place. Same `stream` binding, so the
+            // enclosing loop's `match stream.next().await` keeps running.
+            stream = agent
+                .prompt_streaming_with_history_and_hook(
+                    retry_prompt,
+                    &mut session.messages,
+                    new_hook,
+                )
+                .await;
+
+            // Reset per-turn streaming state.
+            tool_calls_buffer.clear();
+            last_tool_name = None;
+            final_stop_reason = None;
+            accumulated_reasoning.clear();
+            turn_tool_infos.clear();
+            tool_execution_in_progress = false;
+
+            streaming_display = StreamingTokenDisplay::new(
+                session.token_tracker.input_tokens,
+                0,
+                0,
+                0,
+            );
+        }};
+    }
 
     loop {
         // Check interruption at start of each iteration (works for both modes)
@@ -946,8 +1091,38 @@ where
                             GeminiContinuationResult::Completed => {
                                 return Ok(());
                             }
-                            GeminiContinuationResult::CompactionNeeded => {
-                                break;
+                            GeminiContinuationResult::CompactionNeeded(policy) => {
+                                // CMPCT-027: Path D — compaction was triggered
+                                // inside the Gemini continuation sub-loop.
+                                // `begin_compaction_recovery(..., pop_user_prompt=false)`
+                                // has already run inside `handle_gemini_continuation`,
+                                // so partial text is saved, the continuation
+                                // prompt is preserved mid-flight, and the
+                                // lifecycle start events have been emitted.
+                                // We now run the in-loop restart so the same
+                                // error cascade governs the new stream.
+                                //
+                                // CMPCT-028: the Gemini helper selected the
+                                // CompactionRecoveryPolicy when it called
+                                // `begin_compaction_recovery` (or computed it
+                                // inline for the stream-end-with-flag path).
+                                // We forward the policy into the macro so
+                                // the retry prompt string is chosen based on
+                                // whether partial text was preserved rather
+                                // than defaulting to the hardcoded "Continue".
+                                debug!(
+                                    policy = ?policy,
+                                    "[stream_loop] CMPCT-027: in-loop compaction restart (Path D — Gemini continuation)"
+                                );
+                                // Flush any assistant_text that was left in
+                                // the primary loop's buffer. The Gemini
+                                // helper operated on its own local buffer so
+                                // the outer `assistant_text` is typically
+                                // empty here, but clearing defensively
+                                // prevents it from leaking into the retry.
+                                assistant_text.clear();
+                                in_loop_compaction_restart!(policy);
+                                continue;
                             }
                         }
                     }
@@ -1126,30 +1301,124 @@ where
                         e,
                         std::any::type_name_of_val(&e)
                     );
-                    
-                    // CMPCT-002: Check if this error is due to compaction hook cancellation
-                    // using the helper function for DRY compliance
-                    let is_compaction_cancel = is_compaction_cancelled(&e);
 
-                    // Check if compaction was actually triggered by the hook
-                    let compaction_triggered = token_state
-                        .lock()
-                        .map(|state| state.compaction_needed)
-                        .unwrap_or(false);
+                    // CMPCT-026: Single-source-of-truth classification. The
+                    // helper treats the error as authoritative (structural
+                    // downcast to `PromptError::PromptCancelled` via
+                    // CMPCT-025's `extract_prompt_cancelled`) and treats the
+                    // shared `TokenState.compaction_needed` flag as
+                    // defence-in-depth. When the two signals disagree, the
+                    // helper emits a structured `tracing::warn!` AND records
+                    // the disagreement variant on the returned branch for
+                    // downstream observability. See
+                    // `error_classifiers::classify_compaction_branch`.
+                    let branch = classify_compaction_branch(&e, &token_state);
 
-                    // PROV-009-DEBUG: Log error classification
                     debug!(
-                        "[stream_loop] Error classification: is_compaction_cancel={}, compaction_triggered={}",
-                        is_compaction_cancel,
-                        compaction_triggered
+                        "[stream_loop] Error classification: branch={:?}",
+                        branch
                     );
 
-                    if is_compaction_cancel && compaction_triggered {
-                        // This is a compaction cancellation - break to run compaction logic
-                        // Don't log as error, this is expected behavior
-                        debug!("[stream_loop] Breaking due to compaction cancellation (expected)");
-                        break;
+                    if matches!(branch, CompactionBranch::Recover { .. }) {
+                        // CMPCT-029: reconcile in-flight tool state BEFORE
+                        // begin_compaction_recovery runs. The recovery order is:
+                        //   1. If PromptCancelled carries a rig chat_history,
+                        //      merge any tool_call/tool_result pairs rig has
+                        //      but fspec's session.messages doesn't yet.
+                        //      The rig patch at streaming.rs site 508 flushes
+                        //      the pending tool pair so it shows up here.
+                        //   2. Drain fspec's tool_calls_buffer into
+                        //      session.messages (Path 486 recovery — the hook
+                        //      cancelled BEFORE the tool executed, so there
+                        //      is no result to merge; the call is still in
+                        //      the buffer from handle_tool_call).
+                        //   3. Close any remaining orphan tool_calls with a
+                        //      synthetic "cancelled_by_context_limit" result.
+                        //
+                        // After this, execute_compaction's defensive orphan
+                        // guard will pass cleanly — regardless of which cancel
+                        // site rig fired at.
+                        if let Some(rig_chat_history) = extract_prompt_cancelled(&e) {
+                            debug!(
+                                rig_history_len = rig_chat_history.len(),
+                                "[stream_loop] CMPCT-029: reconciling session.messages with rig PromptCancelled chat_history"
+                            );
+                            reconcile_session_messages(&mut session.messages, rig_chat_history);
+                        } else {
+                            debug!(
+                                "[stream_loop] CMPCT-029: PromptCancelled payload not found in error chain; skipping reconcile"
+                            );
+                        }
+
+                        if !tool_calls_buffer.is_empty() {
+                            debug!(
+                                buffer_len = tool_calls_buffer.len(),
+                                "[stream_loop] CMPCT-029: draining tool_calls_buffer into session.messages (site 486 recovery)"
+                            );
+                            add_assistant_tool_calls_message(
+                                &mut session.messages,
+                                tool_calls_buffer.clone(),
+                            )?;
+                            tool_calls_buffer.clear();
+                        }
+
+                        let injected = inject_synthetic_tool_results_for_orphans(&mut session.messages);
+                        if injected > 0 {
+                            warn!(
+                                injected,
+                                "[stream_loop] CMPCT-029: injected {} synthetic cancelled tool_result(s) before compaction",
+                                injected
+                            );
+                        }
+
+                        // CMPCT-023: unified compaction-recovery entry.
+                        // The helper saves partial assistant text (BUG 2),
+                        // flushes the token tracker (BUG 6), pops the trailing
+                        // User prompt (pop_user_prompt=true — it has not been
+                        // consumed by the API), sets compaction_needed on the
+                        // shared token state (warn on disagreement), clears the
+                        // global tool progress callback, and emits
+                        // compaction_started + compaction_progress events.
+                        //
+                        // CMPCT-027: after recovery, we now run the compaction
+                        // + stream restart IN-LOOP via the
+                        // `in_loop_compaction_restart!()` macro so all
+                        // post-compaction errors pass through the SAME error
+                        // cascade as the original stream (BUG 5 fix).
+                        //
+                        // CMPCT-026: this branch fires on ANY PromptCancelled
+                        // in the error chain even if `compaction_needed` was
+                        // false — classify_compaction_branch has already
+                        // defensively set the flag and emitted a warning.
+                        //
+                        // CMPCT-028: capture the CompactionRecoveryPolicy
+                        // returned by begin_compaction_recovery and thread it
+                        // into the macro so the retry prompt is the resume
+                        // prompt when partial assistant text was preserved,
+                        // or "Continue" when no partial text existed.
+                        debug!(
+                            "[stream_loop] CMPCT-023: invoking begin_compaction_recovery (Path C, pop_user_prompt=true)"
+                        );
+                        let policy = super::recovery_compaction::begin_compaction_recovery(
+                            session,
+                            &token_state,
+                            &streaming_display,
+                            &mut assistant_text,
+                            output,
+                            true,
+                        )?;
+
+                        debug!(
+                            policy = ?policy,
+                            "[stream_loop] CMPCT-027: in-loop compaction restart (Path C)"
+                        );
+                        in_loop_compaction_restart!(policy);
+                        continue;
                     }
+                    // CMPCT-026: NotCompaction — fall through to the
+                    // prompt-too-long / image-content / truncation classifier
+                    // cascade. Any `FlagExtraneous` disagreement has already
+                    // been surfaced via `tracing::warn!` inside the helper.
 
                     // Check if this is a "prompt is too long" error from the API
                     let error_str = e.to_string();
@@ -1171,25 +1440,46 @@ where
                     
                     if is_prompt_too_long && has_compactable_turns {
                         info!("Received 'prompt is too long' error, triggering recovery compaction");
-                        // UX-002: Use structured compaction event instead of string status
-                        output.emit_compaction_started();
-                        
-                        // UX-002: Emit progress for emergency compaction
-                        let total_turns = session.messages.len() as u32 / 2;
-                        output.emit_compaction_progress("Emergency compaction", 0, total_turns.max(1));
+                        // CMPCT-023: unified compaction-recovery entry
+                        // (Path B — API-returned "prompt is too long").
+                        //
+                        // The helper saves partial assistant text, flushes the
+                        // token tracker, pops the trailing User prompt (it was
+                        // pushed by rig before the error and has not been
+                        // consumed), sets compaction_needed, clears the tool
+                        // progress callback, and emits compaction_started +
+                        // compaction_progress events.
+                        //
+                        // CMPCT-027: after recovery, we now run the compaction
+                        // + stream restart IN-LOOP via the
+                        // `in_loop_compaction_restart!()` macro so any
+                        // post-compaction "prompt is too long" (i.e. the
+                        // compaction didn't reduce context enough), PromptCancelled
+                        // (hook fires again), truncation, or image-content
+                        // error is handled by the SAME error cascade (BUG 5 fix).
+                        //
+                        // CMPCT-028: capture the CompactionRecoveryPolicy
+                        // returned by begin_compaction_recovery and thread it
+                        // into the macro so the retry prompt honors the
+                        // partial-text preservation signal.
+                        debug!(
+                            "[stream_loop] CMPCT-023: invoking begin_compaction_recovery (Path B, pop_user_prompt=true)"
+                        );
+                        let policy = super::recovery_compaction::begin_compaction_recovery(
+                            session,
+                            &token_state,
+                            &streaming_display,
+                            &mut assistant_text,
+                            output,
+                            true,
+                        )?;
 
-                        // Pop the last user message we added at the start of this function
-                        if let Some(last_msg) = session.messages.last() {
-                            if matches!(last_msg, rig::message::Message::User { .. }) {
-                                session.messages.pop();
-                                info!("Popped last user message from context");
-                            }
-                        }
-
-                        // Set compaction_needed flag so the post-loop logic handles it
-                        signal_compaction_needed(&token_state);
-
-                        break;
+                        debug!(
+                            policy = ?policy,
+                            "[stream_loop] CMPCT-027: in-loop compaction restart (Path B)"
+                        );
+                        in_loop_compaction_restart!(policy);
+                        continue;
                     }
 
                     // EXT-016: Check if this is an image content error (dimensions, size, etc.)
@@ -1487,45 +1777,40 @@ where
     // TOOL-011/BUG-126: Clear the tool progress callback
     set_tool_progress_callback(Uuid::nil(), None);
 
-    // Check if hook triggered compaction
-    let compaction_needed = token_state
-        .lock()
-        .map(|state| state.compaction_needed)
-        .unwrap_or(false);
-
-    // PROV-005-DEBUG: Log post-loop compaction state
-    debug!(
-        "[stream_loop] POST-LOOP: compaction_needed={}, is_interrupted={}",
-        compaction_needed,
-        is_interrupted.load(Acquire)
-    );
-
-    if compaction_needed && !is_interrupted.load(Acquire) {
-        // Extracted to compaction_retry.rs
-        use super::compaction_retry::handle_compaction_retry;
-        return handle_compaction_retry(
-            &agent,
-            session,
-            output,
-            &is_interrupted,
-            &mut input_queue,
-            &token_state,
-            threshold,
-            context_window,
-            compaction_in_progress,
-            prompt,
-        ).await;
+    // CMPCT-027: The post-loop `handle_compaction_retry` call that used to
+    // live here has been removed. Compaction-and-retry now happens in-place
+    // via the `in_loop_compaction_restart!()` macro at Paths B/C/D, so the
+    // retry stream stays governed by the primary loop's full error cascade
+    // (prompt-too-long, truncation, image-content, stall-timeout, network,
+    // PromptCancelled). Reaching this point with `compaction_needed == true`
+    // would mean a loop exited without calling the macro — that is a bug.
+    // We keep a defensive debug log to surface such regressions.
+    #[cfg(debug_assertions)]
+    {
+        if let Ok(state) = token_state.lock() {
+            if state.compaction_needed && !is_interrupted.load(Acquire) {
+                debug!(
+                    "[stream_loop] POST-LOOP: compaction_needed=true but loop exited — \
+                     this should not happen after CMPCT-027; investigate the exit path"
+                );
+            }
+        }
     }
 
     // CMPCT-001: Update session token tracker with BOTH current context AND cumulative billing
     // Uses the consolidated update_from_usage method to reduce code duplication
     if !is_interrupted.load(Acquire) {
         let final_display = streaming_display.current();
+        // TOKEN-001: compute per-turn delta via the single TokenTracker helper
+        // BEFORE update_from_usage mutates self.output_tokens.
+        let per_turn_output_delta = session
+            .token_tracker
+            .compute_output_delta(final_display.output_tokens);
         let final_usage = ApiTokenUsage::new(
             final_display.input_tokens,
             final_display.cache_read_tokens,
             final_display.cache_creation_tokens,
-            0,
+            per_turn_output_delta,
         );
         tracing::debug!(
             "CMPCT-001: Before update: cumulative_billed_input={}, final_display.input_tokens={}",

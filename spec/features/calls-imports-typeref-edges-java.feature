@@ -1,6 +1,5 @@
 @KGRAPH-046
 Feature: Calls/Imports/TypeRef edges — Java
-
   """
   Follows PHP extractor pattern using KindMatcher. Resolves Java package imports
   to file paths by converting dots to path separators + .java.

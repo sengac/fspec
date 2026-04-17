@@ -18,6 +18,7 @@ import { render } from 'ink-testing-library';
 import { Text } from 'ink';
 import { InputManager } from '../../input/InputManager';
 import { useInputCompat, InputPriority } from '../../input';
+import { SGR_BUTTON, parseSgrMouse } from '../../utils/mouseProtocol';
 
 describe('Input priority propagation', () => {
   beforeEach(() => {
@@ -286,16 +287,17 @@ describe('Input priority propagation', () => {
       let modalOpen = false;
       const virtualListScroll = vi.fn();
 
-      // Simulates AgentView mouse handling
+      // Simulates AgentView mouse handling (BUG-131: uses SGR protocol)
       function AgentViewSim() {
         useInputCompat({
           id: 'agent-view',
           priority: InputPriority.LOW,
           isActive: true,
-          handler: (input, key) => {
+          handler: (input) => {
             // Only handle mouse scroll when modal is open
-            if (key.mouse) {
-              if (modalOpen && (key.mouse.button === 'wheelUp' || key.mouse.button === 'wheelDown')) {
+            const mouseEvent = parseSgrMouse(input);
+            if (mouseEvent) {
+              if (modalOpen && (mouseEvent.button === SGR_BUTTON.SCROLL_UP || mouseEvent.button === SGR_BUTTON.SCROLL_DOWN)) {
                 return true; // Handle scroll in modal
               }
               // Let unhandled mouse events propagate to VirtualList
@@ -307,14 +309,15 @@ describe('Input priority propagation', () => {
         return null;
       }
 
-      // Simulates VirtualList scroll handling
+      // Simulates VirtualList scroll handling (BUG-131: uses SGR protocol)
       function VirtualListSim() {
         useInputCompat({
           id: 'virtual-list',
           priority: InputPriority.BACKGROUND,
           isActive: true,
-          handler: (input, key) => {
-            if (key.mouse && (key.mouse.button === 'wheelUp' || key.mouse.button === 'wheelDown')) {
+          handler: (input) => {
+            const mouseEvent = parseSgrMouse(input);
+            if (mouseEvent && (mouseEvent.button === SGR_BUTTON.SCROLL_UP || mouseEvent.button === SGR_BUTTON.SCROLL_DOWN)) {
               virtualListScroll();
               return true;
             }
@@ -335,13 +338,18 @@ describe('Input priority propagation', () => {
       // With no modal open, mouse scroll should reach VirtualList
       modalOpen = false;
       
-      // Note: We can't easily simulate key.mouse in stdin, but we can verify
-      // the logic by checking that AgentView returns false for unhandled mouse
-      // The important thing is the return false allows propagation
+      // BUG-131: Send SGR scroll-up event (post-ESC-strip format)
+      stdin.write('[<64;10;20M');
+
+      // VirtualList should have received the scroll event
+      expect(virtualListScroll).toHaveBeenCalled();
 
       // When modal IS open, scroll should be consumed by AgentView
+      virtualListScroll.mockClear();
       modalOpen = true;
-      // AgentView would return true, VirtualList wouldn't be called
+      stdin.write('[<64;10;20M');
+      // AgentView returns true, VirtualList shouldn't be called
+      expect(virtualListScroll).not.toHaveBeenCalled();
     });
   });
 

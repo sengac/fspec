@@ -1,6 +1,5 @@
 @KGRAPH-016
 Feature: AST Graph Data Model & Nanograph Schema
-
   """
   Uses nanograph PG schema format for the AST graph schema definition
   Refactors existing graph/mod.rs singleton pattern into a reusable GraphDatabase struct that wraps nanograph::Database with init/open/close/load/query methods
@@ -29,7 +28,6 @@ Feature: AST Graph Data Model & Nanograph Schema
   #   4. Reuse the GraphDatabase abstraction for a second database instance with a different schema to prove separation
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to query a structural graph of the codebase's AST relationships

@@ -195,6 +195,7 @@ import { mapProviderIdToInternal } from '../utils/provider-mapping';
 // route to the OAuth login flow instead of surfacing a "requires credentials"
 // error toast.
 import { shouldDispatchCopilotLogin } from '../utils/copilotLoginDispatch';
+import { MOUSE_ENABLE, MOUSE_DISABLE, SGR_BUTTON, parseSgrMouse } from '../utils/mouseProtocol';
 
 interface StreamChunk {
   type: string;
@@ -1167,8 +1168,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       modelId: string,
       reasoning = false,
       hasVision = false,
-      contextWindow = 0
-    ) => ({ modelId, reasoning, hasVision, contextWindow });
+      contextWindow = 0,
+      compactionThreshold?: number
+    ) => ({ modelId, reasoning, hasVision, contextWindow, compactionThreshold });
 
     // Get fallback model ID from local state
     const localModelId =
@@ -1187,6 +1189,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // Has session with Rust model data
     const rustModel = rustSnapshot.model;
     if (rustModel?.modelId) {
+      // CTX-006: Use Rust-resolved context_window when available (single source of truth).
+      // This ensures the displayed value matches what the compaction engine uses.
+      const rustContextWindow = rustModel.contextWindow;
+      // CTX-009: Extract compaction threshold for SessionHeader badge
+      const rustCompactionThreshold = rustModel.compactionThreshold ?? undefined;
+
       const model = findModelInProviders(
         rustModel.providerId,
         rustModel.modelId
@@ -1196,11 +1204,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
           model.name,
           model.reasoning,
           model.hasVision,
-          model.contextWindow
+          // CTX-006: Prefer Rust-resolved context_window over models.dev data
+          rustContextWindow ?? model.contextWindow,
+          rustCompactionThreshold
         );
       }
-      // Rust model exists but not found in providers - use rust data as fallback
-      return createModelInfo(rustModel.modelId);
+      // Rust model exists but not found in providers - use Rust data as fallback
+      return createModelInfo(rustModel.modelId, false, false, rustContextWindow ?? 0, rustCompactionThreshold);
     }
 
     // Fallback to local state with full model info if available
@@ -1224,6 +1234,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     reasoning: displayReasoning,
     hasVision: displayHasVision,
     contextWindow: displayContextWindow,
+    compactionThreshold: displayCompactionThreshold,
   } = rustModelInfo;
 
   // VIEWNV-001: Calculate session number (1-based index of current session in list)
@@ -1390,11 +1401,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // Enable mouse tracking for model selector and settings tab scrolling
   useEffect(() => {
     if (showModelSelector || showSettingsTab || isResumeMode) {
-      // Enable mouse button event tracking (clicks and scroll wheel)
-      process.stdout.write('\x1b[?1000h');
+      // BUG-131: Enable SGR mouse button event tracking (clicks and scroll wheel)
+      process.stdout.write(MOUSE_ENABLE);
       return () => {
         // Disable mouse tracking on unmount or when screens close
-        process.stdout.write('\x1b[?1000l');
+        process.stdout.write(MOUSE_DISABLE);
       };
     }
   }, [showModelSelector, showSettingsTab, isResumeMode]);
@@ -4567,37 +4578,21 @@ export const AgentView: React.FC<AgentViewProps> = ({
     description: 'Agent view main keyboard handler',
     isActive: !showCreateSessionDialog,
     handler: (input, key) => {
-      if (input.startsWith('[M') || key.mouse) {
-        // Parse raw mouse escape sequences for scroll wheel
-        if (input.startsWith('[M')) {
-          const buttonByte = input.charCodeAt(2);
-          // Button codes: 96 = scroll up, 97 = scroll down (xterm encoding)
-          // Note: TUI-042 turn selection scroll is handled by VirtualList via getNextIndex
-          if (isResumeMode) {
-            if (buttonByte === 96) {
-              navigateResumeByDelta(-1);
-              return true;
-            } else if (buttonByte === 97) {
-              navigateResumeByDelta(1);
-              return true;
-            }
-          }
-          // TUI-074: Settings tab mouse scroll now handled by ProviderSettingsScreen
-        }
-        // Handle parsed mouse events from Ink
+      // BUG-131: Parse SGR mouse events
+      const mouseEvent = parseSgrMouse(input);
+      if (mouseEvent) {
+        // SGR mouse scroll for resume mode
         // Note: TUI-042 turn selection scroll is handled by VirtualList via getNextIndex
-        if (key.mouse) {
-          if (isResumeMode) {
-            if (key.mouse.button === 'wheelUp') {
-              navigateResumeByDelta(-1);
-              return true;
-            } else if (key.mouse.button === 'wheelDown') {
-              navigateResumeByDelta(1);
-              return true;
-            }
+        if (isResumeMode) {
+          if (mouseEvent.button === SGR_BUTTON.SCROLL_UP) {
+            navigateResumeByDelta(-1);
+            return true;
+          } else if (mouseEvent.button === SGR_BUTTON.SCROLL_DOWN) {
+            navigateResumeByDelta(1);
+            return true;
           }
-          // TUI-074: Settings tab mouse scroll now handled by ProviderSettingsScreen
         }
+        // TUI-074: Settings tab mouse scroll now handled by ProviderSettingsScreen
         // Let unhandled mouse events propagate to VirtualList (BACKGROUND priority)
         // This allows conversation scrolling when not in a modal/overlay mode
         return false;
@@ -5248,6 +5243,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         hasReasoning={displayReasoning}
         hasVision={displayHasVision}
         contextWindow={displayContextWindow}
+        compactionThreshold={displayCompactionThreshold}
         isDebugEnabled={displayIsDebugEnabled}
         isSelectMode={isTurnSelectMode}
         thinkingLevel={detectedThinkingLevel}

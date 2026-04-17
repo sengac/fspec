@@ -1,7 +1,6 @@
 @done
 @KGRAPH-054
 Feature: Fix AST extractor edge quality gaps — Python/Java/Go missing Imports edges, Go missing method-body Calls, Go missing TypeRef edges
-
   """
   Uses tree-sitter AST queries in Rust extractors — each extractor is in codelet/napi/src/ast_{lang}_extractor.rs
   File→File Imports edges require resolving module/package names to actual file paths using the known_files list passed to each extractor
@@ -34,7 +33,6 @@ Feature: Fix AST extractor edge quality gaps — Python/Java/Go missing Imports 
   #   8. PHP slim repo: after fixes, still shows 9 orphan files (HttpTooManyRequestsException etc) — no regression
   #
   # ========================================
-
   Background: User Story
     As a developer using ast_dead_code
     I want to get accurate dead code detection across Python, Java, and Go projects
@@ -99,4 +97,3 @@ Feature: Fix AST extractor edge quality gaps — Python/Java/Go missing Imports 
     And "com/google/gson/GsonBuilder.java" contains "import com.google.gson.Gson;"
     When I run the Java AST extractor with the known_files set
     Then an Imports edge should exist from "GsonBuilder.java" to "Gson.java"
-

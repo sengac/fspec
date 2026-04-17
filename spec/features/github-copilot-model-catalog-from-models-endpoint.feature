@@ -5,7 +5,6 @@
 @rust
 @PROV-056
 Feature: GitHub Copilot model catalog, provider options & reasoning effort
-
   """
   Wire format is always OpenAI-shaped — reuse existing OpenAIFspecFacade for wire translation; only the reasoning-variant selection and options transformation differs per family
   CopilotModelCatalogService lives at codelet/providers/src/copilot/models.rs; exposes fetch_models(base_url, token) -> Result<Vec<ModelInfo>>; the function calls /models, parses the response, filters by model_picker_enabled, and maps each entry to ModelInfo via build_model_info — there is NO merge step and NO existing parameter
@@ -38,7 +37,6 @@ Feature: GitHub Copilot model catalog, provider options & reasoning effort
   #   6. First fetch from /models returns two models; the second fetch from /models returns only one of them; after the second fetch the catalog contains only that one model — the missing model is gone, with no merging or fallback to the prior fetch
   #
   # ========================================
-
   Background: User Story
     As a codelet user authenticated with GitHub Copilot
     I want to see exactly the model catalog the Copilot /models endpoint returns — with the reasoning effort tiers it advertises and zero retention enforced

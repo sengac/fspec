@@ -1,6 +1,5 @@
 @BUG-096
 Feature: Missing remove commands for foundation event storm artifacts
-
   """
   Follow existing add command file structure: implementation + help in src/commands/, registration import in src/cli/program.ts
   Use fileManager.transaction() for atomic JSON mutations — same pattern as add-foundation-bounded-context.ts
@@ -33,7 +32,6 @@ Feature: Missing remove commands for foundation event storm artifacts
   #   9. After removing items, FOUNDATION.md is regenerated and no longer shows the removed items
   #
   # ========================================
-
   Background: User Story
     As a developer using foundation event storm
     I want to remove bounded contexts, aggregates, domain events, and commands from the foundation event storm

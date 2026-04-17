@@ -394,6 +394,16 @@
       "prefix": "NET",
       "description": "Network resilience and connectivity error recovery",
       "createdAt": "2026-03-29T22:02:30.353Z"
+    },
+    "LIMITS": {
+      "prefix": "LIMITS",
+      "description": "Model limits resolution and compaction threshold system",
+      "createdAt": "2026-04-15T23:13:43.541Z"
+    },
+    "TOKEN": {
+      "prefix": "TOKEN",
+      "description": "Token tracking and billing accumulation bugs",
+      "createdAt": "2026-04-16T11:22:35.863Z"
     }
   }
 }

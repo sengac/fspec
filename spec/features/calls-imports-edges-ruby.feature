@@ -1,6 +1,5 @@
 @KGRAPH-049
 Feature: Calls/Imports edges — Ruby
-
   """
   Uses edge_helpers shared functions. No TypeRef (Ruby is dynamically typed).
   Ruby uses require_relative for local imports.

@@ -9,6 +9,10 @@ import type { UseProviderSettingsStateReturn } from '../hooks/useProviderSetting
 import type { HookMode } from '../types/settingsMode';
 import { PROFILE_FORM_FIELDS } from '../constants/providerSettings';
 import { filterPrintableChars } from '../utils/providerSettingsHelpers';
+import {
+  parseCompactionThreshold,
+  formatCompactionThreshold,
+} from '../utils/compactionThresholdParser';
 
 /**
  * Handles input in profile form mode (create/edit)
@@ -112,6 +116,9 @@ function handleSave(
       ...(values.maxOutputTokens && {
         maxOutputTokens: values.maxOutputTokens,
       }),
+      ...(values.compactionThreshold && {
+        compactionThreshold: values.compactionThreshold,
+      }),
     };
     void providerSettings
       .saveProfileConfig(mode.providerId, name, config)
@@ -149,6 +156,12 @@ function handleCharInput(
       if (field === 'contextWindow' || field === 'maxOutputTokens') {
         const num = parseInt(newValue, 10);
         return { ...prev, [field]: isNaN(num) ? undefined : num };
+      }
+      if (field === 'compactionThreshold') {
+        // CTX-008: Store raw string during editing, parse on save
+        // parseCompactionThreshold handles "80%", "200000", etc.
+        const parsed = parseCompactionThreshold(newValue);
+        return { ...prev, [field]: parsed };
       }
       return { ...prev, [field]: newValue };
     });

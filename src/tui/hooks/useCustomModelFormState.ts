@@ -116,6 +116,9 @@ export function useCustomModelFormState(): UseCustomModelFormStateReturn {
       ...(values.maxOutputTokens && {
         maxOutputTokens: values.maxOutputTokens,
       }),
+      ...(values.compactionThreshold && {
+        compactionThreshold: values.compactionThreshold,
+      }),
       ...(values.reasoning !== undefined && { reasoning: values.reasoning }),
       ...(values.hasVision !== undefined && { hasVision: values.hasVision }),
     };

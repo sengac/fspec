@@ -1,6 +1,5 @@
 @KGRAPH-009
 Feature: DeepSearch Graph Integration
-
   """
   Modifies DeepSearch sub-agent builder in codelet/tools to conditionally add GraphSearch tool. Injects graph context into system prompt before spawning sub-agent. All integration is opt-in — zero behavior change when graph is absent.
   """
@@ -20,12 +19,10 @@ Feature: DeepSearch Graph Integration
   #   3. Graph has concepts related to query → system prompt includes knowledge graph context section
   #
   # ========================================
-
   Background: User Story
     As an agent developer
     I want to have DeepSearch sub-agents optionally use the knowledge graph for context-enriched research
     So that research queries are informed by existing concept relationships and decisions
-
 
   Scenario: GraphSearch tool added when graph database is initialized
     Given the knowledge graph database is initialized and available
@@ -33,13 +30,11 @@ Feature: DeepSearch Graph Integration
     Then the GraphSearch tool is included in the sub-agent's toolset
     And the sub-agent has 8 tools total
 
-
   Scenario: DeepSearch works without graph database
     Given no knowledge graph database exists
     When a DeepSearch sub-agent is being built
     Then the sub-agent has the default 7 tools
     And no error is raised
-
 
   Scenario: Graph context injected into system prompt when data exists
     Given the knowledge graph contains concepts related to the search query

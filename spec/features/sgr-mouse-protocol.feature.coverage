@@ -1,0 +1,189 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse SGR scroll-up mouse event",
+      "testMappings": [
+        {
+          "file": "src/tui/utils/__tests__/mouseProtocol.test.ts",
+          "lines": "24-44",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/mouseProtocol.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse SGR scroll-down mouse event",
+      "testMappings": [
+        {
+          "file": "src/tui/utils/__tests__/mouseProtocol.test.ts",
+          "lines": "46-68",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/mouseProtocol.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse SGR left-click press event",
+      "testMappings": [
+        {
+          "file": "src/tui/utils/__tests__/mouseProtocol.test.ts",
+          "lines": "70-85",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/mouseProtocol.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse SGR left-click release event",
+      "testMappings": [
+        {
+          "file": "src/tui/utils/__tests__/mouseProtocol.test.ts",
+          "lines": "87-102",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/mouseProtocol.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject non-mouse input",
+      "testMappings": [
+        {
+          "file": "src/tui/utils/__tests__/mouseProtocol.test.ts",
+          "lines": "104-127",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/mouseProtocol.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mouse enable sequence uses SGR protocol",
+      "testMappings": [
+        {
+          "file": "src/tui/utils/__tests__/mouseProtocol.test.ts",
+          "lines": "133-139",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/mouseProtocol.ts",
+              "lines": [
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mouse disable sequence uses reverse order",
+      "testMappings": [
+        {
+          "file": "src/tui/utils/__tests__/mouseProtocol.test.ts",
+          "lines": "141-148",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/mouseProtocol.ts",
+              "lines": [
+                20,
+                21,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/utils/__tests__/mouseProtocol.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/utils/mouseProtocol.ts"
+    ],
+    "totalLinesCovered": 176
+  }
+}

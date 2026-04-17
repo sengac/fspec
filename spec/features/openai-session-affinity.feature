@@ -1,6 +1,5 @@
 @PROV-051
 Feature: Fireworks.ai Session Affinity for Prompt Cache Optimization
-
   """
   Session affinity header set via rig ClientBuilder::http_headers() at client construction time in OpenAIProvider::from_api_key_with_options()
   from_api_key_with_options() needs a session_id parameter (or reads OPENAI_SESSION_AFFINITY env var) to set the header value
@@ -36,7 +35,6 @@ Feature: Fireworks.ai Session Affinity for Prompt Cache Optimization
   #   A: Thread the session_id from the caller into get_openai(). The session UUID is already available at all call sites (session.id in NAPI, uuid::Uuid::new_v4() in CLI). Add a session_id parameter to get_openai() and pass it through to from_api_key_with_options(). This is cleaner than env vars and consistent with create_rig_agent() which already takes session_id.
   #
   # ========================================
-
   Background: User Story
     As a developer using Fireworks.ai models
     I want to have session affinity headers sent with API requests

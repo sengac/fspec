@@ -95,34 +95,43 @@ export async function selectModel(
         // Profile-based model: use sessionSetModelProfile (bypasses registry)
         // MODEL-005: Pass context window and max output tokens
         // MODEL-004: Pass facade override for custom model dispatch
+        // CTX-008: Pass compaction threshold if configured
         await sessionSetModelProfile(
           sessionId,
           selection.providerId,
           selection.modelId,
           selection.contextWindow,
           selection.maxOutput,
-          selection.facade ?? null
+          selection.facade ?? null,
+          selection.compactionThreshold?.type ?? null,
+          selection.compactionThreshold?.value ?? null
         );
       } else if (selection.providerId === 'codex') {
         // PROV-018: Codex models bypass registry (not in models.dev under 'codex')
         // MODEL-005: Pass context window and max output tokens
+        // CTX-008: Pass compaction threshold if configured
         await sessionSetModelProfile(
           sessionId,
           selection.providerId,
           selection.modelId,
           selection.contextWindow,
           selection.maxOutput,
-          null
+          null,
+          selection.compactionThreshold?.type ?? null,
+          selection.compactionThreshold?.value ?? null
         );
       } else {
         // Cloud provider: use sessionSetModel (uses registry validation)
         // MODEL-005: Pass context window and max output tokens
+        // CTX-008: Pass compaction threshold if configured
         await sessionSetModel(
           sessionId,
           selection.providerId,
           selection.modelId,
           selection.contextWindow,
-          selection.maxOutput
+          selection.maxOutput,
+          selection.compactionThreshold?.type ?? null,
+          selection.compactionThreshold?.value ?? null
         );
       }
       onRefreshRustState?.(sessionId);

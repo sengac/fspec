@@ -700,7 +700,7 @@ impl TryFrom<(String, crate::completion::CompletionRequest)> for CompletionReque
             full_history.extend(
                 partial_history
                     .into_iter()
-                    .map(|x| <Vec<InputItem>>::try_from(x))
+                    .map(<Vec<InputItem>>::try_from)
                     .collect::<Result<Vec<Vec<InputItem>>, _>>()
                     .map_err(|e| CompletionError::ProviderError(format!("Failed to convert message history: {e}")))?
                     .into_iter()

@@ -5,7 +5,6 @@
 @scheduler
 @SCHED-002
 Feature: Schedule Persistence & Schema
-
   """
   TypeScript types in src/types/schedule.ts, JSON Schema in src/schemas/schedule.schema.json
   LockedFileManager.transaction() for atomic writes; Rust reads file directly via tokio::fs (no shared lock needed)
@@ -43,7 +42,6 @@ Feature: Schedule Persistence & Schema
   #   12. Scheduler completes a run — lastRunAt and lastRunStatus fields are updated in the schedule entry
   #
   # ========================================
-
   Background: User Story
     As a system administrator
     I want to define and persist schedule configurations
@@ -52,15 +50,14 @@ Feature: Schedule Persistence & Schema
   # ========================================
   # SCENARIOS
   # ========================================
-
   @happy-path
   Scenario: Add an agent schedule with all required fields
     Given the project has no schedules configured
     When I add an agent schedule "nightly-review" with:
-      | cron     | 0 2 * * *           |
-      | timezone | Australia/Brisbane  |
-      | role     | Code reviewer       |
-      | prompt   | Review PRs          |
+      | cron     | 0 2 * * *          |
+      | timezone | Australia/Brisbane |
+      | role     | Code reviewer      |
+      | prompt   | Review PRs         |
     Then the schedule should be persisted to spec/schedules.json
     And the schedule entry should have jobType "agent"
     And the schedule entry should have status "active"
@@ -77,14 +74,16 @@ Feature: Schedule Persistence & Schema
     And the schedule entry should have jobType "shell"
     And the schedule entry should have status "active"
 
-  @validation @error-handling
+  @validation
+  @error-handling
   Scenario: Reject schedule with invalid cron expression
     Given the project has no schedules configured
     When I try to add a schedule "bad-cron" with cron "0 99 * * *"
     Then the validation should fail with an error about invalid cron syntax
     And spec/schedules.json should not be modified
 
-  @validation @error-handling
+  @validation
+  @error-handling
   Scenario: Reject schedule with invalid timezone
     Given the project has no schedules configured
     When I try to add a schedule "bad-tz" with timezone "Fake/City"
@@ -92,14 +91,16 @@ Feature: Schedule Persistence & Schema
     And the error message should suggest valid timezone values
     And spec/schedules.json should not be modified
 
-  @validation @error-handling
+  @validation
+  @error-handling
   Scenario: Reject schedule with invalid name format
     Given the project has no schedules configured
     When I try to add a schedule "My Schedule!" with valid cron and timezone
     Then the validation should fail requiring slug format
     And spec/schedules.json should not be modified
 
-  @validation @error-handling
+  @validation
+  @error-handling
   Scenario: Reject duplicate schedule name
     Given a schedule "nightly-review" already exists
     When I try to add another schedule named "nightly-review"

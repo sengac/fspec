@@ -1,7 +1,6 @@
 @done
 @AMGR-016
 Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to return
-
   """
   Primary change in codelet/cli/src/interactive/stream_loop.rs — wrap stream.next() in tokio::time::timeout inside the inner streaming loop
   DeepSearch wall-clock timeout in codelet/napi/src/deep_search_handler.rs — wrap build_and_run_agent() call in tokio::time::timeout
@@ -34,7 +33,6 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
   #   7. LLM starts responding with tokens, then stops mid-sentence for 600s — stall timeout fires — partial text is preserved in history — agent transitions to Idle
   #
   # ========================================
-
   Background: User Story
     As a supervisor agent
     I want to detect and recover when a subordinate agent's LLM generation stalls indefinitely
@@ -66,7 +64,8 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
     Then no stall timeout should fire
     And the agent should complete its response successfully
 
-  @stall-detection @deep-search
+  @stall-detection
+  @deep-search
   Scenario: DeepSearch sub-agent stall triggers wall-clock timeout
     Given a subordinate agent invokes a DeepSearch tool
     And the DeepSearch sub-agent's LLM generation stalls indefinitely
@@ -75,7 +74,8 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
     And the parent agent should continue processing with the error result
     And the parent agent should not hang or remain in running state
 
-  @stall-detection @integration
+  @stall-detection
+  @integration
   Scenario: Network retry logic is not affected by stall timeout
     Given a subordinate agent is running and streaming a response
     When a transient network error occurs during streaming
@@ -83,7 +83,8 @@ Feature: Subordinate agent hangs indefinitely when DeepSearch sub-agent fails to
     And the stall timeout should not interfere with the retry backoff
     And the agent should complete normally after successful retry
 
-  @stall-detection @safety
+  @stall-detection
+  @safety
   Scenario: Stream loop panic triggers drop guard to restore idle status
     Given a subordinate agent is running and the stream loop is active
     When an unexpected panic occurs in the stream loop

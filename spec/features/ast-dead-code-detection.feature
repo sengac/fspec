@@ -1,7 +1,6 @@
 @wip
 @KGRAPH-027
 Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + Orphan Query
-
   """
   TS call extraction: Use ast-grep pattern `$CALLEE($$$ARGS)` on function bodies, filter to bare identifiers only (no dots/method calls), cross-reference with known function names from same file + imported names
   TS type reference extraction: Parse function signatures for type annotations (`param: TypeName`, `: ReturnType`), match against known Type nodes from same file + imported type names
@@ -32,14 +31,12 @@ Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + O
   #   8. Test files should be excluded from dead code results by default — tests are leaf nodes, they call production code but nothing calls them
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to detect dead code (orphan files, uncalled functions, unreferenced types) via GraphSearch
     So that identify unused code and keep the codebase clean
 
   # ── Calls Edge Extraction ──────────────────────────────────────
-
   Scenario: Extract Calls edge for cross-file function call via import
     Given a TypeScript file "src/app.ts" with content:
       """
@@ -75,7 +72,6 @@ Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + O
     Then no Calls edges should be emitted
 
   # ── TypeRef Edge Extraction ────────────────────────────────────
-
   Scenario: Extract TypeRef edges from function parameter and return types
     Given a TypeScript file "src/handler.ts" with content:
       """
@@ -88,7 +84,6 @@ Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + O
     And a TypeRef edge should exist from "src-handler-ts::handler" to "src-handler-ts::Response"
 
   # ── Dead Code Query: Orphan Files ──────────────────────────────
-
   Scenario: Detect orphan files with no incoming Imports edges
     Given a graph with File "src/used.ts" imported by "src/app.ts"
     And a graph with File "src/orphan.ts" imported by no other file
@@ -97,7 +92,6 @@ Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + O
     And the result should not include "src/used.ts"
 
   # ── Dead Code Query: Uncalled Functions ────────────────────────
-
   Scenario: Detect uncalled functions with no incoming Calls edges
     Given a graph with Function "app::main" that calls "app::helper"
     And a graph with Function "app::unused" that is never called
@@ -106,7 +100,6 @@ Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + O
     And the result should not include "app::helper"
 
   # ── Dead Code Query: Unreferenced Types ────────────────────────
-
   Scenario: Detect unreferenced types with no incoming TypeRef edges
     Given a graph with Type "handler-ts::Request" referenced by "handler-ts::handler"
     And a graph with Type "handler-ts::OldInterface" referenced by no function
@@ -115,7 +108,6 @@ Feature: Dead Code Detection via AST Graph — Calls/TypeRef Edge Population + O
     And the result should not include "handler-ts::Request"
 
   # ── Filtering ──────────────────────────────────────────────────
-
   Scenario: Exclude test files from dead code results by default
     Given a graph with File "src/__tests__/app.test.ts" that is a test file
     And that test file is never imported by any other file

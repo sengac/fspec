@@ -1,6 +1,5 @@
 @SCHED-013
 Feature: Per-Entry Spawned Task for Sub-Minute Loop Intervals
-
   """
   Uses tokio::spawn per entry — LoopStore becomes active task manager not passive data store
   LoopStore entries: HashMap<String, (LoopEntry, JoinHandle<()>)> — cancel/remove_for_session abort handles
@@ -30,13 +29,13 @@ Feature: Per-Entry Spawned Task for Sub-Minute Loop Intervals
   #   6. Cron schedules at 30s tick continue working identically — no regression
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to set a sub-minute /loop interval and have it fire at the exact cadence specified
     So that I get timely automated prompts without unexpected 30s quantization
 
-  @scheduler @loop
+  @scheduler
+  @loop
   Scenario: Loop fires at exact sub-minute interval
     Given a session is active and idle
     When the user registers a loop with a 5-second interval
@@ -44,20 +43,23 @@ Feature: Per-Entry Spawned Task for Sub-Minute Loop Intervals
     And the prompt fires after exactly 5 seconds
     And the prompt continues firing every 5 seconds thereafter
 
-  @scheduler @loop
+  @scheduler
+  @loop
   Scenario: Minimum interval is 1 second
     Given a session is active and idle
     When the user registers a loop with a 1-second interval
     Then the prompt fires every 1 second
 
-  @scheduler @loop
+  @scheduler
+  @loop
   Scenario: Cancel aborts the spawned task immediately
     Given a session has an active loop
     When the user cancels the loop
     Then the loop task is aborted via JoinHandle
     And no further prompts fire for that loop
 
-  @scheduler @loop
+  @scheduler
+  @loop
   Scenario: Skip firing when session is busy
     Given a session has an active loop with a 5-second interval
     And the session is currently busy
@@ -65,14 +67,17 @@ Feature: Per-Entry Spawned Task for Sub-Minute Loop Intervals
     Then the prompt is not sent
     And the loop retries after the next interval
 
-  @scheduler @loop
+  @scheduler
+  @loop
   Scenario: Auto-terminate when session is destroyed
     Given a session has an active loop
     When the session is destroyed
     Then the loop task self-terminates
     And no orphaned tasks remain in the LoopStore
 
-  @scheduler @loop @cron
+  @scheduler
+  @loop
+  @cron
   Scenario: Cron engine tick is unaffected
     Given the cron scheduler is running with a 30-second tick
     And loop entries exist with sub-minute intervals
@@ -80,7 +85,8 @@ Feature: Per-Entry Spawned Task for Sub-Minute Loop Intervals
     Then cron schedules are evaluated as before
     And loop entries are not evaluated by the cron tick
 
-  @scheduler @loop
+  @scheduler
+  @loop
   Scenario: Expired loop auto-terminates
     Given a session has an active loop that has reached its expiry time
     When the loop task checks expiry before sleeping

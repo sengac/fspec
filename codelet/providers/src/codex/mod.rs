@@ -80,6 +80,38 @@ impl ProviderAdapter for CodexProvider {
     }
 }
 
+// ---------------------------------------------------------------------------
+// LIMITS-003: ModelLimitsResolver for Codex
+// ---------------------------------------------------------------------------
+
+impl crate::model_limits::ModelLimitsResolver for CodexProvider {
+    /// Codex trusts registry values — no hard ceiling.
+    fn max_context_window(&self) -> Option<usize> {
+        None
+    }
+
+    /// Codex trusts registry values — no hard ceiling.
+    fn max_output_tokens_limit(&self) -> Option<usize> {
+        None
+    }
+
+    /// Default context window when no registry data is available.
+    fn default_context_window(&self) -> usize {
+        CONTEXT_WINDOW
+    }
+
+    /// Default max output tokens when no registry data is available.
+    fn default_max_output_tokens(&self) -> usize {
+        MAX_OUTPUT_TOKENS
+    }
+
+    /// The Codex backend API **rejects** `max_output_tokens` with HTTP 400:
+    /// `{"detail":"Unsupported parameter: max_output_tokens"}`.
+    fn should_send_max_output_tokens(&self) -> bool {
+        false
+    }
+}
+
 impl CodexProvider {
     /// Create a new CodexProvider using credentials from ~/.codex/auth.json
     ///

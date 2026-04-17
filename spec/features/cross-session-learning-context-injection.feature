@@ -1,6 +1,5 @@
 @KGRAPH-022
 Feature: Cross-Session Learning & Periodic Synthesis
-
   """
   Implementation uses learnings_context.rs in codelet/napi/src/graph/ for the standalone context building function, integrated via session_start hook in session_manager.rs
   Context injection uses existing learnings_dispatch::dispatch_learnings_search and dispatch_learnings_decisions functions — no new nanograph queries needed, only formatting and integration logic
@@ -29,7 +28,6 @@ Feature: Cross-Session Learning & Periodic Synthesis
   #   5. Session ends and post-session extraction runs — compaction DAG content is passed to learnings_extraction and entities are loaded into the Learnings graph
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to receive relevant learnings from past sessions when starting work on a domain

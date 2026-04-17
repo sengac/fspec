@@ -152,7 +152,7 @@ impl TokenTracker {
     pub fn update_from_usage(&mut self, usage: &crate::token_usage::ApiTokenUsage, cumulative_output: u64) {
         // PROV-001: Store TOTAL context for display and threshold checks
         self.input_tokens = usage.total_input();
-        // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value
+        // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value.
         self.output_tokens = cumulative_output;
         // Accumulate for billing analytics (raw uncached input, not total context)
         self.cumulative_billed_input += usage.input_tokens;
@@ -198,6 +198,35 @@ impl TokenTracker {
         self.cache_creation_input_tokens = None;
         // Note: cumulative_billed_* is NOT reset - it tracks total session spend
         // Note: input_tokens is set by execute_compaction, not reset here
+    }
+
+    /// Compute the per-turn `output_tokens` delta from a new cumulative
+    /// display value (TOKEN-001).
+    ///
+    /// The streaming display reports cumulative output tokens across the
+    /// entire session. To feed per-turn billing into
+    /// [`Self::update_from_usage`], call sites must subtract the previously
+    /// observed cumulative (stored in `self.output_tokens`) from the new
+    /// cumulative. Using `saturating_sub` guarantees that the delta stays
+    /// non-negative even when the cumulative display ticks backward (for
+    /// example after `reset_after_compaction` or when a provider briefly
+    /// reports a smaller running total).
+    ///
+    /// This is the SINGLE canonical source of the
+    /// `saturating_sub(.., output_tokens)` pattern in the streaming code
+    /// paths — all four `update_from_usage` call sites in
+    /// `codelet-cli::interactive` delegate to it so the rule stays DRY.
+    ///
+    /// # Arguments
+    /// * `current_cumulative_output` — the new session-wide cumulative
+    ///   output token count reported by the streaming display.
+    ///
+    /// # Returns
+    /// The per-turn delta to pass as the `output_tokens` argument to
+    /// [`crate::token_usage::ApiTokenUsage::new`].
+    #[inline]
+    pub fn compute_output_delta(&self, current_cumulative_output: u64) -> u64 {
+        current_cumulative_output.saturating_sub(self.output_tokens)
     }
 }
 

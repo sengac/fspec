@@ -1,7 +1,6 @@
 @done
 @KGRAPH-064
 Feature: Class Hierarchy and Inheritance Traversal
-
   """
   Add AstHierarchy variant to GraphSearchAction enum. Implement in ast_hierarchy.rs using existing type_extends, type_implements, and type_container .gq queries with iterative multi-level BFS traversal. Uses type_extended_by and type_implemented_by reverse queries for children. Methods are approximated by finding all functions in the same file as the type via type_container and file_functions queries.
   """
@@ -22,7 +21,6 @@ Feature: Class Hierarchy and Inheritance Traversal
   #   2. Agent asks ast_hierarchy for a type with no parents or children — returns the type itself with functions from its file, empty parents and children arrays
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to traverse class inheritance hierarchies to find parent classes, child classes, and method overrides

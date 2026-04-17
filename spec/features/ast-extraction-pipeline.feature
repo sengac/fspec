@@ -1,6 +1,5 @@
 @KGRAPH-017
 Feature: AST Extraction Pipeline — Tree-Sitter/AST-Grep Parser
-
   """
   Pipeline module in its own file (ast_pipeline.rs) with per-language extractors in separate files (ast_ts_extractor.rs, ast_rust_extractor.rs)
   Uses ast_grep_core and ast_grep_language crates directly. Uses ignore::WalkBuilder for gitignore-aware walking. Produces GraphEntity values loaded via registry::get_graph(AST_CODE_GRAPH).
@@ -27,7 +26,6 @@ Feature: AST Extraction Pipeline — Tree-Sitter/AST-Grep Parser
   #   4. Walk a project directory respecting .gitignore and extract all entities in batch, loading them into the AST graph in a single operation
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to have the codebase automatically parsed into the AST graph with function, type, and import relationships extracted

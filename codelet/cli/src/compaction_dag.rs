@@ -1,11 +1,10 @@
-//! DAG compaction instructions, detection, extraction, and fallback injection.
+//! DAG compaction instructions, detection, extraction, and force-injection.
 //!
-//! Extracted from interactive_helpers.rs (SRP refactoring for CMPCT-016 review).
 //! Contains:
 //! - Compaction instruction constants (FRESH, INCREMENTAL, ESCALATION)
 //! - Existing DAG detection in session messages
 //! - Partial dag-node extraction from assistant messages
-//! - Force-inject fallback DAG (Level 3 convergence guarantee)
+//! - Force-inject DAG (Level 3 convergence guarantee)
 
 use crate::interactive_helpers::{collect_items, recalculate_token_tracker, reset_session_to_reminders};
 use crate::session::Session;

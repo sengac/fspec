@@ -36,6 +36,32 @@ impl ProviderAdapter for GeminiProvider {
     }
 }
 
+// ---------------------------------------------------------------------------
+// LIMITS-003: ModelLimitsResolver for Gemini
+// ---------------------------------------------------------------------------
+
+impl crate::model_limits::ModelLimitsResolver for GeminiProvider {
+    /// Gemini trusts registry values — the API genuinely supports advertised limits.
+    fn max_context_window(&self) -> Option<usize> {
+        None
+    }
+
+    /// Gemini trusts registry values — no hard ceiling on output tokens.
+    fn max_output_tokens_limit(&self) -> Option<usize> {
+        None
+    }
+
+    /// Default context window when no registry data is available.
+    fn default_context_window(&self) -> usize {
+        CONTEXT_WINDOW
+    }
+
+    /// Default max output tokens when no registry data is available.
+    fn default_max_output_tokens(&self) -> usize {
+        MAX_OUTPUT_TOKENS
+    }
+}
+
 impl GeminiProvider {
     /// Create a new GeminiProvider using API key from environment
     ///

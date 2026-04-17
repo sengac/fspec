@@ -1,6 +1,5 @@
 @KGRAPH-060
 Feature: Call Chain / Path Tracing Between Two Functions
-
   """
   Add AstCallChain variant to GraphSearchAction enum in types.rs. Implement BFS traversal in new ast_call_chain module under codelet/napi/src/graph/. Wire dispatch in graph_search_handler.rs. Reuse existing function_calls .gq query for single-hop adjacency at each BFS level. Pre-fetch all function data into a GraphSnapshot to avoid redundant queries. Register in tool description for LLM discovery.
   """
@@ -30,7 +29,6 @@ Feature: Call Chain / Path Tracing Between Two Functions
   #   7. Agent gets response with summary 'Found 2 call chain(s) from entry to target (max depth: 5)' — human-readable summary included
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to trace the call chain between two functions to understand how function A reaches function B

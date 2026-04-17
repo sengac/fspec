@@ -118,14 +118,14 @@ fn inline_ref_values_inner(
                     .or_else(|| ref_path.strip_prefix("#/$defs/"))
                     .map(String::from);
 
-                if let Some(name) = def_name {
-                    if let Some(definition) = definitions.get(&name) {
-                        let mut inlined = definition.clone();
-                        // Recursively resolve any nested $ref in the inlined definition
-                        inline_ref_values_inner(&mut inlined, definitions, depth + 1);
-                        *value = inlined;
-                        return;
-                    }
+                if let Some(name) = def_name
+                    && let Some(definition) = definitions.get(&name)
+                {
+                    let mut inlined = definition.clone();
+                    // Recursively resolve any nested $ref in the inlined definition
+                    inline_ref_values_inner(&mut inlined, definitions, depth + 1);
+                    *value = inlined;
+                    return;
                 }
             }
 
@@ -156,14 +156,12 @@ fn sanitize_node(schema: &mut serde_json::Value) {
         // `allOf` wrapper remains. Unwrap it by merging each item's keys into the parent
         // object (standard JSON Schema `allOf` semantics = intersection / merge).
         // This MUST happen before any other sanitization so the merged result is processed.
-        if let Some(all_of) = obj.remove("allOf") {
-            if let Value::Array(items) = all_of {
-                for item in items {
-                    if let Value::Object(item_obj) = item {
-                        for (k, v) in item_obj {
-                            // Preserve existing parent keys (e.g. "description")
-                            obj.entry(k).or_insert(v);
-                        }
+        if let Some(Value::Array(items)) = obj.remove("allOf") {
+            for item in items {
+                if let Value::Object(item_obj) = item {
+                    for (k, v) in item_obj {
+                        // Preserve existing parent keys (e.g. "description")
+                        obj.entry(k).or_insert(v);
                     }
                 }
             }
@@ -207,10 +205,10 @@ fn sanitize_node(schema: &mut serde_json::Value) {
         }
 
         // Recurse into additionalProperties if it's a schema (not just true/false)
-        if let Some(Value::Object(_)) = obj.get("additionalProperties") {
-            if let Some(ap) = obj.get_mut("additionalProperties") {
-                sanitize_node(ap);
-            }
+        if let Some(Value::Object(_)) = obj.get("additionalProperties")
+            && let Some(ap) = obj.get_mut("additionalProperties")
+        {
+            sanitize_node(ap);
         }
 
         // OpenAI doesn't support oneOf so we need to switch this to anyOf

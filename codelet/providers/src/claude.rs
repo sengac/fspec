@@ -107,15 +107,6 @@ pub fn build_beta_headers(model: &str, is_oauth: bool) -> String {
     headers.join(",")
 }
 
-/// Legacy: Anthropic beta features header for API key mode (standard features)
-/// DEPRECATED: Use build_beta_headers() for model-aware headers
-const ANTHROPIC_BETA_HEADER_API_KEY: &str =
-    "prompt-caching-2024-07-31,interleaved-thinking-2025-05-14";
-
-/// Legacy: Anthropic beta features header for OAuth mode (must match Claude Code exactly)
-/// DEPRECATED: Use build_beta_headers() for model-aware headers
-const ANTHROPIC_BETA_HEADER_OAUTH: &str =
-    "claude-code-20250219,oauth-2025-04-20,prompt-caching-2024-07-31,interleaved-thinking-2025-05-14";
 
 /// Cache control metadata for Anthropic prompt caching (CLI-017)
 ///
@@ -180,6 +171,32 @@ impl std::fmt::Debug for ClaudeProvider {
 impl ProviderAdapter for ClaudeProvider {
     fn provider_name(&self) -> &'static str {
         "claude"
+    }
+}
+
+// ---------------------------------------------------------------------------
+// LIMITS-003: ModelLimitsResolver for Claude
+// ---------------------------------------------------------------------------
+
+impl crate::model_limits::ModelLimitsResolver for ClaudeProvider {
+    /// Claude hard-caps context window to 200k (until CONFIG-007 opt-in for 1M).
+    fn max_context_window(&self) -> Option<usize> {
+        Some(CONTEXT_WINDOW)
+    }
+
+    /// Claude hard-caps max output tokens to 8192.
+    fn max_output_tokens_limit(&self) -> Option<usize> {
+        Some(MAX_OUTPUT_TOKENS)
+    }
+
+    /// Default context window when no registry data is available.
+    fn default_context_window(&self) -> usize {
+        CONTEXT_WINDOW
+    }
+
+    /// Default max output tokens when no registry data is available.
+    fn default_max_output_tokens(&self) -> usize {
+        MAX_OUTPUT_TOKENS
     }
 }
 
@@ -441,19 +458,6 @@ impl ClaudeProvider {
     /// Get the Claude Code system prompt prefix (required for OAuth)
     pub fn get_system_prompt_prefix(&self) -> &'static str {
         CLAUDE_CODE_PROMPT_PREFIX
-    }
-
-    /// Get the anthropic-beta header value based on auth mode (legacy, non-model-aware)
-    ///
-    /// DEPRECATED: Use get_anthropic_beta_header_for_model() for model-aware headers.
-    /// This method is kept for backward compatibility but doesn't include
-    /// adaptive thinking or 1M context headers for 4.6 models.
-    pub fn get_anthropic_beta_header(&self) -> &'static str {
-        if self.auth_mode == AuthMode::OAuth {
-            ANTHROPIC_BETA_HEADER_OAUTH
-        } else {
-            ANTHROPIC_BETA_HEADER_API_KEY
-        }
     }
 
     /// Get the anthropic-beta header value for the current model (PROV-005)

@@ -73,6 +73,13 @@ export const CUSTOM_MODEL_FORM_FIELDS: CustomModelFormField[] = [
     placeholder: '16384',
   },
   {
+    key: 'compactionThreshold',
+    label: 'Compaction Trigger',
+    fieldType: 'text',
+    required: false,
+    placeholder: '80% or 200000',
+  },
+  {
     key: 'reasoning',
     label: 'Reasoning',
     fieldType: 'boolean',

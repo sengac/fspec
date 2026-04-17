@@ -4,10 +4,11 @@
 // This test file validates the acceptance criteria defined in the feature file.
 // Scenarios map directly to Gherkin scenarios.
 
-use codelet_cli::interactive_helpers::{
-    detect_existing_dag, execute_compaction, COMPACTION_INSTRUCTION_FRESH,
+use codelet_cli::compaction_dag::{
+    detect_existing_dag, COMPACTION_INSTRUCTION_FRESH,
     COMPACTION_INSTRUCTION_INCREMENTAL,
 };
+use codelet_cli::interactive_helpers::execute_compaction;
 use rig::message::{AssistantContent, Message, Text, UserContent};
 use rig::one_or_many::OneOrMany;
 use std::sync::atomic::AtomicBool;

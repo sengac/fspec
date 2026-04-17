@@ -1,6 +1,5 @@
 @BUG-127
 Feature: PAUSE_HANDLER global singleton causes pause interactions to route to wrong session
-
   """
   Uses the same Lazy<RwLock<HashMap<Uuid, T>>> pattern as BUG-126 TOOL_PROGRESS_CALLBACKS and existing FSPEC_HANDLERS
   Primary: tool_pause.rs. Callers: session_manager.rs:4789 (set), session_manager.rs:5435 (clear). pause_for_user callers: web_search.rs (3 sites), blocklist/middleware.rs (2 sites).
@@ -24,7 +23,6 @@ Feature: PAUSE_HANDLER global singleton causes pause interactions to route to wr
   #   4. has_pause_handler checks only whether the specified session has a handler, not any session
   #
   # ========================================
-
   Background: User Story
     As a developer running multiple concurrent agent sessions
     I want to have pause interactions isolated per-session

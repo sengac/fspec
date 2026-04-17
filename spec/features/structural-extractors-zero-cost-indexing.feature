@@ -1,6 +1,5 @@
 @KGRAPH-004
 Feature: Structural Extractors (Zero-Cost Indexing)
-
   """
   Pure extractor functions in codelet/napi/src/graph/extractors.rs. Batch EntityQueue in the same file. Integration hook in session_manager.rs after tool call responses. No LLM dependency — pattern matching only.
   """
@@ -23,7 +22,6 @@ Feature: Structural Extractors (Zero-Cost Indexing)
   #   3. 50 file edits accumulate in queue → flushed as a batch insert of 50 CodeEntity nodes in one graph write
   #
   # ========================================
-
   Background: User Story
     As an agent developer
     I want to have my agent sessions automatically populate the knowledge graph from tool calls without any LLM cost
@@ -35,12 +33,10 @@ Feature: Structural Extractors (Zero-Cost Indexing)
     Then a CodeEntity node is produced with the file path, language 'rust', and entityType 'file'
     And a Modifies edge is produced linking the current turn to the CodeEntity
 
-
   Scenario: Fspec create-story produces WorkUnit node
     Given the graph database is initialized
     When an Fspec tool call with command 'create-story' creates work unit 'AUTH-001'
     Then a WorkUnit node is produced with slug 'AUTH-001', title, and workType 'story'
-
 
   Scenario: Batch queue flushes at threshold
     Given the entity queue has 49 pending entities
@@ -48,9 +44,7 @@ Feature: Structural Extractors (Zero-Cost Indexing)
     Then all 50 entities are flushed to the graph database
     And the queue is empty after flush
 
-
   Scenario: Extractors silently skip when graph is unavailable
     Given the graph database is not initialized
     When a Write tool call is processed
     Then no entities are queued and no error is raised
-

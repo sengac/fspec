@@ -133,6 +133,6 @@ fn test_claude_provider_auth_modes() {
     fn _verify_oauth_methods(provider: &ClaudeProvider) {
         let _ = provider.is_oauth_mode();
         let _ = provider.get_system_prompt_prefix();
-        let _ = provider.get_anthropic_beta_header();
+        let _ = provider.get_anthropic_beta_header_for_model();
     }
 }

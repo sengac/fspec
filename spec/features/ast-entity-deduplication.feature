@@ -1,7 +1,6 @@
 @done
 @KGRAPH-026
 Feature: AST extraction pipeline creates duplicate File entities for import targets — @unique constraint violation on File.path
-
   """
   Fix is in walk_and_extract() (ast_pipeline/mod.rs). After collecting all entities from all files, deduplicate Node entities by (node_type, slug). For File nodes, prefer the node with more properties (full > stub). Use a HashMap<(node_type, slug), index> to track seen nodes.
   """
@@ -25,7 +24,6 @@ Feature: AST extraction pipeline creates duplicate File entities for import targ
   #   4. Multiple files all import the same target → only one stub File node for the target in the output, not N duplicates
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to index the codebase without duplicate entity failures

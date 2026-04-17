@@ -1,6 +1,5 @@
 @KGRAPH-057
 Feature: Add Dart language support to GraphSearch AST index and dead code detection
-
   """
   The Dart extractor must use DartLang (from codelet/tools) for KindMatcher, not pattern matching, since Dart splits function_signature and function_body as sibling nodes at top level
   tree-sitter-dart must be added as a dependency to codelet/napi/Cargo.toml (it's already in codelet/tools from KGRAPH-056)
@@ -34,7 +33,6 @@ Feature: Add Dart language support to GraphSearch AST index and dead code detect
   #   8. ast_dead_code correctly identifies uncalled Dart functions and files without importers
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to index Dart/Flutter projects with ast_index
@@ -95,4 +93,3 @@ Feature: Add Dart language support to GraphSearch AST index and dead code detect
     When I run ast_dead_code detection on the indexed project
     Then "unusedHelper" should appear in the dead functions list
     Then "lib/orphan.dart" should appear in the dead files list
-

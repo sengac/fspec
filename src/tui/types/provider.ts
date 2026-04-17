@@ -8,6 +8,7 @@
 import type {
   ProfileConfig,
   CustomModelDefinition,
+  CompactionThresholdConfig,
 } from '../../utils/provider-config';
 import type { NapiModelInfo } from '@sengac/codelet-napi';
 
@@ -80,6 +81,9 @@ export interface ModelSelection {
 
   /** MODEL-004: Facade override for tool schema selection */
   facade?: string;
+
+  /** CTX-008: Compaction threshold override */
+  compactionThreshold?: CompactionThresholdConfig;
 }
 
 /**
@@ -109,48 +113,3 @@ export type ModelSelectorItem =
       section: ProviderSection;
       model: NapiModelInfo;
     };
-
-/**
- * Profile form field
- */
-export interface ProfileFormField {
-  key: keyof ProfileConfig;
-  label: string;
-  type: 'text' | 'number' | 'password';
-  required: boolean;
-  placeholder?: string;
-}
-
-/**
- * Profile form fields configuration
- */
-export const PROFILE_FORM_FIELDS: ProfileFormField[] = [
-  {
-    key: 'baseUrl',
-    label: 'Base URL',
-    type: 'text',
-    required: true,
-    placeholder: 'http://localhost:8888',
-  },
-  {
-    key: 'apiKey',
-    label: 'API Key',
-    type: 'password',
-    required: true,
-    placeholder: 'Enter API key',
-  },
-  {
-    key: 'contextWindow',
-    label: 'Context Window',
-    type: 'number',
-    required: false,
-    placeholder: '128000',
-  },
-  {
-    key: 'maxOutputTokens',
-    label: 'Max Output Tokens',
-    type: 'number',
-    required: false,
-    placeholder: '16384',
-  },
-];

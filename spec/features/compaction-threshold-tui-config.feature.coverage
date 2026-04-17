@@ -1,0 +1,594 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse percentage compaction threshold input",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "75-88",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/compactionThresholdParser.ts",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse token count compaction threshold input",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "94-106",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/compactionThresholdParser.ts",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty compaction threshold uses built-in default",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "112-124",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/compactionThresholdParser.ts",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject invalid percentage values",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "130-145",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/compactionThresholdParser.ts",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject token count below minimum threshold",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "151-163",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/compactionThresholdParser.ts",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider Settings Panel includes compaction threshold field",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "169-180",
+          "implMappings": [
+            {
+              "file": "src/tui/constants/providerSettings.ts",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Custom Model Form includes compaction threshold field",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "186-200",
+          "implMappings": [
+            {
+              "file": "src/tui/constants/customModelForm.ts",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ModelSelection type includes compactionThreshold",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "206-226",
+          "implMappings": [
+            {
+              "file": "src/tui/types/provider.ts",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model selection service passes compaction threshold to NAPI for profile models",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "232-277",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelSelectionService.ts",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model selection service passes compaction threshold to NAPI for cloud models",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "283-318",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelSelectionService.ts",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model selection service omits compaction threshold when not configured",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "324-358",
+          "implMappings": [
+            {
+              "file": "src/tui/services/modelSelectionService.ts",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile compaction threshold flows through when model has none",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "396-443",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/custom-model-utils.ts",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI type declarations include compaction threshold parameters",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts",
+          "lines": "364-390",
+          "implMappings": [
+            {
+              "file": "codelet/napi/index.d.ts",
+              "lines": [
+                2164,
+                2165,
+                2166,
+                2167,
+                2168,
+                2169,
+                2170,
+                2171,
+                2172,
+                2173,
+                2174,
+                2175,
+                2176,
+                2177,
+                2178,
+                2179,
+                2180,
+                2181,
+                2182,
+                2183
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/compactionThresholdTuiConfig.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/utils/compactionThresholdParser.ts",
+      "src/tui/constants/providerSettings.ts",
+      "src/tui/constants/customModelForm.ts",
+      "src/tui/types/provider.ts",
+      "src/tui/services/modelSelectionService.ts",
+      "src/tui/utils/custom-model-utils.ts",
+      "codelet/napi/index.d.ts"
+    ],
+    "totalLinesCovered": 673
+  }
+}

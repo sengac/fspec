@@ -4,7 +4,6 @@
 @rust
 @AMGR-018
 Feature: Rewrite profile action to produce meaningful symbol resolution, per-thread attribution, and hot call stacks
-
   """
   Backward compatibility: existing scopes_by_calls and scopes_by_self_ms fields remain in ProfileResult with the same shape; new fields (samples_by_thread, hot_stacks, sampling) are additive so existing tool-call consumers do not break.
   Noise frame blocklist lives in session.rs: NOISE_FRAME_PREFIXES = ['libsystem_', '__pthread_', '_pthread_', '_dyld_', '_os_', '__os_unfair_', '_uv_', '_uv__', 'libuv', 'libgcc', 'libc', '_napi_register_module_v1', 'napi_', '__tsan', '__asan']. A symbol is considered noise if any prefix is a substring of its demangled name. The match uses str::contains for portability across macOS's underscore-prefixed mangling convention.
@@ -38,7 +37,6 @@ Feature: Rewrite profile action to produce meaningful symbol resolution, per-thr
   #   6. Inlined double-count fix verified: AI profiles a synthetic workload where compiler inlines 4 helpers into a single frame. Old code would credit 4 symbols per sample (4x inflation); new code credits the outermost symbol only, so scopes_by_calls total_self_ms matches real wall-clock CPU burn within sampling error.
   #
   # ========================================
-
   Background: User Story
     As a AI agent diagnosing a CPU hammering issue in fspec
     I want to invoke the AgentManager profile action and receive a useful Rust-level breakdown
@@ -53,14 +51,12 @@ Feature: Rewrite profile action to produce meaningful symbol resolution, per-thr
     Then the top hot_stacks entry has a leaf frame whose symbol contains "spawn_subordinate_forwarding_task"
     Then the leaf frame of that hot stack has a file path ending in "agent_manager_handler.rs"
 
-
   Scenario: Detect stripped build and report debug info unavailable
     Given a synthetic pprof report where fewer than 10 percent of samples have a non-noise frame with a resolvable source file
     When the profile result is built from that report
     Then the sampling section has debug_info_available set to false
     Then the sampling section reports resolved_rust_samples less than total_samples divided by 10
     Then the sampling section includes a human-readable hint recommending a rebuild with debug info
-
 
   Scenario: Filter samples by focus substring to narrow to a single call chain
     Given a synthetic pprof report containing stacks from multiple independent call chains
@@ -69,13 +65,11 @@ Feature: Rewrite profile action to produce meaningful symbol resolution, per-thr
     Then every entry in scopes_by_calls is attributed to a stack that contains the focus substring
     Then samples_by_thread only reflects threads that ran stacks containing the focus substring
 
-
   Scenario: Walk leaf to root skipping noise frames for attribution
     Given a synthetic stack whose leaf is __os_unfair_lock_lock_slow followed by _napi_register_module_v1 followed by a Rust function spawn_subordinate_forwarding_task
     When the profile session attributes the sample
     Then the attributed label is spawn_subordinate_forwarding_task and not __os_unfair_lock_lock_slow
     Then the attributed label is not _napi_register_module_v1
-
 
   Scenario: Credit only the outermost inlined symbol per physical frame
     Given a synthetic stack whose leaf frame contains four inlined symbols representing one call site
@@ -83,16 +77,13 @@ Feature: Rewrite profile action to produce meaningful symbol resolution, per-thr
     Then only one scopes_by_calls entry is incremented and the sample count equals 1
     Then the attributed label matches the outermost inlined symbol name
 
-
   Scenario: Report cpu_cores_consumed from total sample count
     Given a synthetic pprof report with 2500 samples captured at SAMPLE_FREQUENCY_HZ 250 over a 10 second window
     When the profile result is built
     Then sampling.cpu_cores_consumed is approximately 1.0 within sampling tolerance
-
 
   Scenario: Preserve backward compatibility of existing ProfileResult fields
     Given any ProfileResult serialized to JSON
     When the JSON is inspected
     Then the top-level object still contains duration_secs started_at ended_at process runtime scopes_by_calls scopes_by_self_ms and channels fields
     Then the top-level object also contains the new samples_by_thread hot_stacks and sampling fields
-

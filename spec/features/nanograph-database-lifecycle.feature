@@ -1,6 +1,5 @@
 @KGRAPH-002
 Feature: Nanograph Database Lifecycle & Integration
-
   """
   Nanograph integrated as Rust crate via git submodule + Cargo path dependency. Database stored at ~/.fspec/graph/agent-memory.nano/. Singleton pattern: lazy_static Mutex<Option<Database>>. Schema bundled via include_str!(). Feature-gated behind 'graph' Cargo feature.
   """
@@ -40,7 +39,6 @@ Feature: Nanograph Database Lifecycle & Integration
   #   A: Significant impact — Lance + DataFusion + Arrow add ~30-50MB to binary and 2-5 min to compile. Acceptable tradeoff for a typed graph DB. Feature-gate behind a 'graph' Cargo feature so it can be disabled in minimal builds.
   #
   # ========================================
-
   Background: User Story
     As an agent developer
     I want to have an embedded nanograph database that initializes, opens, and closes cleanly
@@ -53,13 +51,11 @@ Feature: Nanograph Database Lifecycle & Integration
     And the schema.pg file contains the agent-memory schema
     And the database is open and ready for queries
 
-
   Scenario: Subsequent process opens existing database
     Given the ~/.fspec/graph/agent-memory.nano/ directory already exists with a valid schema
     When a GraphSearch action is invoked
     Then the existing database is opened without re-initialization
     And all previously stored graph data is accessible
-
 
   Scenario: Data directory change resets graph singleton
     Given the graph database is open and initialized
@@ -67,17 +63,14 @@ Feature: Nanograph Database Lifecycle & Integration
     Then the graph singleton is reset to None
     And the next GraphSearch call initializes from the new data directory
 
-
   Scenario: Empty graph returns zero stats without error
     Given the graph database has been initialized with no data loaded
     When a stats query is executed against the graph
     Then all node and edge counts are zero
     And no error is returned
 
-
   Scenario: Schema contains all required node and edge types
     Given the graph database has been initialized
     When the database schema is described
     Then node types Concept, Decision, CodeEntity, WorkUnit, Session, and Turn exist
     And edge types Mentions, Discusses, Decides, Implements, Modifies, RelatesTo, Supersedes, WorksOn, References, and ContainsTurn exist
-

@@ -21,6 +21,7 @@ import { WorkUnitMetadata } from './WorkUnitMetadata';
 import { WorkUnitAttachments } from './WorkUnitAttachments';
 import { useFspecStore } from '../store/fspecStore';
 import { useTerminalSize } from '../hooks/useTerminalSize';
+import { SGR_BUTTON, parseSgrMouse } from '../utils/mouseProtocol';
 
 interface StateHistoryEntry {
   state: string;
@@ -284,26 +285,14 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     description: 'Board layout keyboard navigation',
     isActive: !isDialogOpen,
     handler: (input, key) => {
-      // Mouse scroll handling (TUI-010)
-      // Parse raw escape sequences for terminals that don't parse mouse events
-      if (input && input.startsWith('[M')) {
-        const buttonByte = input.charCodeAt(2);
-        if (buttonByte === 96) {  // Scroll up (ASCII '`')
+      // BUG-131: Mouse scroll handling via SGR protocol
+      const mouseEvent = parseSgrMouse(input);
+      if (mouseEvent) {
+        if (mouseEvent.button === SGR_BUTTON.SCROLL_UP) {
           handleColumnScroll('up');
           return true;
-        } else if (buttonByte === 97) {  // Scroll down (ASCII 'a')
+        } else if (mouseEvent.button === SGR_BUTTON.SCROLL_DOWN) {
           handleColumnScroll('down');
-          return true;
-        }
-      }
-
-      // Handle Ink-parsed mouse events (primary method)
-      if (key.mouse) {
-        if (key.mouse.button === 'wheelDown') {
-          handleColumnScroll('down');
-          return true;
-        } else if (key.mouse.button === 'wheelUp') {
-          handleColumnScroll('up');
           return true;
         }
       }

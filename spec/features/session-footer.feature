@@ -1,6 +1,5 @@
 @TUI-091
 Feature: SessionFooter component with CWD and git branch name display
-
   """
   Rust footer poller: ONLY call get_current_branch (reads .git/HEAD). Remove
   get_staged_files, get_unstaged_files, get_untracked_files calls entirely.
@@ -43,7 +42,6 @@ Feature: SessionFooter component with CWD and git branch name display
   #   8. Bash(cwd=/tmp) then Bash(no cwd) — footer returns to project root
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to see the current working directory and git branch in the session footer
@@ -98,7 +96,8 @@ Feature: SessionFooter component with CWD and git branch name display
     Then I should see "~/projects/fspec" in the footer
     And I should not see "/Users/rquast" in the footer
 
-  @component:session-footer @performance
+  @component:session-footer
+  @performance
   Scenario: Footer poller uses near-zero CPU
     Given the footer poller is running
     When it polls for git information

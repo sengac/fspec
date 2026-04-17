@@ -1,7 +1,8 @@
 @done
-@schedule-management @scheduler @SCHED-004
+@schedule-management
+@scheduler
+@SCHED-004
 Feature: Agent Job Execution
-
   """
   Add default_model: RwLock<Option<String>> to SessionManager, set from NAPI on app init so scheduler can resolve model at fire time
   trigger_agent_job needs SessionManager access to call create_session_with_id — use the lazy_static SESSION_MANAGER global from crate::lib
@@ -37,7 +38,6 @@ Feature: Agent Job Execution
   #   8. Schedule has no agent config block at all (agent: null/missing). Job fails gracefully with 'Missing agent configuration'.
   #
   # ========================================
-
   Background: User Story
     As a system operator
     I want to have scheduled agent sessions automatically spawn when a schedule fires

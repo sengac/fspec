@@ -264,6 +264,32 @@ impl CopilotProvider {
     }
 }
 
+// ---------------------------------------------------------------------------
+// LIMITS-003: ModelLimitsResolver for Copilot
+// ---------------------------------------------------------------------------
+
+impl crate::model_limits::ModelLimitsResolver for CopilotProvider {
+    /// Copilot trusts real limits from the live `/models` endpoint via registry.
+    fn max_context_window(&self) -> Option<usize> {
+        None
+    }
+
+    /// Copilot trusts real limits from the live `/models` endpoint via registry.
+    fn max_output_tokens_limit(&self) -> Option<usize> {
+        None
+    }
+
+    /// Default context window when no registry data is available.
+    fn default_context_window(&self) -> usize {
+        crate::copilot::CONTEXT_WINDOW
+    }
+
+    /// Default max output tokens when no registry data is available.
+    fn default_max_output_tokens(&self) -> usize {
+        crate::copilot::MAX_OUTPUT_TOKENS
+    }
+}
+
 #[async_trait]
 impl LlmProvider for CopilotProvider {
     fn name(&self) -> &str {

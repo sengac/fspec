@@ -21,15 +21,101 @@ use crate::{
     tool::ToolSetError,
 };
 
-/// Parse tool result string and convert to appropriate ToolResultContent(s).
-/// Detects image responses from Read tool and converts to ToolResultContent::Image.
-/// Returns a Vec to support multiple images (e.g., PDF visual mode pages).
-
 /// EXT-016: Check base64 image data for oversized pixel dimensions.
 /// Delegates to codelet_common::image_dimensions — single source of truth.
 fn check_image_dimensions(base64_data: &str) -> Option<String> {
     codelet_common::image_dimensions::check_image_dimensions(base64_data, None)
 }
+
+/// CMPCT-031: Maximum byte length for a plain-text `tool_result` payload before
+/// the rig patch replaces it with a truncation marker. Anything strictly
+/// greater than this bound is replaced; values `<= MAX_TOOL_RESULT_TEXT_BYTES`
+/// pass through verbatim. 64 KiB balances room for genuinely useful tool
+/// output (e.g. a ~400-line grep result, a typical `cargo test` summary)
+/// against the memory/token blast radius of pathologically verbose tools.
+const MAX_TOOL_RESULT_TEXT_BYTES: usize = 64 * 1024;
+
+/// CMPCT-031: How many leading bytes of the original text to echo in the
+/// truncation marker's `preview` field. The cut is rounded DOWN to the
+/// nearest UTF-8 char boundary to avoid splitting multi-byte code points.
+const TOOL_RESULT_PREVIEW_BYTES: usize = 2 * 1024;
+
+/// CMPCT-031: How many trailing bytes of the original text to echo in the
+/// truncation marker's `suffix` field. The cut is rounded UP to the nearest
+/// UTF-8 char boundary (so the suffix starts cleanly, never mid-sequence).
+const TOOL_RESULT_SUFFIX_BYTES: usize = 512;
+
+/// CMPCT-031: Remediation hint embedded in every truncation marker so the
+/// model can reason about what to do next (re-run with a narrower query,
+/// use `--failures-only` / `--summary` flags, etc.).
+const TOOL_RESULT_TRUNCATION_HINT: &str =
+    "tool output exceeded MAX_TOOL_RESULT_TEXT_BYTES; re-run with a narrower query or use --failures-only / --summary flags";
+
+/// CMPCT-031: Return the largest byte index `<= limit` that falls on a
+/// UTF-8 character boundary within `s`. Used to trim `preview` safely.
+/// `floor_char_boundary` is nightly-only, so we walk `char_indices` by hand.
+fn floor_char_boundary(s: &str, limit: usize) -> usize {
+    if limit >= s.len() {
+        return s.len();
+    }
+    let mut last = 0;
+    for (idx, _) in s.char_indices() {
+        if idx > limit {
+            return last;
+        }
+        last = idx;
+    }
+    last
+}
+
+/// CMPCT-031: Return the smallest byte index `>= target` that falls on a
+/// UTF-8 character boundary within `s`. Used to trim `suffix` safely.
+fn ceil_char_boundary(s: &str, target: usize) -> usize {
+    if target >= s.len() {
+        return s.len();
+    }
+    for (idx, _) in s.char_indices() {
+        if idx >= target {
+            return idx;
+        }
+    }
+    s.len()
+}
+
+/// CMPCT-031: Pure, I/O-free byte-bounding helper for plain-text tool_result
+/// payloads. If `original.len() <= MAX_TOOL_RESULT_TEXT_BYTES`, returns
+/// `original` unchanged. Otherwise returns a serde_json::json! truncation
+/// marker with fields {status, original_bytes, max_bytes, preview, suffix,
+/// hint}. Preview and suffix are UTF-8-safe slices of the original; the
+/// marker JSON escapes embedded quotes/control chars via serde_json.
+fn bound_tool_result_text(original: String) -> String {
+    if original.len() <= MAX_TOOL_RESULT_TEXT_BYTES {
+        return original;
+    }
+
+    let original_bytes = original.len();
+    let preview_end = floor_char_boundary(&original, TOOL_RESULT_PREVIEW_BYTES);
+    let suffix_start = ceil_char_boundary(
+        &original,
+        original_bytes.saturating_sub(TOOL_RESULT_SUFFIX_BYTES),
+    );
+    let preview = &original[..preview_end];
+    let suffix = &original[suffix_start..];
+
+    serde_json::json!({
+        "status": "truncated",
+        "original_bytes": original_bytes,
+        "max_bytes": MAX_TOOL_RESULT_TEXT_BYTES,
+        "preview": preview,
+        "suffix": suffix,
+        "hint": TOOL_RESULT_TRUNCATION_HINT,
+    })
+    .to_string()
+}
+
+/// Parse tool result string and convert to appropriate ToolResultContent(s).
+/// Detects image responses from Read tool and converts to ToolResultContent::Image.
+/// Returns a Vec to support multiple images (e.g., PDF visual mode pages).
 fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
     // Try to parse as JSON to detect structured tool output
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(result) {
@@ -40,7 +126,11 @@ fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
                 // Parse the content field as JSON
                 match serde_json::from_str::<serde_json::Value>(content_str) {
                     Ok(inner_json) => inner_json,
-                    Err(_) => return vec![ToolResultContent::text(content_str)],
+                    Err(_) => {
+                        return vec![ToolResultContent::text(bound_tool_result_text(
+                            content_str.to_string(),
+                        ))];
+                    }
                 }
             } else {
                 json
@@ -50,37 +140,42 @@ fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
             // This happens when tool results are JSON-encoded strings containing JSON
             match serde_json::from_str::<serde_json::Value>(inner_str) {
                 Ok(inner_json) => inner_json,
-                Err(_) => return vec![ToolResultContent::text(inner_str)],
+                Err(_) => {
+                    return vec![ToolResultContent::text(bound_tool_result_text(
+                        inner_str.to_string(),
+                    ))];
+                }
             }
         } else {
             json
         };
 
         // Check for PDF visual mode: {"path":"...", "total_pages":N, "pages":[{"page_number":N, "data":"...", "media_type":"..."}]}
-        if json.get("pages").is_some() && json.get("total_pages").is_some() {
-            if let Some(pages) = json.get("pages").and_then(|p| p.as_array()) {
-                let mut contents = Vec::with_capacity(pages.len());
-                for page in pages {
-                    let data = page.get("data").and_then(|d| d.as_str());
-                    let media_type_str = page.get("media_type").and_then(|m| m.as_str());
+        if json.get("pages").is_some()
+            && json.get("total_pages").is_some()
+            && let Some(pages) = json.get("pages").and_then(|p| p.as_array())
+        {
+            let mut contents = Vec::with_capacity(pages.len());
+            for page in pages {
+                let data = page.get("data").and_then(|d| d.as_str());
+                let media_type_str = page.get("media_type").and_then(|m| m.as_str());
 
-                    if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
-                        if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
-                            let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
-                            // EXT-016: Validate PDF page dimensions before creating Image content
-                            if let Some(error_msg) = check_image_dimensions(data) {
-                                tracing::warn!("parse_tool_result_content: rejecting oversized PDF page {}", page_num);
-                                contents.push(ToolResultContent::text(error_msg));
-                            } else {
-                                tracing::info!("parse_tool_result_content: PDF page {} as Image, media_type={:?}", page_num, media_type);
-                                contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
-                            }
-                        }
+                if let (Some(data), Some(media_type_str)) = (data, media_type_str)
+                    && let Some(media_type) = ImageMediaType::from_mime_type(media_type_str)
+                {
+                    let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
+                    // EXT-016: Validate PDF page dimensions before creating Image content
+                    if let Some(error_msg) = check_image_dimensions(data) {
+                        tracing::warn!("parse_tool_result_content: rejecting oversized PDF page {}", page_num);
+                        contents.push(ToolResultContent::text(error_msg));
+                    } else {
+                        tracing::info!("parse_tool_result_content: PDF page {} as Image, media_type={:?}", page_num, media_type);
+                        contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
                     }
                 }
-                if !contents.is_empty() {
-                    return contents;
-                }
+            }
+            if !contents.is_empty() {
+                return contents;
             }
         }
 
@@ -108,45 +203,50 @@ fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
         }
         // Check for text type from Read tool: {"type":"text","content":"..."}
         // The content might contain nested JSON (e.g., PDF visual mode output)
-        if type_field == Some("text") {
-            if let Some(content) = json.get("content").and_then(|c| c.as_str()) {
-                // Try to parse content as JSON to check for nested PDF pages
-                if let Ok(inner_json) = serde_json::from_str::<serde_json::Value>(content) {
-                    // Check if the nested JSON is PDF visual mode output
-                    if inner_json.get("pages").is_some() && inner_json.get("total_pages").is_some() {
-                        if let Some(pages) = inner_json.get("pages").and_then(|p| p.as_array()) {
-                            let mut contents = Vec::with_capacity(pages.len());
-                            for page in pages {
-                                let data = page.get("data").and_then(|d| d.as_str());
-                                let media_type_str = page.get("media_type").and_then(|m| m.as_str());
+        if type_field == Some("text")
+            && let Some(content) = json.get("content").and_then(|c| c.as_str())
+        {
+            // Try to parse content as JSON to check for nested PDF pages
+            if let Ok(inner_json) = serde_json::from_str::<serde_json::Value>(content) {
+                // Check if the nested JSON is PDF visual mode output
+                if inner_json.get("pages").is_some()
+                    && inner_json.get("total_pages").is_some()
+                    && let Some(pages) = inner_json.get("pages").and_then(|p| p.as_array())
+                {
+                    let mut contents = Vec::with_capacity(pages.len());
+                    for page in pages {
+                        let data = page.get("data").and_then(|d| d.as_str());
+                        let media_type_str = page.get("media_type").and_then(|m| m.as_str());
 
-                                if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
-                                    if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
-                                        let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
-                                        // EXT-016: Validate nested PDF page dimensions before creating Image content
-                                        if let Some(error_msg) = check_image_dimensions(data) {
-                                            tracing::warn!("parse_tool_result_content: rejecting oversized nested PDF page {}", page_num);
-                                            contents.push(ToolResultContent::text(error_msg));
-                                        } else {
-                                            tracing::info!("parse_tool_result_content: nested PDF page {} as Image, media_type={:?}", page_num, media_type);
-                                            contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
-                                        }
-                                    }
-                                }
-                            }
-                            if !contents.is_empty() {
-                                return contents;
+                        if let (Some(data), Some(media_type_str)) = (data, media_type_str)
+                            && let Some(media_type) = ImageMediaType::from_mime_type(media_type_str)
+                        {
+                            let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
+                            // EXT-016: Validate nested PDF page dimensions before creating Image content
+                            if let Some(error_msg) = check_image_dimensions(data) {
+                                tracing::warn!("parse_tool_result_content: rejecting oversized nested PDF page {}", page_num);
+                                contents.push(ToolResultContent::text(error_msg));
+                            } else {
+                                tracing::info!("parse_tool_result_content: nested PDF page {} as Image, media_type={:?}", page_num, media_type);
+                                contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
                             }
                         }
                     }
+                    if !contents.is_empty() {
+                        return contents;
+                    }
                 }
-                // Not nested PDF, return as plain text
-                return vec![ToolResultContent::text(content)];
             }
+            // Not nested PDF, return as plain text (bounded).
+            return vec![ToolResultContent::text(bound_tool_result_text(
+                content.to_string(),
+            ))];
         }
     }
-    // Default: treat as plain text
-    vec![ToolResultContent::text(result)]
+    // Default: treat as plain text (bounded by MAX_TOOL_RESULT_TEXT_BYTES).
+    vec![ToolResultContent::text(bound_tool_result_text(
+        result.to_string(),
+    ))]
 }
 
 /// Convert Vec<ToolResultContent> to OneOrMany<ToolResultContent>
@@ -506,6 +606,67 @@ where
                                     .await;
 
                                     if cancel_signal.is_cancelled() {
+                                        // CMPCT-029: flush the pending tool_call + tool_result
+                                        // pair into chat_history BEFORE yielding PromptCancelled,
+                                        // so the error payload's chat_history snapshot carries
+                                        // the complete pair. Without this flush the local
+                                        // tool_calls / tool_results vecs (lines 443-444) are
+                                        // dropped when the stream terminates, and fspec's
+                                        // recovery path sees a dangling tool_call in
+                                        // session.messages with no matching tool_result.
+                                        //
+                                        // Mirrors the natural-exit flush at lines 605-633, but
+                                        // scoped to the single in-flight tool. Safe to drain
+                                        // the local vecs because yielding PromptCancelled
+                                        // terminates the turn — the natural-exit flush at the
+                                        // bottom of the while-loop is NOT reached after this
+                                        // error is yielded, so no double-flush is possible.
+                                        let tool_call_msg = AssistantContent::ToolCall(tool_call.clone());
+                                        tool_calls.push(tool_call_msg);
+                                        tool_results.push((
+                                            tool_call.id.clone(),
+                                            tool_call.call_id.clone(),
+                                            tool_result.clone(),
+                                        ));
+
+                                        if !tool_calls.is_empty() {
+                                            let mut assistant_content = reasoning_blocks.clone();
+                                            assistant_content.append(&mut tool_calls);
+                                            match OneOrMany::many(assistant_content) {
+                                                Ok(content) => {
+                                                    chat_history.write().await.push(Message::Assistant {
+                                                        id: None,
+                                                        content,
+                                                    });
+                                                }
+                                                Err(e) => {
+                                                    tracing::warn!(
+                                                        "[rig/streaming] CMPCT-029: could not rebuild Assistant message on cancel flush: {e}"
+                                                    );
+                                                }
+                                            }
+                                            reasoning_blocks.clear();
+                                        }
+
+                                        for (id, call_id, tool_result) in tool_results.drain(..) {
+                                            if let Some(call_id) = call_id {
+                                                chat_history.write().await.push(Message::User {
+                                                    content: OneOrMany::one(UserContent::tool_result_with_call_id(
+                                                        &id,
+                                                        call_id.clone(),
+                                                        vec_to_one_or_many(parse_tool_result_content(&tool_result)),
+                                                    )),
+                                                });
+                                            } else {
+                                                chat_history.write().await.push(Message::User {
+                                                    content: OneOrMany::one(UserContent::tool_result(
+                                                        &id,
+                                                        vec_to_one_or_many(parse_tool_result_content(&tool_result)),
+                                                    )),
+                                                });
+                                            }
+                                        }
+
                                         return Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
                                     }
                                 }
@@ -913,6 +1074,316 @@ mod tests {
     // check_image_dimensions). rig-core is not a workspace member so tests here
     // cannot be executed by `cargo test`. The Layer 2 safety net logic is fully
     // covered by codelet-common's test suite.
+
+    // =========================================================================
+    // CMPCT-031: Defense-in-depth text-size bound on tool_result content
+    // Feature: spec/features/defense-in-depth-bound-tool-result-text-size-in-rig-patch-parse-tool-result-content.feature
+    //
+    // These tests exercise `bound_tool_result_text` directly (pure fn, no I/O)
+    // and observe `parse_tool_result_content` end-to-end for the verbose-tool
+    // cascade scenario. All six scenarios from the feature file are covered
+    // one-to-one by the #[test] fns below, with @step comments matching the
+    // Gherkin step text verbatim.
+    // =========================================================================
+
+    /// Helper: build a UTF-8 string of exactly `bytes` ASCII chars.
+    fn ascii_of_len(bytes: usize) -> String {
+        // Using 'a' so .len() == char count == byte count, and there are no
+        // multi-byte code points to complicate boundary math.
+        "a".repeat(bytes)
+    }
+
+    /// Scenario: A 200 KiB text tool result is replaced by a truncation marker
+    #[test]
+    fn test_cmpct_031_200kib_text_replaced_by_truncation_marker() {
+        // @step Given parse_tool_result_content is called with a plain-text payload of 200 KiB
+        let payload = ascii_of_len(200 * 1024);
+        let result = parse_tool_result_content(&payload);
+
+        // @step When the helper evaluates the byte length against MAX_TOOL_RESULT_TEXT_BYTES
+        assert_eq!(result.len(), 1, "expected a single ToolResultContent");
+        let text = match &result[0] {
+            ToolResultContent::Text(t) => t.text.clone(),
+            other => panic!("expected Text variant, got {other:?}"),
+        };
+
+        // @step Then the returned ToolResultContent::text payload is a JSON truncation marker
+        let parsed: serde_json::Value =
+            serde_json::from_str(&text).expect("marker must be valid JSON");
+        assert!(parsed.is_object(), "marker must be a JSON object");
+
+        // @step And the marker has field "status" equal to "truncated"
+        assert_eq!(parsed.get("status").and_then(|v| v.as_str()), Some("truncated"));
+
+        // @step And the marker has field "original_bytes" equal to the original byte length
+        assert_eq!(
+            parsed.get("original_bytes").and_then(|v| v.as_u64()),
+            Some(payload.len() as u64)
+        );
+
+        // @step And the marker has field "max_bytes" equal to MAX_TOOL_RESULT_TEXT_BYTES
+        assert_eq!(
+            parsed.get("max_bytes").and_then(|v| v.as_u64()),
+            Some(MAX_TOOL_RESULT_TEXT_BYTES as u64)
+        );
+
+        // @step And the marker has field "preview" containing the first 2048 bytes of the original text
+        let preview = parsed
+            .get("preview")
+            .and_then(|v| v.as_str())
+            .expect("preview field must be a string");
+        assert_eq!(preview.len(), 2048);
+        assert_eq!(preview, &payload[..2048]);
+
+        // @step And the marker has field "suffix" containing the last 512 bytes of the original text
+        let suffix = parsed
+            .get("suffix")
+            .and_then(|v| v.as_str())
+            .expect("suffix field must be a string");
+        assert_eq!(suffix.len(), 512);
+        assert_eq!(suffix, &payload[payload.len() - 512..]);
+
+        // @step And the marker has a non-empty "hint" field
+        let hint = parsed
+            .get("hint")
+            .and_then(|v| v.as_str())
+            .expect("hint field must be a string");
+        assert!(!hint.is_empty(), "hint must be non-empty");
+    }
+
+    /// Scenario: A 32 KiB text tool result is stored verbatim without a truncation marker
+    #[test]
+    fn test_cmpct_031_32kib_text_stored_verbatim() {
+        // @step Given parse_tool_result_content is called with a plain-text payload of 32 KiB
+        let payload = ascii_of_len(32 * 1024);
+        let result = parse_tool_result_content(&payload);
+
+        // @step When the helper evaluates the byte length against MAX_TOOL_RESULT_TEXT_BYTES
+        assert_eq!(result.len(), 1);
+        let text = match &result[0] {
+            ToolResultContent::Text(t) => t.text.clone(),
+            other => panic!("expected Text variant, got {other:?}"),
+        };
+
+        // @step Then the returned ToolResultContent::text payload equals the original 32 KiB verbatim
+        assert_eq!(text, payload);
+
+        // @step And the payload does NOT contain a JSON truncation marker
+        // A quick structural check: if it parsed as our marker object, .get("status") would
+        // yield "truncated". For raw "aaa..." text this either fails to parse as JSON or
+        // does not contain the sentinel.
+        let is_marker = serde_json::from_str::<serde_json::Value>(&text)
+            .ok()
+            .and_then(|v| v.get("status").and_then(|s| s.as_str()).map(str::to_owned))
+            == Some("truncated".to_string());
+        assert!(!is_marker, "payload must not be a truncation marker");
+    }
+
+    /// Scenario: A text payload exactly at the bound is stored verbatim
+    #[test]
+    fn test_cmpct_031_exact_bound_stored_verbatim() {
+        // @step Given parse_tool_result_content is called with a plain-text payload of exactly MAX_TOOL_RESULT_TEXT_BYTES bytes
+        let payload = ascii_of_len(MAX_TOOL_RESULT_TEXT_BYTES);
+        let result = parse_tool_result_content(&payload);
+
+        // @step When the helper evaluates the byte length
+        assert_eq!(result.len(), 1);
+        let text = match &result[0] {
+            ToolResultContent::Text(t) => t.text.clone(),
+            other => panic!("expected Text variant, got {other:?}"),
+        };
+
+        // @step Then the returned ToolResultContent::text payload equals the original verbatim
+        assert_eq!(text, payload);
+
+        // @step And the bound condition is a strict greater-than (`>`) not greater-than-or-equal (`>=`)
+        // Verified by a one-byte-over check through the helper directly: len == MAX stays verbatim,
+        // len == MAX + 1 becomes a marker.
+        let one_byte_over = ascii_of_len(MAX_TOOL_RESULT_TEXT_BYTES + 1);
+        let bounded = bound_tool_result_text(one_byte_over);
+        let parsed: serde_json::Value =
+            serde_json::from_str(&bounded).expect("one-over must be a JSON marker");
+        assert_eq!(
+            parsed.get("status").and_then(|v| v.as_str()),
+            Some("truncated")
+        );
+    }
+
+    /// Scenario: An oversized image is still rejected by the existing image size check
+    #[test]
+    fn test_cmpct_031_oversized_image_still_rejected_by_existing_check() {
+        // @step Given parse_tool_result_content is called with an oversized IMAGE payload
+        // Build a tool result JSON envelope of {"type":"image","data":"<b64>","media_type":"image/png"}
+        // whose base64 data will be rejected by check_image_dimensions. We use a known-oversized
+        // 1x1 PNG padded by repeating large-dimension header bytes; the actual check is delegated
+        // to codelet_common. For this test we feed a synthetic ~128 KiB base64 payload — the point
+        // is that the image branch handles it (either accepts or produces an error_msg) WITHOUT
+        // ever consulting the text bound, because the JSON envelope takes the "type":"image"
+        // branch at line 90 before any text-branch code runs.
+        let fake_b64 = "A".repeat(128 * 1024);
+        let envelope = serde_json::json!({
+            "type": "image",
+            "data": fake_b64,
+            "media_type": "image/png",
+        })
+        .to_string();
+        let result = parse_tool_result_content(&envelope);
+
+        // @step When the helper evaluates the payload
+        assert_eq!(result.len(), 1);
+
+        // @step Then the existing image-size rejection path fires unchanged
+        // Either we got an Image variant (accepted by check_image_dimensions) OR a Text
+        // variant whose content is the rejection error_msg — but it is NEVER the truncation
+        // marker and NEVER the raw envelope JSON.
+        match &result[0] {
+            ToolResultContent::Image(_) => { /* accepted by existing path */ }
+            ToolResultContent::Text(t) => {
+                // @step And the new text bound is NOT consulted
+                // Ensure this is not the CMPCT-031 marker: that would prove the text branch
+                // took over, which would be a regression.
+                let is_marker = serde_json::from_str::<serde_json::Value>(&t.text)
+                    .ok()
+                    .and_then(|v| v.get("status").and_then(|s| s.as_str()).map(str::to_owned))
+                    == Some("truncated".to_string());
+                assert!(
+                    !is_marker,
+                    "image rejection must NOT flow through the CMPCT-031 text bound"
+                );
+                // @step And the behavior matches the pre-change image handling exactly
+                // i.e. the payload is the existing image rejection error_msg, NOT the raw envelope.
+                assert_ne!(
+                    t.text, envelope,
+                    "image branch must not fall through to raw-text handling"
+                );
+            }
+        }
+    }
+
+    /// Scenario: The truncation marker is valid UTF-8 JSON that the model can reason about
+    #[test]
+    fn test_cmpct_031_truncation_marker_is_valid_utf8_json() {
+        // @step Given parse_tool_result_content has produced a truncation marker for an oversized text payload
+        let payload = ascii_of_len(200 * 1024);
+        let result = parse_tool_result_content(&payload);
+        assert_eq!(result.len(), 1);
+        let text = match &result[0] {
+            ToolResultContent::Text(t) => t.text.clone(),
+            other => panic!("expected Text variant, got {other:?}"),
+        };
+
+        // @step When the marker is read back as UTF-8 and parsed as JSON
+        assert!(text.is_ascii() || std::str::from_utf8(text.as_bytes()).is_ok());
+        let parsed: serde_json::Value = serde_json::from_str(&text)
+            .expect("marker must parse as JSON from UTF-8 bytes");
+
+        // @step Then parsing succeeds with no errors
+        let obj = parsed.as_object().expect("marker must be a JSON object");
+
+        // @step And every field value round-trips cleanly (no mojibake, no unescaped control chars)
+        // Reserialize and reparse; equality proves round-trip stability.
+        let reserialized = serde_json::to_string(&parsed).expect("reserialization must succeed");
+        let reparsed: serde_json::Value =
+            serde_json::from_str(&reserialized).expect("reparse must succeed");
+        assert_eq!(parsed, reparsed);
+
+        // @step And the top-level object contains exactly the expected keys: status, original_bytes, max_bytes, preview, suffix, hint
+        let mut keys: Vec<&str> = obj.keys().map(String::as_str).collect();
+        keys.sort_unstable();
+        assert_eq!(
+            keys,
+            vec![
+                "hint",
+                "max_bytes",
+                "original_bytes",
+                "preview",
+                "status",
+                "suffix",
+            ]
+        );
+    }
+
+    /// Scenario: Running a verbose tool no longer cascades into PromptCancelled
+    #[test]
+    fn test_cmpct_031_verbose_tool_output_is_bounded_before_chat_history() {
+        // @step Given an fspec interactive session whose agent has just invoked a tool that returned 500 KiB of plain text output
+        let payload = ascii_of_len(500 * 1024);
+
+        // @step When the rig patch processes that tool result via parse_tool_result_content
+        let result = parse_tool_result_content(&payload);
+        assert_eq!(result.len(), 1);
+        let text = match &result[0] {
+            ToolResultContent::Text(t) => t.text.clone(),
+            other => panic!("expected Text variant, got {other:?}"),
+        };
+
+        // @step Then the resulting chat_history entry for that tool_result holds only the truncation marker
+        let parsed: serde_json::Value =
+            serde_json::from_str(&text).expect("marker must be valid JSON");
+        assert_eq!(
+            parsed.get("status").and_then(|v| v.as_str()),
+            Some("truncated")
+        );
+
+        // @step And the chat_history byte count for that tool_result is bounded by a small constant (marker overhead + preview + suffix)
+        // Marker overhead is the JSON scaffolding + key names + numeric fields + hint text.
+        // Upper bound = preview (2048) + suffix (512) + generous 4096-byte overhead cap.
+        let upper_bound = 2048 + 512 + 4096;
+        assert!(
+            text.len() <= upper_bound,
+            "marker size {} exceeded upper bound {}",
+            text.len(),
+            upper_bound
+        );
+
+        // @step And the next LLM turn does NOT exceed the context window from this tool_result alone
+        // Proxy: the payload held in chat_history is orders of magnitude smaller than the original.
+        assert!(
+            text.len() < payload.len() / 10,
+            "bounded payload {} must be <<1/10 of original {}",
+            text.len(),
+            payload.len()
+        );
+    }
+
+    /// UTF-8 boundary regression: preview must not split a multi-byte character.
+    /// Not a feature scenario — internal safety net for the boundary walker.
+    #[test]
+    fn test_cmpct_031_bound_utf8_boundary_preview_does_not_split_codepoint() {
+        // Build a string that is MAX+100 bytes and places a 4-byte codepoint
+        // straddling byte index 2048 (the preview cap). The helper must back up
+        // to the previous char boundary, never mid-sequence.
+        // '😀' (U+1F600) is 4 bytes in UTF-8.
+        let mut s = String::with_capacity(MAX_TOOL_RESULT_TEXT_BYTES + 100);
+        // Fill the first 2046 bytes with ASCII so the codepoint boundary is at 2046.
+        s.push_str(&"b".repeat(2046));
+        s.push('😀'); // occupies bytes 2046..2050
+        // Pad until we exceed the MAX bound.
+        s.push_str(&"c".repeat(MAX_TOOL_RESULT_TEXT_BYTES));
+        assert!(s.len() > MAX_TOOL_RESULT_TEXT_BYTES);
+
+        let bounded = bound_tool_result_text(s.clone());
+        let parsed: serde_json::Value =
+            serde_json::from_str(&bounded).expect("marker must be valid JSON");
+        let preview = parsed
+            .get("preview")
+            .and_then(|v| v.as_str())
+            .expect("preview must be a string");
+
+        // Preview must be valid UTF-8 and ≤ 2048 bytes.
+        assert!(preview.len() <= 2048);
+        // The helper backed up to the char boundary at byte 2046, so preview is 2046 bytes
+        // (the codepoint at 2046..2050 is dropped because it would push past 2048).
+        // Must not contain the half-emoji or any replacement character.
+        assert!(
+            !preview.contains('\u{FFFD}'),
+            "preview must not contain U+FFFD replacement characters"
+        );
+        assert!(
+            preview.as_bytes().iter().all(|b| *b == b'b'),
+            "preview must be clean ASCII up to the last safe boundary"
+        );
+    }
 
     // =========================================================================
     // PROV-039: stop_reason propagation through FinalResponse

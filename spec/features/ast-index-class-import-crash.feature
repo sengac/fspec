@@ -1,6 +1,5 @@
 @KGRAPH-055
 Feature: Python and Java ast_index crashes on real repos — imported classes create dangling Function slug references
-
   """
   edge_helpers.rs:285 — strip leading underscores from original_name before first_char.is_uppercase() check
   helpers.rs extract_name_after_keyword — skip // line comments and /* */ block comments before searching for keyword
@@ -31,7 +30,6 @@ Feature: Python and Java ast_index crashes on real repos — imported classes cr
   #   5. Dedup edge pruning: Calls edge to slug that only exists as Type → pruned, not crash
   #
   # ========================================
-
   Background: User Story
     As a developer running ast_index on real-world repos
     I want to index Python and Java projects without crashes

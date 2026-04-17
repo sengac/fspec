@@ -1,0 +1,415 @@
+{
+  "scenarios": [
+    {
+      "name": "Gemini continuation uses the unified classify_compaction_branch helper on stream error",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "94-117",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "lines": [
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini continuation invokes begin_compaction_recovery with pop_user_prompt=false on Recover",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "124-156",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "lines": [
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream-end-with-compaction-flag path in Gemini continuation selects ResumeFromPartial when partial text was saved",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "163-202",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "lines": [
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream-end-with-compaction-flag path in Gemini continuation selects EmbedInInstruction when no partial text was saved",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "209-239",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/gemini_continuation.rs",
+              "lines": [
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tautological gemini_continuation_compaction_test.rs has been deleted from the cli tests directory",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "246-260",
+          "implMappings": [
+            {
+              "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+              "lines": [
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "convert_messages_to_turns returns an empty slice for a session with only system reminders",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "267-295",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive_helpers.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "convert_messages_to_turns returns one turn per user-assistant pair",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "302-343",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive_helpers.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tautological empty_turn_compaction_fix_test.rs has been deleted from the cli tests directory",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "350-365",
+          "implMappings": [
+            {
+              "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+              "lines": [
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tautological test_normal_compaction_no_watchdog has been deleted from compaction_convergence_watchdog_test.rs",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+          "lines": "372-391",
+          "implMappings": [
+            {
+              "file": "codelet/cli/tests/compaction_convergence_watchdog_test.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/compaction_real_integration_coverage_test.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/gemini_continuation.rs",
+      "codelet/cli/tests/compaction_real_integration_coverage_test.rs",
+      "codelet/cli/src/interactive_helpers.rs",
+      "codelet/cli/tests/compaction_convergence_watchdog_test.rs"
+    ],
+    "totalLinesCovered": 502
+  }
+}

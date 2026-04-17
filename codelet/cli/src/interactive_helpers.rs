@@ -7,20 +7,14 @@ use codelet_core::compaction::{
     ConversationTurn, ToolCall as CoreToolCall,
     ToolResult as CoreToolResult,
 };
-use rig::message::{Message, UserContent};
+use rig::message::{AssistantContent, Message, ToolResultContent, UserContent};
 use rig::OneOrMany;
+use std::collections::HashSet;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::SystemTime;
-use tracing::debug;
+use tracing::{debug, warn};
 
-// Re-export compaction DAG items for backward compatibility.
-// External code importing from `interactive_helpers::` continues to work.
-pub use crate::compaction_dag::{
-    COMPACTION_ESCALATION_MESSAGE, COMPACTION_INSTRUCTION_FRESH,
-    COMPACTION_INSTRUCTION_INCREMENTAL, detect_existing_dag,
-    extract_partial_dag_nodes, force_inject_fallback_dag,
-};
 
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
 ///
@@ -242,9 +236,296 @@ pub fn reset_session_to_reminders(session: &mut Session) -> (usize, usize) {
     counts
 }
 
+/// CMPCT-029: Correlation key used to match Assistant(ToolCall) with its
+/// matching User(ToolResult).
+///
+/// Providers disagree on which field carries the correlation identity:
+/// - Anthropic uses `call_id` (the `toolu_*` prefix — `id` is separate).
+/// - OpenAI/Gemini fold both into `id` and leave `call_id` as `None`.
+///
+/// Rig's natural-exit flush at `streaming.rs:616-633` reflects this split:
+/// when `call_id` is Some, the ToolResult is constructed via
+/// `UserContent::tool_result_with_call_id(&id, call_id.clone(), ...)`. When
+/// `call_id` is None, it falls back to `UserContent::tool_result(&id, ...)`.
+/// In both cases the **pairing key** on the resulting ToolResult is
+/// `call_id.unwrap_or(id)`. We mirror that here.
+fn tool_call_correlation_key(id: &str, call_id: Option<&str>) -> String {
+    match call_id {
+        Some(cid) => cid.to_string(),
+        None => id.to_string(),
+    }
+}
+
+/// CMPCT-029: Walk `messages` and collect the correlation keys of every
+/// Assistant(ToolCall) that does NOT have a matching User(ToolResult).
+///
+/// Returns `Ok(())` when every tool_call has a matching result; returns
+/// `Err(Vec<String>)` with the orphan call_ids (in message order) otherwise.
+///
+/// Used as a defensive guard at the start of [`execute_compaction`]. Any
+/// orphan tool_call would cause the next API request (post-compaction) to
+/// fail with a "tool_use block must be followed by tool_result" error on
+/// Anthropic, or silently produce inconsistent history on OpenAI. Catching
+/// the orphan here — and having the caller resolve it via
+/// [`inject_synthetic_tool_results_for_orphans`] — makes the contract
+/// auditable instead of relying on every recovery path doing the right
+/// thing.
+///
+/// The detector never mutates `messages`; it only reads.
+pub fn validate_no_orphan_tool_calls(messages: &[Message]) -> std::result::Result<(), Vec<String>> {
+    let mut pending: Vec<String> = Vec::new();
+    let mut seen_results: HashSet<String> = HashSet::new();
+
+    for msg in messages {
+        match msg {
+            Message::Assistant { content, .. } => {
+                for item in content.iter() {
+                    if let AssistantContent::ToolCall(tc) = item {
+                        let key = tool_call_correlation_key(&tc.id, tc.call_id.as_deref());
+                        pending.push(key);
+                    }
+                }
+            }
+            Message::User { content } => {
+                for item in content.iter() {
+                    if let UserContent::ToolResult(tr) = item {
+                        let key = tool_call_correlation_key(&tr.id, tr.call_id.as_deref());
+                        seen_results.insert(key);
+                    }
+                }
+            }
+        }
+    }
+
+    let orphans: Vec<String> = pending
+        .into_iter()
+        .filter(|k| !seen_results.contains(k))
+        .collect();
+
+    if orphans.is_empty() {
+        Ok(())
+    } else {
+        Err(orphans)
+    }
+}
+
+/// CMPCT-029: Append any tool_call / tool_result messages from rig's
+/// `chat_history` (delivered via `PromptError::PromptCancelled`) that fspec's
+/// `session_messages` does not yet contain.
+///
+/// The rig-side patch at `streaming.rs` cancel site 508 flushes pending
+/// tool pairs into `chat_history` before yielding PromptCancelled. This
+/// helper drains those pairs into fspec's own message list so the next
+/// compaction pass sees the same conversation state as the provider API.
+///
+/// Dedupe strategy: two messages are considered the same when:
+/// - Both are Assistant with matching tool_call correlation keys, OR
+/// - Both are User with matching tool_result correlation keys.
+///
+/// Messages that don't carry tool state are never appended by this helper —
+/// fspec already tracks assistant text / user text through the stream
+/// handlers, so forwarding text messages from rig would produce duplicates.
+///
+/// This is idempotent: calling it twice with the same arguments produces
+/// the same result as calling it once.
+pub fn reconcile_session_messages(
+    session_messages: &mut Vec<Message>,
+    rig_chat_history: &[Message],
+) {
+    // Build the set of tool correlation keys fspec already tracks. We track
+    // both "calls we've seen" and "results we've seen" separately because
+    // it is possible — though rare — for fspec to hold the call but not the
+    // result (site 486 recovery drains `tool_calls_buffer` into
+    // `session.messages`, producing exactly this shape).
+    let mut known_calls: HashSet<String> = HashSet::new();
+    let mut known_results: HashSet<String> = HashSet::new();
+
+    for msg in session_messages.iter() {
+        match msg {
+            Message::Assistant { content, .. } => {
+                for item in content.iter() {
+                    if let AssistantContent::ToolCall(tc) = item {
+                        known_calls.insert(tool_call_correlation_key(
+                            &tc.id,
+                            tc.call_id.as_deref(),
+                        ));
+                    }
+                }
+            }
+            Message::User { content } => {
+                for item in content.iter() {
+                    if let UserContent::ToolResult(tr) = item {
+                        known_results.insert(tool_call_correlation_key(
+                            &tr.id,
+                            tr.call_id.as_deref(),
+                        ));
+                    }
+                }
+            }
+        }
+    }
+
+    for msg in rig_chat_history {
+        match msg {
+            Message::Assistant { content, .. } => {
+                // Filter the content to just the ToolCall items we don't
+                // already have. Rig may have other content types in the
+                // same message (reasoning, text) — we skip those because
+                // fspec tracks them through separate stream events.
+                let new_calls: Vec<AssistantContent> = content
+                    .iter()
+                    .filter_map(|item| match item {
+                        AssistantContent::ToolCall(tc) => {
+                            let key =
+                                tool_call_correlation_key(&tc.id, tc.call_id.as_deref());
+                            if known_calls.contains(&key) {
+                                None
+                            } else {
+                                known_calls.insert(key);
+                                Some(AssistantContent::ToolCall(tc.clone()))
+                            }
+                        }
+                        _ => None,
+                    })
+                    .collect();
+
+                if !new_calls.is_empty() {
+                    match OneOrMany::many(new_calls) {
+                        Ok(merged) => {
+                            session_messages.push(Message::Assistant {
+                                id: None,
+                                content: merged,
+                            });
+                        }
+                        Err(e) => {
+                            warn!(
+                                "[reconcile_session_messages] could not rebuild OneOrMany for Assistant tool_calls: {e}"
+                            );
+                        }
+                    }
+                }
+            }
+            Message::User { content } => {
+                let new_results: Vec<UserContent> = content
+                    .iter()
+                    .filter_map(|item| match item {
+                        UserContent::ToolResult(tr) => {
+                            let key =
+                                tool_call_correlation_key(&tr.id, tr.call_id.as_deref());
+                            if known_results.contains(&key) {
+                                None
+                            } else {
+                                known_results.insert(key);
+                                Some(UserContent::ToolResult(tr.clone()))
+                            }
+                        }
+                        _ => None,
+                    })
+                    .collect();
+
+                if !new_results.is_empty() {
+                    match OneOrMany::many(new_results) {
+                        Ok(merged) => {
+                            session_messages.push(Message::User { content: merged });
+                        }
+                        Err(e) => {
+                            warn!(
+                                "[reconcile_session_messages] could not rebuild OneOrMany for User tool_results: {e}"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// CMPCT-029: Synthetic tool_result body injected for orphan tool_calls
+/// when the provider stream was cancelled before the tool could run
+/// (site 486) or before the result could be delivered to fspec.
+///
+/// The agent sees this body in the next turn's context, so it reads the
+/// `"cancelled_by_context_limit"` marker as a deliberate cancellation
+/// rather than a silent omission. Keeping the payload as structured JSON
+/// means future recovery layers can machine-detect it without grepping
+/// free-form text.
+pub const SYNTHETIC_TOOL_CANCEL_BODY: &str = r#"{"status":"cancelled_by_context_limit"}"#;
+
+/// CMPCT-029: Close every orphan Assistant(ToolCall) in `session_messages`
+/// with a synthetic User(ToolResult) carrying the
+/// `"cancelled_by_context_limit"` body.
+///
+/// Applies the minimum mutation required to restore tool-pair invariants:
+/// - For each orphan tool_call (no matching tool_result anywhere in the
+///   message list), appends a single User message whose ToolResult reuses
+///   the original tool call's `id` and `call_id`.
+/// - Never removes or reorders any existing message.
+/// - Returns the number of synthetic injections performed, so callers can
+///   log a structured warning that encodes "recovery happened" without
+///   having to re-inspect the orphan detector's output.
+///
+/// Callers in the stream-loop's compaction-cancel branch invoke this AFTER
+/// [`reconcile_session_messages`] has folded in any rig-side tool state.
+/// Any orphans that remain at that point are site-486 cancellations where
+/// rig yielded before the tool ran — there is no real result to preserve,
+/// so we synthesize one with the cancel marker.
+pub fn inject_synthetic_tool_results_for_orphans(session_messages: &mut Vec<Message>) -> usize {
+    // Collect the orphan call_ids / ids together so we can reuse the
+    // correlation identity when constructing the synthetic result.
+    let mut orphans: Vec<(String, Option<String>)> = Vec::new();
+    let mut seen_results: HashSet<String> = HashSet::new();
+
+    for msg in session_messages.iter() {
+        if let Message::User { content } = msg {
+            for item in content.iter() {
+                if let UserContent::ToolResult(tr) = item {
+                    seen_results
+                        .insert(tool_call_correlation_key(&tr.id, tr.call_id.as_deref()));
+                }
+            }
+        }
+    }
+
+    for msg in session_messages.iter() {
+        if let Message::Assistant { content, .. } = msg {
+            for item in content.iter() {
+                if let AssistantContent::ToolCall(tc) = item {
+                    let key = tool_call_correlation_key(&tc.id, tc.call_id.as_deref());
+                    if !seen_results.contains(&key) {
+                        orphans.push((tc.id.clone(), tc.call_id.clone()));
+                    }
+                }
+            }
+        }
+    }
+
+    let injected = orphans.len();
+    for (id, call_id) in orphans {
+        let body = OneOrMany::one(ToolResultContent::Text(rig::message::Text {
+            text: SYNTHETIC_TOOL_CANCEL_BODY.to_string(),
+        }));
+        let tool_result = match call_id {
+            Some(cid) => UserContent::tool_result_with_call_id(&id, cid, body),
+            None => UserContent::tool_result(&id, body),
+        };
+        session_messages.push(Message::User {
+            content: OneOrMany::one(tool_result),
+        });
+    }
+
+    if injected > 0 {
+        warn!(
+            injected,
+            "[inject_synthetic_tool_results_for_orphans] Injected synthetic cancelled tool_results for orphan tool_calls"
+        );
+    }
+
+    injected
+}
+
 /// Execute in-view DAG construction compaction.
 ///
-/// Replaces the legacy batch LLM compaction. New flow:
+/// In-view DAG compaction flow:
 /// 1. Set compaction_in_progress flag to true
 /// 2. Partition messages — extract system reminders
 /// 3. Clear messages and restore system reminders
@@ -272,6 +553,26 @@ pub async fn execute_compaction(
         "[execute_compaction] In-view DAG flow — messages_len={}",
         session.messages.len()
     );
+
+    // CMPCT-029: defensive guard — refuse to run when session.messages still
+    // contains orphan tool_calls. Recovery paths (stream_loop.rs Path C)
+    // must have already reconciled with rig's PromptCancelled chat_history
+    // and injected synthetic cancelled tool_results for any remaining
+    // dangling calls. If we reach here with orphans still present, the
+    // compaction input would corrupt the next API request's tool-pair
+    // invariant — fail loudly instead of proceeding.
+    if let Err(orphans) = validate_no_orphan_tool_calls(&session.messages) {
+        warn!(
+            orphan_count = orphans.len(),
+            orphan_call_ids = ?orphans,
+            "[execute_compaction] Orphan tool_calls detected — refusing to compact"
+        );
+        return Err(anyhow::anyhow!(
+            "execute_compaction refuses to proceed: {} orphan tool_call(s) without matching tool_result: [{}]",
+            orphans.len(),
+            orphans.join(", ")
+        ));
+    }
 
     // Step 1: Set compaction_in_progress flag BEFORE clearing
     // This enables Layer 0 trimming in SessionSearch

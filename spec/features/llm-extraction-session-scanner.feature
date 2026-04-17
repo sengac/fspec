@@ -1,6 +1,5 @@
 @KGRAPH-012
 Feature: LLM Extraction Integration in Session Scanner
-
   """
   Integration point: session_scanner.rs::scan_and_index_sessions() gets new parameters (provider_name, model_id, extraction_mode). After structural extraction per session, if mode is hybrid/llm_only, batch the user/assistant turns, call LLM via DeepSearch-pattern ProviderManager, validate response, load entities.
   The dispatch_index function in dispatch.rs needs provider_name and model_id passed from the GraphSearch handler (graph_search_handler.rs), which captures them during handler registration just like DeepSearch does.
@@ -32,7 +31,6 @@ Feature: LLM Extraction Integration in Session Scanner
   #   6. dispatch_index receives provider_name='anthropic' and model_id='claude-sonnet-4-20250514' from the GraphSearch handler. Creates ProviderManager, builds extraction prompts, calls LLM, parses responses.
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to have my past conversations indexed into the knowledge graph with full concept, decision, and relation extraction

@@ -1,6 +1,5 @@
 @KGRAPH-052
 Feature: Calls/Imports/TypeRef edges — Scala
-
   """
   Uses ast-grep patterns and edge_helpers shared functions.
   Scala colon-based type annotations for TypeRef.

@@ -11,6 +11,7 @@ import React, {
 import { Box, Text, measureElement, type DOMElement } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 import { useInputCompat, InputPriority } from '../input/index';
+import { MOUSE_ENABLE, MOUSE_DISABLE, SGR_BUTTON, parseSgrMouse } from '../utils/mouseProtocol';
 
 // Unicode characters for scrollbar
 const SCROLLBAR_CHARS = {
@@ -196,7 +197,7 @@ export function VirtualList<T>({
     clearReEnableTimer();
     reEnableMouseRef.current = setTimeout(() => {
       if (mouseTrackingTemporarilyDisabledRef.current) {
-        process.stdout.write('\x1b[?1000h');
+        process.stdout.write(MOUSE_ENABLE);
         mouseTrackingTemporarilyDisabledRef.current = false;
       }
     }, 5000);
@@ -207,7 +208,7 @@ export function VirtualList<T>({
     // Clear any existing timer first
     clearReEnableTimer();
     // Disable mouse tracking so terminal handles text selection natively
-    process.stdout.write('\x1b[?1000l');
+    process.stdout.write(MOUSE_DISABLE);
     mouseTrackingTemporarilyDisabledRef.current = true;
     // Schedule re-enable after timeout
     scheduleMouseTrackingReEnable();
@@ -224,11 +225,11 @@ export function VirtualList<T>({
       }
       return;
     }
-    process.stdout.write('\x1b[?1000h');
+    process.stdout.write(MOUSE_ENABLE);
     return () => {
       // TUI-078: Clear pending timer on unmount
       clearReEnableTimer();
-      process.stdout.write('\x1b[?1000l');
+      process.stdout.write(MOUSE_DISABLE);
     };
   }, [isFocused, clearReEnableTimer]);
 
@@ -539,39 +540,33 @@ export function VirtualList<T>({
     handler: (input, key) => {
       if (totalItemCount === 0) return false;
       
-      // TUI-078: Handle X10 mouse protocol escape sequences
-      // Format: ESC [ M <btn+32> <x+32> <y+32>
-      // Button bytes: 32=left, 33=middle, 34=right (clicks), 35=release, 96=scroll up, 97=scroll down
-      if (input.startsWith('[M')) {
-        const buttonByte = input.charCodeAt(2);
+      // BUG-131: Handle SGR mouse protocol escape sequences
+      // Format (after ESC strip by ink): [<button;x;yM (press) or [<button;x;ym (release)
+      const mouseEvent = parseSgrMouse(input);
+      if (mouseEvent) {
+        // Scroll wheel events - handle normally, never disable mouse tracking
+        if (mouseEvent.button === SGR_BUTTON.SCROLL_UP) { handleScroll('up'); return true; }
+        if (mouseEvent.button === SGR_BUTTON.SCROLL_DOWN) { handleScroll('down'); return true; }
         
-        // TUI-078: Scroll wheel events - handle normally, never disable mouse tracking
-        if (buttonByte === 96) { handleScroll('up'); return true; }
-        if (buttonByte === 97) { handleScroll('down'); return true; }
-        
-        // TUI-078: Button-down events (32, 33, 34) - temporarily disable mouse tracking
+        // TUI-078: Button-down events (left, middle, right) - temporarily disable mouse tracking
         // for native terminal text selection. Each click restarts the debounce timer.
-        if (buttonByte === 32 || buttonByte === 33 || buttonByte === 34) {
+        if (!mouseEvent.isRelease && (mouseEvent.button === SGR_BUTTON.LEFT || mouseEvent.button === SGR_BUTTON.MIDDLE || mouseEvent.button === SGR_BUTTON.RIGHT)) {
           temporarilyDisableMouseTracking();
           return true; // Consume the event
         }
         
-        // TUI-078: Button-release event (35) - immediately re-enable mouse tracking
+        // TUI-078: Button-release event - immediately re-enable mouse tracking
         // This allows scroll wheel to work right after the user finishes selecting text
-        if (buttonByte === 35) {
+        if (mouseEvent.isRelease && (mouseEvent.button === SGR_BUTTON.LEFT || mouseEvent.button === SGR_BUTTON.MIDDLE || mouseEvent.button === SGR_BUTTON.RIGHT)) {
           if (mouseTrackingTemporarilyDisabledRef.current) {
             clearReEnableTimer();
-            process.stdout.write('\x1b[?1000h');
+            process.stdout.write(MOUSE_ENABLE);
             mouseTrackingTemporarilyDisabledRef.current = false;
           }
           return true; // Consume the event
         }
       }
       
-      if (key.mouse) {
-        if (key.mouse.button === 'wheelDown') { handleScroll('down'); return true; }
-        if (key.mouse.button === 'wheelUp') { handleScroll('up'); return true; }
-      }
       return false;
     },
   });
@@ -638,7 +633,8 @@ export function VirtualList<T>({
     isActive: isFocused,
     handler: (input, key) => {
       if (totalItemCount === 0) return false;
-      if (input.startsWith('[M') || key.mouse) return false;
+      // BUG-131: Skip SGR mouse events in keyboard nav handler
+      if (parseSgrMouse(input) !== null) return false;
       if (key.shift && (key.upArrow || key.downArrow)) return false;
 
       if (selectionMode === 'scroll') {

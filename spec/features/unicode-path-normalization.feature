@@ -1,6 +1,5 @@
 @BUG-130
 Feature: Unicode Path Normalization — TypeScript fspec CLI
-
   """
   TypeScript-side normalization: src/utils/normalize-path.ts with normalizeFilePath()
   (sync, regex-based) and resolveFilePath() (async, three-phase: exact → normalized

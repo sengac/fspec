@@ -1,6 +1,5 @@
 @PROV-058
 Feature: Add prompt caching for GitHub Copilot provider connections
-
   """
   Inject cache control in CopilotHttpClient::send() by parsing the JSON body, checking the model field, and adding copilot_cache_control to the right positions before re-serializing. New pure function: inject_copilot_cache_control(body: &mut Value, model: &str)
   The body is already parsed in classify_body() — extend that path to also inject cache control, avoiding a double parse/serialize
@@ -28,13 +27,13 @@ Feature: Add prompt caching for GitHub Copilot provider connections
   #   4. Empty tools array: no tool gets copilot_cache_control since there's nothing to tag
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec with a Copilot subscription
     I want to have prompt caching automatically applied on Copilot API calls
     So that my multi-turn conversations get faster responses and use fewer billed tokens
 
-  @claude @multi-turn
+  @claude
+  @multi-turn
   Scenario: Claude model multi-turn conversation gets cache control on system, last tool, and last assistant message
     Given a Copilot API request body with model "claude-sonnet-4"
     And the request has a system message, 3 conversation turns, and 5 tool definitions
@@ -44,7 +43,8 @@ Feature: Add prompt caching for GitHub Copilot provider connections
     And the last assistant message before the final user turn should have copilot_cache_control set to ephemeral
     And no other messages or tools should have copilot_cache_control
 
-  @gpt @negative
+  @gpt
+  @negative
   Scenario: GPT model requests are not modified with cache control
     Given a Copilot API request body with model "gpt-5"
     And the request has a system message, 3 conversation turns, and 5 tool definitions
@@ -52,14 +52,16 @@ Feature: Add prompt caching for GitHub Copilot provider connections
     Then no messages should have copilot_cache_control
     And no tools should have copilot_cache_control
 
-  @gemini @negative
+  @gemini
+  @negative
   Scenario: Gemini model requests are not modified with cache control
     Given a Copilot API request body with model "gemini-2.5-pro"
     And the request has a system message and 2 conversation turns
     When the CopilotHttpClient middleware processes the request
     Then no messages should have copilot_cache_control
 
-  @claude @single-turn
+  @claude
+  @single-turn
   Scenario: Single-turn Claude conversation only caches system message
     Given a Copilot API request body with model "claude-sonnet-4.5"
     And the request has only a system message and one user message
@@ -67,7 +69,8 @@ Feature: Add prompt caching for GitHub Copilot provider connections
     Then the system message should have copilot_cache_control set to ephemeral
     And the user message should not have copilot_cache_control
 
-  @claude @edge-case
+  @claude
+  @edge-case
   Scenario: Claude request with empty tools array does not crash
     Given a Copilot API request body with model "claude-opus-4.5"
     And the request has a system message, 2 conversation turns, and no tools

@@ -52,6 +52,19 @@ export interface ProviderConfig {
 }
 
 /**
+ * CTX-008: Compaction threshold configuration
+ *
+ * Specifies when context compaction should trigger.
+ * Can be an absolute token count or a percentage of the context window.
+ */
+export interface CompactionThresholdConfig {
+  /** Threshold type: absolute token count or percentage of context window */
+  type: 'tokens' | 'percentage';
+  /** The threshold value (token count, or percentage 1-100) */
+  value: number;
+}
+
+/**
  * PROV-007: Profile configuration for local servers
  *
  * Profiles allow configuring multiple local LLM servers (vLLM, Ollama, etc.)
@@ -66,6 +79,8 @@ export interface ProfileConfig {
   contextWindow?: number;
   /** Max output tokens (optional) */
   maxOutputTokens?: number;
+  /** CTX-008: Compaction threshold override (optional) */
+  compactionThreshold?: CompactionThresholdConfig;
   /** MODEL-004: Custom models for this profile (optional, backward-compatible) */
   customModels?: CustomModelDefinition[];
 }
@@ -88,6 +103,8 @@ export interface CustomModelDefinition {
   contextWindow?: number;
   /** Maximum output tokens (optional) */
   maxOutputTokens?: number;
+  /** CTX-008: Compaction threshold override (optional) */
+  compactionThreshold?: CompactionThresholdConfig;
   /** Whether model supports reasoning/thinking (optional) */
   reasoning?: boolean;
   /** Whether model supports vision/image input (optional) */

@@ -3,7 +3,6 @@
 @done
 @TUI-090
 Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
-
   """
   Replaces Yes/No buttons + Normal/Isolated toggle with 3 flat options. Component: src/components/CreateSessionDialog.tsx. Callers: BoardView.tsx, AgentView.tsx via useSessionNavigation.ts
   """
@@ -28,7 +27,6 @@ Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
   #   5. User opens dialog from board work unit AUTH-001, sees 'Work on AUTH-001?' with Yes/Yes-Isolated/Cancel options
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to see a simple 3-option dialog when creating a new session
@@ -40,13 +38,11 @@ Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
     Then the "Yes" option should be highlighted by default
     Then onConfirm should be called with isolated=false
 
-
   Scenario: Selecting Yes - Isolated creates isolated session
     Given the Create Session dialog is open
     When I press Right to select "Yes - Isolated"
     Then onConfirm should be called with isolated=true
     And I press Enter
-
 
   Scenario: Selecting Cancel closes dialog without creating session
     Given the Create Session dialog is open
@@ -55,17 +51,14 @@ Feature: CreateSessionDialog should have 3 options: Yes, Yes - Isolated, Cancel
     And I press Enter
     And no session should be created
 
-
   Scenario: ESC cancels regardless of selected option
     Given the Create Session dialog is open
     When I press ESC
     Then onCancel should be called
     And "Yes - Isolated" is currently highlighted
 
-
   Scenario: Context-aware title with 3 options for work unit
     Given I am viewing the board with work unit "AUTH-001"
     When the Create Session dialog opens for that work unit
     Then the dialog title should be "Work on AUTH-001?"
     And I should see options "Yes", "Yes - Isolated", and "Cancel"
-

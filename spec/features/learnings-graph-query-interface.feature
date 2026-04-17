@@ -1,6 +1,5 @@
 @KGRAPH-023
 Feature: Learnings Graph Query Interface
-
   """
   Learnings dispatch in codelet/napi/src/graph/learnings_dispatch.rs. Query source in codelet/napi/schemas/learnings-queries.gq (loaded via include_str!). New action variants: LearningsSearch, LearningsDecisions, LearningsStats, LearningsRelated added to GraphSearchAction enum. Handler routes Learnings-prefixed actions to learnings_dispatch functions via registry::get_graph(LEARNINGS_GRAPH).
   Follows the exact same architectural pattern as KGRAPH-019 (ast_dispatch.rs) — separate dispatch file, separate query file, registry-based DB access, JSON string returns.
@@ -26,7 +25,6 @@ Feature: Learnings Graph Query Interface
   #   4. Find learnings related to 'error handling' topic and get back Learning nodes with strength and relation type, sorted by relevance
   #
   # ========================================
-
   Background: User Story
     Given an AI agent wants to query accumulated learnings from the Learnings graph
 

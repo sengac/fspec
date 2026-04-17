@@ -159,6 +159,7 @@ const FIELD_LABELS: Array<{ key: keyof ProfileConfig; label: string }> = [
   { key: 'apiKey', label: 'API Key' },
   { key: 'contextWindow', label: 'Context Window' },
   { key: 'maxOutputTokens', label: 'Max Output Tokens' },
+  { key: 'compactionThreshold', label: 'Compaction Trigger' },
 ];
 
 /**
@@ -328,7 +329,11 @@ export function ProviderSettingsPanel({
             const displayValue =
               isPassword && value
                 ? '•'.repeat(String(value).length)
-                : String(value || '');
+                : field.key === 'compactionThreshold' && value && typeof value === 'object'
+                  ? (value as { type: string; value: number }).type === 'percentage'
+                    ? `${(value as { type: string; value: number }).value}%`
+                    : String((value as { type: string; value: number }).value)
+                  : String(value || '');
             const isRequired = field.key === 'baseUrl' || field.key === 'apiKey';
 
             return (
@@ -348,7 +353,9 @@ export function ProviderSettingsPanel({
                           ? '128000'
                           : field.key === 'maxOutputTokens'
                             ? '16384'
-                            : 'Enter value'}
+                            : field.key === 'compactionThreshold'
+                              ? '80% or 200000'
+                              : 'Enter value'}
                     </Text>
                   )}
                   {isActive && <Text inverse> </Text>}

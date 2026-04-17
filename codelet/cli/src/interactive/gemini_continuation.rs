@@ -4,7 +4,7 @@
 //! When Gemini returns an empty response after tool calls, a continuation
 //! prompt is sent to nudge the model to respond with results.
 
-use super::error_classifiers::is_compaction_cancelled;
+use super::error_classifiers::{classify_compaction_branch, CompactionBranch};
 use super::output::StreamOutput;
 use super::stream_handlers::{handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result};
 
@@ -37,8 +37,11 @@ pub(super) enum GeminiContinuationResult {
     NoContinuation,
     /// Continuation completed successfully — caller should return Ok(()).
     Completed,
-    /// Compaction was triggered during continuation — caller should break to compaction.
-    CompactionNeeded,
+    /// Compaction was triggered during continuation — caller should break to
+    /// compaction. The payload carries the policy selected by
+    /// `begin_compaction_recovery` so the primary loop can pick the correct
+    /// retry prompt in its in-loop compaction restart (CMPCT-028).
+    CompactionNeeded(super::recovery_compaction::CompactionRecoveryPolicy),
 }
 
 /// Check if Gemini needs a continuation and run the continuation loop if so.
@@ -314,11 +317,16 @@ where
 
                 // Normal completion
                 handle_final_response(text, &mut session.messages)?;
+                // TOKEN-001: compute per-turn delta via the single TokenTracker
+                // helper BEFORE update_from_usage mutates self.output_tokens.
+                let per_turn_output_delta = session
+                    .token_tracker
+                    .compute_output_delta(cont_final.output_tokens);
                 let cont_usage = ApiTokenUsage::new(
                     cont_final.input_tokens,
                     cont_final.cache_read_tokens,
                     cont_final.cache_creation_tokens,
-                    0,
+                    per_turn_output_delta,
                 );
                 session.token_tracker.update_from_usage(&cont_usage, cont_final.output_tokens);
 
@@ -327,22 +335,44 @@ where
                 return Ok(GeminiContinuationResult::Completed);
             }
             Some(Err(e)) => {
-                // Check if compaction was cancelled
-                if is_compaction_cancelled(&e) {
+                // CMPCT-026: Single-source-of-truth compaction classification.
+                // `classify_compaction_branch` is the same helper used by
+                // stream_loop.rs — it treats the error as authoritative
+                // (structural downcast to PromptError::PromptCancelled) and
+                // treats `parent_token_state.compaction_needed` as
+                // defence-in-depth. The helper emits a structured
+                // `tracing::warn!` when the two signals disagree, so this
+                // site needs no extra warning of its own.
+                let branch = classify_compaction_branch(&e, parent_token_state);
+
+                if matches!(branch, CompactionBranch::Recover { .. }) {
                     info!("Compaction triggered during Gemini continuation - handling gracefully");
 
-                    if !text.is_empty() {
-                        handle_final_response(text, &mut session.messages)?;
-                        info!("Saved {} chars of partial continuation text", text.len());
-                    }
-                    update_token_tracker(session, display);
-                    super::stream_loop::signal_compaction_needed(parent_token_state);
+                    // CMPCT-023: unified compaction-recovery entry (Path D —
+                    // Gemini continuation cancel). pop_user_prompt=false
+                    // because the continuation User prompt is mid-flight, not
+                    // at the tail of a completed turn.
+                    //
+                    // classify_compaction_branch has already defensively set
+                    // compaction_needed=true if it was previously false; the
+                    // helper does so uniformly (warning on disagreement), so
+                    // no separate signal_compaction_needed call is required.
+                    //
+                    // CMPCT-028: capture the selected CompactionRecoveryPolicy
+                    // and forward it to the primary stream loop so the in-loop
+                    // restart picks the correct retry prompt (either
+                    // `"Continue"` for EmbedInInstruction or the resume
+                    // prompt for ResumeFromPartial).
+                    let policy = super::recovery_compaction::begin_compaction_recovery(
+                        session,
+                        parent_token_state,
+                        display,
+                        text,
+                        output,
+                        false,
+                    )?;
 
-                    output.emit_compaction_started();
-                    let total_turns = session.messages.len() as u32 / 2;
-                    output.emit_compaction_progress("Context limit reached", 0, total_turns.max(1));
-                    set_tool_progress_callback(uuid::Uuid::nil(), None);
-                    return Ok(GeminiContinuationResult::CompactionNeeded);
+                    return Ok(GeminiContinuationResult::CompactionNeeded(policy));
                 }
 
                 set_tool_progress_callback(uuid::Uuid::nil(), None);
@@ -350,7 +380,15 @@ where
                 return Err(anyhow::anyhow!("Gemini continuation error: {e}"));
             }
             None => {
-                if !text.is_empty() {
+                // CMPCT-028: capture whether we appended partial Assistant
+                // text before returning CompactionNeeded(policy). This site
+                // does not call `begin_compaction_recovery` (it's the
+                // stream-ended-cleanly path with a deferred compaction flag),
+                // so we compute the policy inline using the same rule the
+                // helper applies: non-empty text → ResumeFromPartial,
+                // empty text → EmbedInInstruction.
+                let partial_text_saved = !text.is_empty();
+                if partial_text_saved {
                     handle_final_response(text, &mut session.messages)?;
                 }
                 update_token_tracker(session, display);
@@ -361,7 +399,17 @@ where
                     .unwrap_or(false);
 
                 if compaction_needed {
-                    return Ok(GeminiContinuationResult::CompactionNeeded);
+                    let policy = if partial_text_saved {
+                        super::recovery_compaction::CompactionRecoveryPolicy::ResumeFromPartial
+                    } else {
+                        super::recovery_compaction::CompactionRecoveryPolicy::EmbedInInstruction
+                    };
+                    debug!(
+                        policy = ?policy,
+                        partial_text_saved = partial_text_saved,
+                        "[gemini_continuation] CompactionRecoveryPolicy selected on stream-end-with-compaction-flag path (CMPCT-028)"
+                    );
+                    return Ok(GeminiContinuationResult::CompactionNeeded(policy));
                 }
 
                 set_tool_progress_callback(uuid::Uuid::nil(), None);
@@ -377,11 +425,16 @@ where
 /// Update token tracker from display values.
 fn update_token_tracker(session: &mut Session, display: &StreamingTokenDisplay) {
     let current = display.current();
+    // TOKEN-001: compute per-turn delta via the single TokenTracker helper
+    // BEFORE update_from_usage mutates self.output_tokens.
+    let per_turn_output_delta = session
+        .token_tracker
+        .compute_output_delta(current.output_tokens);
     let usage = ApiTokenUsage::new(
         current.input_tokens,
         current.cache_read_tokens,
         current.cache_creation_tokens,
-        0,
+        per_turn_output_delta,
     );
     session.token_tracker.update_from_usage(&usage, current.output_tokens);
 }

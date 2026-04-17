@@ -1,6 +1,5 @@
 @TUI-086
 Feature: Refactor sessionStore — split file, extract DRY helper, fix state desync
-
   """
   Split sessionStore.ts into: sessionStore.ts (store+types+actions with immer), sessionSelectors.ts (named selector hooks), sessionActions.ts (useSessionActions with useShallow). Re-export all from sessionStore.ts for backward compatibility. Extract clearAndResetSession helper to DRY the 4 duplicate patterns.
   """
@@ -20,7 +19,6 @@ Feature: Refactor sessionStore — split file, extract DRY helper, fix state des
   #   2. navigateToNewSession and navigateToNewSessionIsolated merged into single function with parameter
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to refactor sessionStore into focused modules

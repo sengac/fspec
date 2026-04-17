@@ -1,0 +1,262 @@
+{
+  "scenarios": [
+    {
+      "name": "VirtualList scroll-up via SGR mouse event",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-sgr-mouse.test.tsx",
+          "lines": "101-126",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "VirtualList scroll-down via SGR mouse event",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-sgr-mouse.test.tsx",
+          "lines": "128-152",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text selection disables mouse tracking on button-down",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-sgr-mouse.test.tsx",
+          "lines": "158-186",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text selection re-enables mouse tracking on button-release",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-sgr-mouse.test.tsx",
+          "lines": "188-220",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Board view scroll in UnifiedBoardLayout",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-sgr-mouse.test.tsx",
+          "lines": "224-251",
+          "implMappings": [
+            {
+              "file": "src/tui/components/UnifiedBoardLayout.tsx",
+              "lines": [
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/VirtualList-sgr-mouse.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/VirtualList.tsx",
+      "src/tui/components/UnifiedBoardLayout.tsx"
+    ],
+    "totalLinesCovered": 306
+  }
+}

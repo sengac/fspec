@@ -13,6 +13,10 @@ crate-type = ["cdylib", "rlib"]
 [features]
 # Enable noop feature for cargo test - stubs out NAPI symbols so tests can link
 noop = ["napi/noop", "napi-derive/noop"]
+# Dummy feature that is never enabled — used as a gate on tests that
+# depend on modules behind #[cfg(not(feature = "noop"))].
+# See the comment above the [[test]] entries that require this feature.
+__full_runtime = []
 
 [dependencies]
 # NAPI-RS v3 with async support for proper streaming

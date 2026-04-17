@@ -1,6 +1,5 @@
 @KGRAPH-021
 Feature: Learnings Extraction Pipeline — Session Boundary Analysis
-
   """
   Extraction pipeline in codelet/napi/src/graph/learnings_extraction.rs.
   Uses the Learnings graph via registry. LLM prompt template uses Residue methodology structure.
@@ -34,7 +33,6 @@ Feature: Learnings Extraction Pipeline — Session Boundary Analysis
   #   [10] Entities loaded → learnings_stats → node counts > 0
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to have learnings extracted from my session summaries into the Learnings graph at compaction boundaries

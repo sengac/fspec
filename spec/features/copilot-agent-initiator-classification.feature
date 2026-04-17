@@ -1,6 +1,5 @@
 @PROV-059
 Feature: Copilot x-initiator header always set to 'user' — metadata.mode agent never injected, burning premium quota on every request
-
   """
   The existing PROV-055 three-layer architecture (CopilotRequestClassifier → CopilotHeaderFacade → CopilotHttpClient) is correct and does not need changes. The fix injects metadata.mode='agent' into the request body at the call sites that construct API requests.
   Fix points: (1) CopilotProvider needs an is_agent parameter on complete_with_tools to inject additional_params metadata. (2) The LlmProvider trait needs to propagate an agent-mode flag. (3) The stream loop / agent loop must track iteration number (0=user-initiated, 1+=agent). (4) DeepSearch, AgentManager, and scheduler must mark their sessions as agent-initiated.
@@ -28,7 +27,6 @@ Feature: Copilot x-initiator header always set to 'user' — metadata.mode agent
   #   6. Request body JSON includes metadata.mode='agent' field → CopilotRequestClassifier.classify() returns is_agent=true → CopilotHeaderFacade sets x-initiator: agent
   #
   # ========================================
-
   Background: User Story
     As a Copilot user
     I want to have agent-initiated requests (tool calls, subagents, compaction) correctly flagged with x-initiator: agent

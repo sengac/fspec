@@ -1,6 +1,5 @@
 @KGRAPH-042
 Feature: Calls/Imports/TypeRef edges — PHP
-
   """
   Uses KindMatcher for `namespace_use_declaration` to find imports, `function_call_expression`/`member_call_expression` for calls.
   PHP import resolution uses PSR-4 namespace-to-path mapping (backslash to forward-slash + .php).
@@ -23,7 +22,6 @@ Feature: Calls/Imports/TypeRef edges — PHP
   #   3. `function handle(AppRequest $req): AppResponse` where AppRequest/AppResponse are local types → TypeRef edges from handle to both types
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to get Imports, Calls, and TypeRef edges extracted from PHP source files

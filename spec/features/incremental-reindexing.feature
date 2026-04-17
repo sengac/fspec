@@ -1,7 +1,6 @@
 @done
 @KGRAPH-065
 Feature: Incremental Re-indexing
-
   """
   Post-process mtime stamping on File nodes via stamp_file_mtimes() rather than changing all 14 language extractor signatures.
   New ast_pipeline/incremental.rs module with: collect_file_mtimes(), read_stored_mtimes(), partition_changed_files(), filter_reusable_entities(), stamp_file_mtimes() — reuses export_all_entities() from the graph database.
@@ -33,7 +32,6 @@ Feature: Incremental Re-indexing
   #   6. When incremental is false or omitted, full extraction + overwrite works as before (backward compatibility)
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want my AST graph to be incrementally re-indexed when only a few files have changed

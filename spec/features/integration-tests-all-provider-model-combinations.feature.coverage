@@ -1,0 +1,625 @@
+{
+  "scenarios": [
+    {
+      "name": "Claude Sonnet 4 resolves context window to 200k and max output to 8192",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "694-717",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Claude Opus 4.6 clamps 1M registry to 200k and 128k output to 8192",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "719-743",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI gpt-4o trusts registry values without clamping",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "745-773",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gemini 2.5 Pro trusts 1M registry value and uses 80% threshold",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "775-795",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Codex falls back to 272k default context window with no registry",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "797-819",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Z.AI resolves 128k context window and 8192 max output",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "821-841",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Copilot falls back to 200k default context and 4096 max output",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "843-867",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User override exceeding provider max is clamped",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "869-890",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/model_limits.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ProviderManager full chain resolves clamped values for all providers",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "892-957",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                800,
+                801,
+                802,
+                803,
+                804,
+                805,
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816,
+                817,
+                818,
+                819,
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837,
+                838,
+                839,
+                840,
+                841,
+                842,
+                843,
+                844,
+                845,
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sub-agent propagation returns clamped values for Claude",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/model_limits.rs",
+          "lines": "959-980",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/src/model_limits.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/model_limits.rs",
+      "codelet/providers/src/manager.rs"
+    ],
+    "totalLinesCovered": 726
+  }
+}

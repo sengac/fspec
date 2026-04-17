@@ -131,8 +131,8 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
     description: 'Multi-line text input keyboard handler',
     isActive,
     handler: (input, key) => {
-      // Ignore mouse escape sequences
-      if (key.mouse || input.includes('[M') || input.includes('[<')) {
+      // Ignore mouse escape sequences (SGR and legacy X10 formats)
+      if (input.includes('[<') || input.includes('[M')) {
         return false;
       }
 

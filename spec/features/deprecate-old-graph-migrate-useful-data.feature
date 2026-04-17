@@ -1,6 +1,5 @@
 @KGRAPH-024
 Feature: Deprecate Old Graph & Migrate Useful Data
-
   """
   Delete 18 purely-old files (~4200 lines): schemas/agent-memory.pg, schemas/graph-queries.gq, entity_pipeline.rs, extractors.rs, merge.rs, watermark.rs, indexing.rs, session_scanner.rs, compaction.rs, dispatch.rs, queries.rs, deepsearch_integration.rs, llm_extraction.rs, llm_validation.rs, llm_caller.rs, tests.rs, graph_lifecycle_test.rs, tool tests.rs. Surgically update 7 shared files: database.rs, registry.rs, dispatch_helpers.rs, llm_response_parser.rs, tool types.rs/mod.rs/handler.rs. Update graph_search_handler.rs to remove old dispatch routing. Update DeepSearch to use Learnings graph context.
   The graph module after migration should only export: database (GraphDatabase), registry (get_graph, AST_CODE_GRAPH, LEARNINGS_GRAPH), ast_pipeline (extractors), ast_dispatch (AstSearch/AstNeighbors/AstStats), learnings_extraction (extract_learnings_from_text), learnings_dispatch (LearningsSearch/LearningsDecisions/LearningsStats/LearningsRelated), dispatch_helpers (shared utilities), llm_response_parser (shared JSON parsing).
@@ -29,7 +28,6 @@ Feature: Deprecate Old Graph & Migrate Useful Data
   #   5. All 15 existing tests pass (4 learnings_query + 3 learnings_extraction + 3 ast_query + 5 ast_data_model) with zero regressions after removing old infrastructure
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to have the old monolithic graph infrastructure deprecated and removed

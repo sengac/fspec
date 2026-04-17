@@ -1,6 +1,5 @@
 @KGRAPH-047
 Feature: Calls/Imports edges — C and C++
-
   """
   C/C++ use #include directives for imports and bare function calls.
   No TypeRef edges — C/C++ type annotations are not function-signature-level types.

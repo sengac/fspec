@@ -1,6 +1,5 @@
 @KGRAPH-056
 Feature: Add Dart language support to AstGrep and AstGrepRefactor tools via tree-sitter-dart 0.1.0
-
   """
   Create a LanguageChoice enum to unify SupportLang variants with custom DartLang — both tools dispatch through this enum. The DartLang struct lives in a new codelet/tools/src/dart_lang.rs module shared by astgrep.rs and astgrep_refactor.rs.
   The LLM tool description JSON schema (TypeScript side) must also add 'dart' to the language enum so models know they can request Dart searches.
@@ -28,7 +27,6 @@ Feature: Add Dart language support to AstGrep and AstGrepRefactor tools via tree
   #   5. AstGrepRefactorTool batch mode replaces all occurrences of a Dart pattern across a file
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to search and refactor Dart code using AstGrep and AstGrepRefactor tools

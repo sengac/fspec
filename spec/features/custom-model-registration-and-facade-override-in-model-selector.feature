@@ -1,7 +1,6 @@
 @done
 @MODEL-004
 Feature: Custom Model Registration and Facade Override in Model Selector
-
   """
   Config layer: Extend ProfileConfig in src/utils/provider-config.ts with optional customModels: CustomModelDefinition[]. Add CustomModelDefinition interface with fields: id (string, required), displayName (string, optional), facade ('openai'|'codex'|'claude'|'gemini'|'zai', optional), contextWindow (number, optional), maxOutputTokens (number, optional), reasoning (boolean, optional), hasVision (boolean, optional). Add loadCustomModels() and saveCustomModel() functions.
   Model initialization: In loadProfileSections() (src/tui/services/modelInitializationService.ts), after the /v1/models fetch, load custom models from the profile config and merge them into localModels[]. Custom models override auto-discovered ones with matching IDs. If only custom models exist, the section should NOT have isUnreachable: true. Custom models get their NapiModelInfo built from CustomModelDefinition fields.
@@ -76,7 +75,6 @@ Feature: Custom Model Registration and Facade Override in Model Selector
   #   3. The ProviderSettingsScreen profile form pattern (arrow key field navigation, Enter to save, Escape to cancel) is a proven UX pattern that users already understand — we reuse it for the custom model form
   #
   # ========================================
-
   Background: User Story
     As a developer using a custom OpenAI-compatible server
     I want to manually add models and configure their facade type
@@ -85,8 +83,8 @@ Feature: Custom Model Registration and Facade Override in Model Selector
   # ========================================
   # Custom Model Registration
   # ========================================
-
-  @config @happy-path
+  @config
+  @happy-path
   Scenario: Add a custom model to a profile
     Given I have a profile "work-vllm" configured with baseUrl "http://localhost:8888"
     And the profile has no custom models defined
@@ -103,7 +101,8 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     And the "customModels" array contains an entry with id "my-fine-tuned-gpt"
     And the custom model is present after reloading the Model Selector
 
-  @config @backward-compat
+  @config
+  @backward-compat
   Scenario: Existing config without customModels field loads normally
     Given I have a profile "work-vllm" in fspec-config.json without a "customModels" field
     When the Model Selector loads the profile sections
@@ -115,22 +114,22 @@ Feature: Custom Model Registration and Facade Override in Model Selector
   Scenario: Custom model with all optional metadata fields
     Given I have a profile "work-vllm" configured with baseUrl "http://localhost:8888"
     When I add a custom model with the following settings:
-      | field          | value                  |
-      | id             | my-reasoning-model     |
-      | displayName    | My Reasoning Model     |
-      | facade         | codex                  |
-      | contextWindow  | 65536                  |
-      | maxOutputTokens| 8192                   |
-      | reasoning      | true                   |
-      | hasVision      | true                   |
+      | field           | value              |
+      | id              | my-reasoning-model |
+      | displayName     | My Reasoning Model |
+      | facade          | codex              |
+      | contextWindow   | 65536              |
+      | maxOutputTokens | 8192               |
+      | reasoning       | true               |
+      | hasVision       | true               |
     Then the model displays "[C]", "[R]", "[V]", and "[65k]" badges in the Model Selector
     And the ModelSelection includes reasoning: true, hasVision: true, contextWindow: 65536
 
   # ========================================
   # Custom Model Override of Auto-Discovered Models
   # ========================================
-
-  @config @override
+  @config
+  @override
   Scenario: Custom model overrides an auto-discovered model with matching ID
     Given I have a profile "work-vllm" configured with baseUrl "http://localhost:8888"
     And the server /v1/models endpoint returns "meta-llama/Meta-Llama-3.1-405B"
@@ -140,7 +139,8 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     And the model shows "[32k]" instead of the default "[128k]"
     And the model displays the "[C]" badge indicating custom override
 
-  @config @override
+  @config
+  @override
   Scenario: Deleting a custom model that overrides an auto-discovered model
     Given I have a profile "work-vllm" with a custom model "meta-llama/Meta-Llama-3.1-405B" overriding the auto-discovered version
     And the server /v1/models endpoint returns "meta-llama/Meta-Llama-3.1-405B"
@@ -152,7 +152,6 @@ Feature: Custom Model Registration and Facade Override in Model Selector
   # ========================================
   # Unreachable Server with Custom Models
   # ========================================
-
   @resilience
   Scenario: Custom models appear when /v1/models endpoint is unreachable
     Given I have a profile "work-vllm" configured with baseUrl "http://localhost:8888"
@@ -175,8 +174,8 @@ Feature: Custom Model Registration and Facade Override in Model Selector
   # ========================================
   # Facade Override — Tool Schema Selection
   # ========================================
-
-  @facade @integration
+  @facade
+  @integration
   Scenario: Facade override to Codex changes tool schemas
     Given I have a custom model "Qwen/Qwen3-80B" with facade set to "codex"
     When I select the custom model and start a session
@@ -184,7 +183,8 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     And the tool names include "exec_command", "shell", "read_file", "grep_files", and "list_dir"
     And the HTTP transport still uses the OpenAI-compatible endpoint
 
-  @facade @integration
+  @facade
+  @integration
   Scenario: Facade override to Gemini changes tool schemas
     Given I have a custom model "my-gemini-compat" with facade set to "gemini"
     When I select the custom model and start a session
@@ -207,7 +207,8 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     And thinking config is NOT activated for this profile model
     And the HTTP transport remains OpenAI-compatible
 
-  @facade @napi
+  @facade
+  @napi
   Scenario: Facade override propagates through NAPI boundary
     Given I have a custom model with facade set to "gemini"
     When the model selection service calls sessionSetModelProfile
@@ -218,7 +219,6 @@ Feature: Custom Model Registration and Facade Override in Model Selector
   # ========================================
   # TUI Keybinds and Form Flow
   # ========================================
-
   @tui
   Scenario: Add custom model via 'a' keybind on profile section
     Given the Model Selector is open and focused on the "openai: work-vllm" profile section header
@@ -244,7 +244,8 @@ Feature: Custom Model Registration and Facade Override in Model Selector
     Then a deletion confirmation prompt appears
     And confirming the deletion removes the model from the "customModels" array in fspec-config.json
 
-  @tui @boundary
+  @tui
+  @boundary
   Scenario: Add keybind is ignored on cloud provider sections
     Given the Model Selector is open and focused on the "anthropic" cloud provider section
     When I press the "a" key

@@ -1,7 +1,6 @@
 @done
 @MODEL-005
 Feature: Per-Model Context Window and Max Output Configuration
-
   """
   Rust changes in codelet/providers/src/manager.rs: (1) Add model_context_window: Option<usize> and model_max_output_tokens: Option<usize> to ProviderManager struct. (2) context_window() returns self.model_context_window.unwrap_or_else(|| self.provider_constant_context_window()). (3) max_output_tokens() does the same. (4) select_model() extracts ModelInfo.limit.context/output and stores them. (5) set_model_direct() gains optional context_window/max_output params. (6) for_testing() gains optional context_window/max_output params. (7) All constructors (new, with_provider, with_provider_and_model, with_model_support) initialize both fields to None.
   NAPI changes in codelet/napi/src/session_manager.rs: (1) session_set_model gains optional context_window: Option<u32> and max_output_tokens: Option<u32> params. For registry-based models, the Rust select_model() already reads from ModelInfo — but the NAPI params serve as overrides (e.g. TypeScript custom model config could override models.dev data). (2) session_set_model_profile gains the same params and passes them to set_model_direct(). These are required for profile models since they have no registry data.
@@ -53,7 +52,6 @@ Feature: Per-Model Context Window and Max Output Configuration
   #   3. MODEL-004 (Custom Model Registration) has not been implemented yet — this work creates the infrastructure it will plug into
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to have compaction and token limits respect my actual model's context window
@@ -62,8 +60,8 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # Registry-based model selection (select_model path)
   # ---------------------------------------------------------------------------
-
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: Cloud model gets per-model context window from models.dev registry
     Given the model registry contains "openai/o3" with context=200000 and max_output=100000
     And the OpenAI provider-level constant is 128000
@@ -73,7 +71,8 @@ Feature: Per-Model Context Window and Max Output Configuration
     And context_window() should return 200000
     And max_output_tokens() should return 100000
 
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: Copilot proxy model gets per-model context from registry
     Given the model registry contains "github-copilot/gemini-2.5-pro" with context=1000000 and max_output=8192
     And the Copilot provider-level constant is 200000
@@ -81,7 +80,8 @@ Feature: Per-Model Context Window and Max Output Configuration
     Then context_window() should return 1000000
     And max_output_tokens() should return 8192
 
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: Claude model gets per-model context from registry
     Given the model registry contains "anthropic/claude-sonnet-4" with context=200000 and max_output=8192
     When I call select_model("anthropic/claude-sonnet-4")
@@ -91,8 +91,9 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # Profile-based model selection (set_model_direct path via NAPI)
   # ---------------------------------------------------------------------------
-
-  @rust @provider-manager @napi
+  @rust
+  @provider-manager
+  @napi
   Scenario: Profile model gets context window through NAPI parameters
     Given a vLLM profile model with ModelSelection.contextWindow=32000 and maxOutput=4096
     When sessionSetModelProfile is called with context_window=32000 and max_output_tokens=4096
@@ -100,7 +101,9 @@ Feature: Per-Model Context Window and Max Output Configuration
     And context_window() should return 32000
     And max_output_tokens() should return 4096
 
-  @rust @provider-manager @napi
+  @rust
+  @provider-manager
+  @napi
   Scenario: Codex model gets context window through NAPI parameters
     Given a Codex model with ModelSelection.contextWindow=272000 and maxOutput=4096
     When sessionSetModelProfile is called with context_window=272000 and max_output_tokens=4096
@@ -110,8 +113,9 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # NAPI override takes priority over models.dev data
   # ---------------------------------------------------------------------------
-
-  @rust @provider-manager @napi
+  @rust
+  @provider-manager
+  @napi
   Scenario: NAPI override takes priority over models.dev metadata
     Given the model registry contains "openai/gpt-4o" with context=128000 and max_output=16384
     When session_set_model is called with context_window=64000 and max_output_tokens=8192
@@ -121,8 +125,8 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # Backward compatibility: fallback to provider constants
   # ---------------------------------------------------------------------------
-
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: No model selected falls back to provider constant
     Given a fresh ProviderManager with Claude as the current provider
     And no model has been selected
@@ -130,7 +134,8 @@ Feature: Per-Model Context Window and Max Output Configuration
     And context_window() should return 200000
     And max_output_tokens() should return 8192
 
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: Environment variable override still works when no per-model data
     Given a fresh ProviderManager with OpenAI as the current provider
     And no model has been selected
@@ -143,15 +148,16 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # Compaction threshold correctly uses per-model values
   # ---------------------------------------------------------------------------
-
-  @rust @compaction
+  @rust
+  @compaction
   Scenario: Compaction threshold uses per-model context window for large-context model
     Given a ProviderManager with model_context_window=200000 and model_max_output_tokens=100000
     When the compaction threshold is calculated
     Then calculate_usable_context(200000, 100000) should return 168000
     And compaction triggers when effective tokens exceed 168000
 
-  @rust @compaction
+  @rust
+  @compaction
   Scenario: Compaction threshold uses per-model context window for small-context model
     Given a ProviderManager with model_context_window=32000 and model_max_output_tokens=4096
     When the compaction threshold is calculated
@@ -161,15 +167,16 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # TypeScript integration: modelSelectionService passes values to NAPI
   # ---------------------------------------------------------------------------
-
-  @typescript @integration
+  @typescript
+  @integration
   Scenario: modelSelectionService passes contextWindow and maxOutput to sessionSetModel
     Given a ModelSelection with providerId="openai" and modelId="o3" and contextWindow=200000 and maxOutput=100000
     And an active session exists
     When selectModel is called
     Then sessionSetModel is called with context_window=200000 and max_output_tokens=100000
 
-  @typescript @integration
+  @typescript
+  @integration
   Scenario: modelSelectionService passes contextWindow and maxOutput to sessionSetModelProfile
     Given a ModelSelection with profileConfig and contextWindow=32000 and maxOutput=4096
     And an active session exists
@@ -179,14 +186,15 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # with_provider_and_model constructor supports optional context params
   # ---------------------------------------------------------------------------
-
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: with_provider_and_model accepts optional context window parameters
     Given I create a ProviderManager via with_provider_and_model("claude", "claude-sonnet-4", context_window=200000, max_output_tokens=8192)
     Then context_window() should return 200000
     And max_output_tokens() should return 8192
 
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: with_provider_and_model without context params falls back to provider constant
     Given I create a ProviderManager via with_provider_and_model("claude", "claude-sonnet-4") with no context params
     Then context_window() should return 200000
@@ -195,8 +203,8 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # for_testing constructor supports optional context params
   # ---------------------------------------------------------------------------
-
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: for_testing constructor with custom context window
     Given I create a test ProviderManager via for_testing(OpenAI, context_window=200000, max_output_tokens=100000)
     Then context_window() should return 200000
@@ -205,8 +213,8 @@ Feature: Per-Model Context Window and Max Output Configuration
   # ---------------------------------------------------------------------------
   # Provider constants remain as fallback defaults
   # ---------------------------------------------------------------------------
-
-  @rust @provider-manager
+  @rust
+  @provider-manager
   Scenario: Provider-level compile-time constants remain unchanged
     Then claude::CONTEXT_WINDOW should be 200000
     And openai::CONTEXT_WINDOW should be 128000

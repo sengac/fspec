@@ -1,7 +1,6 @@
 @done
 @KGRAPH-067
 Feature: Full-Text and Content Search Within Graph
-
   """
   DRY approach: Reuse matches_fields() helper in dispatch_helpers.rs with different field lists per search_mode. Add decorator/parameter filter as post-match predicates in dispatch_ast_search. Extend dispatch_helpers.rs (field lists, matches_decorator, matches_parameter), ast_dispatch.rs (dispatch logic), and types.rs (new parameters).
   """
@@ -28,7 +27,6 @@ Feature: Full-Text and Content Search Within Graph
   #   6. Agent uses ast_search with no search_mode parameter — defaults to 'name' mode for backward compatibility, only searches name/slug/path/qualifiedName
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to search graph nodes by source code content, docstrings, and names with controllable search scope

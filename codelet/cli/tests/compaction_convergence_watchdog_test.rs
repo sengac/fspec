@@ -4,7 +4,7 @@
 // This test file validates the acceptance criteria defined in the feature file.
 // Scenarios map directly to Gherkin scenarios.
 
-use codelet_cli::interactive_helpers::{
+use codelet_cli::compaction_dag::{
     extract_partial_dag_nodes, force_inject_fallback_dag,
     COMPACTION_ESCALATION_MESSAGE,
 };
@@ -48,31 +48,11 @@ fn add_conversation_turns(session: &mut codelet_cli::session::Session, count: us
 // ========================================
 // Scenario: Normal compaction succeeds without watchdog intervention
 // ========================================
-
-#[test]
-fn test_normal_compaction_no_watchdog() {
-    // @step Given a session in compaction mode after execute_compaction
-    let compaction_flag = Arc::new(AtomicBool::new(true));
-
-    // @step When the agent calls inject_summary during the first stream attempt
-    // Simulate: inject_summary handler clears the flag
-    compaction_flag.store(false, Ordering::SeqCst);
-
-    // @step Then the compaction_in_progress flag should be cleared
-    assert!(
-        !compaction_flag.load(Ordering::Relaxed),
-        "Flag should be cleared after inject_summary"
-    );
-
-    // @step And no escalation message should be injected
-    // Watchdog logic: if !compaction_in_progress → no escalation needed
-    let needs_escalation = compaction_flag.load(Ordering::Acquire);
-    assert!(!needs_escalation, "No escalation should be needed");
-
-    // @step And the watchdog counter should remain at 0
-    let watchdog_counter: usize = 0; // Would be 0 since first attempt succeeded
-    assert_eq!(watchdog_counter, 0, "Watchdog counter should be 0");
-}
+// REMOVED (CMPCT-030): `test_normal_compaction_no_watchdog` was tautological —
+// it stored `false` into a local AtomicBool and asserted the AtomicBool was
+// false. The "normal success" path is implicitly covered by every other test
+// in this file that exercises `force_inject_fallback_dag` and friends on a
+// flag that was set to true.
 
 // ========================================
 // Scenario: Escalation triggers after first failed attempt

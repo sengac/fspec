@@ -157,6 +157,12 @@ where
 
 pub struct CancelSignal(Arc<AtomicBool>);
 
+impl Default for CancelSignal {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CancelSignal {
     /// Create a new CancelSignal (public for testing)
     pub fn new() -> Self {

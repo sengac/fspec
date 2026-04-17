@@ -46,6 +46,8 @@ export interface SessionHeaderProps {
   hasVision?: boolean;
   /** Model's context window size in tokens */
   contextWindow?: number;
+  /** CTX-009: Compaction threshold from Rust (badge shows this instead of contextWindow) */
+  compactionThreshold?: number;
   /** Whether debug capture is enabled */
   isDebugEnabled?: boolean;
   /** Whether turn select mode is active */
@@ -104,6 +106,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   hasReasoning = false,
   hasVision = false,
   contextWindow = 0,
+  compactionThreshold,
   isDebugEnabled = false,
   isSelectMode = false,
   thinkingLevel = null,
@@ -157,8 +160,11 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   if (hasVision) {
     leftContent += chalk.blue(' [V]');
   }
-  if (contextWindow > 0) {
-    leftContent += chalk.dim(` [${formatContextWindow(contextWindow)}]`);
+  // CTX-009: Badge shows compaction threshold (what fill% is relative to), not raw context window.
+  // Falls back to contextWindow when threshold is unavailable (pre-model-selection).
+  const badgeValue = compactionThreshold ?? contextWindow;
+  if (badgeValue > 0) {
+    leftContent += chalk.dim(` [${formatContextWindow(badgeValue)}]`);
   }
   if (isDebugEnabled) {
     leftContent += chalk.red.bold(' [DEBUG]');

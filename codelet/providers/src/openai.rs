@@ -86,6 +86,34 @@ impl ProviderAdapter for OpenAIProvider {
     }
 }
 
+// ---------------------------------------------------------------------------
+// LIMITS-003: ModelLimitsResolver for OpenAI
+// ---------------------------------------------------------------------------
+
+impl crate::model_limits::ModelLimitsResolver for OpenAIProvider {
+    /// OpenAI trusts registry values — no hard ceiling.
+    fn max_context_window(&self) -> Option<usize> {
+        None
+    }
+
+    /// OpenAI trusts registry values — no hard ceiling.
+    fn max_output_tokens_limit(&self) -> Option<usize> {
+        None
+    }
+
+    /// Default context window, reading `OPENAI_CONTEXT_WINDOW` env var at
+    /// construction time (already stored in `self.context_window`).
+    fn default_context_window(&self) -> usize {
+        self.context_window
+    }
+
+    /// Default max output tokens, reading `OPENAI_MAX_OUTPUT_TOKENS` env var
+    /// at construction time (already stored in `self.max_output_tokens`).
+    fn default_max_output_tokens(&self) -> usize {
+        self.max_output_tokens
+    }
+}
+
 impl OpenAIProvider {
     /// Create a new OpenAIProvider using API key from environment
     ///

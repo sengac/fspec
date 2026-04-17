@@ -1,7 +1,6 @@
 @done
 @KGRAPH-066
 Feature: Variable and Symbol Tracking
-
   """
   Extend ast-code.pg schema with Variable node type and ContainsVariable edge type.
   Add build_variable_node() and build_contains_variable_edge() to helpers.rs.
@@ -23,7 +22,6 @@ Feature: Variable and Symbol Tracking
   #   7. Variable extraction reuses existing ast-grep infrastructure via variables.rs
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to search for variables and constants by name across all indexed files

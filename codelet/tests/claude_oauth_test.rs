@@ -104,7 +104,7 @@ fn test_oauth_request_includes_beta_headers() {
 
     // @step Then the anthropic-beta header should include "oauth-2025-04-20"
     // @step And the anthropic-beta header should include "prompt-caching-2024-07-31"
-    let beta_header = provider.get_anthropic_beta_header();
+    let beta_header = provider.get_anthropic_beta_header_for_model();
     assert!(
         beta_header.contains("oauth-2025-04-20"),
         "Beta header should include oauth-2025-04-20"

@@ -1,6 +1,5 @@
 @KGRAPH-005
 Feature: LLM-Based Concept Extraction Pipeline
-
   """
   Extraction prompt sends batches to an LLM. Pipeline is pure Rust: build prompt, parse JSON response, validate entities, return Vec<GraphEntity>. No DB writes in this card — outputs feed into KGRAPH-006 merge/upsert.
   """
@@ -28,7 +27,6 @@ Feature: LLM-Based Concept Extraction Pipeline
   #   6. LLM returns a concept with category 'foobar' not in the schema enum — that concept is rejected during validation
   #
   # ========================================
-
   Background: User Story
     As an agent developer
     I want to have conversation content automatically analyzed by an LLM to extract concepts, decisions, and relations
@@ -42,13 +40,11 @@ Feature: LLM-Based Concept Extraction Pipeline
     And RelatesTo edges connect related concepts with valid types and strength values
     And all entities are returned as Vec<GraphEntity> compatible with the merge/upsert pipeline
 
-
   Scenario: Malformed concept entry is skipped without failing the batch
     Given an LLM response containing a concept with a missing slug field and two valid concepts
     When the response is parsed and validated
     Then the malformed concept is skipped
     And the two valid concepts are returned as GraphEntity nodes
-
 
   Scenario: Self-referencing relation is rejected
     Given an LLM response containing a relation where from and to slugs are identical
@@ -56,22 +52,18 @@ Feature: LLM-Based Concept Extraction Pipeline
     Then the self-referencing relation is rejected
     And other valid entities in the response are still returned
 
-
   Scenario: Tool-result-only batch is skipped without LLM invocation
     Given a batch of turns that are all tool results with no user or assistant messages
     When the batch is submitted to the extraction pipeline
     Then the pipeline returns an empty list without invoking the LLM
-
 
   Scenario: Long conversation turns are truncated before extraction
     Given a batch containing a user turn with 5000 characters of content
     When the extraction prompt is built from the batch
     Then the turn content in the prompt is truncated to 2000 characters
 
-
   Scenario: Invalid enum values in entities are rejected
     Given an LLM response with a concept having category 'foobar' and a decision having domain 'invalid-domain'
     When the response is parsed and validated
     Then both entities with invalid enum values are rejected
     And entities with valid enum values from the same response are still returned
-

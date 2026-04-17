@@ -1,6 +1,5 @@
 @BUG-130
 Feature: Unicode Path Normalization — Rust Codelet Tools
-
   """
   macOS uses U+202F (NARROW NO-BREAK SPACE) before am/pm in screenshot filenames.
   When users or AI agents type these paths with regular ASCII spaces, all file
@@ -20,7 +19,6 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   # ========================================
   # Rust utility: resolve_unicode_path (async, directory scan)
   # ========================================
-
   Scenario: Resolve file with U+202F on disk when user types regular space
     Given a file on disk named with U+202F in its name
     When I call resolve_unicode_path with a path using a regular space instead of U+202F
@@ -35,7 +33,6 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   # ========================================
   # Integration: validate_and_resolve_path (wrapper.rs)
   # ========================================
-
   Scenario: validate_and_resolve_path normalizes Unicode whitespace before canonicalization
     Given a directory on disk containing a file with U+202F in its name
     When I call validate_and_resolve_path with a path using regular ASCII spaces
@@ -45,7 +42,6 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   # ========================================
   # Integration: require_file_exists directory-scan fallback (validation.rs)
   # ========================================
-
   Scenario: require_file_exists finds file via directory scan when normalized path also fails
     Given a file on disk named "Screenshot 2026-04-13 at 9.13.45\u202fam.txt"
     When I call require_file_exists with path "Screenshot 2026-04-13 at 9.13.45 am.txt" containing regular space
@@ -55,7 +51,6 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   # ========================================
   # Integration: Read tool end-to-end
   # ========================================
-
   @integration
   Scenario: Read tool reads file with U+202F when user provides regular space path
     Given a text file on disk named with U+202F before "am" containing known content
@@ -73,7 +68,6 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   # ========================================
   # Integration: Edit tool end-to-end
   # ========================================
-
   @integration
   Scenario: Edit tool edits file with U+202F when user provides regular space path
     Given a text file on disk named with U+202F containing "old content"
@@ -84,7 +78,6 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   # ========================================
   # Integration: Write tool normalizes Unicode in new file path
   # ========================================
-
   @integration
   Scenario: Write tool normalizes Unicode whitespace in file path for new files
     Given a target directory exists
@@ -95,7 +88,6 @@ Feature: Unicode Path Normalization — Rust Codelet Tools
   # ========================================
   # Integration: Ls tool with Unicode path
   # ========================================
-
   @integration
   Scenario: Ls tool lists directory when path contains Unicode whitespace
     Given a directory on disk whose path contains U+202F

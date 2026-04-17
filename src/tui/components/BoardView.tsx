@@ -38,6 +38,7 @@ import {
   useSessionActions,
 } from '../store/sessionStore';
 import { useInputCompat, InputPriority } from '../input/index';
+import { MOUSE_ENABLE, MOUSE_DISABLE } from '../utils/mouseProtocol';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -119,9 +120,9 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // since those views disable mouse tracking in their cleanup
   useEffect(() => {
     if (viewMode === 'board') {
-      process.stdout.write('\x1b[?1000h'); // Enable button event tracking
+      process.stdout.write(MOUSE_ENABLE); // BUG-131: Enable SGR mouse tracking
       return () => {
-        process.stdout.write('\x1b[?1000l'); // Disable on unmount
+        process.stdout.write(MOUSE_DISABLE); // Disable on unmount
       };
     }
   }, [viewMode]);

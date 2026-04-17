@@ -1,6 +1,5 @@
 @KGRAPH-018
 Feature: AST Dependency Graph Population
-
   """
   Dependency parsers in codelet/napi/src/graph/ast_pipeline/ — npm_dep_extractor.rs and cargo_dep_extractor.rs. Uses serde_json for package.json and toml crate for Cargo.toml parsing. Produces GraphEntity values reusing helpers.rs from KGRAPH-017.
   """
@@ -24,7 +23,6 @@ Feature: AST Dependency Graph Population
   #   3. Parse a Cargo workspace with multiple member crates, combining all dependency information into the graph with crate-scoped DependsOn edges
   #
   # ========================================
-
   Background: User Story
     As an AI agent
     I want to have package.json and Cargo.toml dependencies parsed into the AST graph as Dependency nodes with DependsOn edges

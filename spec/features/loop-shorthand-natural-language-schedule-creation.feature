@@ -1,14 +1,13 @@
 @done
 @SCHED-011
 Feature: Loop Shorthand — Natural Language Schedule Creation
-
   """
   Deterministic parser (no LLM round-trip) — regex-based interval extraction with /^\d+[smhd]$/ for leading tokens and /every\s+(\d+)\s*(s|sec|seconds?|m|min|minutes?|h|hrs?|hours?|d|days?)$/i for trailing clauses
   Session-scoped schedules are held in-memory in the scheduler (e.g., a HashMap<String, SessionSchedule>) with a sessionScoped: true flag — they bypass spec/schedules.json entirely and include an expiresAt timestamp for 3-day TTL
   Registers as a slash command in slashCommands.ts alongside the /schedule family — handler lives in a dedicated loop-command.ts that calls into the scheduler API
   """
 
-  Background:
+  Background: 
     Given the fspec TUI is running
 
   Scenario: Create loop with leading interval token

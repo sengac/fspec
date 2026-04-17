@@ -151,10 +151,10 @@ where
                         // Emit usage event FIRST if we have usage metadata
                         // This ensures token tracking works even for SSE messages without content
                         // (e.g., initial messages that only have usage_metadata)
-                        if let Some(ref usage_meta) = data.usage_metadata {
-                            if let Some(usage) = usage_meta.token_usage() {
-                                yield Ok(streaming::RawStreamingChoice::Usage(usage));
-                            }
+                        if let Some(ref usage_meta) = data.usage_metadata
+                            && let Some(usage) = usage_meta.token_usage()
+                        {
+                            yield Ok(streaming::RawStreamingChoice::Usage(usage));
                         }
 
                         // Process the response data

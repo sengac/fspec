@@ -1,0 +1,534 @@
+{
+  "scenarios": [
+    {
+      "name": "Display Rust-resolved context window when models.dev disagrees",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "159-195",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169,
+                1170,
+                1171,
+                1172,
+                1173,
+                1174,
+                1175,
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1190,
+                1191,
+                1192,
+                1193,
+                1194,
+                1195,
+                1196,
+                1197,
+                1198,
+                1199,
+                1200,
+                1201,
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1209,
+                1210,
+                1211,
+                1212,
+                1213,
+                1214,
+                1215,
+                1216,
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222,
+                1223,
+                1224,
+                1225
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display consistent context window when sources agree",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "201-230",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169,
+                1170,
+                1171,
+                1172,
+                1173,
+                1174,
+                1175,
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1190,
+                1191,
+                1192,
+                1193,
+                1194,
+                1195,
+                1196,
+                1197,
+                1198,
+                1199,
+                1200,
+                1201,
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1209,
+                1210,
+                1211,
+                1212,
+                1213,
+                1214,
+                1215,
+                1216,
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222,
+                1223,
+                1224,
+                1225
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display context window for Gemini model",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "236-266",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169,
+                1170,
+                1171,
+                1172,
+                1173,
+                1174,
+                1175,
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1190,
+                1191,
+                1192,
+                1193,
+                1194,
+                1195,
+                1196,
+                1197,
+                1198,
+                1199,
+                1200,
+                1201,
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1209,
+                1210,
+                1211,
+                1212,
+                1213,
+                1214,
+                1215,
+                1216,
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222,
+                1223,
+                1224,
+                1225
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display context window for custom profile model",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "272-303",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                6692,
+                6693,
+                6694,
+                6695,
+                6696,
+                6697,
+                6698,
+                6699,
+                6700,
+                6701,
+                6702,
+                6703,
+                6704,
+                6705,
+                6706,
+                6707,
+                6708,
+                6709,
+                6710,
+                6711
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restore context window from Rust state on session resume",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "309-347",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                6713,
+                6714,
+                6715,
+                6716,
+                6717,
+                6718,
+                6719,
+                6720,
+                6721,
+                6722,
+                6723,
+                6724,
+                6725,
+                6726,
+                6727,
+                6728
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display context window when model is missing from models.dev",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "353-385",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1199,
+                1200,
+                1201,
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sub-agent inherits Rust-resolved context window",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "434-487",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionHeader badge and context fill derive from same source",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "391-427",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1164,
+                1165,
+                1166,
+                1167,
+                1168,
+                1169,
+                1170,
+                1171,
+                1172,
+                1173,
+                1174,
+                1175,
+                1176,
+                1177,
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185,
+                1186,
+                1187,
+                1188,
+                1189,
+                1190,
+                1191,
+                1192,
+                1193,
+                1194,
+                1195,
+                1196,
+                1197,
+                1198,
+                1199,
+                1200,
+                1201,
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1209,
+                1210,
+                1211,
+                1212,
+                1213,
+                1214,
+                1215,
+                1216,
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222,
+                1223,
+                1224,
+                1225
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fallback to models.dev before model selection completes",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "433-453",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1178,
+                1179,
+                1180,
+                1181,
+                1182,
+                1183,
+                1184,
+                1185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rust session state exposes model limits via NAPI",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/rust-authoritative-context-window.test.ts",
+          "lines": "88-153",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                6713,
+                6714,
+                6715,
+                6716,
+                6717,
+                6718,
+                6719,
+                6720,
+                6721,
+                6722,
+                6723,
+                6724,
+                6725,
+                6726,
+                6727,
+                6728,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/rust-authoritative-context-window.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 737
+  }
+}

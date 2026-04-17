@@ -1,7 +1,9 @@
 @done
-@SCHED-005 @scheduling @napi @rust
+@SCHED-005
+@scheduling
+@napi
+@rust
 Feature: Shell Job Execution
-
   """
   Create codelet/napi/src/scheduler/shell_job.rs with trigger_shell_job function using tokio::process::Command
   Add ShellJobResult struct to types.rs: exit_code, stdout, stderr
@@ -34,7 +36,6 @@ Feature: Shell Job Execution
   #   8. Engine receives schedule with job_type='shell' and routes to trigger_shell_job instead of trigger_agent_job.
   #
   # ========================================
-
   Background: User Story
     As a system operator
     I want to have scheduled shell commands automatically execute when a schedule fires
