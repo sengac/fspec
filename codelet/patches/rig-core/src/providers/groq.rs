@@ -699,6 +699,7 @@ where
             refusal: None,
             audio: None,
             name: None,
+            reasoning: None,
             tool_calls
         };
 

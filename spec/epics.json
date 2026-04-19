@@ -631,7 +631,10 @@
         "CMPCT-029",
         "CMPCT-030",
         "PROV-079",
-        "PROV-081"
+        "PROV-081",
+        "PROV-082",
+        "PROV-083",
+        "PROV-084"
       ]
     },
     "local-change-protocols": {

@@ -135,6 +135,18 @@ pub enum Message {
         audio: Option<AudioAssistant>,
         #[serde(skip_serializing_if = "Option::is_none")]
         name: Option<String>,
+        /// PROV-081: capture vLLM-native `reasoning` reasoning/thinking text on
+        /// non-streaming assistant messages. Aliased so that Z.AI/GLM payloads
+        /// carrying `reasoning_content` are also captured. The outbound
+        /// serialization skips this field (assistant messages we send upstream
+        /// never need to carry reasoning back — the panic at AssistantContent::
+        /// Reasoning elsewhere in this module guards that invariant).
+        #[serde(
+            default,
+            alias = "reasoning_content",
+            skip_serializing_if = "Option::is_none"
+        )]
+        reasoning: Option<String>,
         #[serde(
             default,
             deserialize_with = "json_utils::null_or_vec",
@@ -401,6 +413,112 @@ impl TryFrom<message::ToolResult> for Message {
     }
 }
 
+/// PROV-084: convert a rig `message::ToolResult` into one or more OpenAI
+/// chat-completion `Message`s.
+///
+/// The OpenAI Chat Completions API only accepts string content on `tool`
+/// role messages, so any image parts inside a tool result must be delivered
+/// via a follow-up `user` role message immediately after the `tool`
+/// message. Text parts are joined by newlines and placed on the tool
+/// message; if the tool result is purely image parts, a non-empty
+/// placeholder string is used so the server has something to render.
+///
+/// Returns:
+/// - `[tool_msg]` for text-only tool results (preserves prior behaviour).
+/// - `[tool_msg, user_msg]` for tool results containing one or more images.
+fn tool_result_to_messages(
+    value: message::ToolResult,
+) -> Result<Vec<Message>, message::MessageError> {
+    let tool_call_id = value.id;
+    let mut text_parts: Vec<String> = Vec::new();
+    let mut image_parts: Vec<UserContent> = Vec::new();
+
+    for content in value.content.into_iter() {
+        match content {
+            message::ToolResultContent::Text(message::Text { text }) => {
+                text_parts.push(text);
+            }
+            message::ToolResultContent::Image(message::Image {
+                data,
+                media_type,
+                detail,
+                ..
+            }) => {
+                let image_user_content = match data {
+                    DocumentSourceKind::Url(url) => UserContent::Image {
+                        image_url: ImageUrl {
+                            url,
+                            detail: detail.unwrap_or_default(),
+                        },
+                    },
+                    DocumentSourceKind::Base64(b64) => {
+                        let mime = media_type.map(|m| m.to_mime_type()).ok_or(
+                            message::MessageError::ConversionError(
+                                "OpenAI Image URI must have media type".into(),
+                            ),
+                        )?;
+                        let url = format!("data:{mime};base64,{b64}");
+                        UserContent::Image {
+                            image_url: ImageUrl {
+                                url,
+                                detail: detail.unwrap_or_default(),
+                            },
+                        }
+                    }
+                    DocumentSourceKind::Raw(_) => {
+                        return Err(message::MessageError::ConversionError(
+                            "Raw tool-result images not supported, encode as base64 first".into(),
+                        ));
+                    }
+                    DocumentSourceKind::Unknown => {
+                        return Err(message::MessageError::ConversionError(
+                            "Tool-result image has no body".into(),
+                        ));
+                    }
+                    other => {
+                        return Err(message::MessageError::ConversionError(format!(
+                            "Unsupported tool-result image source: {other:?}"
+                        )));
+                    }
+                };
+                image_parts.push(image_user_content);
+            }
+        }
+    }
+
+    if image_parts.is_empty() {
+        // Text-only tool result — match the legacy single-Message behaviour.
+        Ok(vec![Message::ToolResult {
+            tool_call_id,
+            content: ToolResultContentValue::String(text_parts.join("\n")),
+        }])
+    } else {
+        // Mixed / image-only tool result: emit a tool message carrying the
+        // text (or a non-empty placeholder) followed by a user message
+        // whose content array carries every image part.
+        let tool_text = if text_parts.is_empty() {
+            "[image attached below]".to_string()
+        } else {
+            text_parts.join("\n")
+        };
+
+        let tool_msg = Message::ToolResult {
+            tool_call_id,
+            content: ToolResultContentValue::String(tool_text),
+        };
+
+        let user_content = OneOrMany::many(image_parts).expect(
+            "image_parts is guaranteed non-empty because we entered the image branch",
+        );
+        let user_msg = Message::User {
+            content: user_content,
+            name: None,
+        };
+
+        Ok(vec![tool_msg, user_msg])
+    }
+}
+
 impl TryFrom<message::UserContent> for UserContent {
     type Error = message::MessageError;
 
@@ -430,9 +548,7 @@ impl TryFrom<message::UserContent> for UserContent {
                         data
                     );
 
-                    let detail = detail.ok_or(message::MessageError::ConversionError(
-                        "OpenAI image URI must have image detail".into(),
-                    ))?;
+                    let detail = detail.unwrap_or_default();
 
                     Ok(UserContent::Image {
                         image_url: ImageUrl { url, detail },
@@ -503,13 +619,22 @@ impl TryFrom<OneOrMany<message::UserContent>> for Vec<Message> {
         // If there are messages with both tool results and user content, openai will only
         //  handle tool results. It's unlikely that there will be both.
         if !tool_results.is_empty() {
-            tool_results
-                .into_iter()
-                .map(|content| match content {
-                    message::UserContent::ToolResult(tool_result) => tool_result.try_into(),
-                    _ => unreachable!(),
-                })
-                .collect::<Result<Vec<_>, _>>()
+            // PROV-084: route every tool-result UserContent through
+            // `tool_result_to_messages`, which emits a `tool` message plus
+            // (if any image parts are present) a follow-up `user` message
+            // carrying the `image_url` content parts. Flatten the per-
+            // tool-result `Vec<Message>` into the final `Vec<Message>`.
+            let mut out: Vec<Message> = Vec::new();
+            for content in tool_results {
+                let tool_result = match content {
+                    message::UserContent::ToolResult(tr) => tr,
+                    _ => unreachable!(
+                        "partition above guarantees every element is UserContent::ToolResult"
+                    ),
+                };
+                out.extend(tool_result_to_messages(tool_result)?);
+            }
+            Ok(out)
         } else {
             let other_content: Vec<UserContent> = other_content
                 .into_iter()
@@ -560,6 +685,13 @@ impl TryFrom<OneOrMany<message::AssistantContent>> for Vec<Message> {
             refusal: None,
             audio: None,
             name: None,
+            // PROV-081: reasoning is an INBOUND-only field. We never plumb
+            // captured reasoning back out to the server — the panic at
+            // `message::AssistantContent::Reasoning` above is the last line of
+            // defense; this explicit `None` plus the `skip_serializing_if` on
+            // `Message::Assistant::reasoning` ensures the outbound wire never
+            // carries a `reasoning` / `reasoning_content` key.
+            reasoning: None,
             tool_calls: tool_calls
                 .into_iter()
                 .map(|tool_call| tool_call.into())
@@ -758,36 +890,42 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
             Message::Assistant {
                 content,
                 tool_calls,
+                reasoning,
                 ..
             } => {
-                let mut content = content
-                    .iter()
-                    .filter_map(|c| {
-                        let s = match c {
-                            AssistantContent::Text { text } => text,
-                            AssistantContent::Refusal { refusal } => refusal,
-                        };
-                        if s.is_empty() {
-                            None
-                        } else {
-                            Some(completion::AssistantContent::text(s))
-                        }
-                    })
-                    .collect::<Vec<_>>();
+                let mut out: Vec<completion::AssistantContent> = Vec::new();
 
-                content.extend(
-                    tool_calls
-                        .iter()
-                        .map(|call| {
-                            completion::AssistantContent::tool_call(
-                                &call.id,
-                                &call.function.name,
-                                call.function.arguments.clone(),
-                            )
-                        })
-                        .collect::<Vec<_>>(),
-                );
-                Ok(content)
+                // PROV-081: surface reasoning/thinking text BEFORE text and
+                // tool-call entries, so downstream consumers see the model's
+                // analysis ahead of its final answer. Captures vLLM's
+                // `reasoning` field and (via the serde alias) Z.AI/GLM's
+                // `reasoning_content` field.
+                if let Some(reasoning_text) = reasoning {
+                    if !reasoning_text.is_empty() {
+                        out.push(completion::AssistantContent::reasoning(reasoning_text));
+                    }
+                }
+
+                out.extend(content.iter().filter_map(|c| {
+                    let s = match c {
+                        AssistantContent::Text { text } => text,
+                        AssistantContent::Refusal { refusal } => refusal,
+                    };
+                    if s.is_empty() {
+                        None
+                    } else {
+                        Some(completion::AssistantContent::text(s))
+                    }
+                }));
+
+                out.extend(tool_calls.iter().map(|call| {
+                    completion::AssistantContent::tool_call(
+                        &call.id,
+                        &call.function.name,
+                        call.function.arguments.clone(),
+                    )
+                }));
+                Ok(out)
             }
             _ => Err(CompletionError::ResponseError(
                 "Response did not contain a valid message or tool call".into(),
@@ -1015,6 +1153,16 @@ pub struct CompletionRequest {
     additional_params: Option<serde_json::Value>,
 }
 
+/// Parameters used to build an OpenAI Chat Completions `CompletionRequest`.
+///
+/// **PROV-081 passthrough caveat:** `request.additional_params` is serialized
+/// flat into the outgoing JSON body via `#[serde(flatten)]` on
+/// `CompletionRequest::additional_params`. Callers MUST NOT set either
+/// `include_reasoning: false` or `chat_template_kwargs.enable_thinking: false`
+/// via `additional_params` — those keys suppress server-side reasoning on
+/// vLLM / Qwen3 and would silently defeat the PROV-081 reasoning-capture path.
+/// The default-built request never emits these keys (see
+/// `prov_081_outgoing_request_body_never_contains_reasoning_suppression_keys`).
 pub struct OpenAIRequestParams {
     pub model: String,
     pub request: CoreCompletionRequest,
@@ -1254,5 +1402,975 @@ where
         CompletionError,
     > {
         Self::stream(self, request).await
+    }
+}
+
+// ================================================================
+// PROV-081: vLLM-native `reasoning` field capture (non-streaming)
+//
+// Feature: spec/features/openai-provider-reasoning-tokens.feature
+//
+// These tests validate that the OpenAI provider recognizes the
+// `reasoning` field emitted by vLLM (Qwen3 reasoning-parser output)
+// in addition to the Z.AI/GLM `reasoning_content` field on
+// non-streaming assistant messages, AND that the outgoing request
+// body never emits reasoning-suppression keys.
+// ================================================================
+#[cfg(test)]
+mod prov_081_tests {
+    use super::*;
+    use crate::OneOrMany;
+    use crate::completion;
+    use crate::streaming as core_streaming;
+
+    // ------------------------------------------------------------
+    // Streaming helpers (reused across the four streaming scenarios)
+    // ------------------------------------------------------------
+
+    /// Mock HTTP client that serves a canned SSE payload to the streaming decoder.
+    #[derive(Clone)]
+    struct MockSseClient {
+        sse_bytes: bytes::Bytes,
+    }
+
+    impl crate::http_client::HttpClientExt for MockSseClient {
+        fn send<T, U>(
+            &self,
+            _req: http::Request<T>,
+        ) -> impl std::future::Future<
+            Output = crate::http_client::Result<
+                http::Response<crate::http_client::LazyBody<U>>,
+            >,
+        > + crate::wasm_compat::WasmCompatSend
+        + 'static
+        where
+            T: Into<bytes::Bytes>,
+            T: crate::wasm_compat::WasmCompatSend,
+            U: From<bytes::Bytes>,
+            U: crate::wasm_compat::WasmCompatSend + 'static,
+        {
+            std::future::ready(Err(crate::http_client::Error::InvalidStatusCode(
+                http::StatusCode::NOT_IMPLEMENTED,
+            )))
+        }
+
+        fn send_multipart<U>(
+            &self,
+            _req: http::Request<crate::http_client::MultipartForm>,
+        ) -> impl std::future::Future<
+            Output = crate::http_client::Result<
+                http::Response<crate::http_client::LazyBody<U>>,
+            >,
+        > + crate::wasm_compat::WasmCompatSend
+        + 'static
+        where
+            U: From<bytes::Bytes>,
+            U: crate::wasm_compat::WasmCompatSend + 'static,
+        {
+            std::future::ready(Err(crate::http_client::Error::InvalidStatusCode(
+                http::StatusCode::NOT_IMPLEMENTED,
+            )))
+        }
+
+        fn send_streaming<T>(
+            &self,
+            _req: http::Request<T>,
+        ) -> impl std::future::Future<
+            Output = crate::http_client::Result<crate::http_client::StreamingResponse>,
+        > + crate::wasm_compat::WasmCompatSend
+        where
+            T: Into<bytes::Bytes>,
+        {
+            let sse_bytes = self.sse_bytes.clone();
+            async move {
+                let byte_stream = futures::stream::iter(vec![Ok::<
+                    bytes::Bytes,
+                    crate::http_client::Error,
+                >(sse_bytes)]);
+                let boxed_stream: crate::http_client::sse::BoxedStream = Box::pin(byte_stream);
+
+                http::Response::builder()
+                    .status(http::StatusCode::OK)
+                    .header(reqwest::header::CONTENT_TYPE, "text/event-stream")
+                    .body(boxed_stream)
+                    .map_err(crate::http_client::Error::Protocol)
+            }
+        }
+    }
+
+    /// Drive an SSE payload through `send_compatible_streaming_request` and collect
+    /// every emitted `StreamedAssistantContent` variant for assertions.
+    async fn collect_streamed_contents(
+        sse: &'static str,
+    ) -> Vec<core_streaming::StreamedAssistantContent<streaming::StreamingCompletionResponse>>
+    {
+        use futures::StreamExt;
+
+        let client = MockSseClient {
+            sse_bytes: bytes::Bytes::from(sse),
+        };
+
+        let req = http::Request::builder()
+            .method("POST")
+            .uri("http://localhost/v1/chat/completions")
+            .body(Vec::new())
+            .expect("build mock request");
+
+        let mut stream = streaming::send_compatible_streaming_request(client, req)
+            .await
+            .expect("stream init should succeed");
+
+        let mut out = Vec::new();
+        while let Some(chunk) = stream.next().await {
+            let value = chunk.expect("each chunk should be Ok");
+            let is_final =
+                matches!(value, core_streaming::StreamedAssistantContent::Final(_));
+            out.push(value);
+            if is_final {
+                break;
+            }
+        }
+        out
+    }
+
+    /// Build the JSON body that would be POSTed to `/chat/completions`
+    /// for a plain caller request (mirrors what `completion::CompletionModel::completion`
+    /// does internally, minus the HTTP send).
+    fn build_request_body_json() -> serde_json::Value {
+        // A minimal caller-built CompletionRequest (no reasoning-suppression flags).
+        let core_req = crate::completion::CompletionRequest {
+            preamble: None,
+            chat_history: OneOrMany::one(crate::completion::Message::User {
+                content: OneOrMany::one(crate::message::UserContent::text("hi")),
+            }),
+            documents: Vec::new(),
+            tools: Vec::new(),
+            temperature: None,
+            max_tokens: None,
+            tool_choice: None,
+            additional_params: None,
+        };
+
+        let wire_req = CompletionRequest::try_from(OpenAIRequestParams {
+            model: "qwen".to_string(),
+            request: core_req,
+            strict_tools: false,
+            tool_result_array_content: false,
+        })
+        .expect("building request should succeed");
+
+        serde_json::to_value(&wire_req).expect("serializing request should succeed")
+    }
+
+    /// Extract reasoning text from a CompletionResponse's choice (OneOrMany<AssistantContent>).
+    fn extract_reasoning_texts(
+        response: &completion::CompletionResponse<CompletionResponse>,
+    ) -> Vec<String> {
+        response
+            .choice
+            .iter()
+            .filter_map(|c| match c {
+                completion::AssistantContent::Reasoning(r) => Some(r.reasoning.join("")),
+                _ => None,
+            })
+            .collect()
+    }
+
+    /// Extract text content from a CompletionResponse's choice.
+    fn extract_text_contents(
+        response: &completion::CompletionResponse<CompletionResponse>,
+    ) -> Vec<String> {
+        response
+            .choice
+            .iter()
+            .filter_map(|c| match c {
+                completion::AssistantContent::Text(t) => Some(t.text.clone()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    fn prov_081_non_streaming_vllm_reasoning_field_surfaces_reasoning_and_content() {
+        // @step Given a caller issues a non-streaming chat completion through the OpenAI provider
+        // @step And the upstream server returns a response whose assistant message is {"role":"assistant","reasoning":"analysis","content":"answer"}
+        let body = serde_json::json!({
+            "id": "resp-1",
+            "object": "chat.completion",
+            "created": 1,
+            "model": "qwen",
+            "system_fingerprint": null,
+            "choices": [{
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "reasoning": "analysis",
+                    "content": "answer"
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+            }],
+            "usage": null
+        });
+
+        let raw: CompletionResponse =
+            serde_json::from_value(body).expect("deserialize raw provider response");
+
+        // @step When the provider decodes the response
+        let response: completion::CompletionResponse<CompletionResponse> =
+            raw.try_into().expect("convert into caller-visible response");
+
+        // @step Then the caller-visible CompletionResponse exposes reasoning text "analysis"
+        let reasoning = extract_reasoning_texts(&response);
+        assert_eq!(
+            reasoning,
+            vec!["analysis".to_string()],
+            "expected reasoning text 'analysis' surfaced from vLLM `reasoning` field"
+        );
+
+        // @step And the caller-visible CompletionResponse exposes content text "answer"
+        let content = extract_text_contents(&response);
+        assert_eq!(
+            content,
+            vec!["answer".to_string()],
+            "expected content text 'answer' surfaced from `content` field"
+        );
+    }
+
+    #[test]
+    fn prov_081_non_streaming_glm_reasoning_content_field_surfaces_reasoning_and_content() {
+        // @step Given a caller issues a non-streaming chat completion through the OpenAI provider
+        // @step And the upstream server returns a response whose assistant message is {"role":"assistant","reasoning_content":"analysis","content":"answer"}
+        let body = serde_json::json!({
+            "id": "resp-2",
+            "object": "chat.completion",
+            "created": 1,
+            "model": "glm-4",
+            "system_fingerprint": null,
+            "choices": [{
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "reasoning_content": "analysis",
+                    "content": "answer"
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+            }],
+            "usage": null
+        });
+
+        let raw: CompletionResponse =
+            serde_json::from_value(body).expect("deserialize raw provider response");
+
+        // @step When the provider decodes the response
+        let response: completion::CompletionResponse<CompletionResponse> =
+            raw.try_into().expect("convert into caller-visible response");
+
+        // @step Then the caller-visible CompletionResponse exposes reasoning text "analysis"
+        let reasoning = extract_reasoning_texts(&response);
+        assert_eq!(
+            reasoning,
+            vec!["analysis".to_string()],
+            "expected reasoning text 'analysis' surfaced from GLM `reasoning_content` field"
+        );
+
+        // @step And the caller-visible CompletionResponse exposes content text "answer"
+        let content = extract_text_contents(&response);
+        assert_eq!(content, vec!["answer".to_string()]);
+    }
+
+    #[test]
+    fn prov_081_non_streaming_without_reasoning_field_still_works() {
+        // @step Given a caller issues a non-streaming chat completion through the OpenAI provider
+        // @step And the upstream server returns a response whose assistant message is {"role":"assistant","content":"answer"}
+        let body = serde_json::json!({
+            "id": "resp-3",
+            "object": "chat.completion",
+            "created": 1,
+            "model": "gpt-4o",
+            "system_fingerprint": null,
+            "choices": [{
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "answer"
+                },
+                "logprobs": null,
+                "finish_reason": "stop"
+            }],
+            "usage": null
+        });
+
+        // @step When the provider decodes the response
+        let raw: CompletionResponse = serde_json::from_value(body)
+            .expect("plain response must still deserialize with no reasoning field");
+        let response: completion::CompletionResponse<CompletionResponse> =
+            raw.try_into().expect("convert into caller-visible response");
+
+        // @step Then the caller-visible CompletionResponse exposes content text "answer"
+        let content = extract_text_contents(&response);
+        assert_eq!(content, vec!["answer".to_string()]);
+
+        // @step And the caller-visible CompletionResponse does not expose any reasoning text
+        let reasoning = extract_reasoning_texts(&response);
+        assert!(
+            reasoning.is_empty(),
+            "expected no reasoning text surfaced, got {reasoning:?}"
+        );
+
+        // @step And the response does not produce a decode error
+        // (deserialize + try_into above both unwrapped — any error would have panicked)
+    }
+
+    #[test]
+    fn prov_081_outgoing_request_body_never_contains_reasoning_suppression_keys() {
+        // @step Given a caller builds a chat completion request through the OpenAI provider without explicitly setting any reasoning-suppression flag
+        // @step When the provider serializes the request body that would be POSTed to /chat/completions
+        let body = build_request_body_json();
+
+        // @step Then the serialized body does not contain a top-level key named "include_reasoning"
+        let obj = body
+            .as_object()
+            .expect("serialized body should be a JSON object");
+        assert!(
+            !obj.contains_key("include_reasoning"),
+            "request body must NOT carry `include_reasoning` (vLLM strips reasoning when false). Body: {body}"
+        );
+
+        // @step And the serialized body does not contain a "chat_template_kwargs.enable_thinking" key path
+        if let Some(chat_template_kwargs) = obj.get("chat_template_kwargs") {
+            if let Some(ctk) = chat_template_kwargs.as_object() {
+                assert!(
+                    !ctk.contains_key("enable_thinking"),
+                    "request body must NOT carry `chat_template_kwargs.enable_thinking` (Qwen3 template-level kill-switch). Body: {body}"
+                );
+            }
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Scenario 1: Streaming — vLLM-native `reasoning` field
+    // ------------------------------------------------------------
+    #[tokio::test]
+    async fn prov_081_streaming_vllm_reasoning_field_surfaces_as_reasoning_delta() {
+        // @step Given a caller streams a chat completion through the OpenAI provider
+        // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning":"Let me analyse..."}}]}
+        let sse = concat!(
+            "data: {\"choices\":[{\"delta\":{\"reasoning\":\"Let me analyse...\"}}]}\n\n",
+            "data: [DONE]\n\n",
+        );
+
+        // @step When the provider decodes the chunk
+        let events = collect_streamed_contents(sse).await;
+
+        // @step Then the caller receives a ReasoningDelta whose reasoning text equals "Let me analyse..."
+        let reasoning_texts: Vec<String> = events
+            .iter()
+            .filter_map(|e| match e {
+                core_streaming::StreamedAssistantContent::ReasoningDelta {
+                    reasoning, ..
+                } => Some(reasoning.clone()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            reasoning_texts,
+            vec!["Let me analyse...".to_string()],
+            "expected exactly one ReasoningDelta carrying the vLLM `reasoning` field content"
+        );
+
+        // @step And the caller does not receive any content delta for that chunk
+        for e in &events {
+            if let core_streaming::StreamedAssistantContent::Text(t) = e {
+                panic!("unexpected content delta: {:?}", t);
+            }
+        }
+
+        // @step And the chunk does not produce a decode error
+        // (collect_streamed_contents unwraps each chunk — a decode error would have panicked above)
+    }
+
+    // ------------------------------------------------------------
+    // Scenario 2: Streaming — Z.AI/GLM `reasoning_content` field
+    // ------------------------------------------------------------
+    #[tokio::test]
+    async fn prov_081_streaming_glm_reasoning_content_field_surfaces_as_reasoning_delta() {
+        // @step Given a caller streams a chat completion through the OpenAI provider
+        // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning_content":"thinking..."}}]}
+        let sse = concat!(
+            "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"thinking...\"}}]}\n\n",
+            "data: [DONE]\n\n",
+        );
+
+        // @step When the provider decodes the chunk
+        let events = collect_streamed_contents(sse).await;
+
+        // @step Then the caller receives a ReasoningDelta whose reasoning text equals "thinking..."
+        let reasoning_texts: Vec<String> = events
+            .iter()
+            .filter_map(|e| match e {
+                core_streaming::StreamedAssistantContent::ReasoningDelta {
+                    reasoning, ..
+                } => Some(reasoning.clone()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            reasoning_texts,
+            vec!["thinking...".to_string()],
+            "expected exactly one ReasoningDelta carrying the GLM `reasoning_content` field content"
+        );
+
+        // @step And the caller does not receive any content delta for that chunk
+        for e in &events {
+            if let core_streaming::StreamedAssistantContent::Text(t) = e {
+                panic!("unexpected content delta: {:?}", t);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------
+    // Scenario 3: Streaming — concatenate when both fields present
+    // ------------------------------------------------------------
+    #[tokio::test]
+    async fn prov_081_streaming_concatenates_reasoning_when_both_fields_present() {
+        // @step Given a caller streams a chat completion through the OpenAI provider
+        // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning_content":"B","reasoning":"A"}}]}
+        let sse = concat!(
+            "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"B\",\"reasoning\":\"A\"}}]}\n\n",
+            "data: [DONE]\n\n",
+        );
+
+        // @step When the provider decodes the chunk
+        let events = collect_streamed_contents(sse).await;
+
+        // @step Then the caller receives reasoning text equal to "BA" with reasoning_content concatenated first and reasoning appended
+        let combined: String = events
+            .iter()
+            .filter_map(|e| match e {
+                core_streaming::StreamedAssistantContent::ReasoningDelta {
+                    reasoning, ..
+                } => Some(reasoning.clone()),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+            .join("");
+        assert_eq!(
+            combined, "BA",
+            "expected reasoning output to be exactly 'BA' \
+             (reasoning_content='B' concatenated first, reasoning='A' appended), \
+             got {combined:?}"
+        );
+
+        // @step And no reasoning character from either source field is dropped
+        assert_eq!(
+            combined.chars().filter(|c| *c == 'A').count(),
+            1,
+            "character 'A' must appear exactly once (not dropped, not duplicated)"
+        );
+        assert_eq!(
+            combined.chars().filter(|c| *c == 'B').count(),
+            1,
+            "character 'B' must appear exactly once (not dropped, not duplicated)"
+        );
+    }
+
+    // ------------------------------------------------------------
+    // Scenario 4: Streaming — regression: plain content still works
+    // ------------------------------------------------------------
+    #[tokio::test]
+    async fn prov_081_streaming_content_chunk_passes_through_unchanged() {
+        // @step Given a caller streams a chat completion through the OpenAI provider
+        // @step And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"content":"hello"}}]}
+        let sse = concat!(
+            "data: {\"choices\":[{\"delta\":{\"content\":\"hello\"}}]}\n\n",
+            "data: [DONE]\n\n",
+        );
+
+        // @step When the provider decodes the chunk
+        let events = collect_streamed_contents(sse).await;
+
+        // @step Then the caller receives a content delta whose text equals "hello"
+        let content_texts: Vec<String> = events
+            .iter()
+            .filter_map(|e| match e {
+                core_streaming::StreamedAssistantContent::Text(t) => Some(t.text.clone()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(content_texts, vec!["hello".to_string()]);
+
+        // @step And the caller does not receive any ReasoningDelta
+        for e in &events {
+            if let core_streaming::StreamedAssistantContent::ReasoningDelta {
+                reasoning, ..
+            } = e
+            {
+                panic!("unexpected ReasoningDelta: {:?}", reasoning);
+            }
+        }
+
+        // @step And the chunk does not produce a decode error
+        // (collect_streamed_contents unwraps each chunk — a decode error would have panicked above)
+    }
+}
+
+// ================================================================
+// PROV-083 — Base64 user images with detail=None must default to "auto"
+//
+// Feature: spec/features/openai-provider-base64-image-inputs.feature
+//
+// Covers the five scenarios that validate
+// `impl TryFrom<message::UserContent> for UserContent` handles:
+//   1. Base64 + PNG + detail=None         -> detail "auto"
+//   2. Base64 + JPEG + detail=None        -> detail "auto"
+//   3. Base64 + PNG + detail=Some(High)   -> detail "high"
+//   4. URL + PNG + detail=None            -> unchanged behaviour, detail "auto"
+//   5. Base64 + media_type=None           -> ConversionError about missing MIME
+// ================================================================
+#[cfg(test)]
+mod prov_083_tests {
+    //! Feature: spec/features/openai-provider-base64-image-inputs.feature
+    //!
+    //! Covers PROV-083 — base64 user images with detail=None must default to "auto".
+    use super::*;
+    use crate::message::{ImageMediaType, UserContent as RigUserContent};
+
+    /// Helper: build a rig `message::UserContent::Image` with the requested data/media/detail.
+    fn build_rig_image(
+        data: DocumentSourceKind,
+        media_type: Option<ImageMediaType>,
+        detail: Option<ImageDetail>,
+    ) -> RigUserContent {
+        RigUserContent::Image(message::Image {
+            data,
+            media_type,
+            detail,
+            additional_params: None,
+        })
+    }
+
+    /// Helper: run the provider conversion and return the wire `UserContent` on success.
+    fn convert(content: RigUserContent) -> Result<UserContent, message::MessageError> {
+        UserContent::try_from(content)
+    }
+
+    #[test]
+    fn prov_083_base64_png_with_detail_none_defaults_to_auto() {
+        // @step Given a caller builds a rig `message::UserContent::Image` with base64 data, media_type=image/png, and detail=None
+        let rig_content = build_rig_image(
+            DocumentSourceKind::Base64("iVBORw0KGgoAAAANSUhEUg".into()),
+            Some(ImageMediaType::PNG),
+            None,
+        );
+
+        // @step When the provider converts the message into an OpenAI chat completion Message
+        let result = convert(rig_content);
+
+        // @step Then the conversion succeeds
+        let wire = result.expect("base64 image with detail=None should convert successfully");
+
+        // @step And the resulting user content part has type "image_url"
+        // @step And the resulting image_url.url starts with "data:image/png;base64,"
+        // @step And the resulting image_url.detail equals "auto"
+        match wire {
+            UserContent::Image { image_url } => {
+                assert!(
+                    image_url.url.starts_with("data:image/png;base64,"),
+                    "unexpected url prefix: {}",
+                    image_url.url
+                );
+                assert_eq!(image_url.detail, ImageDetail::Auto);
+
+                // Also assert the serialized JSON shape carries the right type tag + detail string.
+                let wire_json = serde_json::to_value(UserContent::Image { image_url })
+                    .expect("serialize UserContent::Image");
+                assert_eq!(wire_json["type"], "image_url");
+                assert_eq!(wire_json["image_url"]["detail"], "auto");
+                assert!(
+                    wire_json["image_url"]["url"]
+                        .as_str()
+                        .expect("url is a string")
+                        .starts_with("data:image/png;base64,")
+                );
+            }
+            other => panic!("expected UserContent::Image, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn prov_083_base64_jpeg_with_detail_none_defaults_to_auto() {
+        // @step Given a caller builds a rig `message::UserContent::Image` with base64 data, media_type=image/jpeg, and detail=None
+        let rig_content = build_rig_image(
+            DocumentSourceKind::Base64("/9j/4AAQSkZJRgABAQEAYABgAAD".into()),
+            Some(ImageMediaType::JPEG),
+            None,
+        );
+
+        // @step When the provider converts the message into an OpenAI chat completion Message
+        let result = convert(rig_content);
+
+        // @step Then the conversion succeeds
+        let wire = result.expect("base64 JPEG with detail=None should convert successfully");
+
+        // @step And the resulting image_url.url starts with "data:image/jpeg;base64,"
+        // @step And the resulting image_url.detail equals "auto"
+        match wire {
+            UserContent::Image { image_url } => {
+                assert!(
+                    image_url.url.starts_with("data:image/jpeg;base64,"),
+                    "unexpected url prefix: {}",
+                    image_url.url
+                );
+                assert_eq!(image_url.detail, ImageDetail::Auto);
+            }
+            other => panic!("expected UserContent::Image, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn prov_083_base64_png_with_explicit_high_preserves_value() {
+        // @step Given a caller builds a rig `message::UserContent::Image` with base64 data, media_type=image/png, and detail=High
+        let rig_content = build_rig_image(
+            DocumentSourceKind::Base64("iVBORw0KGgoAAAANSUhEUg".into()),
+            Some(ImageMediaType::PNG),
+            Some(ImageDetail::High),
+        );
+
+        // @step When the provider converts the message into an OpenAI chat completion Message
+        let result = convert(rig_content);
+
+        // @step Then the conversion succeeds
+        let wire = result.expect("base64 image with detail=High should convert successfully");
+
+        // @step And the resulting image_url.detail equals "high"
+        match wire {
+            UserContent::Image { image_url } => {
+                assert_eq!(image_url.detail, ImageDetail::High);
+                let wire_json = serde_json::to_value(UserContent::Image { image_url })
+                    .expect("serialize UserContent::Image");
+                assert_eq!(wire_json["image_url"]["detail"], "high");
+            }
+            other => panic!("expected UserContent::Image, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn prov_083_url_image_path_unchanged() {
+        // @step Given a caller builds a rig `message::UserContent::Image` with a https URL data source, media_type=image/png, and detail=None
+        let original_url = "https://example.com/cat.png";
+        let rig_content = build_rig_image(
+            DocumentSourceKind::Url(original_url.into()),
+            Some(ImageMediaType::PNG),
+            None,
+        );
+
+        // @step When the provider converts the message into an OpenAI chat completion Message
+        let result = convert(rig_content);
+
+        // @step Then the conversion succeeds
+        let wire = result.expect("URL image with detail=None should convert successfully");
+
+        // @step And the resulting image_url.url equals the original URL
+        // @step And the resulting image_url.detail equals "auto"
+        match wire {
+            UserContent::Image { image_url } => {
+                assert_eq!(image_url.url, original_url);
+                assert_eq!(image_url.detail, ImageDetail::Auto);
+            }
+            other => panic!("expected UserContent::Image, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn prov_083_base64_with_media_type_none_still_errors_on_mime() {
+        // @step Given a caller builds a rig `message::UserContent::Image` with base64 data, media_type=None, and detail=None
+        let rig_content = build_rig_image(
+            DocumentSourceKind::Base64("iVBORw0KGgoAAAANSUhEUg".into()),
+            None,
+            None,
+        );
+
+        // @step When the provider converts the message into an OpenAI chat completion Message
+        let result = convert(rig_content);
+
+        // @step Then the conversion returns a MessageError::ConversionError
+        let err = result.expect_err("missing media_type must still error");
+        match err {
+            message::MessageError::ConversionError(msg) => {
+                // @step And the error message references the missing MIME type (not the missing detail)
+                let lower = msg.to_lowercase();
+                assert!(
+                    lower.contains("media type") || lower.contains("mime"),
+                    "error should reference missing MIME/media type, got: {msg}"
+                );
+                assert!(
+                    !lower.contains("image detail"),
+                    "error should NOT be about missing image detail, got: {msg}"
+                );
+            }
+        }
+    }
+}
+
+// ================================================================
+// PROV-084 TESTS — tool-returned images (Read/PDF/MCP)
+//
+// Feature: spec/features/openai-provider-tool-result-images.feature
+//
+// Covers PROV-084 — a rig `ToolResult` containing image parts must
+// convert into an OpenAI `tool` message (carrying text or a
+// placeholder) followed by a `user` message whose content array
+// carries every `image_url` part. Text-only tool results must
+// continue to convert into a single `tool` message.
+// ================================================================
+#[cfg(test)]
+mod prov_084_tests {
+    //! Feature: spec/features/openai-provider-tool-result-images.feature
+    use super::*;
+    use crate::OneOrMany;
+    use crate::completion::message::{
+        Message as RigMessage, ToolResult as RigToolResult,
+        ToolResultContent as RigToolResultContent, UserContent as RigUserContent,
+    };
+    use crate::message::ImageMediaType;
+
+    fn png_image_part() -> RigToolResultContent {
+        RigToolResultContent::image_base64(
+            "iVBORw0KGgoAAAANSUhEUg",
+            Some(ImageMediaType::PNG),
+            None,
+        )
+    }
+
+    fn jpeg_image_part() -> RigToolResultContent {
+        RigToolResultContent::image_base64(
+            "/9j/4AAQSkZJRgABAQEAYABgAAD",
+            Some(ImageMediaType::JPEG),
+            None,
+        )
+    }
+
+    fn text_part(text: &str) -> RigToolResultContent {
+        RigToolResultContent::text(text)
+    }
+
+    /// Wrap a `ToolResult` into a rig `Message::User` and convert via the
+    /// production `TryFrom<message::Message> for Vec<Message>` impl.
+    fn convert_tool_result(tool_result: RigToolResult) -> Vec<Message> {
+        let rig_msg = RigMessage::User {
+            content: OneOrMany::one(RigUserContent::ToolResult(tool_result)),
+        };
+        <Vec<Message> as TryFrom<RigMessage>>::try_from(rig_msg)
+            .expect("tool-result → openai Vec<Message> conversion should succeed")
+    }
+
+    #[test]
+    fn prov_084_single_base64_image_emits_tool_then_user() {
+        // @step Given a rig user message whose content is a `ToolResult` with id "call_abc", one `ToolResultContent::Image` (base64, media_type=image/png), and no text parts
+        let tr = RigToolResult {
+            id: "call_abc".into(),
+            call_id: None,
+            content: OneOrMany::one(png_image_part()),
+        };
+
+        // @step When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`
+        let result = convert_tool_result(tr);
+
+        // @step Then the resulting Vec<Message> has exactly 2 elements
+        assert_eq!(result.len(), 2, "expected 2 messages, got {}", result.len());
+
+        // @step And the first element is a `tool` role message with tool_call_id "call_abc"
+        match &result[0] {
+            Message::ToolResult {
+                tool_call_id,
+                content,
+            } => {
+                assert_eq!(tool_call_id, "call_abc");
+                // @step And the first element's content is a non-empty placeholder string
+                let text = content.as_text();
+                assert!(!text.is_empty(), "tool content placeholder must be non-empty");
+            }
+            other => panic!("expected Message::ToolResult, got {other:?}"),
+        }
+
+        // @step And the second element is a `user` role message
+        let user_json = match &result[1] {
+            user @ Message::User { content, .. } => {
+                assert!(
+                    !content.is_empty(),
+                    "user message must carry at least one content part"
+                );
+                serde_json::to_value(user).expect("serialize user message")
+            }
+            other => panic!("expected Message::User, got {other:?}"),
+        };
+
+        // @step And the second element contains exactly one `image_url` content part
+        let content_array = user_json["content"]
+            .as_array()
+            .expect("user content should serialize as an array");
+        assert_eq!(content_array.len(), 1, "expected exactly one content part");
+        assert_eq!(content_array[0]["type"], "image_url");
+
+        // @step And that image_url.url starts with "data:image/png;base64,"
+        let url = content_array[0]["image_url"]["url"]
+            .as_str()
+            .expect("image_url.url must be a string");
+        assert!(
+            url.starts_with("data:image/png;base64,"),
+            "unexpected url prefix: {url}"
+        );
+
+        // @step And that image_url.detail equals "auto"
+        assert_eq!(content_array[0]["image_url"]["detail"], "auto");
+    }
+
+    #[test]
+    fn prov_084_text_only_tool_result_still_single_message() {
+        // @step Given a rig user message whose content is a `ToolResult` with id "call_text" and one `ToolResultContent::Text("hello")`
+        let tr = RigToolResult {
+            id: "call_text".into(),
+            call_id: None,
+            content: OneOrMany::one(text_part("hello")),
+        };
+
+        // @step When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`
+        let result = convert_tool_result(tr);
+
+        // @step Then the resulting Vec<Message> has exactly 1 element
+        assert_eq!(result.len(), 1, "expected 1 message, got {}", result.len());
+
+        // @step And the element is a `tool` role message with tool_call_id "call_text"
+        // @step And the element's content equals "hello"
+        match &result[0] {
+            Message::ToolResult {
+                tool_call_id,
+                content,
+            } => {
+                assert_eq!(tool_call_id, "call_text");
+                assert_eq!(content.as_text(), "hello");
+            }
+            other => panic!("expected Message::ToolResult, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn prov_084_three_images_yield_tool_plus_user_with_three_parts() {
+        // @step Given a rig user message whose content is a `ToolResult` with id "call_pdf" and three `ToolResultContent::Image` parts in page order (page-1, page-2, page-3)
+        let page1 = RigToolResultContent::image_base64(
+            "UEFHRS0xAAAA",
+            Some(ImageMediaType::PNG),
+            None,
+        );
+        let page2 = RigToolResultContent::image_base64(
+            "UEFHRS0yAAAA",
+            Some(ImageMediaType::PNG),
+            None,
+        );
+        let page3 = RigToolResultContent::image_base64(
+            "UEFHRS0zAAAA",
+            Some(ImageMediaType::PNG),
+            None,
+        );
+        let content = OneOrMany::many(vec![page1, page2, page3])
+            .expect("three-part tool result content");
+        let tr = RigToolResult {
+            id: "call_pdf".into(),
+            call_id: None,
+            content,
+        };
+
+        // @step When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`
+        let result = convert_tool_result(tr);
+
+        // @step Then the resulting Vec<Message> has exactly 2 elements
+        assert_eq!(result.len(), 2);
+
+        // @step And the first element is a `tool` role message with tool_call_id "call_pdf"
+        match &result[0] {
+            Message::ToolResult { tool_call_id, .. } => {
+                assert_eq!(tool_call_id, "call_pdf");
+            }
+            other => panic!("expected Message::ToolResult, got {other:?}"),
+        }
+
+        // @step And the second element is a `user` role message
+        let user_json = match &result[1] {
+            user @ Message::User { .. } => serde_json::to_value(user).expect("serialize user"),
+            other => panic!("expected Message::User, got {other:?}"),
+        };
+
+        // @step And the second element contains exactly three `image_url` content parts in page order
+        let parts = user_json["content"]
+            .as_array()
+            .expect("user content array");
+        assert_eq!(parts.len(), 3, "expected three image parts");
+        for part in parts {
+            assert_eq!(part["type"], "image_url");
+        }
+        // Spot-check page ordering using the distinct base64 payloads.
+        let url0 = parts[0]["image_url"]["url"].as_str().expect("url0");
+        let url1 = parts[1]["image_url"]["url"].as_str().expect("url1");
+        let url2 = parts[2]["image_url"]["url"].as_str().expect("url2");
+        assert!(url0.contains("UEFHRS0xAAAA"), "page-1 expected first: {url0}");
+        assert!(url1.contains("UEFHRS0yAAAA"), "page-2 expected second: {url1}");
+        assert!(url2.contains("UEFHRS0zAAAA"), "page-3 expected third: {url2}");
+    }
+
+    #[test]
+    fn prov_084_mixed_text_and_image_splits_correctly() {
+        // @step Given a rig user message whose content is a `ToolResult` with id "call_mcp", one `ToolResultContent::Text("summary text")`, and one `ToolResultContent::Image` (base64, media_type=image/jpeg)
+        let content = OneOrMany::many(vec![text_part("summary text"), jpeg_image_part()])
+            .expect("mixed tool result content");
+        let tr = RigToolResult {
+            id: "call_mcp".into(),
+            call_id: None,
+            content,
+        };
+
+        // @step When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`
+        let result = convert_tool_result(tr);
+
+        // @step Then the resulting Vec<Message> has exactly 2 elements
+        assert_eq!(result.len(), 2);
+
+        // @step And the first element is a `tool` role message with tool_call_id "call_mcp"
+        // @step And the first element's content contains the substring "summary text"
+        match &result[0] {
+            Message::ToolResult {
+                tool_call_id,
+                content,
+            } => {
+                assert_eq!(tool_call_id, "call_mcp");
+                let text = content.as_text();
+                assert!(
+                    text.contains("summary text"),
+                    "tool-message content must carry the text part, got: {text}"
+                );
+            }
+            other => panic!("expected Message::ToolResult, got {other:?}"),
+        }
+
+        // @step And the second element is a `user` role message
+        let user_json = match &result[1] {
+            user @ Message::User { .. } => serde_json::to_value(user).expect("serialize user"),
+            other => panic!("expected Message::User, got {other:?}"),
+        };
+
+        // @step And the second element contains exactly one `image_url` content part
+        let parts = user_json["content"]
+            .as_array()
+            .expect("user content array");
+        assert_eq!(parts.len(), 1);
+        assert_eq!(parts[0]["type"], "image_url");
+
+        // @step And that image_url.url starts with "data:image/jpeg;base64,"
+        let url = parts[0]["image_url"]["url"].as_str().expect("url string");
+        assert!(
+            url.starts_with("data:image/jpeg;base64,"),
+            "unexpected url prefix: {url}"
+        );
     }
 }

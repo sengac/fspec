@@ -1,0 +1,174 @@
+{
+  "scenarios": [
+    {
+      "name": "Base64 user image with detail=None defaults to image_url.detail=\"auto\"",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "lines": "1832-1874",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Base64 user image with detail=None and image/jpeg also converts successfully",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "lines": "1875-1904",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Base64 user image with explicit detail=High preserves the explicit value",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "lines": "1905-1931",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "URL image path behaviour is unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "lines": "1932-1958",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                428,
+                429,
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Base64 user image with media_type=None still errors (out of scope for this fix)",
+      "testMappings": [
+        {
+          "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+          "lines": "1959-1988",
+          "implMappings": [
+            {
+              "file": "codelet/patches/rig-core/src/providers/openai/completion/mod.rs",
+              "lines": [
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/patches/rig-core/src/providers/openai/completion/mod.rs"
+    ],
+    "implFiles": [
+      "codelet/patches/rig-core/src/providers/openai/completion/mod.rs"
+    ],
+    "totalLinesCovered": 235
+  }
+}

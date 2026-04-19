@@ -488,6 +488,7 @@ mod tests {
             refusal: None,
             audio: None,
             name: None,
+            reasoning: None,
             tool_calls: vec![],
         };
 

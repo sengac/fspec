@@ -1,0 +1,86 @@
+=== PROV-082 Wire Capture Harness ===
+Driven by: codelet/patches/rig-core/examples/prov_082_wire_capture.rs
+Ran: cargo run --example prov_082_wire_capture
+    --manifest-path codelet/patches/rig-core/Cargo.toml
+
+--- Scenario A: USER base64 image with detail=None (bridge/paste path) ---
+Exercises the exact call codelet/cli/src/interactive/multimodal.rs:63 makes:
+    UserContent::image_base64(img.data, media_type, None)
+
+RESULT:
+  FAILED conversion: Message conversion error: OpenAI image URI must have image detail
+
+  Source: codelet/patches/rig-core/src/providers/openai/completion/mod.rs:445-447
+          let detail = detail.ok_or(message::MessageError::ConversionError(
+              "OpenAI image URI must have image detail".into(),
+          ))?;
+
+  The entire Message::User → Vec<openai::Message> conversion fails. NOTHING
+  is sent to vLLM in this case — the provider returns an error to the
+  streaming loop instead of hitting /chat/completions at all.
+
+--- Scenario B: TOOL result with ToolResultContent::Image (Read tool path) ---
+Exercises what rig's parse_tool_result_content at
+  codelet/patches/rig-core/src/agent/prompt_request/streaming.rs:200
+produces when the Read tool returns {"type":"image","data":"...","media_type":"image/png"}:
+    ToolResultContent::image_base64(data, Some(media_type), None)
+
+RESULT:
+  FAILED conversion: Message conversion error: Tool result content does not support non-text
+
+  Source: codelet/patches/rig-core/src/providers/openai/completion/mod.rs:400-404
+          .map(|content| match content {
+              message::ToolResultContent::Text(message::Text { text }) => Ok(text),
+              _ => Err(message::MessageError::ConversionError(
+                  "Tool result content does not support non-text".into(),
+              )),
+          })
+
+  Tool-returned images are silently dropped at conversion. The request
+  fails before any payload is serialized.
+
+--- Scenario C: USER URL image (for comparison, DOES work) ---
+  UserContent::image_url(url, None, None)
+
+RESULT: SUCCESS
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "https://vllm-public-assets.s3.us-west-2.amazonaws.com/vision_model_images/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
+            "detail": "auto"
+          }
+        }
+      ]
+    }
+  ]
+
+  URL path uses detail.unwrap_or_default() at completion/mod.rs:431, so
+  detail=None is tolerated. Wire body IS correctly shaped and would be
+  accepted by vLLM.
+
+--- Scenario D: USER base64 image with detail=Some(Auto) — the FIX ---
+  UserContent::image_base64(img.data, media_type, Some(ImageDetail::Auto))
+
+RESULT: SUCCESS
+  [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAE...=",
+            "detail": "auto"
+          }
+        }
+      ]
+    }
+  ]
+
+  Setting detail to Some(ImageDetail::Auto) at the image_base64 call sites
+  makes the conversion succeed. Wire body shape matches what vLLM accepts
+  (verified separately via direct curl that returned a real description).

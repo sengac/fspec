@@ -236,6 +236,7 @@ impl From<openai::Message> for Message {
                 refusal,
                 audio,
                 name,
+                reasoning: _,
                 tool_calls,
             } => Self::Assistant {
                 content,

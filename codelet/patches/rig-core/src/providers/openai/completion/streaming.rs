@@ -36,9 +36,15 @@ pub(crate) struct StreamingToolCall {
 struct StreamingDelta {
     #[serde(default)]
     content: Option<String>,
-    /// Z.AI GLM models send reasoning/thinking content in this field
+    /// Z.AI GLM models send reasoning/thinking content in this field.
     #[serde(default)]
     reasoning_content: Option<String>,
+    /// vLLM (e.g. Qwen3 reasoning-parser output) sends reasoning/thinking
+    /// content in this field. Kept distinct from `reasoning_content` so
+    /// that a proxy emitting both on the same chunk has every character
+    /// preserved (PROV-081).
+    #[serde(default)]
+    reasoning: Option<String>,
     #[serde(default, deserialize_with = "json_utils::null_or_vec")]
     tool_calls: Vec<StreamingToolCall>,
 }
@@ -294,12 +300,30 @@ where
                         }
                     }
 
-                    // Streamed reasoning content (Z.AI GLM models)
-                    if let Some(reasoning) = &delta.reasoning_content && !reasoning.is_empty() {
-                        yield Ok(streaming::RawStreamingChoice::ReasoningDelta {
-                            id: None,
-                            reasoning: reasoning.clone(),
-                        });
+                    // Streamed reasoning content.
+                    // PROV-081: accept both `reasoning_content` (Z.AI/GLM convention)
+                    // and `reasoning` (vLLM convention). When both fields appear on the
+                    // same chunk, concatenate `reasoning_content` first then `reasoning`
+                    // so nothing is silently dropped.
+                    //
+                    // Hot-path early-out: the vast majority of chunks carry only
+                    // `content` (or tool-call deltas). Skipping the concat scaffolding
+                    // when neither reasoning field is present makes intent explicit
+                    // and avoids the empty-String allocation on every delta.
+                    if delta.reasoning_content.is_some() || delta.reasoning.is_some() {
+                        let mut combined_reasoning = String::new();
+                        if let Some(reasoning_content) = &delta.reasoning_content {
+                            combined_reasoning.push_str(reasoning_content);
+                        }
+                        if let Some(reasoning) = &delta.reasoning {
+                            combined_reasoning.push_str(reasoning);
+                        }
+                        if !combined_reasoning.is_empty() {
+                            yield Ok(streaming::RawStreamingChoice::ReasoningDelta {
+                                id: None,
+                                reasoning: combined_reasoning,
+                            });
+                        }
                     }
 
                     // Streamed text content
