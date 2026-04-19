@@ -71,11 +71,15 @@ pub struct DeepSearchArgs {
     /// The question to answer (required)
     pub query: String,
 
-    /// Paths or glob patterns defining what code to search.
+    /// Colon-separated paths or glob patterns (PATH-style).
     /// Optional — when omitted, the sub-agent uses only SessionSearch.
-    /// Examples: ["src/"], ["**/*.rs"], ["codelet/tools/src/read.rs"]
-    #[serde(default)]
-    pub scope: Option<Vec<String>>,
+    /// Examples: "src/", "src/auth/:tests/auth/", "**/*.rs:spec/**/*.feature"
+    ///
+    /// Accepts both a plain string (preferred, PATH-style) and, for backwards
+    /// compatibility with callers emitting array JSON, a `Vec<String>` that is
+    /// joined with `:`.
+    #[serde(default, deserialize_with = "deserialize_scope")]
+    pub scope: Option<String>,
 
     /// Maximum tool call depth before stopping (default: 50).
     /// Prevents runaway sub-agents.
@@ -89,9 +93,93 @@ pub struct DeepSearchArgs {
     pub max_recursion_depth: Option<usize>,
 }
 
+impl DeepSearchArgs {
+    /// Parse `scope` into an ordered, deduplicated list of paths.
+    ///
+    /// The wire format is PATH-style: segments separated by `:`.
+    /// Whitespace around segments is trimmed; empty segments are dropped.
+    pub fn scope_paths(&self) -> Vec<String> {
+        split_scope(self.scope.as_deref())
+    }
+}
+
+/// Split a colon-separated scope string into a list of non-empty trimmed paths.
+///
+/// Shared helper so both `DeepSearchArgs::scope_paths` and the handler layer
+/// treat `scope` identically.
+pub fn split_scope(scope: Option<&str>) -> Vec<String> {
+    let raw = match scope {
+        Some(s) => s,
+        None => return Vec::new(),
+    };
+    let mut out: Vec<String> = Vec::new();
+    for seg in raw.split(':') {
+        let trimmed = seg.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let owned = trimmed.to_string();
+        if !out.contains(&owned) {
+            out.push(owned);
+        }
+    }
+    out
+}
+
+/// Deserialize the `scope` field.
+///
+/// Accepts three shapes for robustness across capable and weak LLMs:
+///   - `null` / missing           → `None`
+///   - `"a:b:c"` (string)         → `Some("a:b:c".to_string())`
+///   - `["a", "b", "c"]` (array)  → `Some("a:b:c".to_string())`  (joined)
+///
+/// The array branch is a compatibility shim for frontier models that have
+/// been trained to emit JSON arrays for list-valued params. Internally we
+/// standardise on the colon-separated string form.
+fn deserialize_scope<'de, D>(d: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::de::Error;
+    let value = serde_json::Value::deserialize(d)?;
+    match value {
+        serde_json::Value::Null => Ok(None),
+        serde_json::Value::String(s) => {
+            if s.trim().is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(s))
+            }
+        }
+        serde_json::Value::Array(items) => {
+            let parts: Vec<String> = items
+                .into_iter()
+                .filter_map(|v| match v {
+                    serde_json::Value::String(s) => {
+                        let t = s.trim().to_string();
+                        if t.is_empty() { None } else { Some(t) }
+                    }
+                    _ => None,
+                })
+                .collect();
+            if parts.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(parts.join(":")))
+            }
+        }
+        other => Err(D::Error::custom(format!(
+            "scope must be a colon-separated string (or array of strings); got {other:?}"
+        ))),
+    }
+}
+
 /// Handler function type for deep search execution.
-/// Takes query, optional scope, max_depth, and max_recursion_depth. Returns a
-/// future resolving to the synthesized answer.
+/// Takes query, optional colon-separated scope string, max_depth, and
+/// max_recursion_depth. Returns a future resolving to the synthesized answer.
+///
+/// The `scope` argument is the raw PATH-style string (e.g. `"src/:tests/"`) —
+/// callers use `split_scope()` to resolve it into a `Vec<String>` of paths.
 ///
 /// The handler is registered by session_manager before the agent run. It captures:
 /// - project_path: for creating the ephemeral SessionSearch handler
@@ -113,7 +201,7 @@ pub struct DeepSearchArgs {
 pub type DeepSearchHandler = Arc<
     dyn Fn(
             String,
-            Option<Vec<String>>,
+            Option<String>,
             usize,
             usize,
         ) -> Pin<Box<dyn Future<Output = Result<String, String>> + Send>>
@@ -157,7 +245,7 @@ pub fn has_deep_search_handler(session_id: Uuid) -> bool {
 async fn execute_deep_search(
     session_id: Uuid,
     query: String,
-    scope: Option<Vec<String>>,
+    scope: Option<String>,
     max_depth: usize,
     max_recursion_depth: usize,
 ) -> Result<String, String> {
@@ -307,8 +395,9 @@ impl Tool for DeepSearchTool {
                 "Spawns an ephemeral sub-agent that explores the specified scope using read-only ",
                 "tools (Read, Grep, AstGrep, Glob, Ls, Bash, SessionSearch) and returns a ",
                 "synthesized text answer. Use for questions requiring exploration of many files ",
-                "or past conversations. Specify scope as paths/globs to limit code exploration; ",
-                "session history is always searchable via SessionSearch."
+                "or past conversations. Specify scope as a colon-separated list of paths or glob ",
+                "patterns (PATH-style), e.g. \"src/auth/:tests/auth/\". Session history is always ",
+                "searchable via SessionSearch."
             )
             .to_string(),
             parameters: json!({
@@ -320,9 +409,8 @@ impl Tool for DeepSearchTool {
                         "description": "The question to answer by exploring the scoped corpus"
                     },
                     "scope": {
-                        "type": ["array", "null"],
-                        "items": { "type": "string" },
-                        "description": "Paths or glob patterns defining what code to search. Optional — when omitted, the sub-agent uses only SessionSearch for session history exploration. Examples: [\"src/auth/\"], [\"**/*.rs\"], [\"codelet/tools/src/read.rs\"]"
+                        "type": ["string", "null"],
+                        "description": "Colon-separated paths or glob patterns (PATH-style). Optional — when omitted, the sub-agent uses only SessionSearch for session history exploration. Examples: \"src/auth/\", \"src/auth/:tests/auth/\", \"**/*.rs:spec/**/*.feature\""
                     },
                     "max_depth": {
                         "type": ["integer", "null"],

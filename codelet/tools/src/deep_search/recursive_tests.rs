@@ -434,7 +434,7 @@ mod recursive_tests {
 
         let args = DeepSearchArgs {
             query: "How does auth work?".to_string(),
-            scope: Some(vec!["src/".to_string()]),
+            scope: Some("src/".to_string()),
             max_depth: Some(50),
             max_recursion_depth: None,
         };
@@ -464,7 +464,7 @@ mod recursive_tests {
         let session_id = Uuid::new_v4();
         let tool = DeepSearchTool::new(session_id);
 
-        let captured_scope = Arc::new(std::sync::Mutex::new(None::<Vec<String>>));
+        let captured_scope = Arc::new(std::sync::Mutex::new(None::<String>));
         let cs = captured_scope.clone();
 
         let handler: DeepSearchHandler = Arc::new(move |_query, scope, _depth, _max_rec| {

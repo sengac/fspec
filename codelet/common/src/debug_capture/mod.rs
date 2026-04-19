@@ -281,7 +281,7 @@ mod tests {
         // @step When session A enables debug capture
         // Set the debug directory to include the session id
         let session_debug_dir = temp_dir.path().join("debug").join(session_id.to_string());
-        manager.set_debug_directory_raw(session_debug_dir.clone());
+        manager.set_debug_directory_raw(session_debug_dir);
         let session_file = manager.start_capture().unwrap();
 
         // @step Then a debug JSONL file should be created under "~/.fspec/debug/aaaa-1111/"
@@ -323,7 +323,7 @@ mod tests {
         // Set per-session directories
         let dir_a = temp_dir.path().join("debug").join(session_a_id.to_string());
         let dir_b = temp_dir.path().join("debug").join(session_b_id.to_string());
-        manager_a.set_debug_directory_raw(dir_a.clone());
+        manager_a.set_debug_directory_raw(dir_a);
         manager_b.set_debug_directory_raw(dir_b.clone());
 
         // @step And session A has debug capture enabled

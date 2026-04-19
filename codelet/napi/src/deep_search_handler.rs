@@ -76,7 +76,7 @@ impl Drop for GraphSearchCleanup {
 fn execute_deep_search_owned(
     project_path: std::path::PathBuf,
     query: String,
-    scope: Option<Vec<String>>,
+    scope: Option<String>,
     max_depth: usize,
     provider_name: String,
     model_id: Option<String>,
@@ -119,7 +119,7 @@ fn execute_deep_search_owned(
 pub async fn execute_deep_search(
     project_path: &Path,
     query: &str,
-    scope: Option<&[String]>,
+    scope: Option<&str>,
     max_depth: usize,
     provider_name: &str,
     model_id: Option<&str>,
@@ -195,8 +195,8 @@ pub async fn execute_deep_search(
 
     // 3. Build system prompt with scope description and recursion awareness
     //    KGRAPH-024: Inject learnings graph context when available
-    let scope_vec = scope.unwrap_or_default();
-    let mut system_prompt = build_system_prompt(scope_vec, can_recurse);
+    let scope_vec = codelet_tools::split_scope(scope);
+    let mut system_prompt = build_system_prompt(&scope_vec, can_recurse);
 
     if graph_available {
         // KGRAPH-024/KGRAPH-022: Inject formatted learnings context when available.

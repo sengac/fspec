@@ -28,15 +28,16 @@ mod tests {
         // @step Then DeepSearch has NAME = "DeepSearch"
         assert_eq!(DeepSearchTool::NAME, "DeepSearch");
 
-        // @step And DeepSearch has Args type = DeepSearchArgs with query (required) and scope (optional Vec<String>) and max_depth (optional usize)
+        // @step And DeepSearch has Args type = DeepSearchArgs with query (required) and scope (optional colon-separated string) and max_depth (optional usize)
         let json = serde_json::json!({
             "query": "test",
-            "scope": ["src/"],
+            "scope": "src/",
             "max_depth": 10
         });
         let args: DeepSearchArgs = serde_json::from_value(json).unwrap();
         assert_eq!(args.query, "test");
-        assert_eq!(args.scope.as_ref().unwrap(), &vec!["src/".to_string()]);
+        assert_eq!(args.scope.as_deref(), Some("src/"));
+        assert_eq!(args.scope_paths(), vec!["src/".to_string()]);
         assert_eq!(args.max_depth, Some(10));
 
         // Args with only query (scope and max_depth are optional)
@@ -111,7 +112,7 @@ mod tests {
     fn test_missing_query_returns_deserialization_error() {
         // @step When the parent agent calls DeepSearch with no query
         let json = serde_json::json!({
-            "scope": ["src/"]
+            "scope": "src/"
         });
 
         // @step Then the tool returns an error indicating that a query is required
@@ -194,7 +195,7 @@ mod tests {
         assert!(args.scope.is_none());
 
         // @step And the system prompt does not describe any code paths
-        let scope = args.scope.unwrap_or_default();
+        let scope = args.scope_paths();
         let prompt = build_system_prompt(&scope, false);
         assert!(
             !prompt.contains("YOUR CODE SCOPE"),
@@ -377,7 +378,7 @@ mod tests {
         // Track handler invocations
         let call_count = Arc::new(AtomicUsize::new(0));
         let captured_query = Arc::new(std::sync::Mutex::new(String::new()));
-        let captured_scope = Arc::new(std::sync::Mutex::new(None::<Vec<String>>));
+        let captured_scope = Arc::new(std::sync::Mutex::new(None::<String>));
         let captured_depth = Arc::new(AtomicUsize::new(0));
 
         let cc = call_count.clone();
@@ -385,7 +386,7 @@ mod tests {
         let cs = captured_scope.clone();
         let cd = captured_depth.clone();
 
-        // @step When the parent agent calls DeepSearch with query "How is authentication handled?" and scope ["src/auth/"]
+        // @step When the parent agent calls DeepSearch with query "How is authentication handled?" and scope "src/auth/"
         let handler: DeepSearchHandler = Arc::new(move |query, scope, max_depth, _max_rec| {
             cc.fetch_add(1, Ordering::SeqCst);
             *cq.lock().unwrap() = query.clone();
@@ -399,7 +400,7 @@ mod tests {
 
         let args = DeepSearchArgs {
             query: "How is authentication handled?".to_string(),
-            scope: Some(vec!["src/auth/".to_string()]),
+            scope: Some("src/auth/".to_string()),
             max_depth: Some(10),
             max_recursion_depth: None,
         };
@@ -430,7 +431,7 @@ mod tests {
         );
         assert_eq!(
             *captured_scope.lock().unwrap(),
-            Some(vec!["src/auth/".to_string()])
+            Some("src/auth/".to_string())
         );
         assert_eq!(captured_depth.load(Ordering::SeqCst), 10);
 
@@ -449,7 +450,7 @@ mod tests {
         let session_id = Uuid::new_v4();
         let tool = DeepSearchTool::new(session_id);
 
-        let captured_scope = Arc::new(std::sync::Mutex::new(Some(vec!["sentinel".to_string()])));
+        let captured_scope = Arc::new(std::sync::Mutex::new(Some("sentinel".to_string())));
         let captured_depth = Arc::new(AtomicUsize::new(0));
         let cs = captured_scope.clone();
         let cd = captured_depth.clone();
@@ -689,7 +690,7 @@ mod tests {
 
         let args = DeepSearchArgs {
             query: "Search in src".to_string(),
-            scope: Some(vec!["src/".to_string()]),
+            scope: Some("src/".to_string()),
             max_depth: Some(5),
             max_recursion_depth: None,
         };
