@@ -103,3 +103,7 @@ pub use token_exchange::{
     build_token_exchange_url, exchange_github_token_for_copilot_token,
     exchange_github_token_for_copilot_token_at, TokenExchangeResponse,
 };
+
+#[cfg(test)]
+#[path = "file_size_compliance_tests.rs"]
+mod file_size_compliance_tests;

@@ -855,7 +855,11 @@ fn convert_case(
             let mut chars = joined.chars();
             match chars.next() {
                 None => String::new(),
-                Some(c) => c.to_uppercase().to_string() + &chars.as_str().to_lowercase(),
+                Some(c) => {
+                    let mut s = c.to_uppercase().to_string();
+                    s.push_str(&chars.as_str().to_lowercase());
+                    s
+                }
             }
         }
         AstGrepCaseType::CamelCase => words
@@ -868,7 +872,11 @@ fn convert_case(
                     let mut chars = w.chars();
                     match chars.next() {
                         None => String::new(),
-                        Some(c) => c.to_uppercase().to_string() + &chars.as_str().to_lowercase(),
+                        Some(c) => {
+                            let mut s = c.to_uppercase().to_string();
+                            s.push_str(&chars.as_str().to_lowercase());
+                            s
+                        }
                     }
                 }
             })
@@ -879,7 +887,11 @@ fn convert_case(
                 let mut chars = w.chars();
                 match chars.next() {
                     None => String::new(),
-                    Some(c) => c.to_uppercase().to_string() + &chars.as_str().to_lowercase(),
+                    Some(c) => {
+                        let mut s = c.to_uppercase().to_string();
+                        s.push_str(&chars.as_str().to_lowercase());
+                        s
+                    }
                 }
             })
             .collect(),

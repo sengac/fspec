@@ -1021,6 +1021,16 @@ export interface IncomingMessageImage {
 }
 
 /**
+ * PROV-067: Scaffold `.fspec/providers/<name>.json` from a named
+ * template (supported: `"openai-compatible"`).
+ */
+export declare function initProvider(
+  projectRoot: string,
+  name: string,
+  template: string
+): Promise<string>;
+
+/**
  * Inspect session diff before merging
  *
  * Returns diff information without modifying the worktree or any session state.
@@ -1106,6 +1116,26 @@ export interface JsCheckResult {
   matchedRuleId?: string;
 }
 
+/** PROV-067: JS-shaped info entry for a provider (built-in or custom). */
+export interface JsProviderInfo {
+  name: string;
+  displayName?: string;
+  available: boolean;
+  isCustom: boolean;
+  facade?: string;
+  baseUrl?: string;
+  apiKeyEnvVar?: string;
+  models: Array<string>;
+  apiStyle?: string;
+}
+
+/** PROV-067: JS result of a custom-provider connectivity probe. */
+export interface JsProviderTestResult {
+  reachable: boolean;
+  statusCode?: number;
+  matchedModels: Array<string>;
+}
+
 /** TypeScript-friendly thinking level enum */
 export declare const enum JsThinkingLevel {
   /** Disable thinking/reasoning entirely */
@@ -1136,6 +1166,12 @@ export declare function listGhostCheckpoints(
   dir: string,
   workUnitId: string
 ): Array<string>;
+
+/**
+ * PROV-067: Return all built-in + discovered custom providers with
+ * credential / availability info.
+ */
+export declare function listProviders(): Promise<Array<JsProviderInfo>>;
 
 /**
  * List all session worktrees with status information
@@ -2567,15 +2603,18 @@ export declare const enum SessionState {
 }
 
 /**
- * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
+ * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021 + BUG-134)
  *
- * Toggle debug capture mode for a background session.
- * When enabling, sets session metadata (provider, model, context_window).
+ * BUG-134: Now uses the per-session debug capture manager instead of the global singleton.
+ * Each session has its own DebugCaptureManager, so toggling debug in one session
+ * does not affect another session's capture state.
+ *
+ * When enabling, sets session-specific debug directory using the session id
+ * and sets session metadata (provider, model, context_window).
  * When disabling, stops capture and returns path to saved session file.
  *
- * If debug_dir is provided, debug files will be written to `{debug_dir}/debug/`
- * instead of the default directory. For fspec, pass `~/.fspec` to write to
- * `~/.fspec/debug/`.
+ * If debug_dir is provided, debug files will be written to
+ * `{debug_dir}/debug/{session_id}/` instead of the default directory.
  */
 export declare function sessionToggleDebug(
   sessionId: string,
@@ -2595,6 +2634,7 @@ export interface SessionTokens {
 /**
  * Update debug capture metadata with session info.
  *
+ * BUG-134: Now uses the per-session debug capture manager instead of the global singleton.
  * Call this after creating a session if debug was enabled before the session existed.
  */
 export declare function sessionUpdateDebugMetadata(
@@ -2640,6 +2680,9 @@ export declare function sessionValidatePath(
  * allowing CLI commands to exit normally after completion.
  */
 export declare function setRustLogCallback(callback: LogCallback): void;
+
+/** PROV-067: Return detailed info for a single provider by slug. */
+export declare function showProvider(name: string): Promise<JsProviderInfo>;
 
 export declare function startWorkUnitsWatcher(
   projectRoot: string,
@@ -2725,6 +2768,10 @@ export type StreamChunk =
       displayPath: string /** Whether the directory is a git repository */;
       isGitRepo: boolean /** Current branch name, or null for detached HEAD */;
       branch?: string;
+    }
+  | {
+      type: 'DebugStateChange' /** Whether debug capture is now enabled for this session */;
+      enabled: boolean;
     };
 
 /**
@@ -2751,6 +2798,14 @@ export declare function testCallback(
   input: string,
   callback: (arg0: string) => string
 ): string;
+
+/**
+ * PROV-067: Probe `<baseUrl>/models` to confirm the custom provider is
+ * reachable and lists the models declared in its config.
+ */
+export declare function testProvider(
+  name: string
+): Promise<JsProviderTestResult>;
 
 /**
  * CONFIG-004: Test provider connection by validating credentials
@@ -2820,6 +2875,12 @@ export interface ToolResultInfo {
   content: string;
   isError: boolean;
 }
+
+/**
+ * PROV-067: Validate a custom provider's JSON schema (missing facade,
+ * invalid fields, etc.) without making network calls.
+ */
+export declare function validateProvider(name: string): Promise<void>;
 
 /** Result of creating a worktree */
 export interface WorktreeCreateResultJs {

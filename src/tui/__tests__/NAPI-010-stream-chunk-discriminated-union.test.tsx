@@ -47,8 +47,9 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
       // 3. TUI-066: Cleared state is special - it CLEARS conversation (setConversation([])), not adds
 
       // Check handleStreamChunk (the main streaming handler)
+      // CMPCT-033: Signature now includes routedSessionId as the first parameter.
       const handleStreamChunkFn = agentViewSource.match(
-        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(chunk:\s*StreamChunk\)[\s\S]*?\n\s*\},\s*\[/
+        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(\s*routedSessionId:\s*string,\s*chunk:\s*StreamChunk\s*\)[\s\S]*?\n\s*\}\s*,?\s*\[/
       );
       expect(handleStreamChunkFn).not.toBeNull();
 
@@ -106,7 +107,7 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
 
       // Check that handleStreamChunk (the streaming handler) adds to conversation
       const handleStreamChunkFn = agentViewSource.match(
-        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(chunk:\s*StreamChunk\)[\s\S]*?\n\s*\},\s*\[/
+        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(\s*routedSessionId:\s*string,\s*chunk:\s*StreamChunk\s*\)[\s\S]*?\n\s*\}\s*,?\s*\[/
       );
       expect(handleStreamChunkFn).not.toBeNull();
 
@@ -199,7 +200,7 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
 
       // Verify the inline CompactionComplete block delegates to the shared helper
       const handleStreamChunkFn = agentViewSource.match(
-        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(chunk:\s*StreamChunk\)[\s\S]*?\n\s*\},\s*\[/
+        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(\s*routedSessionId:\s*string,\s*chunk:\s*StreamChunk\s*\)[\s\S]*?\n\s*\}\s*,?\s*\[/
       );
       expect(handleStreamChunkFn).not.toBeNull();
 
@@ -251,7 +252,7 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
 
       // Extract the main stream chunk handler (handleStreamChunk function)
       const handleStreamChunkFn = agentViewSource.match(
-        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(chunk:\s*StreamChunk\)[\s\S]*?\n\s*\},\s*\[/
+        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(\s*routedSessionId:\s*string,\s*chunk:\s*StreamChunk\s*\)[\s\S]*?\n\s*\}\s*,?\s*\[/
       );
       expect(handleStreamChunkFn).not.toBeNull();
 
@@ -275,7 +276,7 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
     it('should handle all discriminated union variants with if/else chain', () => {
       // Extract the main stream chunk handler
       const handleStreamChunkFn = agentViewSource.match(
-        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(chunk:\s*StreamChunk\)[\s\S]*?\n\s*\},\s*\[/
+        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(\s*routedSessionId:\s*string,\s*chunk:\s*StreamChunk\s*\)[\s\S]*?\n\s*\}\s*,?\s*\[/
       );
       expect(handleStreamChunkFn).not.toBeNull();
 

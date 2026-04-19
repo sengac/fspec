@@ -52,9 +52,12 @@ describe('Feature: TUI session chunk filtering', () => {
       manager.subscribeToSession('session-b');
 
       // TUI registers handler ONLY for the session it's viewing
-      manager.registerHandler(currentViewedSession, (chunk: StreamChunk) => {
-        displayedChunks.push(chunk);
-      });
+      manager.registerHandler(
+        currentViewedSession,
+        (_sessionId: string, chunk: StreamChunk) => {
+          displayedChunks.push(chunk);
+        }
+      );
 
       // @step And session "session-a" is running
       // @step And session "session-b" is running in background
@@ -94,9 +97,12 @@ describe('Feature: TUI session chunk filtering', () => {
       manager.subscribeToSession('session-main');
 
       // TUI registers handler for the viewed session
-      manager.registerHandler(currentViewedSession, (chunk: StreamChunk) => {
-        displayedChunks.push(chunk);
-      });
+      manager.registerHandler(
+        currentViewedSession,
+        (_sessionId: string, chunk: StreamChunk) => {
+          displayedChunks.push(chunk);
+        }
+      );
 
       // @step And a bridge is connected to session "session-main"
       const bridgeSessionId = 'session-main';
@@ -140,7 +146,7 @@ describe('Feature: TUI session chunk filtering', () => {
       manager.subscribeToSession('session-b');
 
       // Register handler for session-a initially
-      const displayHandler = (chunk: StreamChunk) => {
+      const displayHandler = (_sessionId: string, chunk: StreamChunk) => {
         displayedChunks.push(chunk);
       };
       let unregister = manager.registerHandler(

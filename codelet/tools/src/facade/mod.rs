@@ -87,7 +87,7 @@ pub use thinking_config::{
     ThinkingLevel,
     // PROV-005: Claude model constants and adaptive thinking helpers
     CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6, CLAUDE_SONNET_4_5, CLAUDE_OPUS_4_5,
-    ADAPTIVE_THINKING_MODELS, CONTEXT_1M_MODELS,
+    BUDGETED_THINKING_MODELS, NO_1M_CONTEXT_MODELS,
     is_adaptive_thinking_model, supports_1m_context,
 };
 pub use gemini_history::{

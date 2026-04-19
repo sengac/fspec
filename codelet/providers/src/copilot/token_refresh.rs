@@ -1,14 +1,20 @@
-//! Token refresh decision logic for the Copilot provider (PROV-057).
+//! Token refresh logic for the Copilot provider (PROV-057).
 //!
 //! This module owns the pure-function helpers that decide whether the
-//! short-lived Copilot token needs to be exchanged and how to apply the
-//! exchange response to the in-memory auth state.
+//! short-lived Copilot token needs to be exchanged, how to apply the
+//! exchange response to the in-memory auth state, and the async
+//! orchestration function that coordinates the read/write-lock refresh.
 //!
 //! Extracted from `provider.rs` to satisfy the 300-line file budget and
 //! to keep the refresh concern (a single responsibility) in its own module.
 
-use crate::copilot::auth::CopilotAuthJson;
-use crate::copilot::token_exchange::TokenExchangeResponse;
+use crate::copilot::auth::{write_copilot_auth, CopilotAuthJson};
+use crate::copilot::token_exchange::{
+    exchange_github_token_for_copilot_token, TokenExchangeResponse,
+};
+use crate::error::ProviderError;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 /// Apply a [`TokenExchangeResponse`] to a mutable [`CopilotAuthJson`].
 ///
@@ -49,6 +55,50 @@ pub(crate) fn unix_timestamp_now() -> u64 {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0)
+}
+
+/// PROV-057: Ensure the cached Copilot token is still valid, refreshing
+/// via the token exchange if needed.
+///
+/// Returns `true` if a refresh happened. Takes the shared `auth` lock so
+/// callers (e.g. [`super::provider::CopilotProvider::ensure_fresh_copilot_token`])
+/// can delegate without exposing the coordination logic.
+///
+/// # Errors
+///
+/// Returns [`ProviderError::Api`] if the exchange or persistence fails.
+pub(crate) async fn ensure_fresh_copilot_token(
+    auth: &Arc<RwLock<CopilotAuthJson>>,
+) -> Result<bool, ProviderError> {
+    let now = unix_timestamp_now();
+    let snapshot = auth.read().await.clone();
+    if !needs_copilot_token_refresh(&snapshot, now) {
+        return Ok(false);
+    }
+
+    // Acquire write lock and re-check to avoid double-refresh under race.
+    let mut state = auth.write().await;
+    if !needs_copilot_token_refresh(&state, now) {
+        return Ok(false);
+    }
+
+    let enterprise_host = state.enterprise_url.clone();
+    let gh_token = state.github_oauth_token.clone();
+    let exchange =
+        exchange_github_token_for_copilot_token(&gh_token, enterprise_host.as_deref()).await?;
+
+    apply_exchange_response(&mut state, exchange);
+    let persist = state.clone();
+    drop(state);
+
+    write_copilot_auth(&persist).await.map_err(|e| {
+        ProviderError::api(
+            "github-copilot",
+            format!("Failed to persist refreshed copilot_auth.json: {e}"),
+        )
+    })?;
+
+    Ok(true)
 }
 
 #[cfg(test)]

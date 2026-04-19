@@ -204,8 +204,8 @@ export interface RestoreSessionOptions {
   fallbackModelPath: string;
   /** Fallback project if not in manifest */
   fallbackProject: string;
-  /** Callback for stream chunks (for attaching) */
-  onStreamChunk?: (chunk: StreamChunk) => void;
+  /** Callback for stream chunks (for attaching). CMPCT-033: receives routed sessionId. */
+  onStreamChunk?: (routedSessionId: string, chunk: StreamChunk) => void;
   /** Optional session data (if already available, avoids persistence lookup) */
   sessionData?: {
     name?: string;

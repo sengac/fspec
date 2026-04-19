@@ -18,7 +18,7 @@ use crate::model_limits::{resolve_context_window, resolve_max_output_tokens, Mod
 use std::str::FromStr;
 
 /// Provider type enum
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ProviderType {
     Claude,
     OpenAI,
@@ -27,30 +27,52 @@ pub enum ProviderType {
     ZAI,
     /// PROV-053: GitHub Copilot via OAuth device flow
     GitHubCopilot,
+    /// PROV-067: Custom provider discovered from a JSON config in
+    /// `~/.fspec/providers/` or `.fspec/providers/`. The inner `String`
+    /// is the provider slug (matching [`crate::custom::ProviderConfig::name`]).
+    ///
+    /// `Copy` has been removed from the derive list because `String` is
+    /// not `Copy`. The enum is only used at session-creation time, not
+    /// in hot loops, so this is a non-issue.
+    Custom(String),
 }
 
 impl FromStr for ProviderType {
     type Err = ProviderError;
 
     fn from_str(name: &str) -> Result<Self, ProviderError> {
-        match name.to_lowercase().as_str() {
+        let lowered = name.to_lowercase();
+        match lowered.as_str() {
             "claude" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),
             "codex" => Ok(ProviderType::Codex),
             "gemini" => Ok(ProviderType::Gemini),
             "zai" => Ok(ProviderType::ZAI),
             "github-copilot" | "copilot" => Ok(ProviderType::GitHubCopilot),
-            _ => Err(ProviderError::config(
-                "manager",
-                format!("Unknown provider: {name}"),
-            )),
+            other => {
+                // PROV-067: Before failing with "Unknown provider", consult
+                // the custom provider registry. Any config whose `name`
+                // equals the requested slug resolves to a Custom variant.
+                if custom_provider_registered(other) {
+                    Ok(ProviderType::Custom(other.to_string()))
+                } else {
+                    Err(ProviderError::config(
+                        "manager",
+                        format!("Unknown provider: {name}"),
+                    ))
+                }
+            }
         }
     }
 }
 
 impl ProviderType {
-    /// Get provider name as string
-    pub fn as_str(self) -> &'static str {
+    /// Get provider name as string.
+    ///
+    /// PROV-067: Signature was changed from `(self) -> &'static str` to
+    /// `(&self) -> &str` so the `Custom(String)` variant can borrow from
+    /// its inner `String` without leaking or allocating.
+    pub fn as_str(&self) -> &str {
         match self {
             ProviderType::Claude => "claude",
             ProviderType::OpenAI => "openai",
@@ -58,13 +80,16 @@ impl ProviderType {
             ProviderType::Gemini => "gemini",
             ProviderType::ZAI => "zai",
             ProviderType::GitHubCopilot => "github-copilot",
+            ProviderType::Custom(name) => name.as_str(),
         }
     }
 
     /// Check if this provider type has credentials available
     ///
-    /// DRY: Centralizes credential checking instead of repeating the match pattern
-    pub fn has_credentials(self, credentials: &ProviderCredentials) -> bool {
+    /// DRY: Centralizes credential checking instead of repeating the match pattern.
+    /// PROV-067: Takes `&self` and delegates `Custom` to
+    /// [`ProviderCredentials::has_custom`].
+    pub fn has_credentials(&self, credentials: &ProviderCredentials) -> bool {
         match self {
             ProviderType::Claude => credentials.has_claude(),
             ProviderType::OpenAI => credentials.has_openai(),
@@ -72,7 +97,21 @@ impl ProviderType {
             ProviderType::Gemini => credentials.has_gemini(),
             ProviderType::ZAI => credentials.has_zai(),
             ProviderType::GitHubCopilot => credentials.has_github_copilot(),
+            ProviderType::Custom(name) => credentials.has_custom(name),
         }
+    }
+}
+
+/// PROV-067: Returns `true` when a custom provider with `slug` is
+/// present in the current discovery set. Used by [`FromStr`] and
+/// [`ProviderManager::map_provider_id_to_type`] to resolve unknown
+/// provider names before falling through to an error. Discovery errors
+/// are treated as "not registered" so parsing never panics on a
+/// malformed config file.
+fn custom_provider_registered(slug: &str) -> bool {
+    match crate::custom::discover_provider_configs() {
+        Ok(configs) => configs.iter().any(|c| c.name == slug),
+        Err(_) => false,
     }
 }
 
@@ -469,12 +508,21 @@ impl ProviderManager {
             "zai" | "z-ai" => Ok(ProviderType::ZAI),
             "codex" => Ok(ProviderType::Codex),
             "github-copilot" | "copilot" => Ok(ProviderType::GitHubCopilot),
-            _ => Err(ProviderError::config(
-                "manager",
-                format!(
-                    "Provider '{provider_id}' is not supported. Supported providers: anthropic, openai, google, zai, codex, github-copilot"
-                ),
-            )),
+            other => {
+                // PROV-067: Consult the custom provider registry before
+                // failing. A custom provider slug maps 1:1 to
+                // `ProviderType::Custom(slug)`.
+                if custom_provider_registered(other) {
+                    Ok(ProviderType::Custom(other.to_string()))
+                } else {
+                    Err(ProviderError::config(
+                        "manager",
+                        format!(
+                            "Provider '{provider_id}' is not supported. Supported providers: anthropic, openai, google, zai, codex, github-copilot"
+                        ),
+                    ))
+                }
+            }
         }
     }
 
@@ -511,6 +559,24 @@ impl ProviderManager {
     /// Get current provider name
     pub fn current_provider_name(&self) -> &str {
         self.current_provider.as_str()
+    }
+
+    /// PROV-067: Access the current [`ProviderType`] by reference. The
+    /// `Custom(String)` variant is not `Copy`, so callers use this
+    /// accessor instead of reading a public field.
+    pub fn current_provider_type(&self) -> &ProviderType {
+        &self.current_provider
+    }
+
+    /// PROV-067: Test-only shim around the private
+    /// [`Self::detect_default_provider`] helper, so integration tests
+    /// can verify custom providers never auto-select even when they're
+    /// the only credentialed provider.
+    #[doc(hidden)]
+    pub fn detect_default_provider_for_test(
+        credentials: &ProviderCredentials,
+    ) -> Result<ProviderType, ProviderError> {
+        Self::detect_default_provider(credentials)
     }
 
     /// Get Claude provider (if selected)
@@ -705,6 +771,23 @@ impl ProviderManager {
         if self.credentials.has_github_copilot() {
             providers.push("GitHub Copilot (/github-copilot)".to_string());
         }
+        // PROV-067: Include discovered custom providers — both available
+        // and unavailable — so users can see their full registry.
+        let mut custom_names: Vec<&String> = self.credentials.custom_available.keys().collect();
+        custom_names.sort();
+        for name in custom_names {
+            let available = self
+                .credentials
+                .custom_available
+                .get(name)
+                .copied()
+                .unwrap_or(false);
+            if available {
+                providers.push(format!("{name} (/{name}) (custom)"));
+            } else {
+                providers.push(format!("{name} (/{name}) (custom, unavailable)"));
+            }
+        }
         providers
     }
 
@@ -737,7 +820,7 @@ impl ProviderManager {
     /// that mirrors the constants from each provider's `ModelLimitsResolver`
     /// impl.
     fn provider_limits_resolver(&self) -> Box<dyn ModelLimitsResolver> {
-        match self.current_provider {
+        match &self.current_provider {
             ProviderType::Claude => Box::new(ConstantResolver {
                 max_ctx: Some(claude::CONTEXT_WINDOW),
                 default_ctx: claude::CONTEXT_WINDOW,
@@ -784,6 +867,15 @@ impl ProviderManager {
                 default_ctx: copilot::CONTEXT_WINDOW,
                 max_out: None,
                 default_out: copilot::MAX_OUTPUT_TOKENS,
+            }),
+            // PROV-067: Custom providers have no hard ceiling — trust
+            // user/registry overrides with conservative OpenAI-compatible
+            // defaults (128k ctx, 4k out).
+            ProviderType::Custom(_) => Box::new(ConstantResolver {
+                max_ctx: None,
+                default_ctx: self.user_context_window.unwrap_or(128_000),
+                max_out: None,
+                default_out: self.user_max_output_tokens.unwrap_or(4096),
             }),
         }
     }
@@ -910,6 +1002,7 @@ impl ProviderManager {
                 gemini_available: false,
                 zai_available: false,
                 github_copilot_available: false,
+                custom_available: std::collections::HashMap::new(),
             },
             current_provider: provider,
             model_registry: None,
@@ -989,6 +1082,7 @@ mod tests {
                 gemini_available: false,
                 zai_available: false,
                 github_copilot_available: false,
+                custom_available: std::collections::HashMap::new(),
             },
             current_provider: provider,
             model_registry: None,
@@ -1089,6 +1183,7 @@ mod tests {
                 gemini_available: false,
                 zai_available: false,
                 github_copilot_available: false,
+                custom_available: std::collections::HashMap::new(),
             },
             current_provider: ProviderType::Claude,
             model_registry: Some(build_github_copilot_registry()),
@@ -1385,6 +1480,7 @@ mod tests {
                 gemini_available: false,
                 zai_available: false,
                 github_copilot_available: true,
+                custom_available: std::collections::HashMap::new(),
             },
             current_provider: ProviderType::Claude,
             model_registry: Some(build_multi_provider_registry()),

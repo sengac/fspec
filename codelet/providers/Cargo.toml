@@ -22,6 +22,7 @@ rig-core.workspace = true
 
 # HTTP & Networking
 reqwest.workspace = true
+eventsource-stream = "0.2"
 
 # Serialization
 serde.workspace = true
@@ -49,6 +50,12 @@ http-body-util = "0.1"
 bytes = "1"
 open = "5"
 
+# Rhai scripting engine (PROV-060)
+rhai = { version = "1.24", features = ["sync", "serde"] }
+
+# Sync HTTP client for Rhai scripts (PROV-060)
+ureq = { version = "2", features = ["json", "tls"] }
+
 # Configuration
 dotenvy.workspace = true
 
@@ -59,6 +66,7 @@ chrono.workspace = true
 url.workspace = true
 dirs = "5"
 lazy_static = "1.4"
+once_cell.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

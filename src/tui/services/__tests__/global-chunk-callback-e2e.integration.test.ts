@@ -232,12 +232,18 @@ describe('Feature: BRIDGE-012 Global Chunk Callback Integration', () => {
       const sessionBChunks: StreamChunk[] = [];
 
       // Register handlers for each session
-      const unregisterA = manager.registerHandler(sessionAId, chunk => {
-        sessionAChunks.push(chunk);
-      });
-      const unregisterB = manager.registerHandler(sessionBId, chunk => {
-        sessionBChunks.push(chunk);
-      });
+      const unregisterA = manager.registerHandler(
+        sessionAId,
+        (_sessionId, chunk) => {
+          sessionAChunks.push(chunk);
+        }
+      );
+      const unregisterB = manager.registerHandler(
+        sessionBId,
+        (_sessionId, chunk) => {
+          sessionBChunks.push(chunk);
+        }
+      );
 
       // Emit chunks
       manager.simulateChunk(sessionAId, { type: 'Text', text: 'For A' });

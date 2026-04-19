@@ -114,14 +114,20 @@ describe('Feature: GlobalSessionStreamManager chunk routing by session_id', () =
       const sessionBChunks: StreamChunk[] = [];
 
       // @step And a handler is registered for session "session-a"
-      const unregisterA = manager.registerHandler('session-a', chunk => {
-        sessionAChunks.push(chunk);
-      });
+      const unregisterA = manager.registerHandler(
+        'session-a',
+        (_sessionId, chunk) => {
+          sessionAChunks.push(chunk);
+        }
+      );
 
       // @step And a handler is registered for session "session-b"
-      const unregisterB = manager.registerHandler('session-b', chunk => {
-        sessionBChunks.push(chunk);
-      });
+      const unregisterB = manager.registerHandler(
+        'session-b',
+        (_sessionId, chunk) => {
+          sessionBChunks.push(chunk);
+        }
+      );
 
       // @step When a chunk arrives for session "session-a"
       const testChunk: StreamChunk = {
@@ -157,12 +163,18 @@ describe('Feature: GlobalSessionStreamManager chunk routing by session_id', () =
       const handlerBChunks: StreamChunk[] = [];
       const testSessionId = 'session-x-multiple-handlers';
 
-      const unregisterA = manager.registerHandler(testSessionId, chunk => {
-        handlerAChunks.push(chunk);
-      });
-      const unregisterB = manager.registerHandler(testSessionId, chunk => {
-        handlerBChunks.push(chunk);
-      });
+      const unregisterA = manager.registerHandler(
+        testSessionId,
+        (_sessionId, chunk) => {
+          handlerAChunks.push(chunk);
+        }
+      );
+      const unregisterB = manager.registerHandler(
+        testSessionId,
+        (_sessionId, chunk) => {
+          handlerBChunks.push(chunk);
+        }
+      );
 
       const testChunk: StreamChunk = {
         type: 'Text',
@@ -190,9 +202,12 @@ describe('Feature: GlobalSessionStreamManager chunk routing by session_id', () =
       const manager = GlobalSessionStreamManager.getInstance();
 
       const receivedChunks: StreamChunk[] = [];
-      const unregister = manager.registerHandler('session-a', chunk => {
-        receivedChunks.push(chunk);
-      });
+      const unregister = manager.registerHandler(
+        'session-a',
+        (_sessionId, chunk) => {
+          receivedChunks.push(chunk);
+        }
+      );
 
       const testChunk: StreamChunk = { type: 'Text', text: 'Unknown session' };
 

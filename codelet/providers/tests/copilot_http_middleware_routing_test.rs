@@ -9,7 +9,7 @@
 
 use codelet_providers::copilot::oauth_types::CopilotDeploymentType;
 use codelet_providers::copilot::{
-    base_url::CopilotBaseUrl,
+    base_url::{base_url_for, CopilotBaseUrl},
     behavior_facade::{
         select_copilot_behavior_facade, CopilotBehaviorFacade, CopilotClaudeBehaviorFacade,
         CopilotGptBehaviorFacade,
@@ -17,7 +17,7 @@ use codelet_providers::copilot::{
     classifier::{CopilotRequestClassifier, RequestClassification},
     endpoint::{CopilotEndpoint, CopilotEndpointFacade},
     header_facade::CopilotHeaderFacade,
-    provider::CopilotProvider,
+    system_prompt_facade::system_prompt_facade_for_endpoint,
 };
 use serde_json::json;
 
@@ -42,7 +42,7 @@ fn scenario_chat_completion_gpt_4o_copilot_uses_chat_completions_with_required_h
     let classification = CopilotRequestClassifier::classify(&body);
     let endpoint = CopilotEndpointFacade::select(model_id);
     let headers = CopilotHeaderFacade::build_headers(&classification, access_token);
-    let base_url = CopilotProvider::base_url_for(&deployment);
+    let base_url = base_url_for(&deployment);
     let full_url = format!("{}/chat/completions", base_url.as_str());
 
     // @step Then CopilotEndpointFacade::select("gpt-4o-copilot") should return Endpoint::ChatCompletions
@@ -103,7 +103,7 @@ fn scenario_gpt_5_routed_to_responses_with_reasoning_opaque_roundtrip() {
     let model_id = "gpt-5";
     let endpoint = CopilotEndpointFacade::select(model_id);
     let behavior = select_copilot_behavior_facade(model_id);
-    let base_url = CopilotProvider::base_url_for(&deployment);
+    let base_url = base_url_for(&deployment);
 
     // @step Then CopilotEndpointFacade::select("gpt-5") should return Endpoint::Responses
     assert_eq!(endpoint, CopilotEndpoint::Responses);
@@ -118,7 +118,7 @@ fn scenario_gpt_5_routed_to_responses_with_reasoning_opaque_roundtrip() {
     assert_eq!(behavior.family(), "gpt");
 
     // @step And the system prompt facade should be CopilotResponsesSystemPromptFacade
-    let system_prompt_facade = CopilotProvider::system_prompt_facade_for_endpoint(endpoint);
+    let system_prompt_facade = system_prompt_facade_for_endpoint(endpoint);
     assert_eq!(
         system_prompt_facade.provider(),
         "copilot-responses",
@@ -161,7 +161,7 @@ fn scenario_gpt_5_mini_excluded_from_responses_api_rule() {
     // @step When I select the model "gpt-5-mini" in the TUI and send a chat message
     let model_id = "gpt-5-mini";
     let endpoint = CopilotEndpointFacade::select(model_id);
-    let base_url = CopilotProvider::base_url_for(&deployment);
+    let base_url = base_url_for(&deployment);
     let body = json!({
         "model": model_id,
         "messages": [{ "role": "user", "content": "Quick summary please" }]
@@ -183,7 +183,7 @@ fn scenario_gpt_5_mini_excluded_from_responses_api_rule() {
     );
 
     // @step And the system prompt facade should be OpenAISystemPromptFacade
-    let system_prompt_facade = CopilotProvider::system_prompt_facade_for_endpoint(endpoint);
+    let system_prompt_facade = system_prompt_facade_for_endpoint(endpoint);
     assert_eq!(
         system_prompt_facade.provider(),
         "openai",
@@ -210,7 +210,7 @@ fn scenario_image_attachment_triggers_vision_request_header_on_claude_sonnet() {
     // @step When I select the model "claude-sonnet-4.5" in the TUI
     let model_id = "claude-sonnet-4.5";
     let endpoint = CopilotEndpointFacade::select(model_id);
-    let base_url = CopilotProvider::base_url_for(&deployment);
+    let base_url = base_url_for(&deployment);
 
     // @step And I attach an image and send a message asking to describe the image
     let body = json!({
@@ -270,7 +270,7 @@ fn scenario_enterprise_deployment_routes_to_copilot_api_enterprise_subdomain() {
 
     // @step When I select the model "gpt-4o" in the TUI and send a chat message
     let model_id = "gpt-4o";
-    let base_url = CopilotProvider::base_url_for(&deployment);
+    let base_url = base_url_for(&deployment);
     let body = json!({
         "model": model_id,
         "messages": [{ "role": "user", "content": "Hello enterprise" }]
@@ -431,13 +431,13 @@ fn classifier_detects_responses_api_input_image() {
 
 #[test]
 fn github_dotcom_base_url_is_api_githubcopilot_com() {
-    let url = CopilotProvider::base_url_for(&CopilotDeploymentType::GitHubCom);
+    let url = base_url_for(&CopilotDeploymentType::GitHubCom);
     assert_eq!(url.as_str(), "https://api.githubcopilot.com");
 }
 
 #[test]
 fn enterprise_base_url_uses_copilot_api_subdomain() {
-    let url = CopilotProvider::base_url_for(&CopilotDeploymentType::Enterprise {
+    let url = base_url_for(&CopilotDeploymentType::Enterprise {
         host: "ghe.example.com".to_string(),
     });
     assert_eq!(url.as_str(), "https://copilot-api.ghe.example.com");
@@ -464,7 +464,7 @@ fn type_surface_claude_behavior_facade_is_a_unit_struct() {
 
 #[test]
 fn type_surface_base_url_is_constructible_through_provider() {
-    let url: CopilotBaseUrl = CopilotProvider::base_url_for(&CopilotDeploymentType::GitHubCom);
+    let url: CopilotBaseUrl = base_url_for(&CopilotDeploymentType::GitHubCom);
     assert!(url.as_str().starts_with("https://"));
 }
 

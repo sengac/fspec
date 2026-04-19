@@ -184,60 +184,6 @@
       ]
     },
     {
-      "name": "Unknown model uses default behavior with explicit constant matching",
-      "testMappings": [
-        {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "368-409",
-          "implMappings": [
-            {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "codelet/providers/src/claude.rs",
-              "lines": "49-102"
-            },
-            {
-              "file": "codelet/napi/src/session_manager.rs",
-              "lines": "5047-5105"
-            },
-            {
-              "file": "codelet/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Partial model name does not match adaptive thinking models",
-      "testMappings": [
-        {
-          "file": "codelet/providers/tests/claude_opus_4_6_adaptive_thinking_test.rs",
-          "lines": "412-447",
-          "implMappings": [
-            {
-              "file": "codelet/tools/src/facade/thinking_config.rs",
-              "lines": "19-55,191-227"
-            },
-            {
-              "file": "codelet/providers/src/claude.rs",
-              "lines": "49-102"
-            },
-            {
-              "file": "codelet/napi/src/session_manager.rs",
-              "lines": "5047-5105"
-            },
-            {
-              "file": "codelet/napi/src/thinking_config.rs",
-              "lines": "47-77,109-135"
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Thinking level 'high' defaults to adaptive for Opus 4.6",
       "testMappings": [
         {
@@ -332,11 +278,19 @@
     {
       "name": "Sonnet 4.5 uses correct beta headers",
       "testMappings": []
+    },
+    {
+      "name": "Unknown future model defaults to adaptive thinking",
+      "testMappings": []
+    },
+    {
+      "name": "Model variant inherits adaptive behavior from base model",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 16,
-    "coveredScenarios": 15,
-    "coveragePercent": 94
+    "coveredScenarios": 13,
+    "coveragePercent": 81
   }
 }

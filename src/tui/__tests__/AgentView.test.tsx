@@ -319,7 +319,7 @@ const resetMockSession = (overrides = {}) => {
 };
 
 describe('Feature: TUI Integration for Codelet AI Agent', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     resetMockSession();
     // VIEWNV-001: Reset sessionStore state between tests
@@ -328,6 +328,11 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
     stopGlobalSessionStreamManager();
     clearNapiModuleCache();
     clearAllSubscriptions();
+    // BUG-135: Reset the sessionGetDebugEnabled mock return value so prior
+    // tests that set it to true don't leak into tests that don't configure it.
+    // applyPendingDebugState now consults this as the authoritative fallback.
+    const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
+    (sessionGetDebugEnabled as unknown as ReturnType<typeof vi.fn>).mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -556,7 +561,8 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // @step When I type "/debug" in the input and submit
-      // Configure sessionGetDebugEnabled to return true after toggle
+      // BUG-133: Debug state is now driven by DebugStateChange stream events into Zustand,
+      // not by local useState or rustSnapshot polling
       const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
       (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
 
@@ -565,8 +571,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       stdin.write('\r'); // Enter key
       await waitForFrame(100);
       
-      // Trigger re-render to pick up the new mock value
-      triggerRustStateRefresh();
+      // BUG-133: Simulate the DebugStateChange stream event that Rust emits after toggle
+      // This updates Zustand, which drives the [DEBUG] badge in SessionHeader
+      injectTestChunk('mock-session-id', { type: 'DebugStateChange', enabled: true });
+      useSessionStore.getState().setDebugState('mock-session-id', true);
       await waitForFrame(50);
 
       // @step Then sessionToggleDebug should be called with session ID and debug directory
@@ -621,7 +629,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // @step And debug capture mode is enabled
-      // Configure sessionGetDebugEnabled to return true after first toggle
+      // BUG-133: Debug state now comes from Zustand via stream events
       const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
       (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
 
@@ -630,6 +638,11 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(100);
+
+      // BUG-133: Simulate DebugStateChange stream event
+      injectTestChunk('mock-session-id', { type: 'DebugStateChange', enabled: true });
+      useSessionStore.getState().setDebugState('mock-session-id', true);
+      await waitForFrame(50);
 
       // Verify debug is now enabled
       expect(sessionToggleDebug).toHaveBeenCalledTimes(1);
@@ -644,6 +657,11 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(100);
+
+      // BUG-133: Simulate DebugStateChange stream event (disabled)
+      injectTestChunk('mock-session-id', { type: 'DebugStateChange', enabled: false });
+      useSessionStore.getState().setDebugState('mock-session-id', false);
+      await waitForFrame(50);
 
       // @step Then sessionToggleDebug should be called twice
       expect(sessionToggleDebug).toHaveBeenCalledTimes(2);
@@ -711,7 +729,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // @step And debug capture mode is enabled
-      // Configure sessionGetDebugEnabled to return true after toggle
+      // BUG-133: Debug state now comes from Zustand via stream events
       const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
       (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
 
@@ -719,6 +737,11 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(100);
+
+      // BUG-133: Simulate DebugStateChange stream event
+      injectTestChunk('mock-session-id', { type: 'DebugStateChange', enabled: true });
+      useSessionStore.getState().setDebugState('mock-session-id', true);
+      await waitForFrame(50);
 
       expect(sessionToggleDebug).toHaveBeenCalledTimes(1);
       expect(lastFrame()).toContain('[DEBUG]');
@@ -777,7 +800,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toContain('175000');
 
       // @step And debug capture mode is enabled
-      // Configure sessionGetDebugEnabled to return true after toggle
+      // BUG-133: Debug state now comes from Zustand via stream events
       const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
       (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
 
@@ -785,6 +808,11 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(100);
+
+      // BUG-133: Simulate DebugStateChange stream event
+      injectTestChunk('mock-session-id', { type: 'DebugStateChange', enabled: true });
+      useSessionStore.getState().setDebugState('mock-session-id', true);
+      await waitForFrame(50);
 
       expect(sessionToggleDebug).toHaveBeenCalledTimes(1);
       expect(lastFrame()).toContain('[DEBUG]');

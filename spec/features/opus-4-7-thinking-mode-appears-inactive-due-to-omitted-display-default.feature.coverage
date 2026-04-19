@@ -1,0 +1,147 @@
+{
+  "scenarios": [
+    {
+      "name": "Opus 4.7 adaptive config includes display summarized",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "256-284",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opus 4.6 adaptive config also includes display summarized",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "287-316",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Off level returns empty config for adaptive models",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "319-334",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                243,
+                244,
+                245,
+                246
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Budgeted models remain unchanged with no display field",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "337-373",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                262,
+                263,
+                264,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "337-373",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                262,
+                263,
+                264,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/facade/thinking_config.rs"
+    ],
+    "totalLinesCovered": 205
+  }
+}

@@ -27,31 +27,65 @@ pub const CLAUDE_SONNET_4_5: &str = "claude-sonnet-4-5";
 /// Claude Opus 4.5 model identifier
 pub const CLAUDE_OPUS_4_5: &str = "claude-opus-4-5";
 
-/// Models that use adaptive thinking (exact equality checks - PROV-005)
-/// Per official Anthropic docs, these models use `{"type": "adaptive"}` instead of budgeted thinking.
-pub const ADAPTIVE_THINKING_MODELS: &[&str] = &[CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6];
+/// Model prefixes that require budgeted thinking (pre-adaptive era).
+/// All other Claude 4.x+ models default to adaptive thinking.
+/// Uses `starts_with` matching so versioned variants (e.g. "claude-opus-4-5-20260101")
+/// are automatically covered.
+pub const BUDGETED_THINKING_MODELS: &[&str] = &[CLAUDE_OPUS_4_5, CLAUDE_SONNET_4_5];
 
-/// Models that support 1M context window (exact equality checks - PROV-005)
-/// Note: Opus 4.5 does NOT support 1M context.
-pub const CONTEXT_1M_MODELS: &[&str] = &[
-    CLAUDE_OPUS_4_6,
-    CLAUDE_SONNET_4_6,
-    CLAUDE_SONNET_4_5,
-    "claude-sonnet-4-5-20250929", // Versioned model
-];
+/// Model prefixes that do NOT support 1M context window.
+/// All Claude 4.5+ models support 1M context EXCEPT Opus 4.5.
+/// Claude 3.x models also do not support 1M context.
+pub const NO_1M_CONTEXT_MODELS: &[&str] = &[CLAUDE_OPUS_4_5];
 
 /// Check if a model uses adaptive thinking.
-/// Uses exact equality, NOT pattern matching (PROV-005 rule [7]).
+///
+/// Default-adaptive: All Claude 4.6+ models use adaptive thinking.
+/// Only old models (4.5 and earlier) use budgeted thinking.
+/// This is future-proof — new Claude models automatically get adaptive thinking
+/// without requiring code changes.
 #[inline]
 pub fn is_adaptive_thinking_model(model: &str) -> bool {
-    ADAPTIVE_THINKING_MODELS.contains(&model)
+    // Must be a Claude model (new naming: claude-{family}-{major}-{minor})
+    if !model.starts_with("claude-") {
+        return false;
+    }
+    // Claude 3.x uses old naming (claude-3-*) → always budgeted
+    if model.starts_with("claude-3") {
+        return false;
+    }
+    // Known budgeted models (prefix match covers versioned variants)
+    for budgeted in BUDGETED_THINKING_MODELS {
+        if model.starts_with(budgeted) {
+            return false;
+        }
+    }
+    // All other Claude models default to adaptive
+    true
 }
 
 /// Check if a model supports 1M context window.
-/// Uses exact equality, NOT pattern matching (PROV-005 rule [7]).
+///
+/// Default-enabled: All Claude 4.5+ models support 1M context EXCEPT Opus 4.5.
+/// Claude 3.x models do not support 1M context.
 #[inline]
 pub fn supports_1m_context(model: &str) -> bool {
-    CONTEXT_1M_MODELS.contains(&model)
+    // Must be a Claude model
+    if !model.starts_with("claude-") {
+        return false;
+    }
+    // Claude 3.x → no 1M support
+    if model.starts_with("claude-3") {
+        return false;
+    }
+    // Known models without 1M support (prefix match)
+    for no_1m in NO_1M_CONTEXT_MODELS {
+        if model.starts_with(no_1m) {
+            return false;
+        }
+    }
+    // All other Claude 4.x+ models support 1M
+    true
 }
 
 /// Provider-agnostic thinking intensity levels.
@@ -213,10 +247,14 @@ impl ClaudeThinkingFacade {
         // PROV-005: Adaptive thinking models (Opus 4.6, Sonnet 4.6)
         // User-provided budget_tokens and thinking levels (low/med/high) are ignored
         // - they all default to adaptive mode
+        // PROV-080: Include display:'summarized' so the API returns visible thinking text.
+        // Without this, newer models (e.g. Opus 4.7) default to display:'omitted',
+        // returning empty thinking blocks that rig-core drops, making thinking appear broken.
         if is_adaptive_thinking_model(model) {
             return Some(json!({
                 "thinking": {
-                    "type": "adaptive"
+                    "type": "adaptive",
+                    "display": "summarized"
                 }
             }));
         }
@@ -746,50 +784,63 @@ mod tests {
     }
 
     #[test]
-    fn test_claude_unknown_model_uses_budgeted_thinking() {
+    fn test_claude_opus_4_7_returns_adaptive_thinking() {
         // @step Given a ClaudeThinkingFacade
         let facade = ClaudeThinkingFacade;
 
-        // @step And unknown model "claude-opus-4-7" with ThinkingLevel::High
+        // @step And model "claude-opus-4-7" with ThinkingLevel::High
         let model = "claude-opus-4-7";
         let level = ThinkingLevel::High;
 
         // @step When I call request_config_for_model
         let config = facade.request_config_for_model(model, level);
 
-        // @step Then the result should use budgeted thinking (default behavior)
+        // @step Then the result should use adaptive thinking (default-adaptive)
         assert!(config.is_some(), "Config should exist for High level");
         let config = config.unwrap();
         assert_eq!(
             config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Unknown model should use budgeted thinking"
+            Some("adaptive"),
+            "Opus 4.7 should use adaptive thinking"
         );
         assert!(
-            config["thinking"]["budget_tokens"].as_u64().is_some(),
-            "Unknown model should have budget_tokens"
+            config["thinking"]["budget_tokens"].is_null(),
+            "Opus 4.7 should NOT have budget_tokens"
         );
     }
 
     #[test]
     fn test_adaptive_thinking_model_detection() {
-        // PROV-005: Verify exact equality matching
+        // Default-adaptive: Claude 4.6+ models are adaptive, 4.5 and earlier are budgeted
         assert!(is_adaptive_thinking_model(CLAUDE_OPUS_4_6));
         assert!(is_adaptive_thinking_model(CLAUDE_SONNET_4_6));
-        assert!(!is_adaptive_thinking_model(CLAUDE_OPUS_4_5));
-        assert!(!is_adaptive_thinking_model(CLAUDE_SONNET_4_5));
-        assert!(!is_adaptive_thinking_model("claude-opus-4-6-preview")); // Partial match
-        assert!(!is_adaptive_thinking_model("claude-opus-4-7")); // Unknown
+        assert!(is_adaptive_thinking_model("claude-opus-4-7")); // Future: adaptive by default
+        assert!(is_adaptive_thinking_model("claude-opus-4-8")); // Future: adaptive by default
+        assert!(is_adaptive_thinking_model("claude-sonnet-5-0")); // Future: adaptive by default
+        assert!(is_adaptive_thinking_model("claude-opus-4-6-preview")); // Variant: adaptive
+        assert!(is_adaptive_thinking_model("claude-opus-4-6-20260201")); // Dated: adaptive
+        assert!(is_adaptive_thinking_model("claude-haiku-5-0")); // Future family: adaptive
+        assert!(!is_adaptive_thinking_model(CLAUDE_OPUS_4_5)); // Old: budgeted
+        assert!(!is_adaptive_thinking_model(CLAUDE_SONNET_4_5)); // Old: budgeted
+        assert!(!is_adaptive_thinking_model("claude-sonnet-4-5-20250929")); // Old variant: budgeted
+        assert!(!is_adaptive_thinking_model("claude-3-opus-20240229")); // Claude 3.x: budgeted
+        assert!(!is_adaptive_thinking_model("claude-3-5-sonnet-20241022")); // Claude 3.x: budgeted
+        assert!(!is_adaptive_thinking_model("gemini-3")); // Non-Claude: not adaptive
+        assert!(!is_adaptive_thinking_model("claude")); // Generic (no dash suffix): not adaptive
     }
 
     #[test]
     fn test_context_1m_support_detection() {
-        // PROV-005: Verify exact equality matching for 1M context
+        // Default-enabled for Claude 4.5+ (except Opus 4.5)
         assert!(supports_1m_context(CLAUDE_OPUS_4_6));
         assert!(supports_1m_context(CLAUDE_SONNET_4_6));
         assert!(supports_1m_context(CLAUDE_SONNET_4_5));
-        assert!(supports_1m_context("claude-sonnet-4-5-20250929")); // Versioned
-        assert!(!supports_1m_context(CLAUDE_OPUS_4_5)); // Opus 4.5 does NOT support 1M
-        assert!(!supports_1m_context("claude-opus-4-7")); // Unknown
+        assert!(supports_1m_context("claude-sonnet-4-5-20250929")); // Variant auto-covered
+        assert!(supports_1m_context("claude-opus-4-7")); // Future: auto-covered
+        assert!(supports_1m_context("claude-opus-4-8")); // Future: auto-covered
+        assert!(!supports_1m_context(CLAUDE_OPUS_4_5)); // Explicit exception
+        assert!(!supports_1m_context("claude-opus-4-5-20260101")); // Variant of exception
+        assert!(!supports_1m_context("claude-3-opus-20240229")); // Claude 3.x: no 1M
+        assert!(!supports_1m_context("gemini-3")); // Non-Claude
     }
 }

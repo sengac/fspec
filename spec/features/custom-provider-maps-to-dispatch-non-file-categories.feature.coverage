@@ -1,0 +1,340 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatch bash maps_to to InternalBashParams::Execute",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "23-39",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch search:grep maps_to to InternalSearchParams::Grep",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "43-61",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch search:glob maps_to to InternalSearchParams::Glob",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "64-81",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch ls maps_to to InternalLsParams::List",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "84-101",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch web_search:search maps_to to InternalWebSearchParams::Search",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "104-122",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch fspec maps_to to InternalFspecParams",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "125-147",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch bridge maps_to to InternalBridgeParams::List",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "150-165",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch exec:run maps_to to InternalExecParams::Run",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "168-184",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatch hitl maps_to to InternalHitlParams::Request",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "187-214",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown maps_to value returns error listing valid identifiers",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_maps_to_dispatch_tests.rs",
+          "lines": "217-238",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_dispatch.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/custom_maps_to_dispatch_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/custom/tool_dispatch.rs"
+    ],
+    "totalLinesCovered": 361
+  }
+}

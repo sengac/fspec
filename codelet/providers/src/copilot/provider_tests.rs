@@ -6,18 +6,20 @@
 
 use super::*;
 use crate::copilot::auth::CopilotAuthJson;
+use crate::copilot::base_url::base_url_for;
 use crate::copilot::endpoint::CopilotEndpoint;
 use crate::copilot::oauth_types::CopilotDeploymentType;
+use crate::copilot::system_prompt_facade::system_prompt_facade_for_endpoint;
 
 #[test]
 fn github_dotcom_base_url_is_api_githubcopilot_com() {
-    let url = CopilotProvider::base_url_for(&CopilotDeploymentType::GitHubCom);
+    let url = base_url_for(&CopilotDeploymentType::GitHubCom);
     assert_eq!(url.as_str(), "https://api.githubcopilot.com");
 }
 
 #[test]
 fn enterprise_base_url_uses_copilot_api_subdomain() {
-    let url = CopilotProvider::base_url_for(&CopilotDeploymentType::Enterprise {
+    let url = base_url_for(&CopilotDeploymentType::Enterprise {
         host: "ghe.example.com".to_string(),
     });
     assert_eq!(url.as_str(), "https://copilot-api.ghe.example.com");
@@ -25,7 +27,7 @@ fn enterprise_base_url_uses_copilot_api_subdomain() {
 
 #[test]
 fn chat_completions_endpoint_uses_openai_system_prompt_facade() {
-    let f = CopilotProvider::system_prompt_facade_for_endpoint(
+    let f = system_prompt_facade_for_endpoint(
         CopilotEndpoint::ChatCompletions,
     );
     assert_eq!(f.provider(), "openai");
@@ -33,7 +35,7 @@ fn chat_completions_endpoint_uses_openai_system_prompt_facade() {
 
 #[test]
 fn responses_endpoint_uses_copilot_responses_system_prompt_facade() {
-    let f = CopilotProvider::system_prompt_facade_for_endpoint(CopilotEndpoint::Responses);
+    let f = system_prompt_facade_for_endpoint(CopilotEndpoint::Responses);
     assert_eq!(f.provider(), "copilot-responses");
 }
 

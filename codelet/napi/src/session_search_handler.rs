@@ -841,7 +841,7 @@ mod tests {
     #[test]
     fn test_extract_match_preview_with_ripgrep() {
         let matcher = build_ripgrep_matcher("compaction").unwrap();
-        let content = "x".repeat(200) + "compaction" + &"y".repeat(200);
+        let content = format!("{}compaction{}", "x".repeat(200), "y".repeat(200));
         let preview = extract_match_preview_ripgrep(&content, &matcher);
 
         assert!(preview.contains("compaction"));

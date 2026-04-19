@@ -88,9 +88,12 @@ describe('Feature: Global Session Stream Subscription for FspecCommandRequest Ha
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const uiChunksReceived: StreamChunk[] = [];
-      const unregister = manager.registerHandler(sessionA.id, chunk => {
-        uiChunksReceived.push(chunk);
-      });
+      const unregister = manager.registerHandler(
+        sessionA.id,
+        (_sessionId, chunk) => {
+          uiChunksReceived.push(chunk);
+        }
+      );
 
       // @step And I send a message that invokes the fspec tool in Session A
       const fspecRequest: StreamChunk = {
@@ -263,9 +266,12 @@ describe('Feature: Global Session Stream Subscription for FspecCommandRequest Ha
 
       // @step And AgentView is displaying that session
       const uiChunksReceived: StreamChunk[] = [];
-      const unregister = manager.registerHandler(sessionId, chunk => {
-        uiChunksReceived.push(chunk);
-      });
+      const unregister = manager.registerHandler(
+        sessionId,
+        (_sessionId, chunk) => {
+          uiChunksReceived.push(chunk);
+        }
+      );
 
       // @step When the session emits a Text chunk
       const textChunk: StreamChunk = {
@@ -314,9 +320,12 @@ describe('Feature: Global Session Stream Subscription for FspecCommandRequest Ha
       await new Promise(resolve => setTimeout(resolve, 100));
 
       const chunksReceived: StreamChunk[] = [];
-      const unregister = manager.registerHandler(session.id, chunk => {
-        chunksReceived.push(chunk);
-      });
+      const unregister = manager.registerHandler(
+        session.id,
+        (_sessionId, chunk) => {
+          chunksReceived.push(chunk);
+        }
+      );
 
       manager.simulateChunk(session.id, { type: 'Text', text: 'Hello' });
       manager.simulateChunk(session.id, {
@@ -353,12 +362,18 @@ describe('Feature: Global Session Stream Subscription for FspecCommandRequest Ha
       const handler1Chunks: StreamChunk[] = [];
       const handler2Chunks: StreamChunk[] = [];
 
-      const unregister1 = manager.registerHandler(session.id, chunk => {
-        handler1Chunks.push(chunk);
-      });
-      const unregister2 = manager.registerHandler(session.id, chunk => {
-        handler2Chunks.push(chunk);
-      });
+      const unregister1 = manager.registerHandler(
+        session.id,
+        (_sessionId, chunk) => {
+          handler1Chunks.push(chunk);
+        }
+      );
+      const unregister2 = manager.registerHandler(
+        session.id,
+        (_sessionId, chunk) => {
+          handler2Chunks.push(chunk);
+        }
+      );
 
       manager.simulateChunk(session.id, {
         type: 'Text',

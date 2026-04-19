@@ -7,26 +7,27 @@
 Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
   """
   ARCHITECTURE:
-  - Follow VTCode/OpenCode approach: simple enum variant + model check, no separate facade needed
-  - Use EXPLICIT model constants (CLAUDE_OPUS_4_6, CLAUDE_SONNET_4_6) with exact equality (==)
-  - NO pattern matching (.contains(), .starts_with()) - prevents accidental matches
-  - Group models by capability in explicit lists: ADAPTIVE_THINKING_MODELS, CONTEXT_1M_MODELS
-  - Versioned models (claude-opus-4-6-20260201) must be explicitly added when released
+  - Default-adaptive: All Claude 4.6+ models use adaptive thinking by default
+  - Only old models (4.5 and earlier) are explicitly listed as budgeted exceptions
+  - New models automatically get adaptive thinking — NO per-model constants needed
+  - Uses `starts_with` prefix matching so versioned variants are auto-covered
+  - Group models by exception: BUDGETED_THINKING_MODELS (denylist), NO_1M_CONTEXT_MODELS
 
   OFFICIAL ANTHROPIC SPEC (from platform.claude.com/docs):
 
   ADAPTIVE THINKING MODELS (type: "adaptive", NO interleaved-thinking header needed):
   - claude-opus-4-6   ✓ adaptive ✓ context-1m
   - claude-sonnet-4-6 ✓ adaptive ✓ context-1m
+  - All future Claude models (4.7, 4.8, 5.0, etc.) ✓ adaptive by default
 
   BUDGETED THINKING MODELS (type: "enabled" + budget_tokens, NEED interleaved-thinking header):
   - claude-sonnet-4-5 ✓ interleaved-thinking ✓ context-1m
   - claude-opus-4-5   ✓ interleaved-thinking ✗ context-1m (NO 1M support)
-  - older/unknown     ✓ interleaved-thinking ✗ context-1m
+  - Claude 3.x        ✓ interleaved-thinking ✗ context-1m
 
   BETA HEADERS:
   - prompt-caching-2024-07-31:       ALL models
-  - interleaved-thinking-2025-05-14: ONLY non-adaptive models (4.6 models don't need it)
+  - interleaved-thinking-2025-05-14: ONLY non-adaptive models (4.6+ models don't need it)
   - context-1m-2025-08-07:           NOT sent by default (requires CONFIG-007 user opt-in)
   This header triggers "Extra usage required" for non-Tier-4 users.
 
@@ -45,17 +46,17 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
   #   [4] Non-adaptive models MUST continue using budget-based thinking (type: enabled, budget_tokens: N)
   #   [5] Adaptive thinking models MUST NOT include interleaved-thinking header (automatic)
   #   [6] context-1m-2025-08-07 header NOT sent until CONFIG-007 user opt-in is implemented
-  #   [7] Model detection MUST use explicit string constants and exact equality (==)
-  #   [8] New model versions MUST be added explicitly to capability lists when released
+  #   [7] Model detection uses prefix matching with denylist — future models default to adaptive
+  #   [8] Old models (4.5 and earlier) are explicitly listed as budgeted exceptions
   #   [9] Opus 4.5 does NOT support 1M context - must NOT include context-1m header
-  #   [10] /thinking low/med/high defaults to adaptive for 4.6 models; only /thinking off disables
+  #   [10] /thinking low/med/high defaults to adaptive for 4.6+ models; only /thinking off disables
   #
   # ARCHITECTURE NOTES:
   #   [0] Follow VTCode/OpenCode approach: simple enum variant + model check
   #   [1] Beta headers are model-specific based on official Anthropic documentation
-  #   [2] Use explicit model constants with exact equality checks - no pattern matching
-  #   [3] Group models by capability: ADAPTIVE_THINKING_MODELS, CONTEXT_1M_MODELS
-  #   [4] Versioned models must be explicitly added to capability lists when released
+  #   [2] Default-adaptive: new models get adaptive thinking without code changes
+  #   [3] Only old models explicitly listed in BUDGETED_THINKING_MODELS denylist
+  #   [4] Prefix matching covers versioned variants automatically
   #
   # ========================================
   Background: User Story
@@ -160,26 +161,25 @@ Feature: Add Claude Opus 4.6 Support with Adaptive Thinking
     And the anthropic-beta header should NOT include "context-1m-2025-08-07"
 
   # ===========================================
-  # EXPLICIT MODEL CONSTANT SCENARIOS
+  # DEFAULT-ADAPTIVE SCENARIOS (future models)
   # ===========================================
   @model-detection
-  @explicit-constants
-  Scenario: Unknown model uses default behavior with explicit constant matching
-    Given I have configured the Claude provider with model "claude-opus-4-7"
+  @default-adaptive
+  Scenario: Unknown future model defaults to adaptive thinking
+    Given I have configured the Claude provider with model "claude-opus-4-8"
     When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "enabled"
-    And the request should contain a budget_tokens field
-    And the anthropic-beta header should include "interleaved-thinking-2025-05-14"
-    And the anthropic-beta header should NOT include "context-1m-2025-08-07"
+    Then the request should contain thinking configuration with type "adaptive"
+    And the request should NOT contain a budget_tokens field
+    And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
 
   @model-detection
-  @explicit-constants
-  Scenario: Partial model name does not match adaptive thinking models
+  @default-adaptive
+  Scenario: Model variant inherits adaptive behavior from base model
     Given I have configured the Claude provider with model "claude-opus-4-6-preview"
     When I make an API request with thinking enabled
-    Then the request should contain thinking configuration with type "enabled"
-    And the request should contain a budget_tokens field
-    And the anthropic-beta header should NOT include "context-1m-2025-08-07"
+    Then the request should contain thinking configuration with type "adaptive"
+    And the request should NOT contain a budget_tokens field
+    And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
 
   # ===========================================
   # THINKING LEVEL SCENARIOS (low/med/high → adaptive, off → disabled)

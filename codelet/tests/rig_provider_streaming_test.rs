@@ -149,9 +149,11 @@ fn test_authenticate_using_oauth_with_custom_headers() {
 
     // Verify OAuth-specific headers would be added
     // (In actual implementation, rig handles this via custom headers)
+    // Note: claude-sonnet-4-20250514 is treated as adaptive (default-adaptive for 4.x+),
+    // so interleaved-thinking header is NOT included.
     assert_eq!(
         provider.get_anthropic_beta_header_for_model(),
-        "prompt-caching-2024-07-31,oauth-2025-04-20,interleaved-thinking-2025-05-14,tool-examples-2025-10-29"
+        "prompt-caching-2024-07-31,oauth-2025-04-20,tool-examples-2025-10-29"
     );
 }
 
@@ -163,10 +165,11 @@ fn test_authenticate_using_oauth_with_custom_headers() {
 #[test]
 fn test_support_extended_thinking_with_reasoning_chunks() {
     // @step Given I have an agent using the rig Anthropic provider with extended thinking enabled
-    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Provider should be created");
+    // Use a budgeted model (claude-sonnet-4-5) to test interleaved-thinking header
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-5").expect("Provider should be created");
 
     // Extended thinking is enabled via beta header
-    // (interleaved-thinking-2025-05-14 in anthropic-beta header)
+    // (interleaved-thinking-2025-05-14 in anthropic-beta header for budgeted models)
 
     // @step When Claude generates a response with reasoning
     // This would be triggered by Claude's internal thinking process
@@ -181,7 +184,7 @@ fn test_support_extended_thinking_with_reasoning_chunks() {
         "Provider must support streaming to emit reasoning chunks"
     );
 
-    // Verify beta header includes extended thinking
+    // Verify beta header includes extended thinking (for budgeted models)
     let beta_header = provider.get_anthropic_beta_header_for_model();
     assert!(
         beta_header.contains("interleaved-thinking-2025-05-14"),

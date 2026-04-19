@@ -12,27 +12,18 @@
 //! [`ProviderManager`]: crate::ProviderManager
 //! [`LlmProvider`]: crate::LlmProvider
 
-use crate::copilot::auth::{write_copilot_auth, CopilotAuthJson};
+use crate::copilot::auth::CopilotAuthJson;
 use crate::copilot::base_url::{base_url_for, CopilotBaseUrl};
-use crate::copilot::endpoint::CopilotEndpoint;
-use crate::copilot::models::fetch_models;
 use crate::copilot::oauth_types::CopilotDeploymentType;
 use crate::copilot::refreshing_client::CopilotHttpClient;
 use crate::copilot::response::rig_response_to_completion;
-use crate::copilot::system_prompt_facade::system_prompt_facade_for_endpoint;
-use crate::copilot::token_exchange::exchange_github_token_for_copilot_token;
-use crate::copilot::token_refresh::{
-    apply_exchange_response, needs_copilot_token_refresh, unix_timestamp_now,
-};
 use crate::error::ProviderError;
-use crate::models::ModelInfo;
 use crate::{
     convert_tools_to_rig, extract_prompt_data, extract_text_from_content, CompletionResponse,
     LlmProvider,
 };
 use async_trait::async_trait;
 use codelet_common::Message;
-use codelet_tools::facade::BoxedSystemPromptFacade;
 use codelet_tools::ToolDefinition as OurToolDefinition;
 use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
@@ -70,33 +61,6 @@ impl std::fmt::Debug for CopilotProvider {
 }
 
 impl CopilotProvider {
-    /// Re-exported from [`super::base_url::base_url_for`].
-    #[must_use]
-    pub fn base_url_for(deployment: &CopilotDeploymentType) -> CopilotBaseUrl {
-        base_url_for(deployment)
-    }
-
-    /// Re-exported from [`super::system_prompt_facade::system_prompt_facade_for_endpoint`].
-    #[must_use]
-    pub fn system_prompt_facade_for_endpoint(
-        endpoint: CopilotEndpoint,
-    ) -> BoxedSystemPromptFacade {
-        system_prompt_facade_for_endpoint(endpoint)
-    }
-
-    /// Fetch the model catalog from the Copilot `/models` endpoint (PROV-056).
-    ///
-    /// # Errors
-    ///
-    /// Returns [`ProviderError::Api`] for transport, status, or JSON parse failures.
-    pub async fn list_models(
-        deployment: &CopilotDeploymentType,
-        token: &str,
-    ) -> Result<Vec<ModelInfo>, ProviderError> {
-        let base_url = Self::base_url_for(deployment);
-        fetch_models(base_url.as_str(), token).await
-    }
-
     /// Construct a new `CopilotProvider` from a raw GitHub OAuth token.
     ///
     /// Builds a minimal `CopilotAuthJson` and delegates to [`Self::from_auth`].
@@ -149,7 +113,7 @@ impl CopilotProvider {
             Some(api) if !api.is_empty() => {
                 CopilotBaseUrl::from_string(api.to_string())
             }
-            _ => Self::base_url_for(&deployment),
+            _ => base_url_for(&deployment),
         };
 
         // Prefer the cached short-lived Copilot token if present.
@@ -225,42 +189,14 @@ impl CopilotProvider {
     /// PROV-057: Ensure the cached Copilot token is still valid, refreshing
     /// via the token exchange if needed.
     ///
+    /// Delegates to [`token_refresh::ensure_fresh_copilot_token`].
     /// Returns `true` if a refresh happened.
     ///
     /// # Errors
     ///
     /// Returns [`ProviderError::Api`] if the exchange fails.
     pub async fn ensure_fresh_copilot_token(&self) -> Result<bool, ProviderError> {
-        let now = unix_timestamp_now();
-        let snapshot = self.auth.read().await.clone();
-        if !needs_copilot_token_refresh(&snapshot, now) {
-            return Ok(false);
-        }
-
-            // Acquire write lock and re-check to avoid double-refresh under race.
-        let mut state = self.auth.write().await;
-        if !needs_copilot_token_refresh(&state, now) {
-            return Ok(false);
-        }
-
-        let enterprise_host = state.enterprise_url.clone();
-        let gh_token = state.github_oauth_token.clone();
-        let exchange =
-            exchange_github_token_for_copilot_token(&gh_token, enterprise_host.as_deref())
-                .await?;
-
-        apply_exchange_response(&mut state, exchange);
-        let persist = state.clone();
-        drop(state);
-
-        write_copilot_auth(&persist).await.map_err(|e| {
-            ProviderError::api(
-                "github-copilot",
-                format!("Failed to persist refreshed copilot_auth.json: {e}"),
-            )
-        })?;
-
-        Ok(true)
+        crate::copilot::token_refresh::ensure_fresh_copilot_token(&self.auth).await
     }
 }
 

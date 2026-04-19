@@ -16,12 +16,14 @@ import {
  * Attach to a session and register a handler.
  *
  * @param sessionId - Session to attach to
- * @param onChunk - Callback for stream chunks (UI events only, not FspecCommandRequest)
+ * @param onChunk - Callback for stream chunks (UI events only, not FspecCommandRequest).
+ *   Receives the routed sessionId (CMPCT-033) alongside the chunk so background
+ *   sessions can be attributed correctly.
  * @returns Cleanup function to unregister
  */
 export function attachToSession(
   sessionId: string,
-  onChunk: (chunk: StreamChunk) => void
+  onChunk: (routedSessionId: string, chunk: StreamChunk) => void
 ): () => void {
   const manager = GlobalSessionStreamManager.getInstance();
   return manager.attachWithHandler(sessionId, onChunk);
@@ -31,7 +33,8 @@ export function attachToSession(
  * Hook to subscribe to session stream events.
  *
  * @param sessionId - The session to subscribe to (null/undefined = no subscription)
- * @param onChunk - Callback for stream chunks (UI events only, not FspecCommandRequest)
+ * @param onChunk - Callback for stream chunks (UI events only, not FspecCommandRequest).
+ *   Receives the routed sessionId (CMPCT-033) alongside the chunk.
  */
 export function useSessionStreamManager(
   sessionId: string | null | undefined,
@@ -46,9 +49,12 @@ export function useSessionStreamManager(
     }
 
     const manager = GlobalSessionStreamManager.getInstance();
-    const handler: SessionChunkHandler = (chunk: StreamChunk) => {
+    const handler: SessionChunkHandler = (
+      routedSessionId: string,
+      chunk: StreamChunk
+    ) => {
       if (onChunkRef.current) {
-        onChunkRef.current(chunk);
+        onChunkRef.current(routedSessionId, chunk);
       }
     };
 

@@ -52,7 +52,7 @@ pub struct DebugCaptureManager {
 
 impl DebugCaptureManager {
     /// Create a new manager
-    pub(super) fn new() -> Result<Self, DebugCaptureError> {
+    pub fn new() -> Result<Self, DebugCaptureError> {
         // Derive debug directory from global data directory
         let data_dir = crate::get_data_dir()
             .map_err(|_| DebugCaptureError::NoHomeDirectory)?;
@@ -78,10 +78,18 @@ impl DebugCaptureManager {
     /// Set a custom debug directory
     ///
     /// This should be called before starting capture if you want to use
-    /// a custom directory
+    /// a custom directory. Appends `/debug/` to the base_dir.
     pub fn set_debug_directory(&mut self, base_dir: PathBuf) {
         self.data_dir = base_dir.clone();
         self.debug_dir = base_dir.join("debug");
+    }
+
+    /// Set the debug directory directly without appending "debug/"
+    ///
+    /// BUG-134: Used for per-session debug capture where the session id
+    /// is already included in the path (e.g., `~/.fspec/debug/{session_id}/`).
+    pub fn set_debug_directory_raw(&mut self, dir: PathBuf) {
+        self.debug_dir = dir;
     }
 
     /// Check if debug capture is currently enabled

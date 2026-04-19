@@ -108,7 +108,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       const ctx = createChunkContext();
       const unregister = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversation, ctx);
         }
       );
@@ -166,7 +166,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       const ctx = createChunkContext();
       const unregister = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversation, ctx);
         }
       );
@@ -236,7 +236,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       const ctx = createChunkContext();
       const unregister = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversation, ctx);
         }
       );
@@ -306,7 +306,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
 
       const unregisterA = manager.registerHandler(
         sessionA.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversationA, ctx);
         }
       );
@@ -315,7 +315,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       unregisterA();
       const unregisterB = manager.registerHandler(
         sessionB.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversationB, ctx);
         }
       );
@@ -371,7 +371,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       let handlerCallCount = 0;
       const unregister = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           handlerCallCount++;
           processStreamingChunk(chunk, conversation, ctx);
         }
@@ -421,7 +421,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       // First handler (simulates persistent handler)
       const unregister1 = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversation1, ctx);
         }
       );
@@ -429,7 +429,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       // Second handler (simulates handleSubmit's handler)
       const unregister2 = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversation2, ctx);
         }
       );
@@ -475,7 +475,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       const ctx = createChunkContext();
       const unregister = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           processStreamingChunk(chunk, conversation, ctx);
         }
       );
@@ -557,7 +557,7 @@ describe('Feature: TUI persistent chunk handler for bridge input display', () =>
       const receivedChunks: StreamChunk[] = [];
       const unregister = manager.registerHandler(
         session.id,
-        (chunk: StreamChunk) => {
+        (_sessionId: string, chunk: StreamChunk) => {
           receivedChunks.push(chunk);
         }
       );

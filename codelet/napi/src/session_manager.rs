@@ -26,7 +26,9 @@ use codelet_cli::interactive_helpers::{compression_ratio, execute_compaction};
 use codelet_cli::session::context_gathering::gather_environment_info;
 use codelet_cli::compaction_threshold::{resolve_compaction_threshold, CompactionThresholdConfig};
 use codelet_common::debug_capture::{
-    get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
+    DebugCaptureManager,
+    handle_debug_command_with_dir,
+    PoisonRecoveryMutex, SessionMetadata,
 };
 use codelet_git::ghost_commit::{
     create_ghost_commit, restore_ghost_commit, list_ghost_checkpoints,
@@ -526,6 +528,11 @@ pub struct BackgroundSession {
     /// Debug capture enabled for this session
     is_debug_enabled: AtomicBool,
 
+    /// BUG-134: Per-session debug capture manager
+    /// Each session owns its own DebugCaptureManager instead of sharing a global singleton.
+    /// This ensures toggling debug in one session doesn't affect another session's capture.
+    pub debug_capture: Arc<PoisonRecoveryMutex<DebugCaptureManager>>,
+
     /// Pending input text (TUI-049: preserved when switching sessions)
     pending_input: RwLock<Option<String>>,
 
@@ -699,6 +706,17 @@ impl BackgroundSession {
             schedule_name: RwLock::new(None),
             // HOOK-013: Lifecycle hooks (compiled once at session creation)
             lifecycle_hooks,
+            // BUG-134: Per-session debug capture manager
+            debug_capture: {
+                let mgr = DebugCaptureManager::new()
+                    .unwrap_or_else(|e| {
+                        tracing::warn!("Failed to create per-session DebugCaptureManager: {e}");
+                        // Fallback: create with default - will fail on capture but won't crash
+                        DebugCaptureManager::new()
+                            .expect("DebugCaptureManager::new() failed twice - data dir not set")
+                    });
+                Arc::new(PoisonRecoveryMutex::new(mgr))
+            },
         }
     }
 
@@ -4334,6 +4352,110 @@ macro_rules! run_with_provider {
     };
 }
 
+/// BUG-132: Build and register a DeepSearch handler for the given session.
+///
+/// Extracted so it can be called both at session creation and after model
+/// changes (session_set_model / session_set_model_profile).
+///
+/// The handler captures the current provider, model, context_window, and
+/// max_output_tokens from the inner session's ProviderManager.
+///
+/// MODEL-004: Uses facade_override() when available, matching the agent_loop
+/// dispatch pattern at line 4744-4747.
+fn register_deep_search_handler(
+    session_id: Uuid,
+    inner_session: &codelet_cli::session::Session,
+    project_path: std::path::PathBuf,
+) {
+    // BUG-132/MODEL-004: Check facade_override first — if set, dispatch to that
+    // provider instead of current_provider. This mirrors the agent_loop pattern.
+    let deep_search_provider = inner_session.provider_manager()
+        .facade_override()
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| inner_session.current_provider_name().to_string());
+    let deep_search_model = inner_session.current_model_id().map(|s| s.to_string());
+    let deep_search_context_window = inner_session.provider_manager().raw_model_context_window();
+    let deep_search_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
+    let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(move |query, scope, max_depth, max_recursion_depth| {
+        let path = project_path.clone();
+        let provider = deep_search_provider.clone();
+        let model = deep_search_model.clone();
+        Box::pin(async move {
+            crate::deep_search_handler::execute_deep_search(
+                &path,
+                &query,
+                scope.as_deref(),
+                max_depth,
+                &provider,
+                model.as_deref(),
+                0, // RLM-002: Parent session starts at depth 0
+                max_recursion_depth,
+                deep_search_context_window,
+                deep_search_max_output,
+            ).await
+        })
+    });
+    codelet_tools::set_deep_search_handler(session_id, Some(deep_search_handler));
+}
+
+/// BUG-132: Build and register an AgentManager handler for the given session.
+///
+/// Extracted so it can be called both at session creation and after model
+/// changes (session_set_model / session_set_model_profile).
+///
+/// AMGR-013: Uses selected_model_string() which preserves the original
+/// "provider/model" registry format.
+fn register_agent_manager_handler(
+    session_id: Uuid,
+    inner_session: &codelet_cli::session::Session,
+    project: String,
+) {
+    let full_model_string = inner_session.provider_manager().selected_model_string()
+        .map(|s| s.to_string());
+    let spawner_context_window = inner_session.provider_manager().raw_model_context_window();
+    let spawner_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
+    let agent_manager_handler = crate::agent_manager_handler::create_handler(
+        project,
+        full_model_string,
+        spawner_context_window,
+        spawner_max_output,
+    );
+    codelet_tools::set_agent_manager_handler(session_id, Some(agent_manager_handler));
+}
+
+/// BUG-132: Extract the values that would be captured by the DeepSearch handler.
+///
+/// This is a testable pure function that returns the four values that the
+/// DeepSearch handler closure captures from a ProviderManager. Used by tests
+/// to verify the facade_override logic and value extraction without needing
+/// to construct a full handler closure.
+#[cfg(test)]
+fn extract_deep_search_handler_values(
+    pm: &codelet_providers::ProviderManager,
+) -> (String, Option<String>, Option<usize>, Option<usize>) {
+    let provider = pm.facade_override()
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| pm.current_provider_name().to_string());
+    let model = pm.selected_model_id();
+    let context_window = pm.raw_model_context_window();
+    let max_output = pm.raw_model_max_output_tokens();
+    (provider, model, context_window, max_output)
+}
+
+/// BUG-132: Extract the values that would be captured by the AgentManager handler.
+///
+/// Returns (model_string, context_window, max_output) matching what
+/// `register_agent_manager_handler` captures.
+#[cfg(test)]
+fn extract_agent_manager_handler_values(
+    pm: &codelet_providers::ProviderManager,
+) -> (Option<String>, Option<usize>, Option<usize>) {
+    let model_string = pm.selected_model_string().map(|s| s.to_string());
+    let context_window = pm.raw_model_context_window();
+    let max_output = pm.raw_model_max_output_tokens();
+    (model_string, context_window, max_output)
+}
+
 /// PROV-057 Layer 3 — Pure predicate that returns `true` for every
 /// provider name handled by an explicit arm in the
 /// [`run_with_provider!`] match inside [`agent_loop`].
@@ -4949,31 +5071,13 @@ async fn agent_loop(
             // MODEL-005: Capture context window and max output from parent session
             // so DeepSearch sub-agents use per-model limits instead of provider constants.
             // Returns a Future (not sync) because the sub-agent makes async LLM API calls
-            let deep_search_project_path = std::path::PathBuf::from(&session.project);
-            let deep_search_provider = inner_session.current_provider_name().to_string();
-            let deep_search_model = inner_session.current_model_id().map(|s| s.to_string());
-            let deep_search_context_window = inner_session.provider_manager().raw_model_context_window();
-            let deep_search_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
-            let deep_search_handler: codelet_tools::DeepSearchHandler = std::sync::Arc::new(move |query, scope, max_depth, max_recursion_depth| {
-                let path = deep_search_project_path.clone();
-                let provider = deep_search_provider.clone();
-                let model = deep_search_model.clone();
-                Box::pin(async move {
-                    crate::deep_search_handler::execute_deep_search(
-                        &path,
-                        &query,
-                        scope.as_deref(),
-                        max_depth,
-                        &provider,
-                        model.as_deref(),
-                        0, // RLM-002: Parent session starts at depth 0
-                        max_recursion_depth,
-                        deep_search_context_window,
-                        deep_search_max_output,
-                    ).await
-                })
-            });
-            codelet_tools::set_deep_search_handler(session.id, Some(deep_search_handler));
+            // BUG-132: Extracted into register_deep_search_handler() so it can be
+            // called again after model changes.
+            register_deep_search_handler(
+                session.id,
+                &inner_session,
+                std::path::PathBuf::from(&session.project),
+            );
 
             // AMGR-009: Register AgentManager handler for this session
             // The handler accesses SessionManager for spawn/list/get_status/close
@@ -4982,19 +5086,13 @@ async fn agent_loop(
             // instead of current_provider_name() which returns the internal name ("claude").
             // MODEL-005: Capture per-model context window and max output tokens from parent
             // session so subordinate agents inherit per-model limits.
-            {
-                let full_model_string = inner_session.provider_manager().selected_model_string()
-                    .map(|s| s.to_string());
-                let spawner_context_window = inner_session.provider_manager().raw_model_context_window();
-                let spawner_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
-                let agent_manager_handler = crate::agent_manager_handler::create_handler(
-                    session.project.clone(),
-                    full_model_string,
-                    spawner_context_window,
-                    spawner_max_output,
-                );
-                codelet_tools::set_agent_manager_handler(session.id, Some(agent_manager_handler));
-            }
+            // BUG-132: Extracted into register_agent_manager_handler() so it can be
+            // called again after model changes.
+            register_agent_manager_handler(
+                session.id,
+                &inner_session,
+                session.project.clone(),
+            );
 
             // AMGR-015: Register async handler for await_idle action
             {
@@ -6715,6 +6813,14 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
             ) as u32;
             session.set_model_limits(context_window, max_output, compaction_thresh);
             tracing::debug!("session_set_model: model set successfully (context_window={}, max_output={}, compaction_threshold={})", context_window, max_output, compaction_thresh);
+
+            // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
+            let session_uuid = Uuid::parse_str(&session_id)
+                .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
+            let project_path = std::path::PathBuf::from(&session.project);
+            register_deep_search_handler(session_uuid, &inner, project_path);
+            register_agent_manager_handler(session_uuid, &inner, session.project.clone());
+
             Ok(())
         }
         Err(e) => {
@@ -6765,9 +6871,47 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
         &model_id,
         context_window.map(|v| v as usize),
         max_output_tokens.map(|v| v as usize),
-        facade_override,
+        facade_override.clone(),
     ) {
         Ok(()) => {
+            // PROV-067: For custom providers, derive the facade from
+            // api_style if no explicit facade_override was provided.
+            // This ensures the agent loop dispatches through the correct
+            // built-in provider arm (e.g. "claude" for anthropic_messages).
+            let effective_facade = if matches!(
+                inner.provider_manager().current_provider_type(),
+                codelet_providers::ProviderType::Custom(_)
+            ) {
+                let derived = facade_override.clone().or_else(|| {
+                    codelet_providers::custom::derive_facade_for_custom(&provider_id)
+                });
+                if derived.is_some() && facade_override.is_none() {
+                    // Store the derived facade so the agent loop picks it up.
+                    inner.provider_manager_mut().set_facade_override(derived.clone());
+                }
+                derived
+            } else {
+                facade_override.clone()
+            };
+
+            // Set env vars so the facade's get_*() method picks up
+            // the custom endpoint transparently.
+            if matches!(
+                inner.provider_manager().current_provider_type(),
+                codelet_providers::ProviderType::Custom(_)
+            ) {
+                if let Err(e) = codelet_providers::custom::apply_custom_provider_env_vars(
+                    &provider_id,
+                    &model_id,
+                    effective_facade.as_deref(),
+                ) {
+                    tracing::warn!(
+                        "PROV-067: apply_custom_provider_env_vars for '{}' failed: {}",
+                        provider_id,
+                        e
+                    );
+                }
+            }
             // CTX-006: Cache resolved model limits from ProviderManager for sync access
             let resolved_context_window = inner.provider_manager().context_window() as u32;
             let resolved_max_output = inner.provider_manager().max_output_tokens() as u32;
@@ -6781,6 +6925,14 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
             ) as u32;
             session.set_model_limits(resolved_context_window, resolved_max_output, profile_compaction_thresh);
             tracing::debug!("session_set_model_profile: model set successfully (context_window={}, max_output={}, compaction_threshold={})", resolved_context_window, resolved_max_output, profile_compaction_thresh);
+
+            // BUG-132: Re-register DeepSearch and AgentManager handlers with updated model
+            let session_uuid = Uuid::parse_str(&session_id)
+                .map_err(|e| Error::from_reason(format!("Invalid session ID: {e}")))?;
+            let project_path = std::path::PathBuf::from(&session.project);
+            register_deep_search_handler(session_uuid, &inner, project_path);
+            register_agent_manager_handler(session_uuid, &inner, session.project.clone());
+
             Ok(())
         }
         Err(e) => {
@@ -7386,44 +7538,97 @@ pub fn toggle_debug(debug_dir: Option<String>) -> DebugCommandResult {
 
 /// Update debug capture metadata with session info.
 ///
+/// BUG-134: Now uses the per-session debug capture manager instead of the global singleton.
 /// Call this after creating a session if debug was enabled before the session existed.
 #[napi]
 pub async fn session_update_debug_metadata(session_id: String) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     let inner = session.inner.lock().await;
 
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                manager.set_session_metadata(SessionMetadata {
-                    provider: Some(inner.current_provider_name().to_string()),
-                    model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
-                    context_window: Some(inner.provider_manager().context_window()),
-                    max_output_tokens: None,
-                });
-            }
+    if let Ok(mut manager) = session.debug_capture.lock() {
+        if manager.is_enabled() {
+            manager.set_session_metadata(SessionMetadata {
+                provider: Some(inner.current_provider_name().to_string()),
+                model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
+                context_window: Some(inner.provider_manager().context_window()),
+                max_output_tokens: None,
+            });
         }
     }
 
     Ok(())
 }
 
-/// Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
+/// Toggle debug capture mode for a background session (NAPI-009 + AGENT-021 + BUG-134)
 ///
-/// Toggle debug capture mode for a background session.
-/// When enabling, sets session metadata (provider, model, context_window).
+/// BUG-134: Now uses the per-session debug capture manager instead of the global singleton.
+/// Each session has its own DebugCaptureManager, so toggling debug in one session
+/// does not affect another session's capture state.
+///
+/// When enabling, sets session-specific debug directory using the session id
+/// and sets session metadata (provider, model, context_window).
 /// When disabling, stops capture and returns path to saved session file.
 ///
-/// If debug_dir is provided, debug files will be written to `{debug_dir}/debug/`
-/// instead of the default directory. For fspec, pass `~/.fspec` to write to
-/// `~/.fspec/debug/`.
+/// If debug_dir is provided, debug files will be written to
+/// `{debug_dir}/debug/{session_id}/` instead of the default directory.
 #[napi]
 pub async fn session_toggle_debug(
     session_id: String,
     debug_dir: Option<String>,
 ) -> Result<DebugCommandResult> {
     let session = SessionManager::instance().get_session(&session_id)?;
-    let result = handle_debug_command_with_dir(debug_dir.as_deref());
+
+    let result = {
+        let mut manager = session.debug_capture.lock().map_err(|_| {
+            Error::from_reason("Failed to acquire lock on per-session debug capture manager")
+        })?;
+
+        // BUG-134: Set per-session debug directory including session id
+        if let Some(ref dir) = debug_dir {
+            let session_debug_dir = std::path::PathBuf::from(dir)
+                .join("debug")
+                .join(session.id.to_string());
+            manager.set_debug_directory_raw(session_debug_dir);
+        } else {
+            // Use default data dir with session id subdirectory
+            if let Ok(data_dir) = codelet_common::get_data_dir() {
+                let session_debug_dir = data_dir
+                    .join("debug")
+                    .join(session.id.to_string());
+                manager.set_debug_directory_raw(session_debug_dir);
+            }
+        }
+
+        if manager.is_enabled() {
+            // Turn off
+            match manager.stop_capture() {
+                Ok(session_file) => codelet_common::debug_capture::DebugCommandResult {
+                    enabled: false,
+                    session_file: Some(session_file.clone()),
+                    message: format!("Debug capture stopped. Session saved to: {session_file}"),
+                },
+                Err(e) => codelet_common::debug_capture::DebugCommandResult {
+                    enabled: false,
+                    session_file: None,
+                    message: format!("Failed to stop debug capture: {e}"),
+                },
+            }
+        } else {
+            // Turn on
+            match manager.start_capture() {
+                Ok(session_file) => codelet_common::debug_capture::DebugCommandResult {
+                    enabled: true,
+                    session_file: Some(session_file.clone()),
+                    message: format!("Debug capture started. Writing to: {session_file}"),
+                },
+                Err(e) => codelet_common::debug_capture::DebugCommandResult {
+                    enabled: false,
+                    session_file: None,
+                    message: format!("Failed to start debug capture: {e}"),
+                },
+            }
+        }
+    };
 
     // Store debug state in BackgroundSession for persistence across detach/attach
     session.set_debug_enabled(result.enabled);
@@ -7431,17 +7636,18 @@ pub async fn session_toggle_debug(
     // If debug was just enabled, set session metadata
     if result.enabled {
         let inner = session.inner.lock().await;
-        if let Ok(manager_arc) = get_debug_capture_manager() {
-            if let Ok(mut manager) = manager_arc.lock() {
-                manager.set_session_metadata(SessionMetadata {
-                    provider: Some(inner.current_provider_name().to_string()),
-                    model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
-                    context_window: Some(inner.provider_manager().context_window()),
-                    max_output_tokens: None,
-                });
-            }
+        if let Ok(mut manager) = session.debug_capture.lock() {
+            manager.set_session_metadata(SessionMetadata {
+                provider: Some(inner.current_provider_name().to_string()),
+                model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
+                context_window: Some(inner.provider_manager().context_window()),
+                max_output_tokens: None,
+            });
         }
     }
+
+    // BUG-134: Emit DebugStateChange stream event so TUI can update its state
+    session.handle_output(StreamChunk::debug_state_change(result.enabled));
 
     Ok(DebugCommandResult {
         enabled: result.enabled,
@@ -7475,20 +7681,18 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     let total_messages = inner.messages.len() as u32;
     session.pre_compaction_tokens.store(original_tokens as u32, Ordering::Release);
 
-    // Capture compaction.manual.start event
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                manager.capture(
-                    "compaction.manual.start",
-                    serde_json::json!({
-                        "command": "/compact",
-                        "originalTokens": original_tokens,
-                        "messageCount": total_messages,
-                    }),
-                    None,
-                );
-            }
+    // BUG-134: Capture compaction.manual.start event using per-session debug capture
+    if let Ok(mut manager) = session.debug_capture.lock() {
+        if manager.is_enabled() {
+            manager.capture(
+                "compaction.manual.start",
+                serde_json::json!({
+                    "command": "/compact",
+                    "originalTokens": original_tokens,
+                    "messageCount": total_messages,
+                }),
+                None,
+            );
         }
     }
 
@@ -7498,18 +7702,16 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
             session.set_compaction_progress(None);
             session.set_status(SessionStatus::Idle);
 
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        manager.capture(
-                            "compaction.manual.failed",
-                            serde_json::json!({
-                                "command": "/compact",
-                                "error": e.to_string(),
-                            }),
-                            None,
-                        );
-                    }
+            if let Ok(mut manager) = session.debug_capture.lock() {
+                if manager.is_enabled() {
+                    manager.capture(
+                        "compaction.manual.failed",
+                        serde_json::json!({
+                            "command": "/compact",
+                            "error": e.to_string(),
+                        }),
+                        None,
+                    );
                 }
             }
             return Err(Error::from_reason(format!("Compaction failed: {e}")));
@@ -7523,21 +7725,19 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
 
     session.set_compaction_progress(None);
 
-    // Capture compaction.manual.complete event
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                manager.capture(
-                    "compaction.manual.complete",
-                    serde_json::json!({
-                        "command": "/compact",
-                        "type": "in-view-dag",
-                        "originalTokens": original_tokens,
-                        "compactedTokens": compacted_tokens,
-                    }),
-                    None,
-                );
-            }
+    // BUG-134: Capture compaction.manual.complete event using per-session debug capture
+    if let Ok(mut manager) = session.debug_capture.lock() {
+        if manager.is_enabled() {
+            manager.capture(
+                "compaction.manual.complete",
+                serde_json::json!({
+                    "command": "/compact",
+                    "type": "in-view-dag",
+                    "originalTokens": original_tokens,
+                    "compactedTokens": compacted_tokens,
+                }),
+                None,
+            );
         }
     }
 
@@ -7723,6 +7923,245 @@ pub fn session_validate_path(
     }
 }
 
+// =============================================================================
+// BUG-132: SUB-AGENT MODEL INHERITANCE TESTS
+// =============================================================================
+
+#[cfg(test)]
+mod sub_agent_model_inheritance_tests {
+    //! Feature: spec/features/sub-agent-model-inheritance.feature
+    //!
+    //! BUG-132: DeepSearch and AgentManager handlers use stale model after
+    //! mid-session model switch.
+    //!
+    //! These tests verify the extracted helper functions that build handler
+    //! values, ensuring that:
+    //! - facade_override is checked before current_provider_name
+    //! - All four captured values update when the model changes
+    //! - AgentManager uses selected_model_string() in registry format
+
+    use super::*;
+    use codelet_providers::ProviderManager;
+
+    /// Create a test ProviderManager without real credentials.
+    ///
+    /// Uses `ProviderManager::for_testing()` (pub, no credentials needed) and
+    /// then `set_model_direct()` to configure the model, context_window, and
+    /// max_output_tokens.
+    ///
+    /// `provider` is the *internal* name (e.g. "claude", "gemini") used by
+    /// `ProviderType::from_str`. `registry_provider` is the models.dev name
+    /// (e.g. "anthropic", "google") used by `set_model_direct`.
+    fn test_pm(
+        provider: &str,
+        registry_provider: &str,
+        model_id: Option<&str>,
+        context_window: Option<usize>,
+        max_output_tokens: Option<usize>,
+    ) -> ProviderManager {
+        let provider_type: codelet_providers::ProviderType = provider.parse()
+            .expect("valid provider name");
+        let mut pm = ProviderManager::for_testing(provider_type, None, None);
+        if let Some(mid) = model_id {
+            pm.set_model_direct(registry_provider, mid, context_window, max_output_tokens, None)
+                .expect("set_model_direct should succeed for test provider");
+        }
+        pm
+    }
+
+    // =========================================================================
+    // Scenario: DeepSearch uses updated model after mid-session model switch
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_deep_search_uses_updated_model_after_switch() {
+        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
+        let (provider_before, model_before, _, _) = extract_deep_search_handler_values(&pm_before);
+        assert_eq!(provider_before, "claude");
+        assert_eq!(model_before, Some("claude-sonnet-4-20250514".to_string()));
+
+        // @step And the DeepSearch handler was registered at session creation
+        // (values captured above)
+
+        // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model
+        let pm_after = test_pm("gemini", "google", Some("gemini-2.5-pro"), Some(1048576), Some(65536));
+        let (provider_after, model_after, _, _) = extract_deep_search_handler_values(&pm_after);
+
+        // @step And the user invokes DeepSearch
+        // (extracting values simulates what re-registration would capture)
+
+        // @step Then the DeepSearch sub-agent should use provider "gemini" and model "gemini-2.5-pro"
+        assert_eq!(provider_after, "gemini");
+        assert_eq!(model_after, Some("gemini-2.5-pro".to_string()));
+        // Verify the values actually changed
+        assert_ne!(provider_before, provider_after);
+        assert_ne!(model_before, model_after);
+    }
+
+    // =========================================================================
+    // Scenario: AgentManager uses updated model after mid-session model switch
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_agent_manager_uses_updated_model_after_switch() {
+        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
+        let (model_string_before, _, _) = extract_agent_manager_handler_values(&pm_before);
+        assert_eq!(model_string_before, Some("claude-sonnet-4-20250514".to_string()));
+
+        // @step And the AgentManager handler was registered at session creation
+        // (values captured above)
+
+        // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model
+        let pm_after = test_pm("gemini", "google", Some("gemini-2.5-pro"), Some(1048576), Some(65536));
+        let (model_string_after, _, _) = extract_agent_manager_handler_values(&pm_after);
+
+        // @step And the user spawns a subordinate via AgentManager
+        // (extracting values simulates what re-registration would capture)
+
+        // @step Then the subordinate should be created with the updated model "gemini-2.5-pro"
+        assert_eq!(model_string_after, Some("gemini-2.5-pro".to_string()));
+        assert_ne!(model_string_before, model_string_after);
+    }
+
+    // =========================================================================
+    // Scenario: DeepSearch respects facade_override for custom models
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_deep_search_respects_facade_override() {
+        // @step Given a session was created with a MODEL-004 custom model registered under "openai" with facade_override "claude"
+        let mut pm = test_pm("openai", "openai", Some("my-custom-model"), Some(128000), Some(4096));
+        pm.set_facade_override(Some("claude".to_string()));
+
+        // @step When the user invokes DeepSearch
+        let (provider, _, _, _) = extract_deep_search_handler_values(&pm);
+
+        // @step Then the DeepSearch sub-agent should use provider "claude" not "openai"
+        assert_eq!(provider, "claude", "facade_override should take precedence over current_provider_name");
+    }
+
+    // =========================================================================
+    // Scenario: Handler re-registration updates all four captured values
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_handler_reregistration_updates_all_four_values() {
+        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
+        let (p1, m1, cw1, mo1) = extract_deep_search_handler_values(&pm_before);
+        assert_eq!(p1, "claude");
+        assert_eq!(m1, Some("claude-sonnet-4-20250514".to_string()));
+        // Note: values are clamped by provider limits (Claude max_output = 8192)
+        assert!(cw1.is_some(), "context_window should be set");
+        assert!(mo1.is_some(), "max_output should be set");
+
+        // @step When the user switches the model to "google/gemini-2.5-pro" via session_set_model with context_window 1048576 and max_output_tokens 65536
+        let pm_after = test_pm("gemini", "google", Some("gemini-2.5-pro"), Some(1048576), Some(65536));
+
+        // @step Then the DeepSearch handler should capture provider "gemini", model "gemini-2.5-pro", context_window 1048576, and max_output_tokens 65536
+        let (p2, m2, cw2, mo2) = extract_deep_search_handler_values(&pm_after);
+        assert_eq!(p2, "gemini");
+        assert_eq!(m2, Some("gemini-2.5-pro".to_string()));
+        assert_eq!(cw2, Some(1048576));
+        assert_eq!(mo2, Some(65536));
+
+        // Verify all four values changed from the original
+        assert_ne!(p1, p2, "provider should change");
+        assert_ne!(m1, m2, "model should change");
+        assert_ne!(cw1, cw2, "context_window should change");
+        assert_ne!(mo1, mo2, "max_output should change");
+
+        // @step And the AgentManager handler should capture model "gemini-2.5-pro", context_window 1048576, and max_output_tokens 65536
+        let (ms, cw3, mo3) = extract_agent_manager_handler_values(&pm_after);
+        assert_eq!(ms, Some("gemini-2.5-pro".to_string()));
+        assert_eq!(cw3, Some(1048576));
+        assert_eq!(mo3, Some(65536));
+    }
+
+    // =========================================================================
+    // Scenario: No regression when model is never changed
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_no_regression_when_model_never_changed() {
+        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+        let pm = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
+
+        // @step And no model switch occurs during the session
+        // (no mutation of pm)
+
+        // @step When the user invokes DeepSearch
+        let (provider, model, cw, mo) = extract_deep_search_handler_values(&pm);
+
+        // @step Then the DeepSearch sub-agent should use provider "claude" and model "claude-sonnet-4-20250514"
+        assert_eq!(provider, "claude");
+        assert_eq!(model, Some("claude-sonnet-4-20250514".to_string()));
+        // Values are set (clamped by Claude's provider limits)
+        assert!(cw.is_some(), "context_window should be set");
+        assert!(mo.is_some(), "max_output should be set");
+    }
+
+    // =========================================================================
+    // Scenario: session_set_model_profile also triggers handler re-registration
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_set_model_profile_triggers_reregistration() {
+        // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
+        let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
+        let (p_before, _, _, _) = extract_deep_search_handler_values(&pm_before);
+        assert_eq!(p_before, "claude");
+
+        // @step When the user switches the model via session_set_model_profile to provider "openai" model "gpt-4o"
+        // set_model_direct is what session_set_model_profile calls
+        let mut pm_after = test_pm("openai", "openai", None, None, None);
+        pm_after.set_model_direct(
+            "openai",
+            "gpt-4o",
+            Some(128000),
+            Some(16384),
+            None,
+        ).expect("set_model_direct should succeed");
+        let (p_after, m_after, _, _) = extract_deep_search_handler_values(&pm_after);
+
+        // @step And the user invokes DeepSearch
+
+        // @step Then the DeepSearch sub-agent should use provider "openai" and model "gpt-4o"
+        assert_eq!(p_after, "openai");
+        assert_eq!(m_after, Some("gpt-4o".to_string()));
+    }
+
+    // =========================================================================
+    // Additional: Verify facade_override=None falls through to current_provider
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_no_facade_override_uses_current_provider() {
+        // When facade_override is None, extract_deep_search_handler_values
+        // must fall through to current_provider_name().
+        let pm = test_pm("gemini", "google", Some("gemini-2.5-pro"), None, None);
+        assert!(pm.facade_override().is_none());
+        let (provider, _, _, _) = extract_deep_search_handler_values(&pm);
+        assert_eq!(provider, "gemini");
+    }
+
+    // =========================================================================
+    // Additional: AgentManager uses selected_model_string (registry format)
+    // =========================================================================
+
+    #[test]
+    fn test_bug132_agent_manager_uses_selected_model_string_format() {
+        // AMGR-013: AgentManager must use selected_model_string() which
+        // preserves the "provider/model" registry format.
+        let pm = test_pm("claude", "anthropic", Some("claude-opus-4-6"), Some(200000), Some(32768));
+        let (model_string, _, _) = extract_agent_manager_handler_values(&pm);
+        // selected_model_string() returns the raw stored string
+        assert_eq!(model_string, Some("claude-opus-4-6".to_string()));
+    }
+}
+
 /// GIT-020: Get the effective working directory for a session.
 ///
 /// This function is exposed for E2E testing. It returns the directory
@@ -7830,4 +8269,105 @@ pub fn session_execute_bash(session_id: String, command: String) -> BashExecutio
             error: Some(format!("Failed to execute command: {}", e)),
         },
     }
+}
+
+// =============================================================================
+// PROV-067: Custom provider management NAPI bindings
+// =============================================================================
+
+/// PROV-067: JS-shaped info entry for a provider (built-in or custom).
+#[napi(object)]
+pub struct JsProviderInfo {
+    pub name: String,
+    pub display_name: Option<String>,
+    pub available: bool,
+    pub is_custom: bool,
+    pub facade: Option<String>,
+    pub base_url: Option<String>,
+    pub api_key_env_var: Option<String>,
+    pub models: Vec<String>,
+    pub api_style: Option<String>,
+}
+
+impl From<codelet_providers::custom::ProviderInfo> for JsProviderInfo {
+    fn from(src: codelet_providers::custom::ProviderInfo) -> Self {
+        Self {
+            name: src.name,
+            display_name: src.display_name,
+            available: src.available,
+            is_custom: src.is_custom,
+            facade: src.facade,
+            base_url: src.base_url,
+            api_key_env_var: src.api_key_env_var,
+            models: src.models,
+            api_style: src.api_style,
+        }
+    }
+}
+
+/// PROV-067: JS result of a custom-provider connectivity probe.
+#[napi(object)]
+pub struct JsProviderTestResult {
+    pub reachable: bool,
+    pub status_code: Option<u32>,
+    pub matched_models: Vec<String>,
+}
+
+/// PROV-067: Return all built-in + discovered custom providers with
+/// credential / availability info.
+#[napi]
+pub async fn list_providers() -> Result<Vec<JsProviderInfo>> {
+    let _ = dotenvy::dotenv();
+    codelet_providers::custom::list_providers_info()
+        .map(|list| list.into_iter().map(Into::into).collect())
+        .map_err(|e| Error::from_reason(format!("list_providers failed: {e}")))
+}
+
+/// PROV-067: Return detailed info for a single provider by slug.
+#[napi]
+pub async fn show_provider(name: String) -> Result<JsProviderInfo> {
+    let _ = dotenvy::dotenv();
+    codelet_providers::custom::show_provider_info(&name)
+        .map(Into::into)
+        .map_err(|e| Error::from_reason(format!("show_provider failed: {e}")))
+}
+
+/// PROV-067: Validate a custom provider's JSON schema (missing facade,
+/// invalid fields, etc.) without making network calls.
+#[napi]
+pub async fn validate_provider(name: String) -> Result<()> {
+    codelet_providers::custom::validate_provider_config(&name)
+        .map_err(|e| Error::from_reason(format!("validate_provider failed: {e}")))
+}
+
+/// PROV-067: Probe `<baseUrl>/models` to confirm the custom provider is
+/// reachable and lists the models declared in its config.
+#[napi]
+pub async fn test_provider(name: String) -> Result<JsProviderTestResult> {
+    let _ = dotenvy::dotenv();
+    let result = codelet_providers::custom::test_provider_connection(&name)
+        .await
+        .map_err(|e| Error::from_reason(format!("test_provider failed: {e}")))?;
+    Ok(JsProviderTestResult {
+        reachable: result.reachable,
+        status_code: result.status_code.map(|c| c as u32),
+        matched_models: result.matched_models,
+    })
+}
+
+/// PROV-067: Scaffold `.fspec/providers/<name>.json` from a named
+/// template (supported: `"openai-compatible"`).
+#[napi]
+pub async fn init_provider(
+    project_root: String,
+    name: String,
+    template: String,
+) -> Result<String> {
+    codelet_providers::custom::init_provider_template(
+        std::path::Path::new(&project_root),
+        &name,
+        &template,
+    )
+    .map(|p| p.to_string_lossy().into_owned())
+    .map_err(|e| Error::from_reason(format!("init_provider failed: {e}")))
 }

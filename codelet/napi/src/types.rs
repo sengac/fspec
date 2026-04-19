@@ -383,6 +383,13 @@ pub enum StreamChunk {
         /// Current branch name, or null for detached HEAD
         branch: Option<String>,
     },
+
+    /// BUG-134: Debug state change - emitted when session debug capture state toggles
+    /// TypeScript should update sessionStore.setDebugEnabled() when this is received
+    DebugStateChange {
+        /// Whether debug capture is now enabled for this session
+        enabled: bool,
+    },
 }
 
 impl StreamChunk {
@@ -547,7 +554,7 @@ impl StreamChunk {
         }
     }
 
-    /// TUI-091: Footer state update - emitted by per-session background poller
+    /// TUI-091: Footer state update - emitted by background poller
     pub fn footer_state_update(
         cwd: String,
         display_path: String,
@@ -560,6 +567,11 @@ impl StreamChunk {
             is_git_repo,
             branch,
         }
+    }
+
+    /// BUG-134: Debug state change - emitted when session debug capture toggles
+    pub fn debug_state_change(enabled: bool) -> Self {
+        Self::DebugStateChange { enabled }
     }
 
     /// Convert StreamChunk to serde_json::Value for bridge relay (BRIDGE-001)
@@ -726,6 +738,10 @@ impl StreamChunk {
                 "displayPath": display_path,
                 "isGitRepo": is_git_repo,
                 "branch": branch,
+            }),
+            Self::DebugStateChange { enabled } => json!({
+                "type": "debugStateChange",
+                "enabled": enabled,
             }),
         }
     }

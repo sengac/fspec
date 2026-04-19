@@ -15,6 +15,7 @@ pub mod claude_refreshing_client;
 pub mod codex;
 pub mod copilot;
 mod credentials;
+pub mod custom;
 pub mod error;
 pub mod gemini;
 mod manager;
@@ -22,6 +23,7 @@ pub mod model_limits;
 pub mod models;
 pub mod oauth_crypto;
 pub mod oauth_http_utils;
+pub mod oauth;
 pub mod openai;
 pub mod zai;
 

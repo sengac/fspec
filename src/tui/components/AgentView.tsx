@@ -100,8 +100,6 @@ import {
   sessionPauseResume,
   sessionPauseConfirm,
   sessionPauseTriple,
-  // UX-002: Compaction progress polling for automatic compaction
-  sessionGetCompactionProgress,
   // TUI-065: Clear session history
   sessionClearHistory,
   // BLOCK-004: Blocklist NAPI functions
@@ -159,6 +157,7 @@ import {
   usePendingIsolatedSession,
   useIsIsolated,
   useWorktreePath,
+  useIsDebugEnabled,
   useShowCreateSessionDialog,
   useSessionActions,
 } from '../store/sessionStore';
@@ -185,7 +184,7 @@ import {
   detachFromWorkUnit,
   getAttachedWorkUnit,
 } from '../services/sessionService';
-import { applyPendingIsolationState } from '../services/globalSessionStreamManager';
+import { applyPendingIsolationState, applyPendingDebugState } from '../services/globalSessionStreamManager';
 import { initializeModels } from '../services/modelInitializationService';
 import { selectModel } from '../services/modelSelectionService';
 import { configureProfileEnvironment } from '../services/profileEnvironmentService';
@@ -842,7 +841,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [showProviderSelector, setShowProviderSelector] = useState(false);
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
-  const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021 - local state synced with Rust on toggle
   const [isTurnSelectMode, setIsTurnSelectMode] = useState(false); // TUI-042: Turn selection mode toggle (replaces TUI-041 line selection)
   // TUI-045: Modal state for full turn viewing (replaces expandedMessageIndices)
   const [showTurnModal, setShowTurnModal] = useState(false);
@@ -886,16 +884,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const getAttachedSession = useFspecStore(state => state.getAttachedSession);
 
   // PERF-002: Compaction with retry logic hook
+  // CMPCT-034: useCompaction only manages manual compaction operations + retry dialog.
+  // Display state (isCompacting, compactionProgress) comes from rustSnapshot via
+  // useRustSessionState — Rust is the source of truth.
   const compaction = useCompaction();
-
-  // UX-002: Ref for compaction functions to avoid stale closures in stream callbacks
-  // The useCompaction hook returns new function references on each render, but stream
-  // callbacks (handleStreamChunk) capture the initial reference. Using a ref ensures
-  // callbacks always have access to the latest functions.
-  const compactionRef = useRef(compaction);
-  useEffect(() => {
-    compactionRef.current = compaction;
-  }, [compaction]);
 
   // NAPI-006: History navigation state
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
@@ -916,6 +908,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const pendingIsolatedSession = usePendingIsolatedSession();
   const isIsolated = useIsIsolated();
   const worktreePath = useWorktreePath();
+  const isDebugEnabled = useIsDebugEnabled();
   const showCreateSessionDialog = useShowCreateSessionDialog();
   const {
     activateSession,
@@ -961,8 +954,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
   );
 
   // Shared helper for handling CompactionComplete chunks.
-  // Extracted to avoid duplicating the endCompaction + refreshRustState pattern
-  // across persistentChunkHandler, handleSubmit's inner handler, and handleStreamChunk.
+  // CMPCT-034: No longer calls endCompaction — Rust sets SessionStatus::Idle on
+  // CompactionComplete, and refreshRustState propagates it to the UI.
   const handleCompactionComplete = useCallback(
     (
       result: { compressionRatio: number } | undefined,
@@ -974,10 +967,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
       if (result) {
         setCompactionReductionRef.current?.(Math.round(result.compressionRatio));
       }
-      compactionRef.current.endCompaction();
-      // Refresh Rust state so isLoading reflects the current session status.
-      // After endCompaction() clears isCompacting, the UI needs isLoading=true if the
-      // agent loop is still running (status=Running from CompactionContinuing).
+      // CMPCT-034: Removed compactionRef.current.endCompaction() — Rust sets
+      // SessionStatus::Idle and clears CompactionProgress on CompactionComplete.
+      // refreshRustState below triggers useRustSessionState to re-read from Rust,
+      // which picks up isCompacting = false automatically.
       if (sessionId) {
         refreshRustStateRef.current(sessionId);
       }
@@ -986,18 +979,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
   );
 
   const persistentChunkHandler = useCallback(
-    (chunk: StreamChunk) => {
+    (routedSessionId: string, chunk: StreamChunk) => {
       if (!chunk || sessionCleanupRef.current) {
         return;
       }
 
       // TUI-066: Handle SessionStateChange with Cleared state (from bridge /clear or TUI /clear)
-      // Also handle Compacting state for manual /compact command flow.
-      // When /compact returns early without setting up a streaming handler, chunks from
-      // the agent_loop (which processes the compaction instruction) arrive here.
       // BUG-101: Extracted to handlePersistentSessionStateChange for testability.
+      // CMPCT-034: The handler no longer manages Compacting state — Rust is the source
+      // of truth. refreshRustState() propagates SessionStatus::Compacting to the UI
+      // via useRustSessionState → rustSnapshot.isCompacting.
       if (chunk.type === 'SessionStateChange') {
-        handlePersistentSessionStateChange(chunk.state, {
+        handlePersistentSessionStateChange(routedSessionId, chunk.state, {
           resetConversation: () => {
             setConversation([]);
             setTokenUsage({ inputTokens: 0, outputTokens: 0 });
@@ -1005,11 +998,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
               setContextFillPercentageRef.current(0);
             }
           },
-          startCompaction: (trigger, sessionId, progress) => {
-            compactionRef.current.startCompaction(trigger, sessionId, progress);
-          },
-          getCompactionProgress: (sessionId) =>
-            sessionGetCompactionProgress(sessionId),
           refreshRustState: (sessionId) =>
             refreshRustStateRef.current(sessionId),
           getCurrentSessionId: () => currentSessionIdRef.current,
@@ -1269,7 +1257,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // Extract remaining display state from Rust snapshot
   const displayIsLoading = rustSnapshot.isLoading;
   const rustTokens = rustSnapshot.tokens;
-  const displayIsDebugEnabled = rustSnapshot.isDebugEnabled || isDebugEnabled;
   const displayIsPaused = rustSnapshot.isPaused;
   const displayPauseInfo = rustSnapshot.pauseInfo;
   const displayHitlRequest = rustSnapshot.hitlRequest;
@@ -1621,37 +1608,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
       return;
     }
 
-    // AGENT-021: Handle /debug command - toggle debug capture mode
-    // Supports toggling debug before a session exists
-    if (userMessage === '/debug') {
-      setInputValue('');
-      try {
-        const debugDir = getFspecUserDir();
-        let result;
-        if (currentSessionId) {
-          // Session exists - toggle with metadata
-          result = await sessionToggleDebug(currentSessionId, debugDir);
-        } else {
-          // No session yet - toggle without metadata (will be updated when session is created)
-          result = toggleDebug(debugDir);
-        }
-        setIsDebugEnabled(result.enabled);
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: result.message },
-        ]);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Debug toggle failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
+      // BUG-133: /debug handler now in handleSubmitWithCommand (below)
+      // The guard on line 1586 routes all / commands via executeSlashCommandRef
 
-    // NAPI-006: Handle /search command - enter history search mode
+      // NAPI-006: Handle /search command - enter history search mode
     if (userMessage === '/search') {
       setInputValue('');
       handleSearchMode();
@@ -1767,6 +1727,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // GIT-029: Apply any pending isolation state that arrived before activation
         applyPendingIsolationState(activeSessionId);
+        // BUG-133: Apply any pending debug state that arrived before activation
+        applyPendingDebugState(activeSessionId);
 
         // Register session with SessionManager for background execution
         // This enables ESC + Detach and /resume to work properly
@@ -1976,7 +1938,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // FspecCommandRequest is handled globally - we only get UI chunks here
         sessionCleanupRef.current = attachToSession(
           activeSessionId,
-          (chunk: StreamChunk) => {
+          (routedSessionId: string, chunk: StreamChunk) => {
             if (!chunk) return;
 
             if (chunk.type === 'Text' && chunk.text) {
@@ -2350,13 +2312,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
                 setTokenUsage({ inputTokens: 0, outputTokens: 0 });
                 setContextFillPercentage(0);
               } else if (chunk.state === 'Compacting') {
-                // UX-002: Use unified compaction hook for ALL compaction state
-                const progress = sessionGetCompactionProgress(activeSessionId);
-                compactionRef.current.startCompaction(
-                  'hook-triggered',
-                  activeSessionId,
-                  progress ?? undefined
-                );
+                // CMPCT-034: No local state update — Rust is the source of truth.
+                // Rust already set SessionStatus::Compacting before emitting this chunk.
+                // refreshRustState below triggers useRustSessionState to re-read from
+                // Rust, which picks up isCompacting = true + compactionProgress.
               }
               // Do NOT call endCompaction() for Running state.
               // During active compaction, CompactionContinuing emits SessionStateChange(Running)
@@ -2677,18 +2636,23 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // Handle /debug command
+      // BUG-133: /debug handler moved here from handleSubmit (was dead code there
+      // due to the guard at line 1586 that routes all / commands here)
+      // AGENT-021: Handle /debug command - toggle debug capture mode
+      // Zustand is updated by DebugStateChange stream event from Rust
       if (userMessage === '/debug') {
         setInputValue('');
         try {
           const debugDir = getFspecUserDir();
           let result;
           if (currentSessionId) {
+            // Session exists - toggle with metadata
+            // Rust will emit DebugStateChange stream event which updates Zustand
             result = await sessionToggleDebug(currentSessionId, debugDir);
           } else {
+            // No session yet - toggle without metadata (will be updated when session is created)
             result = toggleDebug(debugDir);
           }
-          setIsDebugEnabled(result.enabled);
           setConversation(prev => [
             ...prev,
             { type: 'status', content: result.message },
@@ -2703,6 +2667,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         }
         return;
       }
+
 
       // Handle /compact command
       if (userMessage === '/compact') {
@@ -3164,8 +3129,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // Used by handleResumeSelect when attaching to running/idle background sessions
   // This is a simplified version of the inline chunk handling in handleSubmit,
   // suitable for reattaching to sessions that may have produced output while detached.
-  const handleStreamChunk = useCallback((chunk: StreamChunk) => {
-    if (!chunk) return;
+  // CMPCT-033: Accepts the routed sessionId so SessionStateChange(Compacting) attaches
+  // to the session that emitted the chunk rather than the currently-viewed session.
+  const handleStreamChunk = useCallback(
+    (routedSessionId: string, chunk: StreamChunk) => {
+      if (!chunk) return;
 
     if (chunk.type === 'Text' && chunk.text) {
       // Update the last assistant message, or create one if needed
@@ -3392,16 +3360,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
         setTokenUsage({ inputTokens: 0, outputTokens: 0 });
         setContextFillPercentage(0);
       } else if (chunk.state === 'Compacting') {
-        // UX-002: Use unified compaction hook for ALL compaction state
-        const sessionId = currentSessionIdRef.current;
-        if (sessionId) {
-          const progress = sessionGetCompactionProgress(sessionId);
-          compactionRef.current.startCompaction(
-            'hook-triggered',
-            sessionId,
-            progress ?? undefined
-          );
-        }
+        // CMPCT-034: No local state update — Rust is the source of truth.
+        // Rust already set SessionStatus::Compacting before emitting this chunk.
+        // refreshRustState below triggers useRustSessionState to re-read from
+        // Rust, which picks up isCompacting = true + compactionProgress.
       }
       // Do NOT call endCompaction() for Running state.
       // During active compaction, CompactionContinuing emits SessionStateChange(Running)
@@ -3657,8 +3619,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
         sessionCleanupRef.current = attachToSession(
           sessionId,
-          (chunk: StreamChunk) => {
-            handleStreamChunk(chunk);
+          (routedSessionId: string, chunk: StreamChunk) => {
+            handleStreamChunk(routedSessionId, chunk);
           }
         );
 
@@ -3667,6 +3629,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // GIT-029: Apply any pending isolation state that arrived before activation
         applyPendingIsolationState(sessionId);
+        // BUG-133: Apply any pending debug state that arrived before activation
+        applyPendingDebugState(sessionId);
 
         // TUI-052: Restore pending input if available
         try {
@@ -3767,6 +3731,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // GIT-029: Apply any pending isolation state that arrived before activation
         applyPendingIsolationState(result.sessionId);
+        // BUG-133: Apply any pending debug state that arrived before activation
+        applyPendingDebugState(result.sessionId);
 
         // TUI-075: Default thinking level is applied automatically by useDefaultThinkingLevel
         // hook when currentSessionId changes after activateSession
@@ -3986,6 +3952,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // GIT-029: Apply any pending isolation state that arrived before activation
         applyPendingIsolationState(result.sessionId);
+        // BUG-133: Apply any pending debug state that arrived before activation
+        applyPendingDebugState(result.sessionId);
 
         // TUI-075: Default thinking level is applied automatically by useDefaultThinkingLevel
         // hook when currentSessionId changes after activateSession
@@ -4295,8 +4263,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
       sessionCleanupRef.current = attachToSession(
         selectedSession.id,
-        (chunk: StreamChunk) => {
-          handleStreamChunk(chunk);
+        (routedSessionId: string, chunk: StreamChunk) => {
+          handleStreamChunk(routedSessionId, chunk);
         }
       );
 
@@ -4306,6 +4274,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // GIT-029: Apply any pending isolation state that arrived before activation
       applyPendingIsolationState(selectedSession.id);
+      // BUG-133: Apply any pending debug state that arrived before activation
+      applyPendingDebugState(selectedSession.id);
 
       setIsResumeMode(false);
       setAvailableSessions([]);
@@ -5244,7 +5214,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         hasVision={displayHasVision}
         contextWindow={displayContextWindow}
         compactionThreshold={displayCompactionThreshold}
-        isDebugEnabled={displayIsDebugEnabled}
+        isDebugEnabled={isDebugEnabled}
         isSelectMode={isTurnSelectMode}
         thinkingLevel={detectedThinkingLevel}
         baseThinkingLevel={rustSnapshot.baseThinkingLevel as JsThinkingLevel}
@@ -5462,8 +5432,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
             hitlFreeformActive={hitlInput.isCurrentQuestionFreeform}
             hitlOtherActive={hitlInput.isOtherActive}
             hitlShowEmptyHint={hitlInput.showEmptyHint}
-            isCompacting={compaction.state.isActive}
-            compactionProgress={compaction.state.progress}
+            isCompacting={rustSnapshot.isCompacting}
+            compactionProgress={rustSnapshot.compactionProgress}
             actionPrompt={actionPrompt}
             clearActionPrompt={() => setActionPrompt(null)}
             value={inputValue}
@@ -5479,7 +5449,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               slashCommand.isVisible ||
               fileSearch.isVisible ||
               isTurnSelectMode ||
-              compaction.state.isActive
+              rustSnapshot.isCompacting
             }
           />
         </Box>

@@ -144,32 +144,31 @@ mod tests {
         );
     }
 
-    /// Test partial model names don't match adaptive thinking
+    /// Test model name variants inherit adaptive thinking from their base model
     #[test]
-    fn test_napi_partial_model_name_uses_budgeted() {
-        // @step Given I call get_thinking_config with partial model "claude-opus-4-6-preview"
+    fn test_napi_model_variant_inherits_adaptive() {
+        // @step Given I call get_thinking_config with model variant "claude-opus-4-6-preview"
         let result = get_thinking_config("claude-opus-4-6-preview".to_string(), JsThinkingLevel::High);
 
         // @step Then the result should be valid JSON
         assert!(result.is_ok(), "Should return valid result");
         let config_str = result.unwrap();
 
-        // @step And the thinking type should be "enabled" (budgeted) - not adaptive
-        // The NAPI uses starts_with() to ROUTE to model-aware handler, but the actual
-        // adaptive thinking decision uses exact equality via is_adaptive_thinking_model().
-        // So "claude-opus-4-6-preview" routes to model-aware, then fails exact match, falls to budgeted.
+        // Default-adaptive: model variants (preview, dated, etc.) inherit adaptive behavior
+        // from their base model. "claude-opus-4-6-preview" starts with "claude-" and is not
+        // a known budgeted model prefix, so it defaults to adaptive thinking.
         let config: serde_json::Value = serde_json::from_str(&config_str)
             .expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Partial model name should NOT trigger adaptive thinking, got: {config_str}"
+            Some("adaptive"),
+            "Model variant should inherit adaptive thinking, got: {config_str}"
         );
     }
 
-    /// Test versioned model names that aren't explicitly listed
+    /// Test versioned model names automatically inherit adaptive behavior
     #[test]
-    fn test_napi_versioned_model_uses_budgeted() {
+    fn test_napi_versioned_model_inherits_adaptive() {
         // @step Given I call get_thinking_config with versioned model "claude-opus-4-6-20260201"
         let result = get_thinking_config("claude-opus-4-6-20260201".to_string(), JsThinkingLevel::High);
 
@@ -177,15 +176,15 @@ mod tests {
         assert!(result.is_ok(), "Should return valid result");
         let config_str = result.unwrap();
 
-        // Per the feature file, versioned models must be EXPLICITLY added to capability lists.
-        // "claude-opus-4-6-20260201" is not in ADAPTIVE_THINKING_MODELS, so it uses budgeted.
-        // The NAPI routes via starts_with(), but is_adaptive_thinking_model() uses exact equality.
+        // Default-adaptive: versioned variants inherit behavior from their base model prefix.
+        // "claude-opus-4-6-20260201" starts with "claude-" and is not a known budgeted model,
+        // so it defaults to adaptive thinking.
         let config: serde_json::Value = serde_json::from_str(&config_str)
             .expect("Should be valid JSON");
         assert_eq!(
             config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Versioned model not in list should use budgeted thinking, got: {config_str}"
+            Some("adaptive"),
+            "Versioned model should inherit adaptive thinking, got: {config_str}"
         );
     }
 }

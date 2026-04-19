@@ -17,10 +17,14 @@ import type {
   StreamChunk,
   GlobalChunkCallbackArgs,
 } from '@sengac/codelet-napi';
+import { sessionGetDebugEnabled } from '@sengac/codelet-napi';
 import { useSessionStore } from '../store/sessionStore';
 import { useFooterStore } from '../store/footerStore';
 
-export type SessionChunkHandler = (chunk: StreamChunk) => void;
+export type SessionChunkHandler = (
+  sessionId: string,
+  chunk: StreamChunk
+) => void;
 export type GlobalChunkHandler = (
   sessionId: string,
   chunk: StreamChunk
@@ -73,6 +77,15 @@ export interface PendingIsolationState {
   worktreePath: string | null;
 }
 
+/**
+ * BUG-133: Pending debug state for sessions that haven't been activated yet.
+ * When DebugStateChange arrives before activateSession is called,
+ * we store the state here and apply it when the session is activated.
+ */
+export interface PendingDebugState {
+  isDebugEnabled: boolean;
+}
+
 export class GlobalSessionStreamManager {
   private static instance: GlobalSessionStreamManager | null = null;
   private sessionHandlers: Map<string, Set<SessionChunkHandler>> = new Map();
@@ -91,6 +104,12 @@ export class GlobalSessionStreamManager {
    * Key: sessionId, Value: isolation state to apply when session activates
    */
   private pendingIsolationState: Map<string, PendingIsolationState> = new Map();
+
+  /**
+   * BUG-133: Pending debug state for sessions not yet activated.
+   * Key: sessionId, Value: debug state to apply when session activates
+   */
+  private pendingDebugState: Map<string, PendingDebugState> = new Map();
 
   private constructor() {}
 
@@ -117,6 +136,8 @@ export class GlobalSessionStreamManager {
       }
       // GIT-029: Clear pending isolation state
       GlobalSessionStreamManager.instance.pendingIsolationState.clear();
+      // BUG-133: Clear pending debug state
+      GlobalSessionStreamManager.instance.pendingDebugState.clear();
     }
     GlobalSessionStreamManager.instance = null;
     // BRIDGE-012: Reset global callback state for testing
@@ -266,6 +287,26 @@ export class GlobalSessionStreamManager {
   }
 
   /**
+   * BUG-133: Get and clear pending debug state for a session.
+   * Called when a session is activated to apply any DebugStateChange
+   * that arrived before the session was activated.
+   *
+   * @param sessionId - Session to get pending state for
+   * @returns Pending debug state if any, or null
+   */
+  public getPendingDebugState(sessionId: string): PendingDebugState | null {
+    const state = this.pendingDebugState.get(sessionId);
+    if (state) {
+      this.pendingDebugState.delete(sessionId);
+      logger.debug(
+        `[GlobalSessionStreamManager] Retrieved pending debug state for ${sessionId}: isDebugEnabled=${state.isDebugEnabled}`
+      );
+      return state;
+    }
+    return null;
+  }
+
+  /**
    * Simulate a chunk being received from a session (for testing).
    */
   public simulateChunk(sessionId: string, chunk: StreamChunk): void {
@@ -309,6 +350,24 @@ export class GlobalSessionStreamManager {
       // Don't return - allow the chunk to be forwarded to session handlers as well
     }
 
+    // BUG-133 / BUG-135: Handle DebugStateChange globally to sync session store.
+    // BUG-135: Always write into the per-session map via setDebugState(sessionId, enabled)
+    // regardless of whether this is the current session, so the badge state follows
+    // the correct session when the user switches to it later.
+    if (chunk.type === 'DebugStateChange') {
+      const { enabled } = chunk;
+      useSessionStore.getState().setDebugState(sessionId, enabled);
+      // Also keep the pending map populated for applyPendingDebugState callers
+      // that expect a pending record on attach (backwards compatibility).
+      this.pendingDebugState.set(sessionId, {
+        isDebugEnabled: enabled,
+      });
+      logger.debug(
+        `[GlobalSessionStreamManager] DebugStateChange applied to per-session map: sessionId=${sessionId}, enabled=${enabled}`
+      );
+      // Don't return - allow the chunk to be forwarded to session handlers as well
+    }
+
     // TUI-091: Handle FooterStateUpdate globally to sync footer store
     if (chunk.type === 'FooterStateUpdate') {
       useFooterStore
@@ -333,7 +392,7 @@ export class GlobalSessionStreamManager {
     if (handlers) {
       for (const handler of handlers) {
         try {
-          handler(chunk);
+          handler(sessionId, chunk);
         } catch (error) {
           logger.error(
             `[GlobalSessionStreamManager] Session handler error:`,
@@ -502,5 +561,47 @@ export function applyPendingIsolationState(sessionId: string): void {
     useSessionStore
       .getState()
       .setIsolationState(pendingState.isIsolated, pendingState.worktreePath);
+  }
+}
+
+/**
+ * BUG-133 / BUG-135: Apply pending debug state for a session, falling back
+ * to Rust's authoritative per-session AtomicBool when no pending state exists.
+ *
+ * Called when a session is activated (Shift+Left/Right, initial attach,
+ * /resume, etc) to ensure Zustand reflects the correct per-session debug
+ * state in all cases:
+ *   1. Pending DebugStateChange arrived before activation → apply it.
+ *   2. No pending state but Rust has is_debug_enabled=true → re-seed.
+ *   3. Fresh attach with no state anywhere → default false is correct.
+ *
+ * This guarantees the [DEBUG] badge survives A→B→A cycling because each
+ * session's state is always re-derived from the ground truth on activation.
+ *
+ * @param sessionId - Session to hydrate debug state for
+ */
+export function applyPendingDebugState(sessionId: string): void {
+  const manager = GlobalSessionStreamManager.getInstance();
+  const pendingState = manager.getPendingDebugState(sessionId);
+  if (pendingState) {
+    useSessionStore
+      .getState()
+      .setDebugState(sessionId, pendingState.isDebugEnabled);
+    return;
+  }
+
+  // BUG-135: Rust ground-truth fallback. Guards against the regression where
+  // cycling back to a previously-visited session finds nothing in the pending
+  // map (it was consumed on first read) and nothing in Zustand (it was never
+  // updated without a fresh stream event). Consulting Rust guarantees
+  // correctness regardless of event timing.
+  try {
+    const rustEnabled = sessionGetDebugEnabled(sessionId);
+    useSessionStore.getState().setDebugState(sessionId, rustEnabled);
+  } catch (error) {
+    // Session may not exist in Rust yet (very early attach); default false.
+    logger.debug(
+      `[GlobalSessionStreamManager] sessionGetDebugEnabled fallback failed for ${sessionId}: ${String(error)}`
+    );
   }
 }

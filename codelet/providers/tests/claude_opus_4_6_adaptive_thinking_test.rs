@@ -237,8 +237,7 @@ mod tests {
         );
 
         // CONFIG-007: context-1m header is NOT sent until user opt-in is implemented.
-        // Sending it by default causes "Extra usage is required for long context requests"
-        // errors for non-Tier-4 API users.
+        // Sending it by default causes "Extra usage required" for non-Tier-4 users.
         // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07" (until CONFIG-007)
         assert!(
             !headers.contains("context-1m-2025-08-07"),
@@ -348,55 +347,49 @@ mod tests {
     }
 
     // =========================================================================
-    // Scenario: Unknown model uses default behavior with explicit constant matching
+    // Scenario: Unknown future model uses adaptive behavior by default
     // =========================================================================
 
     #[test]
-    fn test_unknown_model_uses_default_behavior() {
-        // @step Given I have configured the Claude provider with model "claude-opus-4-7"
-        let model = "claude-opus-4-7";
+    fn test_unknown_future_model_uses_adaptive_behavior() {
+        // @step Given I have configured the Claude provider with model "claude-opus-4-8"
+        let model = "claude-opus-4-8";
         let facade = ClaudeThinkingFacade;
 
         // @step When I make an API request with thinking enabled
         let config = facade.request_config_for_model(model, ThinkingLevel::Medium);
 
-        // @step Then the request should contain thinking configuration with type "enabled"
+        // @step Then the request should contain thinking configuration with type "adaptive"
         assert!(config.is_some(), "Config should exist");
         let config = config.unwrap();
         assert_eq!(
             config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Unknown model should use budget-based thinking"
+            Some("adaptive"),
+            "Unknown future model should default to adaptive thinking"
         );
 
-        // @step And the request should contain a budget_tokens field
+        // @step And the request should NOT contain a budget_tokens field
         assert!(
-            config["thinking"]["budget_tokens"].as_u64().is_some(),
-            "Unknown model should have budget_tokens"
+            config["thinking"]["budget_tokens"].is_null(),
+            "Unknown future model should NOT have budget_tokens"
         );
 
         // Check headers
         let headers = build_beta_headers(model, false);
 
-        // @step And the anthropic-beta header should include "interleaved-thinking-2025-05-14"
+        // @step And the anthropic-beta header should NOT include "interleaved-thinking-2025-05-14"
         assert!(
-            headers.contains("interleaved-thinking-2025-05-14"),
-            "Unknown model should include interleaved-thinking, got: {headers}"
-        );
-
-        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07"
-        assert!(
-            !headers.contains("context-1m-2025-08-07"),
-            "Unknown model should NOT include context-1m, got: {headers}"
+            !headers.contains("interleaved-thinking-2025-05-14"),
+            "Unknown future model should NOT include interleaved-thinking, got: {headers}"
         );
     }
 
     // =========================================================================
-    // Scenario: Partial model name does not match adaptive thinking models
+    // Scenario: Model variant (e.g. preview/dated) inherits adaptive behavior
     // =========================================================================
 
     #[test]
-    fn test_partial_model_name_does_not_match() {
+    fn test_model_variant_inherits_adaptive_behavior() {
         // @step Given I have configured the Claude provider with model "claude-opus-4-6-preview"
         let model = "claude-opus-4-6-preview";
         let facade = ClaudeThinkingFacade;
@@ -404,28 +397,26 @@ mod tests {
         // @step When I make an API request with thinking enabled
         let config = facade.request_config_for_model(model, ThinkingLevel::Medium);
 
-        // @step Then the request should contain thinking configuration with type "enabled"
+        // @step Then the request should contain thinking configuration with type "adaptive"
         assert!(config.is_some(), "Config should exist");
         let config = config.unwrap();
         assert_eq!(
             config["thinking"]["type"].as_str(),
-            Some("enabled"),
-            "Partial match should NOT use adaptive thinking"
+            Some("adaptive"),
+            "Model variant should inherit adaptive thinking from base model"
         );
 
-        // @step And the request should contain a budget_tokens field
+        // @step And the request should NOT contain a budget_tokens field
         assert!(
-            config["thinking"]["budget_tokens"].as_u64().is_some(),
-            "Partial match should have budget_tokens"
+            config["thinking"]["budget_tokens"].is_null(),
+            "Model variant should NOT have budget_tokens"
         );
 
-        // Check headers
+        // Check headers — variant should also skip interleaved-thinking
         let headers = build_beta_headers(model, false);
-
-        // @step And the anthropic-beta header should NOT include "context-1m-2025-08-07"
         assert!(
-            !headers.contains("context-1m-2025-08-07"),
-            "Partial match should NOT include context-1m, got: {headers}"
+            !headers.contains("interleaved-thinking-2025-05-14"),
+            "Model variant should NOT include interleaved-thinking, got: {headers}"
         );
     }
 
@@ -541,29 +532,33 @@ mod tests {
     // =========================================================================
 
     #[test]
-    fn test_is_adaptive_thinking_model_uses_exact_equality() {
-        // Verify exact equality matching (no .contains() or .starts_with())
+    fn test_is_adaptive_thinking_model_uses_default_adaptive_logic() {
+        // Default-adaptive: Claude 4.6+ are adaptive, 4.5 and earlier are budgeted
         assert!(is_adaptive_thinking_model(CLAUDE_OPUS_4_6));
         assert!(is_adaptive_thinking_model(CLAUDE_SONNET_4_6));
         assert!(!is_adaptive_thinking_model(CLAUDE_OPUS_4_5));
         assert!(!is_adaptive_thinking_model(CLAUDE_SONNET_4_5));
-        // These should NOT match - verifies exact equality, not pattern matching
-        assert!(!is_adaptive_thinking_model("claude-opus-4-7"));
-        assert!(!is_adaptive_thinking_model("claude-opus-4-6-preview"));
-        assert!(!is_adaptive_thinking_model("claude-opus-4-6-20260201"));
+        // Future models default to adaptive (no constant needed)
+        assert!(is_adaptive_thinking_model("claude-opus-4-8"));
+        // Variants inherit behavior from base model prefix
+        assert!(is_adaptive_thinking_model("claude-opus-4-6-preview"));
+        assert!(is_adaptive_thinking_model("claude-opus-4-6-20260201"));
+        // Old variant is still budgeted
+        assert!(!is_adaptive_thinking_model("claude-sonnet-4-5-20250929"));
     }
 
     #[test]
-    fn test_supports_1m_context_uses_exact_equality() {
-        // Verify exact equality matching
+    fn test_supports_1m_context_uses_default_enabled_logic() {
+        // Default-enabled for Claude 4.5+ (except Opus 4.5)
         assert!(supports_1m_context(CLAUDE_OPUS_4_6));
         assert!(supports_1m_context(CLAUDE_SONNET_4_6));
         assert!(supports_1m_context(CLAUDE_SONNET_4_5));
-        assert!(supports_1m_context("claude-sonnet-4-5-20250929")); // Versioned model in list
-                                                                    // Opus 4.5 does NOT support 1M
+        assert!(supports_1m_context("claude-sonnet-4-5-20250929")); // Variant auto-covered
+        assert!(supports_1m_context("claude-opus-4-7")); // Future: auto-covered
+        // Opus 4.5 does NOT support 1M
         assert!(!supports_1m_context(CLAUDE_OPUS_4_5));
-        // Unknown models do not match
-        assert!(!supports_1m_context("claude-opus-4-7"));
+        // Claude 3.x does not support 1M
+        assert!(!supports_1m_context("claude-3-opus-20240229"));
     }
 
     #[test]

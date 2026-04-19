@@ -404,7 +404,12 @@
         "PROV-036",
         "PROV-037",
         "MODEL-002",
-        "MODEL-003"
+        "MODEL-003",
+        "PROV-060",
+        "PROV-061",
+        "PROV-068",
+        "PROV-069",
+        "PROV-070"
       ]
     },
     "replace-rig-core": {
@@ -511,7 +516,9 @@
         "CMPCT-018",
         "CMPCT-019",
         "CMPCT-020",
-        "CMPCT-021"
+        "CMPCT-021",
+        "CMPCT-032",
+        "CMPCT-034"
       ]
     },
     "scheduling": {
@@ -622,7 +629,9 @@
         "CMPCT-027",
         "CMPCT-028",
         "CMPCT-029",
-        "CMPCT-030"
+        "CMPCT-030",
+        "PROV-079",
+        "PROV-081"
       ]
     },
     "local-change-protocols": {
@@ -694,6 +703,22 @@
         "LIMITS-005",
         "LIMITS-006",
         "LIMITS-007"
+      ]
+    },
+    "custom-provider-tui-wiring": {
+      "id": "custom-provider-tui-wiring",
+      "title": "Custom Rhai Provider - End-to-End TUI Wiring",
+      "createdAt": "2026-04-17T18:59:51.131Z",
+      "description": "Wire custom Rhai providers through every surface: shared Rust fspec_home() helper, extended NAPI (discovery paths, file enumeration, re-scan, model limits), Rust-sourced provider registry in TypeScript (replace hard-coded SUPPORTED_PROVIDERS), ProviderSettingsScreen rendering of custom providers, Model Selector integration, slash commands (/provider init/list/test/edit), and init scaffolding with Rhai script templates. Rust is the single source of truth for all provider state - TypeScript is a pure view.",
+      "workUnits": [
+        "PROV-071",
+        "PROV-072",
+        "PROV-073",
+        "PROV-074",
+        "PROV-075",
+        "PROV-076",
+        "PROV-077",
+        "PROV-078"
       ]
     }
   }

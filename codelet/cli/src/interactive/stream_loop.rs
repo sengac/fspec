@@ -1290,6 +1290,54 @@ where
                         &mut previous_turn_tool_infos,
                     );
 
+                    // CMPCT-032: Check compaction flag on the clean-exit
+                    // path (FinalResponse). If the hook set
+                    // `compaction_needed=true` during this turn but rig
+                    // yielded `Ok(FinalResponse)` rather than
+                    // `PromptCancelled` (e.g. the hook fired on the
+                    // post-completion callback, or the API returned a
+                    // complete response before cancellation propagated),
+                    // we must run recovery before `emit_done_with_stop_reason`.
+                    // Without this check the flag is silently dropped and
+                    // the NEXT user turn explodes with `prompt is too long`
+                    // — the exact regression tracked by CMPCT-032.
+                    //
+                    // Interrupts take priority — if the user cancelled,
+                    // skip recovery and honour the interrupt state.
+                    //
+                    // `assistant_text` was already appended via
+                    // `handle_final_response` above; clear it so
+                    // `begin_compaction_recovery`'s flush is a no-op (the
+                    // token tracker still gets flushed from
+                    // `streaming_display`).
+                    let final_response_needs_recovery = !is_interrupted.load(Acquire)
+                        && token_state
+                            .lock()
+                            .map(|s| s.compaction_needed)
+                            .unwrap_or(false);
+                    if final_response_needs_recovery {
+                        warn!(
+                            "[stream_loop] CMPCT-032: FinalResponse branch exiting with \
+                             compaction_needed=true — running recovery before emit_done \
+                             to prevent silent context-window exhaustion on the next turn"
+                        );
+                        assistant_text.clear();
+                        let policy = super::recovery_compaction::begin_compaction_recovery(
+                            session,
+                            &token_state,
+                            &streaming_display,
+                            &mut assistant_text,
+                            output,
+                            false, // FinalResponse clean-exit: no trailing User prompt
+                        )?;
+                        debug!(
+                            policy = ?policy,
+                            "[stream_loop] CMPCT-032: in-loop compaction restart (FinalResponse clean-exit)"
+                        );
+                        in_loop_compaction_restart!(policy);
+                        continue;
+                    }
+
                     // PROV-039: Emit done with stop_reason for truncation detection
                     output.emit_done_with_stop_reason(final_stop_reason.take());
                     break;
@@ -1777,21 +1825,91 @@ where
     // TOOL-011/BUG-126: Clear the tool progress callback
     set_tool_progress_callback(Uuid::nil(), None);
 
-    // CMPCT-027: The post-loop `handle_compaction_retry` call that used to
-    // live here has been removed. Compaction-and-retry now happens in-place
-    // via the `in_loop_compaction_restart!()` macro at Paths B/C/D, so the
-    // retry stream stays governed by the primary loop's full error cascade
-    // (prompt-too-long, truncation, image-content, stall-timeout, network,
-    // PromptCancelled). Reaching this point with `compaction_needed == true`
-    // would mean a loop exited without calling the macro — that is a bug.
-    // We keep a defensive debug log to surface such regressions.
-    #[cfg(debug_assertions)]
-    {
-        if let Ok(state) = token_state.lock() {
-            if state.compaction_needed && !is_interrupted.load(Acquire) {
-                debug!(
-                    "[stream_loop] POST-LOOP: compaction_needed=true but loop exited — \
-                     this should not happen after CMPCT-027; investigate the exit path"
+    // CMPCT-032: Production-mode post-loop safety net.
+    //
+    // CMPCT-027 moved compaction-and-retry into the in-loop
+    // `in_loop_compaction_restart!()` macro, but the error-arm macro only
+    // fires from `stream.next()` error branches. Several clean-exit paths
+    // can leave `token_state.compaction_needed == true` unhandled:
+    //   - thinking-exhaustion retry that breaks with the flag set
+    //   - `None` stream-end with a late-firing post-call hook
+    //   - any future break path that bypasses the FinalResponse CMPCT-032
+    //     check above
+    //
+    // Before CMPCT-032 the compaction check here was gated behind
+    // `#[cfg(debug_assertions)]`, which meant release builds had NO
+    // production safety net — the flag was silently dropped and the NEXT
+    // user turn exploded with `prompt is too long`. This block is now
+    // production-mode: if the flag reaches this point, we compact the
+    // session in place so the next turn operates on the reduced context.
+    //
+    // Interrupts take priority — if the user cancelled, we skip recovery
+    // and let the interrupt state propagate.
+    //
+    // The `assistant_text` buffer is already empty at this point (the loop
+    // only breaks after appending it via `handle_final_response`), so
+    // `begin_compaction_recovery`'s partial-text flush is a no-op; the
+    // helper still flushes the token tracker and emits lifecycle events.
+    let post_loop_needs_recovery = !is_interrupted.load(Acquire)
+        && token_state
+            .lock()
+            .map(|s| s.compaction_needed)
+            .unwrap_or(false);
+    if post_loop_needs_recovery {
+        warn!(
+            "[stream_loop] CMPCT-032: POST-LOOP safety net fired — loop exited with \
+             compaction_needed=true without invoking the in-loop macro. This indicates \
+             a break path bypassed both the FinalResponse compaction check and the \
+             error-arm in-loop macro (likely a thinking-exhaustion retry, stream-end \
+             with a late-firing hook, or a new break path added without compaction \
+             handling). Running compaction in place so the next user turn does not \
+             exceed the context window."
+        );
+        let mut post_loop_text = String::new();
+        match super::recovery_compaction::begin_compaction_recovery(
+            session,
+            &token_state,
+            &streaming_display,
+            &mut post_loop_text,
+            output,
+            false, // post-loop: no trailing User prompt to pop
+        ) {
+            Ok(_policy) => {
+                // Compact the session in place so the next turn operates on
+                // the reduced context. We cannot kick off a retry stream
+                // here because the primary loop has already broken — the
+                // next user message will begin a fresh `run_agent_stream`
+                // invocation on the compacted session.
+                if let Err(e) = super::recovery_compaction::execute_compaction_and_capture_events(
+                    session,
+                    compaction_in_progress.clone(),
+                    prompt,
+                    threshold,
+                    context_window,
+                    &token_state,
+                    output,
+                )
+                .await
+                {
+                    warn!(
+                        "[stream_loop] CMPCT-032: POST-LOOP execute_compaction failed: {e}; \
+                         flag remains set — next turn may still exceed context window"
+                    );
+                } else {
+                    // Clear the flag on success so the next turn starts clean.
+                    if let Ok(mut state) = token_state.lock() {
+                        state.compaction_needed = false;
+                        state.input_tokens = session.token_tracker.input_tokens;
+                        state.cache_read_input_tokens = 0;
+                        state.cache_creation_input_tokens = 0;
+                        state.output_tokens = 0;
+                    }
+                }
+            }
+            Err(e) => {
+                warn!(
+                    "[stream_loop] CMPCT-032: POST-LOOP begin_compaction_recovery failed: {e}; \
+                     flag remains set — next turn may still exceed context window"
                 );
             }
         }

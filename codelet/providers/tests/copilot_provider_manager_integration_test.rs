@@ -17,9 +17,10 @@
 mod fixtures;
 
 use codelet_providers::copilot::{
-    delete_copilot_auth, get_copilot_auth_path, models, select_copilot_behavior_facade,
-    write_copilot_auth, CopilotAuthJson, CopilotDeploymentType, CopilotEndpoint,
-    CopilotEndpointFacade, CopilotHeaderFacade, CopilotProvider, CopilotRequestClassifier,
+    base_url_for, delete_copilot_auth, get_copilot_auth_path, models,
+    select_copilot_behavior_facade, write_copilot_auth, CopilotAuthJson,
+    CopilotDeploymentType, CopilotEndpoint, CopilotEndpointFacade, CopilotHeaderFacade,
+    CopilotRequestClassifier,
 };
 use codelet_providers::{ProviderCredentials, ProviderManager, ProviderType};
 use fixtures::setup_fspec_home;
@@ -110,7 +111,7 @@ async fn test_login_github_enterprise_routes_through_provider_manager() {
     assert_eq!(manager.current_provider_name(), "github-copilot");
 
     // @step And subsequent Copilot API calls should be routed to "https://copilot-api.ghe.example.com"
-    let base_url = CopilotProvider::base_url_for(&CopilotDeploymentType::Enterprise {
+    let base_url = base_url_for(&CopilotDeploymentType::Enterprise {
         host: "ghe.example.com".to_string(),
     });
     assert_eq!(base_url.as_str(), "https://copilot-api.ghe.example.com");
@@ -136,7 +137,7 @@ async fn test_gpt_4o_copilot_routes_to_chat_completions_via_manager() {
     // @step When I send a chat message
     // @step Then codelet should send the request to "api.githubcopilot.com/chat/completions"
     assert_eq!(endpoint, CopilotEndpoint::ChatCompletions);
-    let base_url = CopilotProvider::base_url_for(&CopilotDeploymentType::GitHubCom);
+    let base_url = base_url_for(&CopilotDeploymentType::GitHubCom);
     assert_eq!(base_url.as_str(), "https://api.githubcopilot.com");
 
     // @step And the request should include an "Authorization: Bearer <token>" header
@@ -417,6 +418,7 @@ fn provider_credentials_struct_exposes_github_copilot_field() {
         gemini_available: false,
         zai_available: false,
         github_copilot_available: true,
+        custom_available: std::collections::HashMap::new(),
     };
     assert!(creds.has_github_copilot());
     assert!(creds.has_any());

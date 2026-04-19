@@ -16,8 +16,13 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { enableMapSet } from 'immer';
 import { logger } from '../../utils/logger';
 import { sessionSetActive, sessionClearActive } from '@sengac/codelet-napi';
+
+// BUG-135: Enable Immer MapSet plugin so debugStateBySession (Map<string, boolean>)
+// can be mutated via the immer middleware. Idempotent — safe if called elsewhere too.
+enableMapSet();
 
 /** Session store state */
 export interface SessionStoreState {
@@ -37,6 +42,10 @@ export interface SessionStoreState {
   isIsolated: boolean;
   /** Path to the worktree (if isolated) */
   worktreePath: string | null;
+  /** BUG-135: Per-session debug capture state keyed by sessionId.
+   *  Mirrors Rust's BackgroundSession::is_debug_enabled AtomicBool per session.
+   *  Each session retains its own entry across Shift+Left/Right cycling. */
+  debugStateBySession: Map<string, boolean>;
   /** GIT-031: Whether the next auto-created session should be isolated */
   pendingIsolatedSession: boolean;
   /** Target session ID for navigation (set by BoardView, consumed by AgentView). */
@@ -61,6 +70,9 @@ export interface SessionStoreState {
   ) => void;
   /** GIT-029: Set isolation state for current session */
   setIsolationState: (isIsolated: boolean, worktreePath: string | null) => void;
+  /** BUG-135: Set debug capture state for a given session by id.
+   *  Writes into debugStateBySession map so state survives session switches. */
+  setDebugState: (sessionId: string, isDebugEnabled: boolean) => void;
   /** Set navigation target (called by BoardView when navigating to a session). */
   setNavigationTarget: (sessionId: string | null) => void;
   /** Clear navigation target (called after AgentView consumes it). */
@@ -107,6 +119,10 @@ function clearAndResetSession(
     state.currentWorkUnitStatus = null;
     state.isIsolated = false;
     state.worktreePath = null;
+    // BUG-135: Clear the per-session debug map on full reset (used by tests
+    // and navigation-to-new-session). Individual session switches must NOT
+    // clear this — each session retains its own entry.
+    state.debugStateBySession = new Map<string, boolean>();
     state.shouldAutoCreateSession = options?.shouldAutoCreateSession ?? false;
     state.pendingIsolatedSession = options?.pendingIsolatedSession ?? false;
     state.navigationTargetSessionId =
@@ -123,6 +139,7 @@ const initialState = {
   currentWorkUnitStatus: null,
   isIsolated: false,
   worktreePath: null,
+  debugStateBySession: new Map<string, boolean>(),
   pendingIsolatedSession: false,
   navigationTargetSessionId: null,
   showCreateSessionDialog: false,
@@ -146,6 +163,12 @@ export const useSessionStore = create<SessionStoreState>()(
         state.currentSessionId = sessionId;
         state.isReadyForNewSession = false;
         state.shouldAutoCreateSession = false;
+        // BUG-135: DO NOT reset debug state on session switch.
+        // Each session retains its own entry in debugStateBySession so that
+        // cycling Shift+Left/Right between sessions preserves every session's
+        // [DEBUG] badge state correctly. Hydration for never-seen sessions
+        // happens via applyPendingDebugState() + Rust ground-truth fallback
+        // in AgentView's resumeSessionById attach paths.
       });
     },
 
@@ -189,6 +212,16 @@ export const useSessionStore = create<SessionStoreState>()(
         state.isIsolated = isIsolated;
         state.worktreePath = worktreePath;
         state.pendingIsolatedSession = false;
+      });
+    },
+
+    /** BUG-135: Set debug capture state for a specific session by id. */
+    setDebugState: (sessionId: string, isDebugEnabled: boolean) => {
+      logger.debug(
+        `[SessionStore] setDebugState: sessionId=${sessionId}, isDebugEnabled=${isDebugEnabled}`
+      );
+      set(state => {
+        state.debugStateBySession.set(sessionId, isDebugEnabled);
       });
     },
 
@@ -254,6 +287,14 @@ export const useShowCreateSessionDialog = () =>
 export const useIsIsolated = () => useSessionStore(state => state.isIsolated);
 export const useWorktreePath = () =>
   useSessionStore(state => state.worktreePath);
+export const useIsDebugEnabled = () =>
+  useSessionStore(state => {
+    const sid = state.currentSessionId;
+    if (!sid) {
+      return false;
+    }
+    return state.debugStateBySession.get(sid) ?? false;
+  });
 export const usePendingIsolatedSession = () =>
   useSessionStore(state => state.pendingIsolatedSession);
 

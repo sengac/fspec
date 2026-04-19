@@ -1,0 +1,685 @@
+{
+  "scenarios": [
+    {
+      "name": "Build request body from messages",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "48-81",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Build request URL from config",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "86-114",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/provider.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Build HTTP headers including auth",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "119-154",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/http.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse plain text response",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "159-205",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse tool call response",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "210-281",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Map HTTP 401 to auth error",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "286-337",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/error_mapping.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Map HTTP 429 to rate limit error",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "342-385",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/error_mapping.rs",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Surface Rhai runtime errors as provider errors",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "390-434",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/error_mapping.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Complete end-to-end request against mock server",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "439-499",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/provider.rs",
+              "lines": [
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider name reflects config",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "504-519",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/provider.rs",
+              "lines": [
+                192,
+                193,
+                194,
+                195,
+                196,
+                197
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider context window reflects selected model",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "524-571",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/provider.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Request bridge preserves multi-turn message structure",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "576-619",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Response bridge preserves structured tool call input",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_http_lifecycle_tests.rs",
+          "lines": "624-666",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/custom_http_lifecycle_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/custom/request_bridge.rs",
+      "codelet/providers/src/custom/provider.rs",
+      "codelet/providers/src/custom/http.rs",
+      "codelet/providers/src/custom/response_bridge.rs",
+      "codelet/providers/src/custom/error_mapping.rs"
+    ],
+    "totalLinesCovered": 1028
+  }
+}

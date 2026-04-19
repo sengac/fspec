@@ -57,7 +57,7 @@ fn is_codex_provider(provider: &str) -> bool {
 /// Check if a provider string represents a Claude model.
 ///
 /// This is used ONLY for routing to the Claude facade.
-/// The facade handles exact equality checks for model-specific behavior (PROV-005 rule [7]).
+/// The facade handles model-specific behavior (adaptive vs budgeted) internally.
 #[inline]
 fn is_claude_provider(provider: &str) -> bool {
     provider.starts_with("claude")
@@ -130,8 +130,8 @@ pub fn get_thinking_config(provider: String, level: JsThinkingLevel) -> napi::Re
         Gemini25ThinkingFacade.request_config(level)
     } else if is_claude_provider(&provider) {
         // PROV-005: All Claude models use model-aware config.
-        // The facade handles exact equality checks for adaptive vs budgeted thinking.
-        // Unknown Claude models fall back to budgeted thinking (safe default).
+        // The facade handles default-adaptive logic: Claude 4.6+ → adaptive,
+        // older models → budgeted. New models automatically get adaptive thinking.
         match ClaudeThinkingFacade.request_config_for_model(&provider, level) {
             Some(config) => config,
             None => serde_json::json!({}), // Off level returns empty
@@ -348,6 +348,16 @@ mod tests {
 
     #[test]
     fn test_get_thinking_config_routes_claude_to_model_aware() {
+        // PROV-079: Opus 4.7 adaptive thinking
+        let config = get_thinking_config("claude-opus-4-7".to_string(), JsThinkingLevel::High)
+            .expect("Should succeed");
+        let parsed: serde_json::Value = serde_json::from_str(&config).unwrap();
+        assert_eq!(
+            parsed["thinking"]["type"].as_str(),
+            Some("adaptive"),
+            "Opus 4.7 should use adaptive thinking"
+        );
+
         // Adaptive thinking model
         let config = get_thinking_config("claude-opus-4-6".to_string(), JsThinkingLevel::High)
             .expect("Should succeed");

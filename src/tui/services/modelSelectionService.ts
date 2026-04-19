@@ -19,6 +19,7 @@ import { loadConfig, writeConfig } from '../../utils/config';
 import { buildModelString } from '../utils/model-selection';
 import { mapProviderIdToInternal } from '../utils/provider-mapping';
 import { configureProfileEnvironment } from './profileEnvironmentService';
+import { isCustomProviderSection } from './customProviderSectionBuilder';
 import { logger } from '../../utils/logger';
 import type { ModelSelection } from '../types/provider';
 
@@ -106,8 +107,12 @@ export async function selectModel(
           selection.compactionThreshold?.type ?? null,
           selection.compactionThreshold?.value ?? null
         );
-      } else if (selection.providerId === 'codex') {
+      } else if (
+        selection.providerId === 'codex' ||
+        isCustomProviderSection(selection.providerId)
+      ) {
         // PROV-018: Codex models bypass registry (not in models.dev under 'codex')
+        // PROV-067: Custom providers bypass registry (not in models.dev at all)
         // MODEL-005: Pass context window and max output tokens
         // CTX-008: Pass compaction threshold if configured
         await sessionSetModelProfile(
@@ -116,7 +121,7 @@ export async function selectModel(
           selection.modelId,
           selection.contextWindow,
           selection.maxOutput,
-          null,
+          selection.facade ?? null,
           selection.compactionThreshold?.type ?? null,
           selection.compactionThreshold?.value ?? null
         );

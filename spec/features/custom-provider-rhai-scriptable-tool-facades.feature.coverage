@@ -1,0 +1,531 @@
+{
+  "scenarios": [
+    {
+      "name": "define_tools produces custom tool definitions",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "37-54",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tool_style openai preset generates snake_case tool names",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "56-87",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_presets.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default tool_style claude generates PascalCase tool names",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "89-121",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_presets.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "map_tool_params renames parameter names",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "123-158",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "map_tool_params returning unit uses default mapping",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "160-192",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Partial tool list hides unlisted categories",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "194-213",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rhai error in define_tools falls back to preset",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "215-237",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown maps_to identifier is rejected with clear error",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "239-265",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Adapter exposes Rhai-provided name and definition",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "267-299",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_facade.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resolved tools are cached for system prompt introspection",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_tool_facades_tests.rs",
+          "lines": "301-331",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/tool_resolve.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/custom_tool_facades_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/custom/tool_resolve.rs",
+      "codelet/providers/src/custom/tool_presets.rs",
+      "codelet/providers/src/custom/tool_facade.rs"
+    ],
+    "totalLinesCovered": 639
+  }
+}

@@ -28,6 +28,7 @@ import {
 } from '../utils/model-selection';
 import { lookupFacadeOverride } from '../utils/custom-model-utils';
 import { loadCloudModels, buildCloudSections } from './cloudSectionBuilder';
+import { loadCustomProviderSections } from './customProviderSectionBuilder';
 import { loadProfileSections } from './profileSectionBuilder';
 
 // =============================================================================
@@ -182,16 +183,19 @@ export async function initializeModels(): Promise<ModelInitializationResult> {
   store.setIsLoading(true);
 
   try {
-    // Load cloud and profile models in parallel
-    const [cloudModels, profileSections] = await Promise.all([
+    // Load cloud, profile, and custom provider models in parallel
+    const [cloudModels, profileSections, customSections] = await Promise.all([
       loadCloudModels(),
       loadProfileSections(),
+      loadCustomProviderSections(),
     ]);
     const cloudSections = await buildCloudSections(cloudModels);
 
-    // Combine: profiles first, then cloud; filter out unreachable + 0-model sections
+    // Combine: profiles first, then custom providers, then cloud;
+    // filter out unreachable + 0-model sections
     const sections: ProviderSection[] = [
       ...profileSections,
+      ...customSections,
       ...cloudSections,
     ].filter(s => !s.isUnreachable || s.models.length > 0);
 

@@ -1,0 +1,266 @@
+{
+  "scenarios": [
+    {
+      "name": "Opus 4.7 is detected as adaptive thinking model",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "30-38",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opus 4.7 returns adaptive thinking config for High level",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "44-68",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opus 4.7 returns adaptive thinking config for Low level",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "74-99",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opus 4.7 returns empty config when thinking is Off",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "105-118",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opus 4.7 beta headers exclude interleaved-thinking",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "124-148",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/claude.rs",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Opus 4.6 adaptive behaviour unchanged after adding 4.7",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "154-175",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sonnet 4.6 adaptive behaviour unchanged after adding 4.7",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "181-203",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI getThinkingConfig returns adaptive for Opus 4.7",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs",
+          "lines": "210-247",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/thinking_config.rs",
+              "lines": [
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/claude_opus_4_7_adaptive_thinking_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/facade/thinking_config.rs",
+      "codelet/providers/src/claude.rs"
+    ],
+    "totalLinesCovered": 303
+  }
+}
