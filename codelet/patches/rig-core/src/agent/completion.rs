@@ -160,8 +160,10 @@ where
                     .tool_server_handle
                     .get_tool_defs(Some(text.to_string()))
                     .await
-                    .map_err(|_| {
-                        CompletionError::RequestError("Failed to get tool definitions".into())
+                    .map_err(|e| {
+                        CompletionError::RequestError(
+                            format!("Failed to get tool definitions: {e}").into(),
+                        )
                     })?;
 
                 completion_request
@@ -173,8 +175,10 @@ where
                     .tool_server_handle
                     .get_tool_defs(None)
                     .await
-                    .map_err(|_| {
-                        CompletionError::RequestError("Failed to get tool definitions".into())
+                    .map_err(|e| {
+                        CompletionError::RequestError(
+                            format!("Failed to get tool definitions: {e}").into(),
+                        )
                     })?;
 
                 completion_request.tools(tooldefs)

@@ -662,14 +662,25 @@ impl TryFrom<OneOrMany<message::AssistantContent>> for Vec<Message> {
                 match content {
                     message::AssistantContent::Text(text) => texts.push(text),
                     message::AssistantContent::ToolCall(tool_call) => tools.push(tool_call),
-                    message::AssistantContent::Reasoning(_) => {
-                        panic!("The OpenAI Completions API doesn't support reasoning!");
-                    }
-                    message::AssistantContent::Image(_) => {
-                        panic!(
-                            "The OpenAI Completions API doesn't support image content in assistant messages!"
-                        );
-                    }
+                    // PROV-081: reasoning is INBOUND-only. Some providers
+                    // (e.g. Fireworks hosting Qwen3) always emit
+                    // `reasoning_content` on every assistant turn, which the
+                    // inbound parser captures as `AssistantContent::Reasoning`
+                    // and persists into chat history. On subsequent turns that
+                    // history is converted back outbound via this path — we
+                    // must silently drop reasoning here rather than panic,
+                    // otherwise any multi-turn conversation against such a
+                    // provider crashes on turn 2. The explicit `reasoning:
+                    // None` below plus `skip_serializing_if` on
+                    // `Message::Assistant::reasoning` still guarantees the
+                    // outbound wire never carries a `reasoning` /
+                    // `reasoning_content` key.
+                    message::AssistantContent::Reasoning(_) => {}
+                    // Images in assistant messages are likewise not supported
+                    // by the OpenAI Completions wire format. Drop rather than
+                    // panic so a stray inbound image block can't kill an
+                    // otherwise-healthy conversation.
+                    message::AssistantContent::Image(_) => {}
                 }
                 (texts, tools)
             },
