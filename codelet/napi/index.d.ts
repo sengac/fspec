@@ -642,6 +642,71 @@ export declare function createWorktreeAtRef(
 export declare function credentialsReload(): boolean;
 
 /**
+ * Invoke the scripted provider's `auth_start` (with fallback to the
+ * legacy `build_authorization_request`) and return the authorization
+ * payload as a JSON string. The TypeScript TUI is responsible for
+ * opening the browser, hosting the loopback callback server, and
+ * then calling `custom_oauth_exchange` with the captured code.
+ */
+export declare function customOauthAuthorize(
+  providerName: string
+): Promise<NapiCustomAuthorizeResult>;
+
+/** Remove the stored tokens for `provider_name`. Idempotent. */
+export declare function customOauthClear(providerName: string): Promise<void>;
+
+/**
+ * PROV-088: poll the scripted device-code flow. `device_data_json` is
+ * the JSON-encoded map returned by `custom_oauth_device_start`. The
+ * return value is a JSON-encoded `{status, ...}` map. Tokens are
+ * automatically persisted when the status is `"success"`.
+ */
+export declare function customOauthDevicePoll(
+  providerName: string,
+  deviceDataJson: string
+): Promise<NapiCustomTokens>;
+
+/**
+ * PROV-088: start the scripted device-code flow. Returns the
+ * authorization map as JSON — typically `{device_code, user_code,
+ * verification_uri, interval}`.
+ */
+export declare function customOauthDeviceStart(
+  providerName: string
+): Promise<NapiCustomAuthorizeResult>;
+
+/**
+ * Exchange the captured authorization `code` + PKCE `verifier` for
+ * tokens and persist them under `provider_name`.
+ */
+export declare function customOauthExchange(
+  providerName: string,
+  code: string,
+  verifier: string
+): Promise<NapiCustomTokens>;
+
+/** Return the stored tokens for `provider_name`. `None` if not stored. */
+export declare function customOauthGetTokens(
+  providerName: string
+): Promise<NapiCustomTokens | null>;
+
+/**
+ * Return `true` when the stored tokens for `provider_name` need a
+ * refresh (per the script's `auth_needs_refresh` / `needs_refresh`).
+ */
+export declare function customOauthNeedsRefresh(
+  providerName: string
+): Promise<boolean>;
+
+/**
+ * Refresh the stored tokens for `provider_name` by invoking the
+ * script's `auth_refresh` / `refresh_token`, then persist the result.
+ */
+export declare function customOauthRefresh(
+  providerName: string
+): Promise<NapiCustomTokens>;
+
+/**
  * Debug command result (AGENT-021)
  * Returned by toggleDebug() to indicate debug capture state
  */
@@ -1467,6 +1532,26 @@ export interface NapiCopilotDeviceStartResult {
   deploymentType: string;
   /** Normalised enterprise host (present when deployment_type == "enterprise"). */
   enterpriseHost?: string;
+}
+
+/**
+ * Authorization metadata returned by `custom_oauth_authorize`: a
+ * JSON-serialized map of whatever the script's `auth_start`
+ * (or legacy `build_authorization_request`) returned — typically
+ * `{url, pkce_verifier, state, ...}`.
+ */
+export interface NapiCustomAuthorizeResult {
+  payloadJson: string;
+}
+
+/**
+ * JSON envelope for token maps passed back and forth across the NAPI
+ * boundary. We serialize Rhai `Map` → JSON string so we can expose the
+ * full shape (including custom fields produced by user scripts)
+ * without pinning it to a fixed struct.
+ */
+export interface NapiCustomTokens {
+  tokensJson: string;
 }
 
 /**

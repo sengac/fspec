@@ -25,7 +25,7 @@
  * ```
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useLayoutEffect, useRef, useCallback } from 'react';
 import { useInput, type Key } from 'ink';
 import { useOptionalInputManager } from './InputContext';
 import type { InputHandlerConfig, InputHandlerFn } from './types';
@@ -87,8 +87,21 @@ export function useInputCompat(options: UseInputCompatOptions): void {
     return typeof current === 'function' ? current() : current;
   }, []);
 
-  // If InputManager is available, register with it
-  useEffect(() => {
+  // If InputManager is available, register with it.
+  //
+  // PROV-095: We use useLayoutEffect instead of useEffect so the
+  // handler is registered synchronously after React commits the DOM
+  // but BEFORE control returns to Node's event loop (and thus before
+  // the next stdin `readable` tick can dispatch another keystroke).
+  // This closes a race where opening a modal (e.g. CreateSessionDialog)
+  // deactivated the parent's handler synchronously via a ref, but the
+  // modal's handler was not yet registered because registration had
+  // been deferred to the commit-phase passive effect. Any stdin byte
+  // arriving in that window would fall through every handler and be
+  // silently dropped — which manifested as "Enter doesn't dismiss
+  // the dialog" in e2e PTY-driven tests and, intermittently, for
+  // real users typing fast.
+  useLayoutEffect(() => {
     if (!manager) {
       return;
     }

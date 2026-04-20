@@ -1,0 +1,341 @@
+{
+  "scenarios": [
+    {
+      "name": "Load a custom provider config named 'claude' without NameConflict",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_provider_script_shadowing_tests.rs",
+          "lines": "66-89",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/config.rs",
+              "lines": [
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Load a custom provider config named 'codex' without NameConflict",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_provider_script_shadowing_tests.rs",
+          "lines": "89-112",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/config.rs",
+              "lines": [
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shadowing custom config resolves provider slug to Custom variant",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_provider_script_shadowing_tests.rs",
+          "lines": "114-136",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Escape hatch env var disables shadowing and restores hardcoded built-in",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_provider_script_shadowing_tests.rs",
+          "lines": "138-168",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/manager.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid name pattern still fails with InvalidName",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_provider_script_shadowing_tests.rs",
+          "lines": "170-200",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/config.rs",
+              "lines": [
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/custom_provider_script_shadowing_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/custom/config.rs",
+      "codelet/providers/src/manager.rs"
+    ],
+    "totalLinesCovered": 377
+  }
+}

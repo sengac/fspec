@@ -76,3 +76,5 @@ mod callback_server_tests;
 mod regression_tests;
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod file_size_tests;
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+mod cred_module_tests;

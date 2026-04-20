@@ -435,7 +435,7 @@ fn parse_stream_chunk(config, data) { #{ kind: "ignore" } }
     // @step When the provider invokes build_stream_request with a user message
     let messages = vec![Message::user("hi")];
     let body = provider
-        .invoke_build_stream_request(&messages, &[])
+        .invoke_build_stream_request(&messages, &[], None)
         .await
         .expect("build_stream_request returns JSON");
 

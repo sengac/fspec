@@ -52,7 +52,7 @@ pub use codex::CodexProvider;
 pub use codex::CODEX_BASE_INSTRUCTIONS; // PROV-019: Codex backend requires instructions field
 pub use credentials::ProviderCredentials;
 pub use gemini::GeminiProvider;
-pub use manager::{ProviderManager, ProviderType};
+pub use manager::{custom_provider_registered, ProviderManager, ProviderType};
 pub use model_limits::{
     resolve_context_window, resolve_max_output_tokens, resolve_model_limits, ModelLimitsResolver,
 };

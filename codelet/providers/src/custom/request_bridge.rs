@@ -51,10 +51,19 @@ pub fn tools_to_rhai(tools: &[ToolDefinition]) -> Result<Dynamic, CustomProvider
 }
 
 /// Build the single `request` map passed to `build_request(request)`.
-/// Shape: `#{ messages: […], tools: […] }`.
+/// Shape: `#{ messages: […], tools: […], thinking_config: … }`.
+///
+/// `thinking_config` is always present on the returned map. When the
+/// caller passes `Some(value)`, the JSON value is bridged via
+/// [`json_value_to_dynamic`] (object → map, array → array, null → unit,
+/// scalars → matching Rhai types). When the caller passes `None`, the
+/// key is bridged as Rhai unit (`()`). This gives scripts a uniform
+/// shape to inspect (`type_of(request.thinking_config)`), avoiding the
+/// need to distinguish "absent key" from "null value" (PROV-090).
 pub fn request_to_rhai(
     messages: &[Message],
     tools: &[ToolDefinition],
+    thinking_config: Option<&serde_json::Value>,
 ) -> Result<Dynamic, CustomProviderError> {
     let messages_dyn = messages_to_rhai(messages)?;
     let tools_dyn = tools_to_rhai(tools)?;
@@ -73,8 +82,14 @@ pub fn request_to_rhai(
         CustomProviderError::RhaiRuntimeError(format!("tools bridge produced non-array ({typ})"))
     })?;
 
+    let thinking_dyn = match thinking_config {
+        Some(value) => json_value_to_dynamic(value),
+        None => Dynamic::UNIT,
+    };
+
     let mut map = Map::new();
     map.insert("messages".into(), Dynamic::from_array(messages_arr));
     map.insert("tools".into(), Dynamic::from_array(tools_arr));
+    map.insert("thinking_config".into(), thinking_dyn);
     Ok(Dynamic::from_map(map))
 }

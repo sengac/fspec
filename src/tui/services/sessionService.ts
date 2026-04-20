@@ -23,6 +23,7 @@ import {
   discardSession,
   pruneOrphaned,
 } from '@sengac/codelet-napi';
+import { isCustomProviderSection } from './customProviderSectionBuilder';
 import type {
   SessionInfoJs,
   SessionResultJs,
@@ -115,6 +116,19 @@ export async function createSession(
   const { modelPath, project, name, modelSelection } = options;
   const sessionName = name || `New Session ${new Date().toLocaleString()}`;
 
+  logger.warn('[sessionService] createSession ENTER', {
+    modelPath,
+    project,
+    name: sessionName,
+    hasModelSelection: !!modelSelection,
+    providerId: modelSelection?.providerId,
+    modelId: modelSelection?.modelId,
+    hasProfileConfig: !!modelSelection?.profileConfig,
+    isCustom: modelSelection
+      ? isCustomProviderSection(modelSelection.providerId)
+      : undefined,
+  });
+
   // Create persisted session first (gives us the ID)
   const persistedSession = persistenceCreateSessionWithProvider(
     sessionName,
@@ -122,18 +136,30 @@ export async function createSession(
     modelPath
   );
 
+  logger.warn('[sessionService] persistenceCreateSessionWithProvider done', {
+    sessionId: persistedSession.id,
+    modelPath,
+  });
+
   // GIT-029: Subscribe BEFORE creating Rust session to catch IsolationStateChange chunk
   // The chunk is emitted during session creation, so we must be subscribed first
   const manager = GlobalSessionStreamManager.getInstance();
   manager.subscribeToSession(persistedSession.id);
 
   // Create Rust background session with the same ID
+  logger.warn('[sessionService] calling sessionManagerCreateWithId', {
+    sessionId: persistedSession.id,
+    modelPath,
+  });
   await sessionManagerCreateWithId(
     persistedSession.id,
     modelPath,
     project,
     sessionName
   );
+  logger.warn('[sessionService] sessionManagerCreateWithId OK', {
+    sessionId: persistedSession.id,
+  });
 
   // MODEL-005: Propagate per-model context window and max output tokens to ProviderManager.
   // sessionManagerCreateWithId doesn't accept these parameters, so we push them
@@ -142,8 +168,24 @@ export async function createSession(
     try {
       if (
         modelSelection.profileConfig ||
-        modelSelection.providerId === 'codex'
+        modelSelection.providerId === 'codex' ||
+        isCustomProviderSection(modelSelection.providerId)
       ) {
+        // PROV-096: Custom (Rhai-scripted / facade-based) providers are not
+        // in the models.dev registry, so they MUST go through
+        // sessionSetModelProfile which calls `set_model_direct` and
+        // bypasses registry validation. sessionSetModel would call
+        // `select_model()` and fail with "Unknown provider:
+        // '<custom-slug>'" for any non-builtin provider.
+        logger.warn(
+          '[sessionService] routing custom/profile provider via sessionSetModelProfile',
+          {
+            sessionId: persistedSession.id,
+            providerId: modelSelection.providerId,
+            modelId: modelSelection.modelId,
+            facade: modelSelection.facade ?? null,
+          }
+        );
         await sessionSetModelProfile(
           persistedSession.id,
           modelSelection.providerId,
@@ -153,6 +195,14 @@ export async function createSession(
           modelSelection.facade ?? null
         );
       } else {
+        logger.warn(
+          '[sessionService] routing builtin provider via sessionSetModel',
+          {
+            sessionId: persistedSession.id,
+            providerId: modelSelection.providerId,
+            modelId: modelSelection.modelId,
+          }
+        );
         await sessionSetModel(
           persistedSession.id,
           modelSelection.providerId,
@@ -168,6 +218,11 @@ export async function createSession(
       });
     }
   }
+
+  logger.warn('[sessionService] createSession EXIT ok', {
+    sessionId: persistedSession.id,
+    provider: modelPath,
+  });
 
   return {
     sessionId: persistedSession.id,
@@ -397,8 +452,11 @@ export async function createIsolatedSession(
     try {
       if (
         modelSelection.profileConfig ||
-        modelSelection.providerId === 'codex'
+        modelSelection.providerId === 'codex' ||
+        isCustomProviderSection(modelSelection.providerId)
       ) {
+        // PROV-096: see note in createSession() above — custom providers
+        // must bypass the models.dev registry via sessionSetModelProfile.
         await sessionSetModelProfile(
           persistedSession.id,
           modelSelection.providerId,

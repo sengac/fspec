@@ -1,0 +1,389 @@
+{
+  "scenarios": [
+    {
+      "name": "Serialize an Image ContentPart with a URL source",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "210-231",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/types.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Serialize an Image ContentPart with a Base64 source",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "233-257",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/types.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Round-trip an Image ContentPart through JSON",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "259-283",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/types.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "extract_text_from_content skips Image parts",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "24-47",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/adapter.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "messages_to_rhai preserves a URL image part verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "71-121",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "messages_to_rhai preserves a base64 image part verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "126-166",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "convert_assistant_content still rejects assistant-side images",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "285-313",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/adapter.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "response_bridge rejects image parts from parse_response",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/multimodal_image_content_tests.rs",
+          "lines": "171-202",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/response_bridge.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/multimodal_image_content_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/common/src/types.rs",
+      "codelet/providers/src/adapter.rs",
+      "codelet/providers/src/custom/request_bridge.rs",
+      "codelet/providers/src/custom/response_bridge.rs"
+    ],
+    "totalLinesCovered": 491
+  }
+}

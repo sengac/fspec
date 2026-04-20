@@ -311,14 +311,30 @@ pub fn apply_custom_provider_env_vars(
 
 /// Derive the effective facade for a custom provider from its config.
 ///
-/// Priority: explicit `facade` field > derived from `api_style`.
-/// Returns `None` only when the provider uses a Rhai-native path.
+/// Priority:
+/// 1. Explicit `facade` field → use that facade.
+/// 2. No explicit facade AND a Rhai `script` is present → return `None` so
+///    the agent-loop dispatches to the custom-provider fallback arm
+///    (PROV-092's `CustomProvider::create_rig_agent` / Rhai-native path).
+/// 3. No facade AND no script → derive a built-in facade from `api_style`.
+///
+/// PROV-095: Previously this function unconditionally derived a facade
+/// from `api_style` even when a Rhai `script` was present, which
+/// short-circuited dispatch to the built-in provider (e.g. `get_claude()`)
+/// and raised `Current provider is not Claude` for Rhai-scripted
+/// providers like `claude-rhai`.
 pub fn derive_facade_for_custom(name: &str) -> Option<String> {
     let configs = discover_provider_configs().ok()?;
     let cfg = configs.into_iter().find(|c| c.name == name)?;
 
     if let Some(ref f) = cfg.facade {
         return Some(f.clone());
+    }
+    // PROV-095: A non-empty `script` means the provider runs through the
+    // Rhai-native dispatch path — do NOT derive a built-in facade here,
+    // otherwise the agent loop short-circuits to the wrong arm.
+    if !cfg.script.trim().is_empty() {
+        return None;
     }
     match cfg.api_style {
         crate::custom::ApiStyle::AnthropicMessages => Some("claude".to_string()),

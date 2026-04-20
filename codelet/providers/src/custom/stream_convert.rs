@@ -52,6 +52,7 @@ fn handle_one(
 
     match kind.as_str() {
         "text_delta" | "text" => handle_text(&map),
+        "reasoning_delta" | "thinking_delta" => handle_reasoning(&map),
         "tool_call_delta" | "tool_call" => handle_tool_call(processor, &map),
         "stop" => handle_stop(processor, &map),
         "ignore" | "" => Vec::new(),
@@ -63,16 +64,33 @@ fn handle_one(
 }
 
 fn handle_text(map: &Map) -> Vec<StreamChunk> {
-    let text = map
-        .get("text")
+    match non_empty_text(map, "text") {
+        Some(text) => vec![StreamChunk::TextDelta(text)],
+        None => Vec::new(),
+    }
+}
+
+/// PROV-089: Bridge a Rhai `reasoning_delta` / `thinking_delta` map into a
+/// [`StreamChunk::ReasoningDelta`]. Mirrors [`handle_text`] — empty or
+/// missing text is ignored so keepalive-shaped reasoning events do not
+/// produce empty chunks.
+fn handle_reasoning(map: &Map) -> Vec<StreamChunk> {
+    match non_empty_text(map, "text") {
+        Some(text) => vec![StreamChunk::ReasoningDelta(text)],
+        None => Vec::new(),
+    }
+}
+
+/// Extract a non-empty string value for `key` from `map`. Returns
+/// `None` when the key is absent, not-a-string, or an empty string —
+/// the canonical "skip this event" signal for text-bearing chunk
+/// kinds. Shared by [`handle_text`] and [`handle_reasoning`] so the
+/// empty-text guard lives in exactly one place.
+fn non_empty_text(map: &Map, key: &str) -> Option<String> {
+    map.get(key)
         .cloned()
         .and_then(|v| v.into_string().ok())
-        .unwrap_or_default();
-    if text.is_empty() {
-        Vec::new()
-    } else {
-        vec![StreamChunk::TextDelta(text)]
-    }
+        .filter(|s| !s.is_empty())
 }
 
 fn handle_stop(

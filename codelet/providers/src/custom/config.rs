@@ -1,8 +1,17 @@
 //! ProviderConfig JSON schema (PROV-062).
 //!
 //! Deserializes the custom provider JSON configuration and runs load-time
-//! validation: name pattern, built-in name conflict, script existence, and
-//! default-model cross-reference.
+//! validation: name pattern, script existence, and default-model
+//! cross-reference.
+//!
+//! PROV-085: The built-in-name collision guard has been removed so that
+//! custom Rhai provider configs may shadow built-in providers (e.g. ship
+//! `claude-code.rhai` as the default Claude path). Precedence is resolved
+//! at the manager layer via `custom_provider_registered`, gated by the
+//! `FSPEC_DISABLE_SCRIPT_SHADOWING` escape hatch. The
+//! [`CustomProviderError::NameConflict`] variant is retained in the
+//! public API for binary compatibility; it is no longer produced by the
+//! default code path.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -12,17 +21,6 @@ use serde::{Deserialize, Serialize};
 
 use super::error::CustomProviderError;
 use super::tool_facade::RhaiToolDef;
-
-/// Reserved provider names that custom configs must not claim.
-const BUILTIN_PROVIDER_NAMES: &[&str] = &[
-    "claude",
-    "openai",
-    "codex",
-    "gemini",
-    "zai",
-    "github-copilot",
-    "copilot",
-];
 
 /// Allowed pattern for the `name` field of a custom provider config.
 const NAME_PATTERN: &str = "^[a-z][a-z0-9-]*$";
@@ -267,7 +265,7 @@ pub struct ProviderConfig {
 impl ProviderConfig {
     /// Load and validate a provider config from a JSON file on disk.
     ///
-    /// Runs all load-time validation: name pattern, built-in conflict,
+    /// Runs all load-time validation: name pattern,
     /// script existence (resolved relative to the config file's directory),
     /// and default-model cross-reference.
     pub fn from_file(path: &Path) -> Result<Self, CustomProviderError> {
@@ -306,13 +304,14 @@ impl ProviderConfig {
             });
         }
 
-        // Built-in collision.
-        if BUILTIN_PROVIDER_NAMES.contains(&self.name.as_str()) {
-            return Err(CustomProviderError::NameConflict {
-                name: self.name.clone(),
-                path: path.to_path_buf(),
-            });
-        }
+        // PROV-085: The BUILTIN_PROVIDER_NAMES collision guard has been
+        // removed. Custom configs are now permitted to shadow built-in
+        // provider slugs (`claude`, `codex`, `openai`, `gemini`, `zai`,
+        // `copilot`, `github-copilot`). Precedence resolution lives in
+        // `manager::custom_provider_registered` where the escape-hatch
+        // env var `FSPEC_DISABLE_SCRIPT_SHADOWING` can opt back in to
+        // the hardcoded built-in path. The `NameConflict` variant is
+        // retained in `CustomProviderError` for public-API stability.
 
         // Script existence (relative to the config file's directory).
         // PROV-067: when a facade is configured, the custom provider

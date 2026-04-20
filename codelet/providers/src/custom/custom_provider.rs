@@ -1,95 +1,126 @@
-//! PROV-067: Generic `CustomProvider` agent construction for custom
-//! providers with `facade = null`.
+//! PROV-067 + PROV-092: Generic `CustomProvider` agent construction for
+//! custom providers with `facade = null`.
 //!
 //! When a custom provider does not declare a facade, the agent-loop
-//! can't route through an existing match arm; instead it goes through
+//! cannot route through an existing match arm; instead it goes through
 //! this generic path, wiring:
-//! - [`RhaiCustomProvider`] as the LLM backend,
-//! - [`RhaiSystemPromptFacade`] for system-prompt composition, and
-//! - [`RhaiToolFacadeAdapter`] instances as the tool surface.
+//! - [`RhaiCustomProvider`] wrapped in [`RhaiCustomProviderModel`] as
+//!   the `rig::completion::CompletionModel`,
+//! - [`RhaiSystemPromptFacade`] for system-prompt composition (preamble
+//!   transform + identity prefix), and
+//! - [`RhaiToolWrapper`] instances around each [`RhaiToolFacadeAdapter`]
+//!   so script-defined tools surface to rig's `ToolServer` with their
+//!   dynamic names.
 //!
-//! The concrete rig::agent::Agent construction is intentionally stubbed
-//! today — the acceptance test only asserts that the shim is invoked
-//! and that the facade/adapter pair is wired in. Full rig-level
-//! integration will land in a follow-up work unit.
+//! [`CustomProvider::create_rig_agent`] returns a
+//! [`CustomRigAgent`] handle whose [`CustomRigAgent::into_inner`] method
+//! exposes the fully-built [`rig::agent::Agent<RhaiCustomProviderModel>`]
+//! ready to wrap in `codelet_core::RigAgent` and stream through
+//! `run_agent_stream_with_images`.
 
 use std::sync::Arc;
+
+use rig::agent::{Agent, AgentBuilder};
 
 use super::config::ProviderConfig;
 use super::discovery::discover_provider_configs;
 use super::error::CustomProviderError;
 use super::provider::RhaiCustomProvider;
+use super::rig_model::RhaiCustomProviderModel;
+use super::rig_tool::RhaiToolWrapper;
 use super::script_loader::ScriptLoader;
 use super::system_prompt::RhaiSystemPromptFacade;
 use super::tool_facade::{RhaiToolDef, RhaiToolFacadeAdapter};
 use super::tool_resolve::resolve_tools;
 use crate::oauth::building_blocks::register_all_modules;
 use crate::oauth::engine::build_sandboxed_engine;
+use codelet_tools::facade::SystemPromptFacade;
 
-/// Opaque handle exposing the wired Rhai facade/adapter pair. Kept
-/// deliberately small so acceptance tests can assert wiring without
-/// the full rig::Tool plumbing.
+/// Handle returned by [`CustomProvider::create_rig_agent`]. Carries the
+/// real rig agent plus introspection metadata so existing tests can
+/// continue to assert facade wiring without poking at rig's private
+/// fields.
 pub struct CustomRigAgent {
     provider_name: String,
-    _backend: Arc<RhaiCustomProvider>,
+    agent: Agent<RhaiCustomProviderModel>,
     system_prompt_facade: Arc<RhaiSystemPromptFacade>,
-    tool_adapters: Vec<RhaiToolFacadeAdapter>,
+    tool_adapter_count: usize,
 }
 
 impl CustomRigAgent {
+    /// Provider name as configured in the JSON.
     pub fn provider_name(&self) -> &str {
         &self.provider_name
     }
 
     /// `true` — the generic path always wires a [`RhaiSystemPromptFacade`].
     pub fn uses_rhai_system_prompt_facade(&self) -> bool {
-        // The Arc existing proves wiring; the getter keeps the field used.
         let _ = &self.system_prompt_facade;
         true
+    }
+
+    /// Borrow the system-prompt facade (useful for direct rendering tests).
+    pub fn system_prompt_facade(&self) -> &Arc<RhaiSystemPromptFacade> {
+        &self.system_prompt_facade
     }
 
     /// `true` when at least one [`RhaiToolFacadeAdapter`] was resolved
     /// from the script's `define_tools` output or from the tool_style
     /// preset fallback.
     pub fn uses_rhai_tool_facade_adapter(&self) -> bool {
-        !self.tool_adapters.is_empty()
+        self.tool_adapter_count > 0
     }
 
-    /// Return the number of resolved tool adapters.
+    /// Number of resolved tool adapters wired into the agent.
     pub fn tool_adapter_count(&self) -> usize {
-        self.tool_adapters.len()
+        self.tool_adapter_count
+    }
+
+    /// Borrow the inner [`rig::agent::Agent`].
+    pub fn agent(&self) -> &Agent<RhaiCustomProviderModel> {
+        &self.agent
+    }
+
+    /// Consume the wrapper and return the inner [`rig::agent::Agent`].
+    /// The agent-loop dispatch arm uses this to wrap the agent in
+    /// `codelet_core::RigAgent` for streaming.
+    pub fn into_inner(self) -> Agent<RhaiCustomProviderModel> {
+        self.agent
     }
 }
 
-/// PROV-067: Façade-null entry point. Builds the Rhai backend, the
-/// system-prompt façade, and a `RhaiToolFacadeAdapter` per resolved
-/// tool, and returns them bundled in [`CustomRigAgent`].
+/// PROV-067 + PROV-092: Façade-null entry point. Builds the
+/// Rhai-backed completion model, the system-prompt façade, the tool
+/// wrappers, and assembles them into a real `rig::agent::Agent`.
 pub struct CustomProvider;
 
 impl CustomProvider {
     /// Construct a generic Rhai-backed custom provider agent.
     ///
-    /// `project_root` is used to anchor config-file resolution when the
-    /// caller isn't running from the project's CWD. Discovery still
-    /// honours the user-global + project-local override chain.
+    /// `project_root` anchors config-file resolution when the caller
+    /// isn't running from the project's CWD. Discovery still honours
+    /// the user-global + project-local override chain.
+    ///
+    /// `thinking_config` mirrors the shape of
+    /// [`crate::ClaudeProvider::create_rig_agent`] so the agent-loop can
+    /// thread adaptive-thinking configuration uniformly across providers.
+    /// It is forwarded into the agent's `additional_params` so the
+    /// rig-driven `CompletionRequest` carries it through to the Rhai
+    /// `build_request` call (PROV-090).
     pub fn create_rig_agent(
         project_root: &std::path::Path,
         name: &str,
         model_alias: &str,
-        _session_id: uuid::Uuid,
-        _preamble: Option<&str>,
+        session_id: uuid::Uuid,
+        preamble: Option<&str>,
+        thinking_config: Option<serde_json::Value>,
     ) -> Result<CustomRigAgent, CustomProviderError> {
         let configs = discover_provider_configs()?;
-        let cfg = configs
-            .into_iter()
-            .find(|c| c.name == name)
-            .ok_or_else(|| {
-                CustomProviderError::RhaiRuntimeError(format!(
-                    "custom provider '{name}' not discovered"
-                ))
-            })?;
-        // Resolve the script path relative to the config's
-        // canonical directory — matches ProviderConfig::validate.
+        let cfg = configs.into_iter().find(|c| c.name == name).ok_or_else(|| {
+            CustomProviderError::RhaiRuntimeError(format!(
+                "custom provider '{name}' not discovered"
+            ))
+        })?;
         let config_dir = find_config_dir(project_root, name).ok_or_else(|| {
             CustomProviderError::RhaiRuntimeError(format!(
                 "could not locate config directory for '{name}'"
@@ -117,6 +148,7 @@ impl CustomProvider {
                     .ok()
             })
             .collect();
+        let tool_adapter_count = tool_adapters.len();
 
         let system_prompt_facade = Arc::new(build_system_prompt_facade(
             name,
@@ -124,13 +156,68 @@ impl CustomProvider {
             loader.clone(),
         )?);
 
+        let agent = build_rig_agent(
+            backend.clone(),
+            session_id,
+            preamble,
+            thinking_config,
+            &system_prompt_facade,
+            tool_adapters,
+        );
+
         Ok(CustomRigAgent {
             provider_name: name.to_string(),
-            _backend: backend,
+            agent,
             system_prompt_facade,
-            tool_adapters,
+            tool_adapter_count,
         })
     }
+}
+
+/// Build the rig agent: wrap the backend in [`RhaiCustomProviderModel`],
+/// compose the preamble through the system-prompt facade, attach every
+/// [`RhaiToolWrapper`] as a static tool, and merge `thinking_config` into
+/// the agent's `additional_params` so it round-trips through every rig
+/// `CompletionRequest`.
+fn build_rig_agent(
+    backend: Arc<RhaiCustomProvider>,
+    session_id: uuid::Uuid,
+    preamble: Option<&str>,
+    thinking_config: Option<serde_json::Value>,
+    system_prompt_facade: &Arc<RhaiSystemPromptFacade>,
+    tool_adapters: Vec<RhaiToolFacadeAdapter>,
+) -> Agent<RhaiCustomProviderModel> {
+    let model = RhaiCustomProviderModel::new(backend);
+    let mut agent_builder = AgentBuilder::new(model);
+
+    // Preamble: facade transform_preamble first, then prefix the
+    // identity prefix if the script declares one.
+    let preamble_text = preamble.unwrap_or("");
+    let transformed = system_prompt_facade.transform_preamble(preamble_text);
+    let effective_preamble = match system_prompt_facade.identity_prefix() {
+        Some(prefix) if !prefix.is_empty() => format!("{prefix}\n{transformed}"),
+        _ => transformed,
+    };
+    agent_builder = agent_builder.preamble(&effective_preamble);
+
+    // additional_params carries thinking_config — RhaiCustomProviderModel
+    // forwards it into the Rhai build_request call as request.thinking_config.
+    if let Some(thinking) = thinking_config {
+        agent_builder = agent_builder.additional_params(thinking);
+    }
+
+    // Attach every script-defined tool. AgentBuilder::tool consumes
+    // the AgentBuilder and returns an AgentBuilderSimple. Subsequent
+    // .tool() calls append to that simple builder.
+    let mut iter = tool_adapters.into_iter();
+    let Some(first) = iter.next() else {
+        return agent_builder.build();
+    };
+    let mut simple = agent_builder.tool(RhaiToolWrapper::new(first, session_id));
+    for adapter in iter {
+        simple = simple.tool(RhaiToolWrapper::new(adapter, session_id));
+    }
+    simple.build()
 }
 
 /// Locate the directory containing `<name>.json` — project-local first,

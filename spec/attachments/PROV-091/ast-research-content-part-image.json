@@ -1,0 +1,57 @@
+{
+  "description": "AST research for PROV-091 - Image multimodal content in core types and Rhai request bridge",
+  "workUnit": "PROV-091",
+  "findings": {
+    "ContentPart_variants_currently": [
+      "Text { text: String }",
+      "ToolUse { id, name, input }",
+      "ToolResult { tool_use_id, content, is_error }"
+    ],
+    "ContentPart_match_sites": [
+      {
+        "file": "codelet/providers/src/adapter.rs",
+        "line": 72,
+        "context": "extract_text_from_content - uses `if let ContentPart::Text {..}` filter_map - non-text variants already return None; new Image variant needs no change"
+      },
+      {
+        "file": "codelet/providers/src/adapter.rs",
+        "line": 140,
+        "context": "convert_assistant_content builds ContentPart::Text/ToolUse from rig::AssistantContent. Assistant-side Image still rejected (line 154-159)"
+      },
+      {
+        "file": "codelet/providers/src/custom/response_bridge.rs",
+        "line": 47,
+        "context": "part_from_map - matches part_type string 'text' | 'tool_use' | other (error). Unknown types error out; image in response parse intentionally rejected"
+      }
+    ],
+    "MessageContent_enum": {
+      "file": "codelet/common/src/types.rs",
+      "variants": [
+        "Text(String)",
+        "Parts(Vec<ContentPart>)"
+      ]
+    },
+    "request_bridge_pipeline": {
+      "file": "codelet/providers/src/custom/request_bridge.rs",
+      "note": "Uses serde_json::to_value(&messages) then json_value_to_dynamic. Any new ContentPart variant with Serialize impl round-trips transparently through the bridge."
+    },
+    "adapter_exhaustive_matches": "extract_text_from_content uses `if let` not `match` so new variants compile without changes; convert_assistant_content matches on rig::AssistantContent not ContentPart - unaffected by our new variant.",
+    "builtin_providers_impact": {
+      "claude.rs": "Uses extract_text_from_content / adapter helpers - no direct ContentPart::Image handling needed for text-prompt flow",
+      "openai.rs": "Same - consumes text prompts via helpers",
+      "gemini.rs": "Same",
+      "codex/mod.rs": "Same",
+      "zai.rs": "Same",
+      "custom/request_bridge.rs": "Serde-driven; transparent"
+    },
+    "response_bridge_negative_test": "part_from_map with 'image' type must return Err because images are request-only; this is the other edge of the bridge being unidirectional."
+  },
+  "scope_decisions": [
+    "Add ContentPart::Image { source: ImageSource } with ImageSource::Url { url } and ImageSource::Base64 { media_type, data }",
+    "Re-export ImageSource via codelet_common::lib and codelet_common::types module",
+    "Explicitly add Image no-text arm to extract_text_from_content (even though if-let would suffice) to document intent and future-proof against match-refactor",
+    "Do NOT extend convert_assistant_content - assistant images remain rejected",
+    "Do NOT extend response_bridge::part_from_map - response parsing of images remains rejected",
+    "All tests live in common (serde), providers/tests/ (bridge + adapter)"
+  ]
+}

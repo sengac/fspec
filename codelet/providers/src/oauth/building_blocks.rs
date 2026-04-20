@@ -1,23 +1,143 @@
-//! Rhai Building Block Modules (PROV-060)
+//! Rhai Building Block Modules (PROV-060 / PROV-086)
 //!
-//! Registers http::, crypto::, json::, and oauth:: modules for use
-//! in Rhai scripts. Each module exposes provider-agnostic primitives
-//! that custom OAuth scripts can use.
+//! Registers `http::`, `crypto::`, `json::`, `oauth::`, and (optionally)
+//! `cred::` modules for use in Rhai scripts. Each module exposes
+//! provider-agnostic primitives that custom OAuth scripts can use.
+//!
+//! The provider-scoped `cred::` module is kept in a separate file to
+//! stay within the 300-line limit; `pub use` re-exports are provided
+//! below so existing callers that import from `oauth::building_blocks`
+//! continue to work unchanged.
 
 use rhai::{Dynamic, Map, Module};
 
 use super::engine::RhaiModule;
 
+pub use super::cred_module::{build_cred_module, fspec_home};
+pub use super::json_convert::{dynamic_to_json_value, json_value_to_dynamic};
+
 /// Register all default PROV-060 building block modules.
 ///
 /// Returns a Vec of `RhaiModule` for use with `build_sandboxed_engine`.
+///
+/// This set does **not** include the `cred::` module — the `cred::`
+/// namespace is scoped to a specific provider name and is only added
+/// by [`register_all_modules_for_provider`] (PROV-086).
 pub fn register_all_modules() -> Vec<RhaiModule> {
     vec![
         build_http_module(),
         build_crypto_module(),
         build_json_module(),
         build_oauth_module(),
+        build_log_module(),
     ]
+}
+
+/// Build the `log` module with `warn`, `info`, `debug`, `error`, and
+/// `trace` functions that forward to Rust's `tracing` facility.
+///
+/// Rhai scripts can call `log::warn("message")` to emit diagnostics
+/// that flow through the TypeScript log bridge into `~/.fspec/fspec.log`,
+/// which is invaluable for debugging the rhai dispatch pipeline.
+///
+/// Signatures accept either a single string or a key/value map
+/// (rendered as `key=value, ...` pairs) so scripts can emit
+/// structured-ish entries without a real format() API.
+fn build_log_module() -> RhaiModule {
+    let mut module = Module::new();
+
+    fn fmt_map(m: &Map) -> String {
+        let mut parts = Vec::with_capacity(m.len());
+        for (k, v) in m {
+            parts.push(format!("{k}={v:?}"));
+        }
+        parts.join(", ")
+    }
+
+    module.set_native_fn(
+        "warn",
+        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::warn!(target: "rhai_script", source = "rhai", "{}", msg);
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "warn",
+        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::warn!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "info",
+        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::info!(target: "rhai_script", source = "rhai", "{}", msg);
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "info",
+        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::info!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "debug",
+        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::debug!(target: "rhai_script", source = "rhai", "{}", msg);
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "debug",
+        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::debug!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "error",
+        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::error!(target: "rhai_script", source = "rhai", "{}", msg);
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "error",
+        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::error!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
+            Ok(Dynamic::UNIT)
+        },
+    );
+    module.set_native_fn(
+        "trace",
+        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
+            tracing::trace!(target: "rhai_script", source = "rhai", "{}", msg);
+            Ok(Dynamic::UNIT)
+        },
+    );
+
+    RhaiModule {
+        name: "log".to_string(),
+        module,
+    }
+}
+
+/// Register the default building block modules plus a provider-scoped
+/// `cred::` module (PROV-086).
+///
+/// The returned module list is intended for
+/// [`super::engine::build_provider_engine`]. The `cred::` module binds
+/// the given `provider_name` at build time; any call to `cred::read`,
+/// `cred::write`, `cred::delete`, or `cred::path` that passes a
+/// different name is rejected with an access-denied runtime error —
+/// preventing one provider's script from reading another provider's
+/// credential file.
+pub fn register_all_modules_for_provider(provider_name: &str) -> Vec<RhaiModule> {
+    let mut modules = register_all_modules();
+    modules.push(build_cred_module(provider_name.to_string()));
+    modules
 }
 
 /// Build the `http` module with `post` and `get` functions.
@@ -209,63 +329,5 @@ fn build_oauth_module() -> RhaiModule {
     RhaiModule {
         name: "oauth".to_string(),
         module,
-    }
-}
-
-/// Convert `serde_json::Value` to Rhai `Dynamic`.
-fn json_value_to_dynamic(value: &serde_json::Value) -> Dynamic {
-    match value {
-        serde_json::Value::Null => Dynamic::UNIT,
-        serde_json::Value::Bool(b) => Dynamic::from(*b),
-        serde_json::Value::Number(n) => {
-            if let Some(i) = n.as_i64() {
-                Dynamic::from(i)
-            } else if let Some(f) = n.as_f64() {
-                Dynamic::from(f)
-            } else {
-                Dynamic::UNIT
-            }
-        }
-        serde_json::Value::String(s) => Dynamic::from(s.clone()),
-        serde_json::Value::Array(arr) => {
-            let items: Vec<Dynamic> = arr.iter().map(json_value_to_dynamic).collect();
-            Dynamic::from_array(items)
-        }
-        serde_json::Value::Object(obj) => {
-            let mut map = Map::new();
-            for (k, v) in obj {
-                map.insert(k.clone().into(), json_value_to_dynamic(v));
-            }
-            Dynamic::from_map(map)
-        }
-    }
-}
-
-/// Convert Rhai `Dynamic` to `serde_json::Value`.
-fn dynamic_to_json_value(value: &Dynamic) -> serde_json::Value {
-    if value.is_unit() {
-        serde_json::Value::Null
-    } else if let Ok(b) = value.as_bool() {
-        serde_json::Value::Bool(b)
-    } else if let Ok(i) = value.as_int() {
-        serde_json::Value::Number(serde_json::Number::from(i))
-    } else if let Ok(f) = value.as_float() {
-        serde_json::Number::from_f64(f)
-            .map(serde_json::Value::Number)
-            .unwrap_or(serde_json::Value::Null)
-    } else if let Ok(s) = value.clone().into_string() {
-        serde_json::Value::String(s)
-    } else if value.is_array() {
-        let arr = value.clone().into_typed_array::<Dynamic>().unwrap_or_default();
-        serde_json::Value::Array(arr.iter().map(dynamic_to_json_value).collect())
-    } else if value.is_map() {
-        let map = value.clone().cast::<Map>();
-        let mut obj = serde_json::Map::new();
-        for (k, v) in &map {
-            obj.insert(k.to_string(), dynamic_to_json_value(v));
-        }
-        serde_json::Value::Object(obj)
-    } else {
-        serde_json::Value::Null
     }
 }

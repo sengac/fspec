@@ -6,11 +6,8 @@ use std::pin::Pin;
 use codelet_common::Message;
 use codelet_tools::ToolDefinition;
 use futures::{Stream, StreamExt};
-use rhai::Dynamic;
 
-use super::conversion::dynamic_to_json_value;
 use super::provider::RhaiCustomProvider;
-use super::request_bridge::request_to_rhai;
 use super::stream::{open_stream, RhaiStreamProcessor, StreamChunk};
 use crate::error::ProviderError;
 
@@ -19,15 +16,24 @@ impl RhaiCustomProvider {
     ///
     /// Mirrors [`RhaiCustomProvider::invoke_build_request`] but targets
     /// the `build_stream_request` hook so providers can tweak payload
-    /// shape for streaming (e.g. set `"stream": true`).
+    /// shape for streaming (e.g. set `"stream": true`). Both entry
+    /// points share
+    /// [`RhaiCustomProvider::invoke_request_builder`] so the
+    /// `(messages, tools, thinking_config)` → Rhai bridge lives in
+    /// exactly one place.
     pub async fn invoke_build_stream_request(
         &self,
         messages: &[Message],
         tools: &[ToolDefinition],
+        thinking_config: Option<serde_json::Value>,
     ) -> Result<serde_json::Value, ProviderError> {
-        let request = request_to_rhai(messages, tools).map_err(ProviderError::from)?;
-        let result = self.call_fn1_public("build_stream_request", request).await?;
-        Ok(dynamic_to_json_value(&result))
+        self.invoke_request_builder(
+            "build_stream_request",
+            messages,
+            tools,
+            thinking_config,
+        )
+        .await
     }
 
     /// Start a streaming completion. Returns a pinned `Stream` whose
@@ -62,7 +68,9 @@ impl RhaiCustomProvider {
     > {
         let url = self.invoke_build_url().await?;
         let headers = self.invoke_build_headers().await?;
-        let body = self.invoke_build_stream_request(messages, tools).await?;
+        let body = self
+            .invoke_build_stream_request(messages, tools, None)
+            .await?;
         let provider_name = self.provider_name().to_string();
 
         let body_string = serde_json::to_string(&body).map_err(|e| {
@@ -93,7 +101,7 @@ impl RhaiCustomProvider {
             self.engine_handle(),
             self.ast_handle(),
             provider_name.clone(),
-            self.config_dynamic_public(),
+            self.config_dynamic_accessor(),
         );
 
         let this = self.clone();
@@ -107,21 +115,12 @@ impl RhaiCustomProvider {
     }
 }
 
-// Internal accessors. Kept in this file because they are only needed
-// by the streaming entrypoint; exposing them on `RhaiCustomProvider`
-// via `pub(crate)` avoids widening the public surface of provider.rs.
+// Internal accessor kept private to this file. Named
+// `provider_name` to emphasise "the provider's name string" rather
+// than any wrapper type; the single call-site is `open_streaming`
+// above.
 impl RhaiCustomProvider {
     pub(crate) fn provider_name(&self) -> &str {
         self.config_name()
-    }
-    pub(crate) fn config_dynamic_public(&self) -> Dynamic {
-        self.config_dynamic_accessor()
-    }
-    pub(crate) async fn call_fn1_public(
-        &self,
-        fn_name: &'static str,
-        arg: Dynamic,
-    ) -> Result<Dynamic, ProviderError> {
-        self.call_fn1_accessor(fn_name, arg).await
     }
 }

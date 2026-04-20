@@ -723,6 +723,24 @@
         "PROV-077",
         "PROV-078"
       ]
+    },
+    "scriptable-subscription-providers": {
+      "id": "scriptable-subscription-providers",
+      "title": "Scriptable Subscription Providers via Rhai",
+      "createdAt": "2026-04-19T03:05:05.764Z",
+      "description": "Duplicate Claude Code and Codex subscription flows as Rhai-driven custom providers so the current hardcoded ClaudeProvider and CodexProvider eventually become one of several interchangeable transports. This epic delivers the Rhai surface (OAuth, reasoning deltas, multimodal, thinking_config, real rig::Agent construction) plus shipped parity scripts. Deprecation/removal of the hardcoded providers is explicitly OUT OF SCOPE — they continue to ship alongside the scripted versions.",
+      "workUnits": [
+        "PROV-085",
+        "PROV-086",
+        "PROV-087",
+        "PROV-088",
+        "PROV-089",
+        "PROV-090",
+        "PROV-091",
+        "PROV-092",
+        "PROV-093",
+        "PROV-094"
+      ]
     }
   }
 }

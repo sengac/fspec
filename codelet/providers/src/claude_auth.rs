@@ -26,15 +26,12 @@ pub struct ClaudeAuthJson {
     pub expires: u64,
 }
 
-/// Get the fspec credentials directory
-/// Uses FSPEC_HOME env var if set, otherwise defaults to ~/.fspec/credentials
+/// Get the fspec credentials directory.
+///
+/// Delegates to [`crate::oauth::fspec_home`] — the single source of
+/// truth for `$FSPEC_HOME || $HOME/.fspec/credentials`.
 fn get_fspec_home() -> PathBuf {
-    if let Ok(fspec_home) = std::env::var("FSPEC_HOME") {
-        PathBuf::from(fspec_home)
-    } else {
-        let home = std::env::var("HOME").unwrap_or_else(|_| String::from("/tmp"));
-        PathBuf::from(home).join(".fspec").join("credentials")
-    }
+    crate::oauth::fspec_home()
 }
 
 /// Get the path to claude_auth.json

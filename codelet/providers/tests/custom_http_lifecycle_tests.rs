@@ -65,7 +65,7 @@ fn map_error(status, body) { #{ type: "api", message: "" } }
     // @step When I call the request_bridge with a single user message "hi"
     let messages = vec![Message::user("hi")];
     let body_json = provider
-        .invoke_build_request(&messages, &[])
+        .invoke_build_request(&messages, &[], None)
         .await
         .expect("build_request returns JSON");
 

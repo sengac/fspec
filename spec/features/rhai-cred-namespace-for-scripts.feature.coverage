@@ -1,0 +1,303 @@
+{
+  "scenarios": [
+    {
+      "name": "cred::write persists a map as JSON with 0600 permissions",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "57-91",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/cred_module.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cred::read returns the written map",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "96-124",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/cred_module.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cred::read returns unit when the credential file is absent",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "129-149",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/cred_module.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cred::read rejects a name that does not match the active provider",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "155-178",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/cred_module.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cred::write rejects a path-traversal name",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "183-212",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/cred_module.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cred::path returns the absolute credential path without touching the filesystem",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "218-246",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/cred_module.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cred::delete is idempotent when the credential file is absent",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "252-271",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/cred_module.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "default engine does not expose the cred namespace",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "276-288",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/engine.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "provider engine registers cred alongside the other building block modules",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/oauth/cred_module_tests.rs",
+          "lines": "293-319",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/oauth/building_blocks.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/src/oauth/cred_module_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/oauth/cred_module.rs",
+      "codelet/providers/src/oauth/engine.rs",
+      "codelet/providers/src/oauth/building_blocks.rs"
+    ],
+    "totalLinesCovered": 369
+  }
+}

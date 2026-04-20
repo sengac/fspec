@@ -148,16 +148,11 @@ impl From<CopilotAuthJson> for CopilotAuthJsonWire {
 
 /// Resolve the fspec credentials directory.
 ///
-/// Uses the `FSPEC_HOME` env var if set (so tests can redirect to a temp
-/// dir), otherwise falls back to `$HOME/.fspec/credentials`. Mirrors the
-/// behaviour of `claude_auth.rs::get_fspec_home`.
+/// Delegates to [`crate::oauth::fspec_home`] — the single source of
+/// truth for `$FSPEC_HOME || $HOME/.fspec/credentials`. Shared with
+/// `claude_auth`, `cred_module`, and scripted OAuth providers.
 fn get_fspec_home() -> PathBuf {
-    if let Ok(fspec_home) = std::env::var("FSPEC_HOME") {
-        PathBuf::from(fspec_home)
-    } else {
-        let home = std::env::var("HOME").unwrap_or_else(|_| String::from("/tmp"));
-        PathBuf::from(home).join(".fspec").join("credentials")
-    }
+    crate::oauth::fspec_home()
 }
 
 /// Resolve the absolute path to `copilot_auth.json` inside the fspec

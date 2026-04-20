@@ -3360,6 +3360,16 @@ impl SessionManager {
             )));
         }
 
+        // PROV-096: Detect custom (Rhai-scripted / facade-based) providers
+        // discovered from `~/.fspec/providers/` or `.fspec/providers/`.
+        // These providers are NOT present in the models.dev registry, so
+        // `select_model()` would fail with "Unknown provider: '<slug>'".
+        // Route them through `set_model_direct` instead (same pattern as
+        // codex and profile models).
+        let is_custom_model = !is_profile_model
+            && !is_codex_model
+            && codelet_providers::custom_provider_registered(registry_provider);
+
         let (provider_id, model_id) = (Some(registry_provider.to_string()), Some(model_part.to_string()));
 
         // Resolve credentials internally using the credentials module.
@@ -3385,6 +3395,19 @@ impl SessionManager {
             tracing::info!("PROV-018: Codex model detected, using set_model_direct for {}", model);
             provider_manager.set_model_direct(registry_provider, model_part, None, None, None)
                 .map_err(|e| Error::from_reason(format!("Failed to set codex model: {}", e)))?;
+        } else if is_custom_model {
+            // PROV-096: Custom (Rhai-scripted or facade-based) provider —
+            // discovered from `~/.fspec/providers/` / `.fspec/providers/`.
+            // Not in models.dev, so bypass registry validation. The
+            // facade_override is left as None here; `session_set_model_profile`
+            // (called later from the TUI) derives the correct facade from
+            // the provider config when it runs.
+            tracing::info!(
+                "PROV-096: Custom provider '{}' detected, using set_model_direct for {}",
+                registry_provider, model
+            );
+            provider_manager.set_model_direct(registry_provider, model_part, None, None, None)
+                .map_err(|e| Error::from_reason(format!("Failed to set custom model: {}", e)))?;
         } else {
             // Cloud model: validate against registry
             provider_manager.select_model(model)
@@ -5438,8 +5461,72 @@ async fn agent_loop(
                     thinking_config_value
                 ),
                 _ => {
-                    tracing::error!("Unsupported provider: {}", current_provider);
-                    Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+                    // PROV-092: Custom-provider dispatch. If the
+                    // current_provider name corresponds to a registered
+                    // Rhai shadow/custom provider, route through
+                    // `CustomProvider::create_rig_agent` which returns a
+                    // real `rig::agent::Agent<RhaiCustomProviderModel>`.
+                    // Otherwise fall through to the existing "unsupported"
+                    // error path so misspelled provider names still surface.
+                    let project_root = std::path::PathBuf::from(&session.project);
+                    let model_alias = current_model
+                        .clone()
+                        .unwrap_or_else(|| "default".to_string());
+                    let role_preamble = session.get_role();
+                    let agent_result = codelet_providers::custom::CustomProvider::create_rig_agent(
+                        &project_root,
+                        &current_provider,
+                        &model_alias,
+                        session.id,
+                        role_preamble.as_deref(),
+                        thinking_config_value.clone(),
+                    );
+                    match agent_result {
+                        Ok(handle) => {
+                            tracing::debug!(
+                                "[run_with_provider] Creating custom-provider agent - session={}, provider={}",
+                                session.id,
+                                current_provider,
+                            );
+                            let mcp_wrappers = codelet_tools::gather_mcp_tool_wrappers(session.id);
+                            let agent = handle.into_inner();
+                            if !mcp_wrappers.is_empty() {
+                                for wrapper in mcp_wrappers {
+                                    if let Err(e) = agent.tool_server_handle.add_tool(wrapper).await
+                                    {
+                                        tracing::warn!("[MCP] Failed to add MCP tool: {}", e);
+                                    }
+                                }
+                            }
+                            codelet_tools::set_mcp_tool_server_handle(
+                                session.id,
+                                agent.tool_server_handle.clone(),
+                            );
+                            let agent = codelet_core::RigAgent::with_default_depth(agent);
+                            codelet_cli::interactive::run_agent_stream_with_images(
+                                agent,
+                                input,
+                                bridge_images.clone(),
+                                &mut inner_session,
+                                session.is_interrupted.clone(),
+                                session.compaction_in_progress.clone(),
+                                session.interrupt_notify.clone(),
+                                &output,
+                            )
+                            .await
+                        }
+                        Err(e) => {
+                            tracing::error!(
+                                "Unsupported provider '{}' (not a built-in and custom-provider dispatch failed: {})",
+                                current_provider,
+                                e,
+                            );
+                            Err(anyhow::anyhow!(
+                                "Unsupported provider: {}",
+                                current_provider
+                            ))
+                        }
+                    }
                 }
             };
             
@@ -7578,6 +7665,24 @@ pub async fn session_toggle_debug(
 ) -> Result<DebugCommandResult> {
     let session = SessionManager::instance().get_session(&session_id)?;
 
+    // Snapshot session-derived metadata BEFORE acquiring the debug_capture lock so that
+    // when we enable capture we can seed the manager with the real provider/model values
+    // *before* `start_capture()` writes the `session.start` event. Without this, the
+    // recorded `session.start` would contain `provider: "unknown"` / `model: "unknown"`
+    // because the NAPI layer previously called `set_session_metadata` only AFTER
+    // `start_capture` had already flushed the event to disk.
+    let metadata_snapshot = {
+        let inner = session.inner.lock().await;
+        SessionMetadata {
+            provider: Some(inner.current_provider_name().to_string()),
+            model: inner
+                .current_model_id()
+                .or_else(|| Some(inner.current_provider_name().to_string())),
+            context_window: Some(inner.provider_manager().context_window()),
+            max_output_tokens: None,
+        }
+    };
+
     let result = {
         let mut manager = session.debug_capture.lock().map_err(|_| {
             Error::from_reason("Failed to acquire lock on per-session debug capture manager")
@@ -7614,6 +7719,9 @@ pub async fn session_toggle_debug(
                 },
             }
         } else {
+            // Seed metadata BEFORE start_capture so session.start records real values.
+            manager.set_session_metadata(metadata_snapshot);
+
             // Turn on
             match manager.start_capture() {
                 Ok(session_file) => codelet_common::debug_capture::DebugCommandResult {
@@ -7632,19 +7740,6 @@ pub async fn session_toggle_debug(
 
     // Store debug state in BackgroundSession for persistence across detach/attach
     session.set_debug_enabled(result.enabled);
-
-    // If debug was just enabled, set session metadata
-    if result.enabled {
-        let inner = session.inner.lock().await;
-        if let Ok(mut manager) = session.debug_capture.lock() {
-            manager.set_session_metadata(SessionMetadata {
-                provider: Some(inner.current_provider_name().to_string()),
-                model: inner.current_model_id().or_else(|| Some(inner.current_provider_name().to_string())),
-                context_window: Some(inner.provider_manager().context_window()),
-                max_output_tokens: None,
-            });
-        }
-    }
 
     // BUG-134: Emit DebugStateChange stream event so TUI can update its state
     session.handle_output(StreamChunk::debug_state_change(result.enabled));

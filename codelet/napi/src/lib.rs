@@ -21,6 +21,8 @@ mod codex_oauth;
 #[cfg(not(feature = "noop"))]
 mod copilot_oauth;
 #[cfg(not(feature = "noop"))]
+mod custom_oauth;
+#[cfg(not(feature = "noop"))]
 mod fspec;
 #[cfg(not(feature = "noop"))]
 mod git;
@@ -95,6 +97,8 @@ pub use claude_oauth::*;
 pub use codex_oauth::*;
 #[cfg(not(feature = "noop"))]
 pub use copilot_oauth::*;
+#[cfg(not(feature = "noop"))]
+pub use custom_oauth::*;
 #[cfg(not(feature = "noop"))]
 pub use fspec::*;
 #[cfg(not(feature = "noop"))]

@@ -91,36 +91,11 @@ fn reject_config_json_missing_the_required_name_field() {
     assert!(msg.contains("name"), "error should mention 'name': {msg}");
 }
 
-// =========================================================================
-// Scenario: Reject provider name that collides with a built-in provider
-// =========================================================================
-#[test]
-fn reject_provider_name_that_collides_with_a_builtin_provider() {
-    // @step Given a config JSON with name set to "claude"
-    let tmp = TempDir::new().expect("tempdir");
-    let script_path = write_valid_script(tmp.path(), "p.rhai");
-    let cfg = minimal_cfg(
-        "claude",
-        &script_path.file_name().unwrap().to_string_lossy(),
-    );
-    let cfg_path = tmp.path().join("claude.json");
-    fs::write(&cfg_path, serde_json::to_string(&cfg).unwrap()).unwrap();
-
-    // @step When I load the config
-    let result = ProviderConfig::from_file(&cfg_path);
-
-    // @step Then I receive an error mentioning that the name conflicts with a built-in provider
-    let err = result.expect_err("should fail");
-    assert!(
-        matches!(err, CustomProviderError::NameConflict { .. }),
-        "expected NameConflict, got {err:?}"
-    );
-    let msg = format!("{err}");
-    assert!(
-        msg.contains("built-in") || msg.contains("builtin"),
-        "error should mention built-in: {msg}"
-    );
-}
+// NOTE: PROV-085 removed the "Reject provider name that collides with a
+// built-in provider" scenario. The positive-path replacements (load claude
+// and load codex without NameConflict) live in
+// `custom_provider_script_shadowing_tests.rs` alongside the rest of the
+// shadowing feature so the 1 feature ↔ 1 test-file invariant holds.
 
 // =========================================================================
 // Scenario: Reject provider name with invalid characters

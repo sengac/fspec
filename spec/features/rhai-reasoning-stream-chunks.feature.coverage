@@ -1,0 +1,355 @@
+{
+  "scenarios": [
+    {
+      "name": "Emit ReasoningDelta chunk for a reasoning_delta kind",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "lines": "101-115",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accept thinking_delta kind as an alias for reasoning_delta",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "lines": "120-134",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skip reasoning_delta with empty text",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "lines": "139-152",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Skip reasoning_delta with missing text field",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "lines": "157-170",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve wire order for interleaved reasoning and text deltas",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "lines": "175-201",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/stream_convert.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End-to-end stream through complete_with_tools_streaming yields ReasoningDelta",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs",
+          "lines": "206-297",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/stream.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/custom_streaming_reasoning_delta_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/custom/stream_convert.rs",
+      "codelet/providers/src/custom/stream.rs"
+    ],
+    "totalLinesCovered": 419
+  }
+}

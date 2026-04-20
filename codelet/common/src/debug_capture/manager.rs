@@ -48,6 +48,15 @@ pub struct DebugCaptureManager {
     pub(super) session_metadata: SessionMetadata,
     pub(super) debug_dir: PathBuf,
     data_dir: PathBuf,
+    /// Whether the session.start event has been written to the current session file.
+    ///
+    /// BUG-fix: session.start emission is deferred until `set_session_metadata` supplies
+    /// the provider/model/context-window values. Without this flag, callers that set
+    /// metadata *after* `start_capture()` (e.g. `session_toggle_debug` in the NAPI layer)
+    /// end up writing a `session.start` event with `provider: "unknown"` and
+    /// `model: "unknown"`. If no metadata ever arrives, `stop_capture` emits a
+    /// fallback `session.start` before the `session.end` event.
+    pub(super) session_start_emitted: bool,
 }
 
 impl DebugCaptureManager {
@@ -72,6 +81,7 @@ impl DebugCaptureManager {
             session_metadata: SessionMetadata::default(),
             debug_dir,
             data_dir,
+            session_start_emitted: false,
         })
     }
 
@@ -98,6 +108,11 @@ impl DebugCaptureManager {
     }
 
     /// Set session metadata (provider, model, etc.)
+    ///
+    /// If debug capture is currently enabled and the `session.start` event has not yet
+    /// been written to the session file, this will emit it now using the updated
+    /// metadata. This guarantees the recorded `session.start` contains the real
+    /// provider/model values rather than the `"unknown"` defaults.
     pub fn set_session_metadata(&mut self, metadata: SessionMetadata) {
         if let Some(provider) = metadata.provider {
             self.session_metadata.provider = Some(provider);
@@ -110,6 +125,12 @@ impl DebugCaptureManager {
         }
         if let Some(max_output_tokens) = metadata.max_output_tokens {
             self.session_metadata.max_output_tokens = Some(max_output_tokens);
+        }
+
+        // Lazily emit the deferred `session.start` event now that metadata is available.
+        if self.enabled && !self.session_start_emitted {
+            self.capture_session_start();
+            self.session_start_emitted = true;
         }
     }
 
@@ -149,12 +170,19 @@ impl DebugCaptureManager {
         self.error_count = 0;
         self.warning_count = 0;
         self.enabled = true;
+        self.session_start_emitted = false;
 
         // Update latest symlink
         self.update_latest_symlink();
 
-        // Write session start event
-        self.capture_session_start();
+        // Write session start event IMMEDIATELY only if metadata is already present.
+        // Otherwise, defer emission until `set_session_metadata` is called so that the
+        // recorded event contains real provider/model values instead of "unknown".
+        // If metadata never arrives, `stop_capture` emits a fallback before session.end.
+        if self.session_metadata.provider.is_some() || self.session_metadata.model.is_some() {
+            self.capture_session_start();
+            self.session_start_emitted = true;
+        }
 
         Ok(self
             .session_file
@@ -168,6 +196,15 @@ impl DebugCaptureManager {
     pub fn stop_capture(&mut self) -> Result<String, DebugCaptureError> {
         if !self.enabled {
             return Ok(String::new());
+        }
+
+        // Fallback: if metadata was never supplied, emit a `session.start` now using
+        // whatever (possibly default) values we have. This ensures every session file
+        // contains exactly one `session.start` and one `session.end` event, preserving
+        // the ordering contract for downstream consumers.
+        if !self.session_start_emitted {
+            self.capture_session_start();
+            self.session_start_emitted = true;
         }
 
         // Write session end event
@@ -190,6 +227,7 @@ impl DebugCaptureManager {
         self.session_file = None;
         self.start_time = None;
         self.start_datetime = None;
+        self.session_start_emitted = false;
 
         Ok(session_file)
     }

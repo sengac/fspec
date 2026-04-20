@@ -37,6 +37,10 @@ where
     MapErrFut: std::future::Future<Output = ProviderError> + Send + 'static,
 {
     Box::pin(stream! {
+        tracing::warn!(
+            "[rhai-dispatch] open_stream ENTER: status={}",
+            status
+        );
         if !(200..300).contains(&status) {
             let mut body = String::new();
             let mut drained = Box::pin(body_stream);
@@ -45,6 +49,12 @@ where
                     body.push_str(&String::from_utf8_lossy(&bytes));
                 }
             }
+            tracing::warn!(
+                "[rhai-dispatch] open_stream non-2xx status={} body_len={} body_preview={:?}",
+                status,
+                body.len(),
+                body.chars().take(500).collect::<String>()
+            );
             let err = map_error_fn(status, body).await;
             yield Err(err);
             return;
@@ -52,16 +62,28 @@ where
 
         let mut events = Box::pin(body_stream.eventsource());
         let mut processor = processor;
+        let mut sse_events = 0usize;
 
         while let Some(event_result) = events.next().await {
             let event = match event_result {
                 Ok(e) => e,
                 Err(e) => {
-                    tracing::warn!(error = %e, "sse frame parse error");
+                    tracing::warn!(error = %e, "[rhai-dispatch] open_stream: sse frame parse error");
                     continue;
                 }
             };
+            sse_events += 1;
+            tracing::warn!(
+                "[rhai-dispatch] open_stream: received SSE event #{} type={:?} data_len={}",
+                sse_events,
+                event.event,
+                event.data.len()
+            );
             if event.data.trim() == "[DONE]" {
+                tracing::warn!(
+                    "[rhai-dispatch] open_stream: got [DONE] total_events={} flushing processor",
+                    sse_events
+                );
                 for chunk in processor.mark_done() {
                     yield Ok(chunk);
                 }
@@ -74,12 +96,20 @@ where
                     }
                 }
                 Err(e) => {
+                    tracing::warn!(
+                        error = %e,
+                        "[rhai-dispatch] open_stream: process_event returned ERROR"
+                    );
                     yield Err(e);
                     return;
                 }
             }
         }
 
+        tracing::warn!(
+            "[rhai-dispatch] open_stream: byte stream ended total_events={} — calling processor.finish()",
+            sse_events
+        );
         for chunk in processor.finish() {
             yield Ok(chunk);
         }

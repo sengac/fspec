@@ -17,4 +17,4 @@ pub mod web_search;
 
 // Re-export common types for convenience
 pub use data_dir::{get_data_dir, set_data_directory};
-pub use types::{ContentPart, Message, MessageContent, MessageRole};
+pub use types::{ContentPart, ImageSource, Message, MessageContent, MessageRole};

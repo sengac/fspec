@@ -42,6 +42,17 @@ impl FromStr for ProviderType {
 
     fn from_str(name: &str) -> Result<Self, ProviderError> {
         let lowered = name.to_lowercase();
+
+        // PROV-085: Shadowing precedence. Before matching hardcoded
+        // built-in slugs, consult the custom provider registry so that a
+        // discovered config named e.g. "claude" wins over
+        // `ProviderType::Claude`. The escape hatch
+        // `FSPEC_DISABLE_SCRIPT_SHADOWING=1` bypasses the lookup so CI
+        // can regression-test the hardcoded path.
+        if shadowing_enabled() && custom_provider_registered(&lowered) {
+            return Ok(ProviderType::Custom(lowered));
+        }
+
         match lowered.as_str() {
             "claude" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),
@@ -53,6 +64,9 @@ impl FromStr for ProviderType {
                 // PROV-067: Before failing with "Unknown provider", consult
                 // the custom provider registry. Any config whose `name`
                 // equals the requested slug resolves to a Custom variant.
+                // PROV-085: When shadowing is disabled the registry still
+                // resolves unknown slugs here — only built-in slugs are
+                // locked to their hardcoded variants.
                 if custom_provider_registered(other) {
                     Ok(ProviderType::Custom(other.to_string()))
                 } else {
@@ -108,10 +122,31 @@ impl ProviderType {
 /// provider names before falling through to an error. Discovery errors
 /// are treated as "not registered" so parsing never panics on a
 /// malformed config file.
-fn custom_provider_registered(slug: &str) -> bool {
+///
+/// PROV-096: Exposed publicly so the NAPI layer can detect custom
+/// providers at session-creation time (`create_session_with_id`) and
+/// route them through `set_model_direct` — bypassing the models.dev
+/// registry lookup that otherwise fails with "Unknown provider:
+/// 'claude-rhai'" for any non-builtin provider slug.
+pub fn custom_provider_registered(slug: &str) -> bool {
     match crate::custom::discover_provider_configs() {
         Ok(configs) => configs.iter().any(|c| c.name == slug),
         Err(_) => false,
+    }
+}
+
+/// PROV-085: Returns `true` when the shadowing precedence rule should
+/// apply — i.e. a discovered custom provider config may shadow a
+/// hardcoded built-in provider.
+///
+/// The escape hatch `FSPEC_DISABLE_SCRIPT_SHADOWING=1` disables
+/// shadowing so CI can regression-test the hardcoded built-in path
+/// even when a `claude.json` / `codex.json` config is installed in
+/// `~/.fspec/providers/`.
+fn shadowing_enabled() -> bool {
+    match std::env::var("FSPEC_DISABLE_SCRIPT_SHADOWING") {
+        Ok(value) => value != "1",
+        Err(_) => true,
     }
 }
 
@@ -501,6 +536,14 @@ impl ProviderManager {
 
     /// MODEL-001: Map models.dev provider ID to our ProviderType
     fn map_provider_id_to_type(provider_id: &str) -> Result<ProviderType, ProviderError> {
+        // PROV-085: Shadowing precedence also applies to models.dev IDs
+        // so that `--model <shadowing-slug>/<model>` routes through the
+        // custom config. The same escape hatch
+        // `FSPEC_DISABLE_SCRIPT_SHADOWING=1` disables this lookup.
+        if shadowing_enabled() && custom_provider_registered(provider_id) {
+            return Ok(ProviderType::Custom(provider_id.to_string()));
+        }
+
         match provider_id {
             "anthropic" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),

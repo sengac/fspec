@@ -1,20 +1,27 @@
-//! Scripted OAuth Provider (PROV-060)
+//! Scripted OAuth Provider (PROV-060 + PROV-087)
 //!
 //! `ScriptedOAuthProvider` loads `.rhai` files that define custom OAuth flows.
-//! Scripts must define up to five functions:
-//! - `build_authorization_request(config)` → Map with url, pkce_verifier, state
-//! - `exchange_code(config, code, pkce_verifier)` → Map with tokens
-//! - `refresh_token(config, current_tokens)` → Map with new tokens
+//! Scripts may define up to five functions using the preferred names
+//! introduced in PROV-087:
+//! - `auth_start(config)` → Map with url, pkce_verifier, state
+//! - `auth_exchange(config, code, pkce_verifier)` → Map with tokens
+//! - `auth_refresh(config, current_tokens)` → Map with new tokens
+//! - `auth_needs_refresh(tokens)` → bool
 //! - `poll_for_token(config, device_data)` → Map with status + tokens
-//! - `needs_refresh(tokens)` → bool
+//!
+//! For backward compatibility, the legacy PROV-060 names are still accepted
+//! as fallbacks: `build_authorization_request`, `exchange_code`,
+//! `refresh_token`, `needs_refresh`. Use the `auth_*_or_legacy` free
+//! functions to invoke whichever name the script defines.
 
 use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::{anyhow, Result};
-use rhai::{AST, Dynamic, Engine, Map, Scope};
+use rhai::{Dynamic, Engine, Map, AST};
 
 use super::engine::build_default_engine;
+use super::script_invoke::{call_script_bool, call_script_map};
 
 /// Configuration for a scripted OAuth provider.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -106,116 +113,57 @@ impl ScriptedOAuthProvider {
     ///
     /// Runs synchronously inside `tokio::task::spawn_blocking`.
     pub async fn build_authorization_request(&self) -> Result<Map> {
-        let engine = self.engine.clone();
-        let ast = self.ast.clone();
-        let config = self.config_map();
-
-        tokio::task::spawn_blocking(move || -> Result<Map> {
-            let mut scope = Scope::new();
-            let result: Dynamic = engine
-                .call_fn(&mut scope, &ast, "build_authorization_request", (config,))
-                .map_err(|e| anyhow!("build_authorization_request failed: {e}"))?;
-            result.try_cast::<Map>().ok_or_else(|| {
-                anyhow!("build_authorization_request must return a Map")
-            })
-        })
+        call_script_map(
+            self.engine.clone(),
+            self.ast.clone(),
+            "build_authorization_request",
+            (self.config_map(),),
+        )
         .await
-        .map_err(|e| anyhow!("spawn_blocking failed: {e}"))?
     }
 
     /// Call `exchange_code(config, code, pkce_verifier)` in the script.
     pub async fn exchange_code(&self, code: &str, pkce_verifier: &str) -> Result<Map> {
-        let engine = self.engine.clone();
-        let ast = self.ast.clone();
-        let config = self.config_map();
-        let code = code.to_string();
-        let verifier = pkce_verifier.to_string();
-
-        tokio::task::spawn_blocking(move || -> Result<Map> {
-            let mut scope = Scope::new();
-            let result: Dynamic = engine
-                .call_fn(
-                    &mut scope,
-                    &ast,
-                    "exchange_code",
-                    (config, code, verifier),
-                )
-                .map_err(|e| anyhow!("exchange_code failed: {e}"))?;
-            result
-                .try_cast::<Map>()
-                .ok_or_else(|| anyhow!("exchange_code must return a Map"))
-        })
+        call_script_map(
+            self.engine.clone(),
+            self.ast.clone(),
+            "exchange_code",
+            (self.config_map(), code.to_string(), pkce_verifier.to_string()),
+        )
         .await
-        .map_err(|e| anyhow!("spawn_blocking failed: {e}"))?
     }
 
     /// Call `refresh_token(config, current_tokens)` in the script.
     pub async fn refresh_token(&self, current_tokens: Map) -> Result<Map> {
-        let engine = self.engine.clone();
-        let ast = self.ast.clone();
-        let config = self.config_map();
-
-        tokio::task::spawn_blocking(move || -> Result<Map> {
-            let mut scope = Scope::new();
-            let tokens_dyn = Dynamic::from_map(current_tokens);
-            let result: Dynamic = engine
-                .call_fn(
-                    &mut scope,
-                    &ast,
-                    "refresh_token",
-                    (config, tokens_dyn),
-                )
-                .map_err(|e| anyhow!("refresh_token failed: {e}"))?;
-            result
-                .try_cast::<Map>()
-                .ok_or_else(|| anyhow!("refresh_token must return a Map"))
-        })
+        call_script_map(
+            self.engine.clone(),
+            self.ast.clone(),
+            "refresh_token",
+            (self.config_map(), Dynamic::from_map(current_tokens)),
+        )
         .await
-        .map_err(|e| anyhow!("spawn_blocking failed: {e}"))?
     }
 
     /// Call `poll_for_token(config, device_data)` in the script.
     pub async fn poll_for_token(&self, device_data: Map) -> Result<Map> {
-        let engine = self.engine.clone();
-        let ast = self.ast.clone();
-        let config = self.config_map();
-
-        tokio::task::spawn_blocking(move || -> Result<Map> {
-            let mut scope = Scope::new();
-            let data_dyn = Dynamic::from_map(device_data);
-            let result: Dynamic = engine
-                .call_fn(
-                    &mut scope,
-                    &ast,
-                    "poll_for_token",
-                    (config, data_dyn),
-                )
-                .map_err(|e| anyhow!("poll_for_token failed: {e}"))?;
-            result
-                .try_cast::<Map>()
-                .ok_or_else(|| anyhow!("poll_for_token must return a Map"))
-        })
+        call_script_map(
+            self.engine.clone(),
+            self.ast.clone(),
+            "poll_for_token",
+            (self.config_map(), Dynamic::from_map(device_data)),
+        )
         .await
-        .map_err(|e| anyhow!("spawn_blocking failed: {e}"))?
     }
 
     /// Call `needs_refresh(tokens)` in the script.
     pub async fn needs_refresh(&self, tokens: Map) -> Result<bool> {
-        let engine = self.engine.clone();
-        let ast = self.ast.clone();
-
-        tokio::task::spawn_blocking(move || -> Result<bool> {
-            let mut scope = Scope::new();
-            let tokens_dyn = Dynamic::from_map(tokens);
-            let result: Dynamic = engine
-                .call_fn(&mut scope, &ast, "needs_refresh", (tokens_dyn,))
-                .map_err(|e| anyhow!("needs_refresh failed: {e}"))?;
-            result
-                .as_bool()
-                .map_err(|_| anyhow!("needs_refresh must return a bool"))
-        })
+        call_script_bool(
+            self.engine.clone(),
+            self.ast.clone(),
+            "needs_refresh",
+            (Dynamic::from_map(tokens),),
+        )
         .await
-        .map_err(|e| anyhow!("spawn_blocking failed: {e}"))?
     }
 
     /// Get the provider config.
@@ -229,5 +177,19 @@ impl std::fmt::Debug for ScriptedOAuthProvider {
         f.debug_struct("ScriptedOAuthProvider")
             .field("config", &self.config)
             .finish_non_exhaustive()
+    }
+}
+
+// PROV-087: small accessors used by the `auth_*` alias dispatcher in
+// `script_provider_aliases.rs`.
+impl ScriptedOAuthProvider {
+    pub(crate) fn engine_arc(&self) -> Arc<Engine> {
+        self.engine.clone()
+    }
+    pub(crate) fn compiled_ast(&self) -> &AST {
+        &self.ast
+    }
+    pub(crate) fn config_as_dynamic(&self) -> Dynamic {
+        self.config_map()
     }
 }

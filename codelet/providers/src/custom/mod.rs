@@ -25,12 +25,17 @@ pub mod discovery;
 pub mod error;
 pub mod error_mapping;
 mod http;
+mod internal_dispatch;
+pub(crate) mod log_helpers;
 pub mod management;
 pub mod provider;
 mod provider_stream;
 pub mod request_bridge;
 pub mod response_bridge;
 mod rhai_call;
+pub mod rig_message_convert;
+pub mod rig_model;
+pub mod rig_tool;
 pub mod script_loader;
 pub mod stream;
 mod stream_convert;
@@ -52,6 +57,8 @@ pub use management::{
     ProviderInfo, ProviderTestResult,
 };
 pub use provider::RhaiCustomProvider;
+pub use rig_model::{RhaiCustomCompletion, RhaiCustomProviderModel};
+pub use rig_tool::{RhaiToolArgs, RhaiToolWrapper};
 pub use script_loader::ScriptLoader;
 pub use system_prompt::RhaiSystemPromptFacade;
 pub use tool_dispatch::{default_to_internal, DispatchedToolParams};

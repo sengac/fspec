@@ -63,17 +63,21 @@ pub fn validate_api_key_static(provider_name: &str, api_key: &str) -> Result<(),
 ///
 /// This eliminates the ~14 lines of duplicated code in each provider's
 /// `extract_text_from_content()` method.
+///
+/// Non-text parts (ToolUse, ToolResult, Image) contribute no text — Image
+/// parts are request-side-only payloads that providers that use the Rhai
+/// request bridge serialize natively, while text-prompt providers simply
+/// ignore them.
 pub fn extract_text_from_content(content: &MessageContent) -> String {
     match content {
         MessageContent::Text(t) => t.clone(),
         MessageContent::Parts(parts) => parts
             .iter()
-            .filter_map(|p| {
-                if let ContentPart::Text { text } = p {
-                    Some(text.as_str())
-                } else {
-                    None
-                }
+            .filter_map(|p| match p {
+                ContentPart::Text { text } => Some(text.as_str()),
+                ContentPart::ToolUse { .. }
+                | ContentPart::ToolResult { .. }
+                | ContentPart::Image { .. } => None,
             })
             .collect::<Vec<_>>()
             .join("\n"),

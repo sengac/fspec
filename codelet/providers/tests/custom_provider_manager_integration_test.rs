@@ -556,9 +556,9 @@ fn project_local_custom_provider_definition_overrides_user_global() {
 // =========================================================================
 // Scenario: Custom provider without facade uses generic CustomProvider create_rig_agent
 // =========================================================================
-#[test]
+#[tokio::test]
 #[serial]
-fn custom_provider_without_facade_uses_generic_custom_provider_create_rig_agent() {
+async fn custom_provider_without_facade_uses_generic_custom_provider_create_rig_agent() {
     // @step Given a custom provider 'rhai-llm' discovered with facade=null and a Rhai script defining define_tools and format_system_prompt
     let fx = DiscoveryFixture::new();
     let providers_dir = fx.project_root().join(".fspec").join("providers");
@@ -609,6 +609,7 @@ fn format_system_prompt(config, preamble, fspec_guidance) { preamble }
         "rhai-llm",
         "default",
         session_id,
+        None,
         None,
     );
 
@@ -693,5 +694,202 @@ fn detect_default_provider_never_auto_selects_a_custom_provider() {
     assert!(
         err.to_string().contains("No provider credentials available"),
         "error should mention 'No provider credentials available', got: {err}"
+    );
+}
+
+
+// =========================================================================
+// PROV-095: derive_facade_for_custom returns None for Rhai-scripted providers
+//
+// Regression: when a provider has a Rhai `script` but no explicit `facade`,
+// the old implementation derived a facade from `api_style` (e.g. "claude"
+// for anthropic_messages), which caused the agent-loop to dispatch to the
+// built-in `get_claude()` arm and raise "Current provider is not Claude"
+// (see screenshot on user desktop, 2026-04-20).
+//
+// The fix: `derive_facade_for_custom` must return `None` when `script` is
+// present and `facade` is absent, so the custom-provider Rhai-native
+// dispatch arm (PROV-092) fires instead.
+// =========================================================================
+#[test]
+#[serial]
+fn prov_095_derive_facade_returns_none_when_rhai_script_present_anthropic_style() {
+    // Given a Rhai-scripted provider with no explicit facade and
+    // api_style=anthropic_messages (exactly like the user's claude-rhai config)
+    let fx = DiscoveryFixture::new();
+    let providers_dir = fx.project_root().join(".fspec").join("providers");
+    fs::create_dir_all(&providers_dir).unwrap();
+    fs::write(
+        providers_dir.join("claude-rhai-fixture.rhai"),
+        r#"
+fn build_request(ctx) { #{} }
+fn build_headers(ctx) { #{} }
+fn build_url(ctx) { "https://api.anthropic.com/v1/messages" }
+fn parse_response(resp) { #{} }
+fn parse_stream_chunk(chunk) { #{} }
+fn build_stream_request(ctx) { #{} }
+fn map_error(err) { #{} }
+"#,
+    )
+    .unwrap();
+    fs::write(
+        providers_dir.join("claude-rhai-fixture.json"),
+        json!({
+            "name": "claude-rhai-fixture",
+            "display_name": "Claude (Rhai Scripted)",
+            "base_url": "https://api.anthropic.com",
+            "script": "claude-rhai-fixture.rhai",
+            "api_key_env_var": "ANTHROPIC_API_KEY",
+            "auth": { "type": "custom", "credential_file": null },
+            "api_style": "anthropic_messages",
+            "tool_style": "claude",
+            "models": {
+                "opus-4.7": { "id": "claude-opus-4-7" }
+            }
+        })
+        .to_string(),
+    )
+    .unwrap();
+
+    // When deriving the facade for the Rhai-scripted provider
+    let derived = codelet_providers::custom::derive_facade_for_custom(
+        "claude-rhai-fixture",
+    );
+
+    // Then it returns None (so dispatch falls through to the Rhai-native
+    // custom-provider arm instead of short-circuiting to get_claude())
+    assert_eq!(
+        derived, None,
+        "PROV-095: derive_facade_for_custom must return None when a \
+         Rhai script is present so the Rhai-native dispatch arm fires; \
+         got {derived:?} which would route to get_claude() and produce \
+         'Current provider is not Claude'"
+    );
+}
+
+#[test]
+#[serial]
+fn prov_095_derive_facade_returns_none_when_rhai_script_present_openai_style() {
+    // Same fix must hold for openai_chat api_style
+    let fx = DiscoveryFixture::new();
+    let providers_dir = fx.project_root().join(".fspec").join("providers");
+    fs::create_dir_all(&providers_dir).unwrap();
+    fs::write(
+        providers_dir.join("openai-rhai-fixture.rhai"),
+        r#"
+fn build_request(ctx) { #{} }
+fn build_headers(ctx) { #{} }
+fn build_url(ctx) { "https://api.openai.com/v1/chat/completions" }
+fn parse_response(resp) { #{} }
+fn parse_stream_chunk(chunk) { #{} }
+fn build_stream_request(ctx) { #{} }
+fn map_error(err) { #{} }
+"#,
+    )
+    .unwrap();
+    fs::write(
+        providers_dir.join("openai-rhai-fixture.json"),
+        json!({
+            "name": "openai-rhai-fixture",
+            "display_name": "OpenAI (Rhai Scripted)",
+            "base_url": "https://api.openai.com",
+            "script": "openai-rhai-fixture.rhai",
+            "api_key_env_var": "OPENAI_API_KEY",
+            "auth": { "type": "custom", "credential_file": null },
+            "api_style": "openai_chat",
+            "tool_style": "openai",
+            "models": {
+                "gpt-5": { "id": "gpt-5" }
+            }
+        })
+        .to_string(),
+    )
+    .unwrap();
+
+    let derived = codelet_providers::custom::derive_facade_for_custom(
+        "openai-rhai-fixture",
+    );
+
+    assert_eq!(
+        derived, None,
+        "PROV-095: openai_chat + Rhai script must also not derive a facade"
+    );
+}
+
+#[test]
+#[serial]
+fn prov_095_explicit_facade_still_wins_even_when_script_present() {
+    // If a user explicitly sets `facade`, that should still take priority —
+    // the fix is narrow: only absent-facade + present-script returns None.
+    let fx = DiscoveryFixture::new();
+    let providers_dir = fx.project_root().join(".fspec").join("providers");
+    fs::create_dir_all(&providers_dir).unwrap();
+    fs::write(
+        providers_dir.join("hybrid-fixture.rhai"),
+        r#"
+fn build_request(ctx) { #{} }
+fn build_headers(ctx) { #{} }
+fn build_url(ctx) { "" }
+fn parse_response(resp) { #{} }
+fn parse_stream_chunk(chunk) { #{} }
+fn build_stream_request(ctx) { #{} }
+fn map_error(err) { #{} }
+"#,
+    )
+    .unwrap();
+    fs::write(
+        providers_dir.join("hybrid-fixture.json"),
+        json!({
+            "name": "hybrid-fixture",
+            "display_name": "Hybrid",
+            "base_url": "https://example.com",
+            "script": "hybrid-fixture.rhai",
+            "facade": "openai",
+            "api_key_env_var": "X_KEY",
+            "auth": { "type": "bearer", "env_var": "X_KEY" },
+            "api_style": "anthropic_messages",
+            "tool_style": "openai",
+            "models": { "m": { "id": "m" } }
+        })
+        .to_string(),
+    )
+    .unwrap();
+
+    let derived = codelet_providers::custom::derive_facade_for_custom(
+        "hybrid-fixture",
+    );
+
+    assert_eq!(
+        derived.as_deref(),
+        Some("openai"),
+        "Explicit facade must still win even when script is present"
+    );
+}
+
+#[test]
+#[serial]
+fn prov_095_no_script_no_facade_still_derives_from_api_style() {
+    // Regression guard: the OLD behaviour (derive from api_style) must
+    // still hold when no script is present (pure-facade custom providers).
+    let fx = DiscoveryFixture::new();
+    write_project_custom_provider(
+        fx.project_root(),
+        "plain-openai-facade",
+        None,
+        "http://localhost:9999/v1",
+        Some("X_KEY"),
+    );
+
+    // write_project_custom_provider uses default api_style (anthropic_messages)
+    // per ProviderConfig defaults, so assert against whatever the default
+    // produces rather than hard-coding — the contract is "derive from
+    // api_style when no script".
+    let derived = codelet_providers::custom::derive_facade_for_custom(
+        "plain-openai-facade",
+    );
+    assert!(
+        derived.is_some(),
+        "When no script AND no explicit facade, a facade MUST still be \
+         derived from api_style (regression guard)"
     );
 }

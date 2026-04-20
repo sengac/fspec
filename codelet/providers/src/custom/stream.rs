@@ -11,6 +11,7 @@
 //!
 //! ```rhai
 //! #{ kind: "text_delta",       text: "..." }
+//! #{ kind: "reasoning_delta",  text: "..." }   // also accepts "thinking_delta"
 //! #{ kind: "tool_call_delta",  index: 0, id: "call_1", name: "read_file", arguments: "..." }
 //! #{ kind: "stop",             reason: "end_turn" | "tool_use" | "max_tokens" }
 //! #{ kind: "ignore" }
@@ -34,6 +35,16 @@ use crate::StopReason;
 pub enum StreamChunk {
     /// A fragment of assistant text.
     TextDelta(String),
+    /// A fragment of assistant reasoning / thinking (PROV-089).
+    ///
+    /// Carries a chunk of the model's visible chain-of-thought output.
+    /// Scripts produce this by returning `#{ kind: "reasoning_delta"
+    /// | "thinking_delta", text: "..." }` from `parse_stream_chunk`.
+    /// Downstream consumers are expected to surface this separately from
+    /// [`StreamChunk::TextDelta`] (e.g. map it to
+    /// `StreamedAssistantContent::ReasoningDelta` in rig's
+    /// `MultiTurnStreamItem`).
+    ReasoningDelta(String),
     /// A tool call has started — the script has identified the id and name.
     ToolCallStart {
         /// Provider-assigned tool-call id.
@@ -162,6 +173,13 @@ impl RhaiStreamProcessor {
         &mut self,
         data: &str,
     ) -> Result<Vec<StreamChunk>, ProviderError> {
+        tracing::warn!(
+            provider = %self.provider,
+            terminated = self.terminated,
+            data_len = data.len(),
+            data_preview = %super::log_helpers::truncate_str(data, 400),
+            "[rhai-dispatch] process_event ENTER: dispatching SSE frame to parse_stream_chunk"
+        );
         if self.terminated {
             return Ok(Vec::new());
         }
@@ -194,12 +212,23 @@ impl RhaiStreamProcessor {
         let dynamic = match result {
             Ok(d) => d,
             Err(e) => {
+                tracing::warn!(
+                    provider = %self.provider,
+                    error = %e,
+                    "[rhai-dispatch] process_event: parse_stream_chunk returned ERROR, terminating"
+                );
                 self.terminated = true;
                 return Err(e);
             }
         };
 
-        Ok(super::stream_convert::dynamic_to_chunks(self, dynamic))
+        let chunks = super::stream_convert::dynamic_to_chunks(self, dynamic);
+        tracing::warn!(
+            provider = %self.provider,
+            chunk_count = chunks.len(),
+            "[rhai-dispatch] process_event EXIT: parse_stream_chunk produced chunks"
+        );
+        Ok(chunks)
     }
 }
 
