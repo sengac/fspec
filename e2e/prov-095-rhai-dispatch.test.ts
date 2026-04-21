@@ -197,9 +197,18 @@ if (anthropicKey !== null) {
 // Seed `tui.lastUsedModel` so the TUI boots with claude-rhai pre-selected.
 // This is THE key difference vs. the old test: the session is created
 // with the custom provider model string, exercising the bug path.
+//
+// PROV-100: Also seed `tui.defaultThinkingLevel = 3` (High). This forces
+// the session to start with a non-Off thinking level so the
+// session_manager's thinking-config path fires and the adaptive-
+// thinking payload is threaded through `CustomProvider::create_rig_agent`
+// and into the Rhai `build_request`. Without this seed, a fresh
+// fixture would default to Off and the thinking-config assertion
+// below would be impossible to hit (you can't observe a wire-up that
+// was never engaged).
 const FORCED_MODEL = 'claude-rhai/opus-4.7';
 const fixtureConfig = {
-  tui: { lastUsedModel: FORCED_MODEL },
+  tui: { lastUsedModel: FORCED_MODEL, defaultThinkingLevel: 3 },
 };
 fs.writeFileSync(
   path.join(fixtureFspecDir, 'fspec-config.json'),
@@ -233,13 +242,26 @@ const ERROR_PATTERNS: Array<{ label: string; regex: RegExp }> = [
   // Downstream agent-loop errors that the strengthened test must also
   // fail on, so we don't regress into the "dispatch reached the Rhai
   // arm but scripting broke" failure mode.
+  //
+  // NOTE: Patterns below are anchored to banner-style markers
+  // (e.g. leading "✗", colon-suffix, "banner:" prefix) so they don't
+  // false-positive on tool OUTPUT content. AstGrep can legitimately
+  // return source lines that mention `ProviderError`, `api_error`, or
+  // `streaming_error` when searching the fspec codebase — that is
+  // normal tool output, not a banner.
   {
     label: 'Current provider is not Claude',
     regex: /Current provider is not Claude/i,
   },
-  { label: 'API Error banner', regex: /API Error:/ },
-  { label: 'Streaming error banner', regex: /Streaming error:/i },
-  { label: 'ProviderError', regex: /ProviderError/ },
+  // Actual API Error banner renders as `✗ API Error: <message>`
+  { label: 'API Error banner', regex: /✗\s*API Error:/ },
+  // Streaming error banner — same shape.
+  { label: 'Streaming error banner', regex: /✗\s*Streaming error:/i },
+  // Agent-loop surfaces provider failures as `ProviderError:` (colon
+  // suffix) on a banner line. The bare word `ProviderError` without
+  // the colon is valid tool-output content (e.g. Rust type names) and
+  // must not trip the matcher.
+  { label: 'ProviderError banner', regex: /ProviderError:\s/ },
   { label: "script '...' failed", regex: /script '[^']+' failed/i },
   {
     label: 'For loop expects iterable type',
@@ -296,7 +318,7 @@ if (!shouldRun) {
 
 test.when(
   shouldRun,
-  'PROV-095: pre-selected Rhai-scripted custom provider answers "what is 3 + 2?" at session-creation time',
+  'PROV-095: pre-selected Rhai-scripted custom provider forwards tool catalogue end-to-end (WebSearch, LS, AstGrep)',
   async ({ terminal }) => {
     // @step Given a claude-rhai provider fixture is installed in $HOME/.fspec/providers
     // @step And $HOME/.fspec/fspec-config.json seeds tui.lastUsedModel = "claude-rhai/opus-4.7"
@@ -408,23 +430,38 @@ test.when(
       }
     }
 
-    // @step When I send the prompt "what is 3 + 2?"
-    // Type one char at a time with small gaps. Ink's `useInput` handler
-    // sees each keystroke as a discrete event; submitting the whole
-    // string as one blob has previously been observed to race the
-    // Enter against the input-state commit. After all chars are
-    // buffered we pause briefly then press Enter on its own.
+    // @step When I send a prompt that FORCES tool use through the Rhai
+    //        dispatch: WebSearch, then LS, then AstGrep.
     //
-    // We also wait a non-trivial period (3s) after session creation —
-    // in practice the AgentView's useInput hook only attaches once the
-    // compaction threshold + initial IsolationStateChange chunk have
-    // landed, and writes sent before that attach are swallowed.
+    // The historical test here asked "what is 3 + 2?" which Claude
+    // answers purely from its weights — no tools involved — so it
+    // never exercised the tool-definition forwarding path. A
+    // regression where `tools_for_rhai()` returns `Vec::new()` would
+    // pass that test. This version asks for concrete tool work so the
+    // agent must call each of the three target tools to complete it.
+    //
+    // Typing one char at a time with small gaps mirrors user keystrokes
+    // and avoids the useInput handler race described further down.
     await new Promise(r => setTimeout(r, 3000));
 
-    const prompt = 'what is 3 + 2? Please explain your reasoning.';
+    const prompt =
+      'Using the tools available, do these three tasks in order and report what each tool returned: ' +
+      '1) WebSearch for "rust programming language wikipedia". ' +
+      '2) LS the directory "codelet/providers/src/custom" (relative to the cwd) so I can see its contents. ' +
+      '3) AstGrep for the pattern `fn $NAME($$$ARGS) -> $RET { $$$BODY }` with language "rust" in path "codelet/providers/src/custom". ' +
+      'After each tool call, state in one sentence which tool you used. ' +
+      // PROV-100: Explicitly ask for `ultrathink` so the
+      // thinking-level detector (see `thinking_level_detection.rs`,
+      // HIGH_PATTERNS) bumps the effective level to High. Without a
+      // thinking keyword the session defaults to Off and the
+      // `thinking_config` we assert on never gets wired through the
+      // Rhai dispatch. Avoid the word "briefly" — it's in
+      // `DISABLE_KEYWORDS` and would force Off regardless of the
+      // session's base level.
+      'ultrathink while doing this.';
     for (const ch of prompt) {
       terminal.write(ch);
-      await new Promise(r => setTimeout(r, 60));
+      await new Promise(r => setTimeout(r, 30));
     }
     // Let the input commit visually before we press Enter. Dump a
     // diagnostic snapshot so the e2e log shows whether typing actually
@@ -440,26 +477,42 @@ test.when(
     );
     terminal.submit();
 
-    // @step Then within 90 seconds the visible buffer must contain a
-    //       valid answer (the digit 5 in an assistant-reply context)
-    //       and no error banners must appear.
-    const deadline = Date.now() + 90_000;
-    let sawAnswer = false;
+    // @step Then within 180 seconds the TUI must render each of the
+    //        three tool calls, and no error banners must appear.
+    //
+    // A tool call renders as `● ToolName(args)` in the Claude Code
+    // style formatter (see `formatToolHeader` in AgentView.tsx). We
+    // require that exact marker so the tool-name words appearing in
+    // the user's prompt echo don't count as false positives.
+    //
+    // We ALSO cross-check the fspec.log for:
+    //   (a) at least one `CompletionModel::stream ENTER` line
+    //       (proving the Rhai dispatch actually ran)
+    //   (b) tool_count > 0 on those lines (proving the tool catalogue
+    //       was forwarded — this is the regression the fix targets)
+    //   (c) `[rhai-dispatch] stream yielding ToolCallComplete` entries
+    //       for each expected tool name (proving the tool calls
+    //       actually made the full round trip).
+    //
+    // The log check is authoritative — the TUI buffer can scroll
+    // older tool calls out of view on small terminals.
+    const deadline = Date.now() + 180_000;
+    const expectedTools = ['WebSearch', 'LS', 'AstGrep'];
+    const seenToolsInTui = new Set<string>();
+    const seenToolsInLog = new Set<string>();
     let lastScreen = '';
     let firstError: { label: string; regex: RegExp } | null = null;
+    let sawStreamEnter = false;
+    let sawZeroToolCount: string | null = null;
+    const logPath = path.join(fixtureFspecDir, 'fspec.log');
 
-    // Permissive answer match — Claude may reply with any of:
-    //   "The answer is 5."
-    //   "3 + 2 = 5"
-    //   "= 5"
-    //   "5"
-    // but we want to avoid false positives from the status line
-    // ("tokens: 0↓ 0↑"), so require a 5 adjacent to math context
-    // (equals sign, "is", "answer", "equals") or as a standalone digit
-    // on a line that is NOT the status bar, or explicitly in an
-    // assistant-reply context.
-    const ANSWER_REGEX =
-      /=\s*5\b|\bis\s+5\b|\bequals?\s+5\b|\banswer[^\n]{0,40}\b5\b|\b5\s*(?:is\s+the|\.|,)|\bfive\b/i;
+    const readLog = (): string => {
+      try {
+        return fs.readFileSync(logPath, 'utf8');
+      } catch {
+        return '';
+      }
+    };
 
     while (Date.now() < deadline) {
       const rows = terminal.getViewableBuffer();
@@ -477,8 +530,49 @@ test.when(
         break;
       }
 
-      if (ANSWER_REGEX.test(lastScreen)) {
-        sawAnswer = true;
+      // TUI-side: require the `● ToolName(` marker, not a bare word.
+      for (const toolName of expectedTools) {
+        const re = new RegExp(`●\\s*${toolName}\\s*\\(`);
+        if (re.test(lastScreen)) {
+          seenToolsInTui.add(toolName);
+        }
+      }
+
+      // Log-side: authoritative evidence that the Rhai dispatch ran
+      // and the tool actually completed a round trip.
+      const log = readLog();
+      if (log.includes('CompletionModel::stream ENTER')) {
+        sawStreamEnter = true;
+        // tool_count=0 on ANY stream ENTER line is an immediate fail.
+        const lines = log
+          .split('\n')
+          .filter(l => l.includes('CompletionModel::stream ENTER'));
+        for (const line of lines) {
+          if (/tool_count\s*=\s*0(?:\b|,)/.test(line)) {
+            sawZeroToolCount = line;
+            break;
+          }
+        }
+        if (sawZeroToolCount !== null) {
+          break;
+        }
+      }
+      for (const toolName of expectedTools) {
+        // The Rhai stream loop logs each ToolCallComplete with the
+        // tool_name inlined into the message (see
+        // `codelet/providers/src/custom/rig_model.rs` — the
+        // `tool_name={name}` format specifier ensures the NAPI log
+        // bridge surfaces it, since tracing's structured fields get
+        // stripped on the way to the TS log sink).
+        const re = new RegExp(
+          `\\[rhai-dispatch\\][^\\n]*ToolCallComplete[^\\n]*tool_name=${toolName}\\b`
+        );
+        if (re.test(log)) {
+          seenToolsInLog.add(toolName);
+        }
+      }
+
+      if (sawStreamEnter && seenToolsInLog.size === expectedTools.length) {
         break;
       }
 
@@ -487,13 +581,144 @@ test.when(
 
     if (firstError !== null) {
       throw new Error(
-        `PROV-095 FAILURE (streaming): "${firstError.label}" appeared after sending "what is 3 + 2?".\n\nMatched pattern: ${firstError.regex}\n\nScreen:\n${lastScreen}`
+        `PROV-095 FAILURE (streaming): "${firstError.label}" appeared after sending the tool-use prompt.\n\nMatched pattern: ${firstError.regex}\n\nScreen:\n${lastScreen}`
       );
     }
 
-    if (!sawAnswer) {
+    if (!sawStreamEnter) {
       throw new Error(
-        `PROV-095 FAILURE: did not observe a valid answer containing "5" within 90s of sending "what is 3 + 2?".\n\nLast screen:\n${lastScreen}`
+        `PROV-095 FAILURE: no \`CompletionModel::stream ENTER\` log lines found within 180s of sending the prompt — the Rhai dispatch did not run at all.\n\nLog path: ${logPath}\nLast screen:\n${lastScreen}`
+      );
+    }
+
+    if (sawZeroToolCount !== null) {
+      throw new Error(
+        `PROV-095 FAILURE: \`CompletionModel::stream ENTER\` logged tool_count=0 — \`tools_for_rhai()\` regressed to returning an empty Vec.\n\nOffending log line:\n${sawZeroToolCount}`
+      );
+    }
+
+    // PROV-098: ensure the claude-rhai agent exposes the FULL fspec tool
+    // surface — not just the nine baseline preset tools. The baseline
+    // preset is Read/Write/Edit/Bash/Grep/Glob/LS/AstGrep/WebSearch; the
+    // infrastructure tools attached as native rig tools on top are
+    // AstGrepRefactor/SessionSearch/GraphSearch/inject_summary/
+    // DeepSearch/AgentManager/request_user_input/Schedule/ConnectMCP.
+    // If any of those are missing from `tool_names=[…]` on any stream
+    // ENTER line, claude-rhai has regressed to a partial tool surface.
+    const REQUIRED_TOOLS_IN_CATALOGUE = [
+      'Read',
+      'Write',
+      'Edit',
+      'Bash',
+      'Grep',
+      'Glob',
+      'AstGrep',
+      'LS',
+      'WebSearch',
+      'AstGrepRefactor',
+      'SessionSearch',
+      'GraphSearch',
+      'inject_summary',
+      'DeepSearch',
+      'AgentManager',
+      'request_user_input',
+      'Schedule',
+      'ConnectMCP',
+      // PROV-099: Fspec + Bridge are facade-wrapped tools attached to
+      // the Rhai custom provider so a `claude-rhai` agent has full
+      // parity with a native `claude` agent. Their absence is how the
+      // screenshot bug manifested ("Fspec tool not available").
+      'Fspec',
+      'Bridge',
+    ];
+    {
+      const log = readLog();
+      const streamEnterLines = log
+        .split('\n')
+        .filter(l => l.includes('CompletionModel::stream ENTER'));
+      // Collect every tool name mentioned across all stream ENTER lines
+      // by parsing the `tool_names=[…]` bracket list.
+      const seenInCatalogue = new Set<string>();
+      for (const line of streamEnterLines) {
+        const match = /tool_names=\[([^\]]*)\]/.exec(line);
+        if (match === null) continue;
+        const inner = match[1];
+        // Entries look like `"Read", "Write", …`. Extract the quoted
+        // strings; fall back to a simple split on comma if the match
+        // form ever changes.
+        const names = Array.from(inner.matchAll(/"([^"]+)"/g)).map(m => m[1]);
+        for (const n of names) seenInCatalogue.add(n);
+      }
+      const missing = REQUIRED_TOOLS_IN_CATALOGUE.filter(
+        t => !seenInCatalogue.has(t)
+      );
+      if (missing.length > 0) {
+        throw new Error(
+          `PROV-095 FAILURE: claude-rhai tool catalogue is missing required tools ${JSON.stringify(missing)}.\n\nObserved: ${JSON.stringify([...seenInCatalogue])}\n\nStream ENTER lines (last 3):\n${streamEnterLines.slice(-3).join('\n')}`
+        );
+      }
+
+      // PROV-100: Every `CompletionModel::stream ENTER` line must carry
+      // a non-`none` `thinking_config=…` blob, proving the TUI thinking
+      // level (default High in the fixture) flowed through the NAPI
+      // layer → CustomProvider::create_rig_agent →
+      // additional_params → rig CompletionRequest → Rhai
+      // request.thinking_config. A value of `none` means thinking was
+      // never wired up for the custom provider at all.
+      const thinkingLines = streamEnterLines
+        .map(l => /thinking_config=([^\s]+)/.exec(l))
+        .filter((m): m is RegExpExecArray => m !== null)
+        .map(m => m[1]);
+      if (thinkingLines.length === 0) {
+        throw new Error(
+          `PROV-100 FAILURE: no stream ENTER line carried a \`thinking_config=\` field at all. The rig_model logging regressed or the Rhai dispatch didn't run.\n\nStream ENTER lines (last 3):\n${streamEnterLines.slice(-3).join('\n')}`
+        );
+      }
+      const hasRealThinking = thinkingLines.some(
+        t => t !== 'none' && t.includes('"thinking"')
+      );
+      if (!hasRealThinking) {
+        throw new Error(
+          `PROV-100 FAILURE: claude-rhai never received a non-empty thinking_config from the session's thinking level. Observed values: ${JSON.stringify(thinkingLines)}.\n\nStream ENTER lines (last 3):\n${streamEnterLines.slice(-3).join('\n')}`
+        );
+      }
+
+      // And the Rhai script's build_request log must show the
+      // thinking block was attached to the body — this proves the
+      // full chain lands in the Anthropic API payload.
+      const rhaiAttachedThinking = log.includes(
+        '[claude-rhai.rhai] build_request: attached thinking config'
+      );
+      if (!rhaiAttachedThinking) {
+        throw new Error(
+          `PROV-100 FAILURE: Rhai build_request never attached thinking config to the body. Either the rhai script at $HOME/.fspec/providers/claude_rhai.rhai is stale, or request.thinking_config is a Rhai unit when it should be a map.\n\nStream ENTER lines (last 3):\n${streamEnterLines.slice(-3).join('\n')}`
+        );
+      }
+    }
+
+    const missingInLog = expectedTools.filter(t => !seenToolsInLog.has(t));
+    if (missingInLog.length > 0) {
+      const streamEnterLines = readLog()
+        .split('\n')
+        .filter(l => l.includes('CompletionModel::stream ENTER'))
+        .slice(-3);
+      const rhaiDispatchLines = readLog()
+        .split('\n')
+        .filter(l => l.includes('[rhai-dispatch]'))
+        .slice(-40);
+      throw new Error(
+        `PROV-095 FAILURE: tools ${JSON.stringify(missingInLog)} never completed a tool call in the Rhai dispatch log within 180s.\n\nStream ENTER lines (last 3):\n${streamEnterLines.join('\n')}\n\nRhai-dispatch lines (last 40):\n${rhaiDispatchLines.join('\n')}\n\nLast screen:\n${lastScreen}`
+      );
+    }
+
+    const missingInTui = expectedTools.filter(t => !seenToolsInTui.has(t));
+    if (missingInTui.length > 0) {
+      // Non-fatal warning only — logs are authoritative and the TUI
+      // viewport can legitimately scroll tool renders out of view on
+      // small buffers. We still want to see if this happens so we log
+      // it without failing the test.
+      console.warn(
+        `[PROV-095 e2e] WARNING: expected TUI tool renders ${JSON.stringify(missingInTui)} scrolled out of view, but they DID complete in the Rhai dispatch log. Treating as pass.`
       );
     }
 

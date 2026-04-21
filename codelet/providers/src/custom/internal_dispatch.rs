@@ -19,9 +19,9 @@ use codelet_tools::facade::{
     InternalWebSearchParams,
 };
 use codelet_tools::{
-    bash::BashArgs, edit::EditArgs, glob::GlobArgs, grep::GrepArgs, ls::LsArgs, read::ReadArgs,
-    web_search::WebSearchRequest, write::WriteArgs, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-    ReadTool, WebSearchTool, WriteTool,
+    astgrep::AstGrepArgs, bash::BashArgs, edit::EditArgs, glob::GlobArgs, grep::GrepArgs,
+    ls::LsArgs, read::ReadArgs, web_search::WebSearchRequest, write::WriteArgs, AstGrepTool,
+    BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool, WriteTool,
 };
 use codelet_common::web_search::WebSearchAction;
 use rig::tool::Tool;
@@ -29,7 +29,7 @@ use serde_json::json;
 use uuid::Uuid;
 
 use super::error::CustomProviderError;
-use super::tool_dispatch::DispatchedToolParams;
+use super::tool_dispatch::{AstGrepParams, DispatchedToolParams};
 
 /// Execute a [`DispatchedToolParams`] variant against the internal
 /// tool implementations bound to `session_id`. Returns a JSON string
@@ -43,6 +43,7 @@ pub async fn execute_dispatched(
         D::File(file) => execute_file(session_id, file).await,
         D::Bash(bash) => execute_bash(session_id, bash).await,
         D::Search(search) => execute_search(session_id, search).await,
+        D::AstGrep(ast) => execute_ast_grep(session_id, ast).await,
         D::Ls(ls) => execute_ls(session_id, ls).await,
         D::WebSearch(ws) => execute_web_search(session_id, ws).await,
         D::Fspec(_) | D::Bridge(_) | D::Exec(_) | D::Hitl(_) => {
@@ -167,6 +168,19 @@ async fn execute_ls(
     }
 }
 
+async fn execute_ast_grep(
+    session_id: Uuid,
+    params: AstGrepParams,
+) -> Result<String, CustomProviderError> {
+    let tool = AstGrepTool::new(session_id);
+    let args = AstGrepArgs {
+        pattern: params.pattern,
+        language: params.language,
+        path: params.path,
+    };
+    tool.call(args).await.map_err(ast_grep_err)
+}
+
 async fn execute_web_search(
     session_id: Uuid,
     params: InternalWebSearchParams,
@@ -232,6 +246,10 @@ fn search_err(e: codelet_tools::ToolError) -> CustomProviderError {
 
 fn ls_err(e: codelet_tools::ToolError) -> CustomProviderError {
     serialise_tool_error(&e, "ls")
+}
+
+fn ast_grep_err(e: codelet_tools::ToolError) -> CustomProviderError {
+    serialise_tool_error(&e, "ast_grep")
 }
 
 fn web_err(e: codelet_tools::ToolError) -> CustomProviderError {

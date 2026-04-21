@@ -12,6 +12,7 @@
 use rhai::{Dynamic, Map, Module};
 
 use super::engine::RhaiModule;
+use super::log_module::build_log_module;
 
 pub use super::cred_module::{build_cred_module, fspec_home};
 pub use super::json_convert::{dynamic_to_json_value, json_value_to_dynamic};
@@ -31,97 +32,6 @@ pub fn register_all_modules() -> Vec<RhaiModule> {
         build_oauth_module(),
         build_log_module(),
     ]
-}
-
-/// Build the `log` module with `warn`, `info`, `debug`, `error`, and
-/// `trace` functions that forward to Rust's `tracing` facility.
-///
-/// Rhai scripts can call `log::warn("message")` to emit diagnostics
-/// that flow through the TypeScript log bridge into `~/.fspec/fspec.log`,
-/// which is invaluable for debugging the rhai dispatch pipeline.
-///
-/// Signatures accept either a single string or a key/value map
-/// (rendered as `key=value, ...` pairs) so scripts can emit
-/// structured-ish entries without a real format() API.
-fn build_log_module() -> RhaiModule {
-    let mut module = Module::new();
-
-    fn fmt_map(m: &Map) -> String {
-        let mut parts = Vec::with_capacity(m.len());
-        for (k, v) in m {
-            parts.push(format!("{k}={v:?}"));
-        }
-        parts.join(", ")
-    }
-
-    module.set_native_fn(
-        "warn",
-        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::warn!(target: "rhai_script", source = "rhai", "{}", msg);
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "warn",
-        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::warn!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "info",
-        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::info!(target: "rhai_script", source = "rhai", "{}", msg);
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "info",
-        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::info!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "debug",
-        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::debug!(target: "rhai_script", source = "rhai", "{}", msg);
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "debug",
-        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::debug!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "error",
-        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::error!(target: "rhai_script", source = "rhai", "{}", msg);
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "error",
-        |label: String, data: Map| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::error!(target: "rhai_script", source = "rhai", "{} {{ {} }}", label, fmt_map(&data));
-            Ok(Dynamic::UNIT)
-        },
-    );
-    module.set_native_fn(
-        "trace",
-        |msg: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {
-            tracing::trace!(target: "rhai_script", source = "rhai", "{}", msg);
-            Ok(Dynamic::UNIT)
-        },
-    );
-
-    RhaiModule {
-        name: "log".to_string(),
-        module,
-    }
 }
 
 /// Register the default building block modules plus a provider-scoped

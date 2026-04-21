@@ -20,7 +20,6 @@ import { config } from 'dotenv';
 import type {
   RelayEndpointConfig,
   RelayEndpointState,
-  RelayMessage,
   ReconnectState,
   SessionCreateCallback,
   ConfigValidationResult,
@@ -157,7 +156,7 @@ export function createRelayEndpoint(
     if (state.localWss) {
       return;
     }
-    const port = endpointConfig.websocketPort || 8080;
+    const port = endpointConfig.websocketPort || 8181;
     state.localWss = new WebSocketServer({ port });
     state.isRunning = true;
 
@@ -375,7 +374,7 @@ if (runAsMain) {
     relayUrl: process.env.RELAY_URL || '',
     channelId: process.env.RELAY_CHANNEL_ID || '',
     apiKey: process.env.RELAY_API_KEY || '',
-    websocketPort: parseInt(process.env.WEBSOCKET_PORT || '8080', 10),
+    websocketPort: parseInt(process.env.WEBSOCKET_PORT || '8181', 10),
   };
 
   const validation = validateConfig(endpointConfig);

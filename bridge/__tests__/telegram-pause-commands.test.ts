@@ -6,7 +6,7 @@
  * /deny are used when the agent is paused due to blocklist prompts (PauseKind::Triple).
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { SlashCommandState } from '../telegram-slash-commands';
 import type { StreamChunkData, EndpointState } from '../telegram-endpoint';
 import {
@@ -18,8 +18,6 @@ import {
   assertBotMessageContains,
   assertControlMessageSent,
   getBotMessage,
-  getWebSocketMessage,
-  WS_OPEN,
   type MockBot,
   type MockWebSocket,
 } from './fixtures/telegram-test-helpers';
@@ -411,13 +409,14 @@ describe('Feature: Telegram Pause State Management - Integration', () => {
       expect(result.action).toBe('allow_once');
 
       // Simulate what telegram-endpoint does when it receives the action
+      // (session:control envelope per multiplexed protocol)
       if (result.action === 'allow_once') {
         mockWs.send(
           JSON.stringify({
+            service: 'session',
             type: 'control',
-            action: 'pause_response',
             session_id: state.currentSession.sessionId,
-            response: 'allow_once',
+            data: { action: 'pause_response', response: 'allow_once' },
           })
         );
       }
@@ -492,13 +491,14 @@ describe('Feature: Telegram Pause State Management - Integration', () => {
       expect(result.action).toBe('allow_session');
 
       // Simulate what telegram-endpoint does
+      // (session:control envelope per multiplexed protocol)
       if (result.action === 'allow_session') {
         mockWs.send(
           JSON.stringify({
+            service: 'session',
             type: 'control',
-            action: 'pause_response',
             session_id: state.currentSession.sessionId,
-            response: 'allow_session',
+            data: { action: 'pause_response', response: 'allow_session' },
           })
         );
       }
@@ -570,13 +570,14 @@ describe('Feature: Telegram Pause State Management - Integration', () => {
       expect(result.action).toBe('deny');
 
       // Simulate what telegram-endpoint does
+      // (session:control envelope per multiplexed protocol)
       if (result.action === 'deny') {
         mockWs.send(
           JSON.stringify({
+            service: 'session',
             type: 'control',
-            action: 'pause_response',
             session_id: state.currentSession.sessionId,
-            response: 'deny',
+            data: { action: 'pause_response', response: 'deny' },
           })
         );
       }

@@ -4,11 +4,16 @@
 //! returns an error, the resolver falls back to one of these presets
 //! selected by `ProviderConfig.tool_style`. Each preset enumerates the
 //! full baseline tool surface fspec exposes to agents.
-
-use serde_json::json;
+//!
+//! Schema fragments live in [`super::tool_schemas`] to keep this file
+//! within the 300-line project limit.
 
 use super::config::ToolStyle;
 use super::tool_facade::RhaiToolDef;
+use super::tool_schemas::{
+    ast_grep_schema, bash_schema, file_edit_schema, file_read_schema, file_write_schema,
+    glob_schema, grep_schema, ls_schema, web_search_schema,
+};
 
 /// Build a default `RhaiToolDef` from `(name, description, maps_to,
 /// parameters)`. Centralised so the per-style constructors stay terse.
@@ -26,92 +31,6 @@ fn td(
     }
 }
 
-fn file_read_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "file_path": { "type": "string" },
-            "offset": { "type": "integer" },
-            "limit": { "type": "integer" }
-        },
-        "required": ["file_path"]
-    })
-}
-
-fn file_write_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "file_path": { "type": "string" },
-            "content": { "type": "string" }
-        },
-        "required": ["file_path", "content"]
-    })
-}
-
-fn file_edit_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "file_path": { "type": "string" },
-            "old_string": { "type": "string" },
-            "new_string": { "type": "string" }
-        },
-        "required": ["file_path", "old_string", "new_string"]
-    })
-}
-
-fn bash_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "command": { "type": "string" }
-        },
-        "required": ["command"]
-    })
-}
-
-fn grep_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "pattern": { "type": "string" },
-            "path": { "type": "string" }
-        },
-        "required": ["pattern"]
-    })
-}
-
-fn glob_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "pattern": { "type": "string" },
-            "path": { "type": "string" }
-        },
-        "required": ["pattern"]
-    })
-}
-
-fn ls_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "path": { "type": "string" }
-        }
-    })
-}
-
-fn web_search_schema() -> serde_json::Value {
-    json!({
-        "type": "object",
-        "properties": {
-            "query": { "type": "string" }
-        },
-        "required": ["query"]
-    })
-}
-
 /// Claude-native preset: PascalCase tool names.
 fn claude_preset() -> Vec<RhaiToolDef> {
     vec![
@@ -121,6 +40,12 @@ fn claude_preset() -> Vec<RhaiToolDef> {
         td("Bash", "Run a bash command", "bash", bash_schema()),
         td("Grep", "Search file contents", "search:grep", grep_schema()),
         td("Glob", "Find files by glob", "search:glob", glob_schema()),
+        td(
+            "AstGrep",
+            "AST-based code search that finds code by syntax structure, not text. Fewer false positives than grep for structural searches.",
+            "search:ast_grep",
+            ast_grep_schema(),
+        ),
         td("LS", "List a directory", "ls", ls_schema()),
         td(
             "WebSearch",
@@ -154,6 +79,12 @@ fn openai_preset() -> Vec<RhaiToolDef> {
             "Find files by glob",
             "search:glob",
             glob_schema(),
+        ),
+        td(
+            "ast_grep",
+            "AST-based structural code search",
+            "search:ast_grep",
+            ast_grep_schema(),
         ),
         td("list_dir", "List a directory", "ls", ls_schema()),
         td(
@@ -198,6 +129,12 @@ fn gemini_preset() -> Vec<RhaiToolDef> {
             "Find files by glob",
             "search:glob",
             glob_schema(),
+        ),
+        td(
+            "astGrep",
+            "AST-based structural code search",
+            "search:ast_grep",
+            ast_grep_schema(),
         ),
         td(
             "listDirectory",
@@ -252,6 +189,12 @@ fn codex_preset() -> Vec<RhaiToolDef> {
             "Find files by glob",
             "search:glob",
             glob_schema(),
+        ),
+        td(
+            "ast_grep",
+            "AST-based structural code search",
+            "search:ast_grep",
+            ast_grep_schema(),
         ),
         td("list_dir", "List a directory", "ls", ls_schema()),
         td(

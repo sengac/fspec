@@ -4881,7 +4881,7 @@ async fn agent_loop(
             // PROV-005: We need both provider AND model to correctly determine thinking config.
             // Adaptive thinking models (claude-opus-4-6, claude-sonnet-4-6) need the model name,
             // not just the provider name, to trigger adaptive thinking in get_thinking_config().
-            let (current_provider, current_model) = {
+            let (current_provider, current_model, thinking_model_key) = {
                 let inner = session.inner.lock().await;
                 // MODEL-004: Check facade_override first — if set, dispatch to that
                 // provider instead of the current_provider. This allows custom models
@@ -4891,8 +4891,41 @@ async fn agent_loop(
                     .map(|s| s.to_string())
                     .unwrap_or_else(|| inner.current_provider_name().to_string());
                 let model = inner.current_model_id().map(|s| s.to_string());
-                tracing::debug!("[AGENT-LOOP] current_provider={}, current_model={:?}", provider, model);
-                (provider, model)
+
+                // PROV-100: Compute a parallel "thinking model key" that
+                // resolves a custom provider's model alias (e.g.
+                // `"opus-4.7"`, the HashMap key in `ProviderConfig.models`)
+                // to its upstream model identifier (e.g.
+                // `"claude-opus-4-7"`, the `ModelDef.id` field).
+                // `is_adaptive_thinking_model` and
+                // `get_thinking_config` key on the upstream id, so
+                // without this the custom provider never sees a
+                // non-empty thinking config and Opus 4.7 can't enter
+                // adaptive thinking. We intentionally keep
+                // `current_model` as the raw alias because the
+                // CustomProvider dispatch further down uses it as the
+                // `model_alias` argument and would fail the config
+                // lookup if we substituted the resolved id.
+                let real_provider_name = inner.current_provider_name().to_string();
+                let thinking_key = if matches!(
+                    inner.provider_manager().current_provider_type(),
+                    codelet_providers::ProviderType::Custom(_)
+                ) {
+                    model.as_deref().and_then(|alias| {
+                        codelet_providers::custom::resolve_custom_model_id(
+                            &real_provider_name,
+                            alias,
+                        )
+                    })
+                } else {
+                    None
+                };
+
+                tracing::debug!(
+                    "[AGENT-LOOP] current_provider={}, current_model={:?}, thinking_model_key={:?}",
+                    provider, model, thinking_key
+                );
+                (provider, model, thinking_key)
             };
 
             // BRIDGE-006: Unified thinking level detection
@@ -4912,33 +4945,59 @@ async fn agent_loop(
                 };
                 use crate::thinking_config::{get_thinking_config, JsThinkingLevel};
                 use codelet_tools::facade::is_adaptive_thinking_model;
-                
+
+                // PROV-100: Prefer the resolved "thinking model key"
+                // for custom providers (e.g. `"claude-opus-4-7"` rather
+                // than the config alias `"opus-4.7"`). This is the key
+                // that `is_adaptive_thinking_model` / `get_thinking_config`
+                // recognise. For built-in providers
+                // `thinking_model_key` is None and we fall back to
+                // `current_model` verbatim, so no behaviour changes for
+                // claude/openai/gemini/zai/codex/copilot.
+                let routing_model = thinking_model_key
+                    .as_deref()
+                    .or(current_model.as_deref());
+
                 // PROV-005 FIX: For adaptive thinking models, ALWAYS use model-aware config
                 // regardless of what TypeScript passed. This prevents the bug where TypeScript
                 // calls getThinkingConfig('claude', level) and gets budgeted thinking, which
                 // Opus 4.6 rejects with "max_tokens must be greater than thinking.budget_tokens".
-                let is_adaptive_model = current_model.as_deref()
+                let is_adaptive_model = routing_model
                     .map(is_adaptive_thinking_model)
                     .unwrap_or(false);
-                
+
+                tracing::debug!(
+                    "[AGENT-LOOP] thinking routing: routing_model={:?}, is_adaptive={}, base_thinking_level={}, has_ts_config={}",
+                    routing_model,
+                    is_adaptive_model,
+                    session.get_base_thinking_level(),
+                    input_with_images.thinking_config.is_some(),
+                );
+
                 if is_adaptive_model {
                     // Adaptive models: detect level and use model-aware config
                     let detected_level = detect_thinking_level(input);
                     let force_off = has_disable_keywords(input);
                     let base_level = thinking_level_from_u8(session.get_base_thinking_level());
                     let effective_level = compute_effective_thinking_level(base_level, detected_level, force_off);
-                    
+                    tracing::debug!(
+                        "[AGENT-LOOP] adaptive path: base={:?}, detected={:?}, force_off={}, effective={:?}",
+                        base_level, detected_level, force_off, effective_level
+                    );
+
                     if effective_level == JsThinkingLevel::Off {
                         None
                     } else {
                         // Use the actual model name for adaptive config
-                        // Safety: is_adaptive_model is true only when current_model is Some
-                        let config_key = current_model.as_deref()
-                            .expect("current_model must be Some when is_adaptive_model is true");
+                        // Safety: is_adaptive_model is true only when routing_model is Some
+                        let config_key = routing_model
+                            .expect("routing_model must be Some when is_adaptive_model is true");
                         match get_thinking_config(config_key.to_string(), effective_level) {
                             Ok(config_str) => {
-                                tracing::info!("Adaptive thinking model detected: {:?} (base={:?}, detected={:?}, force_off={}, config_key={})", 
-                                    effective_level, base_level, detected_level, force_off, config_key);
+                                tracing::info!(
+                                    "[AGENT-LOOP] adaptive thinking selected: config_key={}, effective_level={:?}, base={:?}, detected={:?}, force_off={}, config_str={}",
+                                    config_key, effective_level, base_level, detected_level, force_off, config_str
+                                );
                                 serde_json::from_str(&config_str).ok()
                             }
                             Err(e) => {
@@ -4956,17 +5015,17 @@ async fn agent_loop(
                     let force_off = has_disable_keywords(input);
                     let base_level = thinking_level_from_u8(session.get_base_thinking_level());
                     let effective_level = compute_effective_thinking_level(base_level, detected_level, force_off);
-                    
+
                     if effective_level == JsThinkingLevel::Off {
                         None
                     } else {
                         // PROV-005: Get thinking config using model name (if available) for model-aware config.
                         // For Claude 4.6 models, this triggers adaptive thinking instead of budgeted.
                         // Falls back to provider name for providers that don't have model-specific configs.
-                        let config_key = current_model.as_deref().unwrap_or(&current_provider);
+                        let config_key = routing_model.unwrap_or(&current_provider);
                         match get_thinking_config(config_key.to_string(), effective_level) {
                             Ok(config_str) => {
-                                tracing::info!("Thinking level detected: {:?} (base={:?}, detected={:?}, force_off={}, config_key={})", 
+                                tracing::info!("Thinking level detected: {:?} (base={:?}, detected={:?}, force_off={}, config_key={})",
                                     effective_level, base_level, detected_level, force_off, config_key);
                                 serde_json::from_str(&config_str).ok()
                             }

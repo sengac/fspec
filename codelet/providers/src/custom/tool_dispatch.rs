@@ -15,9 +15,9 @@ use codelet_tools::facade::{
     InternalFspecParams, InternalHitlParams, InternalLsParams, InternalSearchParams,
     InternalWebSearchParams,
 };
-use codelet_tools::request_user_input::HitlQuestion;
 
 use super::error::CustomProviderError;
+use super::tool_dispatch_extras::{bridge, exec_run, fspec, hitl};
 use super::tool_facade::default_to_internal_file;
 use super::tool_resolve::KNOWN_MAPS_TO;
 
@@ -32,6 +32,15 @@ pub enum DispatchedToolParams {
     Bash(InternalBashParams),
     /// Mapped from `search:grep` or `search:glob`.
     Search(InternalSearchParams),
+    /// Mapped from `search:ast_grep`.
+    ///
+    /// Not part of `InternalSearchParams` because the AST-grep tool is
+    /// structural (pattern + language + optional path) rather than a
+    /// plain text search, and adding it to that enum would ripple
+    /// through every built-in provider's search facade. Instead we
+    /// surface it as its own variant and forward directly to
+    /// `codelet_tools::AstGrepTool` in the executor.
+    AstGrep(AstGrepParams),
     /// Mapped from `ls`.
     Ls(InternalLsParams),
     /// Mapped from `web_search:search`.
@@ -44,6 +53,21 @@ pub enum DispatchedToolParams {
     Exec(InternalExecParams),
     /// Mapped from `hitl`.
     Hitl(InternalHitlParams),
+}
+
+/// Dispatched params for the AST-grep tool (structural code search).
+///
+/// Mirrors [`codelet_tools::astgrep::AstGrepArgs`] — kept here as a
+/// separate struct so the custom-provider dispatch owns its own
+/// serde-less typed shape.
+#[derive(Debug, Clone, PartialEq)]
+pub struct AstGrepParams {
+    /// Structural pattern (e.g. `fn $NAME($$$ARGS) { $$$BODY }`).
+    pub pattern: String,
+    /// Target language (e.g. `rust`, `typescript`, `python`).
+    pub language: String,
+    /// Optional directory / file to scope the search to.
+    pub path: Option<String>,
 }
 
 /// Convert a `maps_to` identifier + Rhai-supplied params JSON into a
@@ -63,6 +87,7 @@ pub fn default_to_internal(
         "bash" => Ok(D::Bash(bash(params)?)),
         "search:grep" => Ok(D::Search(search_grep(params)?)),
         "search:glob" => Ok(D::Search(search_glob(params)?)),
+        "search:ast_grep" => Ok(D::AstGrep(ast_grep(params)?)),
         "ls" => Ok(D::Ls(ls(params)?)),
         "web_search:search" => Ok(D::WebSearch(web_search(params)?)),
         "fspec" => Ok(D::Fspec(fspec(params)?)),
@@ -144,6 +169,22 @@ fn search_glob(params: &Value) -> Result<InternalSearchParams, CustomProviderErr
     })
 }
 
+fn ast_grep(params: &Value) -> Result<AstGrepParams, CustomProviderError> {
+    #[derive(Deserialize)]
+    struct Shape {
+        pattern: String,
+        language: String,
+        #[serde(default)]
+        path: Option<String>,
+    }
+    let s: Shape = parse("search:ast_grep", params)?;
+    Ok(AstGrepParams {
+        pattern: s.pattern,
+        language: s.language,
+        path: s.path,
+    })
+}
+
 fn ls(params: &Value) -> Result<InternalLsParams, CustomProviderError> {
     #[derive(Deserialize)]
     struct Shape {
@@ -172,97 +213,4 @@ fn web_search(params: &Value) -> Result<InternalWebSearchParams, CustomProviderE
     }
     let s: Shape = parse("web_search:search", params)?;
     Ok(InternalWebSearchParams::Search { query: s.query })
-}
-
-fn default_args() -> String {
-    "{}".to_string()
-}
-
-fn default_project_root() -> String {
-    ".".to_string()
-}
-
-fn fspec(params: &Value) -> Result<InternalFspecParams, CustomProviderError> {
-    #[derive(Deserialize)]
-    struct Shape {
-        command: String,
-        #[serde(default = "default_args")]
-        args: String,
-        #[serde(default = "default_project_root")]
-        project_root: String,
-    }
-    let s: Shape = parse("fspec", params)?;
-    Ok(InternalFspecParams {
-        command: s.command,
-        args: s.args,
-        project_root: s.project_root,
-    })
-}
-
-fn bridge(params: &Value) -> Result<InternalBridgeParams, CustomProviderError> {
-    #[derive(Deserialize)]
-    struct Action {
-        #[serde(rename = "type")]
-        kind: String,
-        #[serde(default)]
-        url: Option<String>,
-    }
-    #[derive(Deserialize)]
-    struct Shape {
-        action: Action,
-    }
-    let s: Shape = parse("bridge", params)?;
-    match s.action.kind.as_str() {
-        "connect" => {
-            let url = s
-                .action
-                .url
-                .ok_or_else(|| fail("bridge", "connect action missing 'url'"))?;
-            Ok(InternalBridgeParams::Connect { url })
-        }
-        "disconnect" => {
-            let url = s
-                .action
-                .url
-                .ok_or_else(|| fail("bridge", "disconnect action missing 'url'"))?;
-            Ok(InternalBridgeParams::Disconnect { url })
-        }
-        "list" => Ok(InternalBridgeParams::List),
-        other => Err(fail("bridge", format!("unknown action.type '{other}'"))),
-    }
-}
-
-fn exec_run(params: &Value) -> Result<InternalExecParams, CustomProviderError> {
-    #[derive(Deserialize)]
-    struct Shape {
-        command: Value,
-        #[serde(default)]
-        workdir: Option<String>,
-        #[serde(default)]
-        tty: bool,
-        #[serde(default)]
-        yield_time_ms: Option<u64>,
-        #[serde(default)]
-        max_output_tokens: Option<u64>,
-        #[serde(default)]
-        timeout_secs: Option<u64>,
-    }
-    let s: Shape = parse("exec:run", params)?;
-    Ok(InternalExecParams::Run {
-        command: s.command,
-        workdir: s.workdir,
-        tty: s.tty,
-        yield_time_ms: s.yield_time_ms,
-        max_output_tokens: s.max_output_tokens,
-        timeout_secs: s.timeout_secs,
-    })
-}
-
-fn hitl(params: &Value) -> Result<InternalHitlParams, CustomProviderError> {
-    #[derive(Deserialize)]
-    struct Shape {
-        questions: Vec<HitlQuestion>,
-    }
-    let s: Shape = parse("hitl", params)?;
-    Ok(InternalHitlParams::Request { questions: s.questions })
 }

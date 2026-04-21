@@ -197,11 +197,15 @@ export function getWebSocketMessage(
 }
 
 /**
- * Assert that a control message was sent with the expected action.
- * Convenience function for testing control channel messages.
+ * Assert that a session:control envelope was sent with the expected action.
+ * Convenience function for testing the multiplexed control channel.
+ *
+ * Expected envelope shape:
+ *   { service: "session", type: "control", session_id: "...",
+ *     data: { action: "...", response?: "..." } }
  *
  * @param mockWs - The mock WebSocket to check
- * @param expectedAction - The expected action field value
+ * @param expectedAction - The expected action field value inside `data`
  * @param expectedResponse - Optional expected response field value (for pause_response)
  */
 export function assertControlMessageSent(
@@ -211,10 +215,13 @@ export function assertControlMessageSent(
 ): void {
   expect(mockWs.send).toHaveBeenCalled();
   const message = getWebSocketMessage(mockWs);
+  expect(message.service).toBe('session');
   expect(message.type).toBe('control');
-  expect(message.action).toBe(expectedAction);
+  const data = message.data as { action?: string; response?: string };
+  expect(data).toBeDefined();
+  expect(data.action).toBe(expectedAction);
   if (expectedResponse !== undefined) {
-    expect(message.response).toBe(expectedResponse);
+    expect(data.response).toBe(expectedResponse);
   }
 }
 

@@ -4,7 +4,7 @@ Connect this AI session to a Telegram bridge endpoint for remote monitoring and 
 
 ## Default Configuration
 
-- **WebSocket URL**: `ws://localhost:8080`
+- **WebSocket URL**: `ws://localhost:8181`
 
 ## Action Required
 
@@ -17,7 +17,7 @@ If a custom URL is provided as a parameter, use that instead of the default.
 Reference this file with `@` in your prompt to load the skill:
 
 ```
-@bridge/telegram-skill.md                          # Connect to ws://localhost:8080
+@bridge/telegram-skill.md                          # Connect to ws://localhost:8181
 @bridge/telegram-skill.md ws://myserver:9000       # Connect to custom URL
 ```
 
@@ -25,4 +25,4 @@ Reference this file with `@` in your prompt to load the skill:
 
 ## Execute Now
 
-Connect to the Telegram bridge at `ws://localhost:8080`:
+Connect to the Telegram bridge at `ws://localhost:8181`:

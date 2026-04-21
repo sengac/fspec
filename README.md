@@ -460,7 +460,7 @@ Monitor and interact with your factory from your phone. The Bridge tool connects
 
 5. **Connect the agent** — Tell it:
    ```
-   Connect to the Telegram bridge at ws://localhost:8080
+   Connect to the Telegram bridge at ws://localhost:8181
    ```
 
 Now all agent output streams to Telegram. Send messages back to provide input. Run the factory overnight and check production from bed.

@@ -163,6 +163,7 @@ impl CustomProvider {
             thinking_config,
             &system_prompt_facade,
             tool_adapters,
+            &config_arc,
         );
 
         Ok(CustomRigAgent {
@@ -186,6 +187,7 @@ fn build_rig_agent(
     thinking_config: Option<serde_json::Value>,
     system_prompt_facade: &Arc<RhaiSystemPromptFacade>,
     tool_adapters: Vec<RhaiToolFacadeAdapter>,
+    config: &Arc<ProviderConfig>,
 ) -> Agent<RhaiCustomProviderModel> {
     let model = RhaiCustomProviderModel::new(backend);
     let mut agent_builder = AgentBuilder::new(model);
@@ -209,15 +211,86 @@ fn build_rig_agent(
     // Attach every script-defined tool. AgentBuilder::tool consumes
     // the AgentBuilder and returns an AgentBuilderSimple. Subsequent
     // .tool() calls append to that simple builder.
-    let mut iter = tool_adapters.into_iter();
-    let Some(first) = iter.next() else {
-        return agent_builder.build();
+    //
+    // PROV-098: In addition to the Rhai-customisable surface (the
+    // nine baseline preset tools — Read/Write/Edit/Bash/Grep/Glob/LS/
+    // AstGrep/WebSearch — whose schemas users can override via the
+    // script's `define_tools`), we also attach the fspec "infrastructure"
+    // tools directly as native `rig::tool::Tool` implementations. These
+    // tools are tied to session-scoped state (agent sessions, session
+    // search index, graph store, scheduler, HITL, MCP connections) and
+    // are not customisable via Rhai — attaching them directly mirrors
+    // the full tool surface that `ClaudeProvider::create_rig_agent` and
+    // every other built-in provider exposes, so a `claude-rhai` user
+    // gets parity with a native `claude` user.
+    //
+    // PROV-099: Fspec and Bridge tools are also attached here. These
+    // are facade-wrapped because their tool name, schema, and argument
+    // mapping differ per provider family (Claude uses `Fspec` +
+    // `Bridge`, Gemini uses `fspec_command` + `bridge_event`, etc.).
+    // We pick the facade based on the config's `tool_style` so that a
+    // `tool_style = "claude"` custom provider advertises `Fspec`/
+    // `Bridge` exactly the same way the native `ClaudeProvider` does.
+    use codelet_tools::facade::{
+        bridge_tool_for_provider, claude_bridge_tool, claude_fspec_tool, fspec_tool_for_provider,
     };
-    let mut simple = agent_builder.tool(RhaiToolWrapper::new(first, session_id));
-    for adapter in iter {
-        simple = simple.tool(RhaiToolWrapper::new(adapter, session_id));
+    use codelet_tools::{
+        AgentManagerTool, AstGrepRefactorTool, ConnectMcpTool, DeepSearchTool, GraphSearchTool,
+        InjectSummaryTool, RequestUserInputTool, ScheduleTool, SessionSearchTool,
+    };
+
+    // Map ToolStyle → provider string used by the facade registrations.
+    // Anthropic is an alias for Claude (same rationale as
+    // `tool_presets::preset_tools`).
+    let facade_provider: &str = match config.tool_style {
+        super::config::ToolStyle::Claude | super::config::ToolStyle::Anthropic => "claude",
+        super::config::ToolStyle::Openai => "openai",
+        super::config::ToolStyle::Gemini => "gemini",
+        super::config::ToolStyle::Codex => "codex",
+    };
+    let fspec_tool = fspec_tool_for_provider(facade_provider, session_id)
+        .unwrap_or_else(|| claude_fspec_tool(session_id));
+    let bridge_tool = bridge_tool_for_provider(facade_provider, session_id)
+        .unwrap_or_else(|| claude_bridge_tool(session_id));
+
+    let mut iter = tool_adapters.into_iter();
+    if let Some(first) = iter.next() {
+        let mut simple = agent_builder.tool(RhaiToolWrapper::new(first, session_id));
+        for adapter in iter {
+            simple = simple.tool(RhaiToolWrapper::new(adapter, session_id));
+        }
+        simple
+            .tool(AstGrepRefactorTool::new(session_id))
+            .tool(SessionSearchTool::new(session_id))
+            .tool(GraphSearchTool::new(session_id))
+            .tool(InjectSummaryTool::new(session_id))
+            .tool(DeepSearchTool::new(session_id))
+            .tool(AgentManagerTool::new(session_id))
+            .tool(RequestUserInputTool::new(session_id))
+            .tool(ScheduleTool::new(session_id))
+            .tool(ConnectMcpTool::new(session_id))
+            .tool(fspec_tool)
+            .tool(bridge_tool)
+            .build()
+    } else {
+        // No Rhai-defined tools at all — wire the infrastructure tools
+        // on their own. This branch should be rare (an empty
+        // `define_tools` return) but we must still expose the native
+        // surface so the agent has something to work with.
+        agent_builder
+            .tool(AstGrepRefactorTool::new(session_id))
+            .tool(SessionSearchTool::new(session_id))
+            .tool(GraphSearchTool::new(session_id))
+            .tool(InjectSummaryTool::new(session_id))
+            .tool(DeepSearchTool::new(session_id))
+            .tool(AgentManagerTool::new(session_id))
+            .tool(RequestUserInputTool::new(session_id))
+            .tool(ScheduleTool::new(session_id))
+            .tool(ConnectMcpTool::new(session_id))
+            .tool(fspec_tool)
+            .tool(bridge_tool)
+            .build()
     }
-    simple.build()
 }
 
 /// Locate the directory containing `<name>.json` — project-local first,

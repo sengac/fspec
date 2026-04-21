@@ -48,7 +48,7 @@ npm run bridge:telegram:stop
 You should see:
 ```
 [telegram-endpoint] No TELEGRAM_CHAT_ID configured - waiting for first Telegram message
-[telegram-endpoint] WebSocket server listening on localhost:8080
+[telegram-endpoint] WebSocket server listening on localhost:8181
 [telegram-endpoint] Telegram bot connected with polling mode
 ```
 
@@ -70,7 +70,7 @@ Run the skill file to connect:
 
 Or manually ask the agent:
 ```
-Connect to the Telegram bridge at ws://localhost:8080
+Connect to the Telegram bridge at ws://localhost:8181
 ```
 
 ---
@@ -91,7 +91,7 @@ Connect to the Telegram bridge at ws://localhost:8080
 |----------|----------|---------|-------------|
 | `TELEGRAM_BOT_TOKEN` | Yes | - | Bot token from BotFather |
 | `TELEGRAM_CHAT_ID` | No | - | Pre-configure chat ID for immediate delivery |
-| `WEBSOCKET_PORT` | No | 8080 | Port for WebSocket server |
+| `WEBSOCKET_PORT` | No | 8181 | Port for WebSocket server |
 | `WEBSOCKET_HOST` | No | localhost | Host for WebSocket server |
 
 ---

@@ -175,12 +175,12 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // @step When the bridge processes the photo message
       const result = handleTelegramMessage('12345', caption, images);
 
-      // @step Then the WebSocket message should have message "What error is this?"
-      expect(result.message).toBe('What error is this?');
+      // @step Then the WebSocket envelope should have message "What error is this?"
+      expect(result.data.message).toBe('What error is this?');
 
-      // @step And the WebSocket message should include the image in the images array
-      expect(result.images).toBeDefined();
-      expect(result.images?.length).toBe(1);
+      // @step And the WebSocket envelope should include the image in data.images
+      expect(result.data.images).toBeDefined();
+      expect(result.data.images?.length).toBe(1);
     });
   });
 
@@ -198,12 +198,12 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // @step When the bridge processes the photo message
       const result = handleTelegramMessage('12345', caption, images);
 
-      // @step Then the WebSocket message should have message ""
-      expect(result.message).toBe('');
+      // @step Then the WebSocket envelope should have message ""
+      expect(result.data.message).toBe('');
 
-      // @step And the WebSocket message should include the image in the images array
-      expect(result.images).toBeDefined();
-      expect(result.images?.length).toBe(1);
+      // @step And the WebSocket envelope should include the image in data.images
+      expect(result.data.images).toBeDefined();
+      expect(result.data.images?.length).toBe(1);
     });
   });
 
@@ -222,11 +222,11 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // @step When the bridge processes the photo message
       const result = handleTelegramMessage('12345', caption, images);
 
-      // @step Then the WebSocket message should have message "This is the caption"
-      expect(result.message).toBe('This is the caption');
+      // @step Then the WebSocket envelope should have message "This is the caption"
+      expect(result.data.message).toBe('This is the caption');
 
       // @step And the message should NOT contain "This should be ignored"
-      expect(result.message).not.toContain('This should be ignored');
+      expect(result.data.message).not.toContain('This should be ignored');
     });
   });
 
@@ -246,12 +246,15 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // @step When the bridge processes the photo message
       const result = handleTelegramMessage('12345', caption, images);
 
-      // @step Then the WebSocket message should have this structure
+      // @step Then the WebSocket envelope should have this structure
+      //   { service: "session", type: "input", session_id,
+      //     data: { message, images: [{ data, media_type }] } }
+      expect(result.service).toBe('session');
       expect(result.type).toBe('input');
       expect(result.session_id).toBe('test-session-123');
-      expect(result.message).toBe('Hello');
-      expect(result.images?.[0].data).toBe('SGVsbG8gV29ybGQ=');
-      expect(result.images?.[0].media_type).toBe('image/jpeg');
+      expect(result.data.message).toBe('Hello');
+      expect(result.data.images?.[0].data).toBe('SGVsbG8gV29ybGQ=');
+      expect(result.data.images?.[0].media_type).toBe('image/jpeg');
     });
   });
 
@@ -341,11 +344,11 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // @step When the bridge processes the photo message
       const result = handleTelegramMessage('12345', caption, images);
 
-      // @step Then the WebSocket message should have message ""
-      expect(result.message).toBe('');
+      // @step Then the WebSocket envelope should have message ""
+      expect(result.data.message).toBe('');
 
-      // @step And the WebSocket message should include the image in the images array
-      expect(result.images?.length).toBe(1);
+      // @step And the WebSocket envelope should include the image in data.images
+      expect(result.data.images?.length).toBe(1);
     });
   });
 
@@ -359,9 +362,9 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // @step When a user sends a text message (no photo)
       const result = handleTelegramMessage('12345', 'Hello world');
 
-      // @step Then the WebSocket message should not have images field
-      expect(result.images).toBeUndefined();
-      expect(result.message).toBe('Hello world');
+      // @step Then the WebSocket envelope should not have images field
+      expect(result.data.images).toBeUndefined();
+      expect(result.data.message).toBe('Hello world');
     });
   });
 
@@ -394,12 +397,13 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // Documents don't have msg.photo, so they go through text path
       const result = handleTelegramMessage('12345', 'document.pdf');
 
-      // @step Then the bridge should handle it as a text message
+      // @step Then the bridge should handle it as a text envelope
+      expect(result.service).toBe('session');
       expect(result.type).toBe('input');
-      expect(result.message).toBe('document.pdf');
+      expect(result.data.message).toBe('document.pdf');
 
       // @step And no images array should be included
-      expect(result.images).toBeUndefined();
+      expect(result.data.images).toBeUndefined();
     });
   });
 
@@ -414,11 +418,12 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // Stickers don't have msg.photo, handled as text
       const result = handleTelegramMessage('12345', '');
 
-      // @step Then the bridge should handle it as a text message
+      // @step Then the bridge should handle it as a text envelope
+      expect(result.service).toBe('session');
       expect(result.type).toBe('input');
 
       // @step And no images array should be included
-      expect(result.images).toBeUndefined();
+      expect(result.data.images).toBeUndefined();
     });
   });
 
@@ -445,17 +450,18 @@ describe('Feature: Support Incoming Image Attachments from Telegram', () => {
       // which creates a multimodal Message::User with both text and image content
 
       // @step Then the session should pass the image to the LLM as a UserContent::Image
-      // Verified by checking the message structure includes images
-      expect(result.images).toBeDefined();
-      expect(result.images?.length).toBe(1);
-      expect(result.images?.[0].data).toBe('SGVsbG8gV29ybGQ=');
-      expect(result.images?.[0].media_type).toBe('image/jpeg');
+      // Verified by checking the envelope structure includes images inside data
+      expect(result.data.images).toBeDefined();
+      expect(result.data.images?.length).toBe(1);
+      expect(result.data.images?.[0].data).toBe('SGVsbG8gV29ybGQ=');
+      expect(result.data.images?.[0].media_type).toBe('image/jpeg');
 
       // @step And the LLM should receive both the text message and the image
-      // The text is in message field, images are in images array
+      // The text is in data.message, images are in data.images
       // Both are passed to the LLM via run_agent_stream_with_images -> run_agent_stream_internal
       // which constructs a Message::User with OneOrMany::many([text, image1, image2, ...])
-      expect(result.message).toBe('Describe this image');
+      expect(result.data.message).toBe('Describe this image');
+      expect(result.service).toBe('session');
       expect(result.type).toBe('input');
     });
   });

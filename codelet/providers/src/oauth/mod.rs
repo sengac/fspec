@@ -19,6 +19,7 @@ pub mod device_flow;
 pub mod engine;
 pub mod http_middleware;
 pub mod json_convert;
+pub mod log_module;
 pub mod script_provider;
 pub mod script_provider_aliases;
 pub mod script_invoke;

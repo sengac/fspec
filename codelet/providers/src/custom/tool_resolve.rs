@@ -26,6 +26,7 @@ pub(crate) const KNOWN_MAPS_TO: &[&str] = &[
     "bash",
     "search:grep",
     "search:glob",
+    "search:ast_grep",
     "ls",
     "web_search:search",
     "fspec",

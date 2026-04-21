@@ -134,13 +134,14 @@ describe('Integration: telegram-endpoint sets agentState when forwarding message
     state.chatId = '12345';
     state.agentState = 'idle';
 
-    // handleTelegramMessage creates the message object - it doesn't change state
+    // handleTelegramMessage creates the envelope object - it doesn't change state
     // The state change happens in setupTelegramBot's message handler
     const message = handleTelegramMessage('12345', 'Hello, agent!');
 
-    // Verify message structure is correct
+    // Verify envelope structure matches the multiplexed session:input shape
+    expect(message.service).toBe('session');
     expect(message.type).toBe('input');
-    expect(message.message).toBe('Hello, agent!');
+    expect(message.data.message).toBe('Hello, agent!');
     expect(message.session_id).toBe('test-session');
 
     // The agentState remains 'idle' here because handleTelegramMessage

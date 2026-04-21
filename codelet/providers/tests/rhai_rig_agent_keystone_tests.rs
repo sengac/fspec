@@ -18,7 +18,7 @@ use codelet_providers::custom::{
 };
 use codelet_providers::custom::tool_facade::RhaiToolDef;
 use codelet_tools::facade::SystemPromptFacade;
-use rig::completion::{CompletionModel, CompletionRequest, Message as RigMessage};
+use rig::completion::{CompletionModel, CompletionRequest, Message as RigMessage, ToolDefinition as RigToolDefinition};
 use rig::message::{AssistantContent, UserContent};
 use rig::streaming::RawStreamingChoice;
 use rig::tool::Tool;
@@ -631,4 +631,110 @@ fn rig_preamble_and_history_convert_to_internal_messages() {
         other => panic!("expected text, got {other:?}"),
     }
     let _ = Message::user("placeholder");
+}
+
+// =========================================================================
+// Scenario: CompletionRequest.tools are forwarded to Rhai build_request
+// =========================================================================
+//
+// Regression: previously `tools_for_rhai` returned `Vec::new()`,
+// dropping the rig-supplied tool catalogue on the floor. Scripts like
+// `claude-rhai` that expect `request.tools` to contain the full tool
+// definitions therefore advertised zero tools to the upstream API.
+#[tokio::test]
+#[serial]
+async fn completion_request_tools_are_forwarded_to_rhai_build_request() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .and(path("/v1/chat/completions"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "choices": [
+                {
+                    "message": { "content": "ok" },
+                    "finish_reason": "stop"
+                }
+            ]
+        })))
+        .mount(&server)
+        .await;
+
+    // Script echoes `request.tools` straight back into the request body
+    // so the test can verify the bridge preserved the catalogue.
+    let script = format!(
+        r#"
+fn build_url(config) {{ "{base}/v1/chat/completions" }}
+fn build_headers(config) {{ #{{ "Content-Type": "application/json" }} }}
+fn build_request(request) {{
+    let out = [];
+    if type_of(request.tools) == "array" {{
+        for t in request.tools {{
+            out.push(#{{
+                name: t.name,
+                description: t.description,
+                input_schema: t.input_schema
+            }});
+        }}
+    }}
+    #{{ messages: request.messages, tools: out }}
+}}
+fn parse_response(raw) {{ #{{ content: "ok", stop_reason: "end_turn" }} }}
+fn parse_stream_chunk(config, data) {{ #{{ kind: "ignore" }} }}
+fn build_stream_request(ctx) {{ #{{}} }}
+fn map_error(status, body) {{ #{{ type: "api", message: "err" }} }}
+"#,
+        base = server.uri()
+    );
+    let provider = build_provider_inline(&script, "my-script", &server.uri());
+    let model = RhaiCustomProviderModel::new(Arc::new(provider));
+
+    let history = OneOrMany::one(RigMessage::User {
+        content: OneOrMany::one(UserContent::Text("hi".into())),
+    });
+    let tool_a = RigToolDefinition {
+        name: "read_file".to_string(),
+        description: "read a file".to_string(),
+        parameters: json!({
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string"}
+            },
+            "required": ["file_path"]
+        }),
+    };
+    let tool_b = RigToolDefinition {
+        name: "write_file".to_string(),
+        description: "write a file".to_string(),
+        parameters: json!({
+            "type": "object",
+            "properties": {
+                "file_path": {"type": "string"},
+                "content":   {"type": "string"}
+            },
+            "required": ["file_path", "content"]
+        }),
+    };
+    let request = CompletionRequest {
+        preamble: None,
+        chat_history: history,
+        documents: vec![],
+        tools: vec![tool_a.clone(), tool_b.clone()],
+        temperature: None,
+        max_tokens: None,
+        tool_choice: None,
+        additional_params: None,
+    };
+
+    model.completion(request).await.expect("completion ok");
+
+    let received = &server.received_requests().await.expect("received")[0];
+    let body: serde_json::Value =
+        serde_json::from_slice(&received.body).expect("json body");
+    let tools = body["tools"].as_array().expect("tools is array");
+    assert_eq!(tools.len(), 2, "expected both tools forwarded, got {tools:?}");
+    assert_eq!(tools[0]["name"], "read_file");
+    assert_eq!(tools[0]["description"], "read a file");
+    assert_eq!(tools[0]["input_schema"]["required"][0], "file_path");
+    assert_eq!(tools[1]["name"], "write_file");
+    assert_eq!(tools[1]["description"], "write a file");
+    assert_eq!(tools[1]["input_schema"]["required"][1], "content");
 }

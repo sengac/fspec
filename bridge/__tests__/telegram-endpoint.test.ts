@@ -8,6 +8,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { WebSocket } from 'ws';
 
 // Use vi.hoisted to define mocks that can be used in vi.mock
 const {
@@ -68,7 +69,7 @@ vi.mock('dotenv', () => ({
 }));
 
 // Import types and functions from implementation
-import type { OutboundMessage } from '../telegram-endpoint';
+import type { Envelope, OutboundMessage } from '../telegram-endpoint';
 import {
   startEndpoint,
   stopEndpoint,
@@ -79,6 +80,7 @@ import {
   truncateMessage,
   handleStreamChunk,
   handleTelegramMessage,
+  handleInboundEnvelope,
 } from '../telegram-endpoint';
 
 describe('Feature: Telegram Bridge Endpoint', () => {
@@ -334,8 +336,121 @@ describe('Feature: Telegram Bridge Endpoint', () => {
     });
   });
 
-  describe('Scenario: Learn session ID from connected message', () => {
-    it('should store session ID when connected message is received', () => {
+  describe('Scenario: Complete codelet auth handshake with authSuccess envelope', () => {
+    it('should respond with auth:authSuccess when codelet sends auth:authenticate', () => {
+      // @step Given the endpoint is running
+      process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
+      startEndpoint();
+
+      // @step And a codelet session connects via WebSocket
+      const connectionHandler = mockWsOn.mock.calls.find(
+        call => call[0] === 'connection'
+      )?.[1];
+      expect(connectionHandler).toBeDefined();
+
+      const mockWs = {
+        on: vi.fn(),
+        close: vi.fn(),
+        send: vi.fn(),
+        readyState: 1,
+      };
+      connectionHandler(mockWs);
+
+      // @step When the codelet sends an auth:authenticate envelope
+      const messageHandler = mockWs.on.mock.calls.find(
+        call => call[0] === 'message'
+      )?.[1];
+      expect(messageHandler).toBeDefined();
+
+      const authEnvelope: Envelope = {
+        service: 'auth',
+        type: 'authenticate',
+        data: {
+          role: 'agent',
+          api_key: '',
+          instance: { name: 'my-instance', version: '1.0.0' },
+        },
+      };
+      messageHandler(JSON.stringify(authEnvelope));
+
+      // @step Then the endpoint should respond with an auth:authSuccess envelope
+      expect(mockWs.send).toHaveBeenCalledTimes(1);
+      const sent = JSON.parse(mockWs.send.mock.calls[0][0]) as Envelope;
+      expect(sent.service).toBe('auth');
+      expect(sent.type).toBe('authSuccess');
+
+      // @step And the instance_id should be learned from the envelope
+      expect(getState().instanceId).toBe('my-instance');
+    });
+
+    it('should still respond with authSuccess when no instance metadata is present', () => {
+      // @step Given the endpoint is running
+      process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
+      startEndpoint();
+
+      const connectionHandler = mockWsOn.mock.calls.find(
+        call => call[0] === 'connection'
+      )?.[1];
+      const mockWs = {
+        on: vi.fn(),
+        close: vi.fn(),
+        send: vi.fn(),
+        readyState: 1,
+      };
+      connectionHandler(mockWs);
+
+      const messageHandler = mockWs.on.mock.calls.find(
+        call => call[0] === 'message'
+      )?.[1];
+
+      // @step When the codelet sends an auth:authenticate with empty data
+      messageHandler(
+        JSON.stringify({ service: 'auth', type: 'authenticate', data: {} })
+      );
+
+      // @step Then the endpoint should still respond with authSuccess
+      const sent = JSON.parse(mockWs.send.mock.calls[0][0]) as Envelope;
+      expect(sent.type).toBe('authSuccess');
+
+      // @step And instance_id should remain null
+      expect(getState().instanceId).toBeNull();
+    });
+  });
+
+  describe('Scenario: Reply to system:ping with system:pong', () => {
+    it('should respond with system:pong when codelet sends system:ping', () => {
+      // @step Given the endpoint is running with a connected codelet session
+      process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
+      startEndpoint();
+
+      const connectionHandler = mockWsOn.mock.calls.find(
+        call => call[0] === 'connection'
+      )?.[1];
+      const mockWs = {
+        on: vi.fn(),
+        close: vi.fn(),
+        send: vi.fn(),
+        readyState: 1,
+      };
+      connectionHandler(mockWs);
+
+      const messageHandler = mockWs.on.mock.calls.find(
+        call => call[0] === 'message'
+      )?.[1];
+
+      // @step When the codelet sends a system:ping envelope
+      messageHandler(JSON.stringify({ service: 'system', type: 'ping' }));
+
+      // @step Then the endpoint should reply with a system:pong envelope
+      expect(mockWs.send).toHaveBeenCalledTimes(1);
+      const sent = JSON.parse(mockWs.send.mock.calls[0][0]) as Envelope;
+      expect(sent.service).toBe('system');
+      expect(sent.type).toBe('pong');
+    });
+  });
+
+  describe('Scenario: Learn session ID from first relay chunk envelope', () => {
+    it('should store session ID when the first relay:chunk envelope arrives', () => {
       // @step Given the endpoint is running
       process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
       startEndpoint();
@@ -355,18 +470,20 @@ describe('Feature: Telegram Bridge Endpoint', () => {
       connectionHandler(mockWs);
       expect(getState().currentSession.sessionId).toBeNull();
 
-      // @step When the codelet sends a "connected" message with session_id
+      // @step When the codelet sends a relay:chunk envelope with session_id
       const messageHandler = mockWs.on.mock.calls.find(
         call => call[0] === 'message'
       )?.[1];
       expect(messageHandler).toBeDefined();
 
-      const connectedMessage = JSON.stringify({
-        type: 'connected',
+      const chunkEnvelope: Envelope = {
+        service: 'relay',
+        type: 'chunk',
+        instance_id: 'my-instance',
         session_id: 'abc-123-session-uuid',
-        data: {},
-      });
-      messageHandler(connectedMessage);
+        data: { type: 'text', text: 'hello' },
+      };
+      messageHandler(JSON.stringify(chunkEnvelope));
 
       // @step Then the session ID should be stored
       expect(getState().currentSession.sessionId).toBe('abc-123-session-uuid');
@@ -375,6 +492,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
     it('should use learned session ID when relaying Telegram messages', () => {
       // @step Given the endpoint is running with a connected session
       process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
+      process.env.TELEGRAM_CHAT_ID = '12345678';
       startEndpoint();
 
       const connectionHandler = mockWsOn.mock.calls.find(
@@ -388,24 +506,123 @@ describe('Feature: Telegram Bridge Endpoint', () => {
       };
       connectionHandler(mockWs);
 
-      // @step And the session ID is learned from connected message
+      // @step And the session ID is learned from the first relay chunk envelope
       const wsMessageHandler = mockWs.on.mock.calls.find(
         call => call[0] === 'message'
       )?.[1];
       wsMessageHandler(
         JSON.stringify({
-          type: 'connected',
+          service: 'relay',
+          type: 'chunk',
           session_id: 'learned-session-123',
-          data: {},
+          data: { type: 'text', text: 'streaming...' },
         })
       );
 
       // @step When a Telegram message arrives
       const inbound = handleTelegramMessage('12345678', 'Hello from Telegram');
 
-      // @step Then the inbound message should include the learned session ID
+      // @step Then the inbound session:input envelope should include the learned session ID
+      expect(inbound.service).toBe('session');
+      expect(inbound.type).toBe('input');
       expect(inbound.session_id).toBe('learned-session-123');
-      expect(inbound.message).toBe('Hello from Telegram');
+      expect(inbound.data.message).toBe('Hello from Telegram');
+    });
+
+    it('should not overwrite an existing session_id on subsequent chunk envelopes', () => {
+      // Guard against accidental re-learning mid-session.
+      process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
+      startEndpoint();
+
+      const connectionHandler = mockWsOn.mock.calls.find(
+        call => call[0] === 'connection'
+      )?.[1];
+      const mockWs = {
+        on: vi.fn(),
+        close: vi.fn(),
+        send: vi.fn(),
+        readyState: 1,
+      };
+      connectionHandler(mockWs);
+      const messageHandler = mockWs.on.mock.calls.find(
+        call => call[0] === 'message'
+      )?.[1];
+
+      messageHandler(
+        JSON.stringify({
+          service: 'relay',
+          type: 'chunk',
+          session_id: 'first-session',
+          data: { type: 'text', text: 'one' },
+        })
+      );
+      messageHandler(
+        JSON.stringify({
+          service: 'relay',
+          type: 'chunk',
+          session_id: 'second-session',
+          data: { type: 'text', text: 'two' },
+        })
+      );
+
+      expect(getState().currentSession.sessionId).toBe('first-session');
+    });
+  });
+
+  describe('Scenario: Unknown envelopes are logged and dropped', () => {
+    it('should drop envelopes with unknown service/type and not throw', () => {
+      process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
+      startEndpoint();
+
+      const connectionHandler = mockWsOn.mock.calls.find(
+        call => call[0] === 'connection'
+      )?.[1];
+      const mockWs = {
+        on: vi.fn(),
+        close: vi.fn(),
+        send: vi.fn(),
+        readyState: 1,
+      };
+      connectionHandler(mockWs);
+      const messageHandler = mockWs.on.mock.calls.find(
+        call => call[0] === 'message'
+      )?.[1];
+
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+      expect(() =>
+        messageHandler(
+          JSON.stringify({
+            service: 'terminal',
+            type: 'data',
+            data: { base64: 'ZXhhbXBsZQ==' },
+          })
+        )
+      ).not.toThrow();
+
+      expect(mockWs.send).not.toHaveBeenCalled();
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Ignoring envelope service=terminal type=data')
+      );
+
+      logSpy.mockRestore();
+    });
+
+    it('should invoke handleInboundEnvelope directly without needing a connection', () => {
+      // Sanity test for the exported helper (used by other test files).
+      const mockWs = {
+        send: vi.fn(),
+      } as unknown as WebSocket;
+
+      handleInboundEnvelope(
+        { service: 'system', type: 'ping' },
+        mockWs as never
+      );
+
+      expect(
+        (mockWs as unknown as { send: { mock: { calls: unknown[] } } }).send
+          .mock.calls.length
+      ).toBe(1);
     });
   });
 
@@ -743,17 +960,20 @@ describe('Feature: Telegram Bridge Endpoint', () => {
       // @step When a user sends "build the app" in Telegram
       const result = handleTelegramMessage('12345678', 'build the app');
 
-      // @step Then the endpoint should send a JSON message via WebSocket
+      // @step Then the endpoint should send a JSON envelope via WebSocket
       expect(result).toBeDefined();
 
-      // @step And the message should have type "input"
+      // @step And the envelope should target the session service
+      expect(result.service).toBe('session');
+
+      // @step And the envelope type should be "input"
       expect(result.type).toBe('input');
 
-      // @step And the message should contain the session_id
+      // @step And the envelope should contain the session_id
       expect(result.session_id).toBeDefined();
 
-      // @step And the message should contain "build the app"
-      expect(result.message).toBe('build the app');
+      // @step And the envelope data should contain "build the app"
+      expect(result.data.message).toBe('build the app');
     });
   });
 
@@ -799,12 +1019,14 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step When user A sends "hello" from chat ID "111"
       const result1 = handleTelegramMessage('111', 'hello');
-      expect(result1.message).toBe('hello');
+      expect(result1.data.message).toBe('hello');
+      expect(result1.service).toBe('session');
       expect(result1.type).toBe('input');
 
       // @step And user B sends "hi there" from chat ID "222"
       const result2 = handleTelegramMessage('222', 'hi there');
-      expect(result2.message).toBe('hi there');
+      expect(result2.data.message).toBe('hi there');
+      expect(result2.service).toBe('session');
       expect(result2.type).toBe('input');
 
       // @step Then both messages should be routed to the connected codelet session

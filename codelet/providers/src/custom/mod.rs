@@ -42,9 +42,11 @@ mod stream_convert;
 mod stream_http;
 pub mod system_prompt;
 pub mod tool_dispatch;
+mod tool_dispatch_extras;
 pub mod tool_facade;
 pub mod tool_presets;
 pub mod tool_resolve;
+mod tool_schemas;
 
 pub use config::{
     ApiStyle, AuthConfig, Defaults, ModelDef, ProviderConfig, SystemPromptConfig, ToolStyle,
@@ -53,8 +55,8 @@ pub use custom_provider::{CustomProvider, CustomRigAgent};
 pub use discovery::discover_provider_configs;
 pub use management::{
     apply_custom_provider_env_vars, derive_facade_for_custom, init_provider_template,
-    list_providers_info, show_provider_info, test_provider_connection, validate_provider_config,
-    ProviderInfo, ProviderTestResult,
+    list_providers_info, resolve_custom_model_id, show_provider_info, test_provider_connection,
+    validate_provider_config, ProviderInfo, ProviderTestResult,
 };
 pub use provider::RhaiCustomProvider;
 pub use rig_model::{RhaiCustomCompletion, RhaiCustomProviderModel};

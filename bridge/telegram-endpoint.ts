@@ -11,6 +11,27 @@
  * - Telegram Bot API (node-telegram-bot-api) with polling mode
  * - Single session at a time - rejects additional connections
  * - Chat ID learned from TELEGRAM_CHAT_ID env or first Telegram message
+ *
+ * Wire protocol (multiplexed envelope) — matches codelet/tools/src/bridge_multiplexed.rs:
+ *
+ *   { service: 'auth' | 'relay' | 'fspec' | 'session' | 'terminal' | 'system',
+ *     type: string,
+ *     instance_id?: string,
+ *     session_id?: string,
+ *     terminal_id?: string,
+ *     request_id?: string,
+ *     data?: unknown }
+ *
+ * Codelet → endpoint:
+ *   - { service: 'auth', type: 'authenticate', data: { role: 'agent', api_key, instance } }
+ *   - { service: 'relay', type: 'chunk', instance_id, session_id, data: <StreamChunkData> }
+ *   - { service: 'system', type: 'pong' }
+ *
+ * Endpoint → codelet:
+ *   - { service: 'auth', type: 'authSuccess', data: {} }
+ *   - { service: 'session', type: 'input', session_id, data: { message, images? } }
+ *   - { service: 'session', type: 'control', session_id, data: { action, response? } }
+ *   - { service: 'system', type: 'pong' }  (in reply to a codelet ping)
  */
 
 import { WebSocketServer, WebSocket } from 'ws';
@@ -62,12 +83,23 @@ export interface StreamChunkData {
   pause_details?: string;
 }
 
+/**
+ * Internal shape handed to {@link handleStreamChunk}. The chunk data
+ * originally arrives as the `data` field of a relay:chunk envelope; the
+ * WebSocket message handler unwraps it into this structure.
+ */
 export interface StreamChunkMessage {
   type: 'chunk';
   session_id: string;
   data: StreamChunkData;
 }
 
+/**
+ * @deprecated Retained only so pre-migration tests that import the type
+ * still compile. The flat `{type: "connected"}` handshake was removed when
+ * bridge_relay adopted the multiplexed envelope protocol; session IDs are
+ * now learned from the first `relay:chunk` envelope.
+ */
 export interface ConnectedMessage {
   type: 'connected';
   session_id: string;
@@ -76,12 +108,58 @@ export interface ConnectedMessage {
 
 export type OutboundMessage = StreamChunkMessage | ConnectedMessage;
 
-export interface InboundMessage {
+// ── Multiplexed envelope protocol ───────────────────────────────────────────
+
+/** One of the 6 service channels in the multiplexed protocol. */
+export type EnvelopeService =
+  | 'auth'
+  | 'relay'
+  | 'fspec'
+  | 'session'
+  | 'terminal'
+  | 'system';
+
+/**
+ * Wire format for all WebSocket text frames exchanged with the codelet.
+ * Mirrors `codelet::tools::bridge_multiplexed::Envelope`.
+ */
+export interface Envelope {
+  service: EnvelopeService;
+  type: string;
+  instance_id?: string;
+  session_id?: string;
+  terminal_id?: string;
+  request_id?: string;
+  data?: unknown;
+}
+
+/** Envelope shape returned by {@link handleTelegramMessage} for user input. */
+export interface SessionInputEnvelope extends Envelope {
+  service: 'session';
   type: 'input';
   session_id: string;
-  message: string;
-  images?: Array<{ data: string; media_type: string }>;
+  data: {
+    message: string;
+    images?: Array<{ data: string; media_type: string }>;
+  };
 }
+
+/** Envelope shape emitted for slash-command driven session:control. */
+export interface SessionControlEnvelope extends Envelope {
+  service: 'session';
+  type: 'control';
+  session_id: string;
+  data: {
+    action: string;
+    response?: string;
+  };
+}
+
+/**
+ * Return type of {@link handleTelegramMessage}. This is exactly the JSON
+ * object that gets serialized onto the WebSocket to the codelet.
+ */
+export type InboundMessage = SessionInputEnvelope;
 
 export interface EndpointState {
   wss: WebSocketServer | null;
@@ -91,6 +169,13 @@ export interface EndpointState {
     sessionId: string | null;
   };
   chatId: string | null;
+  /**
+   * Instance identifier reported by the codelet during the auth handshake
+   * (from `envelope.data.instance.name`). Kept for logging/diagnostics; the
+   * endpoint does not need to echo it back on outbound envelopes because
+   * the codelet routes session:input / session:control by `session_id`.
+   */
+  instanceId: string | null;
   toolNameMap: Map<string, string>;
   isRunning: boolean;
   // Buffering state
@@ -136,6 +221,7 @@ const state: EndpointState = {
     sessionId: null,
   },
   chatId: null,
+  instanceId: null,
   toolNameMap: new Map(),
   isRunning: false,
   messageBuffer: [],
@@ -592,8 +678,8 @@ export async function handleStreamChunk(
 // ============================================================================
 
 /**
- * Send a control message to the WebSocket session.
- * Used by slash commands (/stop, /clear, /allowonce, /allowsession, /deny) to communicate with the agent.
+ * Send a session:control envelope to the codelet.
+ * Used by slash commands (/stop, /clear, /allowonce, /allowsession, /deny).
  */
 function sendControlMessage(
   ws: WebSocket,
@@ -601,20 +687,23 @@ function sendControlMessage(
   action: string,
   response?: string
 ): void {
-  const message: Record<string, string> = {
-    type: 'control',
-    action,
-    session_id: sessionId,
-  };
+  const data: { action: string; response?: string } = { action };
   if (response !== undefined) {
-    message.response = response;
+    data.response = response;
   }
-  ws.send(JSON.stringify(message));
+  const envelope: SessionControlEnvelope = {
+    service: 'session',
+    type: 'control',
+    session_id: sessionId,
+    data,
+  };
+  ws.send(JSON.stringify(envelope));
 }
 
 /**
  * Handle an inbound message from Telegram.
- * Updates active chat ID and returns message to send to codelet.
+ * Updates active chat ID and returns the session:input envelope that should
+ * be forwarded to the codelet over the WebSocket.
  */
 export function handleTelegramMessage(
   chatId: string,
@@ -624,19 +713,118 @@ export function handleTelegramMessage(
   // Update active chat ID (allows device switching)
   state.chatId = chatId;
 
-  // Create message for codelet
-  const message: InboundMessage = {
-    type: 'input',
-    session_id: state.currentSession.sessionId || '',
-    message: text,
-  };
-
-  // Only include images if provided and non-empty
+  const data: InboundMessage['data'] = { message: text };
   if (images && images.length > 0) {
-    message.images = images;
+    data.images = images;
   }
 
-  return message;
+  const envelope: InboundMessage = {
+    service: 'session',
+    type: 'input',
+    session_id: state.currentSession.sessionId || '',
+    data,
+  };
+
+  return envelope;
+}
+
+// ============================================================================
+// Envelope Handling (WebSocket messages from codelet)
+// ============================================================================
+
+/**
+ * Build an auth:authSuccess envelope to complete the handshake.
+ */
+function buildAuthSuccess(): Envelope {
+  return {
+    service: 'auth',
+    type: 'authSuccess',
+    data: {},
+  };
+}
+
+/**
+ * Build a system:pong envelope in response to a codelet ping.
+ */
+function buildSystemPong(): Envelope {
+  return {
+    service: 'system',
+    type: 'pong',
+  };
+}
+
+/**
+ * Narrowed shape of the `instance` object sent inside the auth envelope.
+ * Only `name` is actually used by the endpoint; every other field is optional
+ * metadata that we log but do not depend on.
+ */
+interface AuthInstance {
+  name?: string;
+}
+
+/**
+ * Dispatch a single parsed envelope received from the codelet WebSocket.
+ * Keeps the per-service routing logic out of the raw message handler so it
+ * can be unit-tested directly.
+ */
+export function handleInboundEnvelope(envelope: Envelope, ws: WebSocket): void {
+  if (envelope.service === 'auth' && envelope.type === 'authenticate') {
+    // Learn instance metadata, respond with authSuccess so bridge_relay can
+    // transition out of its auth-blocking await state.
+    const authData = envelope.data as
+      | { instance?: AuthInstance }
+      | null
+      | undefined;
+    const instanceName = authData?.instance?.name;
+    if (instanceName) {
+      state.instanceId = instanceName;
+      console.log(
+        `[telegram-endpoint] Auth handshake from instance: ${instanceName}`
+      );
+    } else {
+      console.log('[telegram-endpoint] Auth handshake (no instance metadata)');
+    }
+    ws.send(JSON.stringify(buildAuthSuccess()));
+    return;
+  }
+
+  if (envelope.service === 'relay' && envelope.type === 'chunk') {
+    // Learn session_id from the first chunk we see. The codelet embeds the
+    // session_id at the envelope level; the inner `data` field matches the
+    // StreamChunkData shape expected by handleStreamChunk.
+    const incomingSessionId = envelope.session_id ?? '';
+    if (incomingSessionId && !state.currentSession.sessionId) {
+      state.currentSession.sessionId = incomingSessionId;
+      console.log(
+        `[telegram-endpoint] Session connected: ${incomingSessionId}`
+      );
+    }
+
+    const chunkMessage: StreamChunkMessage = {
+      type: 'chunk',
+      session_id: incomingSessionId,
+      data: envelope.data as StreamChunkData,
+    };
+    void handleStreamChunk(chunkMessage);
+    return;
+  }
+
+  if (envelope.service === 'system' && envelope.type === 'ping') {
+    ws.send(JSON.stringify(buildSystemPong()));
+    return;
+  }
+
+  if (envelope.service === 'system' && envelope.type === 'pong') {
+    // Codelet is responding to one of our pings (we don't send any yet,
+    // but accept the message silently for forward compatibility).
+    return;
+  }
+
+  // Any other envelope we don't know how to handle — log and drop. We
+  // deliberately avoid echoing errors to keep the transport tolerant.
+  console.log(
+    `[telegram-endpoint] Ignoring envelope service=${envelope.service} type=${envelope.type}`
+  );
 }
 
 // ============================================================================
@@ -661,18 +849,10 @@ function setupWebSocketServer(port: number, host: string): WebSocketServer {
 
     ws.on('message', (data: Buffer | string) => {
       try {
-        const message = JSON.parse(data.toString()) as OutboundMessage;
-        if (message.type === 'connected') {
-          // Learn session ID from connection handshake
-          state.currentSession.sessionId = message.session_id;
-          console.log(
-            `[telegram-endpoint] Session connected: ${message.session_id}`
-          );
-        } else if (message.type === 'chunk') {
-          void handleStreamChunk(message);
-        }
+        const envelope = JSON.parse(data.toString()) as Envelope;
+        handleInboundEnvelope(envelope, ws);
       } catch (error) {
-        console.error('[telegram-endpoint] Failed to parse message:', error);
+        console.error('[telegram-endpoint] Failed to parse envelope:', error);
       }
     });
 
@@ -688,6 +868,7 @@ function setupWebSocketServer(port: number, host: string): WebSocketServer {
       void flushBuffer();
       state.currentSession.ws = null;
       state.currentSession.sessionId = null;
+      state.instanceId = null;
       state.toolNameMap.clear();
       state.thinkingHandler.reset();
     });
@@ -844,7 +1025,7 @@ function setupTelegramBot(token: string): TelegramBotInstance {
 
       const inputMessage = handleTelegramMessage(chatId, text);
       console.log(
-        `[telegram-endpoint] Sending input to codelet - session_id: "${inputMessage.session_id}", message: "${inputMessage.message.slice(0, 50)}..."`
+        `[telegram-endpoint] Sending input to codelet - session_id: "${inputMessage.session_id}", message: "${inputMessage.data.message.slice(0, 50)}..."`
       );
       state.currentSession.ws.send(JSON.stringify(inputMessage));
     } else {
@@ -876,7 +1057,7 @@ export function startEndpoint(): EndpointState {
   }
 
   // Get configuration from environment
-  const port = parseInt(process.env.WEBSOCKET_PORT || '8080', 10);
+  const port = parseInt(process.env.WEBSOCKET_PORT || '8181', 10);
   const host = process.env.WEBSOCKET_HOST || 'localhost';
   const preConfiguredChatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -948,6 +1129,7 @@ export async function stopEndpoint(): Promise<void> {
   state.currentSession.ws = null;
   state.currentSession.sessionId = null;
   state.chatId = null;
+  state.instanceId = null;
   state.toolNameMap.clear();
   state.messageBuffer = [];
   state.bufferCharCount = 0;
@@ -972,6 +1154,7 @@ export function resetState(): void {
   state.bot = null;
   state.currentSession = { ws: null, sessionId: null };
   state.chatId = null;
+  state.instanceId = null;
   state.toolNameMap.clear();
   state.messageBuffer = [];
   state.bufferCharCount = 0;

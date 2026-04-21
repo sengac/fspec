@@ -171,16 +171,26 @@ fn internal_response_to_rig_choice(
     }
 }
 
-/// Convert our public `ToolDefinition` slice (currently unused in the
-/// wire bridge — tools are wired through the agent's tool server) into
-/// the shape Rhai's `build_request` expects. Today rig hands us tool
-/// schemas via the agent's `ToolServerHandle`; the Rhai contract
-/// expects them in the request map. PROV-092 keeps them empty here and
-/// surfaces them via `agent.tools()` plumbing in the broader agent loop
-/// so the script does not see double-listed tools. Scripts that need
-/// the catalogue can request it via the `define_tools()` callback.
-fn tools_for_rhai(_req: &CompletionRequest) -> Vec<ToolDefinition> {
-    Vec::new()
+/// Convert the rig `CompletionRequest.tools` (`rig::completion::ToolDefinition`
+/// with `{name, description, parameters}`) into our internal
+/// [`codelet_tools::ToolDefinition`] (`{name, description, input_schema}`)
+/// so the Rhai `build_request` script sees the tool catalogue.
+///
+/// rig's `Agent::prompt` gathers tool definitions from its
+/// `ToolServerHandle` and attaches them to `CompletionRequest.tools` —
+/// previously this bridge dropped them on the floor, which meant
+/// script-driven providers (e.g. `claude-rhai`) received an empty
+/// `tools` array and therefore never advertised tool calls to the
+/// upstream API.
+fn tools_for_rhai(req: &CompletionRequest) -> Vec<ToolDefinition> {
+    req.tools
+        .iter()
+        .map(|rig_tool| ToolDefinition {
+            name: rig_tool.name.clone(),
+            description: rig_tool.description.clone(),
+            input_schema: rig_tool.parameters.clone(),
+        })
+        .collect()
 }
 
 impl CompletionModel for RhaiCustomProviderModel {
@@ -215,13 +225,23 @@ impl CompletionModel for RhaiCustomProviderModel {
         let thinking = extract_thinking_config(&request);
 
         let provider = self.inner.as_ref();
+        let tool_names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
+        let thinking_str = thinking
+            .as_ref()
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "none".to_string());
         tracing::warn!(
             provider = %provider.config_name(),
             history_len = history.len(),
             internal_msg_count = messages.len(),
+            tool_count = tools.len(),
+            tool_names = ?tool_names,
             has_preamble = preamble.is_some(),
             has_thinking = thinking.is_some(),
-            "[rhai-dispatch] CompletionModel::completion ENTER"
+            "[rhai-dispatch] CompletionModel::completion ENTER tool_count={tc} tool_names={tns:?} thinking_config={th}",
+            tc = tools.len(),
+            tns = tool_names,
+            th = thinking_str,
         );
         let url = provider
             .invoke_build_url()
@@ -305,13 +325,23 @@ impl CompletionModel for RhaiCustomProviderModel {
         let thinking = extract_thinking_config(&request);
 
         let provider = self.inner.clone();
+        let tool_names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
+        let thinking_str = thinking
+            .as_ref()
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "none".to_string());
         tracing::warn!(
             provider = %provider.config_name(),
             history_len = history.len(),
             internal_msg_count = messages.len(),
+            tool_count = tools.len(),
+            tool_names = ?tool_names,
             has_preamble = preamble.is_some(),
             has_thinking = thinking.is_some(),
-            "[rhai-dispatch] CompletionModel::stream ENTER"
+            "[rhai-dispatch] CompletionModel::stream ENTER tool_count={tc} tool_names={tns:?} thinking_config={th}",
+            tc = tools.len(),
+            tns = tool_names,
+            th = thinking_str,
         );
         let url = provider
             .invoke_build_url()
@@ -402,11 +432,17 @@ impl CompletionModel for RhaiCustomProviderModel {
                     }
                     Ok(StreamChunk::ToolCallComplete { id, name, input }) => {
                         tool_chunks += 1;
+                        // Keep structured fields for filterable log
+                        // scraping AND inline the tool_name in the
+                        // message so the NAPI log bridge (which strips
+                        // structured fields when forwarding to the TS
+                        // `fspec.log` sink) still surfaces the tool
+                        // name for downstream tests / diagnostics.
                         tracing::warn!(
                             provider = %provider_name,
                             tool_id = %id,
                             tool_name = %name,
-                            "[rhai-dispatch] stream yielding ToolCallComplete"
+                            "[rhai-dispatch] stream yielding ToolCallComplete tool_name={name} tool_id={id}"
                         );
                         let mut tc = RawStreamingToolCall::new(id, name, input);
                         tc = tc.with_signature(None);

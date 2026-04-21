@@ -342,6 +342,28 @@ pub fn derive_facade_for_custom(name: &str) -> Option<String> {
     }
 }
 
+/// PROV-100: Resolve a custom-provider model alias (e.g. `"opus-4.7"`,
+/// the HashMap key in `ProviderConfig.models`) to the underlying model
+/// identifier the provider API expects (e.g. `"claude-opus-4-7"`, the
+/// `ModelDef.id` field).
+///
+/// The session_manager's thinking-config routing is keyed on the real
+/// model id — `is_adaptive_thinking_model("claude-opus-4-7")` must be
+/// true for Opus 4.7 to receive adaptive thinking. Without this
+/// resolution, the alias "opus-4.7" hits none of the Claude/Gemini/
+/// Codex provider heuristics and the session falls through to the
+/// empty-config branch, meaning thinking is never wired up for any
+/// Rhai-scripted provider.
+///
+/// Returns `None` when the provider name does not match any discovered
+/// custom provider or when the alias is not a declared model key. The
+/// caller should then fall back to the raw alias.
+pub fn resolve_custom_model_id(provider_name: &str, model_alias: &str) -> Option<String> {
+    let configs = discover_provider_configs().ok()?;
+    let cfg = configs.into_iter().find(|c| c.name == provider_name)?;
+    cfg.models.get(model_alias).map(|m| m.id.clone())
+}
+
 /// Return the effective API-key env var for `cfg`: the `api_key_env_var`
 /// field wins, falling back to the `env_var` inside
 /// [`AuthConfig::Bearer`] / [`AuthConfig::ApiKeyHeader`].
