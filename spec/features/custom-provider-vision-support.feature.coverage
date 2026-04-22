@@ -1,0 +1,54 @@
+{
+  "scenarios": [
+    {
+      "name": "Custom provider JSON with supports_vision true propagates to NapiModelInfo.hasVision",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
+          "lines": "105-117",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Custom provider model without supports_vision defaults hasVision to false",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
+          "lines": "119-139",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "SessionHeader renders [V] badge for vision-enabled custom model",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
+          "lines": "160-178",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Legacy config without supports_vision loads cleanly without regression",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
+          "lines": "141-158",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 71
+  }
+}

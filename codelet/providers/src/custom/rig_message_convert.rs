@@ -10,7 +10,9 @@
 //! Rhai script sees a stable wire format that matches what existing
 //! tests already exercise.
 
-use codelet_common::{ContentPart, ImageSource, Message, MessageContent, MessageRole};
+use codelet_common::{
+    ContentPart, ImageSource, Message, MessageContent, MessageRole, ToolResultPart,
+};
 use rig::completion::Message as RigMessage;
 use rig::message::{
     AssistantContent, DocumentSourceKind, ImageMediaType, ToolResultContent, UserContent,
@@ -53,21 +55,66 @@ where
                 parts.push(ContentPart::Text { text: text.text.clone() });
             }
             UserContent::ToolResult(result) => {
-                let combined: String = result
-                    .content
-                    .iter()
-                    .map(|tc| match tc {
-                        ToolResultContent::Text(text) => text.text.clone(),
-                        ToolResultContent::Image(_) => String::new(),
-                    })
-                    .filter(|s| !s.is_empty())
-                    .collect::<Vec<_>>()
-                    .join("\n");
-                parts.push(ContentPart::ToolResult {
-                    tool_use_id: result.id.clone(),
-                    content: combined,
-                    is_error: false,
-                });
+                // BUG-141: walk the rig tool_result entries IN ORDER and
+                // build a structured `Vec<ToolResultPart>`. Text entries
+                // become `ToolResultPart::Text`; image entries become
+                // `ToolResultPart::Image` reusing the existing
+                // [`image_to_source`] helper so the wire format matches
+                // the request-side `ContentPart::Image`. Image variants
+                // whose source cannot be derived (Raw / Unknown) are
+                // skipped — `image_to_source` already logs at debug —
+                // and never become an empty Text part.
+                let mut tool_parts: Vec<ToolResultPart> = Vec::new();
+                for tc in result.content.iter() {
+                    match tc {
+                        ToolResultContent::Text(text) => {
+                            tool_parts.push(ToolResultPart::Text {
+                                text: text.text.clone(),
+                            });
+                        }
+                        ToolResultContent::Image(image) => {
+                            if let Some(source) = image_to_source(
+                                image.data.clone(),
+                                image.media_type.clone(),
+                            ) {
+                                tool_parts.push(ToolResultPart::Image { source });
+                            }
+                        }
+                    }
+                }
+
+                // Preserve the existing happy-path shape for text-only
+                // tool_results (legacy callers still read `content` as
+                // a string). For mixed or empty payloads, defer to
+                // `tool_result_parts` which derives a best-effort
+                // `content` summary from the parts vector.
+                let single_text = match tool_parts.as_slice() {
+                    [ToolResultPart::Text { text }] => Some(text.clone()),
+                    _ => None,
+                };
+                let part = match single_text {
+                    Some(text) => ContentPart::tool_result_text(
+                        result.id.clone(),
+                        text,
+                        false,
+                    ),
+                    None if tool_parts.is_empty() => {
+                        // Empty conversions (e.g. only an Unknown image
+                        // input) collapse to an empty text part so the
+                        // ToolResult invariant (parts non-empty) holds.
+                        ContentPart::tool_result_text(
+                            result.id.clone(),
+                            String::new(),
+                            false,
+                        )
+                    }
+                    None => ContentPart::tool_result_parts(
+                        result.id.clone(),
+                        tool_parts,
+                        false,
+                    ),
+                };
+                parts.push(part);
             }
             UserContent::Image(image) => {
                 if let Some(source) = image_to_source(image.data.clone(), image.media_type.clone())

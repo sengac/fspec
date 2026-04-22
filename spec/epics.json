@@ -490,7 +490,8 @@
         "TUI-083",
         "AMGR-015",
         "AMGR-017",
-        "AMGR-018"
+        "AMGR-018",
+        "BUG-136"
       ]
     },
     "hierarchical-compaction": {
@@ -634,7 +635,8 @@
         "PROV-081",
         "PROV-082",
         "PROV-083",
-        "PROV-084"
+        "PROV-084",
+        "BUG-137"
       ]
     },
     "local-change-protocols": {
@@ -739,7 +741,8 @@
         "PROV-091",
         "PROV-092",
         "PROV-093",
-        "PROV-094"
+        "PROV-094",
+        "PROV-095"
       ]
     }
   }

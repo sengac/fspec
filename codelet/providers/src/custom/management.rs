@@ -16,6 +16,40 @@ use super::error::CustomProviderError;
 use crate::credentials::ProviderCredentials;
 use crate::error::ProviderError;
 
+/// BUG-139: Per-model info entry exposed through [`ProviderInfo::models`].
+///
+/// Prior to BUG-139 `ProviderInfo.models` was `Vec<String>` (just the
+/// alias keys of [`ProviderConfig::models`]), which forced the TUI's
+/// `customProviderSectionBuilder` to synthesise hardcoded
+/// `contextWindow=128000` / `maxOutput=8192` values. That lost any
+/// per-model overrides declared in the provider's JSON config (e.g. a
+/// 1M context window on `opus-4.7`) and made the SessionHeader badge
+/// display stale `[120k]` math.
+///
+/// The widened shape surfaces the per-model limits and capability flags
+/// from [`crate::custom::config::ModelDef`] directly, so the TUI can
+/// populate `NapiModelInfo.contextWindow` / `.maxOutput` / `.toolCall`
+/// / `.reasoning` from authoritative config values.
+#[derive(Debug, Clone)]
+pub struct ProviderModelInfo {
+    /// Model alias key from [`ProviderConfig::models`] (e.g. `"opus-4.7"`).
+    pub id: String,
+    /// Context window in tokens, sourced from
+    /// [`ModelDef::context_window`].
+    pub context_window: usize,
+    /// Max output tokens per completion, sourced from
+    /// [`ModelDef::max_output_tokens`].
+    pub max_output_tokens: usize,
+    /// Whether the model supports tool / function calling.
+    pub supports_tools: bool,
+    /// Whether the model supports SSE streaming.
+    pub supports_streaming: bool,
+    /// Whether the model supports extended-thinking mode.
+    pub supports_thinking: bool,
+    /// Whether the model supports vision / image input.
+    pub supports_vision: bool,
+}
+
 /// Lightweight info entry returned by [`list_providers_info`] and
 /// [`show_provider_info`]. Mirrors the shape the TUI renders in its
 /// provider picker.
@@ -35,8 +69,9 @@ pub struct ProviderInfo {
     pub base_url: Option<String>,
     /// Env var name for API key (custom entries).
     pub api_key_env_var: Option<String>,
-    /// Model aliases defined in the custom provider config.
-    pub models: Vec<String>,
+    /// BUG-139: Per-model info (id + limits + supports_* flags) declared
+    /// in the custom provider config. Empty for built-in providers.
+    pub models: Vec<ProviderModelInfo>,
     /// API style for facade derivation (custom entries).
     pub api_style: Option<String>,
 }
@@ -86,7 +121,22 @@ pub fn list_providers_info() -> Result<Vec<ProviderInfo>, ProviderError> {
     for cfg in customs {
         let available = credentials.has_custom(&cfg.name);
         let env_var = effective_api_key_env_var(&cfg).map(ToString::to_string);
-        let models: Vec<String> = cfg.models.keys().cloned().collect();
+        // BUG-139: Surface per-model limits and supports_* flags from the
+        // JSON `ModelDef` so downstream callers (NAPI -> TUI) do not have
+        // to synthesise contextWindow=128000 / maxOutput=8192.
+        let models: Vec<ProviderModelInfo> = cfg
+            .models
+            .iter()
+            .map(|(alias, def)| ProviderModelInfo {
+                id: alias.clone(),
+                context_window: def.context_window,
+                max_output_tokens: def.max_output_tokens,
+                supports_tools: def.supports_tools,
+                supports_streaming: def.supports_streaming,
+                supports_thinking: def.supports_thinking,
+                supports_vision: def.supports_vision,
+            })
+            .collect();
         let api_style_str = match cfg.api_style {
             crate::custom::ApiStyle::AnthropicMessages => "anthropic_messages",
             crate::custom::ApiStyle::OpenaiChat => "openai_chat",

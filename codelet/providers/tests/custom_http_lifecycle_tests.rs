@@ -642,7 +642,7 @@ async fn response_bridge_preserves_structured_tool_call_input() {
     let response_dynamic = Dynamic::from_map(response_map);
 
     // @step When I convert it through the response_bridge
-    let response: CompletionResponse =
+    let (response, _usage) =
         rhai_to_completion_response(response_dynamic).expect("response_bridge succeeds");
 
     // @step Then the ToolUseContent input is a serde_json::Value object with fields path="a.txt" and mode="read"

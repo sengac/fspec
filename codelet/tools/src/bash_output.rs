@@ -147,9 +147,14 @@ impl BashOutput {
 /// Manages stdout and stderr buffers for command execution.
 ///
 /// Encapsulates buffer creation and content extraction (DRY principle).
+///
+/// stdout is stored as raw bytes (`Vec<u8>`) rather than `String` so that
+/// binary payloads survive the capture path intact — the BUG-142 binary-output
+/// guard inspects the raw bytes to decide whether to suppress the output.
+/// stderr remains a String because stderr is by convention text diagnostics.
 #[derive(Default)]
 pub struct StreamBuffers {
-    stdout: Arc<Mutex<String>>,
+    stdout: Arc<Mutex<Vec<u8>>>,
     stderr: Arc<Mutex<String>>,
 }
 
@@ -157,13 +162,13 @@ impl StreamBuffers {
     /// Create new empty stream buffers.
     pub fn new() -> Self {
         Self {
-            stdout: Arc::new(Mutex::new(String::new())),
+            stdout: Arc::new(Mutex::new(Vec::new())),
             stderr: Arc::new(Mutex::new(String::new())),
         }
     }
 
-    /// Get a clone of the stdout buffer handle.
-    pub fn stdout_handle(&self) -> Arc<Mutex<String>> {
+    /// Get a clone of the stdout buffer handle (raw bytes).
+    pub fn stdout_handle(&self) -> Arc<Mutex<Vec<u8>>> {
         Arc::clone(&self.stdout)
     }
 
@@ -172,8 +177,8 @@ impl StreamBuffers {
         Arc::clone(&self.stderr)
     }
 
-    /// Extract the buffered stdout and stderr content.
-    pub async fn extract(self) -> (String, String) {
+    /// Extract the buffered stdout (raw bytes) and stderr (decoded string) content.
+    pub async fn extract(self) -> (Vec<u8>, String) {
         let stdout = self.stdout.lock().await.clone();
         let stderr = self.stderr.lock().await.clone();
         (stdout, stderr)

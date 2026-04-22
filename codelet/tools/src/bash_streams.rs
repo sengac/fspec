@@ -2,6 +2,12 @@
 //!
 //! Spawns async tasks to read stdout/stderr from child processes,
 //! optionally streaming output to UI callbacks.
+//!
+//! stdout is read as raw bytes (line-delimited on `\n`) rather than via the
+//! UTF-8 `lines()` iterator. This is required for BUG-142: binary payloads
+//! such as PNG/JPEG/PDF must reach the captured buffer intact so the
+//! binary-output guard can detect and suppress them before they hit the model.
+//! Streaming callbacks still receive decoded (lossy-UTF-8) text chunks.
 
 use crate::bash_abort::is_bash_abort_requested;
 use crate::bash_output::StreamBuffers;
@@ -28,7 +34,15 @@ pub enum StdoutStreamMode {
     None,
 }
 
-/// Spawn a task to read stdout, buffer it, and optionally stream to UI.
+/// Maximum raw stdout bytes captured for the binary-output guard / final
+/// result. Matches the existing logical output limits — we don't need to
+/// capture gigabytes of binary to decide it's binary.
+const STDOUT_CAPTURE_LIMIT: usize = 1024 * 1024; // 1 MiB
+
+/// Spawn a task to read stdout as raw bytes, buffer it, and optionally stream to UI.
+///
+/// Lines are delimited by `\n` (the byte) so arbitrary binary payloads are
+/// preserved; for UI streaming, each line is decoded via `String::from_utf8_lossy`.
 ///
 /// The `mode` parameter controls how lines are relayed:
 /// - `ToolProgress`: calls `emit_tool_progress(session_id, line, false)`
@@ -36,34 +50,50 @@ pub enum StdoutStreamMode {
 /// - `None`: only buffers
 pub fn spawn_stdout_reader(
     stdout: tokio::process::ChildStdout,
-    buffer: Arc<Mutex<String>>,
+    buffer: Arc<Mutex<Vec<u8>>>,
     mode: StdoutStreamMode,
     session_id: Uuid,
 ) -> tokio::task::JoinHandle<()> {
     tokio::spawn(async move {
-        let reader = BufReader::new(stdout);
-        let mut lines = reader.lines();
-        while let Ok(Some(line)) = lines.next_line().await {
+        let mut reader = BufReader::new(stdout);
+        let mut line_buf: Vec<u8> = Vec::new();
+        loop {
             if is_bash_abort_requested(session_id) {
                 break;
             }
-            let line_with_newline = format!("{line}\n");
-            // Stream to UI based on mode
-            match &mode {
-                StdoutStreamMode::ToolProgress => {
-                    crate::tool_progress::emit_tool_progress(
-                        session_id,
-                        &line_with_newline,
-                        false,
-                    );
+            line_buf.clear();
+            match reader.read_until(b'\n', &mut line_buf).await {
+                Ok(0) => break, // EOF
+                Ok(_) => {
+                    // Stream to UI based on mode — use lossy decoding so UI sees
+                    // something even if bytes aren't valid UTF-8.
+                    let as_str = String::from_utf8_lossy(&line_buf);
+                    match &mode {
+                        StdoutStreamMode::ToolProgress => {
+                            crate::tool_progress::emit_tool_progress(
+                                session_id,
+                                &as_str,
+                                false,
+                            );
+                        }
+                        StdoutStreamMode::Callback(cb) => {
+                            cb(&as_str);
+                        }
+                        StdoutStreamMode::None => {}
+                    }
+                    // Buffer raw bytes for final result (with a size cap so
+                    // pathological producers can't OOM us).
+                    let mut buf = buffer.lock().await;
+                    if buf.len() < STDOUT_CAPTURE_LIMIT {
+                        let remaining = STDOUT_CAPTURE_LIMIT - buf.len();
+                        let take = line_buf.len().min(remaining);
+                        buf.extend_from_slice(&line_buf[..take]);
+                    }
+                    // If read_until didn't end on a newline we've reached EOF
+                    // mid-line; loop will exit on the next read.
                 }
-                StdoutStreamMode::Callback(cb) => {
-                    cb(&line_with_newline);
-                }
-                StdoutStreamMode::None => {}
+                Err(_) => break,
             }
-            // Buffer for final result
-            buffer.lock().await.push_str(&line_with_newline);
         }
     })
 }

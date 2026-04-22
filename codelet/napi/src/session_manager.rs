@@ -4433,8 +4433,10 @@ fn register_agent_manager_handler(
     inner_session: &codelet_cli::session::Session,
     project: String,
 ) {
-    let full_model_string = inner_session.provider_manager().selected_model_string()
-        .map(|s| s.to_string());
+    // BUG-136: `selected_model_string()` now returns an owned `Option<String>`
+    // built on demand from the provider slug + bare model id, so model ids
+    // that themselves contain slashes round-trip cleanly.
+    let full_model_string = inner_session.provider_manager().selected_model_string();
     let spawner_context_window = inner_session.provider_manager().raw_model_context_window();
     let spawner_max_output = inner_session.provider_manager().raw_model_max_output_tokens();
     let agent_manager_handler = crate::agent_manager_handler::create_handler(
@@ -4473,7 +4475,7 @@ fn extract_deep_search_handler_values(
 fn extract_agent_manager_handler_values(
     pm: &codelet_providers::ProviderManager,
 ) -> (Option<String>, Option<usize>, Option<usize>) {
-    let model_string = pm.selected_model_string().map(|s| s.to_string());
+    let model_string = pm.selected_model_string();
     let context_window = pm.raw_model_context_window();
     let max_output = pm.raw_model_max_output_tokens();
     (model_string, context_window, max_output)
@@ -6915,13 +6917,43 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
     
     let mut inner = session.inner.lock().await;
 
+    // PROV-095: For custom Rhai providers, fetch all three script-set
+    // limits (context_window, max_output_tokens, compaction_threshold)
+    // in a single cached call. The script is authoritative:
+    //   - context_window / max_output_tokens from the script OVERRIDE
+    //     the TUI-supplied values (which default to 128_000 / 8_192 in
+    //     `customProviderSectionBuilder.ts` and so are meaningless for
+    //     a script that returns 400_000).
+    //   - compaction_threshold is used only when the TUI has NOT
+    //     supplied an explicit value, so users can still override a
+    //     script default from the CTX-008 configuration UI.
+    let scripted = if codelet_providers::custom_provider_registered(&provider_id) {
+        codelet_providers::custom::lookup_script_model_limits(&provider_id, &model_id)
+    } else {
+        codelet_providers::custom::RhaiScriptedLimits::default()
+    };
+    let effective_context_window = scripted
+        .context_window
+        .map(|v| v as u32)
+        .or(context_window);
+    let effective_max_output_tokens = scripted
+        .max_output_tokens
+        .map(|v| v as u32)
+        .or(max_output_tokens);
+
     // CTX-008: Set compaction threshold override from TUI configuration
+    // PROV-095: When the TUI has not supplied an explicit threshold AND
+    // the selected provider is a Rhai custom provider, consult the
+    // script's `get_model_limits(config).compaction_threshold` return
+    // value so scripts can surface their own defaults.
     if let (Some(ct_type), Some(ct_value)) = (&compaction_threshold_type, compaction_threshold_value) {
         inner.provider_manager_mut().set_compaction_threshold_override(
             Some((ct_type.clone(), ct_value as u64))
         );
     } else {
-        inner.provider_manager_mut().set_compaction_threshold_override(None);
+        inner
+            .provider_manager_mut()
+            .set_compaction_threshold_override(scripted.compaction_threshold.clone());
     }
 
     // PROV-018: Codex models bypass registry validation (not in models.dev under 'codex')
@@ -6929,17 +6961,18 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
         inner.provider_manager_mut().set_model_direct(
             &provider_id,
             &model_id,
-            context_window.map(|v| v as usize),
-            max_output_tokens.map(|v| v as usize),
+            effective_context_window.map(|v| v as usize),
+            effective_max_output_tokens.map(|v| v as usize),
             None,
         )
     } else {
         let select_result = inner.provider_manager_mut().select_model(&model_string).map(|_| ());
         // MODEL-005: NAPI override takes priority over models.dev metadata
+        // PROV-095: Script values (when present) take priority over TUI values.
         if select_result.is_ok() {
             inner.provider_manager_mut().override_model_limits(
-                context_window.map(|v| v as usize),
-                max_output_tokens.map(|v| v as usize),
+                effective_context_window.map(|v| v as usize),
+                effective_max_output_tokens.map(|v| v as usize),
             );
         }
         select_result
@@ -6987,11 +7020,20 @@ pub async fn session_set_model(session_id: String, provider_id: String, model_id
 ///
 /// MODEL-004: Accepts optional facade_override for custom models that need
 /// agent loop dispatch through a different provider backend.
+///
+/// BUG-137: Accepts optional `profile_name` so profile-qualified selections
+/// (e.g. "openai:fireworks/accounts/fireworks/models/kimi-k2p6") round-trip
+/// through `ProviderManager::selected_model_string()` as
+/// "{provider}:{profile}/{model}". This is required for AgentManager.spawn
+/// to correctly re-create the subordinate session on the same profile
+/// endpoint; without it, the subordinate path treated the composite as a
+/// cloud model and failed registry validation with "Model 'accounts/...'
+/// not found in provider 'openai'".
 #[napi]
 #[allow(clippy::too_many_arguments)] // NAPI boundary requires flat parameters
-pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, facade_override: Option<String>, compaction_threshold_type: Option<String>, compaction_threshold_value: Option<u32>) -> Result<()> {
-    tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, facade_override={:?}, compaction_threshold_type={:?}, compaction_threshold_value={:?}",
-          session_id, provider_id, model_id, context_window, max_output_tokens, facade_override, compaction_threshold_type, compaction_threshold_value);
+pub async fn session_set_model_profile(session_id: String, provider_id: String, model_id: String, context_window: Option<u32>, max_output_tokens: Option<u32>, facade_override: Option<String>, compaction_threshold_type: Option<String>, compaction_threshold_value: Option<u32>, profile_name: Option<String>) -> Result<()> {
+    tracing::debug!("session_set_model_profile called: session_id={}, provider_id={}, model_id={}, context_window={:?}, max_output_tokens={:?}, facade_override={:?}, compaction_threshold_type={:?}, compaction_threshold_value={:?}, profile_name={:?}",
+          session_id, provider_id, model_id, context_window, max_output_tokens, facade_override, compaction_threshold_type, compaction_threshold_value, profile_name);
     
     let session = SessionManager::instance().get_session(&session_id)?;
 
@@ -7003,20 +7045,50 @@ pub async fn session_set_model_profile(session_id: String, provider_id: String, 
     // MODEL-004: Pass facade_override through to ProviderManager
     let mut inner = session.inner.lock().await;
 
-    // CTX-008: Set compaction threshold override from TUI configuration
+    // PROV-095: For custom Rhai providers, fetch all three script-set
+    // limits (context_window, max_output_tokens, compaction_threshold)
+    // in a single cached call. The script is authoritative over the
+    // TUI-supplied hard-coded defaults (see session_set_model for the
+    // full rationale). Profile-based models without a registered custom
+    // provider (vLLM, Ollama, plain profile-qualified cloud aliases)
+    // simply get RhaiScriptedLimits::default() and behaviour is
+    // unchanged.
+    let scripted = if codelet_providers::custom_provider_registered(&provider_id) {
+        codelet_providers::custom::lookup_script_model_limits(&provider_id, &model_id)
+    } else {
+        codelet_providers::custom::RhaiScriptedLimits::default()
+    };
+    let effective_context_window = scripted
+        .context_window
+        .map(|v| v as u32)
+        .or(context_window);
+    let effective_max_output_tokens = scripted
+        .max_output_tokens
+        .map(|v| v as u32)
+        .or(max_output_tokens);
+
+    // CTX-008: Set compaction threshold override from TUI configuration.
+    // PROV-095: When the TUI has not supplied an explicit threshold,
+    // consult the Rhai script's get_model_limits(config).compaction_threshold
+    // so scripts can surface their own defaults through this profile
+    // path too (the TUI routes custom providers through here, not
+    // through session_set_model).
     if let (Some(ct_type), Some(ct_value)) = (&compaction_threshold_type, compaction_threshold_value) {
         inner.provider_manager_mut().set_compaction_threshold_override(
             Some((ct_type.clone(), ct_value as u64))
         );
     } else {
-        inner.provider_manager_mut().set_compaction_threshold_override(None);
+        inner
+            .provider_manager_mut()
+            .set_compaction_threshold_override(scripted.compaction_threshold.clone());
     }
 
-    match inner.provider_manager_mut().set_model_direct(
+    match inner.provider_manager_mut().set_model_direct_with_profile(
         &provider_id,
         &model_id,
-        context_window.map(|v| v as usize),
-        max_output_tokens.map(|v| v as usize),
+        profile_name.as_deref(),
+        effective_context_window.map(|v| v as usize),
+        effective_max_output_tokens.map(|v| v as usize),
         facade_override.clone(),
     ) {
         Ok(()) => {
@@ -8162,7 +8234,10 @@ mod sub_agent_model_inheritance_tests {
         // @step Given a session was created with model "anthropic/claude-sonnet-4-20250514"
         let pm_before = test_pm("claude", "anthropic", Some("claude-sonnet-4-20250514"), Some(200000), Some(16384));
         let (model_string_before, _, _) = extract_agent_manager_handler_values(&pm_before);
-        assert_eq!(model_string_before, Some("claude-sonnet-4-20250514".to_string()));
+        // BUG-136: selected_model_string() now returns the full registry
+        // composite so AgentManager's create_session_with_id call can
+        // round-trip it even when the model id contains slashes.
+        assert_eq!(model_string_before, Some("anthropic/claude-sonnet-4-20250514".to_string()));
 
         // @step And the AgentManager handler was registered at session creation
         // (values captured above)
@@ -8175,7 +8250,7 @@ mod sub_agent_model_inheritance_tests {
         // (extracting values simulates what re-registration would capture)
 
         // @step Then the subordinate should be created with the updated model "gemini-2.5-pro"
-        assert_eq!(model_string_after, Some("gemini-2.5-pro".to_string()));
+        assert_eq!(model_string_after, Some("google/gemini-2.5-pro".to_string()));
         assert_ne!(model_string_before, model_string_after);
     }
 
@@ -8229,7 +8304,8 @@ mod sub_agent_model_inheritance_tests {
 
         // @step And the AgentManager handler should capture model "gemini-2.5-pro", context_window 1048576, and max_output_tokens 65536
         let (ms, cw3, mo3) = extract_agent_manager_handler_values(&pm_after);
-        assert_eq!(ms, Some("gemini-2.5-pro".to_string()));
+        // BUG-136: full registry composite, not bare id
+        assert_eq!(ms, Some("google/gemini-2.5-pro".to_string()));
         assert_eq!(cw3, Some(1048576));
         assert_eq!(mo3, Some(65536));
     }
@@ -8307,12 +8383,13 @@ mod sub_agent_model_inheritance_tests {
 
     #[test]
     fn test_bug132_agent_manager_uses_selected_model_string_format() {
-        // AMGR-013: AgentManager must use selected_model_string() which
-        // preserves the "provider/model" registry format.
+        // AMGR-013 / BUG-136: AgentManager must use selected_model_string()
+        // which returns the full "provider/model" registry composite, not
+        // the bare model id. Previously this test asserted the BUG-136 bug
+        // (bare id "claude-opus-4-6"); now we require the full composite.
         let pm = test_pm("claude", "anthropic", Some("claude-opus-4-6"), Some(200000), Some(32768));
         let (model_string, _, _) = extract_agent_manager_handler_values(&pm);
-        // selected_model_string() returns the raw stored string
-        assert_eq!(model_string, Some("claude-opus-4-6".to_string()));
+        assert_eq!(model_string, Some("anthropic/claude-opus-4-6".to_string()));
     }
 }
 
@@ -8429,6 +8506,49 @@ pub fn session_execute_bash(session_id: String, command: String) -> BashExecutio
 // PROV-067: Custom provider management NAPI bindings
 // =============================================================================
 
+/// BUG-139: JS-shaped per-model info carried by [`JsProviderInfo::models`].
+///
+/// Mirrors [`codelet_providers::custom::ProviderModelInfo`] across the
+/// NAPI boundary so the TUI's `customProviderSectionBuilder` can read
+/// authoritative per-model limits (e.g. `contextWindow: 1_000_000`)
+/// directly from the provider JSON config, instead of synthesising
+/// hardcoded `128000 / 8192` fallbacks that made the SessionHeader badge
+/// display a stale `[120k]` context window.
+#[napi(object)]
+pub struct JsProviderModelInfo {
+    /// Model alias key (e.g. `"opus-4.7"`).
+    pub id: String,
+    /// Context window in tokens.
+    pub context_window: u32,
+    /// Max output tokens per completion.
+    pub max_output: u32,
+    /// Whether the model supports tool / function calling.
+    pub supports_tools: bool,
+    /// Whether the model supports SSE streaming.
+    pub supports_streaming: bool,
+    /// Whether the model supports extended-thinking mode.
+    pub supports_thinking: bool,
+    /// Whether the model supports vision / image input.
+    pub supports_vision: bool,
+}
+
+impl From<codelet_providers::custom::ProviderModelInfo> for JsProviderModelInfo {
+    fn from(src: codelet_providers::custom::ProviderModelInfo) -> Self {
+        Self {
+            id: src.id,
+            // Cast `usize` -> `u32`. All realistic model limits (≤ ~16M
+            // tokens) fit in a u32, and NAPI cannot bridge `usize`
+            // directly. Saturate defensively on overflow.
+            context_window: u32::try_from(src.context_window).unwrap_or(u32::MAX),
+            max_output: u32::try_from(src.max_output_tokens).unwrap_or(u32::MAX),
+            supports_tools: src.supports_tools,
+            supports_streaming: src.supports_streaming,
+            supports_thinking: src.supports_thinking,
+            supports_vision: src.supports_vision,
+        }
+    }
+}
+
 /// PROV-067: JS-shaped info entry for a provider (built-in or custom).
 #[napi(object)]
 pub struct JsProviderInfo {
@@ -8439,7 +8559,9 @@ pub struct JsProviderInfo {
     pub facade: Option<String>,
     pub base_url: Option<String>,
     pub api_key_env_var: Option<String>,
-    pub models: Vec<String>,
+    /// BUG-139: Per-model limits + capability flags for custom
+    /// providers; empty for built-ins.
+    pub models: Vec<JsProviderModelInfo>,
     pub api_style: Option<String>,
 }
 
@@ -8453,7 +8575,7 @@ impl From<codelet_providers::custom::ProviderInfo> for JsProviderInfo {
             facade: src.facade,
             base_url: src.base_url,
             api_key_env_var: src.api_key_env_var,
-            models: src.models,
+            models: src.models.into_iter().map(Into::into).collect(),
             api_style: src.api_style,
         }
     }

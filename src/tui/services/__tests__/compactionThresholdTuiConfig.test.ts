@@ -251,7 +251,8 @@ describe('Feature: TUI Configuration Fields and NAPI Bridge for Compaction Thres
           16384,
           null,
           'tokens',
-          100000
+          100000,
+          'my-profile'
         );
       });
     });
@@ -408,7 +409,8 @@ describe('Feature: TUI Configuration Fields and NAPI Bridge for Compaction Thres
         16384,
         null,
         'percentage',
-        75
+        75,
+        'my-profile'
       );
     });
   });

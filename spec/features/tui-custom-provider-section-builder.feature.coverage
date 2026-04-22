@@ -1,0 +1,161 @@
+{
+  "scenarios": [
+    {
+      "name": "customProviderSectionBuilder sources contextWindow from NAPI entry",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
+          "lines": "104-135",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1M JSON context_window round-trips to NapiModelInfo.contextWindow",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
+          "lines": "136-157",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "200k JSON context_window round-trips verbatim into NapiModelInfo",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
+          "lines": "158-176",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Max output tokens from NAPI propagates verbatim (no 8192 fallback)",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
+          "lines": "177-195",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "supports_* flags propagate through the builder",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.test.ts",
+          "lines": "196-229",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/customProviderSectionBuilder.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/services/customProviderSectionBuilder.ts"
+    ],
+    "totalLinesCovered": 317
+  }
+}

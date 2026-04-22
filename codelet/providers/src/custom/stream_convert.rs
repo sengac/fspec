@@ -4,7 +4,7 @@
 
 use rhai::{Dynamic, Map};
 
-use super::stream::{RhaiStreamProcessor, StreamChunk};
+use super::stream::{RhaiStreamProcessor, StreamChunk, StreamUsage};
 use crate::StopReason;
 
 /// Convert the Rhai `Dynamic` returned by `parse_stream_chunk` into a
@@ -55,6 +55,7 @@ fn handle_one(
         "reasoning_delta" | "thinking_delta" => handle_reasoning(&map),
         "tool_call_delta" | "tool_call" => handle_tool_call(processor, &map),
         "stop" => handle_stop(processor, &map),
+        "usage" | "token_delta" => handle_usage(&map),
         "ignore" | "" => Vec::new(),
         other => {
             tracing::debug!(kind = %other, "ignoring unknown stream chunk kind");
@@ -91,6 +92,47 @@ fn non_empty_text(map: &Map, key: &str) -> Option<String> {
         .cloned()
         .and_then(|v| v.into_string().ok())
         .filter(|s| !s.is_empty())
+}
+
+/// Extract a non-negative `u64` token count from a Rhai map field.
+///
+/// Accepts Rhai `INT` (i64) values. Missing keys, unit values, negative
+/// numbers, or non-integer dynamics are normalised to `None` (== "no
+/// update"). This intentionally mirrors the forgiving shape of
+/// [`non_empty_text`] so scripts can omit fields without causing a hard
+/// runtime error.
+fn token_count(map: &Map, key: &str) -> Option<u64> {
+    let value = map.get(key)?.clone();
+    if value.is_unit() {
+        return None;
+    }
+    match value.as_int() {
+        Ok(i) if i >= 0 => Some(i as u64),
+        _ => None,
+    }
+}
+
+/// PROV-103: Bridge a Rhai `usage` / `token_delta` map into a
+/// [`StreamChunk::UsageDelta`]. Every field is optional; if *every*
+/// field is missing the chunk is dropped to avoid polluting the stream
+/// with no-op Usage events.
+fn handle_usage(map: &Map) -> Vec<StreamChunk> {
+    let usage = StreamUsage {
+        input_tokens: token_count(map, "input_tokens"),
+        output_tokens: token_count(map, "output_tokens"),
+        cache_read_input_tokens: token_count(map, "cache_read_input_tokens"),
+        cache_creation_input_tokens: token_count(map, "cache_creation_input_tokens"),
+        reasoning_tokens: token_count(map, "reasoning_tokens"),
+    };
+    if usage.input_tokens.is_none()
+        && usage.output_tokens.is_none()
+        && usage.cache_read_input_tokens.is_none()
+        && usage.cache_creation_input_tokens.is_none()
+        && usage.reasoning_tokens.is_none()
+    {
+        return Vec::new();
+    }
+    vec![StreamChunk::UsageDelta(usage)]
 }
 
 fn handle_stop(

@@ -31,10 +31,16 @@ export const RoleBanner: React.FC<RoleBannerProps> = ({ roleText }) => {
     return null;
   }
 
+  // Collapse all whitespace (including newlines) into single spaces so the
+  // banner always renders as a single line. Without this, multi-line role
+  // prompts cause Ink to render multiple lines even with `wrap="truncate-end"`,
+  // since truncation applies per-line rather than to the entire block.
+  const singleLineRole = roleText.replace(/\s+/g, ' ').trim();
+
   return (
-    <Box height={1} width="100%">
+    <Box height={1} width="100%" flexShrink={0} overflow="hidden">
       <Text wrap="truncate-end">
-        {chalk.cyan('Role:')} {chalk.dim(roleText)}
+        {chalk.cyan('Role:')} {chalk.dim(singleLineRole)}
       </Text>
     </Box>
   );

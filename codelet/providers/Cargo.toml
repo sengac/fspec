@@ -75,6 +75,7 @@ codelet-core.workspace = true
 serial_test.workspace = true
 wiremock = "0.6.5"
 base64 = "0.22"
+tracing-subscriber = { workspace = true }
 
 [lints]
 workspace = true

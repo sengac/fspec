@@ -35,6 +35,8 @@ use codelet_core::RigAgent;
 use futures::Stream;
 use futures::StreamExt;
 use codelet_providers::LlmProvider;
+use codelet_providers::custom_provider_registered;
+use codelet_providers::custom::CustomProvider;
 use rig::client::CompletionClient;
 use uuid::Uuid;
 
@@ -130,6 +132,15 @@ pub async fn execute_deep_search(
 ) -> Result<String, String> {
     // 1. Create ephemeral session_id — NOT shared with parent
     let ephemeral_session_id = Uuid::new_v4();
+    tracing::warn!(
+        "[deep-search] execute_deep_search ENTER provider='{}' model={:?} depth={}/{} project={} ephemeral={}",
+        provider_name,
+        model_id,
+        depth,
+        max_recursion_depth,
+        project_path.display(),
+        ephemeral_session_id,
+    );
 
     // 2. Register SessionSearch handler for ephemeral session
     //    compaction_trimming = false (ephemeral sub-agent never compacts)
@@ -224,6 +235,7 @@ pub async fn execute_deep_search(
     let wall_clock_timeout = codelet_cli::interactive::deep_search_wall_clock_timeout();
     match tokio::time::timeout(wall_clock_timeout, build_and_run_agent(
         ephemeral_session_id,
+        project_path,
         &system_prompt,
         query,
         max_depth,
@@ -396,12 +408,20 @@ where
 /// the parent session's provider and model selection, avoiding the need for
 /// `select_model()` and the "Model is required" error.
 ///
+/// PROV-104: Rhai-scripted custom providers (e.g. `claude-rhai`) are
+/// dispatched through [`CustomProvider::create_rig_agent`] exactly the way
+/// the main agent loop does (PROV-092). This closes the DeepSearch-specific
+/// gap where the previous closed-set match on `provider_name` rejected any
+/// provider whose `facade_override` was `None` — which is every Rhai custom
+/// provider per PROV-095.
+///
 /// Adds `SUB_AGENT_TOOL_COUNT` tools (7) in the base case: Read, Grep, AstGrep,
 /// Glob, Ls, Bash, SessionSearch. When `can_recurse` is true, adds DeepSearch
 /// as the 8th tool for recursive self-invocation (RLM-002).
 #[allow(clippy::too_many_arguments)]
 async fn build_and_run_agent(
     session_id: Uuid,
+    project_path: &Path,
     system_prompt: &str,
     query: &str,
     max_depth: usize,
@@ -416,6 +436,87 @@ async fn build_and_run_agent(
     // When can_recurse, we add DeepSearch as the 8th tool at runtime.
     // KGRAPH-009: GraphSearch is added dynamically via tool_server_handle when graph is available.
     const _: () = assert!(SUB_AGENT_TOOL_COUNT == 7, "base tool count changed — update build_and_run_agent tool list");
+
+    tracing::warn!(
+        "[deep-search-dispatch] ENTER provider={} model={:?} ephemeral_session={} project_path={} can_recurse={} graph_available={}",
+        provider_name,
+        model_id,
+        session_id,
+        project_path.display(),
+        can_recurse,
+        graph_available,
+    );
+
+    // PROV-104: Dispatch custom (Rhai-scripted) providers through
+    // `CustomProvider::create_rig_agent`. This path is taken when a
+    // parent session uses a Rhai-scripted custom provider and
+    // `facade_override` is `None` (PROV-095 keeps it `None` for any
+    // config with a non-empty `script`). The built-in match below
+    // would otherwise fall through to the `_` arm and error with
+    // "Unsupported provider for DeepSearch sub-agent: <slug>".
+    //
+    // The `CustomProvider::create_rig_agent` path already attaches
+    // the full tool catalogue (infra tools plus script-defined tools
+    // plus Fspec / Bridge facades). DeepSearch sub-agents for custom
+    // providers therefore inherit the same tool surface the parent
+    // agent uses — which is a strict superset of the 7 read-only
+    // tools the built-in dispatch attaches. Restricting the tool
+    // surface for custom providers would require a parallel
+    // `build_rig_agent` variant; we accept the superset here because
+    // the sub-agent's ephemeral session still gets its own isolated
+    // DeepSearch / SessionSearch / GraphSearch handlers via the
+    // registration above, and write-type tools on the sub-agent pose
+    // no greater risk than they do on the parent agent.
+    if custom_provider_registered(provider_name) {
+        tracing::warn!(
+            "[deep-search-dispatch] routing provider='{}' through CustomProvider::create_rig_agent (PROV-104)",
+            provider_name,
+        );
+        let model_alias = model_id.unwrap_or("default");
+        let handle = CustomProvider::create_rig_agent(
+            project_path,
+            provider_name,
+            model_alias,
+            session_id,
+            Some(system_prompt),
+            None, // thinking_config is handled by the parent agent; sub-agent runs vanilla
+        )
+        .map_err(|e| {
+            tracing::warn!(
+                "[deep-search-dispatch] CustomProvider::create_rig_agent failed for '{}': {}",
+                provider_name,
+                e,
+            );
+            format!(
+                "Failed to build custom-provider sub-agent for '{provider_name}': {e}"
+            )
+        })?;
+        tracing::warn!(
+            "[deep-search-dispatch] CustomProvider::create_rig_agent built agent for '{}' (tool_adapter_count={})",
+            provider_name,
+            handle.tool_adapter_count(),
+        );
+        let _ = context_window;
+        let _ = max_output_tokens;
+        let agent = handle.into_inner();
+        let rig_agent = RigAgent::new(agent, max_depth);
+        let result = rig_agent
+            .prompt(query)
+            .await
+            .map_err(|e| {
+                tracing::warn!(
+                    "[deep-search-dispatch] custom-provider sub-agent prompt failed: {}",
+                    e,
+                );
+                format!("DeepSearch sub-agent failed: {e}")
+            });
+        tracing::warn!(
+            "[deep-search-dispatch] EXIT provider='{}' result_is_ok={}",
+            provider_name,
+            result.is_ok(),
+        );
+        return result;
+    }
 
     // BUG-102: Create ProviderManager with the parent session's provider and model.
     // Uses with_provider_and_model() which sets selected_model directly without

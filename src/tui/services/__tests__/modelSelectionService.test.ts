@@ -339,7 +339,8 @@ describe('Feature: Model Selection Service', () => {
         16384,
         null,
         null,
-        null
+        null,
+        'work-vllm'
       );
       expect(napiMocks.sessionSetModel).not.toHaveBeenCalled();
 
@@ -552,7 +553,8 @@ describe('Feature: Model Selection Service', () => {
         4096,
         null,
         null,
-        null
+        null,
+        'local-vllm'
       );
     });
   });

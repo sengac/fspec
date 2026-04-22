@@ -3708,6 +3708,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               contextWindow: currentModel.contextWindow,
               maxOutput: currentModel.maxOutput,
               profileConfig: currentModel.profileConfig,
+              profileName: currentModel.profileName,
               facade: currentModel.facade,
             },
           });
@@ -3721,6 +3722,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               contextWindow: currentModel.contextWindow,
               maxOutput: currentModel.maxOutput,
               profileConfig: currentModel.profileConfig,
+              profileName: currentModel.profileName,
               facade: currentModel.facade,
             },
           });
@@ -3927,6 +3929,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               contextWindow: currentModel.contextWindow,
               maxOutput: currentModel.maxOutput,
               profileConfig: currentModel.profileConfig,
+              profileName: currentModel.profileName,
               facade: currentModel.facade,
             },
           });
@@ -3943,6 +3946,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
               contextWindow: currentModel.contextWindow,
               maxOutput: currentModel.maxOutput,
               profileConfig: currentModel.profileConfig,
+              profileName: currentModel.profileName,
               facade: currentModel.facade,
             },
           });

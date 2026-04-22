@@ -188,8 +188,41 @@ pub struct ProviderManager {
     current_provider: ProviderType,
     /// Optional model registry for dynamic model selection
     model_registry: Option<ModelRegistry>,
-    /// Selected model string (provider/model-id format)
+    /// The bare API model id as the remote provider knows it — e.g.
+    /// "claude-sonnet-4", "gpt-4o", or
+    /// "accounts/fireworks/models/kimi-k2-06-instruct".
+    ///
+    /// This is exactly the value passed to provider-specific API constructors
+    /// (`get_claude()`, `get_openai()`, etc.) and may itself contain slashes
+    /// for providers like Fireworks AI or OpenRouter that embed a
+    /// hierarchical path in the model id.
     selected_model: Option<String>,
+    /// BUG-136: Registry-format provider slug associated with
+    /// `selected_model` (e.g. "anthropic", "openai", "kimi-rhai"). Stored
+    /// separately because model ids may themselves contain slashes, so the
+    /// "provider/model" composite returned by `selected_model_string()` is
+    /// not generically parseable after the fact. Callers that need the full
+    /// registry-format string (notably `AgentManager` / `DeepSearch` handler
+    /// registration, which rounds-trips it through
+    /// `SessionManager::create_session_with_id()`) consume
+    /// `selected_model_string()`; callers that need the bare API id
+    /// consume `selected_model_id()`.
+    selected_registry_provider_id: Option<String>,
+    /// BUG-137: Optional profile name associated with `selected_model`
+    /// (e.g. "fireworks" in `openai:fireworks/accounts/fireworks/models/kimi-k2p6`).
+    ///
+    /// When present, `selected_model_string()` emits the profile-qualified
+    /// composite `"{provider}:{profile}/{model}"` instead of the plain
+    /// `"{provider}/{model}"`. This preserves the profile selection across
+    /// the AgentManager spawn round-trip so subordinate sessions created
+    /// via `create_session_with_id()` detect the profile format (colon
+    /// before first slash) and route through `set_model_direct` instead
+    /// of failing registry validation in `select_model`.
+    ///
+    /// Set exclusively by `set_model_direct_with_profile()` /
+    /// `session_set_model_profile` NAPI. All other entry points leave it
+    /// as `None`, which produces the plain composite (unchanged behaviour).
+    selected_profile_name: Option<String>,
     /// LIMITS-004: Raw context window from models.dev registry (before clamping).
     /// Stored by `select_model()`. Clamped at resolution time by the provider's
     /// `ModelLimitsResolver`.
@@ -248,6 +281,8 @@ impl ProviderManager {
             current_provider,
             model_registry: None,
             selected_model: None,
+            selected_registry_provider_id: None,
+            selected_profile_name: None,
             registry_context_window: None,
             registry_max_output_tokens: None,
             user_context_window: None,
@@ -280,6 +315,8 @@ impl ProviderManager {
             current_provider: requested_provider,
             model_registry: None,
             selected_model: None,
+            selected_registry_provider_id: None,
+            selected_profile_name: None,
             registry_context_window: None,
             registry_max_output_tokens: None,
             user_context_window: None,
@@ -320,11 +357,17 @@ impl ProviderManager {
             ));
         }
 
+        // BUG-136: Store the bare model id plus the registry provider slug.
+        // `selected_model_string()` rebuilds the composite on demand so
+        // model ids containing slashes (Fireworks AI, OpenRouter) can't be
+        // mis-parsed by downstream consumers.
         Ok(Self {
             credentials,
             current_provider: requested_provider,
             model_registry: None,
             selected_model: model_id.map(String::from),
+            selected_registry_provider_id: model_id.map(|_| provider_name.to_string()),
+            selected_profile_name: None,
             registry_context_window: context_window,
             registry_max_output_tokens: max_output_tokens,
             user_context_window: None,
@@ -360,6 +403,8 @@ impl ProviderManager {
             current_provider,
             model_registry: Some(registry),
             selected_model: None,
+            selected_registry_provider_id: None,
+            selected_profile_name: None,
             registry_context_window: None,
             registry_max_output_tokens: None,
             user_context_window: None,
@@ -426,9 +471,21 @@ impl ProviderManager {
         self.user_context_window = None;
         self.user_max_output_tokens = None;
 
-        // Update state
+        // Update state. BUG-136: store the bare model slug in
+        // `selected_model` and the registry provider id in
+        // `selected_registry_provider_id`. The `provider/model` composite is
+        // rebuilt on demand by `selected_model_string()`. Keeping the two
+        // pieces separate is essential for providers whose model ids
+        // themselves contain slashes (Fireworks AI, OpenRouter, etc.) where
+        // the composite is otherwise ambiguous to parse.
         self.current_provider = provider_type;
-        self.selected_model = Some(model_string.to_string());
+        self.selected_model = Some(model_id.to_string());
+        self.selected_registry_provider_id = Some(provider_id.to_string());
+        // BUG-137: Cloud model selection has no profile. Clear any stale
+        // profile name left over from a previous `set_model_direct_with_profile`
+        // call so `selected_model_string()` emits the plain
+        // `"provider/model"` composite.
+        self.selected_profile_name = None;
 
         Ok(model_info)
     }
@@ -463,6 +520,44 @@ impl ProviderManager {
         max_output_tokens: Option<usize>,
         facade_override: Option<String>,
     ) -> Result<(), ProviderError> {
+        // BUG-137: Delegate to the profile-aware variant with profile=None.
+        // Existing call sites (codex, custom providers, unit tests, session
+        // initialization) behave exactly as before; only the new
+        // profile-aware NAPI path passes a profile name.
+        self.set_model_direct_with_profile(
+            provider_id,
+            model_id,
+            None,
+            context_window,
+            max_output_tokens,
+            facade_override,
+        )
+    }
+
+    /// BUG-137: Variant of `set_model_direct` that also records a profile
+    /// name.
+    ///
+    /// When `profile_name` is `Some(_)`, `selected_model_string()` emits
+    /// the profile-qualified composite `"{provider}:{profile}/{model}"`
+    /// (e.g. `"openai:fireworks/accounts/fireworks/models/kimi-k2p6"`).
+    /// When `None`, the emitted composite is the plain `"{provider}/{model}"`
+    /// — identical to the historical `set_model_direct` behaviour.
+    ///
+    /// This preserves the profile selection across the AgentManager spawn
+    /// round-trip so subordinate sessions created via
+    /// `create_session_with_id()` detect the profile format (colon before
+    /// first slash) and route through `set_model_direct` again instead
+    /// of failing registry validation in `select_model` with
+    /// `"Model 'accounts/fireworks/...' not found in provider 'openai'"`.
+    pub fn set_model_direct_with_profile(
+        &mut self,
+        provider_id: &str,
+        model_id: &str,
+        profile_name: Option<&str>,
+        context_window: Option<usize>,
+        max_output_tokens: Option<usize>,
+        facade_override: Option<String>,
+    ) -> Result<(), ProviderError> {
         // Map provider ID to our ProviderType
         let provider_type = Self::map_provider_id_to_type(provider_id)?;
 
@@ -471,9 +566,23 @@ impl ProviderManager {
         // as environment variables AFTER the session was created. The OpenAIProvider
         // will read these from the environment when get_openai() is called.
 
-        // Update state - store the model_id directly (no provider/ prefix needed for local models)
+        // BUG-136: Store the bare model id in `selected_model` and the
+        // registry provider id in `selected_registry_provider_id` —
+        // `selected_model_string()` rebuilds the composite on demand.
+        // Previously this path stored only `model_id`, so
+        // `selected_model_string()` returned an incomplete string with no
+        // provider prefix. When `AgentManager` captured that string and
+        // passed it to `create_session_with_id()` the first slash segment
+        // was mis-parsed as the provider name — fine for bare model ids,
+        // but broken for Fireworks/OpenRouter-style ids that contain
+        // slashes (e.g. "accounts/fireworks/models/kimi-k2-06-instruct").
         self.current_provider = provider_type;
         self.selected_model = Some(model_id.to_string());
+        self.selected_registry_provider_id = Some(provider_id.to_string());
+        // BUG-137: Store (or clear) the profile name so
+        // `selected_model_string()` can emit the profile-qualified
+        // composite.
+        self.selected_profile_name = profile_name.map(String::from);
         // LIMITS-004: Profile models pass values as user overrides (from NAPI).
         // They have no registry data. The resolver clamps them at resolution time.
         self.user_context_window = context_window;
@@ -486,47 +595,73 @@ impl ProviderManager {
         Ok(())
     }
 
-    /// Get the selected model ID (the actual API model ID)
+    /// Get the selected model id (the actual API model id).
     ///
-    /// Returns the model ID to use for API calls. If a model registry is available,
-    /// looks up the model to get the actual API model ID. Otherwise, returns the
-    /// stored model string directly (for cases like compaction where the model ID
-    /// is passed directly without registry lookup).
+    /// If a model registry is available, a registry lookup is performed so
+    /// slug selections (e.g. "claude-sonnet-4") resolve to their versioned
+    /// API id (e.g. "claude-sonnet-4-20250514"). Otherwise the bare model id
+    /// stored by `select_model()` / `set_model_direct()` /
+    /// `with_provider_and_model()` is returned verbatim.
+    ///
+    /// BUG-136: This method now returns exactly the bare model id — it no
+    /// longer needs to strip a provider prefix, because the provider id is
+    /// tracked separately in `selected_registry_provider_id`. Model ids
+    /// that contain slashes (e.g.
+    /// "accounts/fireworks/models/kimi-k2-06-instruct") pass through
+    /// unchanged.
     pub fn selected_model_id(&self) -> Option<String> {
-        let model_string = self.selected_model.as_ref()?;
+        let model_id = self.selected_model.as_ref()?;
 
-        // If we have a registry, try to look up the model
-        if let Some(registry) = self.model_registry.as_ref() {
-            if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
-                if let Ok(model_info) = registry.get_model(&provider_id, &model_id) {
-                    return Some(model_info.id.clone());
-                }
+        // If we have both a registry and a known provider slug, resolve the
+        // slug to the canonical API id (e.g. slug → versioned id).
+        if let (Some(registry), Some(provider_id)) = (
+            self.model_registry.as_ref(),
+            self.selected_registry_provider_id.as_deref(),
+        ) {
+            if let Ok(model_info) = registry.get_model(provider_id, model_id) {
+                return Some(model_info.id.clone());
             }
         }
 
-        // No registry or lookup failed - return the stored string directly
-        // This handles cases where the model ID is stored directly (e.g., with_provider_and_model)
-        Some(model_string.clone())
+        Some(model_id.clone())
     }
 
-    /// MODEL-001: Get model info for the selected model
+    /// MODEL-001: Get model info for the selected model, if known to the
+    /// registry.
     pub fn selected_model_info(&self) -> Option<&ModelInfo> {
-        let model_string = self.selected_model.as_ref()?;
         let registry = self.model_registry.as_ref()?;
-
-        if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
-            registry.get_model(&provider_id, &model_id).ok()
-        } else {
-            None
-        }
+        let provider_id = self.selected_registry_provider_id.as_deref()?;
+        let model_id = self.selected_model.as_deref()?;
+        registry.get_model(provider_id, model_id).ok()
     }
 
-    /// MODEL-001: Get the original model string (provider/model-id format)
+    /// MODEL-001: Get the registry-format model string ("provider/model").
     ///
-    /// Returns the model string as originally passed to select_model(),
-    /// e.g., "anthropic/claude-sonnet-4".
-    pub fn selected_model_string(&self) -> Option<&str> {
-        self.selected_model.as_deref()
+    /// BUG-136: The composite is rebuilt on demand from
+    /// `selected_registry_provider_id` + `selected_model`. Returning an
+    /// owned `String` (rather than the previous borrowed `&str`) is
+    /// necessary because the composite may not be stored as a single field.
+    /// Model ids that contain slashes round-trip cleanly because the
+    /// provider slug is tracked independently.
+    ///
+    /// BUG-137: When a profile name has been recorded (via
+    /// `set_model_direct_with_profile`), the composite takes the
+    /// profile-qualified form `"{provider}:{profile}/{model}"` — e.g.
+    /// `"openai:fireworks/accounts/fireworks/models/kimi-k2p6"`. This
+    /// matches the format produced by the TypeScript
+    /// `buildModelString()` helper and consumed by
+    /// `SessionManager::create_session_with_id()`, whose profile-model
+    /// branch is triggered by finding `':'` before the first `'/'`.
+    /// Without this, `AgentManager.spawn` captured a plain
+    /// `"openai/accounts/..."` string and the subordinate path treated
+    /// the model as a cloud model, failing registry validation.
+    pub fn selected_model_string(&self) -> Option<String> {
+        let provider_id = self.selected_registry_provider_id.as_deref()?;
+        let model_id = self.selected_model.as_deref()?;
+        match self.selected_profile_name.as_deref() {
+            Some(profile) => Some(format!("{provider_id}:{profile}/{model_id}")),
+            None => Some(format!("{provider_id}/{model_id}")),
+        }
     }
 
     /// MODEL-001: Get the model registry (for CLI commands like `codelet models`)
@@ -1050,6 +1185,8 @@ impl ProviderManager {
             current_provider: provider,
             model_registry: None,
             selected_model: None,
+            selected_registry_provider_id: None,
+            selected_profile_name: None,
             registry_context_window: context_window,
             registry_max_output_tokens: max_output_tokens,
             user_context_window: None,
@@ -1130,6 +1267,8 @@ mod tests {
             current_provider: provider,
             model_registry: None,
             selected_model: None,
+            selected_registry_provider_id: None,
+            selected_profile_name: None,
             registry_context_window: None,
             registry_max_output_tokens: None,
             user_context_window: None,
@@ -1231,6 +1370,8 @@ mod tests {
             current_provider: ProviderType::Claude,
             model_registry: Some(build_github_copilot_registry()),
             selected_model: None,
+            selected_registry_provider_id: None,
+            selected_profile_name: None,
             registry_context_window: None,
             registry_max_output_tokens: None,
             user_context_window: None,
@@ -1289,7 +1430,7 @@ mod tests {
         // And the manager must now treat github-copilot as the current provider.
         assert_eq!(manager.current_provider_name(), "github-copilot");
         assert_eq!(
-            manager.selected_model_string(),
+            manager.selected_model_string().as_deref(),
             Some("github-copilot/gpt-4o")
         );
     }
@@ -1528,6 +1669,8 @@ mod tests {
             current_provider: ProviderType::Claude,
             model_registry: Some(build_multi_provider_registry()),
             selected_model: None,
+            selected_registry_provider_id: None,
+            selected_profile_name: None,
             registry_context_window: None,
             registry_max_output_tokens: None,
             user_context_window: None,
@@ -2276,5 +2419,368 @@ mod tests {
         assert_eq!(result, 256_000);
 
         std::env::remove_var("OPENAI_CONTEXT_WINDOW");
+    }
+
+    // =========================================================================
+    // BUG-136: set_model_direct stores provider-prefixed model string
+    // Feature: spec/features/set-model-direct-stores-provider-prefixed-model-string.feature
+    // =========================================================================
+
+    /// Scenario: Custom model with slashes in model_id round-trips through
+    /// the AgentManager handler capture (i.e. through `selected_model_string`)
+    /// without losing the provider prefix.
+    ///
+    /// This is the regression scenario for the original Fireworks AI
+    /// failure. `AgentManager::register_handler` captures
+    /// `selected_model_string()` and forwards it to
+    /// `create_session_with_id()`, which then splits at the first `/`.
+    /// Before BUG-136, `set_model_direct` stored only the bare model id so
+    /// `create_session_with_id` mis-interpreted the first slash segment
+    /// ("accounts") as the provider name.
+    #[test]
+    fn test_bug136_agent_manager_round_trips_slashed_model_id() {
+        // @step Given a provider manager has been configured via set_model_direct with provider "openai" and model id "accounts/fireworks/models/kimi-k2-06-instruct"
+        let mut manager = test_manager(ProviderType::OpenAI);
+        manager
+            .set_model_direct(
+                "openai",
+                "accounts/fireworks/models/kimi-k2-06-instruct",
+                Some(131_072),
+                Some(4_096),
+                None,
+            )
+            .expect("set_model_direct should succeed");
+
+        // @step When AgentManager registers its spawn handler using selected_model_string
+        let captured = manager.selected_model_string();
+
+        // @step Then the captured model string is "openai/accounts/fireworks/models/kimi-k2-06-instruct"
+        assert_eq!(
+            captured.as_deref(),
+            Some("openai/accounts/fireworks/models/kimi-k2-06-instruct"),
+            "selected_model_string must include the provider prefix so \
+             create_session_with_id parses it as provider='openai' + \
+             model='accounts/fireworks/...' rather than mis-splitting at \
+             the first '/' and treating 'accounts' as the provider name"
+        );
+
+        // @step And passing that captured model string to create_session_with_id resolves the provider as "openai"
+        let captured = captured.expect("captured string is Some");
+        let (resolved_provider, resolved_model) = captured
+            .split_once('/')
+            .expect("captured string contains at least one '/'");
+        assert_eq!(resolved_provider, "openai");
+        assert_eq!(
+            resolved_model,
+            "accounts/fireworks/models/kimi-k2-06-instruct"
+        );
+
+        // @step And no "Unknown provider: 'accounts'" error is raised
+        // Implicit: if the BUG-136 regression returned — bare model id
+        // stored — `split_once('/')` above would have produced
+        // ("accounts", "fireworks/...") and `create_session_with_id` would
+        // have tried to resolve "accounts" as a provider, producing the
+        // original "Unknown provider: 'accounts'" failure.
+        assert_ne!(
+            resolved_provider, "accounts",
+            "BUG-136 regression: model string mis-split and 'accounts' \
+             would reach create_session_with_id as the provider name"
+        );
+    }
+
+    /// Scenario: set_model_direct stores the full provider-prefixed model string
+    ///
+    /// Uses the `openai` provider slug because that is the code path
+    /// Fireworks AI / OpenRouter-style configurations hit in practice
+    /// (they're served via OpenAI-compatible endpoints and `set_model_direct`
+    /// with `provider_id = "openai"`). The point of this test is the
+    /// `selected_model_string()` / `selected_model_id()` round-trip, not
+    /// custom-provider registration.
+    #[test]
+    fn test_bug136_set_model_direct_stores_provider_prefixed_model_string() {
+        // @step Given a fresh provider manager
+        let mut manager = test_manager(ProviderType::OpenAI);
+
+        // @step When set_model_direct is called with provider "openai" and
+        //        model id "llama-3.1-70b"
+        manager
+            .set_model_direct("openai", "llama-3.1-70b", None, None, None)
+            .expect("set_model_direct should succeed");
+
+        // @step Then selected_model_string returns "openai/llama-3.1-70b"
+        assert_eq!(
+            manager.selected_model_string().as_deref(),
+            Some("openai/llama-3.1-70b")
+        );
+
+        // @step And selected_model_id returns "llama-3.1-70b"
+        assert_eq!(manager.selected_model_id().as_deref(), Some("llama-3.1-70b"));
+    }
+
+    /// Scenario: selected_model_id preserves slashes inside the model id
+    ///
+    /// Regression guard for the original Fireworks AI / OpenRouter failure:
+    /// a model id that itself contains slashes must be handed verbatim to
+    /// `get_openai()` / `get_claude()` etc., with only the single
+    /// `{provider}/` prefix trimmed off.
+    #[test]
+    fn test_bug136_selected_model_id_preserves_internal_slashes() {
+        // @step Given a fresh provider manager
+        let mut manager = test_manager(ProviderType::OpenAI);
+
+        // @step When set_model_direct is called with provider "openai" and
+        //        model id "accounts/fireworks/models/kimi-k2-06-instruct"
+        manager
+            .set_model_direct(
+                "openai",
+                "accounts/fireworks/models/kimi-k2-06-instruct",
+                None,
+                None,
+                None,
+            )
+            .expect("set_model_direct should succeed");
+
+        // @step Then selected_model_string returns
+        //        "openai/accounts/fireworks/models/kimi-k2-06-instruct"
+        assert_eq!(
+            manager.selected_model_string().as_deref(),
+            Some("openai/accounts/fireworks/models/kimi-k2-06-instruct")
+        );
+
+        // @step And selected_model_id returns
+        //        "accounts/fireworks/models/kimi-k2-06-instruct" (unchanged)
+        assert_eq!(
+            manager.selected_model_id().as_deref(),
+            Some("accounts/fireworks/models/kimi-k2-06-instruct")
+        );
+    }
+
+    /// Scenario: Codex models continue to work after the fix
+    #[test]
+    fn test_bug136_codex_models_unaffected() {
+        // @step Given a fresh provider manager
+        let mut manager = test_manager(ProviderType::Codex);
+
+        // @step When set_model_direct is called with provider "codex" and
+        //        model id "gpt-5-codex"
+        manager
+            .set_model_direct("codex", "gpt-5-codex", None, None, None)
+            .expect("set_model_direct should succeed");
+
+        // @step Then selected_model_string returns "codex/gpt-5-codex"
+        assert_eq!(
+            manager.selected_model_string().as_deref(),
+            Some("codex/gpt-5-codex")
+        );
+
+        // @step And selected_model_id returns "gpt-5-codex"
+        assert_eq!(manager.selected_model_id().as_deref(), Some("gpt-5-codex"));
+    }
+
+    /// Scenario: with_provider_and_model also emits a registry-format composite
+    ///
+    /// The compaction and DeepSearch paths re-hydrate a ProviderManager via
+    /// `with_provider_and_model` using the parent's bare model id. This test
+    /// confirms those managers also produce a registry-format string — any
+    /// path that later feeds the value back into AgentManager /
+    /// create_session_with_id must stay consistent with the `select_model`
+    /// and `set_model_direct` formats.
+    #[test]
+    #[serial_test::serial]
+    fn test_bug136_with_provider_and_model_emits_composite() {
+        // @step Given valid "anthropic" credentials
+        std::env::set_var("ANTHROPIC_API_KEY", "bug-136-test-key");
+
+        // @step When with_provider_and_model is called with provider "claude" and model id "claude-opus-4-6"
+        let manager = ProviderManager::with_provider_and_model(
+            "claude",
+            Some("claude-opus-4-6"),
+            Some(200_000),
+            Some(8_192),
+        )
+        .expect("with_provider_and_model should succeed with ANTHROPIC_API_KEY");
+
+        // @step Then selected_model_string returns "claude/claude-opus-4-6"
+        assert_eq!(
+            manager.selected_model_string().as_deref(),
+            Some("claude/claude-opus-4-6")
+        );
+
+        // @step And selected_model_id returns "claude-opus-4-6"
+        assert_eq!(
+            manager.selected_model_id().as_deref(),
+            Some("claude-opus-4-6")
+        );
+    }
+
+    // =========================================================================
+    // BUG-137: AgentManager spawn fails for profile-qualified OpenAI Fireworks
+    // models (e.g. kimi k2.6). Fix: preserve profile name through
+    // set_model_direct so selected_model_string() emits
+    // "provider:profile/model".
+    // Feature: spec/features/agentmanager-spawn-fails-for-profile-qualified-openai-fireworks-models-e-g-kimi-k2-6.feature
+    // =========================================================================
+
+    /// Scenario: set_model_direct with profile_name emits profile-qualified composite
+    #[test]
+    fn test_bug137_set_model_direct_with_profile_emits_profile_composite() {
+        // @step Given a ProviderManager is created with model registry support
+        let mut manager = test_manager(ProviderType::OpenAI);
+
+        // @step When set_model_direct is called with provider_id "openai", model_id "accounts/fireworks/models/kimi-k2p6", and profile_name "fireworks"
+        manager
+            .set_model_direct_with_profile(
+                "openai",
+                "accounts/fireworks/models/kimi-k2p6",
+                Some("fireworks"),
+                Some(200_000),
+                Some(16_384),
+                None,
+            )
+            .expect("set_model_direct_with_profile should succeed");
+
+        // @step Then selected_model_string() returns "openai:fireworks/accounts/fireworks/models/kimi-k2p6"
+        assert_eq!(
+            manager.selected_model_string().as_deref(),
+            Some("openai:fireworks/accounts/fireworks/models/kimi-k2p6"),
+            "selected_model_string must include the profile segment so \
+             create_session_with_id detects profile format (':' before '/') \
+             and routes subordinate through set_model_direct instead of \
+             select_model"
+        );
+
+        // @step And selected_model_id() returns "accounts/fireworks/models/kimi-k2p6"
+        assert_eq!(
+            manager.selected_model_id().as_deref(),
+            Some("accounts/fireworks/models/kimi-k2p6")
+        );
+    }
+
+    /// Scenario: set_model_direct without profile_name emits plain provider/model composite
+    #[test]
+    fn test_bug137_set_model_direct_without_profile_emits_plain_composite() {
+        // @step Given a ProviderManager is created with model registry support
+        let mut manager = test_manager(ProviderType::Codex);
+
+        // @step When set_model_direct is called with provider_id "codex", model_id "gpt-5-codex", and no profile_name
+        manager
+            .set_model_direct_with_profile("codex", "gpt-5-codex", None, None, None, None)
+            .expect("set_model_direct_with_profile should succeed");
+
+        // @step Then selected_model_string() returns "codex/gpt-5-codex"
+        let composite = manager.selected_model_string();
+        assert_eq!(composite.as_deref(), Some("codex/gpt-5-codex"));
+
+        // @step And the composite contains no colon
+        assert!(
+            !composite.as_ref().expect("composite").contains(':'),
+            "composite must not contain ':' when no profile is set"
+        );
+    }
+
+    /// Scenario: Legacy set_model_direct (no profile) emits plain composite
+    /// Regression guard: backward-compatible 5-arg call path must behave as before.
+    #[test]
+    fn test_bug137_legacy_set_model_direct_is_plain_composite() {
+        // @step Given a ProviderManager
+        let mut manager = test_manager(ProviderType::OpenAI);
+
+        // @step When legacy set_model_direct(5 args) is called
+        manager
+            .set_model_direct("openai", "accounts/fireworks/models/kimi-k2p6", None, None, None)
+            .expect("legacy set_model_direct should succeed");
+
+        // @step Then the composite has no profile segment (profile name defaults to None)
+        assert_eq!(
+            manager.selected_model_string().as_deref(),
+            Some("openai/accounts/fireworks/models/kimi-k2p6")
+        );
+    }
+
+    /// Scenario: select_model (cloud) does not inject a profile segment
+    #[test]
+    #[serial_test::serial]
+    fn test_bug137_select_model_emits_no_profile_segment() {
+        // @step Given a ProviderManager is created with model registry support
+        std::env::set_var("ANTHROPIC_API_KEY", "bug-137-test-key");
+        let mut manager = test_manager_with_registry_and_credentials();
+
+        // @step When select_model is called with "anthropic/claude-sonnet-4"
+        let result = manager.select_model("anthropic/claude-sonnet-4");
+        std::env::remove_var("ANTHROPIC_API_KEY");
+        assert!(result.is_ok(), "select_model should succeed: {:?}", result.err());
+
+        // @step Then selected_model_string() returns a composite without a colon before the first slash
+        let composite = manager.selected_model_string().expect("composite");
+        let first_slash = composite.find('/').expect("composite has '/'");
+        let first_colon = composite.find(':');
+        assert!(
+            first_colon.is_none() || first_colon.unwrap() > first_slash,
+            "cloud select_model must not inject 'provider:profile/' — got {composite:?}"
+        );
+    }
+
+    /// Scenario: AgentManager spawn round-trips profile-qualified Fireworks model
+    ///
+    /// Exercises the round-trip that originally failed in the screenshot:
+    /// spawner PM → selected_model_string() → create_session_with_id parser.
+    /// The subordinate path checks `contains(':') && find(':') < find('/')`
+    /// to detect profile models. This test verifies the captured string
+    /// satisfies that invariant.
+    #[test]
+    fn test_bug137_agent_manager_round_trips_profile_qualified_model() {
+        // @step Given a spawner session whose ProviderManager was configured via
+        //   set_model_direct with profile_name "fireworks" on provider "openai"
+        //   and model_id "accounts/fireworks/models/kimi-k2p6"
+        let mut manager = test_manager(ProviderType::OpenAI);
+        manager
+            .set_model_direct_with_profile(
+                "openai",
+                "accounts/fireworks/models/kimi-k2p6",
+                Some("fireworks"),
+                Some(200_000),
+                Some(16_384),
+                None,
+            )
+            .expect("set_model_direct_with_profile should succeed");
+
+        // @step When AgentManager captures selected_model_string() and passes it to create_session_with_id
+        let captured = manager
+            .selected_model_string()
+            .expect("captured composite");
+
+        // @step Then the subordinate path detects profile format by finding ':' before '/'
+        let colon_idx = captured.find(':');
+        let slash_idx = captured.find('/');
+        assert!(
+            colon_idx.is_some() && slash_idx.is_some(),
+            "captured composite {captured:?} must contain both ':' and '/'"
+        );
+        assert!(
+            colon_idx.unwrap() < slash_idx.unwrap(),
+            "captured composite {captured:?} must have ':' before '/' so \
+             create_session_with_id treats it as a profile model"
+        );
+
+        // @step And set_model_direct is used for the subordinate instead of select_model
+        // Simulate create_session_with_id parsing:
+        let is_profile_model = captured.contains(':')
+            && captured.find(':') < captured.find('/');
+        assert!(
+            is_profile_model,
+            "captured composite must be classified as profile model by \
+             session_manager::create_session_with_id"
+        );
+
+        // @step And no "Model '...' not found in provider 'openai'" error is raised
+        // (implicit — the profile branch skips registry validation)
+        let colon = captured.find(':').unwrap();
+        let slash = captured.find('/').unwrap();
+        let provider = &captured[..colon];
+        let profile = &captured[colon + 1..slash];
+        let model = &captured[slash + 1..];
+        assert_eq!(provider, "openai");
+        assert_eq!(profile, "fireworks");
+        assert_eq!(model, "accounts/fireworks/models/kimi-k2p6");
     }
 }

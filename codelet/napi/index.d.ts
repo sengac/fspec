@@ -1190,8 +1190,37 @@ export interface JsProviderInfo {
   facade?: string;
   baseUrl?: string;
   apiKeyEnvVar?: string;
-  models: Array<string>;
+  /**
+   * BUG-139: Per-model limits + capability flags for custom
+   * providers; empty for built-ins.
+   */
+  models: Array<JsProviderModelInfo>;
   apiStyle?: string;
+}
+
+/**
+ * BUG-139: JS-shaped per-model info carried by [`JsProviderInfo::models`].
+ *
+ * Mirrors [`codelet_providers::custom::ProviderModelInfo`] across the
+ * NAPI boundary so the TUI's `customProviderSectionBuilder` can read
+ * authoritative per-model limits (e.g. `contextWindow: 1_000_000`)
+ * directly from the provider JSON config, instead of synthesising
+ * hardcoded `128000 / 8192` fallbacks that made the SessionHeader badge
+ * display a stale `[120k]` context window.
+ */
+export interface JsProviderModelInfo {
+  /** Model alias key (e.g. `"opus-4.7"`). */
+  id: string;
+  /** Context window in tokens. */
+  contextWindow: number;
+  /** Max output tokens per completion. */
+  maxOutput: number;
+  /** Whether the model supports tool / function calling. */
+  supportsTools: boolean;
+  /** Whether the model supports SSE streaming. */
+  supportsStreaming: boolean;
+  /** Whether the model supports extended-thinking mode. */
+  supportsThinking: boolean;
 }
 
 /** PROV-067: JS result of a custom-provider connectivity probe. */
@@ -2614,6 +2643,15 @@ export declare function sessionSetModel(
  *
  * MODEL-004: Accepts optional facade_override for custom models that need
  * agent loop dispatch through a different provider backend.
+ *
+ * BUG-137: Accepts optional `profile_name` so profile-qualified selections
+ * (e.g. "openai:fireworks/accounts/fireworks/models/kimi-k2p6") round-trip
+ * through `ProviderManager::selected_model_string()` as
+ * "{provider}:{profile}/{model}". This is required for AgentManager.spawn
+ * to correctly re-create the subordinate session on the same profile
+ * endpoint; without it, the subordinate path treated the composite as a
+ * cloud model and failed registry validation with "Model 'accounts/...'
+ * not found in provider 'openai'".
  */
 export declare function sessionSetModelProfile(
   sessionId: string,
@@ -2623,7 +2661,8 @@ export declare function sessionSetModelProfile(
   maxOutputTokens?: number | undefined | null,
   facadeOverride?: string | undefined | null,
   compactionThresholdType?: string | undefined | null,
-  compactionThresholdValue?: number | undefined | null
+  compactionThresholdValue?: number | undefined | null,
+  profileName?: string | undefined | null
 ): Promise<void>;
 
 /**

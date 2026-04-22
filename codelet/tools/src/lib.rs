@@ -11,6 +11,7 @@ pub mod astgrep_refactor;
 pub mod apply_patch;
 pub mod bash;
 pub mod bash_abort;
+pub mod bash_binary_guard;
 pub mod bash_output;
 pub mod bash_process;
 pub mod bash_streams;

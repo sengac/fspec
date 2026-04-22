@@ -83,6 +83,13 @@ export interface CreateSessionOptions {
     profileConfig?: { baseUrl: string };
     /** MODEL-004: Facade override for custom model dispatch */
     facade?: string;
+    /**
+     * BUG-137: Profile name (e.g., "fireworks") for profile-qualified
+     * selections. Passed through to `sessionSetModelProfile` so the
+     * subordinate AgentManager.spawn round-trip captures the full
+     * "provider:profile/model" composite.
+     */
+    profileName?: string;
   };
 }
 
@@ -192,7 +199,15 @@ export async function createSession(
           modelSelection.modelId,
           modelSelection.contextWindow,
           modelSelection.maxOutput,
-          modelSelection.facade ?? null
+          modelSelection.facade ?? null,
+          null,
+          null,
+          // BUG-137: Pass profile name (only present on profile-based
+          // selections) so AgentManager.spawn later captures the full
+          // "provider:profile/model" composite.
+          modelSelection.profileConfig
+            ? (modelSelection.profileName ?? null)
+            : null
         );
       } else {
         logger.warn(
@@ -463,7 +478,15 @@ export async function createIsolatedSession(
           modelSelection.modelId,
           modelSelection.contextWindow,
           modelSelection.maxOutput,
-          modelSelection.facade ?? null
+          modelSelection.facade ?? null,
+          null,
+          null,
+          // BUG-137: Pass profile name (only present on profile-based
+          // selections) so AgentManager.spawn later captures the full
+          // "provider:profile/model" composite.
+          modelSelection.profileConfig
+            ? (modelSelection.profileName ?? null)
+            : null
         );
       } else {
         await sessionSetModel(

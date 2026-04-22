@@ -4,27 +4,40 @@
 //! All Rhai calls run on `tokio::task::spawn_blocking`. HTTP uses an
 //! async `reqwest::Client`. Helpers live in sibling modules
 //! (`request_bridge`, `response_bridge`, `error_mapping`, `rhai_call`,
-//! `http`) to keep this file under the 300-line threshold.
+//! `http`, `model_limits`, `provider_dispatch`) so this file stays
+//! focused on the struct definition, construction, accessors, and the
+//! `LlmProvider` trait implementation.
 
 use std::sync::Arc;
 
 use async_trait::async_trait;
 use codelet_common::Message;
 use codelet_tools::ToolDefinition;
-use reqwest::header::HeaderMap;
 use rhai::{Dynamic, Engine, Map, AST};
 
-use super::conversion::{dynamic_to_json_value, json_value_to_dynamic};
 use super::error::CustomProviderError;
-use super::error_mapping::dynamic_to_provider_error;
-use super::http::{dynamic_to_header_map, post_json};
-use super::log_helpers::{truncate_json_preview, truncate_str};
-use super::request_bridge::request_to_rhai;
-use super::response_bridge::rhai_to_completion_response;
-use super::rhai_call::{call_fn1, call_fn2};
+use super::http::post_json;
+use super::model_limits::invoke_get_model_limits;
 use super::{ProviderConfig, ScriptLoader};
 use crate::error::ProviderError;
 use crate::{extract_text_from_content, CompletionResponse, LlmProvider};
+
+/// Build the Rhai `config` map passed to user-script lifecycle hooks
+/// (`build_url`, `build_headers`, `get_model_limits`, etc.). Shared
+/// helper so `RhaiCustomProvider::new` can construct the map BEFORE
+/// `self` exists (needed for the PROV-095 `get_model_limits` invocation
+/// that happens inside `new`).
+fn build_config_dynamic(config: &ProviderConfig, model_id: &str, model_alias: &str) -> Dynamic {
+    let mut map = Map::new();
+    map.insert("name".into(), Dynamic::from(config.name.clone()));
+    map.insert("base_url".into(), Dynamic::from(config.base_url.clone()));
+    map.insert("model".into(), Dynamic::from(model_id.to_string()));
+    map.insert(
+        "model_alias".into(),
+        Dynamic::from(model_alias.to_string()),
+    );
+    Dynamic::from_map(map)
+}
 
 /// Custom LLM provider backed by a Rhai script. `Arc`-heavy so it's
 /// cheap to clone into `ProviderManager`.
@@ -36,10 +49,31 @@ pub struct RhaiCustomProvider {
     model_alias: String,
     /// Resolved `models[model_alias].id` (sent to the LLM API).
     model_id: String,
-    /// Context window of the selected model.
+    /// Context window of the selected model. PROV-095: overridden by
+    /// `get_model_limits(config).context_window` when the script defines
+    /// that optional hook and returns a positive integer.
     context_window: usize,
-    /// Max output tokens of the selected model.
+    /// Max output tokens of the selected model. PROV-095: overridden by
+    /// `get_model_limits(config).max_output_tokens` when the script
+    /// defines that optional hook and returns a positive integer.
     max_output_tokens: usize,
+    /// PROV-095: `true` when `get_model_limits` supplied a valid
+    /// positive `context_window`, `false` when it fell back to the JSON
+    /// ModelDef value. Enables the NAPI bridge to tell "script said
+    /// 128_000" (authoritative) from "script didn't say anything and
+    /// ModelDef defaulted to 128_000" (overridable by TUI value).
+    context_window_from_script: bool,
+    /// PROV-095: `true` when `get_model_limits` supplied a valid
+    /// positive `max_output_tokens`, `false` when it fell back to the
+    /// JSON ModelDef value.
+    max_output_tokens_from_script: bool,
+    /// PROV-095: Compaction-threshold override surfaced by
+    /// `get_model_limits(config).compaction_threshold`. `None` when the
+    /// script did not define the hook or returned an invalid shape. The
+    /// NAPI session-creation path reads this via
+    /// [`Self::script_compaction_threshold`] and forwards it into
+    /// [`crate::ProviderManager::set_compaction_threshold_override`].
+    script_compaction_threshold: Option<(String, u64)>,
     /// Compiled Rhai AST.
     ast: Arc<AST>,
     /// Rhai engine (shared from the loader).
@@ -64,13 +98,29 @@ impl RhaiCustomProvider {
             ))
         })?;
         let model_id = model_def.id.clone();
-        let context_window = model_def.context_window;
-        let max_output_tokens = model_def.max_output_tokens;
+        let json_context_window = model_def.context_window;
+        let json_max_output_tokens = model_def.max_output_tokens;
 
         let script_path = std::path::PathBuf::from(&config.script);
         let ast = loader.load(&script_path)?;
         loader.validate_required_functions(&ast)?;
         let engine: Arc<Engine> = loader.engine_arc();
+
+        // PROV-095: Give the script a chance to override per-model
+        // limits. The optional `get_model_limits(config)` hook is
+        // invoked once here and its result is cached in the struct
+        // fields for the provider's lifetime (rule 8). Missing hook
+        // and/or invalid return values are silently ignored in favor
+        // of the JSON ModelDef values (rules 4/6).
+        let config_map = build_config_dynamic(&config, &model_id, &model_alias);
+        let overrides = invoke_get_model_limits(&engine, &ast, &config.name, config_map);
+        let context_window_from_script = overrides.context_window.is_some();
+        let max_output_tokens_from_script = overrides.max_output_tokens.is_some();
+        let context_window = overrides.context_window.unwrap_or(json_context_window);
+        let max_output_tokens = overrides
+            .max_output_tokens
+            .unwrap_or(json_max_output_tokens);
+        let script_compaction_threshold = overrides.compaction_threshold;
 
         Ok(Self {
             config,
@@ -78,6 +128,9 @@ impl RhaiCustomProvider {
             model_id,
             context_window,
             max_output_tokens,
+            context_window_from_script,
+            max_output_tokens_from_script,
+            script_compaction_threshold,
             ast,
             engine,
             _loader: loader,
@@ -87,183 +140,47 @@ impl RhaiCustomProvider {
 
     /// Build the `config` map passed to script functions.
     pub(crate) fn config_dynamic(&self) -> Dynamic {
-        let mut map = Map::new();
-        map.insert("name".into(), Dynamic::from(self.config.name.clone()));
-        map.insert(
-            "base_url".into(),
-            Dynamic::from(self.config.base_url.clone()),
-        );
-        map.insert("model".into(), Dynamic::from(self.model_id.clone()));
-        map.insert(
-            "model_alias".into(),
-            Dynamic::from(self.model_alias.clone()),
-        );
-        Dynamic::from_map(map)
+        build_config_dynamic(&self.config, &self.model_id, &self.model_alias)
     }
 
-    /// Offload a 1-arg Rhai call to `spawn_blocking`.
-    pub(crate) async fn call_fn1(
-        &self,
-        fn_name: &'static str,
-        arg: Dynamic,
-    ) -> Result<Dynamic, ProviderError> {
-        call_fn1(
-            self.engine.clone(),
-            self.ast.clone(),
-            self.config.name.clone(),
-            fn_name,
-            arg,
-        )
-        .await
-    }
-
-    /// Offload a 2-arg Rhai call to `spawn_blocking`.
-    pub(crate) async fn call_fn2(
-        &self,
-        fn_name: &'static str,
-        arg1: Dynamic,
-        arg2: Dynamic,
-    ) -> Result<Dynamic, ProviderError> {
-        call_fn2(
-            self.engine.clone(),
-            self.ast.clone(),
-            self.config.name.clone(),
-            fn_name,
-            arg1,
-            arg2,
-        )
-        .await
-    }
-
-    /// Invoke `build_url(config)` and return the resulting URL string.
-    pub async fn invoke_build_url(&self) -> Result<String, ProviderError> {
-        tracing::warn!(
-            provider = %self.config.name,
-            model = %self.model_id,
-            "[rhai-dispatch] invoke_build_url: calling Rhai build_url(config)"
-        );
-        let result = self.call_fn1("build_url", self.config_dynamic()).await?;
-        let url = result.into_string().map_err(|typ| {
-            ProviderError::api(
-                self.config.name.clone(),
-                format!("build_url must return a string, got {typ}"),
-            )
-        })?;
-        tracing::warn!(
-            provider = %self.config.name,
-            url = %url,
-            "[rhai-dispatch] invoke_build_url: Rhai returned URL"
-        );
-        Ok(url)
-    }
-
-    /// Invoke `build_headers(config)` and return a `HeaderMap`.
-    pub async fn invoke_build_headers(&self) -> Result<HeaderMap, ProviderError> {
-        tracing::warn!(
-            provider = %self.config.name,
-            "[rhai-dispatch] invoke_build_headers: calling Rhai build_headers(config)"
-        );
-        let result = self
-            .call_fn1("build_headers", self.config_dynamic())
-            .await?;
-        let headers = dynamic_to_header_map(&self.config.name, result)?;
-        tracing::warn!(
-            provider = %self.config.name,
-            header_count = headers.len(),
-            header_names = ?headers.keys().map(|k| k.as_str()).collect::<Vec<_>>(),
-            "[rhai-dispatch] invoke_build_headers: Rhai returned headers"
-        );
-        Ok(headers)
-    }
-
-    /// Invoke `build_request(request)` and return its JSON body.
+    /// PROV-095: Accessor exposing the compaction-threshold override
+    /// surfaced by the optional `get_model_limits(config).compaction_threshold`
+    /// Rhai hook. Returns `None` when the script did not define the
+    /// hook, did not include a `compaction_threshold` entry, or returned
+    /// an invalid shape (non-"tokens"/"percentage" kind, non-positive
+    /// tokens value, or percentage outside 1..=100).
     ///
-    /// `thinking_config` is forwarded into the Rhai `request` map under
-    /// the `thinking_config` key (bridged as `()` when `None`). Scripts
-    /// that need adaptive-thinking support can read this field; scripts
-    /// that don't can ignore it (PROV-090).
-    pub async fn invoke_build_request(
-        &self,
-        messages: &[Message],
-        tools: &[ToolDefinition],
-        thinking_config: Option<serde_json::Value>,
-    ) -> Result<serde_json::Value, ProviderError> {
-        tracing::warn!(
-            provider = %self.config.name,
-            message_count = messages.len(),
-            tool_count = tools.len(),
-            has_thinking_config = thinking_config.is_some(),
-            "[rhai-dispatch] invoke_build_request: calling Rhai build_request"
-        );
-        let result = self
-            .invoke_request_builder("build_request", messages, tools, thinking_config)
-            .await?;
-        tracing::warn!(
-            provider = %self.config.name,
-            body_preview = %truncate_json_preview(&result, 512),
-            "[rhai-dispatch] invoke_build_request: Rhai returned request body"
-        );
-        Ok(result)
+    /// The NAPI session-creation path consults this accessor after
+    /// constructing a `RhaiCustomProvider` and forwards the tuple into
+    /// [`crate::ProviderManager::set_compaction_threshold_override`].
+    pub fn script_compaction_threshold(&self) -> Option<(String, u64)> {
+        self.script_compaction_threshold.clone()
     }
 
-    /// Shared helper for `build_request` / `build_stream_request`:
-    /// convert the `(messages, tools, thinking_config)` triple to a
-    /// Rhai `request` map, invoke the named script function, and
-    /// serialise the returned `Dynamic` back to JSON.
+    /// PROV-095: Accessor exposing the script-supplied `context_window`.
+    /// Returns `Some(n)` only when `get_model_limits` returned a valid
+    /// positive integer for `context_window`; returns `None` when the
+    /// script did not define the hook or its value was rejected.
     ///
-    /// `fn_name` is `"build_request"` from
-    /// [`invoke_build_request`](Self::invoke_build_request) and
-    /// `"build_stream_request"` from
-    /// [`invoke_build_stream_request`](crate::custom::provider_stream).
-    pub(crate) async fn invoke_request_builder(
-        &self,
-        fn_name: &'static str,
-        messages: &[Message],
-        tools: &[ToolDefinition],
-        thinking_config: Option<serde_json::Value>,
-    ) -> Result<serde_json::Value, ProviderError> {
-        let request = request_to_rhai(messages, tools, thinking_config.as_ref())
-            .map_err(ProviderError::from)?;
-        let result = self.call_fn1(fn_name, request).await?;
-        Ok(dynamic_to_json_value(&result))
+    /// Used by the NAPI bridge to decide whether to override the
+    /// TUI-supplied (or default) context window when setting up a
+    /// custom-provider session.
+    pub fn script_context_window(&self) -> Option<usize> {
+        if self.context_window_from_script {
+            Some(self.context_window)
+        } else {
+            None
+        }
     }
 
-    /// Invoke `parse_response(raw)` and bridge it to `CompletionResponse`.
-    pub async fn invoke_parse_response(
-        &self,
-        body: &serde_json::Value,
-    ) -> Result<CompletionResponse, ProviderError> {
-        tracing::warn!(
-            provider = %self.config.name,
-            body_preview = %truncate_json_preview(body, 512),
-            "[rhai-dispatch] invoke_parse_response: calling Rhai parse_response"
-        );
-        let raw = json_value_to_dynamic(body);
-        let result = self.call_fn1("parse_response", raw).await?;
-        let response = rhai_to_completion_response(result).map_err(ProviderError::from)?;
-        tracing::warn!(
-            provider = %self.config.name,
-            stop_reason = ?response.stop_reason,
-            "[rhai-dispatch] invoke_parse_response: Rhai returned completion"
-        );
-        Ok(response)
-    }
-
-    /// Invoke `map_error(status, body)` and translate the returned map
-    /// into a `ProviderError`. Falls back to HTTP status-code
-    /// heuristics when the script returns something unexpected.
-    pub async fn invoke_map_error(&self, status: u16, body: &str) -> ProviderError {
-        tracing::warn!(
-            provider = %self.config.name,
-            status = status,
-            body_preview = %truncate_str(body, 512),
-            "[rhai-dispatch] invoke_map_error: calling Rhai map_error"
-        );
-        let status_dyn = Dynamic::from(status as i64);
-        let body_dyn = Dynamic::from(body.to_string());
-        match self.call_fn2("map_error", status_dyn, body_dyn).await {
-            Ok(result) => dynamic_to_provider_error(&self.config.name, status, body, result),
-            Err(e) => e,
+    /// PROV-095: Accessor exposing the script-supplied `max_output_tokens`.
+    /// Returns `Some(n)` only when `get_model_limits` returned a valid
+    /// positive integer for `max_output_tokens`; returns `None` otherwise.
+    pub fn script_max_output_tokens(&self) -> Option<usize> {
+        if self.max_output_tokens_from_script {
+            Some(self.max_output_tokens)
+        } else {
+            None
         }
     }
 

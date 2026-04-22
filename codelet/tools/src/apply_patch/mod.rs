@@ -9,12 +9,14 @@
 mod hunk;
 mod parser;
 
+use super::bash_binary_guard::{
+    detect_bash_binary_output, format_file_tool_guard_message,
+};
 use super::blocklist::check_file_path;
 use super::error::ToolError;
 use super::facade::validate_and_resolve_path;
 use super::validation::{
-    create_parent_dirs, read_file_contents, require_absolute_path, require_file_exists,
-    write_file_contents,
+    create_parent_dirs, require_absolute_path, require_file_exists, write_file_contents,
 };
 use hunk::apply_hunks;
 use parser::{parse_patch, PatchOp};
@@ -154,12 +156,25 @@ impl rig::tool::Tool for ApplyPatchTool {
                             tool: "apply_patch",
                             message: e.content,
                         })?;
-                    let content = read_file_contents(&resolved)
+                    // Read as bytes and run binary-guard BEFORE attempting UTF-8
+                    // decode (BUG-143). A PDF/PNG target would otherwise surface
+                    // only as a generic UTF-8 decode error.
+                    let bytes = tokio::fs::read(&resolved)
                         .await
                         .map_err(|e| ToolError::File {
                             tool: "apply_patch",
-                            message: e.content,
+                            message: format!("Error reading file: {e}"),
                         })?;
+                    if let Some(kind) = detect_bash_binary_output(&bytes) {
+                        return Err(ToolError::Validation {
+                            tool: "apply_patch",
+                            message: format_file_tool_guard_message("apply_patch", kind),
+                        });
+                    }
+                    let content = String::from_utf8(bytes).map_err(|e| ToolError::File {
+                        tool: "apply_patch",
+                        message: format!("Error reading file: {e}"),
+                    })?;
                     let new_content =
                         apply_hunks(&content, hunks, &p).map_err(|e| ToolError::Validation {
                             tool: "apply_patch",

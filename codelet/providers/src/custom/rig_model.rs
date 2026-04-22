@@ -54,7 +54,7 @@ use codelet_tools::ToolDefinition;
 use super::http::post_sse;
 use super::provider::RhaiCustomProvider;
 use super::rig_message_convert::rig_messages_to_internal;
-use super::stream::{RhaiStreamProcessor, StreamChunk};
+use super::stream::{RhaiStreamProcessor, StreamChunk, StreamUsage};
 use super::stream_http::open_stream;
 use crate::error::ProviderError;
 use crate::{CompletionResponse, StopReason};
@@ -67,11 +67,34 @@ use crate::{CompletionResponse, StopReason};
 /// the stop reason (mapped from Rhai's loose enum) so downstream code
 /// such as the agent-loop multi-step driver can distinguish `ToolUse`
 /// from `EndTurn` without re-inspecting the choice list.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// PROV-103: The raw response also carries the last-known token usage
+/// snapshot so [`GetTokenUsage::token_usage`] can surface a non-empty
+/// [`rig::completion::Usage`]. For streaming this is populated from the
+/// final [`StreamChunk::UsageDelta`] seen before `FinalResponse`; for
+/// non-streaming it is populated from the `usage` map returned by the
+/// script's `parse_response`. All fields default to `0`/`None` when the
+/// script does not surface usage data.
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct RhaiCustomCompletion {
     /// Stop reason mirroring `crate::StopReason` (lower-snake-case).
     #[serde(default)]
     pub stop_reason: String,
+    /// Raw input tokens (excluding cache). `0` when unknown.
+    #[serde(default)]
+    pub input_tokens: u64,
+    /// Output tokens for the final API segment. `0` when unknown.
+    #[serde(default)]
+    pub output_tokens: u64,
+    /// Cache read tokens (Anthropic prompt caching).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cache_read_input_tokens: Option<u64>,
+    /// Cache creation tokens (Anthropic prompt caching).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cache_creation_input_tokens: Option<u64>,
+    /// Reasoning / thinking tokens, if any.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reasoning_tokens: Option<u64>,
 }
 
 impl RhaiCustomCompletion {
@@ -83,13 +106,25 @@ impl RhaiCustomCompletion {
         };
         Self {
             stop_reason: s.to_string(),
+            ..Self::default()
         }
     }
 }
 
 impl rig::completion::GetTokenUsage for RhaiCustomCompletion {
     fn token_usage(&self) -> Option<rig::completion::Usage> {
-        None
+        // PROV-103: Report aggregate usage so it flows through rig's
+        // streaming aggregator and lands in the TUI SessionHeader. If
+        // the script never surfaced usage, all counts will be zero —
+        // which rig treats as "provider failed to supply metrics".
+        let mut usage = rig::completion::Usage::new();
+        usage.input_tokens = self.input_tokens;
+        usage.output_tokens = self.output_tokens;
+        usage.total_tokens = self.input_tokens + self.output_tokens;
+        usage.cache_read_input_tokens = self.cache_read_input_tokens;
+        usage.cache_creation_input_tokens = self.cache_creation_input_tokens;
+        usage.reasoning_tokens = self.reasoning_tokens;
+        Some(usage)
     }
 
     fn stop_reason(&self) -> Option<&str> {
@@ -293,23 +328,39 @@ impl CompletionModel for RhaiCustomProviderModel {
         })?;
 
         let internal = provider
-            .invoke_parse_response(&body_json)
+            .invoke_parse_response_with_usage(&body_json)
             .await
             .map_err(provider_error_to_rig)?;
+        let (internal, usage_snapshot) = internal;
 
         let choice = internal_response_to_rig_choice(&internal);
-        let raw = RhaiCustomCompletion::from_internal(internal.stop_reason);
+        let mut raw = RhaiCustomCompletion::from_internal(internal.stop_reason);
+        raw.input_tokens = usage_snapshot.input_tokens.unwrap_or(0);
+        raw.output_tokens = usage_snapshot.output_tokens.unwrap_or(0);
+        raw.cache_read_input_tokens = usage_snapshot.cache_read_input_tokens;
+        raw.cache_creation_input_tokens = usage_snapshot.cache_creation_input_tokens;
+        raw.reasoning_tokens = usage_snapshot.reasoning_tokens;
+
+        let mut rig_usage = rig::completion::Usage::new();
+        rig_usage.input_tokens = raw.input_tokens;
+        rig_usage.output_tokens = raw.output_tokens;
+        rig_usage.total_tokens = raw.input_tokens + raw.output_tokens;
+        rig_usage.cache_read_input_tokens = raw.cache_read_input_tokens;
+        rig_usage.cache_creation_input_tokens = raw.cache_creation_input_tokens;
+        rig_usage.reasoning_tokens = raw.reasoning_tokens;
 
         tracing::warn!(
             provider = %provider.config_name(),
             choice_len = choice.iter().count(),
             stop_reason = %raw.stop_reason,
+            input_tokens = raw.input_tokens,
+            output_tokens = raw.output_tokens,
             "[rhai-dispatch] CompletionModel::completion EXIT ok"
         );
 
         Ok(RigCompletionResponse {
             choice,
-            usage: rig::completion::Usage::new(),
+            usage: rig_usage,
             raw_response: raw,
         })
     }
@@ -393,6 +444,14 @@ impl CompletionModel for RhaiCustomProviderModel {
             let mut text_chunks = 0usize;
             let mut reasoning_chunks = 0usize;
             let mut tool_chunks = 0usize;
+            // PROV-103: Aggregate the most recent usage snapshot so the
+            // FinalResponse carries authoritative token counts. Each
+            // `StreamChunk::UsageDelta` is folded in field-by-field —
+            // unspecified fields (`None`) preserve the previous value,
+            // which mirrors how rig's anthropic streaming module reads
+            // Anthropic's `message_start` (input + cache) followed by
+            // `message_delta` (output).
+            let mut aggregate = StreamUsage::default();
             while let Some(item) = chunk_stream.next().await {
                 match item {
                     Ok(StreamChunk::TextDelta(text)) => {
@@ -448,6 +507,43 @@ impl CompletionModel for RhaiCustomProviderModel {
                         tc = tc.with_signature(None);
                         yield Ok(RawStreamingChoice::ToolCall(tc));
                     }
+                    Ok(StreamChunk::UsageDelta(delta)) => {
+                        // PROV-103: Fold this delta into the running
+                        // aggregate and forward a rig Usage event so
+                        // the TUI SessionHeader sees token counts as
+                        // soon as the provider reports them.
+                        if let Some(v) = delta.input_tokens {
+                            aggregate.input_tokens = Some(v);
+                        }
+                        if let Some(v) = delta.output_tokens {
+                            aggregate.output_tokens = Some(v);
+                        }
+                        if let Some(v) = delta.cache_read_input_tokens {
+                            aggregate.cache_read_input_tokens = Some(v);
+                        }
+                        if let Some(v) = delta.cache_creation_input_tokens {
+                            aggregate.cache_creation_input_tokens = Some(v);
+                        }
+                        if let Some(v) = delta.reasoning_tokens {
+                            aggregate.reasoning_tokens = Some(v);
+                        }
+                        let mut usage = rig::completion::Usage::new();
+                        usage.input_tokens = aggregate.input_tokens.unwrap_or(0);
+                        usage.output_tokens = aggregate.output_tokens.unwrap_or(0);
+                        usage.total_tokens = usage.input_tokens + usage.output_tokens;
+                        usage.cache_read_input_tokens = aggregate.cache_read_input_tokens;
+                        usage.cache_creation_input_tokens = aggregate.cache_creation_input_tokens;
+                        usage.reasoning_tokens = aggregate.reasoning_tokens;
+                        tracing::warn!(
+                            provider = %provider_name,
+                            input_tokens = usage.input_tokens,
+                            output_tokens = usage.output_tokens,
+                            cache_read = ?usage.cache_read_input_tokens,
+                            cache_creation = ?usage.cache_creation_input_tokens,
+                            "[rhai-dispatch] stream yielding Usage"
+                        );
+                        yield Ok(RawStreamingChoice::Usage(usage));
+                    }
                     Ok(StreamChunk::StopReason(reason)) => {
                         tracing::warn!(
                             provider = %provider_name,
@@ -467,13 +563,20 @@ impl CompletionModel for RhaiCustomProviderModel {
                     }
                 }
             }
-            let raw = RhaiCustomCompletion::from_internal(final_stop);
+            let mut raw = RhaiCustomCompletion::from_internal(final_stop);
+            raw.input_tokens = aggregate.input_tokens.unwrap_or(0);
+            raw.output_tokens = aggregate.output_tokens.unwrap_or(0);
+            raw.cache_read_input_tokens = aggregate.cache_read_input_tokens;
+            raw.cache_creation_input_tokens = aggregate.cache_creation_input_tokens;
+            raw.reasoning_tokens = aggregate.reasoning_tokens;
             tracing::warn!(
                 provider = %provider_name,
                 stop_reason = %raw.stop_reason,
                 text_chunks = text_chunks,
                 reasoning_chunks = reasoning_chunks,
                 tool_chunks = tool_chunks,
+                input_tokens = raw.input_tokens,
+                output_tokens = raw.output_tokens,
                 "[rhai-dispatch] stream EXIT with FinalResponse"
             );
             yield Ok(RawStreamingChoice::FinalResponse(raw));

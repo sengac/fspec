@@ -21,6 +21,7 @@
 
 use super::blocklist::check_bash_command;
 use super::error::ToolError;
+use crate::bash_binary_guard::{detect_bash_binary_output, format_binary_guard_message};
 use crate::bash_output::{BashOutput, StreamBuffers};
 use crate::bash_process::{spawn_command, take_stdio_handles};
 use crate::bash_streams::{spawn_readers, wait_for_tasks_with_abort, StdoutStreamMode};
@@ -177,7 +178,20 @@ impl BashTool {
         })?;
 
         // Build and format output
-        let (stdout_content, stderr_content) = buffers.extract().await;
+        let (stdout_bytes, stderr_content) = buffers.extract().await;
+
+        // BUG-142: binary-output guard. If the command emitted binary bytes
+        // (e.g. `cat /tmp/icon.png`), suppress the payload and return a
+        // structured error instructing the agent to use the Read tool
+        // instead. Runs regardless of exit status.
+        if let Some(kind) = detect_bash_binary_output(&stdout_bytes) {
+            return Err(ToolError::Execution {
+                tool: "bash",
+                message: format_binary_guard_message(kind),
+            });
+        }
+
+        let stdout_content = String::from_utf8_lossy(&stdout_bytes).into_owned();
         BashOutput::from_execution(stdout_content, stderr_content, status).into_result()
     }
 }
@@ -268,7 +282,17 @@ impl rig::tool::Tool for BashTool {
         })?;
 
         // Build and format output
-        let (stdout_content, stderr_content) = buffers.extract().await;
+        let (stdout_bytes, stderr_content) = buffers.extract().await;
+
+        // BUG-142: binary-output guard — see BashTool::call_with_streaming for rationale.
+        if let Some(kind) = detect_bash_binary_output(&stdout_bytes) {
+            return Err(ToolError::Execution {
+                tool: "bash",
+                message: format_binary_guard_message(kind),
+            });
+        }
+
+        let stdout_content = String::from_utf8_lossy(&stdout_bytes).into_owned();
         BashOutput::from_execution(stdout_content, stderr_content, status).into_result()
     }
 }

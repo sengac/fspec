@@ -97,6 +97,10 @@ export async function selectModel(
         // MODEL-005: Pass context window and max output tokens
         // MODEL-004: Pass facade override for custom model dispatch
         // CTX-008: Pass compaction threshold if configured
+        // BUG-137: Pass profile name so selected_model_string() can emit
+        // the profile-qualified composite "provider:profile/model". Without
+        // this, AgentManager.spawn re-creates subordinates as cloud models
+        // and fails registry validation.
         await sessionSetModelProfile(
           sessionId,
           selection.providerId,
@@ -105,7 +109,8 @@ export async function selectModel(
           selection.maxOutput,
           selection.facade ?? null,
           selection.compactionThreshold?.type ?? null,
-          selection.compactionThreshold?.value ?? null
+          selection.compactionThreshold?.value ?? null,
+          selection.profileName ?? null
         );
       } else if (
         selection.providerId === 'codex' ||
@@ -115,6 +120,8 @@ export async function selectModel(
         // PROV-067: Custom providers bypass registry (not in models.dev at all)
         // MODEL-005: Pass context window and max output tokens
         // CTX-008: Pass compaction threshold if configured
+        // BUG-137: No profile_name for codex / custom providers — the
+        // plain "provider/model" composite is what subordinates expect.
         await sessionSetModelProfile(
           sessionId,
           selection.providerId,
@@ -123,7 +130,8 @@ export async function selectModel(
           selection.maxOutput,
           selection.facade ?? null,
           selection.compactionThreshold?.type ?? null,
-          selection.compactionThreshold?.value ?? null
+          selection.compactionThreshold?.value ?? null,
+          null
         );
       } else {
         // Cloud provider: use sessionSetModel (uses registry validation)

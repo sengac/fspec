@@ -1202,6 +1202,7 @@ dependencies = [
  "tokio-stream",
  "tokio-test",
  "tracing",
+ "tracing-subscriber",
  "ureq 2.12.1",
  "url",
  "uuid",

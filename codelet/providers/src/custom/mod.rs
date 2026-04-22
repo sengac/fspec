@@ -28,7 +28,9 @@ mod http;
 mod internal_dispatch;
 pub(crate) mod log_helpers;
 pub mod management;
+pub mod model_limits;
 pub mod provider;
+mod provider_dispatch;
 mod provider_stream;
 pub mod request_bridge;
 pub mod response_bridge;
@@ -56,8 +58,13 @@ pub use discovery::discover_provider_configs;
 pub use management::{
     apply_custom_provider_env_vars, derive_facade_for_custom, init_provider_template,
     list_providers_info, resolve_custom_model_id, show_provider_info, test_provider_connection,
-    validate_provider_config, ProviderInfo, ProviderTestResult,
+    validate_provider_config, ProviderInfo, ProviderModelInfo, ProviderTestResult,
 };
+pub use model_limits::{
+    lookup_script_compaction_threshold, lookup_script_model_limits, RhaiScriptedLimits,
+};
+#[doc(hidden)]
+pub use model_limits::__clear_lookup_cache_for_tests;
 pub use provider::RhaiCustomProvider;
 pub use rig_model::{RhaiCustomCompletion, RhaiCustomProviderModel};
 pub use rig_tool::{RhaiToolArgs, RhaiToolWrapper};

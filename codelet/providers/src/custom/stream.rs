@@ -14,8 +14,17 @@
 //! #{ kind: "reasoning_delta",  text: "..." }   // also accepts "thinking_delta"
 //! #{ kind: "tool_call_delta",  index: 0, id: "call_1", name: "read_file", arguments: "..." }
 //! #{ kind: "stop",             reason: "end_turn" | "tool_use" | "max_tokens" }
+//! #{ kind: "usage",            input_tokens: 1234, output_tokens: 0,
+//!                              cache_read_input_tokens: 500, cache_creation_input_tokens: 200,
+//!                              reasoning_tokens: 0 }
 //! #{ kind: "ignore" }
 //! ```
+//!
+//! All numeric fields on a `"usage"` chunk are optional — missing values
+//! are treated as "unchanged" by downstream consumers. Scripts bridging
+//! Anthropic Messages emit one `usage` chunk on `message_start` (input
+//! and cache totals, `output_tokens = 0` to mark a new API segment) and
+//! another on `message_delta` (cumulative `output_tokens`).
 //!
 //! `data: [DONE]` terminates the stream in Rust without invoking
 //! `parse_stream_chunk`. Rhai runtime errors surface as a single
@@ -71,6 +80,33 @@ pub enum StreamChunk {
     },
     /// Stop reason for the completion.
     StopReason(StopReason),
+    /// Token usage information emitted during a stream (PROV-103).
+    ///
+    /// Scripts surface this by returning `#{ kind: "usage", ... }` from
+    /// `parse_stream_chunk`. Every numeric field is optional — `None`
+    /// means "no update for this field" and the upstream aggregator
+    /// should keep its previous value. Anthropic scripts emit one
+    /// `UsageDelta` on `message_start` (carrying `input_tokens` and
+    /// `cache_read_input_tokens` / `cache_creation_input_tokens`, with
+    /// `output_tokens = Some(0)` to mark a new API segment) and another
+    /// on `message_delta` (carrying the cumulative `output_tokens`).
+    UsageDelta(StreamUsage),
+}
+
+/// Token usage snapshot surfaced via [`StreamChunk::UsageDelta`].
+#[derive(Debug, Clone, Default)]
+pub struct StreamUsage {
+    /// Raw input tokens (NOT including cache). `None` → unchanged.
+    pub input_tokens: Option<u64>,
+    /// Cumulative output tokens for the current API segment. `None` →
+    /// unchanged. `Some(0)` signals a new API segment (message_start).
+    pub output_tokens: Option<u64>,
+    /// Cache read input tokens. `None` → unchanged.
+    pub cache_read_input_tokens: Option<u64>,
+    /// Cache creation input tokens. `None` → unchanged.
+    pub cache_creation_input_tokens: Option<u64>,
+    /// Reasoning / thinking tokens. `None` → unchanged.
+    pub reasoning_tokens: Option<u64>,
 }
 
 /// Accumulator for a single in-flight tool call.

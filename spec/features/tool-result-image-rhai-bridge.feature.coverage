@@ -1,0 +1,574 @@
+{
+  "scenarios": [
+    {
+      "name": "Convert tool_result with single base64 image to structured ToolResultPart::Image",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "421-466",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/rig_message_convert.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Convert tool_result mixing text and base64 image preserves order and derives legacy content",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "468-513",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/rig_message_convert.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Convert text-only tool_result keeps tool_result_text shape for backcompat",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "515-547",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/rig_message_convert.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Convert tool_result with URL image preserves the URL source",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "549-584",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/rig_message_convert.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Convert tool_result with unsupported image variant skips the image but keeps siblings",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "586-622",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/rig_message_convert.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "messages_to_rhai serialises tool_result image parts verbatim into Rhai",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "143-203",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/request_bridge.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "claude_rhai build_request emits Anthropic tool_result block with embedded image for image-only parts",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "224-272",
+          "implMappings": [
+            {
+              "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "claude_rhai build_request emits mixed text and image blocks inside tool_result content",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "277-336",
+          "implMappings": [
+            {
+              "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "claude_rhai build_request leaves plain-text user messages unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+          "lines": "341-358",
+          "implMappings": [
+            {
+              "file": "codelet/providers/tests/tool_result_image_bridge_tests.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/tool_result_image_bridge_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/custom/rig_message_convert.rs",
+      "codelet/providers/src/custom/request_bridge.rs",
+      "codelet/providers/tests/tool_result_image_bridge_tests.rs"
+    ],
+    "totalLinesCovered": 798
+  }
+}

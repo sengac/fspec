@@ -6,11 +6,14 @@
 //! For isolated sessions, file paths are validated and resolved to the worktree
 //! to ensure the session cannot edit files outside its isolated environment.
 
+use super::bash_binary_guard::{
+    detect_bash_binary_output, format_file_tool_guard_message,
+};
 use super::blocklist::check_file_path;
 use super::error::ToolError;
 use super::facade::validate_and_resolve_path;
 use super::validation::{
-    read_file_contents, require_absolute_path, require_file_exists, write_file_contents,
+    require_absolute_path, require_file_exists, write_file_contents,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -108,13 +111,26 @@ impl rig::tool::Tool for EditTool {
         let path = resolved_file.as_path();
         let file_path_str = path.to_string_lossy().to_string();
 
-        // Read file content (async)
-        let content = read_file_contents(path)
-            .await
-            .map_err(|e| ToolError::File {
+        // Read file as bytes first (BUG-143). We run the binary-guard on the raw
+        // bytes BEFORE attempting UTF-8 decode so that the agent gets a
+        // structured "this is a binary file" error naming the format (PNG/PDF/…)
+        // rather than a confusing generic UTF-8 decode failure.
+        let bytes = tokio::fs::read(path).await.map_err(|e| ToolError::File {
+            tool: "edit",
+            message: format!("Error reading file: {e}"),
+        })?;
+
+        if let Some(kind) = detect_bash_binary_output(&bytes) {
+            return Err(ToolError::Validation {
                 tool: "edit",
-                message: e.content,
-            })?;
+                message: format_file_tool_guard_message("Edit", kind),
+            });
+        }
+
+        let content = String::from_utf8(bytes).map_err(|e| ToolError::File {
+            tool: "edit",
+            message: format!("Error reading file: {e}"),
+        })?;
 
         // Check if old_string exists
         if !content.contains(&args.old_string) {

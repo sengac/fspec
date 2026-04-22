@@ -36,8 +36,16 @@ fn default_api_key_header() -> String {
 }
 
 /// Default context window size for a model definition (tokens).
+///
+/// BUG-139: Raised from `128_000` to `200_000` so the fallback matches
+/// modern Claude / OpenAI / Anthropic defaults rather than the legacy
+/// GPT-3.5-era value. Custom provider JSON configs that omit
+/// `context_window` now land on 200k, which is a safer middle-of-the-road
+/// default for 2025-era models and is high enough that the
+/// SessionHeader's compaction math does not surface a misleading
+/// `[120k]` badge for widely-deployed provider templates.
 fn default_context_window() -> usize {
-    128_000
+    200_000
 }
 
 /// Default max output tokens for a model definition.
@@ -174,6 +182,9 @@ pub struct ModelDef {
     /// Whether the model supports extended-thinking mode.
     #[serde(default)]
     pub supports_thinking: bool,
+    /// Whether the model supports vision / image input.
+    #[serde(default)]
+    pub supports_vision: bool,
 }
 
 /// Default request parameters when the caller does not specify them.
