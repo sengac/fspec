@@ -636,7 +636,8 @@
         "PROV-082",
         "PROV-083",
         "PROV-084",
-        "BUG-137"
+        "BUG-137",
+        "BUG-144"
       ]
     },
     "local-change-protocols": {

@@ -136,6 +136,7 @@ fn build_provider_inline(script_body: &str, name: &str, base_url: &str) -> RhaiC
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: true,
+            supports_vision: false,
         },
     );
     let cfg = ProviderConfig {
@@ -489,6 +490,7 @@ fn map_error(status, body) { #{ type: "api", message: "" } }
             supports_tools: true,
             supports_streaming: false,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
     let cfg = ProviderConfig {

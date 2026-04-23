@@ -476,7 +476,7 @@ fn openai_compatible_template(name: &str) -> serde_json::Value {
         "models": {
             "default-model": {
                 "id": "default-model",
-                "context_window": 128000,
+                "context_window": 200000,
                 "max_output_tokens": 4096
             }
         },

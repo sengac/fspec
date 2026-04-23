@@ -341,6 +341,7 @@ fn rhai_script_get_model_limits_still_wins_over_json() {
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
 

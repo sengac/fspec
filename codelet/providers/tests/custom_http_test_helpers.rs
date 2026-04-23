@@ -34,6 +34,7 @@ pub fn config_with_script(name: &str, script_body: &str) -> (TempDir, ProviderCo
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
 
@@ -83,6 +84,7 @@ pub fn config_with_full_script(
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
 

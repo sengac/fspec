@@ -537,6 +537,7 @@ async fn provider_context_window_reflects_selected_model() {
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
 

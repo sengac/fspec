@@ -43,6 +43,7 @@ pub fn streaming_config_with_script(
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
 

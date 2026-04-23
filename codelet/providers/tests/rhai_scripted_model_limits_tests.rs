@@ -163,6 +163,7 @@ fn models_one(
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
     m
@@ -305,6 +306,7 @@ fn scenario_script_branches_on_model_alias() {
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
     models.insert(
@@ -316,6 +318,7 @@ fn scenario_script_branches_on_model_alias() {
             supports_tools: true,
             supports_streaming: true,
             supports_thinking: false,
+            supports_vision: false,
         },
     );
 
