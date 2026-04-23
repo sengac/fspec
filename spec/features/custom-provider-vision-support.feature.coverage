@@ -5,8 +5,25 @@
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
-          "lines": "105-117",
-          "implMappings": []
+          "lines": "103-118",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [51, 52, 53, 54, 55]
+            },
+            {
+              "file": "codelet/providers/src/custom/config.rs",
+              "lines": [185, 186, 187, 188, 189, 190]
+            },
+            {
+              "file": "codelet/providers/src/custom/management.rs",
+              "lines": [48, 49, 50, 51, 52, 136, 137]
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+            }
+          ]
         }
       ]
     },
@@ -15,18 +32,25 @@
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
-          "lines": "119-139",
-          "implMappings": []
-        }
-      ]
-    },
-    {
-      "name": "SessionHeader renders [V] badge for vision-enabled custom model",
-      "testMappings": [
-        {
-          "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
-          "lines": "160-178",
-          "implMappings": []
+          "lines": "120-135",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [51, 52, 53, 54, 55]
+            },
+            {
+              "file": "codelet/providers/src/custom/config.rs",
+              "lines": [185, 186, 187, 188, 189, 190]
+            },
+            {
+              "file": "codelet/providers/src/custom/management.rs",
+              "lines": [48, 49, 50, 51, 52, 136, 137]
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+            }
+          ]
         }
       ]
     },
@@ -35,8 +59,52 @@
       "testMappings": [
         {
           "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
-          "lines": "141-158",
-          "implMappings": []
+          "lines": "137-153",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [51, 52, 53, 54, 55]
+            },
+            {
+              "file": "codelet/providers/src/custom/config.rs",
+              "lines": [185, 186, 187, 188, 189, 190]
+            },
+            {
+              "file": "codelet/providers/src/custom/management.rs",
+              "lines": [48, 49, 50, 51, 52, 136, 137]
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionHeader renders [V] badge for vision-enabled custom model",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts",
+          "lines": "155-179",
+          "implMappings": [
+            {
+              "file": "src/tui/services/customProviderSectionBuilder.ts",
+              "lines": [51, 52, 53, 54, 55]
+            },
+            {
+              "file": "codelet/providers/src/custom/config.rs",
+              "lines": [185, 186, 187, 188, 189, 190]
+            },
+            {
+              "file": "codelet/providers/src/custom/management.rs",
+              "lines": [48, 49, 50, 51, 52, 136, 137]
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [8523, 8524, 8525, 8526, 8527, 8546, 8547]
+            }
+          ]
         }
       ]
     }
@@ -48,7 +116,12 @@
     "testFiles": [
       "src/tui/services/__tests__/customProviderSectionBuilder.vision.test.ts"
     ],
-    "implFiles": [],
-    "totalLinesCovered": 71
+    "implFiles": [
+      "src/tui/services/customProviderSectionBuilder.ts",
+      "codelet/providers/src/custom/config.rs",
+      "codelet/providers/src/custom/management.rs",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 261
   }
 }

@@ -1221,6 +1221,8 @@ export interface JsProviderModelInfo {
   supportsStreaming: boolean;
   /** Whether the model supports extended-thinking mode. */
   supportsThinking: boolean;
+  /** Whether the model supports vision / image input. */
+  supportsVision: boolean;
 }
 
 /** PROV-067: JS result of a custom-provider connectivity probe. */
