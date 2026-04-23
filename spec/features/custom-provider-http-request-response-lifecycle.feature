@@ -5,7 +5,6 @@
 @providers
 @PROV-063
 Feature: Custom provider HTTP request/response lifecycle
-
   """
   RhaiCustomProvider<LlmProvider> delegates to 7 Rhai functions; request_bridge and response_bridge convert between CompletionRequest/Response and Rhai Dynamic; all Rhai calls run in tokio::task::spawn_blocking; HTTP via reqwest; errors flow through map_error
   """
@@ -45,7 +44,6 @@ Feature: Custom provider HTTP request/response lifecycle
   #   13. Response bridge converts tool_calls with structured input into ToolUseContent with id, name, and serde_json::Value input
   #
   # ========================================
-
   Background: User Story
     As a custom provider author
     I want to have my Rhai script build HTTP requests, parse responses, and extract tool calls for the LLM API
@@ -56,75 +54,62 @@ Feature: Custom provider HTTP request/response lifecycle
     When I call the request_bridge with a single user message "hi"
     Then the resulting JSON body contains messages array with role "user" and content "hi"
 
-
   Scenario: Build request URL from config
     Given a config with base_url "https://api.example.com" and a script build_url returning "/v1/chat/completions"
     When RhaiCustomProvider resolves the target URL
     Then the URL equals "https://api.example.com/v1/chat/completions"
-
 
   Scenario: Build HTTP headers including auth
     Given a Rhai script whose build_headers returns a map with Authorization and Content-Type
     When RhaiCustomProvider assembles outgoing HTTP headers
     Then the HeaderMap contains Authorization "Bearer sk-xxx" and Content-Type "application/json"
 
-
   Scenario: Parse plain text response
     Given a Rhai script whose parse_response extracts content from choices[0].message.content and finish_reason
     When I parse the JSON {choices:[{message:{content:"hello"},finish_reason:"stop"}]}
     Then the CompletionResponse has content text "hello" and stop_reason EndTurn
-
 
   Scenario: Parse tool call response
     Given a Rhai script parsing a tool_call with name "read_file" and input {path:"a.txt"}
     When I parse the response body
     Then the CompletionResponse contains MessageContent::ToolUse with name "read_file" and stop_reason ToolUse
 
-
   Scenario: Map HTTP 401 to auth error
     Given a Rhai script whose map_error returns an auth error for status 401
     When the HTTP response returns status 401 with body "{\"error\":\"unauthorized\"}"
     Then I receive ProviderError::Auth whose message contains "unauthorized"
-
 
   Scenario: Map HTTP 429 to rate limit error
     Given a Rhai script whose map_error returns rate_limit for status 429
     When the HTTP response returns status 429
     Then I receive ProviderError::RateLimit
 
-
   Scenario: Surface Rhai runtime errors as provider errors
     Given a Rhai script whose parse_response throws a runtime error
     When I complete with that provider
     Then I receive ProviderError::Api and the process does not crash
-
 
   Scenario: Complete end-to-end request against mock server
     Given a wiremock server responding to /v1/chat/completions with a valid OpenAI-style success payload
     When RhaiCustomProvider.complete_with_tools is called with a single user message
     Then the returned CompletionResponse contains the mock server's content text
 
-
   Scenario: Provider name reflects config
     Given a ProviderConfig with name "my-llm"
     When I construct a RhaiCustomProvider from that config
     Then provider.name() returns "my-llm"
-
 
   Scenario: Provider context window reflects selected model
     Given a config with a model "big" defining context_window 200000 and max_output_tokens 8192
     When I construct a RhaiCustomProvider selecting model "big"
     Then provider.context_window() equals 200000 and provider.max_output_tokens() equals 8192
 
-
   Scenario: Request bridge preserves multi-turn message structure
     Given a conversation with user then assistant then user turns
     When I convert the messages through the request_bridge
     Then the resulting Rhai array has three entries in the correct order with matching roles and contents
 
-
   Scenario: Response bridge preserves structured tool call input
     Given a Rhai response map with tool_call input {path:"a.txt", mode:"read"}
     When I convert it through the response_bridge
     Then the ToolUseContent input is a serde_json::Value object with fields path="a.txt" and mode="read"
-

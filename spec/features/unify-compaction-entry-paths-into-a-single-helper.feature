@@ -4,7 +4,6 @@
 @cli
 @CMPCT-023
 Feature: Unify compaction entry paths into a single helper
-
   """
   A single helper `begin_compaction_recovery` in `recovery_compaction.rs` centralizes the cross-cutting invariants (partial-text save, tracker flush, conditional user-pop, flag set with warn, progress-callback clear, event emit) so all compaction entry points become uniform. The existing `flush_partial_state_before_compaction` from CMPCT-024 becomes the internal save+flush step. Paths B and C call it with `pop_user_prompt=true`; Path D (Gemini continuation) calls it with `pop_user_prompt=false`. Path A (pre-prompt) remains structurally separate because it runs before streaming begins. The pre-existing compaction_started/progress double-emission in `compaction_retry.rs` is removed because the helper now emits them at the break site. The existing CMPCT-024/025/026 fixes (structural PromptCancelled detection, defense-in-depth flag, disagreement warn) are preserved — `classify_compaction_branch` still gates whether the helper is called.
   """
@@ -31,7 +30,6 @@ Feature: Unify compaction entry paths into a single helper
   #   5. Warning disagreement: compaction_needed=true already set on entry (shouldn't happen — indicates a disagreement between the cancel path and the flag). warn! emitted, flag remains true.
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to unify all compaction recovery entry paths through a single helper
@@ -44,7 +42,6 @@ Feature: Unify compaction entry paths into a single helper
     Then both sessions end with identical token_tracker state
     Then both sessions have compaction_needed=true on their shared TokenState
 
-
   Scenario: Path D preserves all messages when pop_user_prompt is false
     Given a session whose last message is a mid-flight User continuation prompt
     When begin_compaction_recovery is called with pop_user_prompt=false and an empty assistant_text buffer
@@ -52,13 +49,11 @@ Feature: Unify compaction entry paths into a single helper
     Then no Assistant message is appended for an empty buffer
     Then compaction_needed is set to true on the TokenState
 
-
   Scenario: Helper emits compaction lifecycle events exactly once per entry
     Given a fake StreamOutput that records every emit_compaction_started and emit_compaction_progress call
     When begin_compaction_recovery is called once
     Then exactly one compaction_started event is recorded
     Then exactly one compaction_progress event with phase 'Context limit reached' is recorded
-
 
   Scenario: Helper emits a warning when compaction_needed flag was already true on entry
     Given a TokenState whose compaction_needed flag is already true before entering the helper
@@ -66,10 +61,8 @@ Feature: Unify compaction entry paths into a single helper
     Then the helper completes successfully without error
     Then the compaction_needed flag remains true
 
-
   Scenario: Empty partial assistant text does not append an empty Assistant message
     Given a session with some existing messages and an empty assistant_text buffer
     When begin_compaction_recovery is invoked with pop_user_prompt=false
     Then the session.messages count is unchanged
     Then no empty Assistant message is added
-

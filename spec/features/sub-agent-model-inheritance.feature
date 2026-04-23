@@ -2,7 +2,6 @@
 @codelet
 @BUG-132
 Feature: DeepSearch and AgentManager handlers use stale model after mid-session model switch
-
   """
   Extract handler re-registration logic into a shared helper function to avoid duplicating the closure-building code between initial registration and model-change re-registration
   session_set_model and session_set_model_profile are NAPI-exported async functions called from TypeScript TUI — changes must preserve their signatures and return types
@@ -26,7 +25,6 @@ Feature: DeepSearch and AgentManager handlers use stale model after mid-session 
   #   4. User never switches model mid-session → behavior is unchanged from before the fix (no regression)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have DeepSearch and AgentManager sub-agents use my current model after I switch models mid-session

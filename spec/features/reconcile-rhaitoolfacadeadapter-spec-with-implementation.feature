@@ -6,7 +6,6 @@
 @providers
 @PROV-068
 Feature: Reconcile RhaiToolFacadeAdapter spec with implementation
-
   """
   Reconcile via docs/spec updates (Option A) rather than introducing a ToolDyn wrapper, because Rhai tools have dynamic names incompatible with rig::Tool's const NAME requirement
   A Rust integration test in codelet/providers/tests/ pins the adapter's getters-only contract (public methods, types, values) so future regressions are caught
@@ -31,7 +30,6 @@ Feature: Reconcile RhaiToolFacadeAdapter spec with implementation
   #   5. After reconciliation, PROV-066 Example 8 reads '...adapter.name() returns the tool name from the RhaiToolDef and .parameters_schema() returns the JSON schema...' (no rig::Tool reference)
   #
   # ========================================
-
   Background: User Story
     As a custom provider developer reading the PROV-066 spec
     I want to have the rules and architecture notes accurately describe RhaiToolFacadeAdapter as a getters-only adapter (not a full rig::Tool impl)

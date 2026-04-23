@@ -2,7 +2,6 @@
 @codelet
 @BUG-136
 Feature: AgentManager spawn fails for custom models with slashes in model_id
-
   """
   Root cause in codelet/providers/src/manager.rs: set_model_direct (line ~476) stores only model_id, whereas select_model (line ~431) stores the full provider/model composite. selected_model_string() returns this stored value verbatim, so AgentManager's handle_spawn passes an incomplete string to create_session_with_id. Fix stays Rust-only and needs the companion update in selected_model_id (line ~495) to continue returning the bare API id.
   Existing BUG-132 regression test at codelet/napi/src/session_manager.rs:8308-8316 asserts selected_model_string() == 'claude-opus-4-6' — this test encodes the buggy behaviour and MUST be updated to expect 'anthropic/claude-opus-4-6'.
@@ -25,7 +24,6 @@ Feature: AgentManager spawn fails for custom models with slashes in model_id
   #   5. Existing Anthropic/Google/OpenAI registry selections via select_model('anthropic/claude-opus-4-6') continue to work — selected_model_string() = 'anthropic/claude-opus-4-6', selected_model_id() = resolved API id from registry (unchanged from today)
   #
   # ========================================
-
   Background: User Story
     As a developer using a custom model whose API id contains slashes
     I want to spawn subordinate sessions via AgentManager

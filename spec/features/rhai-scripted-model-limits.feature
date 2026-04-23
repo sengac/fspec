@@ -7,7 +7,6 @@
 @rig
 @PROV-095
 Feature: Allow Rhai custom provider scripts to set model context window and max output tokens
-
   """
   Uses the new optional Rhai function `get_model_limits(config) -> Map` with shape `#{ context_window?: i64, max_output_tokens?: i64, compaction_threshold?: #{ type: "tokens"|"percentage", value: i64 } }`.
   Implemented in codelet/providers/src/custom/provider.rs (RhaiCustomProvider::new invokes the script) and codelet/providers/src/custom/rhai_call.rs or similar. Missing function is detected via rhai::Engine::call_fn returning FunctionNotFound — treated as 'no-op, use JSON defaults'.
@@ -46,7 +45,6 @@ Feature: Allow Rhai custom provider scripts to set model context window and max 
   #   A: Yes — `get_model_limits` MAY also return an optional `compaction_threshold` entry. Shape: `compaction_threshold: #{ type: "tokens", value: N }` (absolute tokens) or `compaction_threshold: #{ type: "percentage", value: P }` (percentage of context_window, P in 1..=100). When present, RhaiCustomProvider surfaces this through a new accessor that the NAPI layer calls to populate ProviderManager::set_compaction_threshold_override(Some((type, value))).
   #
   # ========================================
-
   Background: User Story
     As a fspec user running a Rhai custom provider
     I want to set the per-model context_window and max_output_tokens from inside my Rhai script

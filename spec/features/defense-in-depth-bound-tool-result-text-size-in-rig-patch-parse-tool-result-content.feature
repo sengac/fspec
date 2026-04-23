@@ -1,5 +1,10 @@
 @done
-@CMPCT-031 @cli @rust @compaction @context-management @resilience
+@CMPCT-031
+@cli
+@rust
+@compaction
+@context-management
+@resilience
 Feature: Defense-in-depth bound on tool_result text size in rig patch parse_tool_result_content
   parse_tool_result_content in codelet/patches/rig-core/src/agent/prompt_request/streaming.rs
   (pre-change lines 33-149) bounds oversized image/PDF payloads but wraps plain text
@@ -10,14 +15,14 @@ Feature: Defense-in-depth bound on tool_result text size in rig patch parse_tool
   Design:
   - MAX_TOOL_RESULT_TEXT_BYTES constant (default 64 * 1024 = 65536 bytes).
   - When a text tool_result's UTF-8 byte length EXCEEDS the bound, the text
-    content is replaced by a truncation-marker JSON object with fields:
-    status (truncated), original_bytes, max_bytes, preview (first 2048 bytes),
-    suffix (last 512 bytes), hint (remediation string).
+  content is replaced by a truncation-marker JSON object with fields:
+  status (truncated), original_bytes, max_bytes, preview (first 2048 bytes),
+  suffix (last 512 bytes), hint (remediation string).
   - Content equal to or under the bound is stored verbatim.
   - Image/PDF size bounds remain untouched.
   - Helper is a private fn in the patch module; tests live alongside it under
-    #[cfg(test)] mod tests. Uses serde_json::json! to guarantee proper escaping.
 
+    #[cfg(test)] mod tests. Uses serde_json::json! to guarantee proper escaping.
   # ========================================
   # EXAMPLE MAPPING CONTEXT
   # ========================================
@@ -38,7 +43,6 @@ Feature: Defense-in-depth bound on tool_result text size in rig patch parse_tool
   #   6. validate-tags --verbose on 3000 files does not cascade into PromptCancelled
   #
   # ========================================
-
   Background: User Story
     As a AI agent running in the fspec interactive stream loop
     I want oversized plain-text tool_result payloads truncated at a fixed byte bound before they enter chat_history

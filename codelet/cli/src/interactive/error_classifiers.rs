@@ -476,16 +476,22 @@ mod tests {
 
     #[test]
     fn detects_streaming_error_wrapped_prompt_cancelled() {
-        // @step Given a StreamingError::Prompt carrying a boxed PromptError::PromptCancelled
+        // @step Given a StreamingError::Prompt containing Box(PromptError::PromptCancelled) is created
         let streaming_err = StreamingError::Prompt(Box::new(PromptError::PromptCancelled {
             chat_history: Box::new(Vec::<Message>::new()),
         }));
 
-        // @step And the StreamingError is converted to anyhow::Error
-        let err: anyhow::Error = streaming_err.into();
+        // @step When the error is converted using the production path anyhow::Error::from(e)
+        let err: anyhow::Error = anyhow::Error::from(streaming_err);
 
-        // @step When is_compaction_cancelled is called with that error
-        // @step Then the function returns true
+        // @step Then extract_prompt_cancelled returns Some(chat_history)
+        let extracted = extract_prompt_cancelled(&err);
+        assert!(
+            extracted.is_some(),
+            "extract_prompt_cancelled must return the chat_history payload via Error::from path"
+        );
+
+        // @step And the typed error chain is preserved for downstream downcast_ref extraction
         assert!(
             is_compaction_cancelled(&err),
             "chain traversal must find PromptCancelled inside StreamingError::Prompt"
@@ -499,6 +505,7 @@ mod tests {
 
         // @step When is_compaction_cancelled is called with that error
         // @step Then the function returns false
+        // @step And bare string errors are correctly rejected as non-typed cancellations
         assert!(
             !is_compaction_cancelled(&err),
             "bare string errors are not typed PromptCancelled variants"
@@ -524,6 +531,43 @@ mod tests {
         assert!(
             extract_prompt_cancelled(&err).is_none(),
             "extract_prompt_cancelled must yield None for non-cancellation variants"
+        );
+    }
+
+    #[test]
+    fn error_from_preserves_downcast_for_extract_prompt_cancelled() {
+        // @step Given a StreamingError::Prompt(Box(PromptError::PromptCancelled)) is created
+        let streaming_err = StreamingError::Prompt(Box::new(PromptError::PromptCancelled {
+            chat_history: Box::new(Vec::<Message>::new()),
+        }));
+
+        // @step When the error is converted via anyhow::Error::from(e) which matches production
+        let err: anyhow::Error = anyhow::Error::from(streaming_err);
+
+        // @step Then the error chain preserves the original StreamingError and PromptError types
+        let mut found_streaming = false;
+        let mut found_prompt = false;
+        for e in err.chain() {
+            if e.downcast_ref::<StreamingError>().is_some() {
+                found_streaming = true;
+            }
+            if e.downcast_ref::<Box<rig::completion::PromptError>>().is_some() {
+                found_prompt = true;
+            }
+        }
+        assert!(
+            found_streaming,
+            "error chain must preserve the original StreamingError type"
+        );
+
+        // @step And extract_prompt_cancelled successfully downcasts and returns Some(chat_history)
+        assert!(
+            found_prompt,
+            "error chain must preserve the boxed PromptError type for downcast"
+        );
+        assert!(
+            extract_prompt_cancelled(&err).is_some(),
+            "extract_prompt_cancelled must return Some via the preserved type chain"
         );
     }
 }

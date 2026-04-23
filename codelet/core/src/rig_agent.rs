@@ -3,7 +3,7 @@
 //! Replaces the manual Runner loop with rig::agent::Agent which handles
 //! multi-turn tool calling automatically with configurable depth control.
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use rig::agent::{Agent, StreamingPromptHook};
 use rig::completion::{CompletionModel, GetTokenUsage, Prompt};
 use rig::streaming::StreamingPrompt;
@@ -65,7 +65,7 @@ where
             .prompt(prompt)
             .multi_turn(self.max_depth)
             .await
-            .map_err(|e| anyhow!("Prompt failed: {e}"))?;
+            .map_err(|e| anyhow::Error::from(e))?;
 
         debug!(
             response_length = response.len(),
@@ -100,7 +100,7 @@ where
             .stream_prompt(prompt)
             .multi_turn(self.max_depth)
             .await
-            .map(|result| result.map_err(|e| anyhow::anyhow!("Streaming error: {e}")))
+            .map(|result| result.map_err(|e| anyhow::Error::from(e)))
     }
 
     /// Execute a prompt in streaming mode WITH conversation history (CLI-008)
@@ -134,7 +134,7 @@ where
             .with_history(history_for_rig)
             .multi_turn(self.max_depth)
             .await
-            .map(|result| result.map_err(|e| anyhow::anyhow!("Streaming error: {e}")))
+            .map(|result| result.map_err(|e| anyhow::Error::from(e)))
     }
 
     /// Execute a prompt in streaming mode WITH conversation history AND a hook
@@ -174,7 +174,7 @@ where
             .with_hook(hook)
             .multi_turn(self.max_depth)
             .await
-            .map(|result| result.map_err(|e| anyhow::anyhow!("Streaming error: {e}")))
+            .map(|result| result.map_err(|e| anyhow::Error::from(e)))
     }
 }
 
@@ -203,6 +203,34 @@ mod tests {
         );
     }
 
-    // Note: RigAgent is now provider-agnostic, so provider-specific tests
-    // should be in the provider modules (src/providers/claude.rs, etc.)
+    #[test]
+    fn no_anyhow_macro_in_error_conversion_sites() {
+        // @step Given RigAgent streaming error conversion sites in rig_agent.rs use anyhow::Error::from(e)
+        // @step When the streaming error conversion is verified against the source
+        // @step Then all sites use anyhow::Error::from(e) instead of anyhow::anyhow!("Streaming error: {e}")
+        // @step And the typed error chain is preserved for downstream downcast_ref extraction
+        //
+        // This is a compile-time guarantee: the file was edited so all four
+        // map_err/map sites call `anyhow::Error::from(e)`. If someone reverts
+        // to `anyhow!("...")`, the `anyhow` macro import will be re-added or
+        // the string pattern will re-appear. We enforce this by a negative
+        // source scan.
+        let source = include_str!("rig_agent.rs");
+        assert!(
+            !source.contains("map_err(|e| anyhow!(\"Prompt failed:"),
+            "prompt() must NOT use anyhow!() — it destroys the typed error chain"
+        );
+        // Count occurrences outside the test module: there should be zero
+        // production usages of anyhow::anyhow!("Streaming error:
+        let test_module_start = source.rfind("#[cfg(test)]").unwrap_or(source.len());
+        let production_source = &source[..test_module_start];
+        assert!(
+            !production_source.contains("map_err(|e| anyhow::anyhow!(\"Streaming error:"),
+            "streaming methods must NOT use anyhow::anyhow!() in production code — it destroys the typed error chain"
+        );
+        assert!(
+            production_source.contains("anyhow::Error::from(e)"),
+            "must use anyhow::Error::from(e) to preserve typed error chain"
+        );
+    }
 }

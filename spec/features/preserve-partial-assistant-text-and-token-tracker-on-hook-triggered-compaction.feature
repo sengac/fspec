@@ -1,7 +1,6 @@
 @done
 @CMPCT-024
 Feature: Preserve partial assistant text and token tracker on hook-triggered compaction
-
   """
   Extract a pure helper flush_partial_state_before_compaction(session, assistant_text, display) that performs handle_final_response + token tracker update + clears assistant_text. This is directly unit-testable without spinning up a real rig stream.
   Do NOT emit compaction_started/compaction_progress here — compaction_retry.rs:59-61 (handle_compaction_retry) already emits them right after our break returns. Double-emit would confuse the TUI progress UI. Add a debug! log noting where the events will fire.
@@ -25,7 +24,6 @@ Feature: Preserve partial assistant text and token tracker on hook-triggered com
   #   3. Given assistant_text is empty at cancel time: no extra empty Assistant message is appended to session.messages
   #
   # ========================================
-
   Background: User Story
     As a user
     I want to have my partially-streamed assistant text preserved when compaction fires mid-turn

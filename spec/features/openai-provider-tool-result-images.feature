@@ -1,7 +1,13 @@
 @done
-@PROV-084 @providers @rust @rig @bug-fix @multimodal @image @tool-result
+@PROV-084
+@providers
+@rust
+@rig
+@bug-fix
+@multimodal
+@image
+@tool-result
 Feature: OpenAI Chat Completions drops tool-returned images (Read/PDF/MCP)
-
   """
   Primary fix location: codelet/patches/rig-core/src/providers/openai/completion/mod.rs. The existing `impl TryFrom<message::ToolResult> for Message` at lines 393-414 returns a single Message — NOT suitable because we may need to emit a follow-up user message. Change the integration at lines 507-540 (`TryFrom<OneOrMany<message::UserContent>> for Vec<Message>`) so the tool-results branch (lines 517-524) routes through a NEW helper `tool_result_to_messages(tool_result) -> Result<Vec<Message>, MessageError>` that returns [tool_message] for text-only and [tool_message, user_image_message] for image-bearing results. Flatten the Vec<Vec<Message>> into Vec<Message>. Keep the original `TryFrom<message::ToolResult> for Message` impl for backward compat (it can return ConversionError for image inputs, now an unreachable path inside the crate).
   Reference implementation: the Responses API path at codelet/patches/rig-core/src/providers/openai/responses_api/mod.rs:295-322 already handles mixed text+image tool results correctly using `ToolResultOutput::ContentItems`. We do NOT copy that wholesale (Chat Completions uses a different message shape), but the same pattern — iterate parts, partition into text vs image, emit appropriately — applies. Similar reference: Anthropic at anthropic/completion.rs:485-499 which uses content blocks.
@@ -28,13 +34,13 @@ Feature: OpenAI Chat Completions drops tool-returned images (Read/PDF/MCP)
   #   4. An MCP tool returns mixed content: a text summary and an image. The tool message carries the text summary; the follow-up user message carries the image. Ordering is text-first tool message, image-bearing user message immediately after.
   #
   # ========================================
-
   Background: User Story
     As a codelet user asking the model to analyse an image it just read via the Read tool or pulled out of a PDF or received from an MCP tool
     I want to have that image actually reach the vision model and be described
     So that multi-turn image workflows (Read → describe → follow up) work against vLLM and other OpenAI-compatible vision servers
 
-  @unit @rust
+  @unit
+  @rust
   Scenario: Tool result with a single base64 image emits tool-message + follow-up user-message
     Given a rig user message whose content is a `ToolResult` with id "call_abc", one `ToolResultContent::Image` (base64, media_type=image/png), and no text parts
     When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`
@@ -46,7 +52,9 @@ Feature: OpenAI Chat Completions drops tool-returned images (Read/PDF/MCP)
     And that image_url.url starts with "data:image/png;base64,"
     And that image_url.detail equals "auto"
 
-  @unit @rust @regression
+  @unit
+  @rust
+  @regression
   Scenario: Text-only tool result still emits a single tool-message (no regression)
     Given a rig user message whose content is a `ToolResult` with id "call_text" and one `ToolResultContent::Text("hello")`
     When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`
@@ -54,7 +62,8 @@ Feature: OpenAI Chat Completions drops tool-returned images (Read/PDF/MCP)
     And the element is a `tool` role message with tool_call_id "call_text"
     And the element's content equals "hello"
 
-  @unit @rust
+  @unit
+  @rust
   Scenario: Tool result with three images yields one tool-message + one user-message with three image parts
     Given a rig user message whose content is a `ToolResult` with id "call_pdf" and three `ToolResultContent::Image` parts in page order (page-1, page-2, page-3)
     When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`
@@ -63,7 +72,8 @@ Feature: OpenAI Chat Completions drops tool-returned images (Read/PDF/MCP)
     And the second element is a `user` role message
     And the second element contains exactly three `image_url` content parts in page order
 
-  @unit @rust
+  @unit
+  @rust
   Scenario: Mixed text and image tool result puts text on the tool-message and image on the follow-up user-message
     Given a rig user message whose content is a `ToolResult` with id "call_mcp", one `ToolResultContent::Text("summary text")`, and one `ToolResultContent::Image` (base64, media_type=image/jpeg)
     When the provider converts the message via `<Vec<openai::Message> as TryFrom<rig::message::Message>>::try_from`

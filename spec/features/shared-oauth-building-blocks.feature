@@ -1,7 +1,6 @@
 @done
 @PROV-060
 Feature: Shared OAuth Building Blocks + Rhai Scripting for Custom Providers
-
   """
   New shared module at codelet/providers/src/oauth/ with sub-modules: mod.rs, credential_store.rs, http_middleware.rs, device_flow.rs, callback_server.rs, token_refresh.rs, engine.rs, building_blocks.rs, script_provider.rs
   Existing providers refactored in-place to use generic building blocks: copilot/refreshing_client.rs, codex/refreshing_client.rs, claude_refreshing_client.rs, copilot/auth.rs, codex/codex_auth.rs, claude_auth.rs, copilot/oauth_device_code.rs, codex/codex_device_auth.rs, codex/codex_oauth_server.rs, claude_oauth_server.rs
@@ -34,7 +33,6 @@ Feature: Shared OAuth Building Blocks + Rhai Scripting for Custom Providers
   #   5. All 103+ unit tests and 49+ integration tests in codelet/providers continue to pass after refactoring
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to use shared OAuth building blocks and a Rhai scripting layer for custom OAuth flows

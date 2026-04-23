@@ -6,7 +6,6 @@
 @providers
 @BUG-141
 Feature: Propagate ToolResultContent::Image through Rhai custom-provider bridge so build_request sees image blocks
-
   """
   rig_message_convert.rs::convert_user_message refactored: instead of collapsing each ToolResult's contents into a single joined string, walk the OneOrMany<ToolResultContent> and build a Vec<ToolResultPart> in order — Text → ToolResultPart::Text, Image → ToolResultPart::Image{source: image_to_source(...)}. If image_to_source returns None (Raw/Unknown), skip that entry. Use ContentPart::tool_result_text when the resulting parts vector is exactly one Text entry (preserves backcompat); otherwise use ContentPart::tool_result_parts.
   messages_to_rhai requires NO change — it serialises via serde and ContentPart::ToolResult.parts already serialises to {type:'text'|'image', ...}. Will validate via integration test that the bridged Rhai value preserves the structure verbatim.
@@ -38,7 +37,6 @@ Feature: Propagate ToolResultContent::Image through Rhai custom-provider bridge 
   #   8. Given the updated claude_rhai.rhai script and a request whose messages contain a user message with a plain text MessageContent (no tool_result), when build_request runs, then body.messages[0] equals {role:'user', content:'<the original text>'} (no transformation, backwards compatible).
   #
   # ========================================
-
   Background: User Story
     As a developer using a Rhai custom provider with vision-capable models
     I want to have ToolResultContent::Image propagate through the Rhai bridge as structured image parts

@@ -4,7 +4,6 @@
 @tools
 @BUG-142
 Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc) and return a structured error
-
   """
   Introduce a new module codelet/tools/src/bash_binary_guard.rs with a pure function `detect_bash_binary_output(stdout_bytes: &[u8]) -> Option<BinaryKind>` where BinaryKind is a small enum {Image(ImageMediaType), Pdf, Other}. Detection logic: (1) if stdout contains a NUL byte anywhere in the first N bytes (N=8192) → Some(Other) unless we also match a magic signature below; (2) if the first 16 bytes match PNG/JPEG/GIF/WebP → Some(Image(...)); (3) if first 5 bytes are '%PDF-' → Some(Pdf); (4) if first 2 bytes are 0x1F 0x8B (gzip), or first 4 bytes are 'PK\x03\x04' (zip), or first 4 bytes are 0x7F 'ELF' → Some(Other). Priority: magic signature wins over generic NUL-byte detection so we can name the type.
   Problem: codelet/tools/src/bash_output.rs uses String for stdout (already lossy to UTF-8) — we cannot reliably detect NUL bytes after stdout has been converted to a Rust String. Investigation needed: either (a) change StreamBuffers to hold Vec<u8> instead of String (intrusive), OR (b) accept that the upstream read/decode in bash_streams.rs already decodes to UTF-8 and use String-level detection (check for '\0' char and magic byte strings). Prefer (b) as less intrusive — Rust's String::contains('\x00') works on any UTF-8 string, and magic bytes are all ASCII-safe byte patterns that survive UTF-8 decoding when checked via .as_bytes().
@@ -40,13 +39,14 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
   #   10. Given call_with_streaming() executes `cat /tmp/icon.png` with a stream_callback, when the command completes with exit 0, then: (a) the stream_callback MAY have received intermediate chunks during execution (not guarded — UI streaming is out of scope), BUT (b) the FINAL returned Result is ToolError::Execution with the binary-guard message — the caller never sees the binary bytes in the buffered return value
   #
   # ========================================
-
   Background: User Story
     As a AI agent operating under a Rhai-scripted custom provider
     I want to have the Bash tool detect and refuse binary output instead of emitting garbled bytes to the model
     So that I get a clear, structured error telling me to use Read instead, preventing context-pollution and model confusion
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: PNG bytes on stdout trigger the image-aware binary guard
     Given a bash command prints PNG magic bytes (0x89 0x50 0x4E 0x47) followed by a PNG payload to stdout
     And the command exits with status 0
@@ -56,7 +56,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message contains "Use the Read tool"
     And the error message does NOT contain any of the raw PNG bytes
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: JPEG bytes on stdout trigger the image-aware binary guard
     Given a bash command prints JPEG magic bytes (0xFF 0xD8 0xFF) followed by a JPEG payload to stdout
     And the command exits with status 0
@@ -65,7 +67,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message contains "detected JPEG image"
     And the error message contains "Use the Read tool"
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: PDF bytes on stdout trigger the document-aware binary guard
     Given a bash command prints PDF magic bytes ("%PDF-1.4") to stdout
     And the command exits with status 0
@@ -74,7 +78,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message contains "detected PDF document"
     And the error message contains "Use the Read tool"
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: ELF binary on stdout triggers the generic binary guard
     Given a bash command prints ELF magic bytes (0x7F 0x45 0x4C 0x46) to stdout
     And the command exits with status 0
@@ -85,7 +91,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message does NOT contain the word "PNG"
     And the error message does NOT contain the word "PDF"
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: Gzip-compressed stdout triggers the generic binary guard
     Given a bash command prints gzip magic bytes (0x1F 0x8B) followed by compressed payload to stdout
     And the command exits with status 0
@@ -94,7 +102,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message contains "detected binary content"
     And the error message contains "Use the Read tool"
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: Raw NUL bytes in stdout trigger the generic binary guard
     Given a bash command prints "\x00\x01\x02\x03hello" to stdout (bytes with an embedded NUL)
     And the command exits with status 0
@@ -103,7 +113,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message contains "detected binary content"
     And the error message does NOT contain the raw bytes
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: Plain text with emoji and high-bit UTF-8 is NOT flagged as binary
     Given a bash command prints "hello 👋 world — café résumé" to stdout
     And the command exits with status 0
@@ -111,7 +123,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     Then the caller receives Ok containing the original text
     And the returned string equals the command's stdout unchanged
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: hexdump output of a binary file is text and passes through unchanged
     Given a bash command pipeline produces canonical hexdump text (e.g. "00000000  89 50 4e 47 0d 0a 1a 0a  |.PNG....|")
     And the command exits with status 0
@@ -119,7 +133,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     Then the caller receives Ok containing the hexdump lines unchanged
     And no binary guard is triggered
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: Missing-file failure preserves stderr diagnostic and does NOT trigger the guard
     Given a bash command fails with exit code 1
     And stdout is empty
@@ -131,7 +147,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message does NOT contain "detected binary content"
     And the error message does NOT contain "Use the Read tool"
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: Text prefix followed by PNG payload is intercepted by the guard
     Given a bash command prints "header\n" then a PNG payload to stdout (mixed text-then-binary)
     And the command exits with status 0
@@ -140,7 +158,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message contains "detected PNG image"
     And the error message does NOT contain the text prefix "header"
 
-  @integration @tools @bug-fix
+  @integration
+  @tools
+  @bug-fix
   Scenario: call_with_streaming replaces the final buffered return value with the guard error
     Given a stream_callback is provided to call_with_streaming
     And a bash command prints PNG bytes to stdout
@@ -150,7 +170,9 @@ Feature: Bash tool should guard against reading binary files (cat of PNG/PDF/etc
     And the error message contains "detected PNG image"
     And the error message contains "Use the Read tool"
 
-  @unit @tools @bug-fix
+  @unit
+  @tools
+  @bug-fix
   Scenario: Binary payload combined with a non-zero exit status still returns the guard error
     Given a bash command prints PNG bytes to stdout
     And the command exits with status 2

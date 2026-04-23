@@ -1,6 +1,5 @@
 @BUG-133
 Feature: [DEBUG] badge in SessionHeader is not session-aware like [ISOLATED]
-
   """
   Reference pattern (isIsolated): Rust emits StreamChunk::IsolationStateChange (codelet/napi/src/types.rs:543, :718) -> globalSessionStreamManager.ts:292-309 listener dispatches setIsolationState -> sessionStore.ts:37 (state), :184 (setter), :254 (useIsIsolated selector) -> AgentView reads via useIsIsolated() (AgentView.tsx:909). This is the exact Rust-authoritative, event-driven, per-session pattern [DEBUG] must follow.
   Rust side: Per-session field BackgroundSession::is_debug_enabled: AtomicBool exists (session_manager.rs:527, :669, :805, :810) with NAPI accessors session_get_debug_enabled/session_set_debug_enabled (:6994, :7001). The /debug handler calls session_toggle_debug (:7555) which flips the global DebugCaptureManager (codelet/common/src/debug_capture/mod.rs:25 OnceLock singleton, :89 handle_debug_command_with_dir) and mirrors result into the per-session AtomicBool (:7563). NO StreamChunk variant exists for debug state change (grep for DebugToggled/DebugStateChange in codelet/napi/src/types.rs returns 0 matches).
@@ -34,7 +33,6 @@ Feature: [DEBUG] badge in SessionHeader is not session-aware like [ISOLATED]
   #   1. Refactor to truly per-session capture. Debug log data should be from ONE session, not mixed. BUG-133 handles the TUI wiring layer; a new story (BUG-134) handles the underlying Rust architectural refactor to make DebugCaptureManager per-session.
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to fix the [DEBUG] badge to reflect only the current session's debug state, sourced from Rust via stream events into Zustand

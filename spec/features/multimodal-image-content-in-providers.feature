@@ -5,7 +5,6 @@
 @providers
 @PROV-091
 Feature: Propagate image and multimodal content through the Rhai request bridge
-
   """
   Architecture notes:
   - Adds ContentPart::Image { source: ImageSource } variant to codelet_common::types

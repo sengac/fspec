@@ -5,7 +5,6 @@
 @bug
 @BUG-143
 Feature: Audit Glob/attachment file-reading surfaces under Rhai providers for silent binary drops
-
   """
   Refactor bash_binary_guard detect_bash_binary_output + BinaryKind into shared module so Edit/apply_patch can reuse the same detector
   Introduce new helper 'detect_binary_file' in codelet_tools::binary_guard (or promote bash_binary_guard → binary_guard module with bash_ prefix removed) + tool-specific formatter for each surface
@@ -37,7 +36,6 @@ Feature: Audit Glob/attachment file-reading surfaces under Rhai providers for si
   #   8. Glob returns ['spec/attachments/WU-001/diagram.png', 'src/main.rs'] — Glob itself does not load file bytes, so no binary-guard needed here
   #
   # ========================================
-
   Background: User Story
     As a developer using a Rhai custom provider
     I want to have Edit/apply_patch and similar file-reading tools surface a clear 'binary file' error instead of a confusing UTF-8 decode failure
@@ -119,4 +117,3 @@ Feature: Audit Glob/attachment file-reading surfaces under Rhai providers for si
     Then the output is a list of file paths
     And no file contents are loaded by the Glob tool
     And no binary-guard error is emitted
-

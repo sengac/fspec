@@ -1,6 +1,5 @@
 @BUG-134
 Feature: Refactor DebugCaptureManager to be truly per-session (one log file per BackgroundSession)
-
   """
   RUST LAYER 1 - DebugCaptureManager ownership change: Currently codelet/common/src/debug_capture/mod.rs:25 has static OnceLock singleton. Refactor so DebugCaptureManager is stored on BackgroundSession (session_manager.rs:486+ struct). BackgroundSession already has pub id: Uuid (line 486) as a perfect key. Add a field like pub debug_capture: Arc<PoisonRecoveryMutex<DebugCaptureManager>> initialized in BackgroundSession::new() (line 628+). Remove the static OnceLock.
   RUST LAYER 2 - Free function removal/refactoring: The convenience free functions in mod.rs must change: (a) get_debug_capture_manager() - remove or make private, callers must go through session, (b) capture_event(event_type, data) - remove, callers must have session context, (c) increment_debug_turn() - remove, callers must have session context, (d) handle_debug_command_with_dir(base_dir) - refactor to take a &BackgroundSession or &DebugCaptureManager and toggle only that session's manager. The global toggle_debug() NAPI (session_manager.rs:7512) should be removed since all debug toggles require a session context in multi-session mode.
@@ -30,7 +29,6 @@ Feature: Refactor DebugCaptureManager to be truly per-session (one log file per 
   #   3. Session A toggles /debug on: Rust emits DebugStateChange(session_A_id, true) on A's stream. TUI picks it up and shows [DEBUG] badge only for A. B's header remains unchanged
   #
   # ========================================
-
   Background: User Story
     As a developer debugging a multi-session TUI
     I want to have each session's /debug capture write to its own isolated JSONL file

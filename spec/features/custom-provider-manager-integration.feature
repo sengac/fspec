@@ -7,7 +7,6 @@
 @providers
 @PROV-067
 Feature: Custom provider ProviderManager integration and create_rig_agent
-
   """
   ProviderType::Custom(String) is added without Copy; Clone-only derives propagate; as_str() returns &str borrowing from Custom's inner String; FromStr and map_provider_id_to_type() consult the discovered custom-provider registry before erroring; ProviderCredentials carries custom_available HashMap<String,bool>; has_credentials(Custom(n)) -> credentials.has_custom(n); provider_limits_resolver() returns ConstantResolver with no hard ceiling for Custom; detect_default_provider() excludes Custom.
   """
@@ -47,7 +46,6 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
   #   12. detect_default_provider() with only MY_LLM_API_KEY set returns an auth error (custom providers never auto-select)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to select a custom provider via 'codelet model <custom>/<model>' and have it route through ProviderManager via facade_override
@@ -59,7 +57,6 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
     Then the file .fspec/providers/my-llm.json is created with name=my-llm and facade=openai
     And the file contains placeholder baseUrl and apiKeyEnvVar fields
 
-
   Scenario: List providers shows custom providers with credential status
     Given a project with .fspec/providers/my-llm.json defining name=my-llm apiKeyEnvVar=MY_LLM_API_KEY
     And the environment variable MY_LLM_API_KEY is set to a non-empty value
@@ -67,24 +64,20 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
     Then the result includes an entry with name='my-llm', isCustom=true, available=true
     And the result also includes built-in providers like claude and openai
 
-
   Scenario: Show custom provider returns full definition
     Given a custom provider 'my-llm' is discovered with facade=openai, baseUrl=http://localhost:8888/v1, 2 models, apiKeyEnvVar=MY_LLM_API_KEY
     When I call show_provider('my-llm')
     Then the returned info includes name, displayName, facade, baseUrl, apiKeyEnvVar, and the 2 models
-
 
   Scenario: Validate custom provider reports schema violations
     Given a file .fspec/providers/broken.json missing required field 'facade'
     When I call validate_provider('broken')
     Then the result is an error describing the missing 'facade' field
 
-
   Scenario: Test custom provider performs connectivity check against baseUrl
     Given a custom provider 'my-llm' with baseUrl pointing to a mock HTTP server returning 200 and a /v1/models response listing 'llama-3.1-70b'
     When I call test_provider('my-llm')
     Then the result is Ok with reachable=true and at least one model matched
-
 
   Scenario: Select custom model routes through openai facade via facade_override
     Given a ProviderManager with custom provider 'my-llm' discovered (facade=openai, baseUrl=http://localhost:8888/v1)
@@ -92,7 +85,6 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
     Then current_provider equals ProviderType::Custom("my-llm")
     And facade_override returns Some("openai")
     And OPENAI_BASE_URL environment variable equals 'http://localhost:8888/v1'
-
 
   Scenario: Agent loop dispatches custom provider via facade_override to existing match arm
     Given a ProviderManager with current_provider=Custom("my-llm") and facade_override=Some("openai")
@@ -102,7 +94,6 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
     And the current provider type remains ProviderType::Custom("my-llm")
     And OPENAI_BASE_URL reflects the custom provider's base_url so the 'openai' match arm picks up the custom endpoint transparently
 
-
   Scenario: Custom provider is unavailable when required env var is unset
     Given a custom provider 'my-llm' with apiKeyEnvVar=MY_LLM_API_KEY is discovered
     And the environment variable MY_LLM_API_KEY is not set
@@ -110,13 +101,11 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
     Then credentials.has_custom("my-llm") returns false
     And ProviderType::Custom("my-llm").has_credentials(&credentials) returns false
 
-
   Scenario: Project-local custom provider definition overrides user-global
     Given a user-global definition at ~/.fspec/providers/my-llm.json with baseUrl=http://global/v1
     And a project-local definition at <project>/.fspec/providers/my-llm.json with baseUrl=http://local/v1
     When I call discover_custom_providers(Some(project_root))
     Then the returned map contains exactly one entry 'my-llm' with baseUrl=http://local/v1
-
 
   Scenario: Custom provider without facade uses generic CustomProvider create_rig_agent
     Given a custom provider 'rhai-llm' discovered with facade=null and a Rhai script defining define_tools and format_system_prompt
@@ -124,17 +113,14 @@ Feature: Custom provider ProviderManager integration and create_rig_agent
     Then CustomProvider::create_rig_agent is invoked and wires RhaiToolFacadeAdapter instances from the script's define_tools output
     And the agent uses RhaiSystemPromptFacade to format the system prompt
 
-
   Scenario: FromStr resolves registered custom provider slug to ProviderType::Custom
     Given a custom provider 'my-llm' is discovered and registered
     When I call ProviderType::from_str("my-llm")
     Then the result is Ok(ProviderType::Custom("my-llm"))
     And ProviderType::from_str("nonexistent") returns a config error
 
-
   Scenario: Detect default provider never auto-selects a custom provider
     Given ProviderCredentials with all built-in providers unavailable
     And custom_available contains 'my-llm' set to true
     When I call ProviderManager::detect_default_provider(&credentials)
     Then the result is an auth error with message 'No provider credentials available'
-

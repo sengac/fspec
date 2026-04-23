@@ -3,7 +3,6 @@
 @provider-abstraction
 @PROV-092
 Feature: Complete CustomProvider::create_rig_agent — construct real rig::agent::Agent
-
   """
   Replaces the opaque CustomRigAgent shim with a fully wired rig::agent::Agent<RhaiCustomProviderModel>. Uses rig builder pattern mirroring claude.rs/codex/mod.rs/copilot/rig_agent.rs. RhaiCustomProviderModel implements rig::completion::CompletionModel and bridges rig CompletionRequest to RhaiCustomProvider::invoke_build_url/headers/request/parse_response, and rig stream() to open_stream() converting StreamChunk to rig RawStreamingChoice. RhaiToolWrapper implements rig::tool::Tool (with dummy const NAME, override name()) and dispatches via apply_map_tool_params + default_to_internal to internal tool impls. thinking_config flows from agent builder additional_params through to Rhai build_request. The session_manager.rs agent_loop dispatch matches on the custom provider name and routes through CustomProvider::create_rig_agent.
   """
@@ -28,7 +27,6 @@ Feature: Complete CustomProvider::create_rig_agent — construct real rig::agent
   #   5. User selects current_provider='my-script' in session_set_model_profile; agent_loop dispatches via the new custom arm and the entire conversation flows through Rhai with no built-in provider involvement
   #
   # ========================================
-
   Background: User Story
     As a fspec agent loop
     I want to dispatch a custom-provider session through CustomProvider::create_rig_agent which returns a real rig::agent::Agent backed by a RhaiCustomProviderModel CompletionModel and RhaiToolWrapper instances
@@ -81,4 +79,3 @@ Feature: Complete CustomProvider::create_rig_agent — construct real rig::agent
     Then the dispatch matches the custom-provider arm
     And CustomProvider::create_rig_agent is invoked with the session id, the user role preamble, and the resolved thinking_config
     And the returned rig::agent::Agent is wrapped in codelet_core::RigAgent and streamed via run_agent_stream_with_images
-

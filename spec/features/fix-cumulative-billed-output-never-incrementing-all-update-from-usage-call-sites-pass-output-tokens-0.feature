@@ -7,7 +7,6 @@
 @tokens
 @TOKEN-001
 Feature: Fix cumulative_billed_output never incrementing — all update_from_usage call sites pass output_tokens=0
-
   """
   TokenTracker::update_from_usage accumulates cumulative_billed_output by the
   output_tokens field of the ApiTokenUsage struct. The four call sites in
@@ -23,7 +22,7 @@ Feature: Fix cumulative_billed_output never incrementing — all update_from_usa
 
   Delta formula:
   let per_turn_delta = current_cumulative_output.saturating_sub(
-      session.token_tracker.output_tokens
+  session.token_tracker.output_tokens
   );
   ApiTokenUsage::new(input, cache_read, cache_creation, per_turn_delta)
   session.token_tracker.update_from_usage(&usage, current_cumulative_output)
@@ -53,7 +52,6 @@ Feature: Fix cumulative_billed_output never incrementing — all update_from_usa
   #   3. All four call sites use the same centralized helper — grep for saturating_sub(…output_tokens) should find only one call site in production code
   #
   # ========================================
-
   Background: User Story
     As a session operator
     I want accurate cumulative output-token billing

@@ -5,7 +5,6 @@
 @cli
 @CMPCT-029
 Feature: Preserve mid-tool-call state when PromptCancelled fires
-
   """
   Rig patch at site 509 only: before yielding PromptCancelled after on_tool_result, push Message::Assistant(tool_calls) and Message::User(tool_results) into chat_history so the error payload carries the complete pair. Sites 486 and 542 are untouched.
   fspec-side recovery in stream_loop.rs compaction-cancel branch (Path C): before invoking begin_compaction_recovery, (1) extract_prompt_cancelled to get rig_chat_history, (2) reconcile_session_messages appends any missing tool pairs, (3) inject_synthetic_tool_results_for_orphans closes any remaining dangling tool_calls with status=cancelled_by_context_limit.
@@ -31,7 +30,6 @@ Feature: Preserve mid-tool-call state when PromptCancelled fires
   #   5. execute_compaction refuses to run when orphan tool_calls remain and reports which call_ids are orphaned so the caller can log a diagnostic and inject synthetic tool_results
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to recover session.messages integrity when PromptCancelled fires mid-tool-call

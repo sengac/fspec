@@ -5,20 +5,19 @@
 @cli
 @CMPCT-028
 Feature: Correct post-compaction retry prompt semantics
-
   """
   Architecture notes:
-    - CompactionRecoveryPolicy is re-exported via interactive/mod.rs so integration
-      tests can import it without reaching into private modules.
-    - Path A (pre-prompt compaction) is NOT changed — it never enters
-      begin_compaction_recovery; its existing compaction_just_ran → "Continue"
-      flow is already correct (no partial text can exist pre-prompt).
-    - Path D (Gemini continuation) plumbs the policy through
-      GeminiContinuationResult::CompactionNeeded(CompactionRecoveryPolicy) so the
-      primary stream loop can honor it during the in-loop restart.
-    - The helper flush_partial_state_before_compaction returns Result<bool>
-      (true when partial assistant text was appended), which begin_compaction_recovery
-      consumes to decide which CompactionRecoveryPolicy to return.
+  - CompactionRecoveryPolicy is re-exported via interactive/mod.rs so integration
+  tests can import it without reaching into private modules.
+  - Path A (pre-prompt compaction) is NOT changed — it never enters
+  begin_compaction_recovery; its existing compaction_just_ran → "Continue"
+  flow is already correct (no partial text can exist pre-prompt).
+  - Path D (Gemini continuation) plumbs the policy through
+  GeminiContinuationResult::CompactionNeeded(CompactionRecoveryPolicy) so the
+  primary stream loop can honor it during the in-loop restart.
+  - The helper flush_partial_state_before_compaction returns Result<bool>
+  (true when partial assistant text was appended), which begin_compaction_recovery
+  consumes to decide which CompactionRecoveryPolicy to return.
   """
 
   # ========================================
@@ -37,7 +36,6 @@ Feature: Correct post-compaction retry prompt semantics
   #   3. compaction_retry_prompt(EmbedInInstruction) returns "Continue" and compaction_retry_prompt(ResumeFromPartial) returns the resume message
   #
   # ========================================
-
   Background: User Story
     As a fspec user recovering from an in-loop post-compaction restart
     I want to see the retry prompt chosen explicitly based on whether partial assistant text was preserved

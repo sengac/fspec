@@ -5,7 +5,6 @@
 @providers
 @PROV-064
 Feature: Custom provider streaming SSE bridge
-
   """
   SSE frames parsed in Rust via eventsource-stream; Rhai invoked per-event; StreamChunk is a new enum in custom::stream; tool call deltas accumulated in Rust; runtime errors yield single Err; [DONE] terminates
   """
@@ -39,7 +38,6 @@ Feature: Custom provider streaming SSE bridge
   #   11. End-to-end streaming against a wiremock SSE server returning 3 content deltas + 1 stop event yields 4 stream chunks (3 TextDelta, 1 StopReason) in order
   #
   # ========================================
-
   Background: User Story
     As a custom provider author
     I want to have my Rhai script incrementally parse SSE events into streaming chunks (text deltas, tool call deltas, stop events)
@@ -50,63 +48,52 @@ Feature: Custom provider streaming SSE bridge
     When the SSE stream emits data '{"choices":[{"delta":{"content":"Hel"}}]}'
     Then the bridge yields one StreamChunk::TextDelta with value "Hel"
 
-
   Scenario: Emit TextDelta chunks in order for consecutive content deltas
     Given a Rhai script extracting text_delta from delta.content
     When the SSE stream emits two content deltas "Hel" then "lo"
     Then the bridge yields TextDelta("Hel") followed by TextDelta("lo")
-
 
   Scenario: Terminate stream on DONE marker without invoking parse_stream_chunk
     Given any valid streaming provider configuration
     When the SSE stream emits data "[DONE]"
     Then the bridge completes without yielding further chunks and parse_stream_chunk is not invoked for that event
 
-
   Scenario: Accumulate partial tool call arguments into a single ToolCallComplete
     Given a Rhai script emitting tool_call_delta with incremental arguments
     When the stream emits arguments "{\"pa" then "th\":\"a.txt\"}" followed by finish_reason "tool_calls"
     Then the bridge yields one ToolCallComplete whose input equals {"path":"a.txt"}
-
 
   Scenario: Emit StopReason EndTurn for stop finish_reason
     Given a Rhai script that maps finish_reason to the stop kind
     When the stream emits finish_reason "stop"
     Then the bridge yields StreamChunk::StopReason(EndTurn)
 
-
   Scenario: Emit StopReason ToolUse for tool_calls finish_reason
     Given a Rhai script mapping finish_reason "tool_calls" to tool_use
     When the stream emits finish_reason "tool_calls"
     Then the bridge yields StreamChunk::StopReason(ToolUse)
-
 
   Scenario: Skip events when parse_stream_chunk returns ignore
     Given a Rhai script that returns kind "ignore" for keepalive events
     When the SSE stream emits a keepalive event
     Then no StreamChunk is yielded for that event
 
-
   Scenario: Yield error and terminate on Rhai runtime error
     Given a Rhai script whose parse_stream_chunk throws a runtime error
     When the SSE stream emits any event the script throws on
     Then the bridge yields a single Err(ProviderError::Api) and then terminates
-
 
   Scenario: Yield auth error before any chunk on 401 streaming response
     Given a wiremock server responding with 401 to the streaming endpoint
     When RhaiCustomProvider starts a streaming completion
     Then the stream yields one Err(ProviderError::Auth) and no TextDelta chunks
 
-
   Scenario: build_stream_request produces streaming body
     Given a Rhai script whose build_stream_request clones build_request and sets "stream": true
     When the provider invokes build_stream_request with a user message
     Then the returned JSON body has stream equal to true
 
-
   Scenario: End-to-end stream against mock SSE server
     Given a wiremock SSE endpoint returning three content deltas and one stop event
     When RhaiCustomProvider performs a streaming completion
     Then the collected chunks are TextDelta, TextDelta, TextDelta, StopReason in that exact order
-

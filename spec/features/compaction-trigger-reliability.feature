@@ -4,7 +4,6 @@
 @agent-core
 @CMPCT-032
 Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalResponse path bypasses recovery
-
   """
   CMPCT-027 deleted compaction_retry.rs and moved recovery into an in-loop macro fired only from stream.next() error arms
   stream_loop.rs post-loop block at 1777-1798 is #[cfg(debug_assertions)] only — no production-mode safety net
@@ -37,13 +36,14 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
   #   9. After recovery, restart stream sends 'Continue' and does NOT re-trigger the hook immediately
   #
   # ========================================
-
   Background: User Story
     As a codelet runtime
     I want to reliably trigger compaction on any stream-loop exit path where compaction_needed becomes true
     So that long-running sessions never silently exceed the context window and fail with 'prompt too long'
 
-  @integration @compaction @regression
+  @integration
+  @compaction
+  @regression
   Scenario: FinalResponse branch triggers recovery when compaction_needed is set
     Given a streaming turn is in progress
     And the compaction hook sets token_state.compaction_needed=true on the last chunk
@@ -53,7 +53,8 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     And emit_done_with_stop_reason is NOT called for that turn
     And the compaction flow runs to completion and restarts the stream
 
-  @integration @compaction
+  @integration
+  @compaction
   Scenario: In-loop macro handles PromptCancelled from mid-stream hook cancellation
     Given a streaming turn is in progress
     And the compaction hook fires mid-stream and cancels the stream
@@ -63,7 +64,8 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     And begin_compaction_recovery runs with policy ResumeFromPartial
     And a fresh stream is built and processed via the retry path
 
-  @integration @compaction
+  @integration
+  @compaction
   Scenario: In-loop macro handles upstream prompt-too-long error
     Given a streaming turn is in progress
     And the upstream provider returns 400 prompt-too-long
@@ -72,7 +74,8 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     And begin_compaction_recovery runs with policy EmbedInInstruction("Continue")
     And the retry stream is processed successfully
 
-  @integration @compaction
+  @integration
+  @compaction
   Scenario: In-loop macro handles Gemini continuation exhaustion
     Given a Gemini streaming turn is in progress
     And Gemini continuation attempts are exhausted
@@ -81,7 +84,9 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     And begin_compaction_recovery runs
     And the retry stream is processed successfully
 
-  @integration @compaction @regression
+  @integration
+  @compaction
+  @regression
   Scenario: Post-loop safety net runs recovery when loop exits via break with flag set
     Given a streaming turn is in progress
     And the compaction hook has set token_state.compaction_needed=true
@@ -91,7 +96,8 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     And begin_compaction_recovery is invoked
     And a production-mode warning log identifies which branch missed the check
 
-  @integration @compaction
+  @integration
+  @compaction
   Scenario: User interrupt takes priority over compaction recovery
     Given a streaming turn is in progress
     And the compaction hook has set token_state.compaction_needed=true
@@ -100,7 +106,9 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     Then begin_compaction_recovery is NOT invoked
     And the turn terminates with the interrupt state honoured
 
-  @integration @compaction @thresholds
+  @integration
+  @compaction
+  @thresholds
   Scenario: Gemini session triggers compaction at 80% of context window
     Given an active Gemini session with a 1,000,000-token context window
     And resolve_compaction_threshold returns 800,000 tokens for the Gemini family default
@@ -109,7 +117,9 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     And token_state.compaction_needed becomes true
     And compaction recovery runs on the next stream exit
 
-  @integration @compaction @thresholds
+  @integration
+  @compaction
+  @thresholds
   Scenario: Claude session honours user threshold override
     Given an active Claude session with a user override threshold of 150,000 tokens
     And resolve_compaction_threshold returns the override value
@@ -117,7 +127,8 @@ Feature: Compaction triggering broken after CMPCT-023..031 refactor — FinalRes
     Then the compaction hook fires at the override threshold, not the default base formula
     And compaction recovery runs
 
-  @integration @compaction
+  @integration
+  @compaction
   Scenario: After recovery, restart stream does not immediately re-trigger the hook
     Given begin_compaction_recovery has just completed execute_compaction
     And chat_history has been replaced with the compacted summary

@@ -1,6 +1,5 @@
 @BUG-125
 Feature: Copilot Rust files exceed 300-line limit (PROV-053 rule 21)
-
   """
   Extracted token refresh orchestration lives in token_refresh.rs. provider.rs still under 300 lines.
   """
@@ -22,7 +21,6 @@ Feature: Copilot Rust files exceed 300-line limit (PROV-053 rule 21)
   #   3. After refactoring, provider.rs is ~295 lines (under 300)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to refactor provider.rs to be under 300 lines
@@ -34,16 +32,13 @@ Feature: Copilot Rust files exceed 300-line limit (PROV-053 rule 21)
     Then provider.rs is under 300 lines
     Then all copilot-provider Rust tests pass
 
-
   Scenario: Token refresh orchestration is accessible via CopilotProvider delegate
     Given ensure_fresh_copilot_token has been extracted to a free function in token_refresh.rs
     When CopilotProvider.ensure_fresh_copilot_token() is called
     Then it delegates to the free function in token_refresh.rs with the auth RwLock
-
 
   Scenario: Callers use module-level functions instead of CopilotProvider convenience methods
     Given base_url_for, system_prompt_facade_for_endpoint, and list_models were convenience re-exports on CopilotProvider
     When the convenience methods are removed from CopilotProvider
     Then test callers import and use the module-level functions directly
     Then no compilation errors are introduced
-

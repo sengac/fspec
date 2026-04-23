@@ -5,7 +5,6 @@
 @tui
 @CMPCT-033
 Feature: Compaction SessionStateChange drops sessionId — wrong session shows Compacting indicator
-
   """
   Rust NAPI already carries session_id via GlobalChunkCallbackArgs at codelet/napi/src/session_manager.rs:67-70 and :971-972 — no ABI change needed
   Change SessionChunkHandler type signature in src/tui/services/globalSessionStreamManager.ts:23 from (chunk) => void to (sessionId, chunk) => void
@@ -32,7 +31,6 @@ Feature: Compaction SessionStateChange drops sessionId — wrong session shows C
   #   3. User runs /compact manually on session B while viewing session A — Compacting indicator shows on session B (not session A)
   #
   # ========================================
-
   Background: User Story
     As a fspec developer
     I want to have the Compacting status indicator attach to the actual session being compacted

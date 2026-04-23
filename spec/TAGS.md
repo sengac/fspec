@@ -315,6 +315,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@budget-ignored` | User-provided budget tokens are ignored |
 | `@budget-thinking` | Budget-based thinking mode for Claude models |
 | `@buffer-overflow` | Buffer overflow handling scenarios |
+| `@bug-144` | Bug fix work unit BUG-144 - PromptCancelled error chain preservation |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
 | `@cache` | Caching and persistence features |
@@ -893,7 +894,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-04-08T01:35:03.748Z_
+_Last updated: 2026-04-23T12:34:47.050Z_
 
 **Update Command**: `fspec tag-stats`
 

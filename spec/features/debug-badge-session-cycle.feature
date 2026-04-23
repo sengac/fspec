@@ -6,7 +6,6 @@
 @tui
 @BUG-135
 Feature: [DEBUG] badge disappears when cycling back to a previously-visited session via Shift+Left/Right
-
   """
   Regression introduced by BUG-133. Full root-cause analysis and design proposal in spec/attachments/BUG-135/design-analysis.md
   Zustand sessionStore: replace flat `isDebugEnabled: boolean` field with `debugStateBySession: Map<string, boolean>`. Update setDebugState to take (sessionId, enabled). Remove the `state.isDebugEnabled = false` reset in activateSession (sessionStore.ts:157). Remove the isDebugEnabled=false reset in clearAndResetSession (sessionStore.ts:114).
@@ -37,13 +36,13 @@ Feature: [DEBUG] badge disappears when cycling back to a previously-visited sess
   #   5. While user is viewing session B, a debug toggle for session A (via a watcher or IPC) updates A's state silently — switching to A then shows the correct badge without any additional refresh
   #
   # ========================================
-
   Background: User Story
     As a TUI user running multiple concurrent sessions
     I want to switch back and forth between sessions via Shift+Left/Right without losing any session's debug state
     So that the [DEBUG] badge accurately reflects each session's debug capture state regardless of how often I switch
 
-  @session-switch @regression
+  @session-switch
+  @regression
   Scenario: DEBUG badge reappears when cycling back to a session that had debug enabled
     Given session A has debug capture enabled
     And session B has debug capture disabled
@@ -53,7 +52,8 @@ Feature: [DEBUG] badge disappears when cycling back to a previously-visited sess
     When I press Shift+Left to switch back to session A
     Then the [DEBUG] badge should be visible again
 
-  @session-switch @regression
+  @session-switch
+  @regression
   Scenario: Each session retains its own debug state across multiple switches
     Given session A has debug capture enabled
     And session B has debug capture disabled

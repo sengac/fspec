@@ -1,7 +1,12 @@
 @done
-@PROV-081 @providers @rust @rig @bug-fix @thinking-detection @streaming
+@PROV-081
+@providers
+@rust
+@rig
+@bug-fix
+@thinking-detection
+@streaming
 Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming + non-streaming)
-
   """
   Streaming fix in codelet/patches/rig-core/src/providers/openai/completion/streaming.rs:35-44. Simplest approach: add `#[serde(alias = "reasoning")]` to the existing `reasoning_content` field (line 41). Consumption at lines 297-303 stays unchanged. If we need both fields kept distinct for concatenation, add a second `reasoning: Option<String>` field and OR/concatenate at the consumption site instead.
   Non-streaming fix in codelet/patches/rig-core/src/providers/openai/completion/mod.rs. Current state: Message::Assistant (lines 113-144) has no reasoning field; AssistantContent enum (lines 180-185) has only Text and Refusal. Required changes: (1) add `reasoning: Option<String>` with `#[serde(alias = "reasoning_content")]` (or both fields) to the Assistant variant, (2) propagate into the TryFrom<CompletionResponse> extraction at lines 757-791 by emitting a new `completion::AssistantContent::reasoning(...)` entry (or extend CompletionResponse with a reasoning field). The outbound panic at line 541 for AssistantContent::Reasoning stays — it guards against serializing reasoning back out to the OpenAI request.
@@ -37,13 +42,13 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
   #   12. A user inspects the HTTP request body sent for any Chat Completion and sees NO `include_reasoning: false` key and NO `chat_template_kwargs.enable_thinking: false` key (the client never suppresses server-side reasoning).
   #
   # ========================================
-
   Background: User Story
     As a fspec user running a local vLLM server with a Qwen3 reasoning model
     I want to see the model's thinking/reasoning tokens appear in my streaming and non-streaming responses
     So that I can debug prompts, evaluate reasoning quality, and get the same thinking visibility I already have with Z.AI/GLM providers
 
-  @unit @rust
+  @unit
+  @rust
   Scenario: Streaming surfaces vLLM-native `reasoning` field as reasoning output
     Given a caller streams a chat completion through the OpenAI provider
     And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning":"Let me analyse..."}}]}
@@ -52,7 +57,9 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
     And the caller does not receive any content delta for that chunk
     And the chunk does not produce a decode error
 
-  @unit @rust @backward-compatibility
+  @unit
+  @rust
+  @backward-compatibility
   Scenario: Streaming still surfaces Z.AI/GLM `reasoning_content` field as reasoning output
     Given a caller streams a chat completion through the OpenAI provider
     And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning_content":"thinking..."}}]}
@@ -60,7 +67,8 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
     Then the caller receives a ReasoningDelta whose reasoning text equals "thinking..."
     And the caller does not receive any content delta for that chunk
 
-  @unit @rust
+  @unit
+  @rust
   Scenario: Streaming concatenates reasoning with reasoning_content first then reasoning when both fields are present
     Given a caller streams a chat completion through the OpenAI provider
     And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"reasoning_content":"B","reasoning":"A"}}]}
@@ -68,7 +76,9 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
     Then the caller receives reasoning text equal to "BA" with reasoning_content concatenated first and reasoning appended
     And no reasoning character from either source field is dropped
 
-  @unit @rust @regression
+  @unit
+  @rust
+  @regression
   Scenario: Streaming passes through normal content chunks unchanged when no reasoning fields are present
     Given a caller streams a chat completion through the OpenAI provider
     And the upstream server emits a streaming chunk with body {"choices":[{"delta":{"content":"hello"}}]}
@@ -77,7 +87,8 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
     And the caller does not receive any ReasoningDelta
     And the chunk does not produce a decode error
 
-  @unit @rust
+  @unit
+  @rust
   Scenario: Non-streaming surfaces vLLM-native `reasoning` field on the assistant message
     Given a caller issues a non-streaming chat completion through the OpenAI provider
     And the upstream server returns a response whose assistant message is {"role":"assistant","reasoning":"analysis","content":"answer"}
@@ -85,7 +96,9 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
     Then the caller-visible CompletionResponse exposes reasoning text "analysis"
     And the caller-visible CompletionResponse exposes content text "answer"
 
-  @unit @rust @backward-compatibility
+  @unit
+  @rust
+  @backward-compatibility
   Scenario: Non-streaming surfaces Z.AI/GLM `reasoning_content` field on the assistant message
     Given a caller issues a non-streaming chat completion through the OpenAI provider
     And the upstream server returns a response whose assistant message is {"role":"assistant","reasoning_content":"analysis","content":"answer"}
@@ -93,7 +106,9 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
     Then the caller-visible CompletionResponse exposes reasoning text "analysis"
     And the caller-visible CompletionResponse exposes content text "answer"
 
-  @unit @rust @regression
+  @unit
+  @rust
+  @regression
   Scenario: Non-streaming works unchanged when the assistant message has no reasoning field
     Given a caller issues a non-streaming chat completion through the OpenAI provider
     And the upstream server returns a response whose assistant message is {"role":"assistant","content":"answer"}
@@ -102,7 +117,8 @@ Feature: OpenAI provider drops vLLM-native reasoning/thinking tokens (streaming 
     And the caller-visible CompletionResponse does not expose any reasoning text
     And the response does not produce a decode error
 
-  @unit @rust
+  @unit
+  @rust
   Scenario: Outgoing request body never contains reasoning-suppression keys
     Given a caller builds a chat completion request through the OpenAI provider without explicitly setting any reasoning-suppression flag
     When the provider serializes the request body that would be POSTed to /chat/completions

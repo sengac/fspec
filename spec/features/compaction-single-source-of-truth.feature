@@ -4,7 +4,6 @@
 @cli
 @CMPCT-026
 Feature: Eliminate fragile `&& compaction_triggered` guard — single source of truth
-
   """
   Structural detection of PromptCancelled in the error chain is the authoritative gate for compaction recovery. The TokenState.compaction_needed flag is defense-in-depth — a warning is logged when the two signals disagree, and the flag is defensively set when PromptCancelled fires without it. Unrelated errors with the flag set bypass recovery and propagate normally (with a warning). Mirrored across stream_loop and gemini_continuation cancel sites.
   """
@@ -25,7 +24,6 @@ Feature: Eliminate fragile `&& compaction_triggered` guard — single source of 
   #   3. Unrelated I/O error with compaction_needed=true — falls through to normal error handling, warning logged but no recovery
   #
   # ========================================
-
   Background: User Story
     As a session orchestrator
     I want to detect a PromptCancelled error structurally as the single source of truth for compaction recovery
@@ -38,7 +36,6 @@ Feature: Eliminate fragile `&& compaction_triggered` guard — single source of 
     Given the shared token state has compaction_needed set to true
     Then no disagreement warning is logged
 
-
   Scenario: PromptCancelled with flag false still recovers
     Given the stream has yielded a PromptCancelled error wrapped in the rig StreamingError chain
     When the stream loop classifies the error
@@ -47,7 +44,6 @@ Feature: Eliminate fragile `&& compaction_triggered` guard — single source of 
     Then the compaction_needed flag is set to true as defense-in-depth
     Then a warning is emitted that the two signals disagree
 
-
   Scenario: Unrelated error with flag true does not trigger recovery
     Given the stream has yielded an error that is NOT a PromptCancelled variant
     When the stream loop classifies the error
@@ -55,4 +51,3 @@ Feature: Eliminate fragile `&& compaction_triggered` guard — single source of 
     Given the shared token state has compaction_needed set to true
     Then a warning is emitted that the flag was set without a PromptCancelled error
     Then the error continues to the normal error classifier cascade
-

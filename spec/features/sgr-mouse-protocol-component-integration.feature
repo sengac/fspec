@@ -1,13 +1,15 @@
-@BUG-131 @tui @mouse-events @virtuallist
+@BUG-131
+@tui
+@mouse-events
+@virtuallist
 Feature: SGR mouse protocol component integration
-
   """
   VirtualList and other TUI components must use SGR mouse protocol for scroll and text selection.
   SGR events survive ink 6.8.0's CSI input parser intact, unlike X10 raw bytes.
   Text selection (TUI-078) uses button-down/release with SGR terminators M/m.
   """
 
-  Background:
+  Background: 
     Given the TUI is running with ink 6.8.0
 
   Scenario: VirtualList scroll-up via SGR mouse event

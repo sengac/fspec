@@ -6,7 +6,6 @@
 @providers
 @PROV-062
 Feature: Provider config loader and Rhai script compiler
-
   """
   ProviderConfig is a serde-deserialized Rust struct; ScriptLoader caches Arc<rhai::AST> keyed by absolute path + mtime; discovery scans ~/.fspec/providers and .fspec/providers with project-local override by name; reuses build_sandboxed_engine from PROV-060 for compilation and required-function validation
   """
@@ -49,7 +48,6 @@ Feature: Provider config loader and Rhai script compiler
   #   15. auth.type='oauth_device_code' with all required fields deserializes into AuthConfig::OauthDeviceCode
   #
   # ========================================
-
   Background: User Story
     As a provider plugin developer
     I want to place a JSON config + Rhai script in .fspec/providers/ and have fspec discover, validate, and compile them at load time
@@ -60,87 +58,72 @@ Feature: Provider config loader and Rhai script compiler
     When I call ProviderConfig::from_file on that JSON path
     Then I get a ProviderConfig whose fields match the JSON values
 
-
   Scenario: Reject config JSON missing the required name field
     Given a JSON file that omits the name field
     When I load the config
     Then I receive an error whose message mentions the missing name field
-
 
   Scenario: Reject provider name that collides with a built-in provider
     Given a config JSON with name set to "claude"
     When I load the config
     Then I receive an error mentioning that the name conflicts with a built-in provider
 
-
   Scenario: Reject provider name with invalid characters
     Given a config JSON with name set to "My Provider"
     When I load the config
     Then I receive an error mentioning the allowed pattern ^[a-z][a-z0-9-]*$
-
 
   Scenario: Reject config when referenced script file does not exist
     Given a config JSON whose script field points to a nonexistent .rhai file
     When I load the config
     Then I receive an error including the resolved absolute script path
 
-
   Scenario: Reject config when default model is not present in models map
     Given a config JSON with defaults.model set to "fast" and models containing only "smart"
     When I load the config
     Then I receive an error mentioning the missing default model "fast"
-
 
   Scenario: Project-local config overrides global config with same name
     Given a global config ~/.fspec/providers/my-llm.json and a project-local .fspec/providers/my-llm.json both named "my-llm"
     When I call discover_provider_configs
     Then the returned list contains exactly one config for "my-llm" and it matches the project-local JSON
 
-
   Scenario: Return empty result when no providers directories exist
     Given neither ~/.fspec/providers/ nor .fspec/providers/ exists
     When I call discover_provider_configs
     Then I receive an empty Vec without error
-
 
   Scenario: ScriptLoader caches AST for unchanged script
     Given a valid .rhai file on disk that has not been modified between loads
     When I call ScriptLoader::load on the same path twice
     Then both calls return the same Arc<AST> instance and parsing occurs only once
 
-
   Scenario: ScriptLoader re-parses script when mtime changes
     Given a .rhai file that has been loaded once
     When I modify the file so its mtime advances and call ScriptLoader::load again
     Then a new Arc<AST> is returned reflecting the updated script content
-
 
   Scenario: Report Rhai syntax errors with file path line and column
     Given a .rhai file containing a syntactically invalid function declaration
     When I call ScriptLoader::load on that file
     Then the returned error includes the file path and the line and column from the Rhai ParseError
 
-
   Scenario: Reject script missing a required function
     Given a .rhai file that parses but does not define parse_response
     When I validate the compiled script against the required functions list
     Then I receive an error naming parse_response as the missing function
-
 
   Scenario: Compiled script can call registered PROV-060 building blocks
     Given a .rhai file that calls oauth::generate_pkce inside a function
     When I compile it with the shared sandboxed engine and execute that function
     Then the script runs successfully and returns a PKCE pair
 
-
   Scenario: Bearer auth config deserializes with default token prefix
     Given a config JSON with auth.type set to "bearer" and auth.env_var set to "MY_KEY"
     When I load the config
     Then the auth field is AuthConfig::Bearer with env_var "MY_KEY" and token_prefix "Bearer"
 
-
   Scenario: OAuth device code auth config deserializes with all fields
     Given a config JSON with auth.type set to "oauth_device_code" and client_id, device_code_url, token_url, credential_file all provided
     When I load the config
     Then the auth field is AuthConfig::OauthDeviceCode with matching fields
-

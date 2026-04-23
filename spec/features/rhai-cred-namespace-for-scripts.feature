@@ -7,7 +7,6 @@
 @providers
 @PROV-086
 Feature: Add cred:: Rhai namespace exposing CredentialStore to scripts
-
   """
   Add pub fn build_cred_module(provider_name: String) -> RhaiModule in oauth/building_blocks.rs. Each registered native fn captures provider_name by clone and enforces name == provider_name before I/O.
   Add pub fn register_all_modules_for_provider(provider_name: &str) -> Vec<RhaiModule> that returns the default four modules plus build_cred_module(provider_name). register_all_modules() keeps its current no-cred signature for backward compatibility.
@@ -43,7 +42,6 @@ Feature: Add cred:: Rhai namespace exposing CredentialStore to scripts
   #   9. build_provider_engine('acme') registers the cred:: module bound to provider name 'acme' in addition to http::, crypto::, json::, oauth::
   #
   # ========================================
-
   Background: User Story
     As a Rhai OAuth script author
     I want to read, write, and delete provider-scoped credentials via a cred:: namespace
@@ -56,14 +54,12 @@ Feature: Add cred:: Rhai namespace exposing CredentialStore to scripts
     Then the file acme.json is created under FSPEC_HOME with 0600 permissions on Unix
     And the file parses as a JSON object containing access_token and refresh_token
 
-
   Scenario: cred::read returns the written map
     Given FSPEC_HOME is set to a temporary directory
     And a provider engine bound to provider name "acme"
     And a script has previously called cred::write("acme", #{access_token: "abc"})
     When a script calls cred::read("acme")
     Then the script receives a Map whose access_token equals "abc"
-
 
   Scenario: cred::read returns unit when the credential file is absent
     Given FSPEC_HOME is set to a temporary directory
@@ -72,18 +68,15 @@ Feature: Add cred:: Rhai namespace exposing CredentialStore to scripts
     When a script calls cred::read("acme")
     Then the script receives unit ()
 
-
   Scenario: cred::read rejects a name that does not match the active provider
     Given a provider engine bound to provider name "acme"
     When a script calls cred::read("other_provider_auth")
     Then the engine returns a runtime error mentioning access denied and the active provider name
 
-
   Scenario: cred::write rejects a path-traversal name
     Given a provider engine bound to provider name "acme"
     When a script calls cred::write("../../etc/passwd", #{})
     Then the engine returns a runtime error and no file is written outside FSPEC_HOME
-
 
   Scenario: cred::path returns the absolute credential path without touching the filesystem
     Given FSPEC_HOME is set to a temporary directory
@@ -92,7 +85,6 @@ Feature: Add cred:: Rhai namespace exposing CredentialStore to scripts
     Then the script receives a string ending with "acme.json" inside FSPEC_HOME
     And no file is created on disk
 
-
   Scenario: cred::delete is idempotent when the credential file is absent
     Given FSPEC_HOME is set to a temporary directory
     And a provider engine bound to provider name "acme"
@@ -100,12 +92,10 @@ Feature: Add cred:: Rhai namespace exposing CredentialStore to scripts
     When a script calls cred::delete("acme")
     Then the call succeeds without error
 
-
   Scenario: default engine does not expose the cred namespace
     Given an engine built via build_default_engine()
     When a script attempts to call cred::path("anything")
     Then the engine returns an error because the cred module is not registered
-
 
   Scenario: provider engine registers cred alongside the other building block modules
     Given an engine built via build_provider_engine("acme")

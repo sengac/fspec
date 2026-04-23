@@ -1,19 +1,21 @@
-@VAL-006 @cli @validation @tag-management
+@VAL-006
+@cli
+@validation
+@tag-management
 Feature: validate-tags default output shows only failures, with opt-in --verbose and --summary flags
-
   """
   Architecture notes:
   - validateTagsCommand Commander action signature changes to accept an options
-    object { verbose?: boolean; summary?: boolean } (plus the existing file arg).
+  object { verbose?: boolean; summary?: boolean } (plus the existing file arg).
   - registerValidateTagsCommand adds `.option('--verbose', ...)` and
-    `.option('--summary', ...)`.
+  `.option('--summary', ...)`.
   - Output flags do NOT affect the exported `validateTags(options)` return value;
-    only the CLI printing branch changes. Programmatic callers see identical results.
+  only the CLI printing branch changes. Programmatic callers see identical results.
   - BREAKING CHANGE (tiny scope): any script that greps validate-tags output for
-    "✓ All tags in " must now pass --verbose. This is explicitly documented in the
-    help text and release notes. Rationale: the default flooded chat_history when
-    AI agents invoked this tool, causing PromptCancelled cascades. Quiet-by-default
-    is the right default for any CLI meant to be consumed by AI agents.
+  "✓ All tags in " must now pass --verbose. This is explicitly documented in the
+  help text and release notes. Rationale: the default flooded chat_history when
+  AI agents invoked this tool, causing PromptCancelled cascades. Quiet-by-default
+  is the right default for any CLI meant to be consumed by AI agents.
   """
 
   # ========================================
@@ -36,7 +38,6 @@ Feature: validate-tags default output shows only failures, with opt-in --verbose
   #   6. --summary --verbose combined: summary wins
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec via tool-calling
     I want to run validate-tags and get back only what I need (failures by default, optional full verbosity with --verbose, just counts with --summary)

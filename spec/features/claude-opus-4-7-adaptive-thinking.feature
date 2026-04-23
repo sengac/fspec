@@ -1,6 +1,5 @@
 @PROV-079
 Feature: Add Claude Opus 4.7 adaptive thinking support
-
   """
   Default-adaptive design: Claude 4.6+ models automatically use adaptive thinking.
   No per-model constant or allowlist entry needed — new models are adaptive by default.
@@ -27,7 +26,6 @@ Feature: Add Claude Opus 4.7 adaptive thinking support
   #   5. Existing claude-opus-4-6 and claude-sonnet-4-6 adaptive behaviour is unchanged (no regression)
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec with Claude Opus 4.7
     I want to have thinking mode work correctly

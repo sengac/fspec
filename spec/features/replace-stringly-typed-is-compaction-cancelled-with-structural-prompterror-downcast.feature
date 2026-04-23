@@ -1,6 +1,5 @@
 @CMPCT-025
 Feature: Replace stringly-typed is_compaction_cancelled with structural PromptError downcast
-
   """
   Uses anyhow::Error::chain() to walk the entire source chain; at each link, attempts downcast_ref::<PromptError>() to match the typed variant. This preserves the public signature while replacing stringly-typed substring matching.
   Introduces extract_prompt_cancelled(&anyhow::Error) -> Option<&Vec<rig::message::Message>> as the structural primitive; is_compaction_cancelled delegates to extract_prompt_cancelled(e).is_some() so both helpers share one code path.
@@ -24,7 +23,6 @@ Feature: Replace stringly-typed is_compaction_cancelled with structural PromptEr
   #   4. PromptError::MaxDepthError returns false from is_compaction_cancelled
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to detect compaction cancellations robustly

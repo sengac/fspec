@@ -1,7 +1,6 @@
 @done
 @PROV-085
 Feature: Remove BUILTIN_PROVIDER_NAMES guard so Rhai scripts may shadow built-in providers
-
   """
   Custom configs shadowing built-ins must leave the NameConflict variant in the enum (public API stability) but the default path never produces it
   The FSPEC_DISABLE_SCRIPT_SHADOWING check lives in the ProviderType::from_str path (and its custom_provider_registered helper) so a single env var toggle flips behaviour across both FromStr and map_provider_id_to_type
@@ -27,7 +26,6 @@ Feature: Remove BUILTIN_PROVIDER_NAMES guard so Rhai scripts may shadow built-in
   #   5. Loading a provider config with an invalid name like 'My Provider' (whitespace/caps) still fails with InvalidName — shadowing only affects built-in collisions, not pattern validation
   #
   # ========================================
-
   Background: User Story
     As a fspec maintainer shipping first-class scripted subscription providers
     I want to have custom Rhai provider configs named after built-in providers (claude, codex, openai, gemini, zai, copilot, github-copilot) load successfully and take precedence over the hardcoded built-in
@@ -38,12 +36,10 @@ Feature: Remove BUILTIN_PROVIDER_NAMES guard so Rhai scripts may shadow built-in
     When I call ProviderConfig::from_file on the JSON path
     Then the result is Ok and the loaded ProviderConfig has name "claude"
 
-
   Scenario: Load a custom provider config named 'codex' without NameConflict
     Given a valid JSON provider config with name "codex" and a valid .rhai script on disk
     When I call ProviderConfig::from_file on the JSON path
     Then the result is Ok and the loaded ProviderConfig has name "codex"
-
 
   Scenario: Shadowing custom config resolves provider slug to Custom variant
     Given a discovered custom provider config with name "claude" is registered in the global providers directory
@@ -51,16 +47,13 @@ Feature: Remove BUILTIN_PROVIDER_NAMES guard so Rhai scripts may shadow built-in
     When I call ProviderType::from_str("claude")
     Then the result is ProviderType::Custom("claude")
 
-
   Scenario: Escape hatch env var disables shadowing and restores hardcoded built-in
     Given a discovered custom provider config with name "claude" is registered in the global providers directory
     And the FSPEC_DISABLE_SCRIPT_SHADOWING environment variable is set to "1"
     When I call ProviderType::from_str("claude")
     Then the result is ProviderType::Claude
 
-
   Scenario: Invalid name pattern still fails with InvalidName
     Given a provider config JSON with name "My Provider" containing whitespace and uppercase
     When I call ProviderConfig::from_file on the JSON path
     Then the result is an InvalidName error mentioning the allowed pattern ^[a-z][a-z0-9-]*$
-

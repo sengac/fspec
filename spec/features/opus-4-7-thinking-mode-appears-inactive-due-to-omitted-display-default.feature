@@ -1,6 +1,5 @@
 @PROV-080
 Feature: Opus 4.7 thinking mode appears inactive due to omitted display default
-
   """
   Fix is a one-line change in ClaudeThinkingFacade::request_config_for_model() — add display:summarized to the adaptive thinking JSON object
   """
@@ -22,7 +21,6 @@ Feature: Opus 4.7 thinking mode appears inactive due to omitted display default
   #   4. getThinkingConfig('claude-opus-4-5', High) returns {"thinking":{"type":"enabled","budget_tokens":32000}} — budgeted models unchanged, no display field
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to see thinking content when using Claude Opus 4.7

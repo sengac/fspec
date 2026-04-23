@@ -1,7 +1,6 @@
 @done
 @LIMITS-006
 Feature: TUI Badge and Fill% Display — End-to-End Verification
-
   """
   Tests verify that SessionHeader badge displays compactionThreshold (not raw contextWindow). AgentView.tsx reads rustModel.contextWindow and rustModel.compactionThreshold from Rust state. SessionHeader.tsx uses compactionThreshold ?? contextWindow for badge. formatContextWindow from sessionHeaderUtils.ts formats token count to human-readable string (e.g. 192k, 800k, 102k).
   """
@@ -25,7 +24,6 @@ Feature: TUI Badge and Fill% Display — End-to-End Verification
   #   3. GPT-4o at 51k tokens: badge [102k], fill [50%]
   #
   # ========================================
-
   Background: User Story
     As a developer using the TUI
     I want to see the correct badge value and fill percentage reflecting the provider-clamped compaction threshold

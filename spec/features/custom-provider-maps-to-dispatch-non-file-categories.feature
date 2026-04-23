@@ -7,7 +7,6 @@
 @providers
 @PROV-069
 Feature: Extend custom provider maps_to dispatch to non-file categories
-
   """
   Extends the existing default_to_internal_file pattern in codelet/providers/src/custom/tool_facade.rs. A new tool_dispatch module adds default_to_internal_<category> functions for bash, search:grep, search:glob, ls, web_search:search, fspec, bridge, exec:run, and hitl. A top-level default_to_internal(maps_to, params) enum-returning dispatcher routes to each category function. Conversion errors surface as CustomProviderError::RhaiRuntimeError. Routes map onto Internal*Params structs already exported from codelet_tools::facade.
   """
@@ -36,7 +35,6 @@ Feature: Extend custom provider maps_to dispatch to non-file categories
   #   10. Unknown maps_to value returns error whose message lists valid identifiers
   #
   # ========================================
-
   Background: User Story
     As a custom provider author
     I want to define tools with non-file maps_to targets
@@ -47,57 +45,47 @@ Feature: Extend custom provider maps_to dispatch to non-file categories
     When I call default_to_internal with maps_to "bash"
     Then the result is an InternalBashParams::Execute whose command is "ls"
 
-
   Scenario: Dispatch search:grep maps_to to InternalSearchParams::Grep
     Given a params JSON object with pattern "foo" and path "src"
     When I call default_to_internal with maps_to "search:grep"
     Then the result is an InternalSearchParams::Grep whose pattern is "foo" and path is Some("src")
-
 
   Scenario: Dispatch search:glob maps_to to InternalSearchParams::Glob
     Given a params JSON object with pattern "*.rs"
     When I call default_to_internal with maps_to "search:glob"
     Then the result is an InternalSearchParams::Glob whose pattern is "*.rs"
 
-
   Scenario: Dispatch ls maps_to to InternalLsParams::List
     Given a params JSON object with path "/tmp"
     When I call default_to_internal with maps_to "ls"
     Then the result is an InternalLsParams::List whose path is Some("/tmp")
-
 
   Scenario: Dispatch web_search:search maps_to to InternalWebSearchParams::Search
     Given a params JSON object with query "rust"
     When I call default_to_internal with maps_to "web_search:search"
     Then the result is an InternalWebSearchParams::Search whose query is "rust"
 
-
   Scenario: Dispatch fspec maps_to to InternalFspecParams
     Given a params JSON object with command "board", args "{}" and project_root "."
     When I call default_to_internal with maps_to "fspec"
     Then the result is an InternalFspecParams with command "board"
-
 
   Scenario: Dispatch bridge maps_to to InternalBridgeParams::List
     Given a params JSON object with action.type set to "list"
     When I call default_to_internal with maps_to "bridge"
     Then the result is an InternalBridgeParams::List variant
 
-
   Scenario: Dispatch exec:run maps_to to InternalExecParams::Run
     Given a params JSON object with command "ls"
     When I call default_to_internal with maps_to "exec:run"
     Then the result is an InternalExecParams::Run whose command equals the input command
-
 
   Scenario: Dispatch hitl maps_to to InternalHitlParams::Request
     Given a params JSON object with a questions array containing one valid HitlQuestion
     When I call default_to_internal with maps_to "hitl"
     Then the result is an InternalHitlParams::Request whose questions vec has length 1
 
-
   Scenario: Unknown maps_to value returns error listing valid identifiers
     Given any params JSON object
     When I call default_to_internal with maps_to "mystery:foo"
     Then I receive a CustomProviderError whose message contains "mystery:foo" and "bash"
-

@@ -6,7 +6,6 @@
 @providers
 @PROV-066
 Feature: Custom provider Rhai-scriptable tool facades
-
   """
   RhaiToolFacadeAdapter is a getters-only adapter in codelet/providers/src/custom/tool_facade.rs (not a full rig::Tool impl, since rig::Tool requires a const NAME incompatible with runtime-defined Rhai tool names). Rhai define_tools/map_tool_params are optional; tool_style presets are static lookup tables; maps_to identifiers route downstream to internal tool dispatchers in codelet/tools
   """
@@ -39,7 +38,6 @@ Feature: Custom provider Rhai-scriptable tool facades
   #   10. Resolving tools stores the final list on a shared cache accessible via ProviderConfig.resolved_tools so system prompt functions can introspect tool names
   #
   # ========================================
-
   Background: User Story
     As a custom provider author
     I want to define which tools the LLM sees and how parameter names map to internal tool types via optional Rhai functions
@@ -50,57 +48,47 @@ Feature: Custom provider Rhai-scriptable tool facades
     When I resolve the tool list for that provider
     Then the resolved list contains a RhaiToolDef with name "read_file" and maps_to "file:read"
 
-
   Scenario: tool_style openai preset generates snake_case tool names
     Given a ProviderConfig with tool_style "openai" and no define_tools function
     When I resolve the tool list
     Then the list contains read_file, write_file, edit_file, run_bash, grep_search, glob_search, list_dir, and web_search
-
 
   Scenario: Default tool_style claude generates PascalCase tool names
     Given a ProviderConfig with no tool_style and no define_tools
     When I resolve the tool list
     Then the list contains Read, Write, Edit, Bash, Grep, Glob, LS, and WebSearch
 
-
   Scenario: map_tool_params renames parameter names
     Given a Rhai script whose map_tool_params renames the incoming "filepath" to "file_path" for file:read
     When the adapter maps tool params {"filepath": "a.txt"}
     Then the resulting InternalFileParams::Read has file_path equal to "a.txt"
-
 
   Scenario: map_tool_params returning unit uses default mapping
     Given a Rhai script whose map_tool_params returns () for all tools
     When the adapter maps tool params {"file_path":"a.txt"} for file:read
     Then the resulting InternalFileParams::Read has file_path equal to "a.txt" via default field-by-field deserialization
 
-
   Scenario: Partial tool list hides unlisted categories
     Given a Rhai script whose define_tools returns only a file:read tool and a bash tool
     When I resolve the tool list
     Then the list contains exactly two RhaiToolDef entries and no others
-
 
   Scenario: Rhai error in define_tools falls back to preset
     Given a Rhai script whose define_tools throws a runtime error and tool_style is "claude"
     When I resolve the tool list
     Then the resolved list matches the claude preset and a tracing::warn is logged with the script error
 
-
   Scenario: Unknown maps_to identifier is rejected with clear error
     Given a Rhai script whose define_tools returns a tool with maps_to "mystery:foo"
     When I resolve the tool list
     Then I receive an error whose message contains "mystery:foo" and lists valid identifiers like "file:read"
-
 
   Scenario: Adapter exposes Rhai-provided name and definition
     Given a RhaiToolDef with name "my_read", description "read a file", and parameters schema {type:"object", properties:{path:{type:"string"}}}
     When I build a RhaiToolFacadeAdapter for that tool
     Then adapter.name() returns "my_read" and adapter.parameters_schema() returns the JSON schema that matches the supplied parameters
 
-
   Scenario: Resolved tools are cached for system prompt introspection
     Given a resolved tool list computed for a provider
     When I inspect ProviderConfig.resolved_tools after resolution
     Then the field contains exactly the RhaiToolDef entries returned by resolution
-

@@ -1162,6 +1162,10 @@
           "description": "Buffer overflow handling scenarios"
         },
         {
+          "name": "@bug-144",
+          "description": "Bug fix work unit BUG-144 - PromptCancelled error chain preservation"
+        },
+        {
           "name": "@build",
           "description": "Build system configuration and bundling"
         },
@@ -2606,7 +2610,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-04-08T01:35:03.748Z",
+    "lastUpdated": "2026-04-23T12:34:47.050Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

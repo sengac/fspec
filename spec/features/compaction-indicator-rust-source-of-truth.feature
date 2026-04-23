@@ -5,7 +5,6 @@
 @bug-fix
 @CMPCT-034
 Feature: Compaction indicator uses local React state instead of Rust source of truth — persists across session switches
-
   """
   Rust is the source of truth — SessionStatus::Compacting and CompactionProgress are already set per-session in Rust; useRustSessionState already reads them; no new NAPI calls needed
   Follow the existing pattern: isLoading comes from rustSnapshot.isLoading, isPaused from rustSnapshot.isPaused, isDebugEnabled from rustSnapshot.isDebugEnabled — isCompacting must follow the same pattern
@@ -32,7 +31,6 @@ Feature: Compaction indicator uses local React state instead of Rust source of t
   #   4. Compaction retry dialog still works after /compact fails — useCompaction retains retryState management independently of the Compacting display state
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to see the Compacting indicator only on the session that is actually compacting

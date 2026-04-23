@@ -1,0 +1,37 @@
+{
+  "scenarios": [
+    {
+      "name": "Replace anyhow::anyhow! with Error::from in all RigAgent streaming paths",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/rig_agent.rs",
+          "lines": "207-235",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/rig_agent.rs",
+              "lines": [
+                67,
+                68,
+                103,
+                137,
+                177
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/core/src/rig_agent.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/rig_agent.rs"
+    ],
+    "totalLinesCovered": 63
+  }
+}

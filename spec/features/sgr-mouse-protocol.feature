@@ -1,13 +1,14 @@
-@BUG-131 @tui @mouse-events
+@BUG-131
+@tui
+@mouse-events
 Feature: SGR mouse protocol parser for ink 6.8.0 compatibility
-
   """
   Create src/tui/utils/mouseProtocol.ts with MOUSE_ENABLE, MOUSE_DISABLE constants, SGR_MOUSE_RE regex, SGR_BUTTON enum, and parseSgrMouse() parser function.
   Ink 6.8.0 strips ESC prefix before delivering to useInput handlers — SGR regex must match the post-strip format [<button;x;yM/m.
   Enable sequence is ?1000h (X10 button event tracking) + ?1006h (SGR encoding mode). Disable is reverse order: ?1006l then ?1000l.
   """
 
-  Background:
+  Background: 
     Given the TUI is running with ink 6.8.0
 
   Scenario: Parse SGR scroll-up mouse event
