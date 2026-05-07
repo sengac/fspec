@@ -34,7 +34,7 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
       expect(frames[frames.length - 1]).toBeDefined();
     });
 
-    it('should use flexGrow to fill container', () => {
+    it('should use flexGrow to fill container', async () => {
       // This test verifies that VirtualList renders with flexGrow=1
       // Currently will fail because VirtualList uses hardcoded height
       const items = ['Item 1', 'Item 2', 'Item 3'];
@@ -47,6 +47,11 @@ describe('Feature: Pure flexbox layout for checkpoint and changed files viewers'
           />
         </Box>
       );
+
+      // VirtualList measures container via setTimeout(0) inside useLayoutEffect.
+      // Under ink 7 / Yoga 3 the post-measure re-render commits asynchronously,
+      // so allow the measurement and follow-up render to flush before asserting.
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // VirtualList should fill the parent container
       expect(frames[frames.length - 1]).toContain('Item 1');

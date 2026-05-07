@@ -82,12 +82,11 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
     "@cucumber/gherkin": "^29.0.0",
     "@cucumber/messages": "^25.0.1",
-    "@inkjs/ui": "^2.0.0",
     "@sengac/codelet-napi": "^0.1.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
@@ -101,7 +100,7 @@
     "execa": "^9.6.0",
     "express": "^5.1.0",
     "immer": "^10.2.0",
-    "ink": "^6.8.0",
+    "ink": "^7.0.2",
     "jsdom": "^27.0.0",
     "lodash.throttle": "^4.1.1",
     "marked": "^16.4.1",
@@ -109,7 +108,8 @@
     "mermaid": "^11.12.0",
     "open": "^10.2.0",
     "proper-lockfile": "^4.1.2",
-    "react": "^19.2.0",
+    "react": "^19.2.6",
+    "react-devtools-core": "^6.1.5",
     "string-width": "^8.1.0",
     "tinyglobby": "^0.2.10",
     "winston": "^3.18.3",
@@ -129,7 +129,7 @@
     "@types/node": "^24.5.1",
     "@types/node-fetch": "^2.6.13",
     "@types/node-telegram-bot-api": "^0.64.13",
-    "@types/react": "^19.2.2",
+    "@types/react": "^19.2.14",
     "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",

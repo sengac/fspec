@@ -85,10 +85,10 @@ describe('Feature: Watcher Template Feedback Dialogs', () => {
       );
 
       // @step When I press ESC before 2 seconds elapse
-      stdin.write('\x1B'); // ESC key
+      stdin.write("\x1B"); // ESC key (ink 7 needs > 20ms wait)
 
       // Wait for input to be processed
-      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(25);
       await Promise.resolve();
       await vi.advanceTimersByTimeAsync(0);
 
@@ -107,7 +107,7 @@ describe('Feature: Watcher Template Feedback Dialogs', () => {
         } as NotificationDialogProps)
       );
       stdinSuccess.write('\x1B');
-      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(25);
       await Promise.resolve();
       expect(onCloseSuccess).toHaveBeenCalled();
 
@@ -121,7 +121,7 @@ describe('Feature: Watcher Template Feedback Dialogs', () => {
         } as NotificationDialogProps)
       );
       stdinInfo.write('\x1B');
-      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(25);
       await Promise.resolve();
       expect(onCloseInfo).toHaveBeenCalled();
 
@@ -135,7 +135,7 @@ describe('Feature: Watcher Template Feedback Dialogs', () => {
         } as NotificationDialogProps)
       );
       stdinWarning.write('\x1B');
-      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(25);
       await Promise.resolve();
       expect(onCloseWarning).toHaveBeenCalled();
     });
@@ -174,7 +174,7 @@ describe('Feature: Watcher Template Feedback Dialogs', () => {
 
       // ESC should still work
       stdin.write('\x1B');
-      await vi.advanceTimersByTimeAsync(0);
+      await vi.advanceTimersByTimeAsync(25);
       await Promise.resolve();
       expect(onClose).toHaveBeenCalled();
     });

@@ -151,7 +151,8 @@ describe('useInputHandler', () => {
     // Send escape key
     stdin.write('\x1b');
 
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    // Ink 7 buffers a single ESC for ~20ms before flushing as a standalone key
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     // High priority handler should run first and stop propagation
     expect(calls).toEqual(['high-escape']);

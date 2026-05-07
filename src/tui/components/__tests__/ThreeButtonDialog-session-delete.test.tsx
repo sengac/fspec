@@ -95,7 +95,7 @@ describe('Feature: Delete Session from Resume View with Confirmation Dialog', ()
   });
 
   describe('Scenario: ESC key cancels delete dialog', () => {
-    it('should close dialog when ESC is pressed', () => {
+    it('should close dialog when ESC is pressed', async () => {
       // @step Given I am in resume mode with the delete confirmation dialog open
       const onSelect = vi.fn();
       const onCancel = vi.fn();
@@ -111,6 +111,9 @@ describe('Feature: Delete Session from Resume View with Confirmation Dialog', ()
 
       // @step When I press the ESC key
       stdin.write('\x1B'); // ESC key
+
+      // Ink 7 buffers ESC for ~20ms before flushing
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // @step Then the dialog closes
       expect(onCancel).toHaveBeenCalled();

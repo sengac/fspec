@@ -11,7 +11,7 @@ import { Box } from 'ink';
 
 describe('Feature: VirtualList height calculation ignores flexbox container dimensions', () => {
   describe('Scenario: CheckpointViewer with many items shows correct count in flexbox container', () => {
-    it('should display only items that fit in flexGrow allocated space', () => {
+    it('should display only items that fit in flexGrow allocated space', async () => {
       // @step Given I have a CheckpointViewer with 100 checkpoints
       const checkpoints = Array.from({ length: 100 }, (_, i) => `Checkpoint ${i + 1}`);
 
@@ -30,6 +30,11 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
           </Box>
         </Box>
       );
+
+      // VirtualList performs measureElement inside a setTimeout(0)+useLayoutEffect.
+      // Under ink 7 the post-measure state update commits asynchronously, so wait
+      // for the measurement-driven re-render to flush before reading frames.
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       const output = frames[frames.length - 1];
 
@@ -53,7 +58,7 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
   });
 
   describe('Scenario: FileDiffViewer with dual panes shows correct counts without overflow', () => {
-    it('should show correct item counts in both panes with different flexGrow ratios', () => {
+    it('should show correct item counts in both panes with different flexGrow ratios', async () => {
       // @step Given I have a FileDiffViewer with file list and diff pane
       const files = Array.from({ length: 50 }, (_, i) => `file${i}.ts`);
       const diffLines = Array.from({ length: 20 }, (_, i) => `line${i}`);
@@ -79,13 +84,15 @@ describe('Feature: VirtualList height calculation ignores flexbox container dime
         </Box>
       );
 
+      // Wait for both VirtualLists' setTimeout(0) measurements to commit under ink 7.
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
       const output = frames[frames.length - 1];
 
       // @step Then VirtualLists should render and virtualize content correctly
       // VirtualList uses measureElement to get actual flexbox container dimensions
 
       const visibleFiles = files.filter(f => output?.includes(f)).length;
-      const visibleDiffLines = diffLines.filter(d => output?.includes(d)).length;
 
       // Both should virtualize - at least first file should be visible
       expect(visibleFiles).toBeGreaterThanOrEqual(1); // At least first visible
