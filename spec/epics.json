@@ -745,6 +745,25 @@
         "PROV-094",
         "PROV-095"
       ]
+    },
+    "rust-frontend": {
+      "id": "rust-frontend",
+      "title": "Distributed Rust Frontend (tarpc + ratatui)",
+      "createdAt": "2026-05-07T07:53:01.939Z",
+      "description": "Distributed Rust frontend: tarpc-over-WebSocket service exposing the codelet/NAPI surface, plus a ratatui client with dual transport (in-process embedded OR remote WebSocket). Replaces the Ink/React TUI incrementally while leaving the TypeScript+NAPI stack fully operational.",
+      "workUnits": [
+        "RPC-001",
+        "RPC-002"
+      ]
+    },
+    "rust-cli-port": {
+      "id": "rust-cli-port",
+      "title": "Port fspec CLI commands to a Rust crate",
+      "createdAt": "2026-05-07T08:21:23.189Z",
+      "description": "Port the ~190 fspec commands (~48,200 LOC of TypeScript) into a Rust crate inside the codelet/ workspace. Goal: a `fspec-core` crate that owns all the business logic (work-unit state machine, Example Mapping, Gherkin generation, dependency graph, hooks, persistence, validators, migrations) so that both the existing TS CLI (via NAPI shim) and a future pure-Rust CLI binary can share a single source of truth. Complements the rust-frontend epic — together they enable a fully Rust fspec while keeping the TS stack operational throughout migration.",
+      "workUnits": [
+        "RPC-003"
+      ]
     }
   }
 }

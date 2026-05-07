@@ -404,6 +404,11 @@
       "prefix": "TOKEN",
       "description": "Token tracking and billing accumulation bugs",
       "createdAt": "2026-04-16T11:22:35.863Z"
+    },
+    "RPC": {
+      "prefix": "RPC",
+      "description": "Rust RPC layer (tarpc + WebSocket) and ratatui frontend",
+      "createdAt": "2026-05-07T07:52:32.381Z"
     }
   }
 }
