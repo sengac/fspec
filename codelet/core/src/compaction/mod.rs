@@ -38,6 +38,18 @@ mod dag_node_parsing_tests {
     include!("__tests__/dag_node_parsing.test.rs");
 }
 
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+mod dag_node_proptest {
+    include!("__tests__/dag_node_proptest.test.rs");
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::needless_collect)]
+mod token_tracker_proptest {
+    include!("__tests__/token_tracker_proptest.test.rs");
+}
+
 // Re-export public types from model
 pub use model::{ConversationTurn, DagDepth, DagNodeMeta, FileOp, StructuralAnnotation, TokenTracker, ToolCall, ToolResult};
 
