@@ -1,0 +1,331 @@
+{
+  "scenarios": [
+    {
+      "name": "turn_start beyond message_count drops the node with a warning",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "lines": "592-615",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/model.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_end above message_count is clamped while turn_start is preserved",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "lines": "615-635",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/model.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_start equal to message_count - 1 is accepted",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "lines": "635-653",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/model.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_start equal to message_count drops the node",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "lines": "653-673",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/model.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mixed input drops only the out-of-range node",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "lines": "673-695",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/model.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "message_count of zero rejects every node",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "lines": "695-714",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/model.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Property — every parsed node satisfies turn_start <= turn_end and turn_end < message_count after clamping",
+      "testMappings": [
+        {
+          "file": "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs",
+          "lines": "716-758",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction/model.rs",
+              "lines": [
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/core/src/compaction/__tests__/dag_node_proptest.test.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/compaction/model.rs"
+    ],
+    "totalLinesCovered": 374
+  }
+}

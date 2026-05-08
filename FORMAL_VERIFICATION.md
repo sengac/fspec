@@ -193,9 +193,6 @@ future change tightening the contract will surface visibly.
 | ID        | Severity | Source        | Description                                                  |
 |-----------|----------|---------------|--------------------------------------------------------------|
 | FV-001-a  | Low      | `trimmer.rs`  | `HashMap::insert` silently overwrites entries — relies on Anthropic UUID uniqueness for `tool_use_id`. No `debug_assert!` guard. |
-| FV-003-a  | Low      | `parse_dag_nodes` | Accepts `turns="50-10"` (start > end). Pinned by `limitation_parser_does_not_validate_start_le_end`. |
-| FV-003-b  | Info     | `parse_dag_nodes` | Logs a warning but ACCEPTS overlapping same-depth ranges. Pinned by `limitation_parser_does_not_reject_overlap`. |
-| FV-003-c  | Low      | `parse_dag_nodes` | Clamping `turn_end` to `message_count - 1` can produce an inverted range when `turn_start ≥ message_count`. Pinned by `limitation_clamping_can_invert_range`. |
 
 None of these are defects — but each represents a gap between what the
 formal model assumes and what the implementation enforces. If hardening any
@@ -213,7 +210,7 @@ files involved.
 |-------------|----------------------|--------------|--------------|-----------------------------------------------------|
 | FV-001      | Compaction trimmer   | ✅ Proved    | 📝 Planned   | `codelet/core/spec/compaction/trimmer.als`          |
 | FV-002      | Token tracker        | ✅ Proved    | ✅ Cross-checked | `codelet/core/spec/compaction/token_tracker.als` |
-| FV-003      | DAG compaction       | ✅ Proved    | ✅ Cross-checked + 3 limitations pinned | `codelet/core/spec/compaction/dag_compaction.als`   |
+| FV-003      | DAG compaction       | ✅ Proved    | ✅ Cross-checked | `codelet/core/spec/compaction/dag_compaction.als`   |
 
 **Status legend:**
 - 📝 Planned — invariants identified, model not yet written

@@ -410,6 +410,29 @@ pub struct DagNodeMeta {
 /// Invalid or malformed nodes are silently skipped. If `message_count` is provided,
 /// `turn_end` values exceeding `message_count - 1` are clamped.
 ///
+/// **Range validation (CMPCT-035 / FV-003-a):** Blocks where the parsed
+/// `turn_start > turn_end` (BEFORE clamping) are rejected and logged with a
+/// `tracing::warn!`. This enforces the formal-model invariant
+/// `turn_start <= turn_end` at the parse boundary.
+///
+/// **Out-of-range start rejection (CMPCT-037 / FV-003-c):** When
+/// `message_count` is provided and `turn_start >= message_count`, the entire
+/// node is rejected and logged with a `tracing::warn!` BEFORE any clamping.
+/// This prevents the residual contract `turn_start < message_count` from
+/// being violated and, transitively, prevents the `turn_end` clamp from
+/// producing an inverted range. With this gate in place, every emitted node
+/// satisfies `turn_start <= turn_end` AND `turn_end < message_count`.
+///
+/// **Same-depth overlap rejection (CMPCT-036 / FV-003-b):** After sorting by
+/// `turn_start`, any node whose `[turn_start, turn_end]` interval overlaps a
+/// previously-accepted node *at the same depth* is dropped and logged with a
+/// `tracing::warn!`. The earlier (lower `turn_start`, then first-encountered)
+/// node is kept. Adjacency at the boundary
+/// (`next.turn_start == prior.turn_end`) counts as overlap because `turn_end`
+/// is inclusive. Cross-depth overlap (e.g., a D2 node spanning the same turns
+/// as a D1 node) is intentional and accepted — hierarchical compaction
+/// depends on it.
+///
 /// Returns nodes sorted by `turn_start` ascending.
 pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<DagNodeMeta> {
     use once_cell::sync::Lazy;
@@ -425,8 +448,6 @@ pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<D
             })
     });
 
-    let max_turn = message_count.map(|c| if c > 0 { c - 1 } else { 0 });
-
     let mut nodes: Vec<DagNodeMeta> = DAG_NODE_RE
         .captures_iter(dag_content)
         .filter_map(|cap| {
@@ -439,9 +460,47 @@ pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<D
 
             let turn_start: usize = cap[2].parse().ok()?;
             let mut turn_end: usize = cap[3].parse().ok()?;
+            let label = &cap[4];
 
-            // Clamp turn_end to message count if provided
-            if let Some(max) = max_turn {
+            // CMPCT-035 / FV-003-a: reject reversed turn ranges at the parse
+            // boundary. This enforces the formal model's invariant
+            // `turn_start <= turn_end`. Validated PRE-clamping so that
+            // clamping logic (handled below) never sees a reversed range.
+            if turn_start > turn_end {
+                tracing::warn!(
+                    turn_start,
+                    turn_end,
+                    label = %label,
+                    "Skipping dag-node with inverted turn range (turn_start > turn_end)"
+                );
+                return None;
+            }
+
+            // CMPCT-037 / FV-003-c: when `message_count` is provided, reject
+            // any node whose `turn_start` is at or beyond `message_count` —
+            // such a range refers to non-existent turns. This MUST happen
+            // BEFORE the `turn_end` clamp; otherwise clamping `turn_end` to
+            // `message_count - 1` would silently produce an inverted output
+            // range (`turn_start > turn_end`). With this gate in place,
+            // `turn_start < message_count` holds for every surviving node,
+            // so the subsequent `turn_end` clamp can never invert the range.
+            //
+            // `Some(0)` is the degenerate case (zero turns exist): every
+            // node has `turn_start >= 0 == message_count` and is therefore
+            // rejected.
+            if let Some(mc) = message_count {
+                if turn_start >= mc {
+                    tracing::warn!(
+                        turn_start,
+                        message_count = mc,
+                        label = %label,
+                        "Skipping dag-node whose turn_start is at or beyond message_count"
+                    );
+                    return None;
+                }
+                // turn_start < mc here, so clamping `turn_end` down to
+                // `mc - 1` preserves `turn_start <= turn_end`.
+                let max = mc - 1;
                 if turn_end > max {
                     turn_end = max;
                 }
@@ -451,23 +510,53 @@ pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<D
                 depth,
                 turn_start,
                 turn_end,
-                label: cap[4].to_string(),
+                label: label.to_string(),
             })
         })
         .collect();
 
-    // Check for overlapping turn ranges and log warnings
+    // CMPCT-036 / FV-003-b: enforce G2 (SameDepthNonOverlapping) at the parse
+    // boundary. Sort by `turn_start` ascending (P1) and reject any node whose
+    // interval overlaps a previously-accepted same-depth node. Adjacency at
+    // the boundary (`turn_start == prior.turn_end`) counts as overlap because
+    // `turn_end` is inclusive. Cross-depth overlap is intentional and
+    // accepted.
     nodes.sort_by_key(|n| n.turn_start);
-    for i in 1..nodes.len() {
-        if nodes[i].turn_start <= nodes[i - 1].turn_end {
-            tracing::warn!(
-                "DAG node overlap — '{}' (turns {}-{}) overlaps with '{}' (turns {}-{})",
-                nodes[i].label, nodes[i].turn_start, nodes[i].turn_end,
-                nodes[i - 1].label, nodes[i - 1].turn_start, nodes[i - 1].turn_end,
-            );
+
+    // Index by `DagDepth` ordinal so we can track the most-recently-accepted
+    // node at each depth without requiring `Hash` on the enum.
+    fn depth_idx(d: &DagDepth) -> usize {
+        match d {
+            DagDepth::D0 => 0,
+            DagDepth::D1 => 1,
+            DagDepth::D2 => 2,
         }
     }
 
-    nodes
+    let mut last_per_depth: [Option<DagNodeMeta>; 3] = [None, None, None];
+    let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());
+
+    for node in nodes {
+        let idx = depth_idx(&node.depth);
+        if let Some(last) = &last_per_depth[idx] {
+            if node.turn_start <= last.turn_end {
+                tracing::warn!(
+                    depth = ?node.depth,
+                    kept_turn_start = last.turn_start,
+                    kept_turn_end = last.turn_end,
+                    kept_label = %last.label,
+                    dropped_turn_start = node.turn_start,
+                    dropped_turn_end = node.turn_end,
+                    dropped_label = %node.label,
+                    "Dropping overlapping same-depth dag-node"
+                );
+                continue;
+            }
+        }
+        last_per_depth[idx] = Some(node.clone());
+        filtered.push(node);
+    }
+
+    filtered
 }
 
