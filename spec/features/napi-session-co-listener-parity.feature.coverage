@@ -1,0 +1,57 @@
+{
+  "scenarios": [
+    {
+      "name": "NAPI sessionSetGlobalChunkCallback continues to fire alongside a Rust embedded subscriber on the same SessionManager",
+      "testMappings": [
+        {
+          "file": "src/__tests__/napi-session-co-listener-parity.test.ts",
+          "lines": "37-115",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                6256,
+                6257,
+                6258,
+                6259,
+                6260,
+                6261,
+                6262,
+                6263,
+                6264,
+                6265,
+                6266,
+                6267,
+                6268,
+                6269,
+                6270,
+                6271,
+                6272,
+                6273,
+                6274,
+                6275,
+                6276,
+                6277,
+                6278,
+                6279,
+                6280
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/napi-session-co-listener-parity.test.ts"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 104
+  }
+}

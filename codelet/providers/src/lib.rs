@@ -27,6 +27,13 @@ pub mod oauth;
 pub mod openai;
 pub mod zai;
 
+/// RPC-007: Test-only deterministic stub provider for cross-transport
+/// integration tests. Gated behind the `test-support` feature so production
+/// builds never compile it. Emits `[StreamChunk::Text("hi back"), Done]`
+/// regardless of input.
+#[cfg(feature = "test-support")]
+pub mod stub_provider;
+
 pub use adapter::{
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_prompt_data, extract_text_from_content, validate_api_key_static, ProviderAdapter,

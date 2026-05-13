@@ -1,0 +1,205 @@
+//! Navigator — top-level view that switches between BoardView and
+//! AgentView, plus the 1-row FooterView.
+//!
+//! Feature: spec/features/rpc012-board-agent-navigation.feature
+//! Card: RPC-012 (replaces RPC-009 `RootView`).
+//!
+//! Renders EXACTLY ONE child view per frame — either BoardView OR
+//! AgentView — plus the 1-row footer. The previous fixed two-pane
+//! (list + REPL) layout is gone.
+
+use std::sync::Arc;
+
+use crossterm::event::Event;
+use ratatui::buffer::Buffer;
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use tokio::sync::mpsc::UnboundedSender;
+
+use crate::components::{Action, EventResult, Priority};
+use crate::store::{AgentViewStore, BoardStore};
+use crate::theme::Theme;
+use crate::views::{AgentView, BoardView, FooterView};
+
+/// Which top-level view is currently visible.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ViewMode {
+    Board,
+    Agent,
+}
+
+impl Default for ViewMode {
+    fn default() -> Self {
+        ViewMode::Board
+    }
+}
+
+/// Top-level navigator. Owns the BoardView + AgentView + FooterView
+/// components; the actual board/agent state lives on App via
+/// BoardStore + AgentViewStore.
+pub struct Navigator {
+    pub board: BoardView,
+    pub agent: AgentView,
+    pub footer: FooterView,
+    pub active_view: ViewMode,
+    pub action_tx: Option<UnboundedSender<Action>>,
+}
+
+impl Navigator {
+    pub fn new(theme: Arc<Theme>, action_tx: UnboundedSender<Action>) -> Self {
+        Self {
+            board: BoardView::new(theme.clone(), action_tx.clone()),
+            agent: AgentView::new(action_tx.clone()),
+            footer: FooterView::new(theme),
+            active_view: ViewMode::Board,
+            action_tx: Some(action_tx),
+        }
+    }
+
+    pub fn priority(&self) -> Priority {
+        Priority::Background
+    }
+
+    pub fn id(&self) -> &str {
+        "navigator"
+    }
+
+    /// Route a keyboard event to the active sub-view.
+    pub fn handle_event(
+        &mut self,
+        event: &Event,
+        board_store: &BoardStore,
+    ) -> EventResult {
+        match self.active_view {
+            ViewMode::Board => self.board.handle_event(event, board_store),
+            ViewMode::Agent => self.agent.handle_event(event),
+        }
+    }
+
+    /// React to a dispatched action that the App has already applied to
+    /// the stores. The Navigator's only meaningful state is `active_view`.
+    pub fn apply_action(&mut self, action: &Action) {
+        match action {
+            Action::EnterWorkUnit(_) | Action::OpenAgentView(_) => {
+                self.active_view = ViewMode::Agent;
+            }
+            Action::BackToBoard => {
+                self.active_view = ViewMode::Board;
+            }
+            _ => {}
+        }
+    }
+
+    /// Render against the live stores. Caller is App.
+    pub fn render_with_stores(
+        &mut self,
+        area: Rect,
+        buf: &mut Buffer,
+        board_store: &BoardStore,
+        agent_store: &AgentViewStore,
+    ) {
+        let outer = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Min(0), Constraint::Length(1)])
+            .split(area);
+        let main = outer[0];
+        let footer = outer[1];
+
+        match self.active_view {
+            ViewMode::Board => {
+                self.board.render_with_store(main, buf, board_store);
+            }
+            ViewMode::Agent => {
+                self.agent.render_with_store(main, buf, agent_store);
+            }
+        }
+        use crate::components::Component;
+        self.footer.render(footer, buf);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+    use super::*;
+    use crate::store::{AgentViewStore, BoardStore};
+    use codelet_rpc_types::{SessionId, WorkUnitInfo};
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+    use tokio::sync::mpsc::unbounded_channel;
+
+    fn wu(id: &str, status: &str) -> WorkUnitInfo {
+        WorkUnitInfo {
+            id: id.to_string(),
+            title: id.to_string(),
+            work_type: "story".to_string(),
+            status: status.to_string(),
+            description: None,
+            estimate: None,
+            epic: None,
+        }
+    }
+
+    fn fresh() -> (Navigator, tokio::sync::mpsc::UnboundedReceiver<Action>) {
+        let (tx, rx) = unbounded_channel();
+        (Navigator::new(Arc::new(Theme::default()), tx), rx)
+    }
+
+    fn render(
+        nav: &mut Navigator,
+        board: &BoardStore,
+        agent: &AgentViewStore,
+    ) -> String {
+        let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
+        term.draw(|frame| {
+            nav.render_with_stores(frame.area(), frame.buffer_mut(), board, agent);
+        })
+        .expect("draw");
+        let buf = term.backend().buffer().clone();
+        let mut joined = String::new();
+        for y in 0..buf.area.height {
+            for x in 0..buf.area.width {
+                joined.push_str(buf[(x, y)].symbol());
+            }
+            joined.push('\n');
+        }
+        joined
+    }
+
+    #[test]
+    fn renders_board_when_active_view_is_board() {
+        let (mut nav, _rx) = fresh();
+        let mut board = BoardStore::default();
+        board.replace_work_units(vec![wu("AUTH-001", "backlog")]);
+        let agent = AgentViewStore::default();
+        let out = render(&mut nav, &board, &agent);
+        assert!(out.contains("BACKLOG"));
+        assert!(out.contains("SPECIFYING"));
+        assert!(out.contains("AUTH-001"));
+    }
+
+    #[test]
+    fn renders_agent_when_active_view_is_agent() {
+        let (mut nav, _rx) = fresh();
+        nav.active_view = ViewMode::Agent;
+        let board = BoardStore::default();
+        let mut agent = AgentViewStore::default();
+        agent.set_current_session(Some(SessionId::new("s-1")));
+        let out = render(&mut nav, &board, &agent);
+        assert!(out.contains("Agent"));
+        assert!(out.contains("s-1"));
+        assert!(!out.contains("BACKLOG"));
+    }
+
+    #[test]
+    fn apply_action_flips_view_mode() {
+        let (mut nav, _rx) = fresh();
+        assert_eq!(nav.active_view, ViewMode::Board);
+        nav.apply_action(&Action::EnterWorkUnit("AUTH-001".to_string()));
+        assert_eq!(nav.active_view, ViewMode::Agent);
+        nav.apply_action(&Action::BackToBoard);
+        assert_eq!(nav.active_view, ViewMode::Board);
+        nav.apply_action(&Action::OpenAgentView(None));
+        assert_eq!(nav.active_view, ViewMode::Agent);
+    }
+}

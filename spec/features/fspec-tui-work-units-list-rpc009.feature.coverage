@@ -1,0 +1,400 @@
+{
+  "scenarios": [
+    {
+      "name": "WorkUnitsListView seeds its list from the bootstrap snapshot and selects index 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "189-216",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::WorkUnitsLoaded replaces the in-memory list (live update)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "218-245",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WorkUnitsLoaded clamps the selection when the new list is shorter",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "247-267",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "j/Down moves the selection forward and clamps at the last index",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "269-293",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "k/Up moves the selection backward and clamps at index 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "295-320",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigation keys are ignored when the view is not focused",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "322-340",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Focused and unfocused borders use different styles from the Theme",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "342-363",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Each list item is rendered as \"{id} {status}\"",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "365-386",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on the work-units list does nothing visible (selection-only navigation)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+          "lines": "388-405",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/work_units_list.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/views/work_units_list.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/work_units_list.rs"
+    ],
+    "totalLinesCovered": 449
+  }
+}

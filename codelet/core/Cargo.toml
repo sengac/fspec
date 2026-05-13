@@ -10,6 +10,9 @@ description = "Core agent execution for codelet - runner loop, message history, 
 codelet-common.workspace = true
 codelet-tools.workspace = true
 codelet-providers.workspace = true
+# RPC-006: pure-Rust WorkUnitsWatcher returns Vec<WorkUnitInfo> — the lifted
+# shared type lives in codelet-rpc-types. Default features only (no NAPI).
+codelet-rpc-types = { workspace = true }
 
 # Async
 tokio.workspace = true
@@ -41,6 +44,10 @@ once_cell.workspace = true
 
 # Token Estimation (PROV-002)
 tiktoken-rs.workspace = true
+
+# RPC-006: cross-platform fs-watching for the lifted WorkUnitsWatcher.
+notify.workspace = true
+notify-debouncer-mini.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

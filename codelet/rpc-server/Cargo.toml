@@ -1,0 +1,47 @@
+[package]
+name = "codelet-rpc-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "codelet-rpc-server"
+path = "src/main.rs"
+
+[dependencies]
+codelet-rpc = { workspace = true }
+codelet-rpc-types = { workspace = true }
+# RPC-006: rpc-server main.rs constructs a real WorkUnitsWatcher from a
+# `--workspace` arg before passing it into SharedFspecService.
+codelet-core = { workspace = true }
+tarpc = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
+tokio-tungstenite = { workspace = true }
+futures = { workspace = true }
+serde = { workspace = true }
+bincode = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+anyhow = { workspace = true }
+clap = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+tokio-tungstenite = { workspace = true }
+url = { workspace = true }
+codelet-rpc-embedded = { workspace = true }
+codelet-rpc-types = { workspace = true }
+codelet-core = { workspace = true }
+codelet-providers = { workspace = true, features = ["test-support"] }
+futures = { workspace = true }
+bincode = { workspace = true }
+serde_json = { workspace = true }
+tempfile = { workspace = true }

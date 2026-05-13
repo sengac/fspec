@@ -118,6 +118,10 @@
           "description": "Provider integration and LLM provider implementations"
         },
         {
+          "name": "@rpc",
+          "description": "RPC service layer crates (rpc-types, rpc, rpc-embedded, rpc-server) implementing the dual-transport tarpc architecture under RPC-002"
+        },
+        {
           "name": "@scheduler",
           "description": "Scheduling service infrastructure and schedule management"
         },
@@ -1662,6 +1666,10 @@
           "description": "Parallel tool execution scenarios"
         },
         {
+          "name": "@parity",
+          "description": "Cross-transport parity invariants — both transports produce equivalent results"
+        },
+        {
           "name": "@path-traversal",
           "description": "Path traversal attack prevention"
         },
@@ -1870,6 +1878,10 @@
           "description": "Anti-drift pattern for AI agents using contextual reminders"
         },
         {
+          "name": "@tarpc",
+          "description": "tarpc service trait, transport adapters, and request/response framing"
+        },
+        {
           "name": "@template",
           "description": "Template System"
         },
@@ -2016,6 +2028,10 @@
         {
           "name": "@web",
           "description": "Web-based features and browser functionality"
+        },
+        {
+          "name": "@websocket",
+          "description": "WebSocket transport for tarpc service"
         },
         {
           "name": "@worker-threads",
@@ -2168,6 +2184,14 @@
         {
           "name": "@remind-008",
           "description": "Feature file prefill detection and CLI enforcement work unit"
+        },
+        {
+          "name": "@rpc-006",
+          "description": "Work unit identifier tag for RPC-006: real work-units backing + first streaming envelope variant (WorkUnitsUpdate)"
+        },
+        {
+          "name": "@rpc-010",
+          "description": "Work unit identifier tag for RPC-010: fspec binary with combined/daemon/client subcommands replacing codelet-rpc-server for production"
         },
         {
           "name": "@technical-debt",
@@ -2610,7 +2634,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-04-23T12:34:47.050Z",
+    "lastUpdated": "2026-05-10T21:44:05.077Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

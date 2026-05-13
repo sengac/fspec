@@ -1,0 +1,112 @@
+{
+  "scenarios": [
+    {
+      "name": "Source-shape regression forbids Mutex/RwLock/atomics in store/",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs",
+          "lines": "27-65",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/mod.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape regression forbids transport-layer imports in store/",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs",
+          "lines": "68-94",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/mod.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every file under codelet/fspec-tui/src/ is under 300 LoC",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs",
+          "lines": "97-128",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/mod.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/source_shape_stores_rpc012.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/mod.rs"
+    ],
+    "totalLinesCovered": 146
+  }
+}

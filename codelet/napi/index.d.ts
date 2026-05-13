@@ -491,48 +491,6 @@ export declare function codexOauthRefreshToken(
   refreshToken: string
 ): Promise<NapiCodexTokens>;
 
-/** PERF-002: Progress information for compaction process */
-export interface CompactionProgress {
-  /** Current compaction phase (e.g., "Preparing compaction", "Analyzing context") */
-  phase: string;
-  /** Current progress count (e.g., current turn being processed) */
-  current: number;
-  /** Total items to process (e.g., total turns to analyze) */
-  total: number;
-}
-
-/**
- * Compaction result (NAPI-005)
- * Returned by compact() with metrics about the compaction operation
- */
-export interface CompactionResult {
-  /** Original token count before compaction */
-  originalTokens: number;
-  /** Token count after compaction */
-  compactedTokens: number;
-  /** Compression ratio as percentage (0-100) */
-  compressionRatio: number;
-  /** Number of turns summarized */
-  turnsSummarized: number;
-  /** Number of turns kept */
-  turnsKept: number;
-}
-
-/**
- * Context window fill information (TUI-033)
- * Sent with each token update to show context window usage
- */
-export interface ContextFillInfo {
-  /** Fill percentage (0-100+, can exceed 100 near compaction) */
-  fillPercentage: number;
-  /** Effective tokens (after cache discount) - using f64 for NAPI compatibility */
-  effectiveTokens: number;
-  /** Compaction threshold (usable context after output reservation) - using f64 for NAPI compatibility */
-  threshold: number;
-  /** Provider's context window size - using f64 for NAPI compatibility */
-  contextWindow: number;
-}
-
 /**
  * Normalise a user-supplied enterprise URL to a bare host.
  *
@@ -769,38 +727,6 @@ export declare function extractThinkingText(
   provider: string,
   partJson: string
 ): string | null;
-
-/**
- * CODE-009: Fspec command request data
- * Sent when LLM invokes FspecTool - TypeScript intercepts and executes
- */
-export interface FspecRequest {
-  /** The fspec command (e.g., "create-story", "show-work-unit") */
-  command: string;
-  /** Command arguments as JSON string */
-  argsJson: string;
-  /** Project root directory */
-  projectRoot: string;
-  /** Tool call ID for correlation with response */
-  toolCallId: string;
-}
-
-/**
- * CODE-009: Fspec command result data
- * Sent by TypeScript after executing the fspec command
- */
-export interface FspecResult {
-  /** Whether the command succeeded */
-  success: boolean;
-  /** Command output (structured data as JSON or human-readable text) */
-  data: string;
-  /** Error message if failed */
-  error?: string;
-  /** System reminder for workflow orchestration (to be injected into LLM context) */
-  systemReminder?: string;
-  /** Tool call ID for correlation */
-  toolCallId: string;
-}
 
 export declare function getAllWorkUnits(): Array<WorkUnitInfo>;
 
@@ -1075,14 +1001,6 @@ export interface HitlResponseInfo {
   cancelled: boolean;
   /** Answers keyed by question id (None when cancelled) */
   answers?: Array<HitlAnswerEntry>;
-}
-
-/** BRIDGE-007: Image data for supervisor input (from Telegram bridge) */
-export interface IncomingMessageImage {
-  /** Base64-encoded image data */
-  data: string;
-  /** Media type (e.g., "image/jpeg", "image/png") */
-  mediaType: string;
 }
 
 /**
@@ -1795,13 +1713,6 @@ export interface NapiTurnDetails {
   context: string;
 }
 
-/** NAPI-010: User notification severity levels */
-export declare const enum NotificationSeverity {
-  Info = 'Info',
-  Warning = 'Warning',
-  Error = 'Error',
-}
-
 /** Result of path validation for isolated sessions. */
 export interface PathValidationResult {
   /** Whether the path is allowed for this session */
@@ -2339,23 +2250,6 @@ export declare function sessionGetWorkUnitContext(
   sessionId: string
 ): JsWorkUnitContext | null;
 
-/** Session info returned to TypeScript */
-export interface SessionInfo {
-  id: string;
-  name: string;
-  status: string;
-  project: string;
-  messageCount: number;
-  /** Provider ID (e.g., "anthropic", "openai") */
-  providerId?: string;
-  /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
-  modelId?: string;
-  /** GIT-029: Whether this is an isolated session with a git worktree */
-  isIsolated: boolean;
-  /** GIT-029: Path to the worktree (if isolated) */
-  worktreePath?: string;
-}
-
 /** Session information with derived status for listing */
 export interface SessionInfoJs {
   /** Session ID */
@@ -2716,19 +2610,6 @@ export declare function sessionSetWorkUnitContext(
 ): void;
 
 /**
- * NAPI-010: Session state for internal state machine tracking
- * NOT for conversation display - use SessionStateChange chunk variant
- */
-export declare const enum SessionState {
-  Idle = 'Idle',
-  Running = 'Running',
-  Paused = 'Paused',
-  Compacting = 'Compacting',
-  Interrupted = 'Interrupted',
-  Cleared = 'Cleared',
-}
-
-/**
  * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021 + BUG-134)
  *
  * BUG-134: Now uses the per-session debug capture manager instead of the global singleton.
@@ -2817,100 +2698,6 @@ export declare function startWorkUnitsWatcher(
 
 export declare function stopWorkUnitsWatcher(): void;
 
-/**
- * NAPI-010: Stream chunk - proper discriminated union
- *
- * The type system enforces correct handling in TypeScript via exhaustive switch statements.
- * This replaces the old struct-based StreamChunk that required fragile string parsing.
- *
- * Key distinction:
- * - SessionStateChange: INTERNAL state updates, do NOT add to conversation
- * - UserNotification: User-facing messages, DISPLAY in conversation
- */
-export type StreamChunk =
-  | {
-      type: 'Text';
-      text: string /** Correlation ID for cross-pane selection highlighting (WATCH-011) */;
-      correlationId?: string /** IDs of observed subordinate chunks that triggered this supervisor response (WATCH-011) */;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'Thinking';
-      thinking: string;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'ToolCall';
-      toolCall: ToolCallInfo;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'ToolResult';
-      toolResult: ToolResultInfo;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | {
-      type: 'ToolProgress';
-      toolProgress: ToolProgressInfo;
-      correlationId?: string;
-      observedCorrelationIds?: Array<string>;
-    }
-  | { type: 'SessionStateChange'; state: SessionState }
-  | {
-      type: 'UserNotification';
-      message: string;
-      severity: NotificationSeverity;
-    }
-  | { type: 'Interrupted'; queuedInputs: Array<string> }
-  | { type: 'TokenUpdate'; tokens: TokenTracker }
-  | { type: 'ContextFillUpdate'; contextFill: ContextFillInfo }
-  | { type: 'Done' }
-  | { type: 'Error'; error: string }
-  | { type: 'UserInput'; text: string }
-  | {
-      type: 'IncomingMessage';
-      text: string /** Optional images for multimodal input (BRIDGE-007) */;
-      images?: Array<IncomingMessageImage>;
-    }
-  | {
-      type: 'SupervisorPendingInjection';
-      supervisorPendingInjection: SupervisorPendingInjectionInfo;
-    }
-  | { type: 'CompactionComplete'; compactionResult: CompactionResult }
-  | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
-  | { type: 'FspecCommandResult'; fspecResult: FspecResult }
-  | { type: 'WorkUnitsUpdate'; workUnits: Array<WorkUnitInfo> }
-  | {
-      type: 'IsolationStateChange' /** Whether the session is isolated (has a git worktree) */;
-      isIsolated: boolean /** Path to the worktree (if isolated) */;
-      worktreePath?: string;
-    }
-  | {
-      type: 'FooterStateUpdate' /** Effective working directory for this session */;
-      cwd: string /** Display path (with ~ substitution) */;
-      displayPath: string /** Whether the directory is a git repository */;
-      isGitRepo: boolean /** Current branch name, or null for detached HEAD */;
-      branch?: string;
-    }
-  | {
-      type: 'DebugStateChange' /** Whether debug capture is now enabled for this session */;
-      enabled: boolean;
-    };
-
-/**
- * Supervisor pending injection information (WATCH-020)
- * Sent when auto_inject=false and supervisor detects an [INTERJECT] block
- */
-export interface SupervisorPendingInjectionInfo {
-  /** Whether this is an urgent injection */
-  urgent: boolean;
-  /** The message content that would be injected */
-  content: string;
-}
-
 /** Session role info returned to TypeScript (AMGR-008: simplified from SupervisorRoleInfo) */
 export interface SupervisorRoleInfo {
   /** Role name (e.g., "security-reviewer") */
@@ -2957,51 +2744,6 @@ export declare function toggleDebug(
   debugDir?: string | undefined | null
 ): DebugCommandResult;
 
-/** Token usage tracking information */
-export interface TokenTracker {
-  inputTokens: number;
-  outputTokens: number;
-  cacheReadInputTokens?: number;
-  cacheCreationInputTokens?: number;
-  /** Tokens per second (EMA-smoothed, calculated in Rust) */
-  tokensPerSecond?: number;
-  /** Cumulative billed input tokens (sum of all API calls) */
-  cumulativeBilledInput?: number;
-  /** Cumulative billed output tokens (sum of all API calls) */
-  cumulativeBilledOutput?: number;
-  /** Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking) */
-  reasoningTokens?: number;
-}
-
-/** Tool call information */
-export interface ToolCallInfo {
-  id: string;
-  name: string;
-  input: string;
-}
-
-/**
- * Tool execution progress information (TOOL-011)
- * Streaming output from bash/shell tools during execution
- */
-export interface ToolProgressInfo {
-  /** Tool call ID this progress is for */
-  toolCallId: string;
-  /** Tool name (e.g., "bash", "run_shell_command") */
-  toolName: string;
-  /** Output chunk (new text since last progress event) */
-  outputChunk: string;
-  /** Whether this output is from stderr (should be styled as error/red) */
-  isStderr: boolean;
-}
-
-/** Tool result information */
-export interface ToolResultInfo {
-  toolCallId: string;
-  content: string;
-  isError: boolean;
-}
-
 /**
  * PROV-067: Validate a custom provider's JSON schema (missing facade,
  * invalid fields, etc.) without making network calls.
@@ -3035,8 +2777,300 @@ export interface WorktreeInfoJs {
   /** Whether the worktree is in detached HEAD mode */
   isDetached: boolean;
 }
+export interface CompactionProgress {
+  phase: string;
+  current: number;
+  total: number;
+}
 
-/** Work unit information for file watcher updates */
+export interface CompactionResult {
+  originalTokens: number;
+  compactedTokens: number;
+  compressionRatio: number;
+  turnsSummarized: number;
+  turnsKept: number;
+}
+
+export interface ContextFillInfo {
+  fillPercentage: number;
+  effectiveTokens: number;
+  threshold: number;
+  contextWindow: number;
+}
+
+export interface FspecRequest {
+  command: string;
+  argsJson: string;
+  projectRoot: string;
+  toolCallId: string;
+}
+
+export interface FspecResult {
+  success: boolean;
+  data: string;
+  error?: string;
+  systemReminder?: string;
+  toolCallId: string;
+}
+
+/**
+ * RPC-011: live health summary returned by `FspecService::health` and
+ * reused by the `fspec status` subcommand for human-readable output.
+ *
+ * All counters are point-in-time reads from `ServerStats`. `version`
+ * is the daemon process's `env!("CARGO_PKG_VERSION")` so the caller
+ * can sanity-check protocol compatibility.
+ *
+ * Lifted into `codelet-rpc-types` (rather than living on the server
+ * crate) so both transports — `EmbeddedFspecBackend` (which reads
+ * `ServerStats` directly) and `WebSocketFspecBackend` (which receives
+ * the struct over tarpc) — share the SAME wire shape. The napi
+ * feature gate follows the existing `WorkUnitInfo`/`SessionInfo`
+ * pattern so the type can be re-exported through `codelet-napi`
+ * verbatim if a future JS surface needs it.
+ */
+export interface HealthInfo {
+  /**
+   * Seconds since the daemon's `ServerStats::started_at` instant.
+   *
+   * Typed `i64` (rather than `u64`) so the `napi(object)` cfg-gate
+   * compiles under napi-derive v3 + `napi4` feature, which does not
+   * support `u64` in `napi(object)` field positions. The wire format
+   * (tarpc bincode) carries the same 8 bytes either way, and uptime
+   * can never exceed 2^63 seconds in practice.
+   */
+  uptimeSecs: number;
+  /**
+   * Live count of attached WebSocket clients (decremented via the
+   * `ConnectedClientGuard` Drop impl when each connection task
+   * exits).
+   */
+  connectedClients: number;
+  /**
+   * Elapsed seconds since the workspace watcher last fired an Ok
+   * snapshot into the work-units fanout task. `None` if no
+   * snapshot has ever been observed by this daemon.
+   */
+  lastWatcherEventSecsAgo?: number;
+  /**
+   * Cumulative `RecvError::Lagged` count surfaced by the chunks
+   * broadcast fanout.
+   */
+  lagChunks: number;
+  /**
+   * Cumulative `RecvError::Lagged` count surfaced by the logs
+   * broadcast fanout.
+   */
+  lagLogs: number;
+  /**
+   * Cumulative `RecvError::Lagged` count surfaced by the work-units
+   * broadcast fanout.
+   */
+  lagWorkUnits: number;
+  /** Daemon process's `env!("CARGO_PKG_VERSION")`. */
+  version: string;
+}
+
+export interface IncomingMessageImage {
+  data: string;
+  mediaType: string;
+}
+
+/**
+ * Structured log event payload pushed to subscribers via the
+ * `logs_rx` broadcast channel.
+ */
+export interface LogRecord {
+  level: string;
+  target: string;
+  message: string;
+  /** Unix epoch milliseconds when the event was captured. */
+  timestampMs: number;
+}
+
+export declare const enum NotificationSeverity {
+  Info = 'Info',
+  Warning = 'Warning',
+  Error = 'Error',
+}
+
+/**
+ * Stable identifier for a session. Newtype around `String` so the wire
+ * shape stays a plain string but the type system distinguishes session
+ * IDs from arbitrary strings.
+ */
+export interface SessionId {
+  value: string;
+}
+
+/**
+ * Public metadata about a session returned by `list_sessions`.
+ *
+ * Field names match the NAPI surface verbatim (see
+ * codelet/napi/src/session_manager.rs:380) so that codelet/napi can
+ * re-export this type without changing the existing TypeScript shape.
+ * `id` is a plain `String` rather than a [`SessionId`] newtype so the
+ * TS shape stays a flat string.
+ */
+export interface SessionInfo {
+  id: string;
+  name: string;
+  status: string;
+  project: string;
+  messageCount: number;
+  providerId?: string;
+  modelId?: string;
+  /** GIT-029: Whether this is an isolated session with a git worktree */
+  isIsolated: boolean;
+  /** GIT-029: Path to the worktree (if isolated) */
+  worktreePath?: string;
+  /** RPC-007: optional role string the session was created with. */
+  role?: string;
+}
+
+export declare const enum SessionState {
+  Idle = 'Idle',
+  Running = 'Running',
+  Paused = 'Paused',
+  Compacting = 'Compacting',
+  Interrupted = 'Interrupted',
+  Cleared = 'Cleared',
+}
+
+/**
+ * Coarse session lifecycle state.
+ *
+ * Variant ORDER is preserved exactly so that `as u8` casts in
+ * `codelet/napi/src/session_manager.rs`
+ * (`AtomicU8::new(SessionStatus::Idle as u8)` /
+ * `status.swap(status as u8, ...)`) keep the historical discriminant
+ * values 0..=4 stable after the type was lifted out of NAPI. `Cleared`
+ * is appended (5) as RPC-007's only new variant.
+ */
+export declare const enum SessionStatus {
+  Idle = 'Idle',
+  Running = 'Running',
+  Interrupted = 'Interrupted',
+  /** PAUSE-001: Session is paused waiting for user input (Enter/Y/N/Esc) */
+  Paused = 'Paused',
+  /** PERF-002: Session is compacting context - supports progress tracking */
+  Compacting = 'Compacting',
+  /** RPC-007: Session has been cleared (post-cleanup terminal state). */
+  Cleared = 'Cleared',
+}
+
+/**
+ * Streaming chunk discriminated union shared by the embedded transport,
+ * the WebSocket transport, and the NAPI re-exports.
+ */
+export type StreamChunk =
+  | {
+      type: 'Text';
+      text: string;
+      correlationId?: string;
+      observedCorrelationIds?: Array<string>;
+    }
+  | {
+      type: 'Thinking';
+      thinking: string;
+      correlationId?: string;
+      observedCorrelationIds?: Array<string>;
+    }
+  | {
+      type: 'ToolCall';
+      toolCall: ToolCallInfo;
+      correlationId?: string;
+      observedCorrelationIds?: Array<string>;
+    }
+  | {
+      type: 'ToolResult';
+      toolResult: ToolResultInfo;
+      correlationId?: string;
+      observedCorrelationIds?: Array<string>;
+    }
+  | {
+      type: 'ToolProgress';
+      toolProgress: ToolProgressInfo;
+      correlationId?: string;
+      observedCorrelationIds?: Array<string>;
+    }
+  | { type: 'SessionStateChange'; state: SessionState }
+  | {
+      type: 'UserNotification';
+      message: string;
+      severity: NotificationSeverity;
+    }
+  | { type: 'Interrupted'; queuedInputs: Array<string> }
+  | { type: 'TokenUpdate'; tokens: TokenTracker }
+  | { type: 'ContextFillUpdate'; contextFill: ContextFillInfo }
+  | { type: 'Done' }
+  | { type: 'Error'; error: string }
+  | { type: 'UserInput'; text: string }
+  | {
+      type: 'IncomingMessage';
+      text: string;
+      images?: Array<IncomingMessageImage>;
+    }
+  | {
+      type: 'SupervisorPendingInjection';
+      supervisorPendingInjection: SupervisorPendingInjectionInfo;
+    }
+  | { type: 'CompactionComplete'; compactionResult: CompactionResult }
+  | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
+  | { type: 'FspecCommandResult'; fspecResult: FspecResult }
+  | { type: 'WorkUnitsUpdate'; workUnits: Array<WorkUnitInfo> }
+  | { type: 'IsolationStateChange'; isIsolated: boolean; worktreePath?: string }
+  | {
+      type: 'FooterStateUpdate';
+      cwd: string;
+      displayPath: string;
+      isGitRepo: boolean;
+      branch?: string;
+    }
+  | { type: 'DebugStateChange'; enabled: boolean };
+
+export interface SupervisorPendingInjectionInfo {
+  urgent: boolean;
+  content: string;
+}
+
+export interface TokenTracker {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadInputTokens?: number;
+  cacheCreationInputTokens?: number;
+  tokensPerSecond?: number;
+  cumulativeBilledInput?: number;
+  cumulativeBilledOutput?: number;
+  reasoningTokens?: number;
+}
+
+export interface ToolCallInfo {
+  id: string;
+  name: string;
+  input: string;
+}
+
+export interface ToolProgressInfo {
+  toolCallId: string;
+  toolName: string;
+  outputChunk: string;
+  isStderr: boolean;
+}
+
+export interface ToolResultInfo {
+  toolCallId: string;
+  content: string;
+  isError: boolean;
+}
+
+/**
+ * Work unit information shared across all transports and the NAPI surface.
+ *
+ * Field order and naming match the original NAPI definition so that the
+ * `napi` feature gate can preserve the existing TypeScript shape without
+ * breaking changes.
+ */
 export interface WorkUnitInfo {
   id: string;
   title: string;

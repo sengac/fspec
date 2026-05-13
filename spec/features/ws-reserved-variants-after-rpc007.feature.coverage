@@ -1,0 +1,57 @@
+{
+  "scenarios": [
+    {
+      "name": "Envelope::CmdReq and Envelope::CmdRes remain reserved-and-rejected while Event and LogEvent are now legitimate",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-server/tests/ws_reserved_variants_after_rpc007.rs",
+          "lines": "30-117",
+          "implMappings": [
+            {
+              "file": "codelet/rpc-server/src/pump.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/rpc-server/tests/ws_reserved_variants_after_rpc007.rs"
+    ],
+    "implFiles": [
+      "codelet/rpc-server/src/pump.rs"
+    ],
+    "totalLinesCovered": 113
+  }
+}

@@ -40,6 +40,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@popup` | Extension popup UI scenarios |
 | `@profiling` | Runtime profiling and instrumentation features |
 | `@providers` | Provider integration and LLM provider implementations |
+| `@rpc` | RPC service layer crates (rpc-types, rpc, rpc-embedded, rpc-server) implementing the dual-transport tarpc architecture under RPC-002 |
 | `@scheduler` | Scheduling service infrastructure and schedule management |
 | `@session` | Session management and state tracking |
 | `@telegram` | Telegram bot and messaging platform integration |
@@ -440,6 +441,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@package` | npm package configuration |
 | `@parallel-tools` | Parallel tool execution scenarios |
+| `@parity` | Cross-transport parity invariants — both transports produce equivalent results |
 | `@path-traversal` | Path traversal attack prevention |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@per-message` | Per-message metadata scenarios |
@@ -492,6 +494,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@structure` | Message structure preservation scenarios |
 | `@symlink` | Symlink escape attack prevention |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
+| `@tarpc` | tarpc service trait, transport adapters, and request/response framing |
 | `@template` | Template System |
 | `@template-generation` | Template and documentation generation |
 | `@testing-framework` | Testing framework and infrastructure features |
@@ -529,6 +532,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@versioning` | Version management and migration features |
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
+| `@websocket` | WebSocket transport for tarpc service |
 | `@worker-threads` | Features involving Node.js worker threads for parallel processing |
 | `@workspace` | Cargo workspace configuration |
 | `@write` | Write tool operations |
@@ -588,6 +592,8 @@ Tags tracking development status of features.
 | `@refactor` | Code refactoring and technical improvements |
 | `@refactoring` | Code that needs refactoring |
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |
+| `@rpc-006` | Work unit identifier tag for RPC-006: real work-units backing + first streaming envelope variant (WorkUnitsUpdate) |
+| `@rpc-010` | Work unit identifier tag for RPC-010: fspec binary with combined/daemon/client subcommands replacing codelet-rpc-server for production |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -894,7 +900,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-04-23T12:34:47.050Z_
+_Last updated: 2026-05-10T21:44:05.077Z_
 
 **Update Command**: `fspec tag-stats`
 

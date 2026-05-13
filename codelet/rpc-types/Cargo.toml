@@ -1,0 +1,25 @@
+[package]
+name = "codelet-rpc-types"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[features]
+# When enabled, applies the NAPI-RS `#[napi(object)]` decoration to types
+# that cross the JS boundary so that the existing TypeScript surface is
+# preserved without redefining types in `codelet/napi`. This is the
+# "feature gate" half of RPC-005 architecture rule #2 (the alternative
+# was a wrapper struct in `codelet/napi`).
+#
+# Default builds remain free of any napi/tokio/tarpc dependency, satisfying
+# the "rpc-types has no inbound deps on transport crates" invariant.
+napi = ["dep:napi", "dep:napi-derive"]
+
+[dependencies]
+serde = { workspace = true }
+napi = { version = "3", default-features = false, features = ["napi4"], optional = true }
+napi-derive = { version = "3", optional = true }

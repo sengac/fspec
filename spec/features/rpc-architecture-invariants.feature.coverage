@@ -1,0 +1,159 @@
+{
+  "scenarios": [
+    {
+      "name": "EmbeddedTransport requires a tokio runtime Handle at construction",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "lines": "21-69",
+          "implMappings": [
+            {
+              "file": "codelet/rpc-embedded/src/lib.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WorkUnitInfo is defined once in rpc-types and re-exported by codelet-napi",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "lines": "70-129",
+          "implMappings": [
+            {
+              "file": "codelet/rpc-types/src/lib.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Embedded transport uses only tarpc::transport::channel for in-process traffic",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "lines": "130-171",
+          "implMappings": [
+            {
+              "file": "codelet/rpc-embedded/src/lib.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shared service crate codelet-rpc has no dependency on codelet-core or the NAPI work_units_watcher",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "lines": "172-211",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/Cargo.toml",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rpc-server binary binds to 127.0.0.1 loopback only",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-embedded/tests/architecture_invariants.rs",
+          "lines": "212-242",
+          "implMappings": [
+            {
+              "file": "codelet/rpc-server/src/main.rs",
+              "lines": [
+                29
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/rpc-embedded/tests/architecture_invariants.rs"
+    ],
+    "implFiles": [
+      "codelet/rpc-embedded/src/lib.rs",
+      "codelet/rpc-types/src/lib.rs",
+      "codelet/rpc/Cargo.toml",
+      "codelet/rpc-server/src/main.rs"
+    ],
+    "totalLinesCovered": 282
+  }
+}

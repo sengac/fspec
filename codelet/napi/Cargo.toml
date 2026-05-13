@@ -30,6 +30,9 @@ codelet-git = { path = "../git" }
 codelet-providers = { path = "../providers" }
 codelet-tools = { path = "../tools" }
 codelet-common = { path = "../common" }
+# RPC-005: re-export shared serde types from rpc-types with NAPI derives
+# applied via the optional `napi` feature gate.
+codelet-rpc-types = { path = "../rpc-types", features = ["napi"] }
 
 # AST-grep for NAPI bindings
 ast-grep-core.workspace = true

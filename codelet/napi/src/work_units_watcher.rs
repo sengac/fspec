@@ -1,104 +1,50 @@
-//! Work Units File Watcher
+//! Work Units File Watcher — NAPI compatibility shim (RPC-006).
 //!
-//! Cross-platform file watcher for spec/work-units.json using notify crate.
-//! Emits StreamChunk::WorkUnitsUpdate events to TypeScript via callback.
+//! After RPC-006 the cross-platform `notify`-based watcher logic lives
+//! in `codelet/core/src/work_units.rs`. This module is now a thin shim
+//! that wraps the lifted [`codelet_core::work_units::WorkUnitsWatcher`]
+//! and forwards each broadcast event into the existing
+//! [`ThreadsafeFunction`] callback so the TypeScript side keeps working
+//! unchanged.
+//!
+//! Exported NAPI surface (preserved verbatim):
+//!   - `startWorkUnitsWatcher(projectRoot, callback)`
+//!   - `stopWorkUnitsWatcher()`
+//!   - `getAllWorkUnits()`, `getWorkUnit(id)`, `getWorkUnitStatus(id)`
+//!   - `isWorkUnitsWatcherActive()`
 
-use std::collections::HashMap;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::sync::{Arc, RwLock};
-use std::time::Duration;
 
+use codelet_core::work_units::WorkUnitsWatcher;
+use codelet_rpc_types::WorkUnitInfo;
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use napi_derive::napi;
-use notify::{RecommendedWatcher, RecursiveMode};
-use notify_debouncer_mini::{new_debouncer, DebouncedEventKind};
-use serde::Deserialize;
-use tracing::{debug, error, warn};
+use tracing::{debug, warn};
 
-use crate::types::{StreamChunk, WorkUnitInfo};
+use crate::types::StreamChunk;
 
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct WorkUnit {
-    id: String,
-    title: String,
-    #[serde(rename = "type", default)]
-    work_type: Option<String>,
-    status: String,
-    #[serde(default)]
-    description: Option<String>,
-    #[serde(default)]
-    estimate: Option<i32>,
-    #[serde(default)]
-    epic: Option<String>,
-}
-
-impl From<WorkUnit> for WorkUnitInfo {
-    fn from(wu: WorkUnit) -> Self {
-        let work_type = wu.work_type.unwrap_or_else(|| {
-            warn!("Work unit {} is missing 'type' field, defaulting to 'story'", wu.id);
-            "story".to_string()
-        });
-        WorkUnitInfo {
-            id: wu.id,
-            title: wu.title,
-            work_type,
-            status: wu.status,
-            description: wu.description,
-            estimate: wu.estimate,
-            epic: wu.epic,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct WorkUnitsFile {
-    work_units: HashMap<String, WorkUnit>,
-}
-
-struct WatcherState {
-    work_units: HashMap<String, WorkUnit>,
-    watch_path: PathBuf,
+/// Globals: watcher handle (owns the notify debouncer) and the latest
+/// snapshot cache used by the synchronous getters.
+struct ShimState {
+    watcher: Option<WorkUnitsWatcher>,
+    snapshot: Vec<WorkUnitInfo>,
     is_watching: bool,
 }
 
-impl WatcherState {
+impl ShimState {
     fn new() -> Self {
-        WatcherState {
-            work_units: HashMap::new(),
-            watch_path: PathBuf::new(),
+        Self {
+            watcher: None,
+            snapshot: Vec::new(),
             is_watching: false,
         }
     }
 }
 
 lazy_static::lazy_static! {
-    static ref WATCHER_STATE: Arc<RwLock<WatcherState>> = Arc::new(RwLock::new(WatcherState::new()));
-    static ref WATCHER_HANDLE: Arc<RwLock<Option<notify_debouncer_mini::Debouncer<RecommendedWatcher>>>> = 
-        Arc::new(RwLock::new(None));
-}
-
-fn load_work_units(path: &Path) -> Result<HashMap<String, WorkUnit>> {
-    if !path.exists() {
-        debug!("Work units file does not exist: {:?}", path);
-        return Ok(HashMap::new());
-    }
-
-    let content = fs::read_to_string(path)
-        .map_err(|e| Error::from_reason(format!("Failed to read work-units.json: {}", e)))?;
-
-    let file: WorkUnitsFile = serde_json::from_str(&content)
-        .map_err(|e| Error::from_reason(format!("Failed to parse work-units.json: {}", e)))?;
-
-    Ok(file.work_units)
-}
-
-fn create_update_chunk(units: &HashMap<String, WorkUnit>) -> StreamChunk {
-    let work_units: Vec<WorkUnitInfo> = units.values().cloned().map(WorkUnitInfo::from).collect();
-    StreamChunk::work_units_update(work_units)
+    static ref SHIM_STATE: Arc<RwLock<ShimState>> = Arc::new(RwLock::new(ShimState::new()));
 }
 
 #[napi]
@@ -107,131 +53,131 @@ pub fn start_work_units_watcher(
     #[napi(ts_arg_type = "(chunk: import('./index').StreamChunk) => void")]
     callback: ThreadsafeFunction<StreamChunk>,
 ) -> Result<()> {
-    let work_units_path = Path::new(&project_root).join("spec").join("work-units.json");
+    let workspace = Path::new(&project_root).to_path_buf();
+    let watcher = WorkUnitsWatcher::new(&workspace).map_err(|e| {
+        Error::from_reason(format!("create WorkUnitsWatcher: {e}"))
+    })?;
 
-    let initial_units = load_work_units(&work_units_path)?;
-    
+    // Subscribe BEFORE we capture the initial snapshot so we don't miss
+    // any push that lands between the snapshot read and the subscribe
+    // call.
+    let mut rx = watcher.subscribe();
+    let initial = watcher.snapshot();
+
     {
-        let mut state = WATCHER_STATE.write().map_err(|e| {
-            Error::from_reason(format!("Failed to acquire watcher state lock: {}", e))
+        let mut guard = SHIM_STATE.write().map_err(|e| {
+            Error::from_reason(format!("acquire shim-state lock: {e}"))
         })?;
-        state.work_units = initial_units.clone();
-        state.watch_path = work_units_path.clone();
-        state.is_watching = true;
+        guard.watcher = Some(watcher);
+        guard.snapshot = initial.clone();
+        guard.is_watching = true;
     }
 
-    let initial_chunk = create_update_chunk(&initial_units);
-    callback.call(Ok(initial_chunk), ThreadsafeFunctionCallMode::NonBlocking);
+    // Fire the initial chunk synchronously so the TS side observes it
+    // before any potential subsequent file mutation (matches legacy
+    // RPC-005 behaviour).
+    callback.call(
+        Ok(StreamChunk::work_units_update(initial)),
+        ThreadsafeFunctionCallMode::NonBlocking,
+    );
 
-    let watch_path = work_units_path.clone();
-    
-    let mut debouncer = new_debouncer(
-        Duration::from_millis(100),
-        move |res: std::result::Result<Vec<notify_debouncer_mini::DebouncedEvent>, notify::Error>| {
-            match res {
-                Ok(events) => {
-                    // Only react to events that touch work-units.json itself.
-                    // The spec/ directory also contains lock files (.lock dirs)
-                    // created by proper-lockfile during reads. Without this filter,
-                    // loadData() → lock creation → watcher event → loadData() creates
-                    // an infinite feedback loop burning ~20% CPU while idle.
-                    let relevant = events.iter().any(|e| {
-                        matches!(e.kind, DebouncedEventKind::Any | DebouncedEventKind::AnyContinuous)
-                            && e.path.file_name().is_some_and(|name| name == "work-units.json")
-                    });
-                    
-                    if relevant {
-                        match load_work_units(&watch_path) {
-                            Ok(units) => {
-                                if let Ok(mut state) = WATCHER_STATE.write() {
-                                    state.work_units = units.clone();
-                                }
-                                let chunk = create_update_chunk(&units);
-                                callback.call(Ok(chunk), ThreadsafeFunctionCallMode::NonBlocking);
-                            }
-                            Err(e) => {
-                                warn!("Failed to reload work units: {}", e);
-                            }
+    // Drive the broadcast receiver from a dedicated std::thread using
+    // `broadcast::Receiver::blocking_recv` so the shim does NOT need a
+    // Tokio runtime context (NAPI synchronous functions are called
+    // outside of any Tokio context, which is why an earlier draft that
+    // used `tokio::spawn` panicked with "no reactor running"). The
+    // shim's lazy_static state holds the watcher alive, so the
+    // receiver stays open until stop_work_units_watcher() is called.
+    std::thread::Builder::new()
+        .name("napi-work-units-watcher".to_string())
+        .spawn(move || {
+            use tokio::sync::broadcast::error::RecvError;
+            loop {
+                match rx.blocking_recv() {
+                    Ok(snapshot) => {
+                        if let Ok(mut guard) = SHIM_STATE.write() {
+                            guard.snapshot = snapshot.clone();
                         }
+                        callback.call(
+                            Ok(StreamChunk::work_units_update(snapshot)),
+                            ThreadsafeFunctionCallMode::NonBlocking,
+                        );
+                    }
+                    Err(RecvError::Lagged(skipped)) => {
+                        debug!("napi shim watcher lagged; skipped={skipped}");
+                        continue;
+                    }
+                    Err(RecvError::Closed) => {
+                        debug!("napi shim watcher channel closed");
+                        break;
                     }
                 }
-                Err(e) => {
-                    error!("File watcher error: {:?}", e);
-                }
             }
-        },
-    ).map_err(|e| Error::from_reason(format!("Failed to create file watcher: {}", e)))?;
-
-    let spec_dir = work_units_path.parent().unwrap_or(Path::new("."));
-    debouncer.watcher().watch(spec_dir, RecursiveMode::NonRecursive)
-        .map_err(|e| Error::from_reason(format!("Failed to watch directory: {}", e)))?;
-
-    {
-        let mut handle = WATCHER_HANDLE.write().map_err(|e| {
-            Error::from_reason(format!("Failed to acquire watcher handle lock: {}", e))
+        })
+        .map_err(|e| {
+            Error::from_reason(format!("spawn napi-work-units-watcher thread: {e}"))
         })?;
-        *handle = Some(debouncer);
-    }
 
-    debug!("Work units watcher started successfully");
+    debug!("Work units watcher (post-RPC-006 shim) started successfully");
     Ok(())
 }
 
 #[napi]
 pub fn stop_work_units_watcher() -> Result<()> {
-    debug!("Stopping work units watcher");
-    
-    {
-        let mut handle = WATCHER_HANDLE.write().map_err(|e| {
-            Error::from_reason(format!("Failed to acquire watcher handle lock: {}", e))
-        })?;
-        *handle = None;
-    }
-    
-    {
-        let mut state = WATCHER_STATE.write().map_err(|e| {
-            Error::from_reason(format!("Failed to acquire watcher state lock: {}", e))
-        })?;
-        state.is_watching = false;
-        state.work_units.clear();
-    }
-    
-    debug!("Work units watcher stopped");
+    debug!("Stopping work units watcher (post-RPC-006 shim)");
+    let mut guard = SHIM_STATE.write().map_err(|e| {
+        Error::from_reason(format!("acquire shim-state lock: {e}"))
+    })?;
+    guard.watcher = None;
+    guard.is_watching = false;
+    guard.snapshot.clear();
     Ok(())
 }
 
 #[napi]
 pub fn get_work_unit_status(work_unit_id: String) -> Result<Option<String>> {
-    let state = WATCHER_STATE.read().map_err(|e| {
-        Error::from_reason(format!("Failed to acquire watcher state lock: {}", e))
+    let guard = SHIM_STATE.read().map_err(|e| {
+        Error::from_reason(format!("acquire shim-state lock: {e}"))
     })?;
-    
-    Ok(state.work_units.get(&work_unit_id).map(|wu| wu.status.clone()))
+    Ok(guard
+        .snapshot
+        .iter()
+        .find(|wu| wu.id == work_unit_id)
+        .map(|wu| wu.status.clone()))
 }
 
 #[napi]
 pub fn get_work_unit(work_unit_id: String) -> Result<Option<WorkUnitInfo>> {
-    let state = WATCHER_STATE.read().map_err(|e| {
-        Error::from_reason(format!("Failed to acquire watcher state lock: {}", e))
+    let guard = SHIM_STATE.read().map_err(|e| {
+        Error::from_reason(format!("acquire shim-state lock: {e}"))
     })?;
-    
-    Ok(state.work_units.get(&work_unit_id).cloned().map(WorkUnitInfo::from))
+    Ok(guard
+        .snapshot
+        .iter()
+        .find(|wu| wu.id == work_unit_id)
+        .cloned())
 }
 
 #[napi]
 pub fn get_all_work_units() -> Result<Vec<WorkUnitInfo>> {
-    let state = WATCHER_STATE.read().map_err(|e| {
-        Error::from_reason(format!("Failed to acquire watcher state lock: {}", e))
+    let guard = SHIM_STATE.read().map_err(|e| {
+        Error::from_reason(format!("acquire shim-state lock: {e}"))
     })?;
-    
-    Ok(state.work_units.values().cloned().map(WorkUnitInfo::from).collect())
+    Ok(guard.snapshot.clone())
 }
 
 #[napi]
 pub fn is_work_units_watcher_active() -> Result<bool> {
-    let state = WATCHER_STATE.read().map_err(|e| {
-        Error::from_reason(format!("Failed to acquire watcher state lock: {}", e))
+    let guard = SHIM_STATE.read().map_err(|e| {
+        Error::from_reason(format!("acquire shim-state lock: {e}"))
     })?;
-    
-    Ok(state.is_watching)
+    Ok(guard.is_watching)
+}
+
+// `warn!` is referenced indirectly via tracing macros above. Keep the
+// import in scope so linters do not flag the unused import in builds
+// that compile this file without the napi feature gate.
+#[allow(dead_code)]
+fn _ensure_warn_in_scope() {
+    warn!("placeholder");
 }

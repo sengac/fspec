@@ -1,20 +1,92 @@
 //! Type definitions for NAPI bindings
 //!
 //! These types are exposed to JavaScript/TypeScript.
+//!
+//! ## RPC-007 type-uniqueness invariant
+//!
+//! All types that cross the RPC wire (StreamChunk + its 13 supporting
+//! structs/enums, SessionState, NotificationSeverity, the five RPC-007
+//! contract types: SessionId, SessionInfo, SessionStatus, StreamChunk,
+//! LogRecord) are defined exactly once in `codelet-rpc-types` and
+//! re-exported here. The TypeScript shape is preserved verbatim because
+//! the lifted definitions retain every `#[cfg_attr(feature = "napi",
+//! napi(js_name = ...))]` rename. Only NAPI-only types (HITL, NapiHitl*,
+//! NapiToolCall, NapiTurnDetails, etc.) remain locally defined here.
 
 use serde::{Deserialize, Serialize};
 
+// ============================================================================
+// RPC-007: Re-exports of types lifted into codelet-rpc-types as the
+// single source of truth for the dual-transport RPC.
+// ============================================================================
+
 /// PERF-002: Progress information for compaction process
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CompactionProgress {
-    /// Current compaction phase (e.g., "Preparing compaction", "Analyzing context")
-    pub phase: String,
-    /// Current progress count (e.g., current turn being processed)
-    pub current: u32,
-    /// Total items to process (e.g., total turns to analyze)
-    pub total: u32,
-}
+pub use codelet_rpc_types::CompactionProgress;
+
+/// BRIDGE-007: Image data for supervisor input (from Telegram bridge)
+pub use codelet_rpc_types::IncomingMessageImage;
+
+/// Token usage tracking information (NAPI-005, TUI-033, TUI-091)
+pub use codelet_rpc_types::TokenTracker;
+
+/// Tool call information
+pub use codelet_rpc_types::ToolCallInfo;
+
+/// Tool result information
+pub use codelet_rpc_types::ToolResultInfo;
+
+/// Tool execution progress information (TOOL-011)
+pub use codelet_rpc_types::ToolProgressInfo;
+
+/// Context window fill information (TUI-033)
+pub use codelet_rpc_types::ContextFillInfo;
+
+/// Supervisor pending injection information (WATCH-020)
+pub use codelet_rpc_types::SupervisorPendingInjectionInfo;
+
+/// Work unit information for file watcher updates.
+///
+/// RPC-005: lifted into `codelet-rpc-types` so the dual-transport RPC and
+/// the NAPI surface share a single source of truth. The `napi` feature
+/// gate on `codelet-rpc-types` re-applies the `#[napi(object)]` derive so
+/// the existing TypeScript shape (camelCase `workType`) is preserved.
+pub use codelet_rpc_types::WorkUnitInfo;
+
+/// RPC-007: Session and log types lifted into `codelet-rpc-types`.
+///
+/// `SessionInfo` is re-exported from `codelet/napi/src/session_manager.rs`
+/// to preserve its placement next to the SessionManager. `SessionId`
+/// (newtype around String) and `LogRecord` (structured tracing event) are
+/// re-exported here so codelet/napi has the full RPC-007 contract surface
+/// available without depending on rpc-types directly.
+pub use codelet_rpc_types::{LogRecord, SessionId};
+
+/// NAPI-010: Session state for internal state machine tracking
+/// NOT for conversation display - use SessionStateChange chunk variant
+pub use codelet_rpc_types::SessionState;
+
+/// NAPI-010: User notification severity levels
+pub use codelet_rpc_types::NotificationSeverity;
+
+/// NAPI-010: Stream chunk - proper discriminated union (RPC-007 lift)
+pub use codelet_rpc_types::StreamChunk;
+
+/// Compaction result (NAPI-005)
+/// Returned by compact() with metrics about the compaction operation
+pub use codelet_rpc_types::CompactionResult;
+
+/// CODE-009: Fspec command request data
+/// Sent when LLM invokes FspecTool - TypeScript intercepts and executes
+pub use codelet_rpc_types::FspecRequest;
+
+/// CODE-009: Fspec command result data
+/// Sent by TypeScript after executing the fspec command
+pub use codelet_rpc_types::FspecResult;
+
+// ============================================================================
+// NAPI-only types (not lifted to codelet-rpc-types because they do not
+// cross the RPC wire — they are surface-only types for the JS frontend).
+// ============================================================================
 
 /// TUI-056: Tool call info for turn details
 #[napi(object)]
@@ -26,17 +98,6 @@ pub struct NapiToolCall {
     pub parameters: String,
     /// Whether tool call was successful
     pub success: bool,
-}
-
-/// BRIDGE-007: Image data for supervisor input (from Telegram bridge)
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct IncomingMessageImage {
-    /// Base64-encoded image data
-    pub data: String,
-    /// Media type (e.g., "image/jpeg", "image/png")
-    #[napi(js_name = "mediaType")]
-    pub media_type: String,
 }
 
 /// TUI-056: File modification info for turn details
@@ -71,39 +132,6 @@ pub struct NapiTurnDetails {
     pub context: String,
 }
 
-/// Token usage tracking information
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TokenTracker {
-    pub input_tokens: u32,
-    pub output_tokens: u32,
-    pub cache_read_input_tokens: Option<u32>,
-    pub cache_creation_input_tokens: Option<u32>,
-    /// Tokens per second (EMA-smoothed, calculated in Rust)
-    pub tokens_per_second: Option<f64>,
-    /// Cumulative billed input tokens (sum of all API calls)
-    pub cumulative_billed_input: Option<u32>,
-    /// Cumulative billed output tokens (sum of all API calls)
-    pub cumulative_billed_output: Option<u32>,
-    /// Reasoning/thinking tokens (OpenAI o-series, Codex extended thinking)
-    pub reasoning_tokens: Option<u32>,
-}
-
-impl Default for TokenTracker {
-    fn default() -> Self {
-        Self {
-            input_tokens: 0,
-            output_tokens: 0,
-            cache_read_input_tokens: Some(0),
-            cache_creation_input_tokens: Some(0),
-            tokens_per_second: None,
-            cumulative_billed_input: Some(0),
-            cumulative_billed_output: Some(0),
-            reasoning_tokens: None,
-        }
-    }
-}
-
 /// Debug command result (AGENT-021)
 /// Returned by toggleDebug() to indicate debug capture state
 #[napi(object)]
@@ -117,633 +145,214 @@ pub struct DebugCommandResult {
     pub message: String,
 }
 
-/// Tool call information
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolCallInfo {
-    pub id: String,
-    pub name: String,
-    pub input: String, // JSON string of input
-}
-
-/// Tool result information
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolResultInfo {
-    pub tool_call_id: String,
-    pub content: String,
-    pub is_error: bool,
-}
-
-/// Tool execution progress information (TOOL-011)
-/// Streaming output from bash/shell tools during execution
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolProgressInfo {
-    /// Tool call ID this progress is for
-    pub tool_call_id: String,
-    /// Tool name (e.g., "bash", "run_shell_command")
-    pub tool_name: String,
-    /// Output chunk (new text since last progress event)
-    pub output_chunk: String,
-    /// Whether this output is from stderr (should be styled as error/red)
-    pub is_stderr: bool,
-}
-
-/// Context window fill information (TUI-033)
-/// Sent with each token update to show context window usage
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ContextFillInfo {
-    /// Fill percentage (0-100+, can exceed 100 near compaction)
-    pub fill_percentage: u32,
-    /// Effective tokens (after cache discount) - using f64 for NAPI compatibility
-    pub effective_tokens: f64,
-    /// Compaction threshold (usable context after output reservation) - using f64 for NAPI compatibility
-    pub threshold: f64,
-    /// Provider's context window size - using f64 for NAPI compatibility
-    pub context_window: f64,
-}
-
-/// Supervisor pending injection information (WATCH-020)
-/// Sent when auto_inject=false and supervisor detects an [INTERJECT] block
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct SupervisorPendingInjectionInfo {
-    /// Whether this is an urgent injection
-    pub urgent: bool,
-    /// The message content that would be injected
-    pub content: String,
-}
-
-/// Work unit information for file watcher updates
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct WorkUnitInfo {
-    pub id: String,
-    pub title: String,
-    #[napi(js_name = "workType")]
-    pub work_type: String,
-    pub status: String,
-    pub description: Option<String>,
-    pub estimate: Option<i32>,
-    pub epic: Option<String>,
-}
-
-/// NAPI-010: Session state for internal state machine tracking
-/// NOT for conversation display - use SessionStateChange chunk variant
-#[napi(string_enum)]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum SessionState {
-    Idle,
-    Running,
-    Paused,
-    Compacting,
-    Interrupted,
-    Cleared,
-}
-
-/// NAPI-010: User notification severity levels
-#[napi(string_enum)]
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum NotificationSeverity {
-    Info,
-    Warning,
-    Error,
-}
-
-/// NAPI-010: Stream chunk - proper discriminated union
+/// Convert StreamChunk to serde_json::Value for bridge relay (BRIDGE-001)
 ///
-/// The type system enforces correct handling in TypeScript via exhaustive switch statements.
-/// This replaces the old struct-based StreamChunk that required fragile string parsing.
+/// This manual serialization is needed because StreamChunk uses NAPI's
+/// discriminant-based serialization which doesn't implement serde::Serialize
+/// in the shape the bridge needs. The bridge needs to serialize chunks to
+/// JSON for WebSocket transmission.
 ///
-/// Key distinction:
-/// - SessionStateChange: INTERNAL state updates, do NOT add to conversation
-/// - UserNotification: User-facing messages, DISPLAY in conversation
-#[napi(discriminant = "type")]
-#[derive(Debug, Clone)]
-pub enum StreamChunk {
-    /// Text content from assistant
-    Text {
-        text: String,
-        /// Correlation ID for cross-pane selection highlighting (WATCH-011)
-        #[napi(js_name = "correlationId")]
-        correlation_id: Option<String>,
-        /// IDs of observed subordinate chunks that triggered this supervisor response (WATCH-011)
-        #[napi(js_name = "observedCorrelationIds")]
-        observed_correlation_ids: Option<Vec<String>>,
-    },
+/// Free function (NOT inherent method) because StreamChunk is now defined
+/// in codelet-rpc-types and Rust's orphan rule forbids inherent impls on
+/// types from another crate. The two callers (session_manager.rs and
+/// agent_manager_handler.rs) use this function.
+pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
+    use serde_json::json;
 
-    /// Thinking/reasoning content from extended thinking (TOOL-010)
-    Thinking {
-        thinking: String,
-        #[napi(js_name = "correlationId")]
-        correlation_id: Option<String>,
-        #[napi(js_name = "observedCorrelationIds")]
-        observed_correlation_ids: Option<Vec<String>>,
-    },
-
-    /// Tool invocation from assistant
-    ToolCall {
-        #[napi(js_name = "toolCall")]
-        tool_call: ToolCallInfo,
-        #[napi(js_name = "correlationId")]
-        correlation_id: Option<String>,
-        #[napi(js_name = "observedCorrelationIds")]
-        observed_correlation_ids: Option<Vec<String>>,
-    },
-
-    /// Tool execution result
-    ToolResult {
-        #[napi(js_name = "toolResult")]
-        tool_result: ToolResultInfo,
-        #[napi(js_name = "correlationId")]
-        correlation_id: Option<String>,
-        #[napi(js_name = "observedCorrelationIds")]
-        observed_correlation_ids: Option<Vec<String>>,
-    },
-
-    /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
-    ToolProgress {
-        #[napi(js_name = "toolProgress")]
-        tool_progress: ToolProgressInfo,
-        #[napi(js_name = "correlationId")]
-        correlation_id: Option<String>,
-        #[napi(js_name = "observedCorrelationIds")]
-        observed_correlation_ids: Option<Vec<String>>,
-    },
-
-    /// NAPI-010: Internal session state change - NOT for conversation display
-    /// TypeScript should update state machine and UI indicators, but NOT add to conversation
-    SessionStateChange {
-        state: SessionState,
-    },
-
-    /// NAPI-010: User-facing notification - DISPLAY in conversation
-    /// For messages that should be visible to the user in the conversation area
-    UserNotification {
-        message: String,
-        severity: NotificationSeverity,
-    },
-
-    /// User interrupted agent execution
-    Interrupted {
-        #[napi(js_name = "queuedInputs")]
-        queued_inputs: Vec<String>,
-    },
-
-    /// Token usage update
-    TokenUpdate {
-        tokens: TokenTracker,
-    },
-
-    /// Context fill percentage update (TUI-033)
-    ContextFillUpdate {
-        #[napi(js_name = "contextFill")]
-        context_fill: ContextFillInfo,
-    },
-
-    /// Stream completed
-    Done,
-
-    /// Error occurred
-    Error {
-        error: String,
-    },
-
-    /// User input message (NAPI-009: for resume/attach to restore user messages)
-    UserInput {
-        text: String,
-    },
-
-    /// Supervisor input message (WATCH-006: for supervisor injection into subordinate session)
-    /// BRIDGE-007: Extended to support optional images from Telegram bridge
-    IncomingMessage {
-        text: String,
-        /// Optional images for multimodal input (BRIDGE-007)
-        #[napi(js_name = "images")]
-        images: Option<Vec<IncomingMessageImage>>,
-    },
-
-    /// Supervisor pending injection - when auto_inject=false (WATCH-020)
-    SupervisorPendingInjection {
-        #[napi(js_name = "supervisorPendingInjection")]
-        supervisor_pending_injection: SupervisorPendingInjectionInfo,
-    },
-
-    /// UX-002: Compaction completed with structured result data
-    /// NOT a string to parse - direct access to compression metrics
-    CompactionComplete {
-        #[napi(js_name = "compactionResult")]
-        compaction_result: CompactionResult,
-    },
-
-    /// CODE-009: Fspec command request - sent when LLM invokes FspecTool
-    /// TypeScript must intercept this, execute the command, and call session_send_fspec_result()
-    FspecCommandRequest {
-        #[napi(js_name = "fspecRequest")]
-        fspec_request: FspecRequest,
-    },
-
-    /// CODE-009: Fspec command result - sent by TypeScript after executing command
-    /// This is emitted after session_send_fspec_result() is called
-    FspecCommandResult {
-        #[napi(js_name = "fspecResult")]
-        fspec_result: FspecResult,
-    },
-
-    /// Work units updated - emitted by global file watcher when work-units.json changes
-    WorkUnitsUpdate {
-        #[napi(js_name = "workUnits")]
-        work_units: Vec<WorkUnitInfo>,
-    },
-
-    /// GIT-029: Isolation state change - emitted when session isolation state changes
-    /// TypeScript should update sessionStore.setIsolationState() when this is received
-    IsolationStateChange {
-        /// Whether the session is isolated (has a git worktree)
-        #[napi(js_name = "isIsolated")]
-        is_isolated: bool,
-        /// Path to the worktree (if isolated)
-        #[napi(js_name = "worktreePath")]
-        worktree_path: Option<String>,
-    },
-
-    /// TUI-091: Footer state update - emitted by background poller with CWD + git branch name
-    /// TypeScript should update footerStore when this is received
-    FooterStateUpdate {
-        /// Effective working directory for this session
-        cwd: String,
-        /// Display path (with ~ substitution)
-        #[napi(js_name = "displayPath")]
-        display_path: String,
-        /// Whether the directory is a git repository
-        #[napi(js_name = "isGitRepo")]
-        is_git_repo: bool,
-        /// Current branch name, or null for detached HEAD
-        branch: Option<String>,
-    },
-
-    /// BUG-134: Debug state change - emitted when session debug capture state toggles
-    /// TypeScript should update sessionStore.setDebugEnabled() when this is received
-    DebugStateChange {
-        /// Whether debug capture is now enabled for this session
-        enabled: bool,
-    },
-}
-
-impl StreamChunk {
-    pub fn text(text: String) -> Self {
-        Self::Text {
+    match chunk {
+        StreamChunk::Text {
             text,
-            correlation_id: None,
-            observed_correlation_ids: None,
-        }
-    }
-
-    /// Create a thinking/reasoning content chunk (TOOL-010)
-    pub fn thinking(thinking: String) -> Self {
-        Self::Thinking {
+            correlation_id,
+            observed_correlation_ids,
+        } => json!({
+            "type": "text",
+            "text": text,
+            "correlationId": correlation_id,
+            "observedCorrelationIds": observed_correlation_ids,
+        }),
+        StreamChunk::Thinking {
             thinking,
-            correlation_id: None,
-            observed_correlation_ids: None,
+            correlation_id,
+            observed_correlation_ids,
+        } => json!({
+            "type": "thinking",
+            "thinking": thinking,
+            "correlationId": correlation_id,
+            "observedCorrelationIds": observed_correlation_ids,
+        }),
+        StreamChunk::ToolCall {
+            tool_call,
+            correlation_id,
+            observed_correlation_ids,
+        } => json!({
+            "type": "toolCall",
+            "toolCall": {
+                "id": tool_call.id,
+                "name": tool_call.name,
+                "input": tool_call.input,
+            },
+            "correlationId": correlation_id,
+            "observedCorrelationIds": observed_correlation_ids,
+        }),
+        StreamChunk::ToolResult {
+            tool_result,
+            correlation_id,
+            observed_correlation_ids,
+        } => json!({
+            "type": "toolResult",
+            "toolResult": {
+                "toolCallId": tool_result.tool_call_id,
+                "content": tool_result.content,
+                "isError": tool_result.is_error,
+            },
+            "correlationId": correlation_id,
+            "observedCorrelationIds": observed_correlation_ids,
+        }),
+        StreamChunk::ToolProgress {
+            tool_progress,
+            correlation_id,
+            observed_correlation_ids,
+        } => json!({
+            "type": "toolProgress",
+            "toolProgress": {
+                "toolCallId": tool_progress.tool_call_id,
+                "toolName": tool_progress.tool_name,
+                "outputChunk": tool_progress.output_chunk,
+                "isStderr": tool_progress.is_stderr,
+            },
+            "correlationId": correlation_id,
+            "observedCorrelationIds": observed_correlation_ids,
+        }),
+        StreamChunk::SessionStateChange { state } => json!({
+            "type": "sessionStateChange",
+            "state": format!("{:?}", state),
+        }),
+        StreamChunk::UserNotification { message, severity } => json!({
+            "type": "userNotification",
+            "message": message,
+            "severity": format!("{:?}", severity),
+        }),
+        StreamChunk::Interrupted { queued_inputs } => json!({
+            "type": "interrupted",
+            "queuedInputs": queued_inputs,
+        }),
+        StreamChunk::TokenUpdate { tokens } => json!({
+            "type": "tokenUpdate",
+            "tokens": {
+                "inputTokens": tokens.input_tokens,
+                "outputTokens": tokens.output_tokens,
+                "cacheCreationInputTokens": tokens.cache_creation_input_tokens,
+                "cacheReadInputTokens": tokens.cache_read_input_tokens,
+                "tokensPerSecond": tokens.tokens_per_second,
+            },
+        }),
+        StreamChunk::ContextFillUpdate { context_fill } => json!({
+            "type": "contextFillUpdate",
+            "contextFill": {
+                "fillPercentage": context_fill.fill_percentage,
+                "effectiveTokens": context_fill.effective_tokens,
+                "threshold": context_fill.threshold,
+                "contextWindow": context_fill.context_window,
+            },
+        }),
+        StreamChunk::Done => json!({
+            "type": "done",
+        }),
+        StreamChunk::Error { error } => json!({
+            "type": "error",
+            "error": error,
+        }),
+        StreamChunk::UserInput { text } => json!({
+            "type": "userInput",
+            "text": text,
+        }),
+        StreamChunk::IncomingMessage { text, images } => {
+            let mut obj = json!({
+                "type": "supervisorInput",
+                "text": text,
+            });
+            if let Some(imgs) = images {
+                obj["images"] = json!(imgs
+                    .iter()
+                    .map(|i| json!({
+                        "data": i.data,
+                        "mediaType": i.media_type,
+                    }))
+                    .collect::<Vec<_>>());
+            }
+            obj
         }
-    }
-
-    pub fn tool_call(info: ToolCallInfo) -> Self {
-        Self::ToolCall {
-            tool_call: info,
-            correlation_id: None,
-            observed_correlation_ids: None,
-        }
-    }
-
-    pub fn tool_result(info: ToolResultInfo) -> Self {
-        Self::ToolResult {
-            tool_result: info,
-            correlation_id: None,
-            observed_correlation_ids: None,
-        }
-    }
-
-    /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
-    pub fn tool_progress(info: ToolProgressInfo) -> Self {
-        Self::ToolProgress {
-            tool_progress: info,
-            correlation_id: None,
-            observed_correlation_ids: None,
-        }
-    }
-
-    /// NAPI-010: Create a session state change chunk (internal state, not for conversation)
-    pub fn session_state_change(state: SessionState) -> Self {
-        Self::SessionStateChange { state }
-    }
-
-    /// NAPI-010: Create a user notification chunk (for conversation display)
-    pub fn user_notification(message: String, severity: NotificationSeverity) -> Self {
-        Self::UserNotification { message, severity }
-    }
-
-    pub fn interrupted(queued_inputs: Vec<String>) -> Self {
-        Self::Interrupted { queued_inputs }
-    }
-
-    pub fn token_update(tokens: TokenTracker) -> Self {
-        Self::TokenUpdate { tokens }
-    }
-
-    /// Context fill percentage update (TUI-033)
-    pub fn context_fill_update(info: ContextFillInfo) -> Self {
-        Self::ContextFillUpdate { context_fill: info }
-    }
-
-    pub fn done() -> Self {
-        Self::Done
-    }
-
-    pub fn error(message: String) -> Self {
-        Self::Error { error: message }
-    }
-
-    /// User input message (NAPI-009: for resume/attach to restore user messages)
-    pub fn user_input(text: String) -> Self {
-        Self::UserInput { text }
-    }
-
-    /// Supervisor input message (WATCH-006: for supervisor injection into subordinate session)
-    /// BRIDGE-007: Extended to support optional images
-    pub fn incoming_message(formatted_message: String) -> Self {
-        Self::IncomingMessage { text: formatted_message, images: None }
-    }
-    
-    /// Supervisor input message with images (BRIDGE-007)
-    pub fn incoming_message_with_images(formatted_message: String, images: Vec<IncomingMessageImage>) -> Self {
-        Self::IncomingMessage { 
-            text: formatted_message, 
-            images: if images.is_empty() { None } else { Some(images) }
-        }
-    }
-
-    /// Set correlation ID on the chunk (for variants that support it)
-    pub fn with_correlation_id(mut self, id: String) -> Self {
-        match &mut self {
-            Self::Text { correlation_id, .. } => *correlation_id = Some(id),
-            Self::Thinking { correlation_id, .. } => *correlation_id = Some(id),
-            Self::ToolCall { correlation_id, .. } => *correlation_id = Some(id),
-            Self::ToolResult { correlation_id, .. } => *correlation_id = Some(id),
-            Self::ToolProgress { correlation_id, .. } => *correlation_id = Some(id),
-            // Other variants don't have correlation_id
-            _ => {}
-        }
-        self
-    }
-
-    /// Set observed correlation IDs for supervisor response chunks (WATCH-011)
-    pub fn with_observed_correlation_ids(mut self, ids: Vec<String>) -> Self {
-        match &mut self {
-            Self::Text { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
-            Self::Thinking { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
-            Self::ToolCall { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
-            Self::ToolResult { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
-            Self::ToolProgress { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
-            // Other variants don't have observed_correlation_ids
-            _ => {}
-        }
-        self
-    }
-
-    /// Supervisor pending injection - when auto_inject=false (WATCH-020)
-    pub fn supervisor_pending_injection(urgent: bool, content: String) -> Self {
-        Self::SupervisorPendingInjection {
-            supervisor_pending_injection: SupervisorPendingInjectionInfo { urgent, content },
-        }
-    }
-
-    /// UX-002: Compaction completed with structured result
-    pub fn compaction_complete(result: CompactionResult) -> Self {
-        Self::CompactionComplete {
-            compaction_result: result,
-        }
-    }
-
-    /// CODE-009: Fspec command request - sent to TypeScript for execution
-    pub fn fspec_command_request(request: FspecRequest) -> Self {
-        Self::FspecCommandRequest {
-            fspec_request: request,
-        }
-    }
-
-    /// CODE-009: Fspec command result - sent after TypeScript executes command
-    pub fn fspec_command_result(result: FspecResult) -> Self {
-        Self::FspecCommandResult {
-            fspec_result: result,
-        }
-    }
-
-    /// Work units updated - emitted by global file watcher
-    pub fn work_units_update(work_units: Vec<WorkUnitInfo>) -> Self {
-        Self::WorkUnitsUpdate { work_units }
-    }
-
-    /// GIT-029: Isolation state change - emitted when session isolation state changes
-    pub fn isolation_state_change(is_isolated: bool, worktree_path: Option<String>) -> Self {
-        Self::IsolationStateChange {
+        StreamChunk::SupervisorPendingInjection {
+            supervisor_pending_injection,
+        } => json!({
+            "type": "supervisorPendingInjection",
+            "supervisorPendingInjection": {
+                "urgent": supervisor_pending_injection.urgent,
+                "content": supervisor_pending_injection.content,
+            },
+        }),
+        StreamChunk::CompactionComplete { compaction_result } => json!({
+            "type": "compactionComplete",
+            "compactionResult": {
+                "originalTokens": compaction_result.original_tokens,
+                "compactedTokens": compaction_result.compacted_tokens,
+                "compressionRatio": compaction_result.compression_ratio,
+                "turnsSummarized": compaction_result.turns_summarized,
+                "turnsKept": compaction_result.turns_kept,
+            },
+        }),
+        StreamChunk::FspecCommandRequest { fspec_request } => json!({
+            "type": "fspecCommandRequest",
+            "fspecRequest": {
+                "command": fspec_request.command,
+                "argsJson": fspec_request.args_json,
+                "projectRoot": fspec_request.project_root,
+                "toolCallId": fspec_request.tool_call_id,
+            },
+        }),
+        StreamChunk::FspecCommandResult { fspec_result } => json!({
+            "type": "fspecCommandResult",
+            "fspecResult": {
+                "success": fspec_result.success,
+                "data": fspec_result.data,
+                "error": fspec_result.error,
+                "systemReminder": fspec_result.system_reminder,
+                "toolCallId": fspec_result.tool_call_id,
+            },
+        }),
+        StreamChunk::WorkUnitsUpdate { work_units } => json!({
+            "type": "workUnitsUpdate",
+            "workUnits": work_units.iter().map(|wu| json!({
+                "id": wu.id,
+                "title": wu.title,
+                "status": wu.status,
+                "workType": wu.work_type,
+            })).collect::<Vec<_>>(),
+        }),
+        StreamChunk::IsolationStateChange {
             is_isolated,
             worktree_path,
-        }
-    }
-
-    /// TUI-091: Footer state update - emitted by background poller
-    pub fn footer_state_update(
-        cwd: String,
-        display_path: String,
-        is_git_repo: bool,
-        branch: Option<String>,
-    ) -> Self {
-        Self::FooterStateUpdate {
+        } => json!({
+            "type": "isolationStateChange",
+            "isIsolated": is_isolated,
+            "worktreePath": worktree_path,
+        }),
+        StreamChunk::FooterStateUpdate {
             cwd,
             display_path,
             is_git_repo,
             branch,
-        }
-    }
-
-    /// BUG-134: Debug state change - emitted when session debug capture toggles
-    pub fn debug_state_change(enabled: bool) -> Self {
-        Self::DebugStateChange { enabled }
-    }
-
-    /// Convert StreamChunk to serde_json::Value for bridge relay (BRIDGE-001)
-    ///
-    /// This manual serialization is needed because StreamChunk uses NAPI's
-    /// discriminant-based serialization which doesn't implement serde::Serialize.
-    /// The bridge needs to serialize chunks to JSON for WebSocket transmission.
-    pub fn to_json_value(&self) -> serde_json::Value {
-        use serde_json::json;
-
-        match self {
-            Self::Text { text, correlation_id, observed_correlation_ids } => json!({
-                "type": "text",
-                "text": text,
-                "correlationId": correlation_id,
-                "observedCorrelationIds": observed_correlation_ids,
-            }),
-            Self::Thinking { thinking, correlation_id, observed_correlation_ids } => json!({
-                "type": "thinking",
-                "thinking": thinking,
-                "correlationId": correlation_id,
-                "observedCorrelationIds": observed_correlation_ids,
-            }),
-            Self::ToolCall { tool_call, correlation_id, observed_correlation_ids } => json!({
-                "type": "toolCall",
-                "toolCall": {
-                    "id": tool_call.id,
-                    "name": tool_call.name,
-                    "input": tool_call.input,
-                },
-                "correlationId": correlation_id,
-                "observedCorrelationIds": observed_correlation_ids,
-            }),
-            Self::ToolResult { tool_result, correlation_id, observed_correlation_ids } => json!({
-                "type": "toolResult",
-                "toolResult": {
-                    "toolCallId": tool_result.tool_call_id,
-                    "content": tool_result.content,
-                    "isError": tool_result.is_error,
-                },
-                "correlationId": correlation_id,
-                "observedCorrelationIds": observed_correlation_ids,
-            }),
-            Self::ToolProgress { tool_progress, correlation_id, observed_correlation_ids } => json!({
-                "type": "toolProgress",
-                "toolProgress": {
-                    "toolCallId": tool_progress.tool_call_id,
-                    "toolName": tool_progress.tool_name,
-                    "outputChunk": tool_progress.output_chunk,
-                    "isStderr": tool_progress.is_stderr,
-                },
-                "correlationId": correlation_id,
-                "observedCorrelationIds": observed_correlation_ids,
-            }),
-            Self::SessionStateChange { state } => json!({
-                "type": "sessionStateChange",
-                "state": format!("{:?}", state),
-            }),
-            Self::UserNotification { message, severity } => json!({
-                "type": "userNotification",
-                "message": message,
-                "severity": format!("{:?}", severity),
-            }),
-            Self::Interrupted { queued_inputs } => json!({
-                "type": "interrupted",
-                "queuedInputs": queued_inputs,
-            }),
-            Self::TokenUpdate { tokens } => json!({
-                "type": "tokenUpdate",
-                "tokens": {
-                    "inputTokens": tokens.input_tokens,
-                    "outputTokens": tokens.output_tokens,
-                    "cacheCreationInputTokens": tokens.cache_creation_input_tokens,
-                    "cacheReadInputTokens": tokens.cache_read_input_tokens,
-                    "tokensPerSecond": tokens.tokens_per_second,
-                },
-            }),
-            Self::ContextFillUpdate { context_fill } => json!({
-                "type": "contextFillUpdate",
-                "contextFill": {
-                    "fillPercentage": context_fill.fill_percentage,
-                    "effectiveTokens": context_fill.effective_tokens,
-                    "threshold": context_fill.threshold,
-                    "contextWindow": context_fill.context_window,
-                },
-            }),
-            Self::Done => json!({
-                "type": "done",
-            }),
-            Self::Error { error } => json!({
-                "type": "error",
-                "error": error,
-            }),
-            Self::UserInput { text } => json!({
-                "type": "userInput",
-                "text": text,
-            }),
-            Self::IncomingMessage { text, images } => {
-                let mut obj = json!({
-                    "type": "supervisorInput",
-                    "text": text,
-                });
-                if let Some(imgs) = images {
-                    obj["images"] = json!(imgs.iter().map(|i| json!({
-                        "data": i.data,
-                        "mediaType": i.media_type,
-                    })).collect::<Vec<_>>());
-                }
-                obj
-            },
-            Self::SupervisorPendingInjection { supervisor_pending_injection } => json!({
-                "type": "supervisorPendingInjection",
-                "supervisorPendingInjection": {
-                    "urgent": supervisor_pending_injection.urgent,
-                    "content": supervisor_pending_injection.content,
-                },
-            }),
-            Self::CompactionComplete { compaction_result } => json!({
-                "type": "compactionComplete",
-                "compactionResult": {
-                    "originalTokens": compaction_result.original_tokens,
-                    "compactedTokens": compaction_result.compacted_tokens,
-                    "compressionRatio": compaction_result.compression_ratio,
-                    "turnsSummarized": compaction_result.turns_summarized,
-                    "turnsKept": compaction_result.turns_kept,
-                },
-            }),
-            Self::FspecCommandRequest { fspec_request } => json!({
-                "type": "fspecCommandRequest",
-                "fspecRequest": {
-                    "command": fspec_request.command,
-                    "argsJson": fspec_request.args_json,
-                    "projectRoot": fspec_request.project_root,
-                    "toolCallId": fspec_request.tool_call_id,
-                },
-            }),
-            Self::FspecCommandResult { fspec_result } => json!({
-                "type": "fspecCommandResult",
-                "fspecResult": {
-                    "success": fspec_result.success,
-                    "data": fspec_result.data,
-                    "error": fspec_result.error,
-                    "systemReminder": fspec_result.system_reminder,
-                    "toolCallId": fspec_result.tool_call_id,
-                },
-            }),
-            Self::WorkUnitsUpdate { work_units } => json!({
-                "type": "workUnitsUpdate",
-                "workUnits": work_units.iter().map(|wu| json!({
-                    "id": wu.id,
-                    "title": wu.title,
-                    "status": wu.status,
-                    "workType": wu.work_type,
-                })).collect::<Vec<_>>(),
-            }),
-            Self::IsolationStateChange { is_isolated, worktree_path } => json!({
-                "type": "isolationStateChange",
-                "isIsolated": is_isolated,
-                "worktreePath": worktree_path,
-            }),
-            Self::FooterStateUpdate { cwd, display_path, is_git_repo, branch } => json!({
-                "type": "footerStateUpdate",
-                "cwd": cwd,
-                "displayPath": display_path,
-                "isGitRepo": is_git_repo,
-                "branch": branch,
-            }),
-            Self::DebugStateChange { enabled } => json!({
-                "type": "debugStateChange",
-                "enabled": enabled,
-            }),
-        }
+        } => json!({
+            "type": "footerStateUpdate",
+            "cwd": cwd,
+            "displayPath": display_path,
+            "isGitRepo": is_git_repo,
+            "branch": branch,
+        }),
+        StreamChunk::DebugStateChange { enabled } => json!({
+            "type": "debugStateChange",
+            "enabled": enabled,
+        }),
     }
 }
 
@@ -781,60 +390,6 @@ pub enum MessageRole {
 pub struct Message {
     pub role: String,
     pub content: String,
-}
-
-/// Compaction result (NAPI-005)
-/// Returned by compact() with metrics about the compaction operation
-#[napi(object)]
-#[derive(Debug, Clone)]
-pub struct CompactionResult {
-    /// Original token count before compaction
-    pub original_tokens: u32,
-    /// Token count after compaction
-    pub compacted_tokens: u32,
-    /// Compression ratio as percentage (0-100)
-    pub compression_ratio: f64,
-    /// Number of turns summarized
-    pub turns_summarized: u32,
-    /// Number of turns kept
-    pub turns_kept: u32,
-}
-
-/// CODE-009: Fspec command request data
-/// Sent when LLM invokes FspecTool - TypeScript intercepts and executes
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FspecRequest {
-    /// The fspec command (e.g., "create-story", "show-work-unit")
-    pub command: String,
-    /// Command arguments as JSON string
-    #[napi(js_name = "argsJson")]
-    pub args_json: String,
-    /// Project root directory
-    #[napi(js_name = "projectRoot")]
-    pub project_root: String,
-    /// Tool call ID for correlation with response
-    #[napi(js_name = "toolCallId")]
-    pub tool_call_id: String,
-}
-
-/// CODE-009: Fspec command result data
-/// Sent by TypeScript after executing the fspec command
-#[napi(object)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FspecResult {
-    /// Whether the command succeeded
-    pub success: bool,
-    /// Command output (structured data as JSON or human-readable text)
-    pub data: String,
-    /// Error message if failed
-    pub error: Option<String>,
-    /// System reminder for workflow orchestration (to be injected into LLM context)
-    #[napi(js_name = "systemReminder")]
-    pub system_reminder: Option<String>,
-    /// Tool call ID for correlation
-    #[napi(js_name = "toolCallId")]
-    pub tool_call_id: String,
 }
 
 /// BUG-117: HITL request state — questions to present to the user
@@ -928,7 +483,8 @@ mod tests {
     /// Test user input with multiline content
     #[test]
     fn test_multiline_user_input_chunk() {
-        let multiline_message = "First line\nSecond line\nThird line with code:\n```rust\nfn main() {}\n```";
+        let multiline_message =
+            "First line\nSecond line\nThird line with code:\n```rust\nfn main() {}\n```";
         let chunk = StreamChunk::user_input(multiline_message.to_string());
 
         match chunk {
@@ -943,7 +499,8 @@ mod tests {
     /// Test user input with special characters
     #[test]
     fn test_special_characters_in_user_input() {
-        let special_message = "Test with émojis 🎉 and symbols: <>&\"' and unicode: 你好世界";
+        let special_message =
+            "Test with émojis 🎉 and symbols: <>&\"' and unicode: 你好世界";
         let chunk = StreamChunk::user_input(special_message.to_string());
 
         match chunk {

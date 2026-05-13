@@ -1,0 +1,538 @@
+{
+  "scenarios": [
+    {
+      "name": "Higher priority intercepts events first",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "121-140",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ignored events propagate to the next handler",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "143-163",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "is_active=false skips a handler without consuming",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "166-189",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FIFO tiebreak at equal priority — newer registrations win",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "192-212",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Callback inside Consumed runs after event handling completes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "215-239",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A Critical-priority modal pushed on top intercepts subsequent keystrokes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "242-264",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pop() removes the most recently pushed layer regardless of priority",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "267-284",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "remove(id) removes the layer with the matching id",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "287-303",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty compositor returns Ignored from handle_event",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "306-319",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All-inactive compositor returns Ignored",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "322-346",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Render order is bottom-up so highest priority paints last",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "349-377",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action propagation in update fans out across all layers top-down",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/compositor_tests.rs",
+          "lines": "380-402",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/compositor.rs",
+              "lines": [
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/compositor_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/compositor.rs"
+    ],
+    "totalLinesCovered": 590
+  }
+}

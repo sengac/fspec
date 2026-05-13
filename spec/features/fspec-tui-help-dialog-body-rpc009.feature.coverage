@@ -1,0 +1,125 @@
+{
+  "scenarios": [
+    {
+      "name": "HelpDialog body lists every keybinding from the RPC-009 scope on one line each",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+          "lines": "234-265",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "lines": [
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HelpDialog still uses the tui-popup adapter at Priority::Critical (RPC-008 invariant)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+          "lines": "267-282",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HelpDialog rendering is byte-equal across runs (insta snapshot regenerated)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+          "lines": "284-300",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/help_dialog.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/src/components/help_dialog.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/components/help_dialog.rs"
+    ],
+    "totalLinesCovered": 126
+  }
+}

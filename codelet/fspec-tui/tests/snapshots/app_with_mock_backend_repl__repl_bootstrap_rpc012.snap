@@ -1,0 +1,28 @@
+---
+source: fspec-tui/tests/app_with_mock_backend_repl.rs
+expression: rows
+---
+- ┌ Board (2) ───────────────────────────────────────────────────────────────────┐
+- │BACKLOG    SPECIFYING TESTING    IMPLEMENTINVALIDATING DONE       BLOCKED     │
+- │                                                                              │
+- │                                 AUTH-002              AUTH-001               │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- └──────────────────────────────────────────────────────────────────────────────┘
+- "? help  q quit  Tab switch pane                                                 "

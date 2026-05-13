@@ -1,0 +1,53 @@
+[package]
+name = "codelet-fspec-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Ratatui app shell + transport-agnostic FspecBackend trait for fspec (RPC-008)"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+# RPC seam (the consumed surfaces — see ast-research-rpc008-foundations.md)
+codelet-rpc.workspace = true
+codelet-rpc-types.workspace = true
+codelet-rpc-embedded.workspace = true
+codelet-rpc-server.workspace = true
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+
+# Terminal & UI
+ratatui.workspace = true
+crossterm.workspace = true
+tui-popup = "0.6"
+tui-input.workspace = true
+
+# WebSocket transport (consumed by WebSocketFspecBackend::connect)
+tokio-tungstenite.workspace = true
+url.workspace = true
+
+# Tarpc context (for delegated RPC calls)
+tarpc.workspace = true
+
+# Error handling
+anyhow.workspace = true
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+[dev-dependencies]
+insta.workspace = true
+tempfile.workspace = true
+tokio-test.workspace = true
+
+# Real services used by integration fixtures
+codelet-core.workspace = true
+
+[lints]
+workspace = true

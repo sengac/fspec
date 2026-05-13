@@ -1,0 +1,28 @@
+---
+source: fspec-tui/tests/app_with_mock_backend.rs
+expression: rows_dismissed
+---
+- ┌ Board (0) ───────────────────────────────────────────────────────────────────┐
+- │BACKLOG    SPECIFYING TESTING    IMPLEMENTINVALIDATING DONE       BLOCKED     │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- └──────────────────────────────────────────────────────────────────────────────┘
+- "? help  q quit  Tab switch pane                                                 "

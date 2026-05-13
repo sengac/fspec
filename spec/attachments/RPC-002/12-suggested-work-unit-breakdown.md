@@ -57,8 +57,8 @@ rough indications, to be refined per slice.
   cancel.
 - One placeholder `HelloComponent` rendering centered text at
   `Priority::Background`.
-- One `Dialog` wrapper (centered rect + Clear + Block) at
-  `Priority::Critical` triggered by `?` key.
+- One `Dialog` wrapper (using `tui-popup` from ratatui-org/tui-widgets,
+  per resolved Q5) at `Priority::Critical` triggered by `?` key.
 - ESC closes the dialog.
 - Unit tests for Compositor (12 cases per the test plan in doc 09).
 - Snapshot test of dialog rendering via `TestBackend` + insta.
@@ -239,13 +239,15 @@ Each of these is independent once Slices 01-06 land:
 
 ## Recommended ordering for the first sprint
 
-1. **Q-block (decisions):** answer Q1, Q2, Q3, Q5, Q10 from doc 11.
-2. **Slice 01 (foundation).**
-3. **Spike: confirm `tui-widget-list` accepts external selection state**
+> **Note (2026-05-08):** The Q-block is now resolved (see doc 11). The
+> first sprint starts directly at Slice 01.
+
+1. **Slice 01 (foundation).**
+2. **Spike: confirm `tui-widget-list` accepts external selection state**
    (1 day). If yes, proceed to slice 03 and use it. If no, plan extra
    LoC for slice 03.
-4. **Slice 02 (mouse + transport).**
-5. **Slice 03 (VirtualList standard mode).**
+3. **Slice 02 (mouse + transport).**
+4. **Slice 03 (VirtualList standard mode).**
 
 Past that point the work parallelises across multiple developers, with
 slices 04 / 05 / 06 cleared dependently and slice 07+ in parallel

@@ -276,7 +276,7 @@ fn spawn_subordinate_forwarding_task(
             match sub_rx.recv().await {
                 Ok(chunk) => {
                     // Convert StreamChunk to JSON
-                    let mut chunk_json = chunk.to_json_value();
+                    let mut chunk_json = crate::types::stream_chunk_to_json_value(&chunk);
 
                     // Inject _relay_session_id so process_outbound_envelope uses
                     // the subordinate's session_id in the relay envelope

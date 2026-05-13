@@ -9,9 +9,11 @@ pub mod gemini_history_hook;
 pub mod lifecycle_hooks;
 pub mod message_estimator;
 pub mod rig_agent;
+pub mod session_manager_handle;
 pub mod streaming_display;
 pub mod token_usage;
 pub mod tool_specs;
+pub mod work_units;
 
 pub use compaction_hook::{CompactionHook, TokenState};
 pub use gemini_history_hook::{ensure_thought_signatures, GeminiHistoryHook, SYNTHETIC_THOUGHT_SIGNATURE};

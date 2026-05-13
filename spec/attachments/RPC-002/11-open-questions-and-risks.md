@@ -4,11 +4,18 @@ This document lists decisions to resolve before Example Mapping starts on
 RPC-002 and the technical risks the port carries. The order of work-unit
 breakdown depends on these answers.
 
+> **Status (2026-05-08):** Q1, Q2, Q3, Q5, Q10 are **RESOLVED**. See the
+> updated decisions matrix at the bottom of this document and the
+> RPC-002 work unit description for the canonical record.
+>
+> Q4, Q6, Q7, Q8, Q9 remain **deferred** to the slice that consumes them
+> — they are not gating questions for the foundation work.
+
 ---
 
 ## Open questions
 
-### Q1. Alt-screen vs inline rendering mode?
+### Q1. Alt-screen vs inline rendering mode? — **RESOLVED: alt-screen**
 
 - **Codex** runs ratatui in **inline mode** (no alt-screen) and writes
   scrollback to the host terminal via DECSTBM. This works because Codex
@@ -23,7 +30,7 @@ breakdown depends on these answers.
 - **Impact on breakdown:** alt-screen is the default for ratatui and
   needs no extra crate. Confirm and move on.
 
-### Q2. Adopt `rat-event` / `rat-salsa`, or roll our own Compositor?
+### Q2. Adopt `rat-event` / `rat-salsa`, or roll our own Compositor? — **RESOLVED: roll our own**
 
 - `rat-event` provides the `Dialog` qualifier (literal 1:1 to our
   `InputPriority::CRITICAL`) and a documented event-routing trait
@@ -37,7 +44,7 @@ breakdown depends on these answers.
   a framework, and the contract maps exactly to our Ink design.
 - **Impact:** affects work-unit 02 (Input Compositor).
 
-### Q3. Adopt `tui-realm` for React-like ergonomics?
+### Q3. Adopt `tui-realm` for React-like ergonomics? — **RESOLVED: no, bare ratatui**
 
 - `tui-realm` is the closest React-mental-model framework on ratatui.
 - BUT its focus-based event routing fights our priority-based dispatch.
@@ -53,7 +60,12 @@ breakdown depends on these answers.
   re-implements undo / paste / wrap.
 - **Recommendation:** **use `tui-textarea`.**
 
-### Q5. Use `tui-popup` for Dialog rendering, or hand-roll centered-rect?
+### Q5. Use `tui-popup` for Dialog rendering, or hand-roll centered-rect? — **RESOLVED: use `tui-popup`**
+
+> **Decision overrides the original recommendation.** The official
+> maintenance signal (ratatui-org/tui-widgets monorepo) and built-in
+> drag-to-move support are worth the extra dep up front rather than
+> retro-fitting later.
 
 - `tui-popup` is in the official `ratatui-org/tui-widgets` mono-repo
   (long-term viability signal). Supports drag-to-move (we don't use it
@@ -119,7 +131,12 @@ confirming before the trait surface is defined.
 current `useApi` calls; implement two backends; ratatui consumes the
 trait.
 
-### Q10. Will the existing Ink TUI continue to be maintained during migration?
+### Q10. Will the existing Ink TUI continue to be maintained during migration? — **RESOLVED: yes, maintain in parallel**
+
+> **Decision overrides the original recommendation.** Implication: a
+> follow-up work unit must own a feature-parity matrix and the cadence
+> for keeping it current. The port plan must assume a moving target and
+> account for that overhead in slice estimates.
 
 If so, we need a feature-parity matrix tracked over time. If not (Ink
 gets frozen at the start of the port), we just need a finish-line check.
@@ -241,20 +258,20 @@ Dialog wrapper + MultiLineInput glue).
 
 ---
 
-## Decisions matrix (to be answered before Example Mapping)
+## Decisions matrix
 
-| ID | Question | Default recommendation | Decision needed by |
+| ID | Question | Decision | Status |
 |---|---|---|---|
-| Q1 | Alt-screen vs inline | Alt-screen | Foundation slice |
-| Q2 | rat-event vs custom Compositor | Custom (~30 LoC) | Foundation slice |
-| Q3 | tui-realm vs bare ratatui | Bare | Foundation slice |
-| Q4 | tui-textarea for MLI | Yes | MLI slice |
-| Q5 | tui-popup for Dialog | No (hand-roll) | Dialog slice |
-| Q6 | tui-widget-list for VL | Try first | VirtualList slice |
-| Q7 | Lazy-mode API shape | `trait ListItems` | VirtualList slice |
-| Q8 | Group API unification | Unify to one trait | VirtualList slice |
-| Q9 | tarpc embedded shared runtime | Share via `Handle` | RPC slice |
-| Q10 | Freeze Ink during port? | Yes | RPC-002 epic-level |
+| Q1 | Alt-screen vs inline | Alt-screen | ✅ Resolved 2026-05-08 |
+| Q2 | rat-event vs custom Compositor | Custom (~30 LoC) | ✅ Resolved 2026-05-08 |
+| Q3 | tui-realm vs bare ratatui | Bare | ✅ Resolved 2026-05-08 |
+| Q4 | tui-textarea for MLI | Default: yes | ⏳ Deferred to MLI slice |
+| Q5 | tui-popup for Dialog | Use tui-popup | ✅ Resolved 2026-05-08 |
+| Q6 | tui-widget-list for VL | Default: try first | ⏳ Deferred to VirtualList slice |
+| Q7 | Lazy-mode API shape | Default: `trait ListItems` | ⏳ Deferred to VirtualList slice |
+| Q8 | Group API unification | Default: unify to one trait | ⏳ Deferred to VirtualList slice |
+| Q9 | tarpc embedded shared runtime | Default: share via `Handle` | ⏳ Deferred to RPC slice |
+| Q10 | Maintain Ink during port? | Yes, maintain in parallel | ✅ Resolved 2026-05-08 |
 
 ---
 

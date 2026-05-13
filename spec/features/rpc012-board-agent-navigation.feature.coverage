@@ -1,0 +1,331 @@
+{
+  "scenarios": [
+    {
+      "name": "AgentViewStore is empty after App::bootstrap with no pre-created session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "30-49",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a work unit hands off to AgentView and triggers lazy session creation",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "53-79",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on an unattached work unit raises the create-session dialog flag",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "82-101",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on an attached work unit sets the navigation target",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "104-121",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ESC from AgentView returns to BoardView preserving focus and selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "124-145",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                110,
+                111,
+                112
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::SessionCreated with a current work unit emits Action::AttachSession",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "148-176",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chunks subscriber filter follows AgentViewStore.current_session via watch channel",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "200-238",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigator renders BoardView as the first landing view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "179-198",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigator renders AgentView when active_view is Agent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs",
+          "lines": "241-279",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/board_agent_navigation_rpc012.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/bootstrap.rs",
+      "codelet/fspec-tui/src/app/dispatch.rs",
+      "codelet/fspec-tui/src/views/navigator.rs"
+    ],
+    "totalLinesCovered": 403
+  }
+}

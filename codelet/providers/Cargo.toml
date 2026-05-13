@@ -9,6 +9,11 @@ description = "LLM provider implementations for codelet - Claude, OpenAI, Gemini
 [dependencies]
 codelet-common.workspace = true
 codelet-tools.workspace = true
+# RPC-007 test-support: only used behind the `test-support` feature for
+# the StubProvider's deterministic StreamChunk emission. Optional so
+# production builds without `test-support` don't pull rpc-types into
+# providers' default dependency tree.
+codelet-rpc-types = { workspace = true, optional = true }
 
 # Async
 tokio.workspace = true
@@ -82,3 +87,7 @@ workspace = true
 
 [features]
 integration-tests = []
+# RPC-007: Test-only feature gate for the deterministic StubProvider used
+# by cross-transport integration tests. Behind the feature so production
+# builds never compile a stub provider into release artifacts.
+test-support = ["dep:codelet-rpc-types"]

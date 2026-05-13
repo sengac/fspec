@@ -1,0 +1,28 @@
+---
+source: fspec-tui/tests/app_with_mock_backend.rs
+expression: rows_visible
+---
+- ┌ Board (0) ───────────────────────────────────────────────────────────────────┐
+- │BACKLOG    SPECIFYING TESTING    IMPLEMENTINVALIDATING DONE       BLOCKED     │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                       ┌Help─────────────────────────┐                        │
+- │                       │j/k     Navigate             │                        │
+- │                       │Tab     Switch pane          │                        │
+- │                       │?       Toggle this help     │                        │
+- │                       │q       Quit fspec-tui       │                        │
+- │                       │Enter   Send                 │                        │
+- │                       │Ctrl+C  Interrupt            │                        │
+- │                       │ESC     Dismiss this dialog  │                        │
+- │                       └─────────────────────────────┘                        │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- │                                                                              │
+- └──────────────────────────────────────────────────────────────────────────────┘
+- "? help  q quit  Tab switch pane                                                 "

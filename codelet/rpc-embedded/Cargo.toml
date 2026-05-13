@@ -1,0 +1,26 @@
+[package]
+name = "codelet-rpc-embedded"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+codelet-rpc = { workspace = true }
+codelet-rpc-types = { workspace = true }
+tarpc = { workspace = true }
+tokio = { workspace = true }
+futures = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+tempfile = { workspace = true }
+codelet-core = { workspace = true }
+codelet-providers = { workspace = true, features = ["test-support"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }

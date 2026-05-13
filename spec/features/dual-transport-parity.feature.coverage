@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "name": "Both transports produce semantically identical results for the same call",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-server/tests/parity.rs",
+          "lines": "20-51",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both transport calls reach the same shared service implementation",
+      "testMappings": [
+        {
+          "file": "codelet/rpc-server/tests/parity.rs",
+          "lines": "53-86",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/rpc-server/tests/parity.rs"
+    ],
+    "implFiles": [
+      "codelet/rpc/src/lib.rs"
+    ],
+    "totalLinesCovered": 96
+  }
+}

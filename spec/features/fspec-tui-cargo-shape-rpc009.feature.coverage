@@ -1,0 +1,228 @@
+{
+  "scenarios": [
+    {
+      "name": "codelet/fspec-tui/Cargo.toml [dependencies] now lists tui-input alongside the existing entries",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "lines": "24-54",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/Cargo.toml",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet/Cargo.toml [workspace.dependencies] declares tui-input = \"0.10\"",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "lines": "56-71",
+          "implMappings": [
+            {
+              "file": "codelet/Cargo.toml",
+              "lines": [
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Production [dependencies] of codelet/fspec-tui still excludes codelet-napi and codelet-core",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "lines": "73-91",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/Cargo.toml",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dev-dependencies of codelet/fspec-tui still excludes codelet-napi (codelet-core stays allowed for fixtures)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "lines": "93-111",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/Cargo.toml",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New src/views/*.rs files preserve the host-supplied tokio runtime invariant (Q9)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "lines": "113-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/mod.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New src/views/*.rs files do not directly import the encapsulated transport crates",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc009.rs",
+          "lines": "154-184",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/mod.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/source_shape_rpc009.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/Cargo.toml",
+      "codelet/Cargo.toml",
+      "codelet/fspec-tui/src/views/mod.rs"
+    ],
+    "totalLinesCovered": 270
+  }
+}

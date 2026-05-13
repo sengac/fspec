@@ -13,6 +13,7 @@
   "scripts": {
     "build:codelet-napi": "cd codelet/napi && npm run build",
     "build:codelet-napi:all": "cd codelet/napi && npm run build:all",
+    "build:rust:fspec": "(cd codelet && cargo build -p fspec --release) && mkdir -p dist && cp codelet/target/release/fspec dist/fspec && chmod +x dist/fspec",
     "build": "npm run build:codelet-napi && vite build && chmod +x dist/index.js",
     "build:sea": "npm run build && ./scripts/build-sea.sh",
     "build:sea:clean": "./scripts/build-sea.sh --clean",

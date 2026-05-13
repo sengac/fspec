@@ -753,7 +753,16 @@
       "description": "Distributed Rust frontend: tarpc-over-WebSocket service exposing the codelet/NAPI surface, plus a ratatui client with dual transport (in-process embedded OR remote WebSocket). Replaces the Ink/React TUI incrementally while leaving the TypeScript+NAPI stack fully operational.",
       "workUnits": [
         "RPC-001",
-        "RPC-002"
+        "RPC-002",
+        "RPC-004",
+        "RPC-005",
+        "RPC-006",
+        "RPC-007",
+        "RPC-008",
+        "RPC-009",
+        "RPC-010",
+        "RPC-011",
+        "RPC-012"
       ]
     },
     "rust-cli-port": {

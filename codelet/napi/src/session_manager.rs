@@ -98,18 +98,18 @@ pub(crate) struct PromptInput {
 }
 
 /// Session status values
-#[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub enum SessionStatus {
-    #[default]
-    Idle = 0,
-    Running = 1,
-    Interrupted = 2,
-    /// PAUSE-001: Session is paused waiting for user input (Enter/Y/N/Esc)
-    Paused = 3,
-    /// PERF-002: Session is compacting context - supports progress tracking
-    Compacting = 4,
-}
+///
+/// RPC-007: lifted into `codelet-rpc-types` so the dual-transport RPC,
+/// the embedded transport, and the NAPI surface share a single source of
+/// truth. The lifted enum preserves the historical `#[repr(u8)]` and the
+/// explicit discriminant order (`Idle = 0, Running = 1, Interrupted = 2,
+/// Paused = 3, Compacting = 4, Cleared = 5`) so the existing
+/// `AtomicU8::new(SessionStatus::Idle as u8)` and
+/// `status.swap(status as u8, ...)` patterns in this file continue to
+/// compile unchanged. The `napi` feature gate on `codelet-rpc-types`
+/// re-applies `#[napi(string_enum)]` so the TypeScript shape is
+/// preserved verbatim.
+pub use codelet_rpc_types::SessionStatus;
 
 /// PERF-002: Compaction progress information  
 #[derive(Debug, Clone, Default)]
@@ -349,49 +349,22 @@ pub fn format_incoming_message(input: &IncomingMessage) -> String {
 }
 
 
-impl From<u8> for SessionStatus {
-    fn from(v: u8) -> Self {
-        match v {
-            0 => SessionStatus::Idle,
-            1 => SessionStatus::Running,
-            2 => SessionStatus::Interrupted,
-            3 => SessionStatus::Paused,
-            _ => SessionStatus::Idle,
-        }
-    }
-}
+// `impl From<u8> for SessionStatus` and `impl SessionStatus { fn as_str() }`
+// were lifted into `codelet-rpc-types` alongside the `SessionStatus` enum
+// itself (RPC-007 type-uniqueness rule). Rust's orphan rule forbids inherent
+// or foreign-trait impls on a type from another crate, so they live with the
+// type definition now and are reachable via the `pub use` above.
 
-impl SessionStatus {
-    /// Convert status to string representation for TypeScript
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            SessionStatus::Idle => "idle",
-            SessionStatus::Running => "running",
-            SessionStatus::Interrupted => "interrupted",
-            SessionStatus::Paused => "paused",
-            SessionStatus::Compacting => "compacting",
-        }
-    }
-}
-
-/// Session info returned to TypeScript
-#[napi(object)]
-#[derive(Clone)]
-pub struct SessionInfo {
-    pub id: String,
-    pub name: String,
-    pub status: String,
-    pub project: String,
-    pub message_count: u32,
-    /// Provider ID (e.g., "anthropic", "openai")
-    pub provider_id: Option<String>,
-    /// Model ID (e.g., "claude-sonnet-4", "gpt-4o")
-    pub model_id: Option<String>,
-    /// GIT-029: Whether this is an isolated session with a git worktree
-    pub is_isolated: bool,
-    /// GIT-029: Path to the worktree (if isolated)
-    pub worktree_path: Option<String>,
-}
+/// Session info returned to TypeScript.
+///
+/// RPC-007: lifted into `codelet-rpc-types` so the dual-transport RPC and
+/// the NAPI surface share a single source of truth. The `napi` feature
+/// gate on `codelet-rpc-types` re-applies `#[napi(object)]` so the
+/// existing TypeScript shape (id, name, status, project, message_count,
+/// provider_id, model_id, is_isolated, worktree_path) is preserved
+/// verbatim. The `role` field is added as RPC-007's session role surface
+/// and is `None` for sessions created via the legacy NAPI path.
+pub use codelet_rpc_types::SessionInfo;
 
 /// Model info returned by session_get_model
 #[napi(object)]
@@ -942,6 +915,7 @@ impl BackgroundSession {
                 SessionStatus::Interrupted => SessionState::Interrupted,
                 SessionStatus::Paused => SessionState::Paused,
                 SessionStatus::Compacting => SessionState::Compacting,
+                SessionStatus::Cleared => SessionState::Cleared,
             };
             self.handle_output(StreamChunk::session_state_change(state));
             
@@ -1372,6 +1346,11 @@ impl BackgroundSession {
             // GIT-029: Isolation state
             is_isolated: self.worktree_path.is_some(),
             worktree_path: self.worktree_path.as_ref().map(|p| p.to_string_lossy().to_string()),
+            // RPC-007: role surface for the session manager handle. NAPI
+            // sessions don't currently track a role at construction; emit
+            // None so the lifted shape is satisfied without changing TS
+            // behaviour.
+            role: None,
         }
     }
 }
@@ -5240,8 +5219,8 @@ async fn agent_loop(
                     loop {
                         match stream_rx.recv().await {
                             Ok(chunk) => {
-                                // Convert StreamChunk to JSON using to_json_value()
-                                let json_value = chunk.to_json_value();
+                                // Convert StreamChunk to JSON using stream_chunk_to_json_value()
+                                let json_value = crate::types::stream_chunk_to_json_value(&chunk);
                                 // Send to the JSON broadcast channel
                                 // Ignore send errors (no receivers)
                                 let _ = json_tx_clone.send(json_value);
