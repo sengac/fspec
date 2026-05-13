@@ -1,0 +1,86 @@
+{
+  "scenarios": [
+    {
+      "name": "AgentView renders the placeholder footer string for this slice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc013.rs",
+          "lines": "62-86",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AgentView footer omits the legacy generic hint and the BoardView hint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_unit_rpc013.rs",
+          "lines": "89-104",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/view_agent_unit_rpc013.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent.rs"
+    ],
+    "totalLinesCovered": 79
+  }
+}

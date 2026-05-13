@@ -1,0 +1,169 @@
+{
+  "scenarios": [
+    {
+      "name": "BoardView renders the literal TS UnifiedBoardLayout footer string",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_board_unit_rpc013.rs",
+          "lines": "74-94",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BoardView footer omits the legacy `? help q quit Tab switch pane` hint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_board_unit_rpc013.rs",
+          "lines": "97-109",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BoardView paints headers above the footer in its own area",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_board_unit_rpc013.rs",
+          "lines": "112-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/view_board_unit_rpc013.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board.rs"
+    ],
+    "totalLinesCovered": 159
+  }
+}

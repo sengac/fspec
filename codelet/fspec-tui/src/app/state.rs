@@ -1,9 +1,10 @@
-//! `App` struct + constructor + accessor surface (RPC-012).
+//! `App` struct + constructor + accessor surface (RPC-012, RPC-013).
 //!
 //! Holds the Compositor (modal layers only — HelpDialog / DisconnectDialog),
 //! the Action bus, the FspecBackend handle, the Theme, the Navigator
-//! (which owns BoardView + AgentView + FooterView), and the two stores
-//! (BoardStore + AgentViewStore) that the navigator's children read from.
+//! (which owns BoardView + AgentView, each painting its own footer per
+//! RPC-013), and the two stores (BoardStore + AgentViewStore) that the
+//! navigator's children read from.
 //!
 //! All store mutations happen synchronously inside [`crate::app::dispatch`]
 //! on the App task per the RPC-009 single-task tenere pattern — no Mutex /
@@ -185,7 +186,8 @@ impl App {
         &mut self.agent_view_store
     }
 
-    /// Borrow the Navigator (BoardView + AgentView + FooterView container).
+    /// Borrow the Navigator (BoardView + AgentView container; each
+    /// child paints its own footer per RPC-013).
     pub fn navigator(&self) -> &Navigator {
         &self.navigator
     }

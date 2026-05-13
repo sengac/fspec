@@ -1,0 +1,200 @@
+{
+  "scenarios": [
+    {
+      "name": "120-wide terminal divides into seven equal 16-wide columns",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "lines": "18-39",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "125-wide terminal spreads a 5-wide remainder across the leading columns",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "lines": "41-63",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Narrow terminals clamp to the 8-column minimum and report zero remainder",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "lines": "65-80",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "build_border_row produces the four canonical separator strings for a 120-wide layout",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/grid_unit_rpc014.rs",
+          "lines": "82-114",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/grid.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/grid_unit_rpc014.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board/grid.rs"
+    ],
+    "totalLinesCovered": 214
+  }
+}

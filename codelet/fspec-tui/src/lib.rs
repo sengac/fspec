@@ -48,4 +48,4 @@ pub use store::{AgentViewStore, BoardStore, COLUMN_ORDER};
 pub use terminal::TerminalGuard;
 pub use theme::Theme;
 pub use transport::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
-pub use views::{AgentView, BoardView, FooterView, Navigator, ViewMode};
+pub use views::{AgentView, BoardView, Navigator, ViewMode};

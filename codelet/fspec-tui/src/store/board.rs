@@ -11,7 +11,7 @@
 
 use std::collections::HashMap;
 
-use codelet_rpc_types::{SessionId, WorkUnitInfo};
+use codelet_rpc_types::{CheckpointCounts, SessionId, WorkUnitInfo};
 
 /// Canonical column order — must match `STATES` in
 /// `src/tui/components/UnifiedBoardLayout.tsx`.
@@ -44,6 +44,13 @@ pub struct BoardStore {
     selected_index_per_column: HashMap<String, usize>,
     session_attachments: HashMap<String, SessionId>,
     last_changed_id: Option<String>,
+    /// RPC-015: aggregate manual + auto checkpoint counts populated by
+    /// `App::bootstrap` via `Action::CheckpointCountsLoaded`. The
+    /// BoardView header reads this on every render to paint
+    /// `Checkpoints: None` or `Checkpoints: N Manual, M Auto`. Defaults
+    /// to `{0,0}` so the empty state paints `Checkpoints: None` until
+    /// the bootstrap RPC returns.
+    checkpoint_counts: CheckpointCounts,
 }
 
 impl BoardStore {
@@ -202,5 +209,18 @@ impl BoardStore {
     /// Total work-unit count across all columns.
     pub fn total_count(&self) -> usize {
         self.work_units.len()
+    }
+
+    /// RPC-015: read the aggregate manual + auto checkpoint counts.
+    /// Returns the default `{0,0}` until the bootstrap RPC populates
+    /// the field via `Action::CheckpointCountsLoaded`.
+    pub fn checkpoint_counts(&self) -> CheckpointCounts {
+        self.checkpoint_counts
+    }
+
+    /// RPC-015: replace the checkpoint counts. Called from
+    /// `App::dispatch` on `Action::CheckpointCountsLoaded`.
+    pub fn set_checkpoint_counts(&mut self, counts: CheckpointCounts) {
+        self.checkpoint_counts = counts;
     }
 }

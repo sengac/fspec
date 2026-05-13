@@ -3,14 +3,18 @@
 //! Feature files:
 //!   - spec/features/rpc012-board-agent-navigation.feature
 //!   - spec/features/rpc012-board-store.feature
+//!   - spec/features/rpc013-board-footer.feature
+//!   - spec/features/rpc013-agent-footer.feature
+//!   - spec/features/rpc013-source-shape.feature
 //!
-//! RPC-012 navigator-level layout (single owner = App):
-//!   - `board::BoardView` — placeholder Kanban skeleton, reads
-//!     `&BoardStore`.
-//!   - `agent::AgentView` — slim AgentView, reads `&AgentViewStore`.
+//! Navigator-level layout (single owner = App):
+//!   - `board::BoardView` — Kanban skeleton + view-specific footer
+//!     (RPC-013); reads `&BoardStore`.
+//!   - `agent::AgentView` — slim AgentView + view-specific footer
+//!     (RPC-013); reads `&AgentViewStore`.
 //!   - `navigator::Navigator` + `ViewMode { Board, Agent }` — top-level
-//!     view that renders exactly one child + footer per frame.
-//!   - `footer::FooterView` — 1-row hint bar (unchanged from RPC-009).
+//!     view that renders exactly one child per frame, full-area
+//!     passthrough (RPC-013 removed the shared 1-row footer).
 //!
 //! These views MUST NOT import `codelet_napi`, `codelet_core`, `tarpc`,
 //! or `tokio_tungstenite` directly — backend access goes through
@@ -18,10 +22,8 @@
 
 pub mod agent;
 pub mod board;
-pub mod footer;
 pub mod navigator;
 
 pub use agent::{AgentView, RenderedChunk as AgentRenderedChunk};
 pub use board::BoardView;
-pub use footer::FooterView;
 pub use navigator::{Navigator, ViewMode};

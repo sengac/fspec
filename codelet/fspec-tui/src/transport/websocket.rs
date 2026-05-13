@@ -16,7 +16,7 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
-    HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
 };
 use tarpc::context;
 use tokio::sync::{broadcast, mpsc::UnboundedSender, Notify, RwLock};
@@ -265,6 +265,14 @@ impl FspecBackend for WebSocketFspecBackend {
             .as_ref()
             .ok_or(BackendError::Disconnected)?;
         Ok(client.client().health(context::current()).await?)
+    }
+
+    async fn checkpoint_counts(&self) -> Result<CheckpointCounts> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        Ok(client.client().checkpoint_counts(context::current()).await?)
     }
 
     /// RPC-011 rule [4]: notify the supervisor task to cancel its

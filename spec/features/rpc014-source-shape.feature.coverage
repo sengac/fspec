@@ -1,0 +1,383 @@
+{
+  "scenarios": [
+    {
+      "name": "Grid helpers and details_strip modules exist as separate files",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "lines": "38-54",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New and modified board modules stay under 300 lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "lines": "56-79",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WorkUnitInfo gains the attachments field",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "lines": "81-91",
+          "implMappings": [
+            {
+              "file": "codelet/rpc-types/src/lib.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Core work_units parser reads attachments with serde default",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "lines": "93-119",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/work_units.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RPC-013 invariants preserved",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "lines": "121-139",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/navigator.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BoardView still emits Action variants and renders the RPC-013 footer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "lines": "141-161",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Views still avoid encapsulated transport crates and host runtime construction",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc014.rs",
+          "lines": "163-194",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board.rs",
+              "lines": [
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/source_shape_rpc014.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board.rs",
+      "codelet/rpc-types/src/lib.rs",
+      "codelet/core/src/work_units.rs",
+      "codelet/fspec-tui/src/views/navigator.rs"
+    ],
+    "totalLinesCovered": 403
+  }
+}

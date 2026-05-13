@@ -115,8 +115,10 @@ fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() {
     // @step Given the source files codelet/fspec-tui/src/views/work_units_list.rs, agent_repl.rs, root.rs, footer.rs, and mod.rs exist
     // RPC-012 supersession: work_units_list.rs, agent_repl.rs and root.rs
     // were removed in favour of board.rs, agent.rs and navigator.rs
-    // respectively (rule [4] and architecture note [2]). The invariant
-    // is preserved across the new set of files.
+    // respectively (rule [4] and architecture note [2]).
+    // RPC-013 supersession: footer.rs was removed when the 1-row footer
+    // moved into each view (rule [1] of rpc013-source-shape.feature).
+    // The invariant is preserved across the new set of files.
     let views_dir = common::workspace_root()
         .join("fspec-tui")
         .join("src")
@@ -126,7 +128,6 @@ fn new_src_views_files_preserve_the_host_supplied_tokio_runtime_invariant_q9() {
         "board.rs",
         "agent.rs",
         "navigator.rs",
-        "footer.rs",
     ] {
         let path = views_dir.join(file);
         assert!(path.exists(), "expected {} to exist", path.display());

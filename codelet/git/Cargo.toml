@@ -21,6 +21,12 @@ gix = { version = "0.72", default-features = false, features = [
 anyhow.workspace = true
 thiserror.workspace = true
 
+# RPC-015: shared CheckpointCounts wire type — both the new
+# `count_checkpoints` helper and the FspecService impl return the SAME
+# struct so the additive `napi::count_checkpoints` export and the new
+# tarpc method cannot drift.
+codelet-rpc-types = { workspace = true }
+
 # Diff algorithm (for unified diff generation)
 similar = "2"
 

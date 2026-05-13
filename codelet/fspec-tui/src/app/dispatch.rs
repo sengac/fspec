@@ -71,6 +71,12 @@ impl App {
             Action::WorkUnitsLoaded(units) => {
                 self.board_store.replace_work_units(units.clone());
             }
+            Action::CheckpointCountsLoaded(counts) => {
+                // RPC-015: bootstrap delivered fresh checkpoint counts;
+                // store them so the BoardView header repaints with the
+                // live `Checkpoints: N Manual, M Auto` text.
+                self.board_store.set_checkpoint_counts(*counts);
+            }
             Action::EnterWorkUnit(id) => {
                 let status = self
                     .board_store

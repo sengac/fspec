@@ -183,7 +183,9 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_fspec_tui::FspecBackend;
-use codelet_rpc_types::{LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{
+    CheckpointCounts, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+};
 use tokio::sync::broadcast;
 
 /// In-memory FspecBackend impl with seedable data + per-channel
@@ -211,9 +213,11 @@ pub struct MockBackend {
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,
     interrupt_calls: AtomicUsize,
+    checkpoint_counts_calls: AtomicUsize,
     scripted_session: Mutex<Option<SessionId>>,
     last_send_input: Mutex<Option<(SessionId, String)>>,
     last_interrupt: Mutex<Option<SessionId>>,
+    checkpoint_counts: Mutex<CheckpointCounts>,
 }
 
 impl Default for MockBackend {
@@ -231,9 +235,11 @@ impl Default for MockBackend {
             create_session_calls: AtomicUsize::new(0),
             send_input_calls: AtomicUsize::new(0),
             interrupt_calls: AtomicUsize::new(0),
+            checkpoint_counts_calls: AtomicUsize::new(0),
             scripted_session: Mutex::new(None),
             last_send_input: Mutex::new(None),
             last_interrupt: Mutex::new(None),
+            checkpoint_counts: Mutex::new(CheckpointCounts::default()),
         }
     }
 }
@@ -280,6 +286,17 @@ impl MockBackend {
     }
     pub fn last_interrupt(&self) -> Option<SessionId> {
         self.last_interrupt.lock().expect("MockBackend mutex").clone()
+    }
+
+    /// RPC-015: preload the CheckpointCounts the next `checkpoint_counts`
+    /// call returns.
+    pub fn set_checkpoint_counts(&self, counts: CheckpointCounts) {
+        *self.checkpoint_counts.lock().expect("MockBackend mutex") = counts;
+    }
+
+    /// RPC-015: how many times `checkpoint_counts()` has been awaited.
+    pub fn checkpoint_counts_calls(&self) -> usize {
+        self.checkpoint_counts_calls.load(Ordering::SeqCst)
     }
 }
 
@@ -339,6 +356,11 @@ impl FspecBackend for MockBackend {
             lag_work_units: 0,
             version: env!("CARGO_PKG_VERSION").to_string(),
         })
+    }
+
+    async fn checkpoint_counts(&self) -> Result<CheckpointCounts> {
+        self.checkpoint_counts_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(*self.checkpoint_counts.lock().expect("MockBackend mutex"))
     }
 }
 

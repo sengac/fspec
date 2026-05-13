@@ -1,0 +1,212 @@
+{
+  "scenarios": [
+    {
+      "name": "count_checkpoints returns zero in a directory that is not a git repo",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/count_checkpoints_rpc015.rs",
+          "lines": "31-41",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/ghost_commit.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "count_checkpoints returns zero in a git repo with no checkpoint refs",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/count_checkpoints_rpc015.rs",
+          "lines": "44-55",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/ghost_commit.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "count_checkpoints classifies one manual and one auto checkpoint for a single work unit",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/count_checkpoints_rpc015.rs",
+          "lines": "58-72",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/ghost_commit.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "count_checkpoints aggregates counts across multiple work units",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/count_checkpoints_rpc015.rs",
+          "lines": "75-89",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/ghost_commit.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/git/tests/count_checkpoints_rpc015.rs"
+    ],
+    "implFiles": [
+      "codelet/git/src/ghost_commit.rs"
+    ],
+    "totalLinesCovered": 185
+  }
+}

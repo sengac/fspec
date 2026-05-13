@@ -21,6 +21,13 @@ codelet-rpc-types = { workspace = true }
 # arrow rpc → napi remains forbidden (enforced by the source-shape
 # regression test in codelet/rpc-embedded/tests/rpc_006_source_shape.rs).
 codelet-core = { workspace = true }
+# RPC-015: `FspecServiceImpl::checkpoint_counts` delegates to
+# `codelet_git::ghost_commit::count_checkpoints(cwd)`. The new
+# dependency arrow rpc → git is permitted because both transports
+# (embedded + WebSocket) share the SAME `FspecServiceImpl` and we want
+# the helper called inside the service body — not duplicated at every
+# transport's call site.
+codelet-git = { workspace = true }
 tarpc = { workspace = true }
 serde = { workspace = true }
 # RPC-006: Arc<WorkUnitsWatcher>, broadcast::Receiver — tokio sync feature

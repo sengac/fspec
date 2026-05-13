@@ -11,6 +11,7 @@
 use crate::error::{GitError, Result};
 use crate::open_repo;
 use crate::tree_utils::collect_worktree_files;
+use codelet_rpc_types::CheckpointCounts;
 use gix::bstr::BString;
 use gix::objs::WriteTo;
 use std::collections::HashSet;
@@ -19,6 +20,68 @@ use std::path::Path;
 
 /// Prefix for fspec checkpoint refs
 const CHECKPOINT_REF_PREFIX: &str = "refs/fspec-checkpoints";
+
+/// RPC-015: substring used to classify a checkpoint name as automatic.
+///
+/// Mirrors the TS `AUTO_CHECKPOINT_PATTERN` constant from
+/// `src/utils/checkpoint-index.ts`. Names that contain `-auto-` (e.g.
+/// `AUTH-001-auto-testing`) are produced by automatic state-transition
+/// checkpoints; all other names are treated as user-created manual
+/// checkpoints.
+pub const AUTO_CHECKPOINT_PATTERN: &str = "-auto-";
+
+/// RPC-015: aggregate `CheckpointCounts` across every ref under
+/// `refs/fspec-checkpoints/`.
+///
+/// Iterates every reference in the repository, filters for those whose
+/// name starts with `refs/fspec-checkpoints/`, and classifies the final
+/// path segment (the checkpoint name) by [`AUTO_CHECKPOINT_PATTERN`].
+///
+/// Gracefully returns `Ok(CheckpointCounts::default())` for directories
+/// that are not git repositories — matches the TS
+/// `countCheckpoints(cwd)` ENOENT-tolerance contract.
+///
+/// # Arguments
+/// * `dir` - Path to the repository root (or any directory)
+///
+/// # Returns
+/// `Ok(CheckpointCounts { manual, auto })` on success, or a graceful
+/// `Ok(CheckpointCounts::default())` when `dir` is not a git repository.
+/// Returns `Err` only on unexpected gix errors (corrupt refs etc.).
+pub fn count_checkpoints(dir: &Path) -> Result<CheckpointCounts> {
+    let repo = match open_repo(dir) {
+        Ok(r) => r,
+        // Not a git repo — match TS countCheckpoints ENOENT behavior:
+        // return zero counts rather than propagating the error.
+        Err(_) => return Ok(CheckpointCounts::default()),
+    };
+
+    let refs = repo
+        .references()
+        .map_err(|e| GitError::Other(format!("Failed to get references: {}", e)))?;
+
+    let prefix = format!("{}/", CHECKPOINT_REF_PREFIX);
+    let mut manual: u32 = 0;
+    let mut auto: u32 = 0;
+    for reference in refs
+        .all()
+        .map_err(|e| GitError::Other(e.to_string()))?
+    {
+        let reference = reference.map_err(|e| GitError::Other(e.to_string()))?;
+        let name = reference.name().as_bstr().to_string();
+        if !name.starts_with(&prefix) {
+            continue;
+        }
+        // Extract the last path segment (the checkpoint name).
+        let checkpoint_name = name.rsplit('/').next().unwrap_or(&name);
+        if checkpoint_name.contains(AUTO_CHECKPOINT_PATTERN) {
+            auto = auto.saturating_add(1);
+        } else {
+            manual = manual.saturating_add(1);
+        }
+    }
+    Ok(CheckpointCounts { manual, auto })
+}
 
 /// Result of creating a ghost commit checkpoint
 #[derive(Debug, Clone)]

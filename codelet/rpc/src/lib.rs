@@ -26,9 +26,11 @@
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
-    HealthInfo, LogRecord, SessionId, SessionInfo, SessionStatus, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, SessionStatus, StreamChunk,
+    WorkUnitInfo,
 };
 use arc_swap::ArcSwap;
+use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc,
@@ -73,6 +75,14 @@ pub trait FspecService {
     /// reads `ServerStats` directly via its own `FspecBackend::health`
     /// short-circuit; the WebSocket transport routes through tarpc.
     async fn health() -> HealthInfo;
+
+    /// RPC-015: return manual + auto checkpoint counts aggregated across
+    /// every work unit in the workspace. Delegates to
+    /// `codelet_git::ghost_commit::count_checkpoints(cwd)` where `cwd`
+    /// is the workspace root the shared service was constructed with.
+    /// Returns `CheckpointCounts { manual: 0, auto: 0 }` when no cwd
+    /// has been attached or the cwd is not a git repository.
+    async fn checkpoint_counts() -> CheckpointCounts;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -130,6 +140,12 @@ pub struct SharedFspecService {
     /// `None` for in-process embedded callers that don't run a server
     /// — in that case `health()` returns zeroed counters.
     stats: AsyncMutex<Option<Arc<dyn ServerStatsHandle>>>,
+    /// RPC-015: workspace cwd used by `checkpoint_counts()` to walk
+    /// `refs/fspec-checkpoints/...`. `None` for in-process callers
+    /// that don't care about checkpoint counts (e.g. RPC-005..014
+    /// tests) — in that case `checkpoint_counts()` returns
+    /// `CheckpointCounts::default()`.
+    cwd: Option<PathBuf>,
 }
 
 impl SharedFspecService {
@@ -148,6 +164,7 @@ impl SharedFspecService {
             list_work_units_calls: Arc::new(AtomicU64::new(0)),
             started_at: Instant::now(),
             stats: AsyncMutex::new(None),
+            cwd: None,
         }
     }
 
@@ -169,7 +186,31 @@ impl SharedFspecService {
             list_work_units_calls: Arc::new(AtomicU64::new(0)),
             started_at: Instant::now(),
             stats: AsyncMutex::new(None),
+            cwd: None,
         }
+    }
+
+    /// RPC-015: chainable builder method that attaches a workspace cwd
+    /// to a freshly-constructed [`SharedFspecService`]. The cwd is
+    /// passed into `codelet_git::ghost_commit::count_checkpoints` by
+    /// `FspecService::checkpoint_counts`. When no cwd is attached,
+    /// `checkpoint_counts()` returns the zero default.
+    ///
+    /// Example:
+    /// ```ignore
+    /// let service = Arc::new(
+    ///     SharedFspecService::new(watcher).with_cwd(workspace_root.to_path_buf()),
+    /// );
+    /// ```
+    pub fn with_cwd(mut self, cwd: PathBuf) -> Self {
+        self.cwd = Some(cwd);
+        self
+    }
+
+    /// RPC-015: borrow the workspace cwd attached via [`with_cwd`].
+    /// Returns `None` when no cwd has been attached.
+    pub fn cwd(&self) -> Option<&PathBuf> {
+        self.cwd.as_ref()
     }
 
     /// RPC-011 rule [25]/[26]: atomically replace the watcher with a
@@ -365,6 +406,18 @@ impl FspecService for FspecServiceImpl {
             version: env!("CARGO_PKG_VERSION").to_string(),
         }
     }
+
+    async fn checkpoint_counts(self, _ctx: Context) -> CheckpointCounts {
+        // RPC-015: delegate to the shared git helper when a workspace
+        // cwd has been attached. Without a cwd (e.g. RPC-005..014
+        // tests), return the zero default to preserve backward
+        // compatibility.
+        match self.inner.cwd() {
+            Some(cwd) => codelet_git::ghost_commit::count_checkpoints(cwd)
+                .unwrap_or_default(),
+            None => CheckpointCounts::default(),
+        }
+    }
 }
 
 /// Test-only seed fixture used by integration tests in this crate and
@@ -380,6 +433,7 @@ pub fn test_fixture() -> Vec<WorkUnitInfo> {
             description: Some("Sign in with email/password".to_string()),
             estimate: Some(5),
             epic: Some("authentication".to_string()),
+            attachments: Vec::new(),
         },
         WorkUnitInfo {
             id: "AUTH-002".to_string(),
@@ -389,6 +443,7 @@ pub fn test_fixture() -> Vec<WorkUnitInfo> {
             description: None,
             estimate: Some(3),
             epic: Some("authentication".to_string()),
+            attachments: Vec::new(),
         },
     ]
 }

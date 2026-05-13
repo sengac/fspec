@@ -43,6 +43,32 @@ pub struct WorkUnitInfo {
     pub description: Option<String>,
     pub estimate: Option<i32>,
     pub epic: Option<String>,
+    /// RPC-014: attachment file paths (basenames are rendered in the
+    /// BoardView details strip). Empty vec when the work unit has no
+    /// attachments. The NAPI surface preserves the existing TS shape
+    /// `attachments: string[]`.
+    pub attachments: Vec<String>,
+}
+
+/// RPC-015: paired manual + automatic checkpoint counts across all work
+/// units in a workspace.
+///
+/// Mirrors the TS interface `{ manual: number; auto: number }` from
+/// `src/utils/checkpoint-index.ts` so both the existing Ink TUI (which
+/// reads via the pure-JS `countCheckpoints` helper) and the new Rust
+/// ratatui TUI (which reads via `FspecService::checkpoint_counts`)
+/// converge on the same shape. The `napi` cfg-gate preserves the JS
+/// shape so the additive `napi::count_checkpoints` export can return
+/// the same type verbatim.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CheckpointCounts {
+    /// Count of manual (user-created) checkpoints.
+    pub manual: u32,
+    /// Count of automatic (state-transition) checkpoints — those whose
+    /// names contain the `-auto-` substring per
+    /// `src/utils/checkpoint-index.ts::AUTO_CHECKPOINT_PATTERN`.
+    pub auto: u32,
 }
 
 // ============================================================================

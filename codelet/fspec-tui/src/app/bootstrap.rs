@@ -19,9 +19,25 @@ impl App {
     /// RPC-012 bootstrap: seed BoardStore via `backend.list_work_units()`
     /// and spawn the three subscriber tasks. Lazy session creation is
     /// deferred to the first `Action::EnterWorkUnit` / `OpenAgentView`.
+    ///
+    /// RPC-015 extension: additionally fire `backend.checkpoint_counts()`
+    /// and dispatch `Action::CheckpointCountsLoaded(counts)` so the
+    /// BoardView header paints the live counts on the very first frame.
     pub async fn bootstrap(&mut self) -> Result<()> {
         let units = self.backend.list_work_units().await?;
         self.dispatch(Action::WorkUnitsLoaded(units));
+        // RPC-015: best-effort — failure is non-fatal because the header
+        // already paints the default `Checkpoints: None` until the call
+        // succeeds. We still surface the error to the tracing layer so
+        // misconfigured cwds don't go silently undiagnosed.
+        match self.backend.checkpoint_counts().await {
+            Ok(counts) => {
+                self.dispatch(Action::CheckpointCountsLoaded(counts));
+            }
+            Err(err) => {
+                debug!("bootstrap: backend.checkpoint_counts() failed: {err}");
+            }
+        }
         self.spawn_subscriber_tasks();
         Ok(())
     }

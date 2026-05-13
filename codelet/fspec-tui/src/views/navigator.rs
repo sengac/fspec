@@ -1,24 +1,27 @@
 //! Navigator — top-level view that switches between BoardView and
-//! AgentView, plus the 1-row FooterView.
+//! AgentView.
 //!
-//! Feature: spec/features/rpc012-board-agent-navigation.feature
-//! Card: RPC-012 (replaces RPC-009 `RootView`).
+//! Feature files:
+//!   - spec/features/rpc012-board-agent-navigation.feature
+//!   - spec/features/rpc013-source-shape.feature
+//! Cards: RPC-012 (replaces RPC-009 `RootView`), RPC-013 (footer moved
+//! into each view; Navigator hands the full area to the active child).
 //!
 //! Renders EXACTLY ONE child view per frame — either BoardView OR
-//! AgentView — plus the 1-row footer. The previous fixed two-pane
-//! (list + REPL) layout is gone.
+//! AgentView — over the full area. Each view paints its own 1-row
+//! footer per RPC-013.
 
 use std::sync::Arc;
 
 use crossterm::event::Event;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
 
 use crate::components::{Action, EventResult, Priority};
 use crate::store::{AgentViewStore, BoardStore};
 use crate::theme::Theme;
-use crate::views::{AgentView, BoardView, FooterView};
+use crate::views::{AgentView, BoardView};
 
 /// Which top-level view is currently visible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -33,13 +36,12 @@ impl Default for ViewMode {
     }
 }
 
-/// Top-level navigator. Owns the BoardView + AgentView + FooterView
-/// components; the actual board/agent state lives on App via
-/// BoardStore + AgentViewStore.
+/// Top-level navigator. Owns the BoardView + AgentView components; the
+/// actual board/agent state lives on App via BoardStore +
+/// AgentViewStore.
 pub struct Navigator {
     pub board: BoardView,
     pub agent: AgentView,
-    pub footer: FooterView,
     pub active_view: ViewMode,
     pub action_tx: Option<UnboundedSender<Action>>,
 }
@@ -49,7 +51,6 @@ impl Navigator {
         Self {
             board: BoardView::new(theme.clone(), action_tx.clone()),
             agent: AgentView::new(action_tx.clone()),
-            footer: FooterView::new(theme),
             active_view: ViewMode::Board,
             action_tx: Some(action_tx),
         }
@@ -90,6 +91,10 @@ impl Navigator {
     }
 
     /// Render against the live stores. Caller is App.
+    ///
+    /// RPC-013: the active child receives the full `area` — the
+    /// Navigator no longer reserves a 1-row footer chunk because each
+    /// view now paints its own view-specific footer.
     pub fn render_with_stores(
         &mut self,
         area: Rect,
@@ -97,23 +102,14 @@ impl Navigator {
         board_store: &BoardStore,
         agent_store: &AgentViewStore,
     ) {
-        let outer = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([Constraint::Min(0), Constraint::Length(1)])
-            .split(area);
-        let main = outer[0];
-        let footer = outer[1];
-
         match self.active_view {
             ViewMode::Board => {
-                self.board.render_with_store(main, buf, board_store);
+                self.board.render_with_store(area, buf, board_store);
             }
             ViewMode::Agent => {
-                self.agent.render_with_store(main, buf, agent_store);
+                self.agent.render_with_store(area, buf, agent_store);
             }
         }
-        use crate::components::Component;
-        self.footer.render(footer, buf);
     }
 }
 
@@ -137,6 +133,7 @@ mod tests {
             description: None,
             estimate: None,
             epic: None,
+            attachments: Vec::new(),
         }
     }
 

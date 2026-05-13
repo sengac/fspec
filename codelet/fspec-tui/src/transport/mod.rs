@@ -18,7 +18,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
-    HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
 };
 use thiserror::Error;
 use tokio::sync::broadcast;
@@ -84,6 +84,12 @@ pub trait FspecBackend: Send + Sync {
     /// Embedded backends short-circuit and read `ServerStats` directly;
     /// the WebSocket backend routes through tarpc `FspecService::health`.
     async fn health(&self) -> Result<HealthInfo>;
+
+    /// RPC-015: return manual + auto checkpoint counts aggregated across
+    /// every work unit in the workspace. Both transports delegate to
+    /// the shared `FspecService::checkpoint_counts` RPC method which
+    /// in turn calls `codelet_git::ghost_commit::count_checkpoints`.
+    async fn checkpoint_counts(&self) -> Result<CheckpointCounts>;
 
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff

@@ -170,6 +170,10 @@ pub enum Action {
     ReorderUp,
     /// RPC-012: placeholder — priority reorder down.
     ReorderDown,
+    /// RPC-015: bootstrap's `backend.checkpoint_counts()` has returned;
+    /// the BoardStore's `checkpoint_counts` field is updated so the
+    /// BoardView header paints the live counts on the next render.
+    CheckpointCountsLoaded(codelet_rpc_types::CheckpointCounts),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

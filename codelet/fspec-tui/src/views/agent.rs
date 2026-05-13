@@ -174,6 +174,10 @@ impl AgentView {
 
     /// Render the view against the supplied store snapshot. The store
     /// is &-borrow only — mutation flows through `App::dispatch`.
+    ///
+    /// RPC-013: splits the area into `[scrollback (Min 0), input (Length 3),
+    /// footer (Length 1)]`. The placeholder footer string lives on the
+    /// bottom row; richer cwd / git-branch / model info lands in RPC-018.
     pub fn render_with_store(
         &mut self,
         area: Rect,
@@ -182,10 +186,11 @@ impl AgentView {
     ) {
         let split = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Min(0), Constraint::Length(3)])
+            .constraints([Constraint::Min(0), Constraint::Length(3), Constraint::Length(1)])
             .split(area);
         let scrollback_area = split[0];
         let input_area = split[1];
+        let footer_area = split[2];
         self.last_input_area = Some(input_area);
 
         let title = match store.current_session() {
@@ -217,76 +222,45 @@ impl AgentView {
 
         let input_block = Block::default()
             .borders(Borders::ALL)
-            .title("Input (Enter=send, Ctrl+C=interrupt, ESC=back)")
+            .title("Input")
             .border_style(Style::default().bold());
         let input_widget = Paragraph::new(self.input.value().to_string())
             .block(input_block)
             .style(Style::default().bold());
         input_widget.render(input_area, buf);
+
+        render_footer(footer_area, buf);
     }
 
 }
 
+/// RPC-013: paint the 1-row AgentView placeholder footer at the bottom
+/// of the supplied `area`. The rich `~/projects/fspec [⌥ codelet-integration]`
+/// form lands in RPC-018.
+fn render_footer(area: Rect, buf: &mut Buffer) {
+    if area.width == 0 || area.height == 0 {
+        return;
+    }
+    let dim = Style::default().fg(ratatui::style::Color::DarkGray);
+    let key = Style::default().bold();
+    let line = Line::from(vec![
+        Span::styled("Enter=send", key),
+        Span::styled("  ", dim),
+        Span::styled("Ctrl+C=interrupt", key),
+        Span::styled("  ", dim),
+        Span::styled("ESC=back", key),
+    ]);
+    Paragraph::new(line).render(area, buf);
+}
+
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-    use crate::store::AgentViewStore;
-    use codelet_rpc_types::SessionId;
-    use crossterm::event::{KeyEvent, KeyModifiers};
-    use ratatui::backend::TestBackend;
-    use ratatui::Terminal;
-    use tokio::sync::mpsc::unbounded_channel;
-
-    fn fresh() -> (AgentView, tokio::sync::mpsc::UnboundedReceiver<Action>) {
-        let (tx, rx) = unbounded_channel();
-        (AgentView::new(tx), rx)
-    }
-
-    #[test]
-    fn esc_emits_back_to_board() {
-        let (mut view, mut rx) = fresh();
-        let event = Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
-        let result = view.handle_event(&event);
-        assert!(matches!(result, EventResult::Consumed(None)));
-        let action = rx.try_recv().expect("Action::BackToBoard on bus");
-        assert!(matches!(action, Action::BackToBoard));
-    }
-
-    #[test]
-    fn enter_on_non_empty_input_emits_input_submitted() {
-        let (mut view, mut rx) = fresh();
-        view.input = view.input.clone().with_value("hi".to_string());
-        let event = Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE));
-        let _ = view.handle_event(&event);
-        let action = rx.try_recv().expect("Action::InputSubmitted on bus");
-        match action {
-            Action::InputSubmitted(s) => assert_eq!(s, "hi"),
-            other => panic!("expected InputSubmitted, got {other:?}"),
-        }
-        assert_eq!(view.input.value(), "");
-    }
-
-    #[test]
-    fn render_with_store_paints_agent_title_with_session_id() {
-        let (mut view, _rx) = fresh();
-        let mut store = AgentViewStore::default();
-        store.set_current_session(Some(SessionId::new("s-1")));
-        let mut term = Terminal::new(TestBackend::new(80, 24)).expect("Terminal::new");
-        term.draw(|frame| {
-            view.render_with_store(frame.area(), frame.buffer_mut(), &store);
-        })
-        .expect("draw");
-        let buf = term.backend().buffer().clone();
-        let mut joined = String::new();
-        for y in 0..buf.area.height {
-            for x in 0..buf.area.width {
-                joined.push_str(buf[(x, y)].symbol());
-            }
-            joined.push('\n');
-        }
-        assert!(joined.contains("Agent"));
-        assert!(joined.contains("s-1"));
-    }
+    // RPC-013: inline AgentView unit tests have moved to
+    // codelet/fspec-tui/tests/view_agent_unit_rpc013.rs so this file
+    // stays under the 300 LoC ceiling after adding the footer-row layout
+    // split. See `view_agent_unit_rpc013.rs` for the migrated tests:
+    //   - esc_emits_back_to_board
+    //   - enter_on_non_empty_input_emits_input_submitted
+    //   - render_with_store_paints_agent_title_with_session_id
+    //   plus the new RPC-013 footer-rendering tests.
 }

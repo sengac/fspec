@@ -1,28 +1,29 @@
 ---
 source: fspec-tui/tests/app_with_mock_backend.rs
+assertion_line: 149
 expression: rows_visible
 ---
-- ┌ Board (0) ───────────────────────────────────────────────────────────────────┐
-- │BACKLOG    SPECIFYING TESTING    IMPLEMENTINVALIDATING DONE       BLOCKED     │
-- │                                                                              │
-- │                                                                              │
-- │                                                                              │
-- │                                                                              │
+- ┌──────────────────────────────────────────────────────────────────────────────┐
+- │┏┓┏┓┏┓┏┓┏┓                                                                    │
+- "│┣ ┗┓┃┃┣ ┃    Checkpoints: None                                                │"
+- │┻ ┗┛┣┛┗┛┗┛   ─────────────────────────────────────────────────────────────────│
+- │             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent  │
+- ├──────────────────────────────────────────────────────────────────────────────┤
 - │                                                                              │
 - │                       ┌Help─────────────────────────┐                        │
 - │                       │j/k     Navigate             │                        │
 - │                       │Tab     Switch pane          │                        │
 - │                       │?       Toggle this help     │                        │
-- │                       │q       Quit fspec-tui       │                        │
-- │                       │Enter   Send                 │                        │
-- │                       │Ctrl+C  Interrupt            │                        │
-- │                       │ESC     Dismiss this dialog  │                        │
-- │                       └─────────────────────────────┘                        │
-- │                                                                              │
-- │                                                                              │
-- │                                                                              │
-- │                                                                              │
-- │                                                                              │
-- │                                                                              │
+- ├───────────┬───────────│q       Quit fspec-tui       │──┬──────────┬──────────┤
+- │BACKLOG    │SPECIFYING │Enter   Send                 │NG│DONE      │BLOCKED   │
+- ├───────────┼───────────│Ctrl+C  Interrupt            │──┼──────────┼──────────┤
+- │           │           │ESC     Dismiss this dialog  │  │          │          │
+- │           │           └─────────────────────────────┘  │          │          │
+- │           │           │          │          │          │          │          │
+- │           │           │          │          │          │          │          │
+- │           │           │          │          │          │          │          │
+- │           │           │          │          │          │          │          │
+- │           │           │          │          │          │          │          │
+- ├───────────┴───────────┴──────────┴──────────┴──────────┴──────────┴──────────┤
+- "│← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆│"
 - └──────────────────────────────────────────────────────────────────────────────┘
-- "? help  q quit  Tab switch pane                                                 "

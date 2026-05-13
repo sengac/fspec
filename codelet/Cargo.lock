@@ -1151,6 +1151,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "codelet-core",
+ "codelet-git",
  "codelet-rpc",
  "codelet-rpc-embedded",
  "codelet-rpc-server",
@@ -1177,6 +1178,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "chrono",
+ "codelet-rpc-types",
  "diffy",
  "dirs 6.0.0",
  "gix",
@@ -1302,6 +1304,7 @@ version = "0.1.0"
 dependencies = [
  "arc-swap",
  "codelet-core",
+ "codelet-git",
  "codelet-rpc-types",
  "serde",
  "tarpc",

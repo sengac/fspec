@@ -48,6 +48,10 @@ tokio-test.workspace = true
 
 # Real services used by integration fixtures
 codelet-core.workspace = true
+# RPC-015: cross-transport parity tests construct real ghost-commit
+# checkpoint refs to exercise the new `FspecBackend::checkpoint_counts`
+# method against both transports.
+codelet-git.workspace = true
 
 [lints]
 workspace = true

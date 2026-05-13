@@ -61,6 +61,11 @@ struct WorkUnitRecord {
     estimate: Option<i32>,
     #[serde(default)]
     epic: Option<String>,
+    /// RPC-014: attachment file paths read from `spec/work-units.json`.
+    /// `#[serde(default)]` so legacy files without the field still parse
+    /// as an empty Vec.
+    #[serde(default)]
+    attachments: Vec<String>,
 }
 
 impl From<WorkUnitRecord> for WorkUnitInfo {
@@ -80,6 +85,7 @@ impl From<WorkUnitRecord> for WorkUnitInfo {
             description: record.description,
             estimate: record.estimate,
             epic: record.epic,
+            attachments: record.attachments,
         }
     }
 }

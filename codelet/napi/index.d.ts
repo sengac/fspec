@@ -3079,4 +3079,11 @@ export interface WorkUnitInfo {
   description?: string;
   estimate?: number;
   epic?: string;
+  /**
+   * RPC-014: attachment file paths (basenames are rendered in the
+   * BoardView details strip). Empty vec when the work unit has no
+   * attachments. The NAPI surface preserves the existing TS shape
+   * `attachments: string[]`.
+   */
+  attachments: Array<string>;
 }

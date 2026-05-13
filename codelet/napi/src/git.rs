@@ -406,6 +406,26 @@ pub fn get_checkpoint_diff_files(
     .map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
+/// RPC-015: Count manual + auto checkpoints across all work units.
+///
+/// Mirrors the TS `countCheckpoints(cwd)` helper from
+/// `src/utils/checkpoint-index.ts` but reads directly from
+/// `refs/fspec-checkpoints/...` git refs (rather than the
+/// `.git/fspec-checkpoints-index/{workUnitId}.json` sidecar files)
+/// so both UIs converge on the SAME source of truth.
+///
+/// The existing TS pure-JS `countCheckpoints` helper is NOT changed by
+/// this card — it can switch to this NAPI export at its own pace.
+/// Both paths converge in `codelet_git::ghost_commit::count_checkpoints`.
+///
+/// @param cwd - Path to the workspace root (containing `.git/`)
+/// @returns CheckpointCounts with `manual` + `auto` u32 fields
+#[napi]
+pub fn count_checkpoints(cwd: String) -> napi::Result<codelet_rpc_types::CheckpointCounts> {
+    codelet_git::ghost_commit::count_checkpoints(Path::new(&cwd))
+        .map_err(|e| napi::Error::from_reason(e.to_string()))
+}
+
 // =============================================================================
 // Repository Operations (GIT-039: resolve_ref, init, add, commit, setConfig)
 // =============================================================================

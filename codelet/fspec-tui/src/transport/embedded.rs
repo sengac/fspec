@@ -18,7 +18,7 @@ use async_trait::async_trait;
 use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
-    HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
 };
 use tarpc::context;
 use tokio::sync::broadcast;
@@ -92,5 +92,12 @@ impl FspecBackend for EmbeddedFspecBackend {
         // FspecService::health() method — both transports share the
         // single `FspecServiceImpl` implementation per RPC-005 rule.
         Ok(self.client.health(context::current()).await?)
+    }
+
+    async fn checkpoint_counts(&self) -> Result<CheckpointCounts> {
+        // RPC-015: route through the shared tarpc method so the
+        // embedded transport produces the same result as the WS
+        // transport against the same SharedFspecService.
+        Ok(self.client.checkpoint_counts(context::current()).await?)
     }
 }
