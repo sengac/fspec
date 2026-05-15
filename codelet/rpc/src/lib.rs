@@ -83,6 +83,18 @@ pub trait FspecService {
     /// Returns `CheckpointCounts { manual: 0, auto: 0 }` when no cwd
     /// has been attached or the cwd is not a git repository.
     async fn checkpoint_counts() -> CheckpointCounts;
+
+    /// RPC-017: move the work unit with `id` one position UP in its
+    /// current `states[<column>]` array. No-op at the top boundary.
+    /// Returns `Err(String)` when the unit lives in the done column,
+    /// when no cwd is attached to the shared service, or on I/O /
+    /// data-integrity failure. The error string is serialised as
+    /// part of the tarpc payload so both transports surface the
+    /// same diagnostics to callers.
+    async fn move_work_unit_up(id: String) -> Result<(), String>;
+
+    /// RPC-017: mirror of [`move_work_unit_up`] for the DOWN direction.
+    async fn move_work_unit_down(id: String) -> Result<(), String>;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -416,6 +428,43 @@ impl FspecService for FspecServiceImpl {
             Some(cwd) => codelet_git::ghost_commit::count_checkpoints(cwd)
                 .unwrap_or_default(),
             None => CheckpointCounts::default(),
+        }
+    }
+
+    async fn move_work_unit_up(self, _ctx: Context, id: String) -> Result<(), String> {
+        // RPC-017: delegate to the shared work-units write helper.
+        // Errors are stringified at the RPC boundary so both transports
+        // see the same diagnostic text.
+        match self.inner.cwd() {
+            Some(cwd) => codelet_core::work_units_write::move_work_unit(
+                cwd,
+                &id,
+                codelet_core::work_units_write::Direction::Up,
+            )
+            .map_err(|e| format!("{e:#}")),
+            None => Err(
+                "move_work_unit_up requires a workspace cwd; SharedFspecService was constructed without with_cwd"
+                    .to_string(),
+            ),
+        }
+    }
+
+    async fn move_work_unit_down(
+        self,
+        _ctx: Context,
+        id: String,
+    ) -> Result<(), String> {
+        match self.inner.cwd() {
+            Some(cwd) => codelet_core::work_units_write::move_work_unit(
+                cwd,
+                &id,
+                codelet_core::work_units_write::Direction::Down,
+            )
+            .map_err(|e| format!("{e:#}")),
+            None => Err(
+                "move_work_unit_down requires a workspace cwd; SharedFspecService was constructed without with_cwd"
+                    .to_string(),
+            ),
         }
     }
 }

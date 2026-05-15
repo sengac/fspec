@@ -60,9 +60,30 @@ pub struct BoardStore {
 
 impl BoardStore {
     /// Replace the full work-units list. Re-groups indices by status,
-    /// then clamps each column's selected index to the new length.
-    /// Unknown statuses (not in [`COLUMN_ORDER`]) are silently dropped.
+    /// then re-anchors each column's selection to the previously
+    /// selected work-unit id (so the cursor follows an item that moved
+    /// within its column — e.g. after `[` / `]` reorder). Falls back to
+    /// clamping the prior numeric index when the previously selected id
+    /// no longer lives in that column. Unknown statuses (not in
+    /// [`COLUMN_ORDER`]) are silently dropped.
     pub fn replace_work_units(&mut self, units: Vec<WorkUnitInfo>) {
+        // Capture id-of-selection per column BEFORE we rebuild so we
+        // can re-anchor the cursor to follow the moved item. Per
+        // RPC-017 rule [6]: "the focused-column selection follows the
+        // moved unit (the unit stays selected, not the row position)".
+        let mut prior_selected_id: HashMap<String, String> = HashMap::new();
+        for column in COLUMN_ORDER {
+            let Some(indices) = self.by_column.get(column) else {
+                continue;
+            };
+            let sel = self.selected_index_for(column);
+            if let Some(unit_idx) = indices.get(sel) {
+                if let Some(unit) = self.work_units.get(*unit_idx) {
+                    prior_selected_id.insert(column.to_string(), unit.id.clone());
+                }
+            }
+        }
+
         self.work_units = units;
         self.by_column.clear();
         for column in COLUMN_ORDER {
@@ -73,17 +94,36 @@ impl BoardStore {
                 slot.push(idx);
             }
         }
-        // Clamp selections to new column lengths.
+        // Re-anchor selection per column: prefer the previously
+        // selected id when it still lives in this column; otherwise
+        // clamp the prior numeric index to the new length.
         for column in COLUMN_ORDER {
             let len = self
                 .by_column
                 .get(column)
                 .map(|v| v.len())
                 .unwrap_or(0);
+            if len == 0 {
+                self.selected_index_per_column
+                    .insert(column.to_string(), 0);
+                continue;
+            }
+            if let Some(prior_id) = prior_selected_id.get(column) {
+                let indices = self
+                    .by_column
+                    .get(column)
+                    .expect("column slot inserted above");
+                let new_pos = indices
+                    .iter()
+                    .position(|i| &self.work_units[*i].id == prior_id);
+                if let Some(pos) = new_pos {
+                    self.selected_index_per_column
+                        .insert(column.to_string(), pos);
+                    continue;
+                }
+            }
             if let Some(sel) = self.selected_index_per_column.get_mut(column) {
-                if len == 0 {
-                    *sel = 0;
-                } else if *sel >= len {
+                if *sel >= len {
                     *sel = len.saturating_sub(1);
                 }
             }

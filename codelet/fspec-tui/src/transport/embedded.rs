@@ -100,4 +100,22 @@ impl FspecBackend for EmbeddedFspecBackend {
         // transport against the same SharedFspecService.
         Ok(self.client.checkpoint_counts(context::current()).await?)
     }
+
+    async fn move_work_unit_up(&self, id: String) -> Result<()> {
+        // RPC-017: delegate to the shared tarpc method. The service
+        // implementation maps any helper-level error to a `String` so
+        // both transports surface identical diagnostics; we lift that
+        // back into anyhow::Error here.
+        self.client
+            .move_work_unit_up(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn move_work_unit_down(&self, id: String) -> Result<()> {
+        self.client
+            .move_work_unit_down(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
 }

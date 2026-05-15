@@ -6,9 +6,11 @@
 //! - Debug capture utilities
 //! - Shared types for LLM conversations
 //! - Token estimation using tiktoken-rs (PROV-002)
+//! - File locking (proper-lockfile-compatible inter-process mkdir lock)
 
 pub mod data_dir;
 pub mod debug_capture;
+pub mod file_lock;
 pub mod image_dimensions;
 pub mod logging;
 pub mod token_estimator;

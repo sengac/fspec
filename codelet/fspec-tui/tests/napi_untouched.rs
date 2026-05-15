@@ -1,24 +1,27 @@
-//! NAPI / TypeScript surface invariant test (RPC-008).
+//! NAPI / TypeScript surface invariant test (RPC-008, narrowed by RPC-017).
 //!
 //! Feature: spec/features/fspec-tui-napi-untouched.feature
 //! Scenario: "The Vitest smoke test for WorkUnitInfo shape remains green"
 //!
-//! Verifies the cross-language invariant that RPC-008 did NOT touch any
-//! NAPI or TypeScript source file. Asserts via filesystem inspection
-//! that:
+//! Verifies the cross-language invariant that the WorkUnitInfo shape +
+//! the TypeScript NAPI smoke test remain unchanged. Originally RPC-008
+//! also asserted that NO `.rs` file under `codelet/napi/src/` was
+//! modified after the RPC-008 work session began (an mtime heuristic).
 //!
-//!   1. The existing Vitest smoke test
-//!      `src/__tests__/napi-workunitinfo-shape.test.ts` still exists and
-//!      its byte-length is the documented 1,520-byte original (the file
-//!      was created in RPC-005 and has not been modified since).
-//!   2. No `.rs` file under `codelet/napi/src/` was created or modified
-//!      after the RPC-008 work session began (heuristic: their mtimes
-//!      are all earlier than the youngest mtime under
-//!      `codelet/fspec-tui/src/`).
+//! RPC-017 legitimately modifies two NAPI files:
+//!   - `codelet/napi/src/work_units_watcher.rs` — additive
+//!     `move_work_unit_up/_down` exports (per RPC-017 architecture note
+//!     and the rust-tui-parity-master-plan doc).
+//!   - `codelet/napi/src/schedule_handler.rs` — refactored to delegate
+//!     to the lifted `codelet_common::file_lock` helper.
+//! Both edits are additive / refactor-only — neither touches the
+//! WorkUnitInfo shape nor the existing Vitest smoke test, which is the
+//! actual cross-language invariant this test guards.
 //!
-//! The actual `npm test` invocation is exercised by the project's
-//! pre-validating quality-check virtual hook (Q-NPM-TEST below) — this
-//! Rust test only confirms the source-shape invariant.
+//! The mtime heuristic is therefore narrowed: ONLY `types.rs` (which
+//! defines the cross-language WorkUnitInfo shape and the StreamChunk
+//! variants) is required to predate the newest fspec-tui change. The
+//! Vitest smoke-test source body is still asserted as unchanged.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -66,41 +69,55 @@ fn vitest_smoke_test_for_work_unit_info_shape_remains_unchanged_by_rpc_008() {
     // existing test file body matches its expected RPC-005 shape.)
 
     // @step And no NAPI or TypeScript source file was touched by RPC-008
-    // Heuristic: every .ts under src/ + every .rs under codelet/napi/src/
-    // must have a mtime earlier than the youngest mtime under
-    // codelet/fspec-tui/src/ (the new RPC-008 code).
+    //
+    // RPC-017 narrowing: only `codelet/napi/src/types.rs` (the cross-
+    // language WorkUnitInfo + StreamChunk definitions) is required to
+    // predate the newest fspec-tui change. RPC-017's additive changes
+    // to `work_units_watcher.rs` (new NAPI exports) and the
+    // `schedule_handler.rs` refactor to `codelet_common::file_lock`
+    // are explicitly allowed by the rust-tui-parity-master-plan doc.
     let fspec_tui_youngest = youngest_mtime(&common::workspace_root().join("fspec-tui").join("src"))
         .expect("fspec-tui src must contain at least one .rs file");
 
     let mut violations: Vec<String> = Vec::new();
-    let scan_targets = [
-        project_root.join("src").join("__tests__"),
-        common::workspace_root().join("napi").join("src"),
-    ];
-    for target in &scan_targets {
-        if !target.exists() {
-            continue;
-        }
-        if let Some(youngest) = youngest_mtime(target) {
-            if youngest >= fspec_tui_youngest {
+
+    // (a) The Vitest smoke test must NOT be modified after the
+    //     newest fspec-tui change.
+    if let Ok(meta) = fs::metadata(&existing_test) {
+        if let Ok(mtime) = meta.modified() {
+            if mtime >= fspec_tui_youngest {
                 violations.push(format!(
-                    "{} contains a file modified at-or-after the newest fspec-tui file (RPC-008 must not touch NAPI/TS source). \
-                     youngest={youngest:?}, fspec-tui youngest={fspec_tui_youngest:?}",
-                    target.display()
+                    "{} was modified at-or-after the newest fspec-tui file (the Vitest smoke test must not be touched). \
+                     mtime={mtime:?}, fspec-tui youngest={fspec_tui_youngest:?}",
+                    existing_test.display()
                 ));
             }
         }
     }
-    // We allow violations.is_empty() OR a single violation we know
-    // about: the existing test file itself is allowed to predate the
-    // session — but if it has been touched in this work session, we
-    // would expect mtime > fspec_tui_youngest. Since the assertion is
-    // structural ("must not touch"), an empty violation list is the
-    // pass condition. A future maintainer who legitimately needs to
-    // touch NAPI/TS in a different card will replace this assertion.
+
+    // (b) `codelet/napi/src/types.rs` (the cross-language type
+    //     definitions) must NOT be modified after the newest fspec-tui
+    //     change. Other NAPI files are explicitly allowed to evolve in
+    //     RPC-017+ cards.
+    let types_rs = common::workspace_root()
+        .join("napi")
+        .join("src")
+        .join("types.rs");
+    if let Ok(meta) = fs::metadata(&types_rs) {
+        if let Ok(mtime) = meta.modified() {
+            if mtime >= fspec_tui_youngest {
+                violations.push(format!(
+                    "{} was modified at-or-after the newest fspec-tui file (the WorkUnitInfo / StreamChunk type definitions must not drift). \
+                     mtime={mtime:?}, fspec-tui youngest={fspec_tui_youngest:?}",
+                    types_rs.display()
+                ));
+            }
+        }
+    }
+
     assert!(
         violations.is_empty(),
-        "RPC-008 must not modify any NAPI/TypeScript source file. \
+        "RPC-017 must not touch cross-language type definitions or the Vitest smoke test. \
          Violations: {violations:?}"
     );
 }

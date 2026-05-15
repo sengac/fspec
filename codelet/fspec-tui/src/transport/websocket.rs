@@ -275,6 +275,30 @@ impl FspecBackend for WebSocketFspecBackend {
         Ok(client.client().checkpoint_counts(context::current()).await?)
     }
 
+    async fn move_work_unit_up(&self, id: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .move_work_unit_up(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn move_work_unit_down(&self, id: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .move_work_unit_down(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     /// RPC-011 rule [4]: notify the supervisor task to cancel its
     /// current backoff sleep, attempt connect immediately, and reset
     /// the backoff schedule on its next failure. Idempotent; safe to

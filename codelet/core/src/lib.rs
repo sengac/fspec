@@ -14,6 +14,7 @@ pub mod streaming_display;
 pub mod token_usage;
 pub mod tool_specs;
 pub mod work_units;
+pub mod work_units_write;
 
 pub use compaction_hook::{CompactionHook, TokenState};
 pub use gemini_history_hook::{ensure_thought_signatures, GeminiHistoryHook, SYNTHETIC_THOUGHT_SIGNATURE};

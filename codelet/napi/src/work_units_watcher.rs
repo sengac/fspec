@@ -174,6 +174,46 @@ pub fn is_work_units_watcher_active() -> Result<bool> {
     Ok(guard.is_watching)
 }
 
+/// RPC-017: move the work unit with `id` one position UP in its current
+/// `states[<column>]` array in `<cwd>/spec/work-units.json`. Delegates
+/// to the shared `codelet_core::work_units_write::move_work_unit`
+/// helper so both this NAPI export AND the new
+/// `FspecService::move_work_unit_up` RPC method converge on a single
+/// inter-process-locked atomic-write code path. No-op at the top
+/// boundary. Returns an error when the unit lives in the done column,
+/// is unknown, or on I/O / data-integrity failure.
+///
+/// Additive: the existing TS `fspec prioritize-work-unit` command path
+/// continues to use `fileManager.transaction` and is NOT changed by
+/// RPC-017. Both paths cooperate through the same proper-lockfile-
+/// compatible mkdir lock on `spec/work-units.json.lock`.
+///
+/// @param cwd - Path to the workspace root (containing `spec/work-units.json`)
+/// @param id  - Work unit ID to reorder
+#[napi]
+pub fn move_work_unit_up(cwd: String, id: String) -> Result<()> {
+    codelet_core::work_units_write::move_work_unit(
+        std::path::Path::new(&cwd),
+        &id,
+        codelet_core::work_units_write::Direction::Up,
+    )
+    .map_err(|e| Error::from_reason(format!("{e:#}")))
+}
+
+/// RPC-017: mirror of [`move_work_unit_up`] for the DOWN direction.
+///
+/// @param cwd - Path to the workspace root (containing `spec/work-units.json`)
+/// @param id  - Work unit ID to reorder
+#[napi]
+pub fn move_work_unit_down(cwd: String, id: String) -> Result<()> {
+    codelet_core::work_units_write::move_work_unit(
+        std::path::Path::new(&cwd),
+        &id,
+        codelet_core::work_units_write::Direction::Down,
+    )
+    .map_err(|e| Error::from_reason(format!("{e:#}")))
+}
+
 // `warn!` is referenced indirectly via tracing macros above. Keep the
 // import in scope so linters do not flag the unused import in builds
 // that compile this file without the napi feature gate.

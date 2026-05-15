@@ -1,0 +1,268 @@
+{
+  "scenarios": [
+    {
+      "name": "EmbeddedFspecBackend.move_work_unit_up persists through the shared helper",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "lines": "81-103",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WebSocketFspecBackend.move_work_unit_down crosses tarpc cleanly",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "lines": "104-128",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both transports return Err for done-column targets",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "lines": "129-162",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "napi::move_work_unit_up is wired through the same shared helper",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "lines": "163-193",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/work_units_watcher.rs",
+              "lines": [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecService::move_work_unit_up delegates through SharedFspecService::cwd to the shared helper",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "lines": "194-215",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecService::move_work_unit_down delegates through SharedFspecService::cwd to the shared helper",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "lines": "216-237",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecService::move_work_unit_up returns Err when no cwd is attached",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+          "lines": "238-260",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/move_work_unit_rpc017.rs",
+      "codelet/fspec/src/common.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/transport/embedded.rs",
+      "codelet/fspec-tui/src/transport/websocket.rs",
+      "codelet/rpc/src/lib.rs",
+      "codelet/napi/src/work_units_watcher.rs",
+      "codelet/fspec/src/common.rs"
+    ],
+    "totalLinesCovered": 358
+  }
+}

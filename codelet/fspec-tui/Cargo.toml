@@ -45,6 +45,9 @@ tracing.workspace = true
 insta.workspace = true
 tempfile.workspace = true
 tokio-test.workspace = true
+# RPC-017: cross-transport parity tests for move_work_unit_up/_down
+# build seed work-units.json blobs inline.
+serde_json.workspace = true
 
 # Real services used by integration fixtures
 codelet-core.workspace = true

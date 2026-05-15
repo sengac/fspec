@@ -51,12 +51,22 @@ pub enum ShutdownReason {
 }
 
 /// Build the single SharedFspecService for this process.
+///
+/// RPC-015 / RPC-017 fix: attach the workspace cwd via
+/// [`SharedFspecService::with_cwd`] so that cwd-dependent RPC methods
+/// (`checkpoint_counts`, `move_work_unit_up`, `move_work_unit_down`)
+/// can locate the workspace. Without this attach, `checkpoint_counts`
+/// silently returns the zero default and `move_work_unit_*` return Err
+/// (which the TUI's fire-and-forget dispatch arm logs at debug level —
+/// invisible to the user, making the `[` / `]` keys appear inert).
 pub fn build_service(workspace: &Path) -> Result<Arc<SharedFspecService>> {
     let watcher = Arc::new(
         WorkUnitsWatcher::new(workspace)
             .with_context(|| format!("WorkUnitsWatcher::new({})", workspace.display()))?,
     );
-    Ok(Arc::new(SharedFspecService::new(watcher)))
+    Ok(Arc::new(
+        SharedFspecService::new(watcher).with_cwd(workspace.to_path_buf()),
+    ))
 }
 
 fn env_filter() -> EnvFilter {
@@ -460,4 +470,42 @@ fn pid_is_alive(_pid: u32) -> bool {
     // RPC-011 windows support is best-effort — we conservatively
     // accept the daemon.json. A future card adds GetExitCodeProcess.
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// RPC-017 regression: production `build_service` MUST attach the
+    /// workspace cwd to the SharedFspecService via `.with_cwd(...)`.
+    ///
+    /// Without this attach, `move_work_unit_up` / `move_work_unit_down`
+    /// silently fail at runtime in both combined and daemon modes
+    /// (the RPC handler returns Err which `dispatch.rs` swallows via
+    /// `tracing::debug!`), and `checkpoint_counts` silently returns the
+    /// zero default — making `[` / `]` keys appear inert in the TUI.
+    #[test]
+    fn build_service_attaches_workspace_cwd() {
+        // @step Given the codelet-fspec binary crate after RPC-017 lands
+        let tmp = tempfile::tempdir().expect("tempdir");
+        let workspace = tmp.path();
+
+        // @step When common::build_service(workspace) is invoked against a temp workspace path
+        let service = build_service(workspace).expect("build_service");
+
+        // @step Then the returned Arc<SharedFspecService>::cwd() returns Some equal to that workspace path
+        assert_eq!(
+            service.cwd(),
+            Some(&workspace.to_path_buf()),
+            "build_service must call SharedFspecService::with_cwd(workspace) so that cwd-dependent RPC methods can locate the workspace",
+        );
+
+        // @step And codelet/fspec/src/common.rs contains the substring ".with_cwd(workspace.to_path_buf())"
+        let src = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/common.rs"))
+            .expect("read common.rs");
+        assert!(
+            src.contains(".with_cwd(workspace.to_path_buf())"),
+            "common.rs must contain the literal .with_cwd(workspace.to_path_buf()) chain in build_service",
+        );
+    }
 }

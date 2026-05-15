@@ -91,6 +91,25 @@ pub trait FspecBackend: Send + Sync {
     /// in turn calls `codelet_git::ghost_commit::count_checkpoints`.
     async fn checkpoint_counts(&self) -> Result<CheckpointCounts>;
 
+    /// RPC-017: move the work unit with `id` one position UP in its
+    /// current `states[<column>]` array in `spec/work-units.json`.
+    /// No-op at the top boundary. Returns `Err` when the unit lives
+    /// in the done column, when no cwd is attached to the shared
+    /// service, or on I/O / data-integrity failure.
+    ///
+    /// Both transports forward to the shared `FspecService` RPC
+    /// method, which delegates to
+    /// `codelet_core::work_units_write::move_work_unit`. After
+    /// persistence the workspace's `WorkUnitsWatcher` fires a fresh
+    /// snapshot — the App's existing subscriber task converts that
+    /// into `Action::WorkUnitsLoaded` and re-seeds the BoardStore,
+    /// keeping the focused-column selection on the moved unit (via
+    /// RPC-016's auto-scroll math).
+    async fn move_work_unit_up(&self, id: String) -> Result<()>;
+
+    /// RPC-017: mirror of [`move_work_unit_up`] for the DOWN direction.
+    async fn move_work_unit_down(&self, id: String) -> Result<()>;
+
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff
     /// sleep). Wired to the App's `r`-press handler from the

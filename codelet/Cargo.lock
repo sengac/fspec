@@ -1160,6 +1160,7 @@ dependencies = [
  "futures",
  "insta",
  "ratatui 0.29.0",
+ "serde_json",
  "tarpc",
  "tempfile",
  "thiserror 1.0.69",

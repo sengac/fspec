@@ -187,9 +187,32 @@ impl App {
                 // an owner-keyed registry of MouseTrackingToggle
                 // instances and route this variant through it.
             }
-            Action::ReorderUp | Action::ReorderDown => {
-                // RPC-012 architecture note [1]: persistence is out of scope
-                // for this slice — placeholder no-op.
+            Action::ReorderUp => {
+                // RPC-017: persist a one-step UP move for the selected
+                // work unit. The workspace WorkUnitsWatcher fires
+                // Action::WorkUnitsLoaded after the write, which the
+                // existing arm above re-seeds the BoardStore from.
+                if let Some(unit) = self.board_store.selected_work_unit() {
+                    let id = unit.id.clone();
+                    let backend = self.backend.clone();
+                    tokio::spawn(async move {
+                        if let Err(err) = backend.move_work_unit_up(id).await {
+                            tracing::debug!("move_work_unit_up failed: {err}");
+                        }
+                    });
+                }
+            }
+            Action::ReorderDown => {
+                // RPC-017: mirror of Action::ReorderUp for the DOWN direction.
+                if let Some(unit) = self.board_store.selected_work_unit() {
+                    let id = unit.id.clone();
+                    let backend = self.backend.clone();
+                    tokio::spawn(async move {
+                        if let Err(err) = backend.move_work_unit_down(id).await {
+                            tracing::debug!("move_work_unit_down failed: {err}");
+                        }
+                    });
+                }
             }
             _ => {}
         }

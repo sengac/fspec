@@ -6,7 +6,8 @@
 //! dispatching on action (add, list, pause, resume, remove).
 //! Registered per-session in session_manager.rs agent_loop.
 //!
-//! File locking: uses mkdir-based locking compatible with the TypeScript
+//! File locking: delegates to `codelet_common::file_lock::with_file_lock`
+//! (RPC-017 lift) which is compatible with the TypeScript
 //! `proper-lockfile` protocol (inter-process) plus atomic write-replace
 //! (temp file + rename) for crash safety.
 
@@ -14,6 +15,7 @@ use std::sync::Arc;
 
 use serde_json::{json, Value};
 
+use codelet_common::file_lock::with_file_lock;
 use codelet_tools::schedule::types::{ScheduleRequest, ScheduleResult};
 use codelet_tools::ScheduleHandler;
 
@@ -44,7 +46,7 @@ pub fn create_handler(project: String) -> ScheduleHandler {
 }
 
 // =============================================================================
-// File I/O helpers — with mkdir-based locking (proper-lockfile compatible)
+// File I/O helpers — locking delegates to codelet_common::file_lock (RPC-017)
 // =============================================================================
 
 fn schedules_path(project: &str) -> std::path::PathBuf {
@@ -55,82 +57,24 @@ fn lock_dir_path(project: &str) -> std::path::PathBuf {
     std::path::Path::new(project).join("spec/schedules.json.lock")
 }
 
-/// Stale threshold for lock directories (matches proper-lockfile default: 10s)
-const LOCK_STALE_MS: u128 = 10_000;
-/// Maximum retries to acquire the lock
-const LOCK_MAX_RETRIES: u32 = 10;
-/// Minimum backoff between retries in milliseconds
-const LOCK_MIN_BACKOFF_MS: u64 = 50;
-/// Maximum backoff between retries in milliseconds
-const LOCK_MAX_BACKOFF_MS: u64 = 500;
-
-/// Acquire a mkdir-based lock compatible with the proper-lockfile protocol.
-///
-/// Retries with exponential backoff, removes stale locks (mtime > 10s).
-fn acquire_lock(lock_dir: &std::path::Path) -> Result<(), String> {
-    for attempt in 0..LOCK_MAX_RETRIES {
-        match std::fs::create_dir(lock_dir) {
-            Ok(()) => return Ok(()),
-            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
-                // Check staleness
-                if is_lock_stale(lock_dir) {
-                    // Remove stale lock and retry immediately
-                    let _ = std::fs::remove_dir_all(lock_dir);
-                    if std::fs::create_dir(lock_dir).is_ok() {
-                        return Ok(());
-                    }
-                }
-                // Backoff: min + (attempt * step), capped at max
-                let backoff = std::cmp::min(
-                    LOCK_MIN_BACKOFF_MS + (attempt as u64) * LOCK_MIN_BACKOFF_MS,
-                    LOCK_MAX_BACKOFF_MS,
-                );
-                std::thread::sleep(std::time::Duration::from_millis(backoff));
-            }
-            Err(e) => {
-                return Err(format!("Failed to acquire lock on schedules.json: {e}"));
-            }
-        }
-    }
-    Err("Timed out acquiring lock on schedules.json".to_string())
-}
-
-/// Check if a lock directory is stale (mtime older than LOCK_STALE_MS).
-fn is_lock_stale(lock_dir: &std::path::Path) -> bool {
-    match std::fs::metadata(lock_dir) {
-        Ok(meta) => match meta.modified() {
-            Ok(mtime) => {
-                let elapsed = std::time::SystemTime::now()
-                    .duration_since(mtime)
-                    .unwrap_or_default();
-                elapsed.as_millis() > LOCK_STALE_MS
-            }
-            Err(_) => true, // Can't read mtime → treat as stale
-        },
-        Err(_) => true, // Lock disappeared → treat as stale (race OK)
-    }
-}
-
-/// Release the mkdir-based lock.
-fn release_lock(lock_dir: &std::path::Path) {
-    let _ = std::fs::remove_dir_all(lock_dir);
-}
-
 /// Execute a closure while holding the schedules.json file lock.
 ///
-/// Acquires the mkdir-based lock before the closure runs and releases it after,
-/// even if the closure returns an error.
+/// Thin wrapper over `codelet_common::file_lock::with_file_lock` that
+/// adapts the lock-error string into a `ScheduleResult::error` and
+/// pipes the closure's `ScheduleResult` through unchanged.
 fn with_schedules_lock<F>(project: &str, f: F) -> ScheduleResult
 where
     F: FnOnce() -> ScheduleResult,
 {
     let lock_dir = lock_dir_path(project);
-    if let Err(e) = acquire_lock(&lock_dir) {
-        return ScheduleResult::error(&e);
+    // The closure returns ScheduleResult directly; wrap it as Ok so the
+    // generic with_file_lock<F, T> signature is satisfied. Errors from
+    // the closure are propagated as Ok(error_result) and the inner
+    // ScheduleResult.success flag carries the boolean state.
+    match with_file_lock(&lock_dir, || -> Result<ScheduleResult, String> { Ok(f()) }) {
+        Ok(result) => result,
+        Err(e) => ScheduleResult::error(&e),
     }
-    let result = f();
-    release_lock(&lock_dir);
-    result
 }
 
 fn read_schedules_file(project: &str) -> Result<Value, String> {

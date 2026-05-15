@@ -214,6 +214,14 @@ pub struct MockBackend {
     send_input_calls: AtomicUsize,
     interrupt_calls: AtomicUsize,
     checkpoint_counts_calls: AtomicUsize,
+    /// RPC-017: per-call counters for the reorder methods + record of
+    /// the most recently passed id so App-level dispatch tests can
+    /// assert that `Action::ReorderUp`/`Down` routes to the focused-
+    /// column selection.
+    move_work_unit_up_calls: AtomicUsize,
+    move_work_unit_down_calls: AtomicUsize,
+    last_move_work_unit_up_id: Mutex<Option<String>>,
+    last_move_work_unit_down_id: Mutex<Option<String>>,
     scripted_session: Mutex<Option<SessionId>>,
     last_send_input: Mutex<Option<(SessionId, String)>>,
     last_interrupt: Mutex<Option<SessionId>>,
@@ -236,6 +244,10 @@ impl Default for MockBackend {
             send_input_calls: AtomicUsize::new(0),
             interrupt_calls: AtomicUsize::new(0),
             checkpoint_counts_calls: AtomicUsize::new(0),
+            move_work_unit_up_calls: AtomicUsize::new(0),
+            move_work_unit_down_calls: AtomicUsize::new(0),
+            last_move_work_unit_up_id: Mutex::new(None),
+            last_move_work_unit_down_id: Mutex::new(None),
             scripted_session: Mutex::new(None),
             last_send_input: Mutex::new(None),
             last_interrupt: Mutex::new(None),
@@ -297,6 +309,32 @@ impl MockBackend {
     /// RPC-015: how many times `checkpoint_counts()` has been awaited.
     pub fn checkpoint_counts_calls(&self) -> usize {
         self.checkpoint_counts_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-017: counter + capture for `move_work_unit_up`.
+    pub fn move_work_unit_up_calls(&self) -> usize {
+        self.move_work_unit_up_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-017: counter + capture for `move_work_unit_down`.
+    pub fn move_work_unit_down_calls(&self) -> usize {
+        self.move_work_unit_down_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-017: the last id passed to `move_work_unit_up`.
+    pub fn last_move_work_unit_up_id(&self) -> Option<String> {
+        self.last_move_work_unit_up_id
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-017: the last id passed to `move_work_unit_down`.
+    pub fn last_move_work_unit_down_id(&self) -> Option<String> {
+        self.last_move_work_unit_down_id
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
     }
 }
 
@@ -361,6 +399,26 @@ impl FspecBackend for MockBackend {
     async fn checkpoint_counts(&self) -> Result<CheckpointCounts> {
         self.checkpoint_counts_calls.fetch_add(1, Ordering::SeqCst);
         Ok(*self.checkpoint_counts.lock().expect("MockBackend mutex"))
+    }
+
+    async fn move_work_unit_up(&self, id: String) -> Result<()> {
+        self.move_work_unit_up_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_move_work_unit_up_id
+            .lock()
+            .expect("MockBackend mutex") = Some(id);
+        Ok(())
+    }
+
+    async fn move_work_unit_down(&self, id: String) -> Result<()> {
+        self.move_work_unit_down_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_move_work_unit_down_id
+            .lock()
+            .expect("MockBackend mutex") = Some(id);
+        Ok(())
     }
 }
 
