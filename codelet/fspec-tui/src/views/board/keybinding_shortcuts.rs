@@ -12,7 +12,7 @@
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::{Modifier, Style};
+use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
@@ -24,21 +24,14 @@ pub fn render(area: Rect, buf: &mut Buffer, theme: &Theme) {
     if area.width == 0 || area.height == 0 {
         return;
     }
-    let key = Style::default().fg(theme.fg).add_modifier(Modifier::BOLD);
-    let dim = Style::default().fg(theme.dim);
-    let line = Line::from(vec![
-        Span::styled("C ", key),
-        Span::styled("Checkpoints ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("F ", key),
-        Span::styled("Changed Files ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("D ", key),
-        Span::styled("FOUNDATION.md ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("/ ", key),
-        Span::styled("New Agent", dim),
-    ]);
+    // TS source (`KeybindingShortcuts.tsx`) renders a single plain
+    // `<Text>` with no color/bold attributes — so port it as one span
+    // styled with the theme's primary fg.
+    let style = Style::default().fg(theme.fg);
+    let line = Line::from(Span::styled(
+        "C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent".to_string(),
+        style,
+    ));
     Paragraph::new(line).render(
         Rect {
             x: area.x,

@@ -391,6 +391,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@idempotent` | Operations that can be safely repeated without changing results |
 | `@image` | Image content type scenarios |
 | `@inbound` | Inbound message flow scenarios |
+| `@indicators` | Visual indicators rendered into TUI cells (e.g. last-changed ⏩, attached-session 🟢) |
 | `@initialization` | File and system initialization features |
 | `@ink` | Ink (React for CLIs) rendering engine |
 | `@interactive` | Interactive terminal UI features using Ink |
@@ -471,6 +472,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@runtime` | Runtime behavior and dynamic configuration |
 | `@rust` | Rust implementation components |
 | `@schema-validation` | JSON Schema validation features and commands |
+| `@scroll` | Scroll-related UI behaviour (offsets, arrows, auto-scroll) |
 | `@scroll-mode` | Scroll mode for virtual list components |
 | `@scrolling` | Scenarios testing viewport scrolling behavior |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
@@ -483,12 +485,14 @@ Tags for specific technical concerns or architectural patterns.
 | `@slash-commands` | Claude Code slash command implementations |
 | `@smart-scroll` | Scenarios testing smart scrolling with sticky scroll behavior |
 | `@sms` | SMS-related functionality |
+| `@source-shape` | Source-shape regression test pinning file layout and cross-crate invariants |
 | `@stable-indices` | Stable indices system for maintaining unique IDs across soft-delete operations |
 | `@stale-cache` | Stale credential cache detection and re-detection scenarios |
 | `@state` | Session state scenarios |
 | `@step-validation` | Step-level validation and Gherkin step matching |
 | `@stop-reason` | Response stop reason scenarios |
 | `@storage` | File storage operations |
+| `@store` | Single-task state store types (BoardStore / AgentViewStore) in the Rust TUI |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
 | `@streaming` | Real-time output streaming features |
 | `@structure` | Message structure preservation scenarios |
@@ -530,6 +534,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@url` | URL reference content scenarios |
 | `@uuid` | UUID-related functionality for message identification and threading |
 | `@versioning` | Version management and migration features |
+| `@viewport` | Per-column scroll viewport semantics in the BoardView (RPC-016) |
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
 | `@websocket` | WebSocket transport for tarpc service |
@@ -900,7 +905,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-05-10T21:44:05.077Z_
+_Last updated: 2026-05-15T02:19:56.440Z_
 
 **Update Command**: `fspec tag-stats`
 

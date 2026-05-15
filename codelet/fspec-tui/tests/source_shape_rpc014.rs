@@ -168,6 +168,11 @@ fn rpc013_invariants_preserved() {
 fn board_view_still_emits_action_variants_and_renders_rpc013_footer() {
     // @step Given codelet/fspec-tui/src/views/board.rs after RPC-014 lands
     let board = read_raw(&src_dir().join("views").join("board.rs"));
+    // RPC-016 moved the footer literal into views/board/footer.rs so the
+    // orchestrator can stay under the 300 LoC ceiling — combine both for
+    // the literal-string assertions below.
+    let footer = read_raw(&src_dir().join("views").join("board").join("footer.rs"));
+    let combined = format!("{board}\n{footer}");
     // @step When a developer scans the file source raw
     // @step Then the file contains the substring "Action::EnterWorkUnit"
     assert!(board.contains("Action::EnterWorkUnit"), "missing Action::EnterWorkUnit in board.rs");
@@ -176,14 +181,14 @@ fn board_view_still_emits_action_variants_and_renders_rpc013_footer() {
     // @step And the file contains the substring "Action::ReorderUp"
     assert!(board.contains("Action::ReorderUp"), "missing Action::ReorderUp in board.rs");
     // @step And the file contains the substring "← → Columns"
-    assert!(board.contains("← →"), "board.rs must contain the '← →' span");
-    assert!(board.contains("Columns"), "board.rs must contain 'Columns' span");
+    assert!(combined.contains("← →"), "board.rs|footer.rs must contain the '← →' span");
+    assert!(combined.contains("Columns"), "board.rs|footer.rs must contain 'Columns' span");
     // @step And the file contains the substring "↵ Work Agent"
-    assert!(board.contains("↵"), "board.rs must contain '↵' span");
-    assert!(board.contains("Work Agent"), "board.rs must contain 'Work Agent' span");
+    assert!(combined.contains("↵"), "board.rs|footer.rs must contain '↵' span");
+    assert!(combined.contains("Work Agent"), "board.rs|footer.rs must contain 'Work Agent' span");
     // @step And the file contains the substring "ESC Back"
-    assert!(board.contains("ESC"), "board.rs must contain 'ESC' span");
-    assert!(board.contains("Back"), "board.rs must contain 'Back' span");
+    assert!(combined.contains("ESC"), "board.rs|footer.rs must contain 'ESC' span");
+    assert!(combined.contains("Back"), "board.rs|footer.rs must contain 'Back' span");
 }
 
 /// Scenario: Views still avoid encapsulated transport crates and host runtime construction

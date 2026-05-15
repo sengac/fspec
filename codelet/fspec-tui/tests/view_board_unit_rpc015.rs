@@ -33,6 +33,7 @@ fn make_unit(id: &str, status: &str, work_type: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
+    last_state_change_at: None,
     }
 }
 
@@ -230,6 +231,7 @@ fn rpc014_details_strip_and_rpc013_footer_are_still_painted_after_rpc015_header(
         estimate: Some(5),
         epic: Some("authentication".to_string()),
         attachments: Vec::new(),
+    last_state_change_at: None,
     };
     let mut store = BoardStore::default();
     store.replace_work_units(vec![unit]);

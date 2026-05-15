@@ -38,10 +38,15 @@ pub fn column_index(column: &str) -> Option<usize> {
 /// only mutation surface; the App task calls them inside `App::dispatch`.
 #[derive(Debug, Default)]
 pub struct BoardStore {
-    work_units: Vec<WorkUnitInfo>,
-    by_column: HashMap<String, Vec<usize>>,
+    pub(super) work_units: Vec<WorkUnitInfo>,
+    pub(super) by_column: HashMap<String, Vec<usize>>,
     focused_column: usize,
-    selected_index_per_column: HashMap<String, usize>,
+    pub(super) selected_index_per_column: HashMap<String, usize>,
+    /// RPC-016: per-column scroll offset — the index of the first
+    /// work unit in the column-content viewport. `0` for every
+    /// column until move_selection / scroll_focused_column / End
+    /// advances it.
+    pub(super) scroll_offsets: HashMap<String, usize>,
     session_attachments: HashMap<String, SessionId>,
     last_changed_id: Option<String>,
     /// RPC-015: aggregate manual + auto checkpoint counts populated by
@@ -223,4 +228,9 @@ impl BoardStore {
     pub fn set_checkpoint_counts(&mut self, counts: CheckpointCounts) {
         self.checkpoint_counts = counts;
     }
+
+    // RPC-016: per-column scroll viewport + viewport-aware selection
+    // methods live in `super::board_viewport` so this file stays under
+    // the 300 LoC ceiling. The `pub(super)` field visibility above
+    // grants the sibling module access to the underlying maps.
 }

@@ -1,0 +1,313 @@
+{
+  "scenarios": [
+    {
+      "name": "Wheel-down inside the BACKLOG content area emits SelectNext",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "62-92",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel-down at the last unit wraps the selection to index 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "95-122",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/board_viewport.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel-up inside the BACKLOG content area emits SelectPrev",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "125-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel event outside the content area is Ignored",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "151-170",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel-right inside the content area emits FocusNextColumn",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "173-196",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wheel-left inside the content area emits FocusPrevColumn",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "199-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left-click on a column header emits SetFocusedColumn",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "225-256",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left-click on a content row emits SetFocusedColumn and SelectIndexInFocused",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "259-300",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Click on a content row adds scroll_offset to the clicked row index",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/board_mouse_rpc023.rs",
+          "lines": "303-330",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/board/mouse.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/board_mouse_rpc023.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/board/mouse.rs",
+      "codelet/fspec-tui/src/store/board_viewport.rs"
+    ],
+    "totalLinesCovered": 405
+  }
+}

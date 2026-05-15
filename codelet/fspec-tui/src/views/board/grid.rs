@@ -128,3 +128,28 @@ pub fn calculate_viewport_height(terminal_height: u16) -> u16 {
     let fixed_rows: u16 = 13;
     terminal_height.saturating_sub(fixed_rows).max(5)
 }
+
+/// RPC-023: slice a horizontal strip (`area`, height = whatever the
+/// caller passes — typically the column-header row or the content
+/// area) into per-column [`Rect`]s, accounting for the leading `│`
+/// border, each column's width from [`column_width_at`], and the `│`
+/// separator between columns. The returned array is indexed by
+/// [`crate::store::COLUMN_ORDER`] position.
+pub fn slice_column_rects(area: ratatui::layout::Rect, widths: ColumnWidths) -> [ratatui::layout::Rect; 7] {
+    let mut rects = [ratatui::layout::Rect::default(); 7];
+    let mut x = area.x.saturating_add(1);
+    for (idx, slot) in rects.iter_mut().enumerate() {
+        let w = column_width_at(idx, widths);
+        *slot = ratatui::layout::Rect {
+            x,
+            y: area.y,
+            width: w,
+            height: area.height,
+        };
+        x = x.saturating_add(w);
+        if idx < 6 {
+            x = x.saturating_add(1);
+        }
+    }
+    rects
+}

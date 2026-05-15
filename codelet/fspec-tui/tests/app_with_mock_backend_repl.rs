@@ -42,6 +42,7 @@ fn wu(id: &str, status: &str) -> WorkUnitInfo {
         estimate: None,
         epic: None,
         attachments: Vec::new(),
+    last_state_change_at: None,
     }
 }
 

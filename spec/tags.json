@@ -1466,6 +1466,10 @@
           "description": "Inbound message flow scenarios"
         },
         {
+          "name": "@indicators",
+          "description": "Visual indicators rendered into TUI cells (e.g. last-changed ⏩, attached-session 🟢)"
+        },
+        {
           "name": "@initialization",
           "description": "File and system initialization features"
         },
@@ -1786,6 +1790,10 @@
           "description": "JSON Schema validation features and commands"
         },
         {
+          "name": "@scroll",
+          "description": "Scroll-related UI behaviour (offsets, arrows, auto-scroll)"
+        },
+        {
           "name": "@scroll-mode",
           "description": "Scroll mode for virtual list components"
         },
@@ -1834,6 +1842,10 @@
           "description": "SMS-related functionality"
         },
         {
+          "name": "@source-shape",
+          "description": "Source-shape regression test pinning file layout and cross-crate invariants"
+        },
+        {
           "name": "@stable-indices",
           "description": "Stable indices system for maintaining unique IDs across soft-delete operations"
         },
@@ -1856,6 +1868,10 @@
         {
           "name": "@storage",
           "description": "File storage operations"
+        },
+        {
+          "name": "@store",
+          "description": "Single-task state store types (BoardStore / AgentViewStore) in the Rust TUI"
         },
         {
           "name": "@strategy-planning",
@@ -2020,6 +2036,10 @@
         {
           "name": "@versioning",
           "description": "Version management and migration features"
+        },
+        {
+          "name": "@viewport",
+          "description": "Per-column scroll viewport semantics in the BoardView (RPC-016)"
         },
         {
           "name": "@vitest",
@@ -2634,7 +2654,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-05-10T21:44:05.077Z",
+    "lastUpdated": "2026-05-15T02:19:56.440Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -52,7 +52,11 @@ impl Default for Theme {
         Self {
             fg: Color::White,
             bg: Color::Black,
-            border: Color::DarkGray,
+            // Borders match TS: <Text> with no color → terminal default fg.
+            // Color::Reset uses the terminal's own foreground so the box
+            // grid stays clearly visible (DarkGray on Black collapsed to
+            // near-invisible on most modern terminals).
+            border: Color::Reset,
             border_focused: Color::Cyan,
             selection_bg: Color::Blue,
             selection_fg: Color::White,
@@ -75,7 +79,7 @@ mod tests {
         let theme = Theme::default();
         assert_eq!(theme.fg, Color::White);
         assert_eq!(theme.bg, Color::Black);
-        assert_eq!(theme.border, Color::DarkGray);
+        assert_eq!(theme.border, Color::Reset);
         assert_eq!(theme.border_focused, Color::Cyan);
         assert_eq!(theme.selection_bg, Color::Blue);
         assert_eq!(theme.selection_fg, Color::White);

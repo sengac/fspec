@@ -30,6 +30,7 @@
 pub mod app;
 pub mod components;
 pub mod compositor;
+pub mod mouse;
 pub mod store;
 pub mod terminal;
 pub mod theme;

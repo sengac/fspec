@@ -66,6 +66,32 @@ struct WorkUnitRecord {
     /// as an empty Vec.
     #[serde(default)]
     attachments: Vec<String>,
+    /// RPC-016: the `stateHistory` array from `spec/work-units.json` —
+    /// only the timestamp of the LAST entry is exposed downstream as
+    /// `WorkUnitInfo.last_state_change_at`. Legacy records without
+    /// `stateHistory` default to an empty Vec and yield `None`.
+    #[serde(default)]
+    state_history: Vec<StateHistoryEntry>,
+}
+
+/// RPC-016: a single entry in `spec/work-units.json::stateHistory`.
+///
+/// Only `timestamp` is read by codelet_core — the full record may
+/// contain `from`/`to`/`actor` fields the CLI writes but the RPC
+/// surface does not currently expose. `#[serde(default)]` is applied
+/// to the unused fields so historical entries with absent fields still
+/// deserialize; `timestamp` itself is left strict because every
+/// stateHistory entry the CLI writes carries one.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct StateHistoryEntry {
+    timestamp: String,
+    #[serde(default, rename = "from")]
+    _from: Option<String>,
+    #[serde(default, rename = "to")]
+    _to: Option<String>,
+    #[serde(default, rename = "actor")]
+    _actor: Option<String>,
 }
 
 impl From<WorkUnitRecord> for WorkUnitInfo {
@@ -86,6 +112,12 @@ impl From<WorkUnitRecord> for WorkUnitInfo {
             estimate: record.estimate,
             epic: record.epic,
             attachments: record.attachments,
+            // RPC-016: pick the timestamp of the LAST stateHistory entry.
+            // Legacy records (empty Vec) yield None.
+            last_state_change_at: record
+                .state_history
+                .last()
+                .map(|entry| entry.timestamp.clone()),
         }
     }
 }
@@ -94,13 +126,43 @@ impl From<WorkUnitRecord> for WorkUnitInfo {
 #[serde(rename_all = "camelCase")]
 struct WorkUnitsFile {
     work_units: HashMap<String, WorkUnitRecord>,
+    /// Display-order arrays per column status. Mirrors the TS
+    /// `states` field in `spec/work-units.json`. The TS TUI builds its
+    /// `workUnits[]` by iterating `states[<column>]` in column order
+    /// and looking up records by id — preserving the manual ordering
+    /// the user has imposed via `[`/`]` priority moves and the
+    /// "most-recent-first" ordering of the `done` column. Optional
+    /// because legacy/test JSON may not include it.
+    #[serde(default)]
+    states: HashMap<String, Vec<String>>,
 }
+
+/// Canonical column order — must match `COLUMN_ORDER` in
+/// `codelet/fspec-tui/src/store/board.rs` and `STATES` in
+/// `src/tui/components/UnifiedBoardLayout.tsx`.
+const COLUMN_ORDER: [&str; 7] = [
+    "backlog",
+    "specifying",
+    "testing",
+    "implementing",
+    "validating",
+    "done",
+    "blocked",
+];
 
 /// One-shot read of `<workspace>/spec/work-units.json`.
 ///
 /// Returns an empty vec (NOT an error) if the file does not exist —
 /// matches the legacy NAPI behaviour so the rpc-server binary can start
 /// in workspaces that have not yet been bootstrapped.
+///
+/// Ordering: when the file contains a top-level `states` object (the
+/// standard `fspec` schema), records are emitted in the order
+/// `states[<column>]` for each column in `COLUMN_ORDER`. This mirrors
+/// the TS `fspecStore.loadData()` behaviour and preserves the user's
+/// manual `[`/`]` priority ordering on the kanban board. Records not
+/// referenced from `states` (and records referenced from unknown
+/// columns) are appended afterwards, sorted by id for determinism.
 pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>> {
     let path = workspace.join("spec").join("work-units.json");
     if !path.exists() {
@@ -111,15 +173,30 @@ pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>> {
         .with_context(|| format!("read {}", path.display()))?;
     let file: WorkUnitsFile = serde_json::from_str(&content)
         .with_context(|| format!("parse {}", path.display()))?;
-    let mut out: Vec<WorkUnitInfo> = file
-        .work_units
-        .into_values()
-        .map(WorkUnitInfo::from)
-        .collect();
-    // Sort for deterministic output across HashMap iteration order so
-    // cross-transport parity tests can compare bytewise.
-    out.sort_by(|a, b| a.id.cmp(&b.id));
-    Ok(out)
+
+    let mut records = file.work_units;
+    let mut ordered: Vec<WorkUnitInfo> = Vec::with_capacity(records.len());
+
+    // First pass: emit records in `states[<column>]` order.
+    for column in COLUMN_ORDER {
+        if let Some(ids) = file.states.get(column) {
+            for id in ids {
+                if let Some(record) = records.remove(id) {
+                    ordered.push(WorkUnitInfo::from(record));
+                }
+            }
+        }
+    }
+
+    // Second pass: anything still in `records` (records whose status
+    // didn't appear in any `states` array, or workspaces with no
+    // `states` field at all) is appended sorted by id so the
+    // cross-transport parity tests still get deterministic output.
+    let mut leftover: Vec<WorkUnitInfo> =
+        records.into_values().map(WorkUnitInfo::from).collect();
+    leftover.sort_by(|a, b| a.id.cmp(&b.id));
+    ordered.extend(leftover);
+    Ok(ordered)
 }
 
 /// Long-lived debounced file-system watcher for `spec/work-units.json`.
@@ -255,4 +332,82 @@ fn workspace_root(work_units_path: &Path) -> &Path {
         .parent()
         .and_then(Path::parent)
         .unwrap_or(work_units_path)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used)]
+
+    use super::*;
+    use std::io::Write;
+    use tempfile::TempDir;
+
+    fn write_workspace(tmp: &TempDir, json: &str) {
+        let spec = tmp.path().join("spec");
+        std::fs::create_dir_all(&spec).unwrap();
+        let mut f = std::fs::File::create(spec.join("work-units.json")).unwrap();
+        f.write_all(json.as_bytes()).unwrap();
+    }
+
+    #[test]
+    fn read_snapshot_preserves_states_array_order_per_column() {
+        // TS reference: src/tui/__tests__/done-column-sorting.test.ts.
+        // The Rust port must mirror `fspecStore.loadData()` — build the
+        // workUnits vec by walking `states[<column>]` in column order.
+        let tmp = TempDir::new().unwrap();
+        write_workspace(
+            &tmp,
+            r#"{
+              "workUnits": {
+                "BOARD-001": {"id": "BOARD-001", "title": "Backlog Unit 1", "type": "story", "status": "backlog"},
+                "BOARD-002": {"id": "BOARD-002", "title": "Backlog Unit 2", "type": "story", "status": "backlog"},
+                "BOARD-003": {"id": "BOARD-003", "title": "Backlog Unit 3", "type": "story", "status": "backlog"},
+                "DONE-001":  {"id": "DONE-001",  "title": "Done Unit 1",    "type": "story", "status": "done"},
+                "DONE-002":  {"id": "DONE-002",  "title": "Done Unit 2",    "type": "story", "status": "done"}
+              },
+              "states": {
+                "backlog":      ["BOARD-002", "BOARD-003", "BOARD-001"],
+                "specifying":   [],
+                "testing":      [],
+                "implementing": [],
+                "validating":   [],
+                "done":         ["DONE-002", "DONE-001"],
+                "blocked":      []
+              }
+            }"#,
+        );
+        let snap = read_snapshot(tmp.path()).unwrap();
+        let ids: Vec<&str> = snap.iter().map(|u| u.id.as_str()).collect();
+        // Column order: backlog first (in its file order), then done.
+        assert_eq!(
+            ids,
+            vec!["BOARD-002", "BOARD-003", "BOARD-001", "DONE-002", "DONE-001"]
+        );
+    }
+
+    #[test]
+    fn read_snapshot_appends_orphan_records_sorted_by_id() {
+        let tmp = TempDir::new().unwrap();
+        write_workspace(
+            &tmp,
+            r#"{
+              "workUnits": {
+                "Z-001": {"id": "Z-001", "title": "z", "type": "story", "status": "backlog"},
+                "A-001": {"id": "A-001", "title": "a", "type": "story", "status": "backlog"}
+              },
+              "states": {
+                "backlog":      [],
+                "specifying":   [],
+                "testing":      [],
+                "implementing": [],
+                "validating":   [],
+                "done":         [],
+                "blocked":      []
+              }
+            }"#,
+        );
+        let snap = read_snapshot(tmp.path()).unwrap();
+        let ids: Vec<&str> = snap.iter().map(|u| u.id.as_str()).collect();
+        assert_eq!(ids, vec!["A-001", "Z-001"]);
+    }
 }

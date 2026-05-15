@@ -144,16 +144,48 @@ impl App {
                 self.board_store.focus_next_column();
             }
             Action::SelectNext => {
-                let col = self.board_store.focused_column().to_string();
-                let cur = self.board_store.selected_index_for(&col);
-                self.board_store
-                    .set_selected_index_for(&col, cur.saturating_add(1));
+                // RPC-016: route arrow keys through move_selection so
+                // they auto-scroll when crossing the viewport boundary.
+                let vh = self.navigator.board.last_viewport_height();
+                self.board_store.move_selection(1, vh);
             }
             Action::SelectPrev => {
-                let col = self.board_store.focused_column().to_string();
-                let cur = self.board_store.selected_index_for(&col);
-                self.board_store
-                    .set_selected_index_for(&col, cur.saturating_sub(1));
+                let vh = self.navigator.board.last_viewport_height();
+                self.board_store.move_selection(-1, vh);
+            }
+            Action::ScrollFocusedColumnUp(vh) => {
+                self.board_store.scroll_focused_column(-1, *vh);
+            }
+            Action::ScrollFocusedColumnDown(vh) => {
+                self.board_store.scroll_focused_column(1, *vh);
+            }
+            Action::SelectFirstInFocused => {
+                self.board_store.select_first_in_focused();
+            }
+            Action::SelectLastInFocused => {
+                self.board_store.select_last_in_focused();
+            }
+            Action::SetFocusedColumn(idx) => {
+                // RPC-023: map the column index to a name via
+                // COLUMN_ORDER and forward to BoardStore::set_focused_column.
+                use crate::store::COLUMN_ORDER;
+                if let Some(column) = COLUMN_ORDER.get(*idx) {
+                    self.board_store.set_focused_column(column);
+                }
+            }
+            Action::SelectIndexInFocused(idx) => {
+                // RPC-023: route through the viewport-aware setter so
+                // the click both targets the row AND scrolls it into
+                // view when it falls outside the current viewport.
+                let vh = self.navigator.board.last_viewport_height();
+                self.board_store.select_index_in_focused(*idx, vh);
+            }
+            Action::ReEnableMouseTracking(_owner) => {
+                // RPC-023 scaffolding: the BoardView slice does not opt
+                // into TUI-078 button-press, so no toggle is registered
+                // for App::dispatch to look up. RPC-019 will introduce
+                // an owner-keyed registry of MouseTrackingToggle
+                // instances and route this variant through it.
             }
             Action::ReorderUp | Action::ReorderDown => {
                 // RPC-012 architecture note [1]: persistence is out of scope

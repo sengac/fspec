@@ -9,18 +9,18 @@
 //! snapshot returns `None`, paints a centered `No work unit selected`
 //! placeholder. Otherwise paints the five rows of the strip in order:
 //!
-//!   row 0: `{id}: {title}` (cyan + bold)
-//!   row 1: first line of description, truncated to `width - 4`
-//!   row 2: `Attachments (use the "A" key to view): <basename, …>`
-//!   row 3: `Epic: {epic} | Estimate: {n}pts | Status: {status}`
-//!   row 4: blank padding
+//!   row 0: `{id}: {title}` (plain)
+//!   rows 1-2: description (cyan, word-wrapped to 2 lines, ellipsis
+//!             if it overflows the 2nd line)
+//!   row 3: `Attachments (use the "A" key to view): <basename, …>`
+//!   row 4: `Epic: {epic} | Estimate: {n}pts | Status: {status}`
 
 use std::path::Path;
 
 use codelet_rpc_types::WorkUnitInfo;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
@@ -38,43 +38,56 @@ pub fn render(area: Rect, buf: &mut Buffer, selected: Option<&WorkUnitInfo>) {
     };
 
     let row_y = area.y;
-    // Row 0 — title (cyan + bold).
+    // Row 0 — title (matches TS WorkUnitTitle: plain <Text>, no color).
     if area.height >= 1 {
         let title_text = format!("{}: {}", unit.id, unit.title);
-        let line = Line::from(Span::styled(
-            truncate_to(title_text, area.width as usize),
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
-        ));
-        Paragraph::new(line).render(Rect { x: area.x, y: row_y, width: area.width, height: 1 }, buf);
+        let line = Line::from(Span::raw(truncate_to(title_text, area.width as usize)));
+        Paragraph::new(line).render(
+            Rect { x: area.x, y: row_y, width: area.width, height: 1 },
+            buf,
+        );
     }
-    // Row 1 — description (single-line, truncated).
+    // Rows 1-2 — description (TS WorkUnitDescription: `<Text color="cyan"
+    // wrap="wrap">` inside a `height={2}` box).
     if area.height >= 2 {
+        // Match the TS calculation:
+        //   availableWidth = max(10, terminalWidth - 4)
+        // where terminalWidth includes the two side borders. Our `area`
+        // is already the inner rect (terminalWidth - 2), so to mirror
+        // the TS "-4" we drop 2 more cells.
+        let avail = (area.width as usize).saturating_sub(2).max(10);
+        let avail = avail.min(area.width as usize);
         let desc = unit.description.clone().unwrap_or_default();
         let normalized = normalize(&desc);
-        let max_chars = area.width.saturating_sub(2) as usize;
-        let truncated = truncate_to(normalized, max_chars);
-        Paragraph::new(Line::from(Span::raw(truncated))).render(
+        let cyan = Style::default().fg(Color::Cyan);
+        let (line1, line2) = wrap_to_two_lines(&normalized, avail);
+        Paragraph::new(Line::from(Span::styled(line1, cyan))).render(
             Rect { x: area.x, y: row_y + 1, width: area.width, height: 1 },
             buf,
         );
+        if area.height >= 3 {
+            Paragraph::new(Line::from(Span::styled(line2, cyan))).render(
+                Rect { x: area.x, y: row_y + 2, width: area.width, height: 1 },
+                buf,
+            );
+        }
     }
-    // Row 2 — attachments.
-    if area.height >= 3 {
+    // Row 3 — attachments.
+    if area.height >= 4 {
         let attachments_line = build_attachments_line(unit, area.width);
         Paragraph::new(attachments_line).render(
-            Rect { x: area.x, y: row_y + 2, width: area.width, height: 1 },
-            buf,
-        );
-    }
-    // Row 3 — metadata.
-    if area.height >= 4 {
-        let meta_line = build_metadata_line(unit, area.width);
-        Paragraph::new(meta_line).render(
             Rect { x: area.x, y: row_y + 3, width: area.width, height: 1 },
             buf,
         );
     }
-    // Row 4 — intentional blank padding (no work required).
+    // Row 4 — metadata.
+    if area.height >= 5 {
+        let meta_line = build_metadata_line(unit, area.width);
+        Paragraph::new(meta_line).render(
+            Rect { x: area.x, y: row_y + 4, width: area.width, height: 1 },
+            buf,
+        );
+    }
 }
 
 fn render_placeholder(area: Rect, buf: &mut Buffer) {
@@ -108,6 +121,55 @@ fn normalize(s: &str) -> String {
         }
     }
     out.trim().to_string()
+}
+
+/// Word-wrap `text` greedily into at most 2 lines, each at most
+/// `width` user-perceived characters. If the text overflows the
+/// second line, append `…` at the end of line 2 (matching the TS
+/// `cli-truncate` `position: 'end'` behaviour).
+///
+/// Returns `(line1, line2)`. `line2` is empty when the whole text
+/// fits on `line1`.
+fn wrap_to_two_lines(text: &str, width: usize) -> (String, String) {
+    if width == 0 {
+        return (String::new(), String::new());
+    }
+    let chars: Vec<char> = text.chars().collect();
+    if chars.len() <= width {
+        return (text.to_string(), String::new());
+    }
+
+    // Find a break index for line 1: prefer the rightmost whitespace
+    // within `width` chars; fall back to a hard cut at `width`.
+    let mut break_at = width;
+    for i in (0..=width).rev() {
+        if i < chars.len() && chars[i] == ' ' {
+            break_at = i;
+            break;
+        }
+    }
+    let line1: String = chars[..break_at].iter().collect();
+
+    // Skip the breaking space (if any) before line 2 begins.
+    let line2_start = if break_at < chars.len() && chars[break_at] == ' ' {
+        break_at + 1
+    } else {
+        break_at
+    };
+
+    let remaining: Vec<char> = chars[line2_start..].to_vec();
+    if remaining.len() <= width {
+        return (line1.trim_end().to_string(), remaining.into_iter().collect());
+    }
+
+    // Line 2 overflows — keep `width - 1` chars + an ellipsis.
+    let keep = width.saturating_sub(1);
+    let mut line2 = String::with_capacity(width);
+    for ch in remaining.into_iter().take(keep) {
+        line2.push(ch);
+    }
+    line2.push('…');
+    (line1.trim_end().to_string(), line2)
 }
 
 fn truncate_to(s: String, max_chars: usize) -> String {
@@ -170,4 +232,44 @@ fn build_metadata_line(unit: &WorkUnitInfo, width: u16) -> Line<'static> {
     let joined = fields.join(" | ");
     let truncated = truncate_to(joined, width as usize);
     Line::from(Span::raw(truncated))
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used)]
+    use super::*;
+
+    #[test]
+    fn wrap_short_text_fits_on_one_line() {
+        let (a, b) = wrap_to_two_lines("hello world", 20);
+        assert_eq!(a, "hello world");
+        assert_eq!(b, "");
+    }
+
+    #[test]
+    fn wrap_long_text_breaks_on_whitespace_for_line_one() {
+        // 25 chars — line1 fits 20 wide, remainder ("dog") fits line2.
+        let (a, b) = wrap_to_two_lines("the quick brown fox done", 20);
+        assert_eq!(a, "the quick brown fox");
+        assert_eq!(b, "done");
+    }
+
+    #[test]
+    fn wrap_overflow_truncates_line_two_with_ellipsis() {
+        let (a, b) = wrap_to_two_lines(
+            "the quick brown fox jumps over the lazy dog one two three four",
+            20,
+        );
+        assert_eq!(a, "the quick brown fox");
+        // line2 must be exactly `width` chars long and end with `…`.
+        assert_eq!(b.chars().count(), 20);
+        assert!(b.ends_with('…'));
+    }
+
+    #[test]
+    fn wrap_hard_break_when_first_word_exceeds_width() {
+        let (a, b) = wrap_to_two_lines("supercalifragilisticexpialidocious", 10);
+        assert_eq!(a.chars().count(), 10);
+        assert!(!b.is_empty());
+    }
 }

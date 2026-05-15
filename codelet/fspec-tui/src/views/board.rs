@@ -5,28 +5,26 @@
 //!   - spec/features/rpc013-board-footer.feature
 //!   - spec/features/rpc014-board-grid.feature
 //!   - spec/features/rpc014-source-shape.feature
-//! Cards: RPC-012 (placeholder skeleton), RPC-013 (view-aware footer),
-//!        RPC-014 (rich grid + details strip).
+//!   - spec/features/boardview-mouse-handling.feature (RPC-023)
+//! Cards: RPC-012 / RPC-013 / RPC-014 / RPC-016 / RPC-023.
 //!
 //! Renders the seven canonical kanban columns with box-drawing
-//! separators (`├ ┬ ┼ ┴ ┤`), a 5-row work-unit details strip above
-//! the column headers, focused-column highlighting and work-type cell
-//! coloring. Per-column viewport scroll (the `⏩`/`🟢` indicators and
-//! the `↑`/`↓` scroll arrows) lands in RPC-016.
+//! separators, a 5-row details strip, focused-column highlighting and
+//! per-column viewport scroll (RPC-016 `↑`/`↓` arrows). Wheel + click
+//! mouse handling lives in the sibling `mouse` module (RPC-023).
 //!
-//! BoardView reads from a `&BoardStore` passed in via `render_with_store`
-//! — it does NOT own any work-units state. Keyboard handling emits
-//! `Action::EnterWorkUnit` / `Action::OpenAgentView` /
-//! `Action::FocusNextColumn` etc. onto the action bus that
-//! `App::dispatch` consumes.
+//! BoardView holds NO work-units state — `render_with_store` borrows a
+//! `&BoardStore`. Keyboard + mouse handlers emit Actions onto the bus
+//! that `App::dispatch` consumes.
 
+use std::cell::Cell;
 use std::sync::Arc;
 
 use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Modifier, Style};
+use ratatui::style::Style;
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 use tokio::sync::mpsc::UnboundedSender;
@@ -38,20 +36,43 @@ use crate::theme::Theme;
 pub mod checkpoint_status;
 pub mod columns;
 pub mod details_strip;
+pub mod footer;
 pub mod grid;
 pub mod header;
 pub mod keybinding_shortcuts;
 pub mod logo;
+pub mod mouse;
+pub mod viewport;
 
-use self::columns::{paint_column_headers, paint_content_rows};
+use self::columns::paint_column_headers;
 use self::grid::{
-    build_border_row, calculate_column_widths, column_width_at, SeparatorType,
+    build_border_row, calculate_column_widths, column_width_at, slice_column_rects,
+    SeparatorType,
 };
+use self::viewport::paint_content_rows;
 
-/// BoardView holds NO work-units state — only the action bus + theme.
+/// BoardView holds NO work-units state — only the action bus + theme +
+/// the most-recent viewport_height observed at render time (so
+/// handle_event can emit Action::ScrollFocusedColumnUp/Down with the
+/// right scroll step for the CURRENT terminal height).
 pub struct BoardView {
     pub theme: Arc<Theme>,
     pub action_tx: Option<UnboundedSender<Action>>,
+    /// RPC-016: the column-content viewport_height observed by the most
+    /// recent `render_with_store` call. Read by `handle_event` to
+    /// produce ScrollFocusedColumnUp/Down payloads, and by App::dispatch
+    /// when routing SelectNext/SelectPrev through BoardStore::move_selection.
+    last_viewport_height: Cell<u16>,
+    /// RPC-023: the column-content Rect (split[7]) observed by the
+    /// most recent `render_with_store`. Read by the mouse branch in
+    /// [`self::mouse::handle_mouse`] for wheel hit-testing.
+    pub(super) last_content_area: Cell<Option<Rect>>,
+    /// RPC-023: per-column header Rects observed by the most recent
+    /// `render_with_store`. Indexed by `COLUMN_ORDER` position.
+    pub(super) last_column_header_areas: Cell<Option<[Rect; 7]>>,
+    /// RPC-023: per-column content Rects observed by the most recent
+    /// `render_with_store`. Indexed by `COLUMN_ORDER` position.
+    pub(super) last_column_content_areas: Cell<Option<[Rect; 7]>>,
 }
 
 impl BoardView {
@@ -59,19 +80,36 @@ impl BoardView {
         Self {
             theme,
             action_tx: Some(action_tx),
+            last_viewport_height: Cell::new(1),
+            last_content_area: Cell::new(None),
+            last_column_header_areas: Cell::new(None),
+            last_column_content_areas: Cell::new(None),
         }
     }
 
-    fn emit(&self, action: Action) {
+    /// RPC-016: read the most-recent column-content viewport_height
+    /// observed by `render_with_store`. App::dispatch uses this when
+    /// routing arrow keys through `BoardStore::move_selection`.
+    pub fn last_viewport_height(&self) -> usize {
+        self.last_viewport_height.get() as usize
+    }
+
+    pub(super) fn emit(&self, action: Action) {
         if let Some(tx) = &self.action_tx {
             let _ = tx.send(action);
         }
     }
 
-    /// Handle a keyboard event against the supplied store snapshot.
-    /// The store is &-borrow only; mutation flows through App::dispatch
-    /// in response to the emitted action.
+    /// Handle a keyboard or mouse event against the supplied store
+    /// snapshot. The store is &-borrow only; mutation flows through
+    /// App::dispatch in response to the emitted action.
     pub fn handle_event(&self, event: &Event, store: &BoardStore) -> EventResult {
+        // RPC-023: mouse branch lives in `mouse.rs` so this file stays
+        // under the 300 LoC ceiling.
+        if matches!(event, Event::Mouse(_)) {
+            return mouse::handle_mouse(self, event, store);
+        }
+
         let Event::Key(key) = event else {
             return EventResult::ignored();
         };
@@ -93,6 +131,24 @@ impl BoardView {
         }
 
         match key.code {
+            KeyCode::PageUp => {
+                let vh = self.last_viewport_height();
+                self.emit(Action::ScrollFocusedColumnUp(vh));
+                return EventResult::consumed();
+            }
+            KeyCode::PageDown => {
+                let vh = self.last_viewport_height();
+                self.emit(Action::ScrollFocusedColumnDown(vh));
+                return EventResult::consumed();
+            }
+            KeyCode::Home => {
+                self.emit(Action::SelectFirstInFocused);
+                return EventResult::consumed();
+            }
+            KeyCode::End => {
+                self.emit(Action::SelectLastInFocused);
+                return EventResult::consumed();
+            }
             KeyCode::Left | KeyCode::Char('h') => {
                 self.emit(Action::FocusPrevColumn);
                 return EventResult::consumed();
@@ -182,17 +238,29 @@ impl BoardView {
         );
         paint_side_borders(split[5], buf, border_style);
         paint_column_headers(split[5], buf, widths, store, &self.theme);
+        // RPC-023: cache per-column header rects for click-to-focus.
+        self.last_column_header_areas
+            .set(Some(slice_column_rects(split[5], widths)));
         paint_border_string(
             split[6], buf,
             &build_border_row(widths, "├", "┤", SeparatorType::Cross), border_style,
         );
+        // RPC-016: record the viewport height the painter is about to
+        // observe so handle_event can emit ScrollFocusedColumnUp/Down
+        // with the right scroll step.
+        self.last_viewport_height.set(split[7].height);
+        // RPC-023: cache the content rect + per-column content rects
+        // for wheel + click hit-testing.
+        self.last_content_area.set(Some(split[7]));
+        self.last_column_content_areas
+            .set(Some(slice_column_rects(split[7], widths)));
         paint_content_rows(split[7], buf, widths, store, &self.theme);
         paint_border_string(
             split[8], buf,
             &build_border_row(widths, "├", "┤", SeparatorType::Bottom), border_style,
         );
         paint_side_borders(split[9], buf, border_style);
-        render_footer(inner_rect(split[9]), buf, &self.theme);
+        footer::render(inner_rect(split[9]), buf, &self.theme);
         paint_border_string(
             split[10], buf,
             &build_border_row(widths, "└", "┘", SeparatorType::Plain), border_style,
@@ -228,34 +296,4 @@ fn inner_rect(area: Rect) -> Rect {
         width: area.width - 2,
         height: area.height,
     }
-}
-
-/// RPC-013: paint the 1-row Board footer string. Literal port of
-/// `src/tui/components/UnifiedBoardLayout.tsx:504-511`.
-fn render_footer(area: Rect, buf: &mut Buffer, theme: &Theme) {
-    if area.width == 0 || area.height == 0 {
-        return;
-    }
-    let dim = Style::default().fg(theme.dim);
-    let key = Style::default().fg(theme.fg).add_modifier(Modifier::BOLD);
-    let line = Line::from(vec![
-        Span::styled("← → ", key),
-        Span::styled("Columns ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("↑↓ ", key),
-        Span::styled("Work Units ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("[ ", key),
-        Span::styled("Priority Up ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("] ", key),
-        Span::styled("Priority Down ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("↵ ", key),
-        Span::styled("Work Agent ", dim),
-        Span::styled("◆ ", dim),
-        Span::styled("ESC ", key),
-        Span::styled("Back", dim),
-    ]);
-    Paragraph::new(line).render(area, buf);
 }

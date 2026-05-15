@@ -64,7 +64,10 @@ impl Navigator {
         "navigator"
     }
 
-    /// Route a keyboard event to the active sub-view.
+    /// Route a keyboard or mouse event to the active sub-view. RPC-023
+    /// extended this from `Event::Key`-only forwarding so the BoardView
+    /// mouse-handling slice sees `Event::Mouse(_)` for wheel scroll and
+    /// click-to-focus hit-testing.
     pub fn handle_event(
         &mut self,
         event: &Event,
@@ -134,6 +137,7 @@ mod tests {
             estimate: None,
             epic: None,
             attachments: Vec::new(),
+        last_state_change_at: None,
         }
     }
 

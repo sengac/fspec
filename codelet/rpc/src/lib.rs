@@ -434,6 +434,7 @@ pub fn test_fixture() -> Vec<WorkUnitInfo> {
             estimate: Some(5),
             epic: Some("authentication".to_string()),
             attachments: Vec::new(),
+        last_state_change_at: None,
         },
         WorkUnitInfo {
             id: "AUTH-002".to_string(),
@@ -444,6 +445,7 @@ pub fn test_fixture() -> Vec<WorkUnitInfo> {
             estimate: Some(3),
             epic: Some("authentication".to_string()),
             attachments: Vec::new(),
+        last_state_change_at: None,
         },
     ]
 }

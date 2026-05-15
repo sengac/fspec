@@ -150,27 +150,33 @@ fn every_modified_view_file_stays_under_300_loc() {
 /// multi-byte UTF-8 arrows used in the footer literal. The doc comments
 /// in views/board.rs do NOT contain the legacy '? help' / 'switch pane'
 /// strings (verified independently below), so raw reading is safe.
+///
+/// RPC-016 widened this scenario: the footer literal moved into the
+/// sibling `views/board/footer.rs` module so `views/board.rs` could stay
+/// under the 300 LoC ceiling. The scenario now scans both files.
 #[test]
 fn board_view_source_contains_literal_footer_string() {
     // @step Given the BoardView module at codelet/fspec-tui/src/views/board.rs
     // @step When a developer scans the source after comment stripping
     let board = read_raw("views/board.rs");
+    let footer = read_raw("views/board/footer.rs");
+    let combined = format!("{board}\n{footer}");
     // @step Then the file contains the substring "← → Columns"
-    assert!(board.contains("← →"), "board.rs must contain the '← →' key span");
-    assert!(board.contains("Columns"), "board.rs must contain the 'Columns' label span");
+    assert!(combined.contains("← →"), "board.rs|footer.rs must contain the '← →' key span");
+    assert!(combined.contains("Columns"), "board.rs|footer.rs must contain the 'Columns' label span");
     // @step And the file contains the substring "↑↓ Work Units"
-    assert!(board.contains("↑↓"), "board.rs must contain the '↑↓' key span");
-    assert!(board.contains("Work Units"), "board.rs must contain the 'Work Units' label span");
+    assert!(combined.contains("↑↓"), "board.rs|footer.rs must contain the '↑↓' key span");
+    assert!(combined.contains("Work Units"), "board.rs|footer.rs must contain the 'Work Units' label span");
     // @step And the file contains the substring "[ Priority Up"
-    assert!(board.contains("Priority Up"), "board.rs must contain the 'Priority Up' label span");
+    assert!(combined.contains("Priority Up"), "board.rs|footer.rs must contain the 'Priority Up' label span");
     // @step And the file contains the substring "] Priority Down"
-    assert!(board.contains("Priority Down"), "board.rs must contain the 'Priority Down' label span");
+    assert!(combined.contains("Priority Down"), "board.rs|footer.rs must contain the 'Priority Down' label span");
     // @step And the file contains the substring "↵ Work Agent"
-    assert!(board.contains("↵"), "board.rs must contain the '↵' key span");
-    assert!(board.contains("Work Agent"), "board.rs must contain the 'Work Agent' label span");
+    assert!(combined.contains("↵"), "board.rs|footer.rs must contain the '↵' key span");
+    assert!(combined.contains("Work Agent"), "board.rs|footer.rs must contain the 'Work Agent' label span");
     // @step And the file contains the substring "ESC Back"
-    assert!(board.contains("ESC"), "board.rs must contain the 'ESC' key span");
-    assert!(board.contains("Back"), "board.rs must contain the 'Back' label span");
+    assert!(combined.contains("ESC"), "board.rs|footer.rs must contain the 'ESC' key span");
+    assert!(combined.contains("Back"), "board.rs|footer.rs must contain the 'Back' label span");
     // @step And the file does NOT contain the substring "? help"
     let stripped = read_stripped("views/board.rs");
     assert!(!stripped.contains("? help"), "board.rs (code) must not contain '? help' after RPC-013");

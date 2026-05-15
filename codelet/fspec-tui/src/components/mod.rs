@@ -174,6 +174,41 @@ pub enum Action {
     /// the BoardStore's `checkpoint_counts` field is updated so the
     /// BoardView header paints the live counts on the next render.
     CheckpointCountsLoaded(codelet_rpc_types::CheckpointCounts),
+    /// RPC-016: PageUp pressed while BoardView is focused. The payload
+    /// is the most recent viewport_height observed by BoardView so
+    /// App::dispatch can scroll the focused column by exactly that
+    /// many rows (matching the TS UnifiedBoardLayout behaviour).
+    ScrollFocusedColumnUp(usize),
+    /// RPC-016: PageDown pressed while BoardView is focused. Same
+    /// payload semantics as `ScrollFocusedColumnUp`.
+    ScrollFocusedColumnDown(usize),
+    /// RPC-016: Home pressed while BoardView is focused. App::dispatch
+    /// resets the focused column's selected_index + scroll_offset to 0.
+    SelectFirstInFocused,
+    /// RPC-016: End pressed while BoardView is focused. App::dispatch
+    /// sets the focused column's selected_index to units.len()-1 and
+    /// adjusts the scroll_offset so the last unit stays visible.
+    SelectLastInFocused,
+    /// RPC-023: BoardView emits this on a left-click hit-test against
+    /// a column header (or content row). `App::dispatch` maps the index
+    /// through `COLUMN_ORDER` and calls `BoardStore::set_focused_column`.
+    SetFocusedColumn(usize),
+    /// RPC-023: BoardView emits this on a left-click hit-test against
+    /// a content row. The payload is the WORK-UNIT index in the focused
+    /// column (visible row + `scroll_offset`). App::dispatch routes
+    /// through `BoardStore::select_index_in_focused` so the click both
+    /// updates the selection AND adjusts the viewport when crossing the
+    /// scroll boundary.
+    SelectIndexInFocused(usize),
+    /// RPC-023: scaffolding for the TUI-078 native-text-selection
+    /// toggle (RPC-019). Emitted by `MouseTrackingToggle`'s tokio timer
+    /// 5 seconds after the most recent `temporarily_disable` call. The
+    /// payload is the toggle's `owner_id` so multiple toggle instances
+    /// can coexist (a future App::dispatch routing layer will look up
+    /// the owner and call `re_enable()`). For RPC-023 this variant
+    /// exists but `App::dispatch` does not yet route it — the BoardView
+    /// slice intentionally does not opt into TUI-078 button-press.
+    ReEnableMouseTracking(String),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

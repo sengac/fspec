@@ -48,6 +48,15 @@ pub struct WorkUnitInfo {
     /// attachments. The NAPI surface preserves the existing TS shape
     /// `attachments: string[]`.
     pub attachments: Vec<String>,
+    /// RPC-016: ISO-8601 UTC timestamp of the latest entry in this work
+    /// unit's `stateHistory` array (i.e. when the unit most recently
+    /// changed status). `None` for legacy records without
+    /// `stateHistory`. Drives the `⏩` last-changed indicator in the
+    /// Rust BoardView. Additive — the TS Ink BoardView continues to
+    /// derive its `lastChangedWorkUnit` from `stateHistory[last]`
+    /// directly so this field is invisible on the TS side.
+    #[cfg_attr(feature = "napi", napi(js_name = "lastStateChangeAt"))]
+    pub last_state_change_at: Option<String>,
 }
 
 /// RPC-015: paired manual + automatic checkpoint counts across all work
