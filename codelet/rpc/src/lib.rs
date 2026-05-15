@@ -26,8 +26,8 @@
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, SessionStatus, StreamChunk,
-    WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, SessionStatus,
+    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use arc_swap::ArcSwap;
 use std::path::PathBuf;
@@ -95,6 +95,28 @@ pub trait FspecService {
 
     /// RPC-017: mirror of [`move_work_unit_up`] for the DOWN direction.
     async fn move_work_unit_down(id: String) -> Result<(), String>;
+
+    /// RPC-018: return the display + capability metadata for the model
+    /// currently bound to `session_id`. Delegates through the attached
+    /// `SessionManagerHandle`; when no session manager is attached the
+    /// SAFE default (`ModelInfo::default()`) is returned. Both the
+    /// SessionHeader and any future ModelSelector modal dialog consume
+    /// this single source of truth.
+    async fn get_model_info(session_id: SessionId) -> ModelInfo;
+
+    /// RPC-018: return the per-session thinking/reasoning level.
+    /// Default is `ThinkingLevel::Off`; the real wiring lands when the
+    /// codelet/napi `SessionManager` overrides the
+    /// `SessionManagerHandle::get_thinking_level` trait method in RPC-022.
+    async fn get_thinking_level(session_id: SessionId) -> ThinkingLevel;
+
+    /// RPC-018: return the workspace snapshot (cwd + optional git
+    /// branch) for the workspace this shared service was constructed
+    /// against. Built from the cwd attached via `with_cwd` plus
+    /// `codelet_git::status::get_current_branch(cwd)`. When no cwd has
+    /// been attached, falls back to `std::env::current_dir()` + a `None`
+    /// branch so the SessionFooter still paints something sensible.
+    async fn get_workspace_info() -> WorkspaceInfo;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -465,6 +487,52 @@ impl FspecService for FspecServiceImpl {
                 "move_work_unit_down requires a workspace cwd; SharedFspecService was constructed without with_cwd"
                     .to_string(),
             ),
+        }
+    }
+
+    async fn get_model_info(self, _ctx: Context, session_id: SessionId) -> ModelInfo {
+        // RPC-018: delegate via the optional SessionManagerHandle. The
+        // trait carries a default impl that returns `ModelInfo::default()`,
+        // so callers without an attached handle (test fixtures, embedded
+        // hosts without a session manager) get the safe sentinel.
+        match self.inner.session_manager() {
+            Some(handle) => handle.get_model_info(&session_id),
+            None => ModelInfo::default(),
+        }
+    }
+
+    async fn get_thinking_level(self, _ctx: Context, session_id: SessionId) -> ThinkingLevel {
+        // RPC-018: mirror of `get_model_info`. Default = `ThinkingLevel::Off`.
+        match self.inner.session_manager() {
+            Some(handle) => handle.get_thinking_level(&session_id),
+            None => ThinkingLevel::Off,
+        }
+    }
+
+    async fn get_workspace_info(self, _ctx: Context) -> WorkspaceInfo {
+        // RPC-018: build the workspace snapshot from the attached cwd +
+        // `codelet_git::status::get_current_branch`. When no cwd is
+        // attached we fall back to `std::env::current_dir()` for the
+        // cwd string but DELIBERATELY skip the git probe so the
+        // SessionFooter degrades to a bare-cwd render (no `[⌥ branch]`).
+        match self.inner.cwd() {
+            Some(cwd_buf) => {
+                let cwd_buf = cwd_buf.clone();
+                let git_branch = codelet_git::status::get_current_branch(&cwd_buf)
+                    .ok()
+                    .flatten();
+                WorkspaceInfo {
+                    cwd: cwd_buf.to_string_lossy().into_owned(),
+                    git_branch,
+                }
+            }
+            None => {
+                let cwd_buf = std::env::current_dir().unwrap_or_default();
+                WorkspaceInfo {
+                    cwd: cwd_buf.to_string_lossy().into_owned(),
+                    git_branch: None,
+                }
+            }
         }
     }
 }

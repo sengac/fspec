@@ -18,7 +18,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk,
+    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use thiserror::Error;
 use tokio::sync::broadcast;
@@ -109,6 +110,23 @@ pub trait FspecBackend: Send + Sync {
 
     /// RPC-017: mirror of [`move_work_unit_up`] for the DOWN direction.
     async fn move_work_unit_down(&self, id: String) -> Result<()>;
+
+    /// RPC-018: return the display + capability metadata for the model
+    /// currently bound to `session_id`. Both transports delegate to
+    /// `FspecService::get_model_info`; the AgentView's SessionHeader
+    /// reads the response via `Action::ModelInfoLoaded`.
+    async fn get_model_info(&self, session_id: SessionId) -> Result<ModelInfo>;
+
+    /// RPC-018: return the per-session thinking/reasoning level.
+    /// Both transports delegate to `FspecService::get_thinking_level`.
+    async fn get_thinking_level(&self, session_id: SessionId) -> Result<ThinkingLevel>;
+
+    /// RPC-018: return the workspace snapshot (cwd + optional git
+    /// branch) for the workspace this shared service was constructed
+    /// against. Both transports delegate to
+    /// `FspecService::get_workspace_info` which in turn reads
+    /// `codelet_git::status::get_current_branch(cwd)`.
+    async fn get_workspace_info(&self) -> Result<WorkspaceInfo>;
 
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff

@@ -26,6 +26,7 @@ ratatui.workspace = true
 crossterm.workspace = true
 tui-popup = "0.6"
 tui-input.workspace = true
+tui-textarea.workspace = true
 
 # WebSocket transport (consumed by WebSocketFspecBackend::connect)
 tokio-tungstenite.workspace = true

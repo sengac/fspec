@@ -92,26 +92,44 @@ fn agent_view_splits_into_scrollback_input_and_footer_rows() {
     // @step Given an AgentView module at codelet/fspec-tui/src/views/agent.rs
     // @step When a developer scans the render_with_store method body
     let agent = read_stripped("views/agent.rs");
-    // @step Then the method contains a Layout split with constraints
-    //       [Constraint::Min(0), Constraint::Length(3), Constraint::Length(1)]
-    let needle = "Constraint::Min(0), Constraint::Length(3), Constraint::Length(1)";
+    // @step Then the method contains a Layout split with a Min(0) flex row and a trailing Length(1) footer row
+    //
+    // RPC-019 update: the input row's exact constraint moved from a
+    // hardcoded `Constraint::Length(3)` to a variable that tracks the
+    // textarea's `visible_rows()` (default cap 6). The flex Min(0)
+    // scrollback row and the trailing Length(1) footer row are the
+    // structural invariants this scenario now pins.
     assert!(
-        agent.contains(needle),
-        "agent.rs must contain layout `{needle}` after RPC-013"
+        agent.contains("Constraint::Min(0)"),
+        "agent.rs must contain a Constraint::Min(0) flex row after RPC-013/RPC-019"
+    );
+    assert!(
+        agent.contains("Constraint::Length(1)"),
+        "agent.rs must contain a Constraint::Length(1) footer row after RPC-013"
+    );
+    assert!(
+        agent.contains("Constraint::Length(input_height)"),
+        "agent.rs must size the input row from MultiLineInput::visible_rows() after RPC-019"
     );
     // @step And the bottom 1-row chunk is painted with the placeholder footer string
     //       "Enter=send  Ctrl+C=interrupt  ESC=back"
+    //
+    // Note: after RPC-018 the literal lives in
+    // views/agent::PLACEHOLDER_FOOTER_HINTS and is re-exported by the
+    // SessionFooter widget. Checking the components individually
+    // keeps the pin robust against whitespace shifts inside the
+    // literal.
     assert!(
         agent.contains("Enter=send"),
-        "agent.rs must render the placeholder footer string 'Enter=send  Ctrl+C=interrupt  ESC=back'"
+        "agent.rs (or its re-export chain) must render 'Enter=send'"
     );
     assert!(
         agent.contains("Ctrl+C=interrupt"),
-        "agent.rs must render 'Ctrl+C=interrupt' in the placeholder footer"
+        "agent.rs (or its re-export chain) must render 'Ctrl+C=interrupt'"
     );
     assert!(
         agent.contains("ESC=back"),
-        "agent.rs must render 'ESC=back' in the placeholder footer"
+        "agent.rs (or its re-export chain) must render 'ESC=back'"
     );
 }
 

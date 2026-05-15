@@ -74,8 +74,9 @@ crossterm = { version = "0.28", features = ["event-stream"] }
 ratatui = { version = "0.29", features = ["all-widgets"] }
 tui-popup = "0.6"
 # tui-input — single-line input widget (RPC-009).
-# Q4 deferred: tui-textarea is RPC-002 Slice 06.
+# tui-textarea — multi-line input widget (RPC-019).
 tui-input = "0.10"
+tui-textarea = "0.7"
 
 # === Logging ===
 tracing = "0.1"

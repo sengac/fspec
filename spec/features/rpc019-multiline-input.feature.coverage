@@ -1,0 +1,501 @@
+{
+  "scenarios": [
+    {
+      "name": "Plain Enter on the multi-line input submits and resets the buffer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "60-83",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Enter inserts a literal newline instead of submitting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "85-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Plain Enter submits a multi-line buffer with embedded newlines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "110-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pasted text with embedded newlines preserves them in the buffer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "133-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MultiLineInput auto-grows up to its max visible rows cap of 6",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "150-167",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty MultiLineInput paints the dim placeholder hint with a green > prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "169-188",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-empty MultiLineInput hides the placeholder hint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "190-205",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+              "lines": [
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Up emits Action::HistoryPrev without modifying the buffer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "207-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Down emits Action::HistoryNext without modifying the buffer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "224-239",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left emits Action::SessionPrev without modifying the buffer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "241-256",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right emits Action::SessionNext without modifying the buffer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "258-273",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ESC inside AgentView emits Action::BackToBoard",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs",
+          "lines": "275-291",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/multiline_input.rs",
+      "codelet/fspec-tui/src/views/agent.rs"
+    ],
+    "totalLinesCovered": 513
+  }
+}

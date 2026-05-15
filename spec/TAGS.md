@@ -72,6 +72,7 @@ Tags that categorize features by functional area.
 | `@agent-manager` | Agent manager tool for programmatic agent orchestration, role management, and inter-agent communication |
 | `@agent-modal` | Agent modal component features and interactions |
 | `@agent-support` | Multi-agent support and agent-specific configurations |
+| `@agent-view` | Rust ratatui AgentView container — input, scrollback, and chrome (RPC-012/018/019) |
 | `@ai-assistance` | AI-assisted features for analysis and extraction |
 | `@answer-question` | Question answering operations |
 | `@any-to-any` | Any-to-any messaging between sessions regardless of ChainOfCommand relationship |
@@ -474,6 +475,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@schema-validation` | JSON Schema validation features and commands |
 | `@scroll` | Scroll-related UI behaviour (offsets, arrows, auto-scroll) |
 | `@scroll-mode` | Scroll mode for virtual list components |
+| `@scrollback` | Windowed scrollback widget rendered O(1) per frame in the Rust ratatui AgentView (RPC-019) |
 | `@scrolling` | Scenarios testing viewport scrolling behavior |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
 | `@selection-mode` | Scenarios testing line selection mode behavior |
@@ -905,7 +907,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-05-15T02:19:56.440Z_
+_Last updated: 2026-05-15T11:35:44.845Z_
 
 **Update Command**: `fspec tag-stats`
 

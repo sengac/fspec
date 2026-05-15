@@ -209,6 +209,33 @@ pub enum Action {
     /// exists but `App::dispatch` does not yet route it — the BoardView
     /// slice intentionally does not opt into TUI-078 button-press.
     ReEnableMouseTracking(String),
+    /// RPC-018: per-session ModelInfo arrived (typically from a spawned
+    /// `backend.get_model_info(session)` task fired in response to
+    /// `Action::SessionCreated`). App::dispatch writes the payload
+    /// into `AgentViewStore.model_info_by_session[session]`.
+    ModelInfoLoaded(codelet_rpc_types::SessionId, codelet_rpc_types::ModelInfo),
+    /// RPC-018: per-session ThinkingLevel arrived. Sibling of
+    /// `ModelInfoLoaded` — fired by the same `Action::SessionCreated`
+    /// dispatch arm.
+    ThinkingLevelLoaded(codelet_rpc_types::SessionId, codelet_rpc_types::ThinkingLevel),
+    /// RPC-018: workspace snapshot arrived (typically from
+    /// `App::bootstrap` firing `backend.get_workspace_info()`).
+    /// App::dispatch writes the payload into `AgentViewStore.workspace`.
+    WorkspaceInfoLoaded(codelet_rpc_types::WorkspaceInfo),
+    /// RPC-019: AgentView emits this when the user presses Shift+Up
+    /// inside the MultiLineInput. RPC-021 will wire App::dispatch
+    /// routing to walk the command history backward.
+    HistoryPrev,
+    /// RPC-019: AgentView emits this when the user presses Shift+Down.
+    /// Sibling of `HistoryPrev` — walks forward through command history.
+    HistoryNext,
+    /// RPC-019: AgentView emits this when the user presses Shift+Left.
+    /// RPC-021 will route through App::dispatch to cycle to the
+    /// previous session in the AgentViewStore's session list.
+    SessionPrev,
+    /// RPC-019: AgentView emits this when the user presses Shift+Right.
+    /// Sibling of `SessionPrev` — cycles forward through sessions.
+    SessionNext,
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

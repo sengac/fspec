@@ -38,6 +38,17 @@ impl App {
                 debug!("bootstrap: backend.checkpoint_counts() failed: {err}");
             }
         }
+        // RPC-018: best-effort workspace fetch — failure is non-fatal
+        // because the SessionFooter just hides the right-side content
+        // until the real value arrives via a later refresh.
+        match self.backend.get_workspace_info().await {
+            Ok(info) => {
+                self.dispatch(Action::WorkspaceInfoLoaded(info));
+            }
+            Err(err) => {
+                debug!("bootstrap: backend.get_workspace_info() failed: {err}");
+            }
+        }
         self.spawn_subscriber_tasks();
         Ok(())
     }

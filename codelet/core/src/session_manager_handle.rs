@@ -26,7 +26,9 @@
 //! dependency tree (codelet-cli, codelet-git, codelet-tools,
 //! codelet-providers, OAuth, persistence, ghost commits, etc.).
 
-use codelet_rpc_types::{LogRecord, SessionId, SessionInfo, SessionStatus, StreamChunk};
+use codelet_rpc_types::{
+    LogRecord, ModelInfo, SessionId, SessionInfo, SessionStatus, StreamChunk, ThinkingLevel,
+};
 use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc, Mutex,
@@ -87,6 +89,28 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
     /// host's tracing::Layer can push records onto the same broadcast
     /// that other listeners observe via `logs_rx`.
     fn logs_tx(&self) -> broadcast::Sender<LogRecord>;
+
+    /// RPC-018: return the display + capability metadata for the model
+    /// currently bound to `session_id`. Default implementation returns
+    /// `ModelInfo::default()` (empty display name, all-false caps,
+    /// context_window = 0) so handles that don't yet know how to
+    /// resolve provider/model state — including `StubSessionManagerHandle`
+    /// — compile without per-test wiring. The concrete codelet/napi
+    /// `SessionManager` overrides this in RPC-022 once the ModelSelector
+    /// modal dialog needs live data.
+    fn get_model_info(&self, session_id: &SessionId) -> ModelInfo {
+        let _ = session_id;
+        ModelInfo::default()
+    }
+
+    /// RPC-018: return the per-session thinking/reasoning level.
+    /// Mirrors `get_model_info` in shape — default returns
+    /// `ThinkingLevel::Off`; the codelet/napi `SessionManager` overrides
+    /// this in RPC-022 (ThinkingLevel modal dialog).
+    fn get_thinking_level(&self, session_id: &SessionId) -> ThinkingLevel {
+        let _ = session_id;
+        ThinkingLevel::Off
+    }
 }
 
 // ============================================================================

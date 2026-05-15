@@ -426,6 +426,26 @@ pub fn count_checkpoints(cwd: String) -> napi::Result<codelet_rpc_types::Checkpo
         .map_err(|e| napi::Error::from_reason(e.to_string()))
 }
 
+/// RPC-018: Return the workspace snapshot (cwd + optional git branch).
+///
+/// Mirrors `FspecService::get_workspace_info` — both bindings (NAPI for
+/// the JS frontend, tarpc for the Rust ratatui frontend) call the SAME
+/// `codelet_git::get_current_branch` helper so the cwd + branch string
+/// is computed identically regardless of which UI consumes it.
+///
+/// @param cwd - Path to the workspace root
+/// @returns WorkspaceInfo with `cwd` + `git_branch: Option<String>`
+#[napi]
+pub fn get_workspace_info(cwd: String) -> napi::Result<codelet_rpc_types::WorkspaceInfo> {
+    let git_branch = codelet_git::status::get_current_branch(Path::new(&cwd))
+        .ok()
+        .flatten();
+    Ok(codelet_rpc_types::WorkspaceInfo {
+        cwd,
+        git_branch,
+    })
+}
+
 // =============================================================================
 // Repository Operations (GIT-039: resolve_ref, init, add, commit, setConfig)
 // =============================================================================

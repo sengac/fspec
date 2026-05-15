@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "ScrollbackList::push appends a chunk and bumps offset in stick mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "lines": "58-78",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PageUp on the scrollback decrements offset by viewport_height and disables stick",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "lines": "80-94",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PageDown / End from a scrolled-up position re-enables stick when offset reaches the tail",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "lines": "96-112",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ScrollbackList::render only lays out the visible window",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "lines": "114-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/scrollback.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AgentView vertical layout reserves Length(N+2) for the input box where N tracks the textarea",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
+          "lines": "170-209",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/scrollback.rs",
+      "codelet/fspec-tui/src/views/agent.rs"
+    ],
+    "totalLinesCovered": 190
+  }
+}

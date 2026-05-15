@@ -38,7 +38,7 @@ Feature: RPC-013 source-shape — Navigator restructure + FooterView deletion + 
   Scenario: AgentView splits its area into scrollback + input + footer rows
     Given an AgentView module at codelet/fspec-tui/src/views/agent.rs
     When a developer scans the render_with_store method body
-    Then the method contains a Layout split with constraints [Constraint::Min(0), Constraint::Length(3), Constraint::Length(1)]
+    Then the method contains a Layout split with a Min(0) flex row and a trailing Length(1) footer row
     And the bottom 1-row chunk is painted with the placeholder footer string "Enter=send  Ctrl+C=interrupt  ESC=back"
 
   Scenario: FooterView module and its re-exports are removed

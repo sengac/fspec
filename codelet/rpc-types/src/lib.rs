@@ -265,6 +265,60 @@ pub struct HealthInfo {
 }
 
 // ============================================================================
+// RPC-018: AgentView chrome shared types (ModelInfo, ThinkingLevel,
+// WorkspaceInfo) consumed by the new `get_model_info`,
+// `get_thinking_level`, `get_workspace_info` RPC methods.
+// ============================================================================
+
+/// Capability + display metadata for the model attached to a session.
+///
+/// Mirrors the TS `useModelStore.getCapabilities` shape so the SessionHeader
+/// in the Rust ratatui TUI can paint `[R]` / `[V]` / `[Nk]` badges using
+/// the SAME source of truth that the Ink SessionHeader.tsx consumes.
+///
+/// `Default` returns an "unknown model" sentinel — `display_name` is empty,
+/// every capability is false, and `context_window` is 0. The SessionHeader
+/// widget hides empty badges so the UI degrades gracefully when no
+/// session manager is attached (the RPC-018 default-impl path).
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ModelInfo {
+    pub display_name: String,
+    pub supports_reasoning: bool,
+    pub supports_vision: bool,
+    pub context_window: u32,
+}
+
+/// Per-session thinking/reasoning level. Mirrors the
+/// `JsThinkingLevel` enum that the existing TS code consumes via
+/// `@sengac/codelet-napi` (`codelet/napi/src/thinking_config.rs`).
+#[cfg_attr(feature = "napi", napi_derive::napi(string_enum))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ThinkingLevel {
+    #[default]
+    Off,
+    Low,
+    Medium,
+    High,
+}
+
+/// Workspace snapshot — cwd + git branch — returned by
+/// `FspecService::get_workspace_info`. Mirrors the data the TS
+/// `SessionFooter.tsx` derives from a Rust-side `FooterStateUpdate`
+/// poller; the new RPC method is a single-shot pull alternative that the
+/// Rust ratatui SessionFooter widget consumes via `Action::WorkspaceInfoLoaded`.
+///
+/// `cwd` is returned RAW (not `~`-shortened) — the SessionFooter widget
+/// performs the `home::home_dir()` substitution at render time so the
+/// wire shape stays portable across hosts whose `$HOME` differs.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WorkspaceInfo {
+    pub cwd: String,
+    pub git_branch: Option<String>,
+}
+
+// ============================================================================
 // RPC-007: StreamChunk supporting types (lifted verbatim from
 //   codelet/napi/src/types.rs)
 // ============================================================================

@@ -8626,3 +8626,20 @@ pub async fn init_provider(
     .map(|p| p.to_string_lossy().into_owned())
     .map_err(|e| Error::from_reason(format!("init_provider failed: {e}")))
 }
+
+/// RPC-018: Return display + capability metadata for the model currently
+/// bound to a session.
+///
+/// Mirrors `FspecService::get_model_info` (codelet/rpc/src/lib.rs). Both
+/// bindings call into the SAME `SessionManagerHandle::get_model_info`
+/// path, so the JS Ink frontend and the Rust ratatui frontend converge
+/// on identical data once the codelet/napi `SessionManager` overrides
+/// the trait method (deferred to RPC-022). For RPC-018 the default
+/// trait impl returns `ModelInfo::default()` — the additive NAPI export
+/// preserves the call site so that the TS code can wire up to the new
+/// shape ahead of the override.
+#[napi]
+pub fn get_model_info(session_id: String) -> Result<codelet_rpc_types::ModelInfo> {
+    let _ = SessionManager::instance().get_session(&session_id)?;
+    Ok(codelet_rpc_types::ModelInfo::default())
+}

@@ -184,7 +184,8 @@ use anyhow::Result;
 use async_trait::async_trait;
 use codelet_fspec_tui::FspecBackend;
 use codelet_rpc_types::{
-    CheckpointCounts, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk, ThinkingLevel,
+    WorkUnitInfo, WorkspaceInfo,
 };
 use tokio::sync::broadcast;
 
@@ -226,6 +227,16 @@ pub struct MockBackend {
     last_send_input: Mutex<Option<(SessionId, String)>>,
     last_interrupt: Mutex<Option<SessionId>>,
     checkpoint_counts: Mutex<CheckpointCounts>,
+    /// RPC-018: scripted ModelInfo returned by `get_model_info`.
+    model_info: Mutex<ModelInfo>,
+    /// RPC-018: scripted ThinkingLevel returned by `get_thinking_level`.
+    thinking_level: Mutex<ThinkingLevel>,
+    /// RPC-018: scripted WorkspaceInfo returned by `get_workspace_info`.
+    workspace_info: Mutex<WorkspaceInfo>,
+    /// RPC-018: when `Some`, `get_workspace_info` returns
+    /// `Err(anyhow!(message))` so bootstrap-best-effort scenarios can
+    /// exercise the failure branch.
+    workspace_info_error: Mutex<Option<String>>,
 }
 
 impl Default for MockBackend {
@@ -252,6 +263,10 @@ impl Default for MockBackend {
             last_send_input: Mutex::new(None),
             last_interrupt: Mutex::new(None),
             checkpoint_counts: Mutex::new(CheckpointCounts::default()),
+            model_info: Mutex::new(ModelInfo::default()),
+            thinking_level: Mutex::new(ThinkingLevel::Off),
+            workspace_info: Mutex::new(WorkspaceInfo::default()),
+            workspace_info_error: Mutex::new(None),
         }
     }
 }
@@ -336,6 +351,27 @@ impl MockBackend {
             .expect("MockBackend mutex")
             .clone()
     }
+
+    /// RPC-018: preload the ModelInfo the next `get_model_info` call returns.
+    pub fn set_model_info(&self, info: ModelInfo) {
+        *self.model_info.lock().expect("MockBackend mutex") = info;
+    }
+
+    /// RPC-018: preload the ThinkingLevel the next `get_thinking_level` call returns.
+    pub fn set_thinking_level(&self, level: ThinkingLevel) {
+        *self.thinking_level.lock().expect("MockBackend mutex") = level;
+    }
+
+    /// RPC-018: preload the WorkspaceInfo the next `get_workspace_info` call returns.
+    pub fn set_workspace_info(&self, info: WorkspaceInfo) {
+        *self.workspace_info.lock().expect("MockBackend mutex") = info;
+    }
+
+    /// RPC-018: force the next `get_workspace_info` call to fail with the
+    /// supplied message — exercises the bootstrap best-effort branch.
+    pub fn set_workspace_info_error(&self, message: String) {
+        *self.workspace_info_error.lock().expect("MockBackend mutex") = Some(message);
+    }
 }
 
 #[async_trait]
@@ -419,6 +455,26 @@ impl FspecBackend for MockBackend {
             .lock()
             .expect("MockBackend mutex") = Some(id);
         Ok(())
+    }
+
+    async fn get_model_info(&self, _session_id: SessionId) -> Result<ModelInfo> {
+        Ok(self.model_info.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn get_thinking_level(&self, _session_id: SessionId) -> Result<ThinkingLevel> {
+        Ok(*self.thinking_level.lock().expect("MockBackend mutex"))
+    }
+
+    async fn get_workspace_info(&self) -> Result<WorkspaceInfo> {
+        if let Some(msg) = self
+            .workspace_info_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(self.workspace_info.lock().expect("MockBackend mutex").clone())
     }
 }
 

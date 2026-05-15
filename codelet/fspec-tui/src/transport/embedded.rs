@@ -18,7 +18,8 @@ use async_trait::async_trait;
 use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk,
+    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::broadcast;
@@ -117,5 +118,18 @@ impl FspecBackend for EmbeddedFspecBackend {
             .move_work_unit_down(context::current(), id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_model_info(&self, session_id: SessionId) -> Result<ModelInfo> {
+        // RPC-018: one-line delegate to the shared tarpc method.
+        Ok(self.client.get_model_info(context::current(), session_id).await?)
+    }
+
+    async fn get_thinking_level(&self, session_id: SessionId) -> Result<ThinkingLevel> {
+        Ok(self.client.get_thinking_level(context::current(), session_id).await?)
+    }
+
+    async fn get_workspace_info(&self) -> Result<WorkspaceInfo> {
+        Ok(self.client.get_workspace_info(context::current()).await?)
     }
 }

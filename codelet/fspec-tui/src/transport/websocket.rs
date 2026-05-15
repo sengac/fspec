@@ -16,7 +16,8 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, SessionId, SessionInfo, StreamChunk, WorkUnitInfo,
+    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk,
+    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::{broadcast, mpsc::UnboundedSender, Notify, RwLock};
@@ -297,6 +298,36 @@ impl FspecBackend for WebSocketFspecBackend {
             .move_work_unit_down(context::current(), id)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_model_info(&self, session_id: SessionId) -> Result<ModelInfo> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_model_info(context::current(), session_id)
+            .await?)
+    }
+
+    async fn get_thinking_level(&self, session_id: SessionId) -> Result<ThinkingLevel> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_thinking_level(context::current(), session_id)
+            .await?)
+    }
+
+    async fn get_workspace_info(&self) -> Result<WorkspaceInfo> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        Ok(client.client().get_workspace_info(context::current()).await?)
     }
 
     /// RPC-011 rule [4]: notify the supervisor task to cancel its

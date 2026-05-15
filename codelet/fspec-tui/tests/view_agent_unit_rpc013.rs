@@ -136,11 +136,16 @@ fn esc_emits_back_to_board() {
 }
 
 /// Migrated from RPC-012 inline tests: Enter on non-empty input emits
-/// Action::InputSubmitted with the trimmed input value.
+/// Action::InputSubmitted with the input value.
+///
+/// RPC-019 update: the old test poked the now-removed
+/// `tui_input::Input::with_value` / `.value()` surface directly. After
+/// the MultiLineInput swap, we drive the AgentView through real
+/// keystrokes and assert via the Action bus + `MultiLineInput::value`.
 #[test]
 fn enter_on_non_empty_input_emits_input_submitted() {
     let (mut view, mut rx) = fresh();
-    view.input = view.input.clone().with_value("hi".to_string());
+    view.input.set_value("hi");
     let event = Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE));
     let _ = view.handle_event(&event);
     let action = rx.try_recv().expect("Action::InputSubmitted on bus");
@@ -148,7 +153,7 @@ fn enter_on_non_empty_input_emits_input_submitted() {
         Action::InputSubmitted(s) => assert_eq!(s, "hi"),
         other => panic!("expected InputSubmitted, got {other:?}"),
     }
-    assert_eq!(view.input.value(), "");
+    assert!(view.input.is_empty());
 }
 
 /// Migrated from RPC-012 inline tests: title shows session id.

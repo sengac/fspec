@@ -218,6 +218,10 @@
           "description": "Multi-agent support and agent-specific configurations"
         },
         {
+          "name": "@agent-view",
+          "description": "Rust ratatui AgentView container — input, scrollback, and chrome (RPC-012/018/019)"
+        },
+        {
           "name": "@ai-assistance",
           "description": "AI-assisted features for analysis and extraction"
         },
@@ -1798,6 +1802,10 @@
           "description": "Scroll mode for virtual list components"
         },
         {
+          "name": "@scrollback",
+          "description": "Windowed scrollback widget rendered O(1) per frame in the Rust ratatui AgentView (RPC-019)"
+        },
+        {
           "name": "@scrolling",
           "description": "Scenarios testing viewport scrolling behavior"
         },
@@ -2654,7 +2662,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-05-15T02:19:56.440Z",
+    "lastUpdated": "2026-05-15T11:35:44.845Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
