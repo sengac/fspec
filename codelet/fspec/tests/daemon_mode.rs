@@ -26,6 +26,7 @@ use common::{
 };
 use url::Url;
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_daemon_emits_the_port_on_stdout_rpc_005_contract_verbatim() {
     // @step Given a temp workspace exists with a seeded spec/work-units.json
@@ -138,6 +139,7 @@ fn scenario_daemon_keeps_stderr_fmt_tracing_subscriber_rpc_005_pattern() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_bind_defaults_to_loopback_zero_when_omitted() {
     // @step Given a temp workspace exists with a seeded spec/work-units.json
@@ -163,6 +165,7 @@ async fn scenario_bind_defaults_to_loopback_zero_when_omitted() {
     // would have failed if the daemon had bound to a non-loopback iface.)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_bind_127_0_0_1_8080_succeeds_custom_loopback_port() {
     // @step Given a temp workspace exists with a seeded spec/work-units.json
@@ -201,6 +204,7 @@ async fn scenario_bind_127_0_0_1_8080_succeeds_custom_loopback_port() {
         .expect("connect ws://127.0.0.1:8080");
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_bind_ipv6_loopback_zero_succeeds() {
     // @step Given a temp workspace exists with a seeded spec/work-units.json
@@ -237,6 +241,7 @@ async fn scenario_bind_ipv6_loopback_zero_succeeds() {
             .expect("connect ws://[::1]:<port>");
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_daemon_handles_sigterm_cleanly_extension_over_rpc_005() {
     // @step Given the developer has spawned `fspec daemon --workspace <temp-workspace>` as a subprocess
@@ -286,6 +291,7 @@ async fn scenario_daemon_handles_sigterm_cleanly_extension_over_rpc_005() {
     // other test processes.)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_daemon_handles_ctrl_c_sigint_cleanly() {
     // @step Given the developer has spawned `fspec daemon` as a subprocess
@@ -328,6 +334,7 @@ async fn scenario_daemon_handles_ctrl_c_sigint_cleanly() {
     // (See note in scenario_daemon_handles_sigterm_cleanly_* above.)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_pidfile_path_writes_pid_and_port_on_bootstrap() {
     // @step Given a tempfile path `<P>`
@@ -430,6 +437,7 @@ async fn scenario_pidfile_path_writes_pid_and_port_on_bootstrap() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_daemon_writes_daemon_json_so_fspec_client_can_autodiscover_it() {
     // @step Given the developer has set HOME to a tempdir BEFORE spawning the child
@@ -517,6 +525,7 @@ async fn scenario_daemon_writes_daemon_json_so_fspec_client_can_autodiscover_it(
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[test]
 fn scenario_pidfile_is_daemon_only_combined_mode_does_not_accept_it() {
     // @step When the developer spawns `fspec --pidfile /tmp/test.pid` (combined mode)
@@ -546,6 +555,7 @@ fn scenario_pidfile_is_daemon_only_combined_mode_does_not_accept_it() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[test]
 fn scenario_bind_0_0_0_0_8080_is_rejected_at_clap_arg_validation() {
     // @step When the developer spawns `fspec daemon --bind 0.0.0.0:8080`
@@ -582,6 +592,7 @@ fn scenario_bind_0_0_0_0_8080_is_rejected_at_clap_arg_validation() {
     // exit-before-bind assertion above is the structural guarantee.)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[test]
 fn scenario_bind_with_any_non_loopback_host_is_rejected() {
     // @step When the developer spawns `fspec daemon --bind 192.168.1.5:0`

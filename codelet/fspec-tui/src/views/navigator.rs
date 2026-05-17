@@ -99,7 +99,7 @@ impl Navigator {
         area: Rect,
         buf: &mut Buffer,
         board_store: &BoardStore,
-        agent_store: &AgentViewStore,
+        agent_store: &mut AgentViewStore,
     ) {
         match self.active_view {
             ViewMode::Board => {
@@ -145,7 +145,7 @@ mod tests {
     fn render(
         nav: &mut Navigator,
         board: &BoardStore,
-        agent: &AgentViewStore,
+        agent: &mut AgentViewStore,
     ) -> String {
         let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
         term.draw(|frame| {
@@ -168,8 +168,8 @@ mod tests {
         let (mut nav, _rx) = fresh();
         let mut board = BoardStore::default();
         board.replace_work_units(vec![wu("AUTH-001", "backlog")]);
-        let agent = AgentViewStore::default();
-        let out = render(&mut nav, &board, &agent);
+        let mut agent = AgentViewStore::default();
+        let out = render(&mut nav, &board, &mut agent);
         assert!(out.contains("BACKLOG"));
         assert!(out.contains("SPECIFYING"));
         assert!(out.contains("AUTH-001"));
@@ -181,8 +181,8 @@ mod tests {
         nav.active_view = ViewMode::Agent;
         let board = BoardStore::default();
         let mut agent = AgentViewStore::default();
-        agent.set_current_session(Some(SessionId::new("s-1")));
-        let out = render(&mut nav, &board, &agent);
+        agent.append_session(crate::store::SessionContext::new(SessionId::new("s-1")));
+        let out = render(&mut nav, &board, &mut agent);
         assert!(out.contains("Agent"));
         assert!(out.contains("s-1"));
         assert!(!out.contains("BACKLOG"));

@@ -1,0 +1,431 @@
+{
+  "scenarios": [
+    {
+      "name": "A new SearchPalette has empty query and no matches",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "41-54",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_query updates the filter text and resets selection to the first row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "56-67",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_matches populates the typeahead rows and clamps selection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "69-87",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_matches with fewer rows than the current selection clamps the index",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "89-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Down arrow advances selection and wraps around at the end",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "110-132",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up arrow walks backward and wraps to the last row",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "134-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Typing a printable character appends it to the query and emits FilterChanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "150-164",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backspace removes the last character from the query and emits FilterChanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "166-181",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backspace on an empty query is a no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "183-194",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on a highlighted match emits Selected with the match text",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "196-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on zero matches is ignored",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "213-223",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on the popup returns Dismiss",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "225-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                132
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Modifier-prefixed keys are propagated so AgentView can route Shift+arrow chords",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "237-249",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty query renders the \"(type to search history)\" placeholder",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "251-263",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-empty query with zero matches renders the \"(no history matches \"<query>\")\" placeholder",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "265-278",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Populated matches render one row per HistoryMatch with the navigation hint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs",
+          "lines": "280-296",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/search_palette.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 16,
+    "coveredScenarios": 16,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/search_palette_widget_rpc026.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/search_palette.rs"
+    ],
+    "totalLinesCovered": 400
+  }
+}

@@ -3,7 +3,7 @@ source: fspec-tui/tests/app_with_mock_backend_repl.rs
 assertion_line: 115
 expression: rows
 ---
-- "Agent                                                         tokens: 0↓ 0↑ [0%]"
+- "#1: Agent                                                     tokens: 0↓ 0↑ [0%]"
 - ┌ Agent — s-mock-1 ────────────────────────────────────────────────────────────┐
 - │assistant> Hello!                                                             │
 - │                                                                              │

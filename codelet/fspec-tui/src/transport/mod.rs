@@ -18,8 +18,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk,
-    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
+    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use thiserror::Error;
 use tokio::sync::broadcast;
@@ -136,6 +136,24 @@ pub trait FspecBackend: Send + Sync {
     /// an empty Vec when no cwd is attached to the shared service or
     /// when no files match.
     async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>>;
+
+    /// RPC-025: append a submitted input to the session's command
+    /// history. Both transports forward to
+    /// `FspecService::persistence_add_history`. Fire-and-forget at the
+    /// App dispatch layer; the underlying tarpc call still returns
+    /// Result so transport-level failures can be logged.
+    async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()>;
+
+    /// RPC-025: return the most recent `limit` history entries for the
+    /// supplied session, newest-first. Used by App::dispatch to
+    /// snapshot the per-session history before walking with Shift+↑.
+    async fn persistence_get_history(&self, session: SessionId, limit: u32) -> Result<Vec<String>>;
+
+    /// RPC-025: case-insensitive substring search across the full
+    /// history JSONL. Returns `HistoryMatch` values with an
+    /// RFC3339-formatted timestamp so the @search popup can render
+    /// "<text>  <relative time>" lines without a chrono dep.
+    async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>>;
 
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff

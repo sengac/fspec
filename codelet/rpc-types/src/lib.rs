@@ -390,6 +390,19 @@ pub struct CompactionResult {
     pub turns_kept: u32,
 }
 
+/// RPC-025: transport-portable match returned by
+/// `FspecService::persistence_search_history`. Mirrors the relevant
+/// fields of `codelet_core::persistence::history::HistoryEntry` but
+/// formats the timestamp as an RFC3339 string so non-Rust consumers
+/// don't need a chrono dependency.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HistoryMatch {
+    pub session_id: SessionId,
+    pub text: String,
+    pub timestamp_iso: String,
+}
+
 #[cfg_attr(feature = "napi", napi_derive::napi(object))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FspecRequest {

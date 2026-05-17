@@ -48,7 +48,6 @@ lazy_static::lazy_static! {
     static ref MESSAGE_STORE: Mutex<Option<MessageStore>> = Mutex::new(None);
     static ref SESSION_STORE: Mutex<Option<SessionStore>> = Mutex::new(None);
     static ref BLOB_STORE: Mutex<Option<BlobStore>> = Mutex::new(None);
-    static ref HISTORY_STORE: Mutex<Option<HistoryStore>> = Mutex::new(None);
 }
 
 /// Set the data directory for the application
@@ -75,9 +74,8 @@ pub fn set_data_directory(dir: PathBuf) -> Result<(), String> {
     *blob = None;
     drop(blob);
 
-    let mut hist = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
-    *hist = None;
-    drop(hist);
+    // RPC-025: history store now lives in codelet_core; reset its cache too.
+    codelet_core::persistence::history::reset_for_tests();
 
     // Reset credential store so it reinitializes with the new directory
     crate::credentials::reset_credential_store();
@@ -136,15 +134,6 @@ fn init_blob_store() -> Result<(), String> {
     let mut store = BLOB_STORE.lock().map_err(|e| e.to_string())?;
     if store.is_none() {
         *store = Some(BlobStore::new()?);
-    }
-    Ok(())
-}
-
-/// Initialize HistoryStore lazily (only when history operations are needed)
-fn init_history_store() -> Result<(), String> {
-    let mut store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
-    if store.is_none() {
-        *store = Some(HistoryStore::new()?);
     }
     Ok(())
 }
@@ -521,43 +510,29 @@ pub fn cleanup_orphaned_messages() -> Result<usize, String> {
     msg_store_ref.cleanup_orphans(&referenced)
 }
 
-/// Add a history entry
+/// Add a history entry.
+///
+/// RPC-025: now a one-line delegate to `codelet_core::persistence::history::add`
+/// so the JSONL on-disk store is shared with codelet_rpc.
 pub fn add_history_entry(entry: HistoryEntry) -> Result<(), String> {
-    init_history_store()?;
-    let mut store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
-    store
-        .as_mut()
-        .ok_or("History store not initialized")?
-        .add(entry)
+    codelet_core::persistence::history::add(entry)
 }
 
-/// Get history entries
+/// Get history entries.
+///
+/// RPC-025: now a one-line delegate to `codelet_core::persistence::history::get`.
 pub fn get_history(
     project: Option<&Path>,
     limit: Option<usize>,
 ) -> Result<Vec<HistoryEntry>, String> {
-    init_history_store()?;
-    let store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
-    Ok(store
-        .as_ref()
-        .ok_or("History store not initialized")?
-        .get(project, limit)
-        .into_iter()
-        .cloned()
-        .collect())
+    codelet_core::persistence::history::get(project, limit)
 }
 
-/// Search history entries
+/// Search history entries.
+///
+/// RPC-025: now a one-line delegate to `codelet_core::persistence::history::search`.
 pub fn search_history(query: &str, project: Option<&Path>) -> Result<Vec<HistoryEntry>, String> {
-    init_history_store()?;
-    let store = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
-    Ok(store
-        .as_ref()
-        .ok_or("History store not initialized")?
-        .search(query, project)
-        .into_iter()
-        .cloned()
-        .collect())
+    codelet_core::persistence::history::search(query, project)
 }
 
 /// Get a stored message by ID

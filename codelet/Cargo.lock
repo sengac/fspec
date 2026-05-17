@@ -1123,6 +1123,7 @@ dependencies = [
  "anyhow",
  "assert_cmd",
  "clap",
+ "codelet-common",
  "codelet-core",
  "codelet-fspec-tui",
  "codelet-rpc",
@@ -1152,6 +1153,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "chrono",
+ "codelet-common",
  "codelet-core",
  "codelet-git",
  "codelet-rpc",
@@ -1174,6 +1177,7 @@ dependencies = [
  "tui-popup",
  "tui-textarea",
  "url",
+ "uuid",
 ]
 
 [[package]]
@@ -1315,6 +1319,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]

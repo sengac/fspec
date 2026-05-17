@@ -37,7 +37,7 @@ fn type_chars(view: &mut AgentView, s: &str) {
     }
 }
 
-fn render_rows(width: u16, height: u16, store: &AgentViewStore, view: &mut AgentView) -> Vec<String> {
+fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
         view.render_with_store(frame.area(), frame.buffer_mut(), store);
@@ -166,10 +166,10 @@ fn multi_line_input_auto_grows_up_to_its_max_visible_rows_cap_of_6() {
 fn empty_multi_line_input_paints_the_dim_placeholder_hint_with_a_green_prefix() {
     // @step Given an AgentView whose MultiLineInput is empty
     let (mut view, _rx) = fresh_view();
-    let store = AgentViewStore::default();
+    let mut store = AgentViewStore::default();
 
     // @step When the App renders AgentView against a 100x12 TestBackend
-    let rows = render_rows(100, 12, &store, &mut view);
+    let rows = render_rows(100, 12, &mut store, &mut view);
     let input_row: String = rows.iter().find(|r| r.contains("Type a message...")).cloned().unwrap_or_default();
 
     // @step Then the rendered buffer's input row contains the substring "> Type a message..."
@@ -188,10 +188,10 @@ fn non_empty_multi_line_input_hides_the_placeholder_hint() {
     // @step Given an AgentView whose MultiLineInput contains "draft"
     let (mut view, _rx) = fresh_view();
     view.input.set_value("draft");
-    let store = AgentViewStore::default();
+    let mut store = AgentViewStore::default();
 
     // @step When the App renders AgentView against a 100x12 TestBackend
-    let rows = render_rows(100, 12, &store, &mut view);
+    let rows = render_rows(100, 12, &mut store, &mut view);
     let joined = rows.join("\n");
 
     // @step Then the rendered buffer's input area contains the substring "draft"

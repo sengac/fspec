@@ -26,8 +26,8 @@
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, SessionStatus,
-    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
+    SessionStatus, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use arc_swap::ArcSwap;
 use std::path::PathBuf;
@@ -126,6 +126,25 @@ pub trait FspecService {
     /// `cwd` is the workspace root attached via `with_cwd`. Returns an
     /// empty Vec when no cwd is attached or when no files match.
     async fn search_files(prefix: String, limit: u32) -> Vec<String>;
+
+    /// RPC-025: append a submitted input to the session's command
+    /// history. Delegates to `codelet_core::persistence::history::add`
+    /// using the workspace cwd attached via `with_cwd` as the project
+    /// filter. Returns `Err(String)` only on I/O / serialisation failure
+    /// against the JSONL store.
+    async fn persistence_add_history(session: SessionId, text: String) -> Result<(), String>;
+
+    /// RPC-025: return the most recent `limit` history entries for the
+    /// supplied `session`, newest-first. Delegates to
+    /// `codelet_core::persistence::history::get` with the workspace cwd
+    /// as the project filter.
+    async fn persistence_get_history(session: SessionId, limit: u32) -> Result<Vec<String>, String>;
+
+    /// RPC-025: case-insensitive substring search across history
+    /// entries, scoped to the workspace cwd. Returns transport-portable
+    /// `HistoryMatch` values whose `timestamp_iso` field is the
+    /// RFC3339-formatted entry timestamp.
+    async fn persistence_search_history(query: String) -> Result<Vec<HistoryMatch>, String>;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -557,6 +576,67 @@ impl FspecService for FspecServiceImpl {
             Some(cwd) => codelet_core::file_search::search(cwd, &prefix, limit),
             None => Vec::new(),
         }
+    }
+
+    async fn persistence_add_history(
+        self,
+        _ctx: Context,
+        session: SessionId,
+        text: String,
+    ) -> Result<(), String> {
+        // RPC-025: delegate to the lifted core helper. Preserve the
+        // original SessionId string via `session_id_str` so non-UUID
+        // SessionIds round-trip back through `HistoryMatch` unchanged;
+        // the Uuid field is best-effort parsed-or-nil for legacy NAPI
+        // / JSONL compatibility.
+        let session_uuid =
+            uuid::Uuid::parse_str(&session.value).unwrap_or_else(|_| uuid::Uuid::nil());
+        let project = self
+            .inner
+            .cwd()
+            .cloned()
+            .unwrap_or_else(|| std::path::PathBuf::from(""));
+        let entry = codelet_core::persistence::HistoryEntry::with_session_id_str(
+            text,
+            project,
+            session_uuid,
+            session.value,
+        );
+        codelet_core::persistence::history::add(entry)
+    }
+
+    async fn persistence_get_history(
+        self,
+        _ctx: Context,
+        _session: SessionId,
+        limit: u32,
+    ) -> Result<Vec<String>, String> {
+        // RPC-025: scope to the workspace cwd if attached; otherwise return
+        // entries across all projects. The current contract returns `Vec<String>`
+        // (display values only) — search returns richer HistoryMatch values.
+        let project = self.inner.cwd().cloned();
+        let proj_ref = project.as_deref();
+        codelet_core::persistence::history::get(proj_ref, Some(limit as usize))
+            .map(|entries| entries.into_iter().map(|e| e.display).collect())
+    }
+
+    async fn persistence_search_history(
+        self,
+        _ctx: Context,
+        query: String,
+    ) -> Result<Vec<HistoryMatch>, String> {
+        // RPC-025: scope to workspace cwd if attached; convert each
+        // matching HistoryEntry into a HistoryMatch with an RFC3339
+        // timestamp so non-Rust consumers don't need chrono.
+        let project = self.inner.cwd().cloned();
+        let proj_ref = project.as_deref();
+        codelet_core::persistence::history::search(&query, proj_ref)
+            .map(|entries| {
+                entries
+                    .iter()
+                    .map(codelet_core::persistence::HistoryEntry::to_history_match)
+                    .collect()
+            })
     }
 }
 

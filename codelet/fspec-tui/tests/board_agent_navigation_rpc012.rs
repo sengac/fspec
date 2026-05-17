@@ -191,11 +191,14 @@ async fn navigator_renders_board_view_as_first_landing_view() {
     assert_eq!(app.active_view(), ViewMode::Board);
     // @step When the App renders against an 80x24 TestBackend
     let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
-    let board_snapshot = app.board_store();
-    let agent_snapshot = app.agent_view_store();
+    // Move the stores out of the App so we can lend a `&` to board and a `&mut`
+    // to agent without violating Rust's borrow rules.
+    let mut agent_snapshot = std::mem::take(app.agent_view_store_mut());
+    let board_snapshot: codelet_fspec_tui::BoardStore =
+        std::mem::take(app.board_store_mut());
     // Use Navigator render directly so we don't paint the old RootView on top.
     assert_eq!(board_snapshot.column_units("backlog").len(), 1);
-    // Render via mutable navigator borrow + immutable store borrows.
+    // Render via mutable navigator borrow + mutable agent store borrow.
     let mut nav = codelet_fspec_tui::Navigator::new(
         Arc::new(codelet_fspec_tui::Theme::default()),
         app.action_tx_clone(),
@@ -203,8 +206,8 @@ async fn navigator_renders_board_view_as_first_landing_view() {
     nav.render_with_stores(
         ratatui::layout::Rect::new(0, 0, 120, 24),
         term.current_buffer_mut(),
-        board_snapshot,
-        agent_snapshot,
+        &board_snapshot,
+        &mut agent_snapshot,
     );
     let buf = term.current_buffer_mut().clone();
     let mut joined = String::new();
@@ -277,7 +280,7 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
     app.navigator_mut().active_view = ViewMode::Agent;
     // @step And AgentViewStore.current_session = Some(SessionId::new("s-1"))
     app.agent_view_store_mut()
-        .set_current_session(Some(SessionId::new("s-1")));
+        .append_session(codelet_fspec_tui::SessionContext::new(SessionId::new("s-1")));
     // @step When the App renders against an 80x24 TestBackend
     let mut term = Terminal::new(TestBackend::new(120, 24)).expect("Terminal::new");
     let mut nav = Navigator::new(
@@ -285,11 +288,14 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
         app.action_tx_clone(),
     );
     nav.active_view = ViewMode::Agent;
+    let mut agent_snapshot = std::mem::take(app.agent_view_store_mut());
+    let board_snapshot: codelet_fspec_tui::BoardStore =
+        std::mem::take(app.board_store_mut());
     nav.render_with_stores(
         ratatui::layout::Rect::new(0, 0, 120, 24),
         term.current_buffer_mut(),
-        app.board_store(),
-        app.agent_view_store(),
+        &board_snapshot,
+        &mut agent_snapshot,
     );
     let buf = term.current_buffer_mut().clone();
     let mut joined = String::new();

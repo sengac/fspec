@@ -1,18 +1,16 @@
 //! AgentViewStore — single source of truth for the AgentView session
 //! navigation state PLUS the per-session model/token/thinking chrome
-//! state introduced by RPC-018.
+//! state introduced by RPC-018 and the multi-session container
+//! introduced by RPC-024.
 //!
 //! Feature files:
 //!   - spec/features/rpc012-board-agent-navigation.feature
 //!   - spec/features/rpc018-agent-chrome.feature
 //!   - spec/features/rpc018-app-bootstrap.feature
+//!   - spec/features/rpc024-multi-session-store.feature
+//!   - spec/features/rpc025-source-shape.feature (per-session history)
 //!
-//! Cards: RPC-012, RPC-018 (parent RPC-002).
-//!
-//! Plain owned Rust struct held by [`crate::app::App`]. Mirrors the
-//! navigation-relevant slice of `src/tui/store/sessionStore.ts` plus the
-//! `useModelStore` + `tokenStateUtils` pieces consumed by the TS
-//! AgentView chrome (`SessionHeader.tsx` + `SessionFooter.tsx`).
+//! Cards: RPC-012, RPC-018, RPC-024, RPC-025 (parent RPC-002).
 
 use std::collections::HashMap;
 
@@ -21,11 +19,14 @@ use codelet_rpc_types::{
     WorkspaceInfo,
 };
 
+pub mod history_state;
+pub mod session_context;
+pub use history_state::HistoryNavState;
+pub use session_context::SessionContext;
+
 /// Per-session token state derived from `StreamChunk::TokenUpdate` +
-/// `StreamChunk::ContextFillUpdate` events arriving on
-/// `Action::ChunkReceived`. Mirrors `ExtractedTokenState` from
-/// `src/tui/utils/tokenStateUtils.ts` so the Rust SessionHeader paints
-/// the same `tokens: in↓ out↑ [fill%]` triple as the Ink original.
+/// `StreamChunk::ContextFillUpdate` events. Mirrors `ExtractedTokenState`
+/// from `src/tui/utils/tokenStateUtils.ts`.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct TokenState {
     pub input_tokens: u64,
@@ -34,9 +35,7 @@ pub struct TokenState {
 }
 
 impl TokenState {
-    /// Fold an arriving chunk into this state. `TokenUpdate` overwrites
-    /// `input_tokens` + `output_tokens`; `ContextFillUpdate` overwrites
-    /// `context_fill_pct`; every other variant is a no-op.
+    /// Fold an arriving chunk into this state.
     pub fn apply_chunk(&mut self, chunk: &StreamChunk) {
         match chunk {
             StreamChunk::TokenUpdate { tokens } => self.apply_token_tracker(tokens),
@@ -53,10 +52,6 @@ impl TokenState {
     }
 
     fn apply_context_fill(&mut self, info: &ContextFillInfo) {
-        // RPC-018: ContextFillInfo.fill_percentage is u32 from the TS
-        // shape — clamp to 100 (percentage upper bound) and narrow to
-        // u8 so the SessionHeader can paint `[N%]` without per-render
-        // arithmetic.
         self.context_fill_pct = info.fill_percentage.min(100) as u8;
     }
 }
@@ -65,7 +60,11 @@ impl TokenState {
 /// Mutated only on the App task.
 #[derive(Debug, Default)]
 pub struct AgentViewStore {
-    current_session: Option<SessionId>,
+    // ── RPC-024 multi-session container ───────────────────────────────
+    open_sessions: Vec<SessionContext>,
+    current_session_index: usize,
+
+    // ── Legacy navigation slots (preserved from RPC-012) ───────────────
     navigation_target_session: Option<SessionId>,
     current_work_unit_id: Option<String>,
     current_work_unit_status: Option<String>,
@@ -73,23 +72,81 @@ pub struct AgentViewStore {
     should_auto_create_session: bool,
 
     // ── RPC-018 chrome state ───────────────────────────────────────────
-    /// 1-based session index within the sessions list (`#N`). Defaults
-    /// to `(0, 0)` until the App publishes a real index.
-    session_index: (usize, usize),
     model_info_by_session: HashMap<SessionId, ModelInfo>,
     token_state_by_session: HashMap<SessionId, TokenState>,
     thinking_level_by_session: HashMap<SessionId, ThinkingLevel>,
     workspace: Option<WorkspaceInfo>,
+
+    // ── RPC-025 per-session history-recall state ────────────────────────
+    /// Walk position into the cached history snapshot. See
+    /// [`HistoryNavState`] for semantics.
+    history_state_by_session: HashMap<SessionId, HistoryNavState>,
+    /// Per-session cached history snapshot loaded by the first
+    /// Action::HistoryPrev. Cleared on Action::InputSubmitted.
+    cached_history_snapshot: HashMap<SessionId, Vec<String>>,
 }
 
 impl AgentViewStore {
-    pub fn current_session(&self) -> Option<&SessionId> {
-        self.current_session.as_ref()
+    // ── RPC-024 multi-session accessors ─────────────────────────────────
+
+    pub fn open_sessions(&self) -> &[SessionContext] {
+        &self.open_sessions
     }
 
-    pub fn set_current_session(&mut self, session: Option<SessionId>) {
-        self.current_session = session;
+    pub fn open_sessions_mut(&mut self) -> &mut Vec<SessionContext> {
+        &mut self.open_sessions
     }
+
+    pub fn current_session_index(&self) -> usize {
+        self.current_session_index
+    }
+
+    pub fn current_session_context(&self) -> Option<&SessionContext> {
+        self.open_sessions.get(self.current_session_index)
+    }
+
+    pub fn current_session_context_mut(&mut self) -> Option<&mut SessionContext> {
+        self.open_sessions.get_mut(self.current_session_index)
+    }
+
+    pub fn session_context_for(&self, id: &SessionId) -> Option<&SessionContext> {
+        self.open_sessions.iter().find(|c| &c.id == id)
+    }
+
+    pub fn session_context_mut_for(&mut self, id: &SessionId) -> Option<&mut SessionContext> {
+        self.open_sessions.iter_mut().find(|c| &c.id == id)
+    }
+
+    /// Append a fresh SessionContext to `open_sessions` and focus it.
+    pub fn append_session(&mut self, ctx: SessionContext) {
+        self.open_sessions.push(ctx);
+        self.current_session_index = self.open_sessions.len().saturating_sub(1);
+    }
+
+    /// Rotate `current_session_index` by `delta` with wrap-around.
+    pub fn cycle_session(&mut self, delta: isize) {
+        let len = self.open_sessions.len();
+        if len <= 1 {
+            return;
+        }
+        let len_i = len as isize;
+        let cur = self.current_session_index as isize;
+        let next = (cur + delta).rem_euclid(len_i);
+        self.current_session_index = next as usize;
+    }
+
+    /// Persist a string into `open_sessions[idx].input_draft`.
+    pub fn set_input_draft(&mut self, idx: usize, value: String) {
+        if let Some(ctx) = self.open_sessions.get_mut(idx) {
+            ctx.input_draft = value;
+        }
+    }
+
+    pub fn current_session(&self) -> Option<&SessionId> {
+        self.current_session_context().map(|c| &c.id)
+    }
+
+    // ── Legacy slot accessors ────────────────────────────────────────────
 
     pub fn navigation_target_session(&self) -> Option<&SessionId> {
         self.navigation_target_session.as_ref()
@@ -111,11 +168,7 @@ impl AgentViewStore {
         self.current_work_unit_status.as_deref()
     }
 
-    pub fn set_current_work_unit(
-        &mut self,
-        id: Option<String>,
-        status: Option<String>,
-    ) {
+    pub fn set_current_work_unit(&mut self, id: Option<String>, status: Option<String>) {
         self.current_work_unit_id = id;
         self.current_work_unit_status = status;
     }
@@ -137,52 +190,44 @@ impl AgentViewStore {
         self.show_create_session_dialog = false;
         self.should_auto_create_session = false;
     }
+}
 
+impl AgentViewStore {
     // ── RPC-018 chrome accessors ───────────────────────────────────────
 
-    /// 1-based session index + total count. The SessionHeader paints
-    /// `#N:` from `current` when `total >= current >= 1`.
     pub fn session_index(&self) -> (usize, usize) {
-        self.session_index
+        let len = self.open_sessions.len();
+        if len == 0 {
+            (0, 0)
+        } else {
+            (self.current_session_index + 1, len)
+        }
     }
 
-    /// Set the (current, total) session index pair. Idempotent.
-    pub fn set_session_index(&mut self, current: usize, total: usize) {
-        self.session_index = (current, total);
-    }
-
-    /// Borrow the ModelInfo for `session_id`, if one has been recorded.
     pub fn model_info_for(&self, session_id: &SessionId) -> Option<&ModelInfo> {
         self.model_info_by_session.get(session_id)
     }
 
-    /// Record the ModelInfo for `session_id`.
     pub fn set_model_info(&mut self, session_id: SessionId, info: ModelInfo) {
         self.model_info_by_session.insert(session_id, info);
     }
 
-    /// Borrow the ThinkingLevel for `session_id`, if one has been recorded.
     pub fn thinking_level_for(&self, session_id: &SessionId) -> Option<&ThinkingLevel> {
         self.thinking_level_by_session.get(session_id)
     }
 
-    /// Record the ThinkingLevel for `session_id`.
     pub fn set_thinking_level(&mut self, session_id: SessionId, level: ThinkingLevel) {
         self.thinking_level_by_session.insert(session_id, level);
     }
 
-    /// Borrow the TokenState for `session_id`, if one has been recorded.
     pub fn token_state_for(&self, session_id: &SessionId) -> Option<&TokenState> {
         self.token_state_by_session.get(session_id)
     }
 
-    /// Replace the TokenState for `session_id`.
     pub fn set_token_state(&mut self, session_id: SessionId, state: TokenState) {
         self.token_state_by_session.insert(session_id, state);
     }
 
-    /// Fold an arriving `StreamChunk` into the token state for
-    /// `session_id`, creating a default state if none exists yet.
     pub fn apply_chunk_to_token_state(&mut self, session_id: &SessionId, chunk: &StreamChunk) {
         let entry = self
             .token_state_by_session
@@ -191,52 +236,48 @@ impl AgentViewStore {
         entry.apply_chunk(chunk);
     }
 
-    /// Borrow the workspace snapshot, if one has been recorded by
-    /// `Action::WorkspaceInfoLoaded`.
     pub fn workspace(&self) -> Option<&WorkspaceInfo> {
         self.workspace.as_ref()
     }
 
-    /// Replace (or clear) the workspace snapshot.
     pub fn set_workspace(&mut self, workspace: Option<WorkspaceInfo>) {
         self.workspace = workspace;
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+impl AgentViewStore {
+    // ── RPC-025 per-session history accessors ───────────────────────────
 
-    use super::*;
-
-    #[test]
-    fn defaults_are_all_empty_or_false() {
-        let store = AgentViewStore::default();
-        assert!(store.current_session().is_none());
-        assert!(store.navigation_target_session().is_none());
-        assert!(store.workspace().is_none());
-        assert_eq!(store.session_index(), (0, 0));
+    /// Borrow the current HistoryNavState for `session`, if any.
+    pub fn history_state_for(&self, session: &SessionId) -> Option<&HistoryNavState> {
+        self.history_state_by_session.get(session)
     }
 
-    #[test]
-    fn apply_chunk_to_token_state_creates_default_then_folds() {
-        let mut store = AgentViewStore::default();
-        let sid = SessionId::new("s-1");
-        let chunk = StreamChunk::TokenUpdate {
-            tokens: TokenTracker {
-                input_tokens: 100,
-                output_tokens: 50,
-                cache_read_input_tokens: None,
-                cache_creation_input_tokens: None,
-                tokens_per_second: None,
-                cumulative_billed_input: None,
-                cumulative_billed_output: None,
-                reasoning_tokens: None,
-            },
-        };
-        store.apply_chunk_to_token_state(&sid, &chunk);
-        let ts = store.token_state_for(&sid).copied().expect("token state");
-        assert_eq!(ts.input_tokens, 100);
-        assert_eq!(ts.output_tokens, 50);
+    /// Mutable accessor — inserts a default state when missing.
+    pub fn history_state_for_mut(&mut self, session: &SessionId) -> &mut HistoryNavState {
+        self.history_state_by_session
+            .entry(session.clone())
+            .or_default()
+    }
+
+    /// Borrow the cached history snapshot for `session`, if loaded.
+    pub fn cached_history_snapshot(&self, session: &SessionId) -> Option<&Vec<String>> {
+        self.cached_history_snapshot.get(session)
+    }
+
+    /// Replace the cached history snapshot for `session`.
+    pub fn set_history_snapshot(&mut self, session: SessionId, snapshot: Vec<String>) {
+        self.cached_history_snapshot.insert(session, snapshot);
+    }
+
+    /// Reset the per-session HistoryNavState and clear the cached snapshot.
+    pub fn reset_history_state(&mut self, session: &SessionId) {
+        self.history_state_by_session
+            .insert(session.clone(), HistoryNavState::default());
+        self.cached_history_snapshot.remove(session);
     }
 }
+
+// Inline AgentViewStore unit tests were removed in RPC-024 — the
+// equivalent coverage now lives in
+// `tests/store_agent_view_multisession_rpc024.rs`.

@@ -45,7 +45,7 @@ pub use components::{Action, Callback, Component, EventResult, Priority};
 pub use components::hello::HelloComponent;
 pub use components::help_dialog::HelpDialog;
 pub use compositor::Compositor;
-pub use store::{AgentViewStore, BoardStore, COLUMN_ORDER};
+pub use store::{AgentViewStore, BoardStore, SessionContext, COLUMN_ORDER};
 pub use terminal::TerminalGuard;
 pub use theme::Theme;
 pub use transport::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};

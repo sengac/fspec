@@ -43,3 +43,6 @@ tracing-subscriber = { workspace = true }
 # so the daemon's SIGHUP handler can atomically replace the watcher
 # without blocking concurrent readers.
 arc-swap = "1.7"
+# RPC-025: persistence_add_history parses SessionId values back into
+# Uuid form when persisting to the lifted HistoryStore.
+uuid = { workspace = true }

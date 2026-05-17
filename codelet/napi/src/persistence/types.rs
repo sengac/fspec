@@ -222,50 +222,13 @@ impl SessionManifest {
     }
 }
 
-/// A command history entry
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct HistoryEntry {
-    /// The command/input that was entered
-    pub display: String,
-    /// When the command was entered
-    pub timestamp: DateTime<Utc>,
-    /// Which project this was entered in
-    pub project: PathBuf,
-    /// Which session this was entered in
-    pub session_id: Uuid,
-    /// Any pasted content (stored separately if large)
-    #[serde(default)]
-    pub pasted_content: Option<PastedContent>,
-}
-
-impl HistoryEntry {
-    /// Create a new history entry
-    pub fn new(display: String, project: PathBuf, session_id: Uuid) -> Self {
-        Self {
-            display,
-            timestamp: Utc::now(),
-            project,
-            session_id,
-            pasted_content: None,
-        }
-    }
-
-    /// Create a new history entry with pasted content
-    pub fn with_pasted_content(
-        display: String,
-        project: PathBuf,
-        session_id: Uuid,
-        pasted: PastedContent,
-    ) -> Self {
-        Self {
-            display,
-            timestamp: Utc::now(),
-            project,
-            session_id,
-            pasted_content: Some(pasted),
-        }
-    }
-}
+/// A command history entry.
+///
+/// RPC-025: lifted into `codelet_core::persistence::history`; this
+/// re-export keeps the old `crate::persistence::HistoryEntry` import
+/// path working for the NAPI binding without changing any caller.
+#[allow(unused_imports)]
+pub use codelet_core::persistence::HistoryEntry;
 
 #[cfg(test)]
 mod tests {

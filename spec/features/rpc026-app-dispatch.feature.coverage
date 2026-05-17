@@ -1,0 +1,336 @@
+{
+  "scenarios": [
+    {
+      "name": "SlashCommandAction::Resume opens the resume_popup and spawns list_sessions",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "178-210",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::SessionListLoaded folds the result into the open resume_popup",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "212-231",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::SessionListLoaded when the popup is already closed is a no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "233-245",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::AttachToSession to a session already in open_sessions moves the index without appending",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "247-280",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::AttachToSession to a session NOT in open_sessions appends and focuses it",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "282-304",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SlashCommandAction::Search opens the search_popup empty and does NOT spawn",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "306-336",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::SearchHistory spawns persistence_search_history and folds the result",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "338-393",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::HistorySearchResults when search_popup is closed is a no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "392-402",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Action::InsertIntoInput sets the input buffer and drops the search_popup",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "404-422",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "handle_slash_command no longer fires the \"[notice] not yet implemented\" arm for Resume/Search",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "424-443",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "handle_slash_command still fires \"[notice]\" for the OTHER unimplemented variants",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs",
+          "lines": "445-459",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/app_dispatch_resume_search_rpc026.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc020.rs"
+    ],
+    "totalLinesCovered": 418
+  }
+}

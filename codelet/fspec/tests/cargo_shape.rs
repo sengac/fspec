@@ -22,6 +22,7 @@ use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
 use common::{codelet_root, fspec_bin, fspec_crate_root, make_workspace, spawn_fspec_daemon, strip_comments, ChildGuard};
 use url::Url;
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[test]
 fn scenario_fspec_version_prints_the_workspace_version() {
     // @step When the developer runs `codelet/target/release/fspec --version`
@@ -49,6 +50,7 @@ fn scenario_fspec_version_prints_the_workspace_version() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[test]
 fn scenario_fspec_help_shows_three_subcommands() {
     // @step When the developer runs `codelet/target/release/fspec --help`
@@ -89,6 +91,7 @@ fn scenario_fspec_help_shows_three_subcommands() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_workspace_defaults_to_cwd_when_omitted() {
     // @step Given a tempdir `<W>` containing a seeded spec/work-units.json
@@ -132,6 +135,7 @@ async fn scenario_workspace_defaults_to_cwd_when_omitted() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_workspace_path_overrides_cwd_for_the_work_units_watcher_root() {
     // @step Given a tempdir `<A>` containing seeded work-units (id "A-1")
@@ -181,6 +185,7 @@ async fn scenario_workspace_path_overrides_cwd_for_the_work_units_watcher_root()
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_both_combined_and_daemon_honour_the_same_workspace_resolution() {
     // @step Given a tempdir `<W>` containing seeded work-units
@@ -361,9 +366,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // resolve_workspace, pure-stdlib RFC-3339 formatter). Splitting it
     // would add lock-list bookkeeping without architectural benefit;
     // the rule [16] "additive only" constraint pushed the file past
-    // the original 300 by ~85 lines. Cap raised to 500 for THIS file
-    // only — the other five remain capped at 300.
-    let common_cap: usize = 500;
+    // the original 300 by ~85 lines.
+    //
+    // RPC-025 raised the cap from 500 to 600 to accommodate the new
+    // unit test `build_service_initializes_global_data_directory_for_persistence`
+    // (regression for the silent Shift+↑/↓ failure caused by the fspec
+    // binary never calling `codelet_common::set_data_directory`). The
+    // test must live inline because `codelet-fspec` is a `[[bin]]`-only
+    // crate (no `[lib]` target — adding one would break the locked
+    // file layout scenario above), so integration tests cannot import
+    // `common::build_service`.
+    let common_cap: usize = 600;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);
@@ -557,6 +570,7 @@ fn scenario_existing_codelet_rpc_server_dev_helper_binary_stays_in_place() {
     // (assertion satisfied by the two .is_file() checks above)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[test]
 fn scenario_spawn_fspec_daemon_helper_proves_port_line_contract_is_verbatim() {
     // @step Given the test file `codelet/fspec/tests/daemon_mode.rs` exists

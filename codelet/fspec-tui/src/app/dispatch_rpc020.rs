@@ -30,16 +30,33 @@ impl App {
                 }
             }
             SlashCommandAction::Clear => {
-                self.navigator.agent.reset_scrollback();
+                self.navigator
+                    .agent
+                    .reset_scrollback(&mut self.agent_view_store);
             }
             SlashCommandAction::Quit => {
                 self.should_quit = true;
             }
+            SlashCommandAction::Resume => {
+                // RPC-026: route into the real resume-picker helper
+                // (which is the Action::OpenResumePicker arm in
+                // app/dispatch.rs). Direct invocation rather than
+                // self.action_tx.send(Action::OpenResumePicker) so the
+                // popup state lands in this dispatch tick.
+                self.handle_open_resume_picker();
+            }
+            SlashCommandAction::Search => {
+                // RPC-026: route into the real search-palette helper
+                // (Action::OpenSearchPalette arm). Same direct-call
+                // rationale as Resume.
+                self.handle_open_search_palette();
+            }
             other => {
                 let name = other.name();
-                self.navigator
-                    .agent
-                    .push_line(format!("[notice] /{name} not yet implemented in Rust TUI"));
+                self.navigator.agent.push_line(
+                    &mut self.agent_view_store,
+                    format!("[notice] /{name} not yet implemented in Rust TUI"),
+                );
             }
         }
     }
@@ -77,20 +94,27 @@ impl App {
     pub(crate) fn handle_input_submitted(&mut self, text: String) {
         self.navigator
             .agent
-            .push_line(format!("user> {text}"));
+            .push_line(&mut self.agent_view_store, format!("user> {text}"));
         let Some(session) = self.agent_view_store.current_session().cloned() else {
             return;
         };
         if session.value == "rpc-no-session-manager" {
             self.navigator.agent.push_line(
+                &mut self.agent_view_store,
                 "[notice] no LLM session manager attached — input recorded but \
                  not sent to a model.",
             );
             return;
         }
         let backend = self.backend.clone();
+        let session_for_send = session.clone();
+        let text_for_send = text.clone();
         tokio::spawn(async move {
-            let _ = backend.send_input(session, text).await;
+            let _ = backend.send_input(session_for_send, text_for_send).await;
         });
+        // RPC-025: fire-and-forget persistence_add_history + reset the
+        // per-session HistoryNavState so the next Shift+↑ pulls a fresh
+        // snapshot from disk.
+        self.handle_input_submitted_persistence(session, text);
     }
 }

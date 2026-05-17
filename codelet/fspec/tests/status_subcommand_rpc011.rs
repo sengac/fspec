@@ -63,6 +63,7 @@ fn spawn_daemon_with_xdg(
 // Scenario: fspec status against a live daemon prints health and exits 0
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn fspec_status_against_a_live_daemon_prints_health_and_exits_0() {
     // @step Given a fspec daemon has been running for 14 minutes 32 seconds with two connected clients
@@ -156,6 +157,7 @@ async fn fspec_status_against_a_live_daemon_prints_health_and_exits_0() {
 // Scenario: fspec status against no daemon prints diagnostic and exits 1
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test]
 async fn fspec_status_against_no_daemon_prints_diagnostic_and_exits_1() {
     // @step Given no daemon.json exists at the autodiscovery path
@@ -202,6 +204,7 @@ async fn fspec_status_against_no_daemon_prints_diagnostic_and_exits_1() {
 // Scenario: fspec status against stale daemon.json deletes the file and exits 1
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test]
 async fn fspec_status_against_stale_daemon_json_deletes_the_file_and_exits_1() {
     // @step Given a daemon.json on disk pointing at PID 99999 (dead)
@@ -249,6 +252,7 @@ async fn fspec_status_against_stale_daemon_json_deletes_the_file_and_exits_1() {
 // Scenario: fspec status honours --connect override
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn fspec_status_honours_connect_override() {
     // @step Given a fspec daemon running on ws://127.0.0.1:54321

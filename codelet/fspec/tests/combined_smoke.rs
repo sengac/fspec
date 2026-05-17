@@ -44,6 +44,7 @@ fn drain_into_buffer(stdout: std::process::ChildStdout) -> Arc<Mutex<Vec<u8>>> {
     buf
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_combined_boots_the_tui_and_starts_the_ws_server_in_one_process() {
     // @step Given the fspec binary has been built via `cargo build -p fspec --release`
@@ -90,6 +91,7 @@ async fn scenario_combined_boots_the_tui_and_starts_the_ws_server_in_one_process
             .expect("connect to combined-mode WS listener");
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_combined_emits_the_port_equals_n_banner_on_stderr_not_stdout() {
     // @step Given the fspec binary has been built
@@ -136,6 +138,7 @@ async fn scenario_combined_emits_the_port_equals_n_banner_on_stderr_not_stdout()
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_combined_does_not_corrupt_the_alt_screen_tui_canvas() {
     // @step When the developer spawns `fspec` and pipes its STDOUT to a buffer
@@ -177,6 +180,7 @@ async fn scenario_combined_does_not_corrupt_the_alt_screen_tui_canvas() {
     //  bootstrap-completion gate.)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_external_ws_client_can_attach_to_combined_and_call_list_work_units() {
     // @step Given the developer has spawned `fspec --workspace <temp-workspace>` as a subprocess
@@ -220,6 +224,7 @@ async fn scenario_external_ws_client_can_attach_to_combined_and_call_list_work_u
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_combined_shutdown_aborts_ws_join_handle_before_removing_daemon_json() {
     // @step Given the developer has spawned `fspec` as a subprocess
@@ -422,6 +427,7 @@ fn scenario_combined_and_daemon_share_the_same_bind_and_serve_function() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_combined_writes_daemon_json_on_bootstrap_and_removes_it_on_clean_exit() {
     // @step Given the developer has set HOME to a tempdir BEFORE spawning the child

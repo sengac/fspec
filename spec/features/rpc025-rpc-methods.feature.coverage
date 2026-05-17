@@ -1,0 +1,328 @@
+{
+  "scenarios": [
+    {
+      "name": "FspecService trait declares the three new history RPC methods",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "58-88",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecBackend trait declares the three new history methods with matching signatures",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "90-113",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/mod.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmbeddedFspecBackend.persistence_add_history persists into the lifted core store via FspecServiceImpl",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "115-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmbeddedFspecBackend.persistence_get_history returns the texts of the most recent entries newest-first",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "137-162",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmbeddedFspecBackend.persistence_search_history returns HistoryMatch values with text, session_id, and ISO timestamp",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "164-204",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WebSocketFspecBackend round-trips persistence_add_history over tarpc to the same core store",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "206-232",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-transport-parity for persistence_get_history",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "234-274",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-transport-parity for persistence_search_history",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "276-323",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecServiceImpl falls back to a None project filter when the shared service has no workspace cwd attached",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs",
+          "lines": "325-349",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                581,
+                582,
+                583,
+                584,
+                585,
+                586,
+                587,
+                588,
+                589,
+                590,
+                591,
+                592,
+                593,
+                594,
+                595,
+                596,
+                597,
+                598,
+                599,
+                600,
+                601,
+                602,
+                603,
+                604,
+                605,
+                606,
+                607,
+                608,
+                609,
+                610,
+                611,
+                612,
+                613,
+                614,
+                615,
+                616,
+                617,
+                618,
+                619,
+                620,
+                621,
+                622,
+                623,
+                624,
+                625,
+                626,
+                627,
+                628,
+                629,
+                630
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc_persistence_history_rpc025.rs"
+    ],
+    "implFiles": [
+      "codelet/rpc/src/lib.rs",
+      "codelet/fspec-tui/src/transport/mod.rs",
+      "codelet/fspec-tui/src/transport/embedded.rs",
+      "codelet/fspec-tui/src/transport/websocket.rs"
+    ],
+    "totalLinesCovered": 449
+  }
+}

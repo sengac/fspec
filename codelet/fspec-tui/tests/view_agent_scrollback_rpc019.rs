@@ -35,7 +35,7 @@ fn seed_list(n: u64) -> ScrollbackList {
     list
 }
 
-fn render_rows(width: u16, height: u16, store: &AgentViewStore, view: &mut AgentView) -> Vec<String> {
+fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
         view.render_with_store(frame.area(), frame.buffer_mut(), store);
@@ -146,24 +146,38 @@ fn scroll_state_default_is_stick_to_bottom_true_offset_zero() {
 }
 
 /// AgentView render integration: PageUp/PageDown in AgentView routes
-/// through the ScrollbackList offset semantics.
+/// through the ScrollbackList offset semantics via the per-session
+/// SessionContext + the ScrollbackPageUp/Down Actions wired in RPC-024.
 #[test]
 fn agent_view_page_up_disables_stick_and_decrements_offset() {
-    let (tx, _rx) = unbounded_channel();
+    let (tx, mut rx) = unbounded_channel();
     let mut view = AgentView::new(tx);
-    for i in 0..100u64 {
-        view.scrollback.push(chunk(i, &format!("chunk-{i}")));
-    }
     let mut store = AgentViewStore::default();
-    store.set_current_session(Some(codelet_rpc_types::SessionId::new("s-1")));
-    // Force a render so viewport_height gets recorded.
-    let _ = render_rows(80, 20, &store, &mut view);
+    store.append_session(codelet_fspec_tui::SessionContext::new(codelet_rpc_types::SessionId::new("s-1")));
+    {
+        let ctx = store.current_session_context_mut().expect("current ctx");
+        for i in 0..100u64 {
+            ctx.scrollback.push(chunk(i, &format!("chunk-{i}")));
+        }
+    }
+    // Force a render so viewport_height gets recorded on the
+    // SessionContext's ScrollbackList (via render_count_visited).
+    let _ = render_rows(80, 20, &mut store, &mut view);
     // viewport_height for an 80x20 layout = 20 - 1 (header) - 1 (footer)
     // - 3 (input) - 2 (block border) = 13.
     let event = Event::Key(KeyEvent::new(KeyCode::PageUp, KeyModifiers::NONE));
     let _ = view.handle_event(&event);
-    assert!(!view.scrollback.scroll_state().stick_to_bottom);
-    assert!(view.scrollback.scroll_state().offset < 100);
+    // RPC-024: AgentView::handle_event emits Action::ScrollbackPageUp
+    // rather than mutating its own ScrollbackList. The Action is
+    // routed through App::dispatch in production; this unit-level test
+    // verifies the Action is emitted and that the SessionContext's
+    // scrollback is still in stick mode (since dispatch isn't wired).
+    let action = rx.try_recv().expect("Action::ScrollbackPageUp on bus");
+    assert!(matches!(action, Action::ScrollbackPageUp));
+    let ctx = store.current_session_context().expect("current ctx");
+    // Stick mode is still on because we did NOT route through App::dispatch
+    // in this unit test — the Action drives the scrollback mutation.
+    assert!(ctx.scrollback.scroll_state().stick_to_bottom);
 }
 
 /// Scenario: AgentView vertical layout reserves Length(N+2) for the input box where N tracks the textarea
@@ -175,10 +189,10 @@ fn agent_view_vertical_layout_reserves_input_box_rows_tracking_the_textarea() {
     view.input.set_value("a\nb\nc");
 
     let mut store = AgentViewStore::default();
-    store.set_current_session(Some(codelet_rpc_types::SessionId::new("s-1")));
+    store.append_session(codelet_fspec_tui::SessionContext::new(codelet_rpc_types::SessionId::new("s-1")));
 
     // @step When the App renders AgentView against an 80x20 TestBackend
-    let rows = render_rows(80, 20, &store, &mut view);
+    let rows = render_rows(80, 20, &mut store, &mut view);
 
     // @step Then the input box occupies exactly 5 rows
     let input_top_idx = view
@@ -206,19 +220,22 @@ fn agent_view_vertical_layout_reserves_input_box_rows_tracking_the_textarea() {
     );
 }
 
-/// AgentView::record_chunk delegates to ScrollbackList::push so the
-/// auto-stick behavior continues to work end-to-end after the refactor.
+/// AgentView::record_chunk delegates into the focused SessionContext's
+/// ScrollbackList so the auto-stick behavior continues to work
+/// end-to-end after the RPC-024 refactor.
 #[test]
 fn agent_view_record_chunk_delegates_to_scrollback_list_push() {
     let (tx, _rx) = unbounded_channel();
     let mut view = AgentView::new(tx);
+    let mut store = AgentViewStore::default();
+    store.append_session(codelet_fspec_tui::SessionContext::new(codelet_rpc_types::SessionId::new("s-1")));
     let chunk = codelet_rpc_types::StreamChunk::Text {
         text: "hi".to_string(),
         correlation_id: None,
         observed_correlation_ids: None,
     };
-    let before = view.scrollback.chunk_count();
-    view.record_chunk(&chunk);
+    let before = view.chunk_count(&store);
+    view.record_chunk(&mut store, &chunk);
     let _ = Action::Redraw; // touch the enum to keep the use-line warm
-    assert_eq!(view.scrollback.chunk_count(), before + 1);
+    assert_eq!(view.chunk_count(&store), before + 1);
 }

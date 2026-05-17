@@ -18,8 +18,8 @@ use async_trait::async_trait;
 use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk,
-    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
+    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::broadcast;
@@ -139,5 +139,31 @@ impl FspecBackend for EmbeddedFspecBackend {
             .client
             .search_files(context::current(), prefix, limit)
             .await?)
+    }
+
+    async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()> {
+        // RPC-025: one-line delegate to the shared tarpc method.
+        self.client
+            .persistence_add_history(context::current(), session, text)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn persistence_get_history(
+        &self,
+        session: SessionId,
+        limit: u32,
+    ) -> Result<Vec<String>> {
+        self.client
+            .persistence_get_history(context::current(), session, limit)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>> {
+        self.client
+            .persistence_search_history(context::current(), query)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
     }
 }

@@ -178,6 +178,7 @@ Tags that categorize features by functional area.
 | `@model-selector` | Model selection TUI interface |
 | `@modification` | Feature Modification Operations |
 | `@multi-agent-support` | Features related to supporting multiple AI coding agents beyond Claude |
+| `@multi-session` | Multi-session AgentView features — open multiple sessions, attach, cycle |
 | `@multiple` | Multiple simultaneous connections |
 | `@navigation` | Navigation and keyboard interaction features in the TUI |
 | `@operations` | General operations |
@@ -907,7 +908,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-05-15T11:35:44.845Z_
+_Last updated: 2026-05-17T12:05:31.682Z_
 
 **Update Command**: `fspec tag-stats`
 

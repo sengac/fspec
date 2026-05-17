@@ -20,6 +20,7 @@ use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
 use codelet_fspec_tui::{Action, App, FspecBackend, Priority, RenderedChunk};
+use codelet_rpc_types::SessionId;
 use ratatui::text::Line;
 
 mod common;
@@ -30,6 +31,13 @@ fn fresh_app() -> (App, Arc<MockBackend>) {
     let backend: Arc<dyn FspecBackend> = mock.clone();
     let app = App::new(backend);
     (app, mock)
+}
+
+/// Seed `app` with a single open SessionContext so AgentView callers
+/// have a current session to mutate (RPC-024 moved scrollback off
+/// AgentView and onto SessionContext).
+fn seed_session(app: &mut App) {
+    app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
 }
 
 /// Scenario: Pressing Enter on /help pushes the HelpDialog onto the Compositor at Priority::Critical
@@ -57,15 +65,22 @@ fn dispatch_help_pushes_help_dialog_at_priority_critical() {
 fn dispatch_clear_resets_scrollback_and_input() {
     // @step Given an AgentView whose scrollback has 5 chunks
     let (mut app, _mock) = fresh_app();
-    for _ in 0..5 {
-        app.navigator_mut().agent.scrollback.push(RenderedChunk {
-            seq: 0,
-            lines: vec![Line::from("x")],
-        });
+    seed_session(&mut app);
+    {
+        let ctx = app
+            .agent_view_store_mut()
+            .current_session_context_mut()
+            .expect("current ctx");
+        for _ in 0..5 {
+            ctx.scrollback.push(RenderedChunk {
+                seq: 0,
+                lines: vec![Line::from("x")],
+            });
+        }
     }
     // @step And the slash popup is open with "/clear" highlighted
     app.navigator_mut().agent.input.set_value("/clear");
-    assert_eq!(app.navigator().agent.chunk_count(), 5);
+    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 5);
 
     // @step When the user presses Enter
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Clear));
@@ -75,7 +90,7 @@ fn dispatch_clear_resets_scrollback_and_input() {
     // App::dispatch reaction to that Action.)
 
     // @step And dispatching that action makes the AgentView's chunk_count equal 0
-    assert_eq!(app.navigator().agent.chunk_count(), 0);
+    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
     // @step And the MultiLineInput's buffer is empty
     assert!(app.navigator().agent.input.is_empty());
 }
@@ -103,7 +118,8 @@ fn dispatch_quit_flips_should_quit() {
 fn dispatch_unimplemented_command_emits_scrollback_notice() {
     // @step Given an AgentView whose slash popup is open with "/model" highlighted
     let (mut app, _mock) = fresh_app();
-    assert_eq!(app.navigator().agent.chunk_count(), 0);
+    seed_session(&mut app);
+    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
 
     // @step When the user presses Enter
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Model));
@@ -114,7 +130,7 @@ fn dispatch_unimplemented_command_emits_scrollback_notice() {
 
     // @step And dispatching that action appends one scrollback chunk whose text contains "[notice]"
     assert_eq!(
-        app.navigator().agent.chunk_count(),
+        app.navigator().agent.chunk_count(app.agent_view_store()),
         1,
         "one notice chunk should be pushed"
     );

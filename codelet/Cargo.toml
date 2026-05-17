@@ -99,7 +99,7 @@ ast-grep-language = "0.40"
 
 # === Utilities ===
 async-trait = "0.1"
-uuid = { version = "1", features = ["v4"] }
+uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
 chrono-tz = "0.10"
 croner = "2"

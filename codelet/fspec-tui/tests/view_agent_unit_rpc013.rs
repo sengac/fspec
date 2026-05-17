@@ -21,10 +21,12 @@ fn fresh() -> (AgentView, tokio::sync::mpsc::UnboundedReceiver<Action>) {
 fn render_agent(width: u16, height: u16, session: Option<SessionId>) -> String {
     let (mut view, _rx) = fresh();
     let mut store = codelet_fspec_tui::AgentViewStore::default();
-    store.set_current_session(session);
+    if let Some(sid) = session {
+        store.append_session(codelet_fspec_tui::SessionContext::new(sid));
+    }
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), &store);
+        view.render_with_store(frame.area(), frame.buffer_mut(), &mut store);
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();
@@ -41,10 +43,12 @@ fn render_agent(width: u16, height: u16, session: Option<SessionId>) -> String {
 fn render_agent_rows(width: u16, height: u16, session: Option<SessionId>) -> Vec<String> {
     let (mut view, _rx) = fresh();
     let mut store = codelet_fspec_tui::AgentViewStore::default();
-    store.set_current_session(session);
+    if let Some(sid) = session {
+        store.append_session(codelet_fspec_tui::SessionContext::new(sid));
+    }
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
-        view.render_with_store(frame.area(), frame.buffer_mut(), &store);
+        view.render_with_store(frame.area(), frame.buffer_mut(), &mut store);
     })
     .expect("draw");
     let buf = term.backend().buffer().clone();

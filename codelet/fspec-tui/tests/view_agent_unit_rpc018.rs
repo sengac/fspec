@@ -23,7 +23,7 @@ mod common;
 
 /// Helper: render AgentView against an N×M TestBackend and return the
 /// buffer as a Vec<String> of row text.
-fn render_rows(width: u16, height: u16, store: &AgentViewStore, view: &mut AgentView) -> Vec<String> {
+fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
     let backend = TestBackend::new(width, height);
     let mut term = Terminal::new(backend).expect("Terminal::new");
     term.draw(|frame| {
@@ -51,10 +51,10 @@ fn fresh_view() -> AgentView {
 #[tokio::test]
 async fn empty_agent_view_store_paints_placeholder_header_and_bare_cwd_footer() {
     // @step Given an empty AgentViewStore with no current_session, no model_info, no thinking_level, and no workspace snapshot
-    let store = AgentViewStore::default();
+    let mut store = AgentViewStore::default();
     let mut view = fresh_view();
     // @step When the App renders AgentView against an 80x20 TestBackend
-    let rows = render_rows(80, 20, &store, &mut view);
+    let rows = render_rows(80, 20, &mut store, &mut view);
     let top = &rows[0];
     let bottom = &rows[rows.len() - 1];
     let full = rows.join("\n");
@@ -83,8 +83,7 @@ async fn header_paints_model_badges_and_thinking_level_when_session_has_model_in
     // @step Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
     let mut store = AgentViewStore::default();
     let sid = SessionId::new("s-1");
-    store.set_current_session(Some(sid.clone()));
-    store.set_session_index(1, 1);
+    store.append_session(codelet_fspec_tui::SessionContext::new(sid.clone()));
     // @step And model_info_by_session["s-1"] is ModelInfo { display_name: "Claude Opus 4.7", supports_reasoning: true, supports_vision: true, context_window: 192000 }
     store.set_model_info(
         sid.clone(),
@@ -100,7 +99,7 @@ async fn header_paints_model_badges_and_thinking_level_when_session_has_model_in
 
     let mut view = fresh_view();
     // @step When the App renders AgentView against an 100x20 TestBackend
-    let rows = render_rows(100, 20, &store, &mut view);
+    let rows = render_rows(100, 20, &mut store, &mut view);
     let top = &rows[0];
     // @step Then the rendered buffer's top row contains the substring "#1:"
     assert!(top.contains("#1:"), "top row missing '#1:', got: {top:?}");
@@ -122,8 +121,7 @@ async fn header_right_side_reflects_token_update_followed_by_context_fill_update
     // @step Given an AgentViewStore with current_session "s-1"
     let mut store = AgentViewStore::default();
     let sid = SessionId::new("s-1");
-    store.set_current_session(Some(sid.clone()));
-    store.set_session_index(1, 1);
+    store.append_session(codelet_fspec_tui::SessionContext::new(sid.clone()));
     // @step And token_state_by_session["s-1"] is TokenState { input_tokens: 1234, output_tokens: 567, context_fill_pct: 45 }
     store.set_token_state(
         sid,
@@ -135,7 +133,7 @@ async fn header_right_side_reflects_token_update_followed_by_context_fill_update
     );
     let mut view = fresh_view();
     // @step When the App renders AgentView against an 100x20 TestBackend
-    let rows = render_rows(100, 20, &store, &mut view);
+    let rows = render_rows(100, 20, &mut store, &mut view);
     let top = &rows[0];
     // @step Then the rendered buffer's top row contains the substring "tokens: 1234↓ 567↑ [45%]"
     assert!(
@@ -157,7 +155,7 @@ async fn footer_abbreviates_cwd_to_tilde_inside_home_and_appends_branch_in_a_git
     std::env::set_var("HOME", "/Users/rquast");
     let mut view = fresh_view();
     // @step When the App renders AgentView against a 100x20 TestBackend
-    let rows = render_rows(100, 20, &store, &mut view);
+    let rows = render_rows(100, 20, &mut store, &mut view);
     let bottom = &rows[rows.len() - 1];
     // @step Then the rendered buffer's bottom row contains the substring "~/projects/fspec"
     assert!(bottom.contains("~/projects/fspec"), "bottom missing ~/projects/fspec, got: {bottom:?}");
@@ -184,7 +182,7 @@ async fn footer_omits_branch_segment_when_workspace_is_not_a_git_repo() {
     }));
     let mut view = fresh_view();
     // @step When the App renders AgentView against a 100x20 TestBackend
-    let rows = render_rows(100, 20, &store, &mut view);
+    let rows = render_rows(100, 20, &mut store, &mut view);
     let bottom = &rows[rows.len() - 1];
     // @step Then the rendered buffer's bottom row contains the substring "/tmp/scratch"
     assert!(bottom.contains("/tmp/scratch"), "bottom missing cwd, got: {bottom:?}");
@@ -198,8 +196,7 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
     // @step Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
     let mut store = AgentViewStore::default();
     let sid = SessionId::new("s-1");
-    store.set_current_session(Some(sid.clone()));
-    store.set_session_index(1, 1);
+    store.append_session(codelet_fspec_tui::SessionContext::new(sid.clone()));
     store.set_model_info(
         sid,
         ModelInfo {
@@ -212,10 +209,10 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
 
     let mut view = fresh_view();
     // @step And the AgentView has pushed two scrollback lines "user> hi" and "assistant> hello"
-    view.push_line("user> hi");
-    view.push_line("assistant> hello");
+    view.push_line(&mut store, "user> hi");
+    view.push_line(&mut store, "assistant> hello");
     // @step When the App renders AgentView against an 80x10 TestBackend
-    let rows = render_rows(80, 10, &store, &mut view);
+    let rows = render_rows(80, 10, &mut store, &mut view);
 
     // @step Then the rendered buffer's row 0 contains the substring "#1:"
     assert!(rows[0].contains("#1:"), "row 0 should contain '#1:', got: {:?}", rows[0]);
@@ -241,7 +238,7 @@ fn stream_chunk_token_update_updates_token_state_for_current_session() {
     // @step Given an App with current_session "s-1"
     let mut store = AgentViewStore::default();
     let sid = SessionId::new("s-1");
-    store.set_current_session(Some(sid.clone()));
+    store.append_session(codelet_fspec_tui::SessionContext::new(sid.clone()));
     // @step And token_state_by_session["s-1"] starts at TokenState::default()
     assert_eq!(
         store.token_state_for(&sid).copied().unwrap_or_default(),
@@ -274,7 +271,7 @@ fn stream_chunk_context_fill_update_updates_context_fill_pct() {
     // @step Given an App with current_session "s-1"
     let mut store = AgentViewStore::default();
     let sid = SessionId::new("s-1");
-    store.set_current_session(Some(sid.clone()));
+    store.append_session(codelet_fspec_tui::SessionContext::new(sid.clone()));
     // @step And token_state_by_session["s-1"] starts at TokenState { input_tokens: 100, output_tokens: 50, context_fill_pct: 0 }
     store.set_token_state(
         sid.clone(),
@@ -308,7 +305,7 @@ fn non_token_stream_chunk_variants_leave_token_state_unchanged() {
     // @step Given an App with current_session "s-1"
     let mut store = AgentViewStore::default();
     let sid = SessionId::new("s-1");
-    store.set_current_session(Some(sid.clone()));
+    store.append_session(codelet_fspec_tui::SessionContext::new(sid.clone()));
     // @step And token_state_by_session["s-1"] is TokenState { input_tokens: 1234, output_tokens: 567, context_fill_pct: 45 }
     store.set_token_state(
         sid.clone(),

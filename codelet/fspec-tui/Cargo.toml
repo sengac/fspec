@@ -56,6 +56,14 @@ codelet-core.workspace = true
 # checkpoint refs to exercise the new `FspecBackend::checkpoint_counts`
 # method against both transports.
 codelet-git.workspace = true
+# RPC-025: history-lift parity tests reach codelet_common::set_data_directory
+# directly to redirect the global DATA_DIRECTORY at the start of each test.
+codelet-common.workspace = true
+# RPC-025: tests build HistoryEntry instances directly.
+uuid = { version = "1", features = ["v4"] }
+# RPC-025: timestamp_iso assertions parse RFC3339 strings round-tripped
+# through HistoryMatch.
+chrono = { version = "0.4" }
 
 [lints]
 workspace = true

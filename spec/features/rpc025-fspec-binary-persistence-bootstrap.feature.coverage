@@ -1,0 +1,47 @@
+{
+  "scenarios": [
+    {
+      "name": "build_service initialises the global data directory before exposing persistence RPCs",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/common.rs",
+          "lines": "517-563",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/common.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/src/common.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/common.rs"
+    ],
+    "totalLinesCovered": 62
+  }
+}

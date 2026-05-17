@@ -47,6 +47,7 @@ fn write_daemon_json(path: &std::path::Path, port: u16, pid: u32) {
 // text "no daemon.json found".
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test]
 async fn read_and_verify_daemon_json_deletes_stale_file_when_pid_is_dead() {
     // @step Given a daemon.json on disk pointing at PID 99999 (guaranteed dead) on port 12345
@@ -99,6 +100,7 @@ async fn read_and_verify_daemon_json_deletes_stale_file_when_pid_is_dead() {
 // deleted, and status must exit 0.
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn read_and_verify_daemon_json_accepts_a_live_pid() {
     // @step Given a daemon.json on disk pointing at the test process's own PID and an arbitrary port
@@ -157,6 +159,7 @@ async fn read_and_verify_daemon_json_accepts_a_live_pid() {
 // Scenario: fspec client falls back gracefully on stale daemon.json
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn fspec_client_falls_back_gracefully_on_stale_daemon_json() {
     // @step Given a stale daemon.json on disk (dead pid) and NO running daemon

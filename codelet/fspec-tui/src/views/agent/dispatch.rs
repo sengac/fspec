@@ -1,9 +1,12 @@
-//! AgentView event dispatch + popup orchestration (RPC-020).
+//! AgentView event dispatch + popup orchestration (RPC-020 / RPC-026).
 //!
 //! Factored out of `views/agent.rs` so the orchestrator file stays
 //! under the 300-LoC ceiling (rule [10] / RPC-002 invariant). Contains
 //! the key-routing flow used by `AgentView::handle_event`:
-//!   1. Route the key through the slash / file popup first.
+//!   1. Route the key through the resume / search popups first
+//!      (RPC-026), then through the slash / file popups (RPC-020).
+//!      Mutual exclusivity guarantees at most one popup is live, but
+//!      the ordering matches architecture note [1] of RPC-026.
 //!   2. Fall back to the default Esc/Ctrl+C/PageUp/Shift-arrow chord
 //!      handling that lived inline before RPC-020.
 //!   3. Forward to MultiLineInput and re-classify the buffer via
@@ -17,6 +20,8 @@ use crate::components::{Action, EventResult};
 use super::file_search_popup::{FilePopupOutcome, FileSearchPopup};
 use super::multiline_input::InputEventOutcome;
 use super::popups::{classify_buffer, splice_file_selection, PopupTrigger};
+use super::resume_picker::ResumePickerOutcome;
+use super::search_palette::SearchPaletteOutcome;
 use super::slash_command_popup::{PopupOutcome, SlashCommandPopup};
 use super::AgentView;
 
@@ -31,11 +36,23 @@ impl AgentView {
         }
     }
 
-    /// RPC-020: route the key through the popup (if any) BEFORE the
-    /// normal input/dispatch flow. Returns `Some(EventResult)` when the
-    /// popup handled the event; `None` means the caller should fall
-    /// through to the default key-handling path.
+    /// RPC-020/RPC-026: route the key through the popup (if any)
+    /// BEFORE the normal input/dispatch flow. Returns
+    /// `Some(EventResult)` when a popup handled the event; `None` means
+    /// the caller should fall through to the default key-handling path.
+    ///
+    /// Order matters and matches the mutual-exclusivity rules:
+    ///   1. RPC-026 resume picker (opened via `/resume`).
+    ///   2. RPC-026 search palette (opened via `/search`).
+    ///   3. RPC-020 slash popup.
+    ///   4. RPC-020 file search popup.
     fn handle_popup_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
+        if let Some(result) = self.handle_resume_popup_key(key) {
+            return Some(result);
+        }
+        if let Some(result) = self.handle_search_popup_key(key) {
+            return Some(result);
+        }
         if let Some(popup) = self.slash_popup.as_mut() {
             match popup.handle_key(key.code, key.modifiers) {
                 PopupOutcome::Selected(action) => {
@@ -78,6 +95,53 @@ impl AgentView {
             }
         }
         None
+    }
+
+    /// RPC-026: route a key through the resume picker popup. Returns
+    /// `Some(EventResult)` when the popup is open AND the key was
+    /// handled or explicitly continued; `None` when no popup is open
+    /// or the popup ignored the key (so the caller falls through to
+    /// later popups / default handling).
+    fn handle_resume_popup_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
+        let popup = self.resume_popup.as_mut()?;
+        match popup.handle_key(key.code, key.modifiers) {
+            ResumePickerOutcome::Selected(session_id) => {
+                self.resume_popup = None;
+                self.emit(Action::AttachToSession(session_id));
+                Some(EventResult::consumed())
+            }
+            ResumePickerOutcome::Dismiss => {
+                self.resume_popup = None;
+                Some(EventResult::consumed())
+            }
+            ResumePickerOutcome::Continued => Some(EventResult::consumed()),
+            ResumePickerOutcome::Ignored => None,
+        }
+    }
+
+    /// RPC-026: route a key through the search palette popup. Returns
+    /// `Some(EventResult)` when the popup is open AND the key was
+    /// handled or explicitly continued; `None` when no popup is open
+    /// or the popup ignored the key.
+    fn handle_search_popup_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
+        let popup = self.search_popup.as_mut()?;
+        match popup.handle_key(key.code, key.modifiers) {
+            SearchPaletteOutcome::FilterChanged(query) => {
+                self.emit(Action::SearchHistory(query));
+                Some(EventResult::consumed())
+            }
+            SearchPaletteOutcome::Selected(text) => {
+                self.search_popup = None;
+                self.emit(Action::InsertIntoInput(text));
+                Some(EventResult::consumed())
+            }
+            SearchPaletteOutcome::Dismiss => {
+                self.search_popup = None;
+                Some(EventResult::consumed())
+            }
+            SearchPaletteOutcome::Continued => Some(EventResult::consumed()),
+            SearchPaletteOutcome::Ignored => None,
+        }
     }
 
     fn splice_path(&mut self, anchor: usize, filter_len: usize, path: &str, trailing_space: bool) {
@@ -125,10 +189,10 @@ impl AgentView {
 
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
         if let Event::Key(key) = event {
-            // RPC-020: route through the popup overlay BEFORE the
-            // default Esc/Ctrl+C/PageUp/Shift-arrow chords. Popup keys
-            // (↑↓/Enter/Tab/Esc) take precedence so a visible popup is
-            // dismissed first.
+            // RPC-020/RPC-026: route through the popup overlay BEFORE
+            // the default Esc/Ctrl+C/PageUp/Shift-arrow chords. Popup
+            // keys (↑↓/Enter/Tab/Esc) take precedence so a visible
+            // popup is dismissed first.
             if let Some(result) = self.handle_popup_key(key) {
                 return result;
             }
@@ -141,11 +205,11 @@ impl AgentView {
                 return EventResult::consumed();
             }
             if key.code == KeyCode::PageUp {
-                self.scrollback.scroll_up(self.scrollback_viewport_hint());
+                self.emit(Action::ScrollbackPageUp);
                 return EventResult::consumed();
             }
             if key.code == KeyCode::PageDown || key.code == KeyCode::End {
-                self.scrollback.scroll_down(self.scrollback_viewport_hint());
+                self.emit(Action::ScrollbackPageDown);
                 return EventResult::consumed();
             }
             if key.modifiers.contains(KeyModifiers::SHIFT) {
@@ -172,7 +236,10 @@ impl AgentView {
         }
     }
 
-    pub(super) fn scrollback_viewport_hint(&self) -> usize {
-        10
+    pub(crate) fn scrollback_viewport_hint(&self) -> usize {
+        // Use the last observed scrollback inner height when known;
+        // fall back to a conservative default for first-frame events.
+        let h = self.last_scrollback_viewport as usize;
+        if h == 0 { 10 } else { h }
     }
 }

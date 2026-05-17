@@ -500,6 +500,25 @@ impl FspecBackend for MockBackend {
             .collect();
         Ok(filtered)
     }
+
+    async fn persistence_add_history(&self, _session: SessionId, _text: String) -> Result<()> {
+        Ok(())
+    }
+
+    async fn persistence_get_history(
+        &self,
+        _session: SessionId,
+        _limit: u32,
+    ) -> Result<Vec<String>> {
+        Ok(Vec::new())
+    }
+
+    async fn persistence_search_history(
+        &self,
+        _query: String,
+    ) -> Result<Vec<codelet_rpc_types::HistoryMatch>> {
+        Ok(Vec::new())
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────

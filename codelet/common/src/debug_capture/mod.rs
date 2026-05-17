@@ -546,14 +546,35 @@ mod tests {
         let types_source = std::fs::read_to_string(&types_path).unwrap();
 
         // @step Given session A is running
+        // Since the RPC-002 split, StreamChunk is defined in
+        // codelet-rpc-types and re-exported from napi/src/types.rs via
+        // `pub use codelet_rpc_types::StreamChunk;`. Accept either the
+        // canonical definition or the re-export so this source-shape
+        // assertion stays robust to the lift.
         assert!(
-            types_source.contains("pub enum StreamChunk"),
-            "StreamChunk enum must exist in types.rs"
+            types_source.contains("pub enum StreamChunk")
+                || types_source.contains("pub use codelet_rpc_types::StreamChunk"),
+            "StreamChunk enum (or re-export) must be present in types.rs"
         );
 
         // @step When session A toggles debug on via the "/debug" command
+        // DebugStateChange is also defined in codelet-rpc-types; check
+        // the rpc-types crate when the napi shim re-exports.
+        let rpc_types_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .join("rpc-types")
+            .join("src")
+            .join("lib.rs");
+        let combined_source = if rpc_types_path.exists() {
+            let mut s = types_source.clone();
+            s.push_str(&std::fs::read_to_string(&rpc_types_path).unwrap());
+            s
+        } else {
+            types_source.clone()
+        };
         assert!(
-            types_source.contains("DebugStateChange"),
+            combined_source.contains("DebugStateChange"),
             "StreamChunk must have a DebugStateChange variant"
         );
 

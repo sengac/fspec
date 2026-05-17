@@ -11,7 +11,10 @@
 use std::sync::Arc;
 
 use codelet_fspec_tui::views::agent::slash_commands::SlashCommandAction;
-use codelet_fspec_tui::{Action, AgentView, App, FspecBackend, Priority, RenderedChunk};
+use codelet_fspec_tui::{
+    Action, AgentView, AgentViewStore, App, FspecBackend, Priority, RenderedChunk, SessionContext,
+};
+use codelet_rpc_types::SessionId;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use ratatui::text::Line;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
@@ -30,8 +33,30 @@ fn fresh_app() -> App {
     App::new(backend)
 }
 
+/// Seed `app` with a single open SessionContext so AgentView callers
+/// have a current session to mutate (RPC-024 moved scrollback off
+/// AgentView and onto SessionContext).
+fn seed_session(app: &mut App, id: &str) {
+    app.dispatch(Action::SessionCreated(SessionId::new(id)));
+}
+
+fn push_chunk(app: &mut App, body: &str) {
+    let ctx = app
+        .agent_view_store_mut()
+        .current_session_context_mut()
+        .expect("current ctx");
+    ctx.scrollback.push(RenderedChunk {
+        seq: 0,
+        lines: vec![Line::from(body.to_string())],
+    });
+}
+
 fn scrollback_text(app: &App) -> String {
-    let chunks = app.navigator().agent.scrollback.visible_window(1024);
+    let chunks = app
+        .agent_view_store()
+        .current_session_context()
+        .map(|c| c.scrollback.visible_window(1024))
+        .unwrap_or_default();
     chunks
         .iter()
         .flat_map(|c| c.lines.iter().map(|l| l.spans.iter().map(|s| s.content.as_ref()).collect::<String>()))
@@ -126,13 +151,18 @@ fn pressing_enter_on_quit_emits_slash_command_selected_quit() {
 fn pressing_enter_on_clear_emits_clear_action() {
     // @step Given an AgentView whose scrollback has 5 chunks
     let (mut view, mut rx) = fresh_view();
-    for _ in 0..5 {
-        view.scrollback.push(RenderedChunk {
-            seq: 0,
-            lines: vec![Line::from("x")],
-        });
+    let mut store = AgentViewStore::default();
+    store.append_session(SessionContext::new(SessionId::new("s-1")));
+    {
+        let ctx = store.current_session_context_mut().expect("ctx");
+        for _ in 0..5 {
+            ctx.scrollback.push(RenderedChunk {
+                seq: 0,
+                lines: vec![Line::from("x")],
+            });
+        }
     }
-    assert_eq!(view.chunk_count(), 5);
+    assert_eq!(view.chunk_count(&store), 5);
     // @step And the slash popup is open with "/clear" highlighted
     type_chars(&mut view, "/clear");
     let _ = drain(&mut rx);
@@ -150,16 +180,14 @@ fn pressing_enter_on_clear_emits_clear_action() {
     );
     // @step And dispatching that action makes the AgentView's chunk_count equal 0
     let mut app = fresh_app();
+    seed_session(&mut app, "s-1");
     for _ in 0..5 {
-        app.navigator_mut().agent.scrollback.push(RenderedChunk {
-            seq: 0,
-            lines: vec![Line::from("x")],
-        });
+        push_chunk(&mut app, "x");
     }
     app.navigator_mut().agent.input.set_value("/clear");
-    assert_eq!(app.navigator().agent.chunk_count(), 5);
+    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 5);
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Clear));
-    assert_eq!(app.navigator().agent.chunk_count(), 0);
+    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
     // @step And the MultiLineInput's buffer is empty
     assert!(view.input.is_empty());
     assert!(app.navigator().agent.input.is_empty());
@@ -218,9 +246,10 @@ fn pressing_enter_on_unimplemented_command_emits_notice() {
     );
     // @step And dispatching that action appends one scrollback chunk whose text contains "[notice]"
     let mut app = fresh_app();
-    assert_eq!(app.navigator().agent.chunk_count(), 0);
+    seed_session(&mut app, "s-1");
+    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Model));
-    assert_eq!(app.navigator().agent.chunk_count(), 1);
+    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 1);
     let text = scrollback_text(&app);
     assert!(text.contains("[notice]"), "expected '[notice]' in {text:?}");
     // @step And that scrollback chunk's text contains "model"

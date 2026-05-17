@@ -9,6 +9,7 @@ pub mod file_search;
 pub mod gemini_history_hook;
 pub mod lifecycle_hooks;
 pub mod message_estimator;
+pub mod persistence;
 pub mod rig_agent;
 pub mod session_manager_handle;
 pub mod streaming_display;

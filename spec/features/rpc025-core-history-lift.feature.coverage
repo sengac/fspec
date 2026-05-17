@@ -1,0 +1,228 @@
+{
+  "scenarios": [
+    {
+      "name": "codelet_core::persistence::history::add writes to the same on-disk JSONL file the NAPI surface uses",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "45-72",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/history.rs",
+              "lines": [
+                215,
+                216,
+                217,
+                218
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet_core::persistence::history::get returns entries newest-first, optionally filtered by project",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "74-101",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/history.rs",
+              "lines": [
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet_core::persistence::history::search is case-insensitive substring on display and respects project filter",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "103-131",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/history.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet/napi/src/persistence/mod.rs::add_history_entry is now a one-line delegate to codelet_core::persistence::history::add",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "133-156",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/mod.rs",
+              "lines": [
+                515,
+                516,
+                517,
+                518,
+                519
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet/napi/src/persistence/mod.rs::get_history is now a one-line delegate to codelet_core::persistence::history::get",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "158-174",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/mod.rs",
+              "lines": [
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet/napi/src/persistence/mod.rs::search_history is now a one-line delegate to codelet_core::persistence::history::search",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "176-192",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/mod.rs",
+              "lines": [
+                531,
+                532,
+                533,
+                534,
+                535,
+                536
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HistoryEntry::to_history_match converts a core HistoryEntry into the transport-portable HistoryMatch",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "194-217",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/history.rs",
+              "lines": [
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The TS Ink TUI persistence path stays byte-identical via the kept NAPI exports",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/core_history_lift_rpc025.rs",
+          "lines": "219-248",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/napi_bindings.rs",
+              "lines": [
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/core_history_lift_rpc025.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/persistence/history.rs",
+      "codelet/napi/src/persistence/mod.rs",
+      "codelet/napi/src/persistence/napi_bindings.rs"
+    ],
+    "totalLinesCovered": 279
+  }
+}

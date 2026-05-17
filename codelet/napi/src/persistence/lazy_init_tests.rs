@@ -39,10 +39,7 @@ fn is_session_store_initialized() -> bool {
 }
 
 fn is_history_store_initialized() -> bool {
-    HISTORY_STORE
-        .lock()
-        .map(|store| store.is_some())
-        .unwrap_or(false)
+    codelet_core::persistence::history::is_initialized_for_tests()
 }
 
 fn is_blob_store_initialized() -> bool {

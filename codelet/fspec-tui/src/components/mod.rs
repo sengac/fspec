@@ -251,6 +251,53 @@ pub enum Action {
     /// RPC-020: backend search returned this list of paths — App::dispatch
     /// forwards into AgentView's file_popup via `set_matches`.
     FileSearchResults(Vec<String>),
+    /// RPC-024: AgentView emits this when the user presses PageUp.
+    /// App::dispatch routes the scroll into the currently-focused
+    /// SessionContext's ScrollbackList so cross-session scroll state
+    /// stays correctly per-session.
+    ScrollbackPageUp,
+    /// RPC-024: sibling of `ScrollbackPageUp` — emitted on PageDown /
+    /// End. App::dispatch advances the focused SessionContext's
+    /// scrollback offset, snapping back to stick-mode at the tail.
+    ScrollbackPageDown,
+    /// RPC-025: emitted by the spawned `backend.persistence_get_history`
+    /// task fired in response to the user's first `Action::HistoryPrev`
+    /// on a session. Carries the SessionId and the newest-first list of
+    /// past submitted inputs. App::dispatch caches the snapshot, snaps
+    /// `recall_index` to `Some(0)`, and replaces the MultiLineInput
+    /// value with `snapshot[0]`. Dropped (no-op) when the snapshot is
+    /// empty so HistoryPrev with no history leaves state untouched.
+    HistorySnapshotLoaded(codelet_rpc_types::SessionId, Vec<String>),
+    /// RPC-026: open the /resume session picker. App::dispatch installs
+    /// AgentView.resume_popup AND spawns `backend.list_sessions()`.
+    OpenResumePicker,
+    /// RPC-026: open the /search history palette. App::dispatch
+    /// installs AgentView.search_popup with an empty query (no
+    /// backend call yet — that fires on the first SearchHistory).
+    OpenSearchPalette,
+    /// RPC-026: a spawned `backend.list_sessions()` task resolved.
+    /// App::dispatch folds the result into the open resume_popup via
+    /// `set_sessions`. No-op when resume_popup is None.
+    SessionListLoaded(Vec<codelet_rpc_types::SessionInfo>),
+    /// RPC-026: emitted by the resume picker on Enter. App::dispatch
+    /// either moves `current_session_index` to the matching slot in
+    /// AgentViewStore.open_sessions OR appends a fresh
+    /// SessionContext::new(id) if the session is not yet open. Also
+    /// publishes to active_session_tx and runs refresh_session_chrome.
+    AttachToSession(codelet_rpc_types::SessionId),
+    /// RPC-026: emitted by the search palette as the user types.
+    /// App::dispatch spawns `backend.persistence_search_history(q)` and
+    /// dispatches Action::HistorySearchResults on success.
+    SearchHistory(String),
+    /// RPC-026: a spawned `backend.persistence_search_history` task
+    /// resolved. App::dispatch folds the result into the open
+    /// search_popup via `set_matches`. No-op when search_popup is None.
+    HistorySearchResults(Vec<codelet_rpc_types::HistoryMatch>),
+    /// RPC-026: emitted by the search palette on Enter with the
+    /// highlighted match's text. App::dispatch replaces the
+    /// MultiLineInput value with `text` AND drops the search_popup.
+    /// Does NOT auto-submit — the user may edit before pressing Enter.
+    InsertIntoInput(String),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

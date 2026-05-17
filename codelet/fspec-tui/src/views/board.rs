@@ -13,7 +13,6 @@
 //! separators, a 5-row details strip, focused-column highlighting and
 //! per-column viewport scroll (RPC-016 `↑`/`↓` arrows). Wheel + click
 //! mouse handling lives in the sibling `mouse` module (RPC-023).
-//!
 //! BoardView holds NO work-units state — `render_with_store` borrows a
 //! `&BoardStore`. Keyboard + mouse handlers emit Actions onto the bus
 //! that `App::dispatch` consumes.

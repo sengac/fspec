@@ -128,7 +128,7 @@ impl App {
     /// Compositor's modal stack on top.
     pub fn render(&mut self, area: Rect, buf: &mut Buffer) {
         self.navigator
-            .render_with_stores(area, buf, &self.board_store, &self.agent_view_store);
+            .render_with_stores(area, buf, &self.board_store, &mut self.agent_view_store);
         self.compositor.render(area, buf);
         self.should_render = false;
     }
@@ -149,7 +149,7 @@ impl App {
                     frame.area(),
                     frame.buffer_mut(),
                     &self.board_store,
-                    &self.agent_view_store,
+                    &mut self.agent_view_store,
                 );
                 self.compositor.render(frame.area(), frame.buffer_mut());
                 if let ViewMode::Agent = self.navigator.active_view {
@@ -187,7 +187,7 @@ impl App {
                                 frame.area(),
                                 frame.buffer_mut(),
                                 &self.board_store,
-                                &self.agent_view_store,
+                                &mut self.agent_view_store,
                             );
                             self.compositor.render(frame.area(), frame.buffer_mut());
                             if let ViewMode::Agent = self.navigator.active_view {

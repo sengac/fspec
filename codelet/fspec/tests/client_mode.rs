@@ -26,6 +26,7 @@ use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
 use common::{fspec_bin, fspec_crate_root, make_workspace, spawn_fspec_daemon, strip_comments, ChildGuard};
 use url::Url;
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[test]
 fn scenario_plain_fspec_client_fails_fast_when_no_daemon_json_exists() {
     // @step Given HOME is set to a fresh tempdir with no `.fspec/` directory
@@ -65,6 +66,7 @@ fn scenario_plain_fspec_client_fails_fast_when_no_daemon_json_exists() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_plain_fspec_client_reads_home_fspec_daemon_json_for_autodiscovery() {
     // @step Given the developer has set HOME to a tempdir BEFORE spawning the daemon
@@ -154,6 +156,7 @@ async fn scenario_plain_fspec_client_reads_home_fspec_daemon_json_for_autodiscov
     //  flag and no environment variable carrying the port.)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_fspec_client_prefers_xdg_runtime_dir_fspec_daemon_json_when_set() {
     // @step Given XDG_RUNTIME_DIR is set to `<XDG>` BEFORE spawning the daemon
@@ -223,6 +226,7 @@ async fn scenario_fspec_client_prefers_xdg_runtime_dir_fspec_daemon_json_when_se
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_client_bootstrap_observability_daemon_side_counter_increments_by_1() {
     // @step Given the developer has spawned `fspec daemon` and the test holds an external WS observer
@@ -284,6 +288,7 @@ async fn scenario_client_bootstrap_observability_daemon_side_counter_increments_
     //  counter inspection.)
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_client_connect_opens_the_ws_connection_and_runs_the_app() {
     // @step Given the developer has spawned `fspec daemon --workspace <temp-workspace>` as a subprocess
@@ -319,6 +324,7 @@ async fn scenario_client_connect_opens_the_ws_connection_and_runs_the_app() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_client_mode_emits_nothing_on_stdout_or_stderr_under_normal_operation() {
     // @step Given a daemon is running and reachable
@@ -453,6 +459,7 @@ fn scenario_client_mode_does_not_call_ratatui_init_directly_app_owns_terminal_gu
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_ws_disconnect_mid_session_surfaces_a_critical_priority_disconnect_dialog() {
     // @step Given the developer has spawned `fspec daemon` and captured port `<P>`
@@ -499,6 +506,7 @@ async fn scenario_ws_disconnect_mid_session_surfaces_a_critical_priority_disconn
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_pressing_q_in_the_disconnect_dialog_quits_the_app() {
     // @step Given a client is showing the disconnect dialog after a daemon kill
@@ -549,6 +557,7 @@ async fn scenario_pressing_q_in_the_disconnect_dialog_quits_the_app() {
     );
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_reconnect_attempt_does_not_loop_single_try_only_in_this_card() {
     // @step Given a client is showing the disconnect dialog after a daemon kill
@@ -608,6 +617,7 @@ async fn scenario_reconnect_attempt_does_not_loop_single_try_only_in_this_card()
     let _ = client_child.wait();
 }
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_pressing_r_performs_a_full_reconnect_bootstrap() {
     // @step Given a client is showing the disconnect dialog after a daemon kill

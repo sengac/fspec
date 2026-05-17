@@ -154,6 +154,14 @@ impl App {
         self.action_tx.clone()
     }
 
+    /// RPC-026 test-only seam: borrow a clone of the currently-active
+    /// session id as published on the `active_session_tx` watch
+    /// channel. Used by App-dispatch tests to assert that
+    /// `Action::AttachToSession` republished the new SessionId.
+    pub fn active_session_rx_snapshot(&self) -> Option<SessionId> {
+        self.active_session_rx.borrow().clone()
+    }
+
     /// Drain a single Action from the bus (test helper).
     pub fn try_recv_action(&mut self) -> Option<Action> {
         self.action_rx.try_recv().ok()

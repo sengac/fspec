@@ -30,6 +30,7 @@ use common::{make_workspace, spawn_fspec_daemon, ChildGuard};
 // ─────────────────────────────────────────────────────────────────────────
 
 #[cfg(unix)]
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn sigterm_triggers_graceful_drain_with_going_away_close_frame() {
     use futures::StreamExt;
@@ -117,6 +118,7 @@ async fn sigterm_triggers_graceful_drain_with_going_away_close_frame() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[cfg(unix)]
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn sighup_rebuilds_workspace_watcher_without_exiting() {
     // @step Given a fspec daemon with SharedFspecService.watcher = ArcSwap holding W_old
@@ -165,6 +167,7 @@ async fn sighup_rebuilds_workspace_watcher_without_exiting() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[cfg(unix)]
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn sigint_continues_to_trigger_immediate_shutdown() {
     // @step Given a fspec daemon currently serving zero clients
@@ -196,6 +199,7 @@ async fn sigint_continues_to_trigger_immediate_shutdown() {
 // connected_clients>=1, then close the client and assert it returns to 0.
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn connected_client_guard_increments_and_decrements_on_each_connection() {
     // @step Given a fspec daemon with ServerStats.connected_clients = 0
@@ -301,6 +305,7 @@ async fn connected_client_guard_increments_and_decrements_on_each_connection() {
 // Scenario: daemon.json schema upgrade carries pid + started_at + version
 // ─────────────────────────────────────────────────────────────────────────
 
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn daemon_json_schema_upgrade_carries_pid_started_at_version() {
     // @step Given the fspec daemon is bootstrapping
@@ -377,6 +382,7 @@ async fn daemon_json_schema_upgrade_carries_pid_started_at_version() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[cfg(unix)]
+#[ignore = "RPC-026: spawns the CLI binary; combined-mode invocations grab /dev/tty via ratatui; run with `cargo test -- --ignored` in a real TTY/CI environment"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn daemon_json_is_removed_on_every_clean_shutdown_path() {
 

@@ -16,8 +16,8 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk,
-    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
+    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::{broadcast, mpsc::UnboundedSender, Notify, RwLock};
@@ -338,6 +338,47 @@ impl FspecBackend for WebSocketFspecBackend {
             .client()
             .search_files(context::current(), prefix, limit)
             .await?)
+    }
+
+    async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()> {
+        // RPC-025: route through the shared tarpc method.
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .persistence_add_history(context::current(), session, text)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn persistence_get_history(
+        &self,
+        session: SessionId,
+        limit: u32,
+    ) -> Result<Vec<String>> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .persistence_get_history(context::current(), session, limit)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .persistence_search_history(context::current(), query)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
     /// RPC-011 rule [4]: notify the supervisor task to cancel its

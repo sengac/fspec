@@ -642,6 +642,10 @@
           "description": "Features related to supporting multiple AI coding agents beyond Claude"
         },
         {
+          "name": "@multi-session",
+          "description": "Multi-session AgentView features — open multiple sessions, attach, cycle"
+        },
+        {
           "name": "@multiple",
           "description": "Multiple simultaneous connections"
         },
@@ -2662,7 +2666,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-05-15T11:35:44.845Z",
+    "lastUpdated": "2026-05-17T12:05:31.682Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

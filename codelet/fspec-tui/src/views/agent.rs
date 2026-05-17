@@ -1,6 +1,7 @@
 //! AgentView — the always-on container. Owns presentation state for
-//! the input + scrollback widgets + popup overlays; reads everything
-//! else from [`AgentViewStore`].
+//! the input + popup overlays; reads scrollback + token chrome from
+//! the per-session [`crate::store::SessionContext`] via
+//! [`AgentViewStore`].
 //!
 //! Feature files:
 //!   - spec/features/rpc012-board-agent-navigation.feature
@@ -9,14 +10,17 @@
 //!   - spec/features/rpc019-multiline-input.feature
 //!   - spec/features/rpc019-scrollback.feature
 //!   - spec/features/rpc020-slash-and-file-popups.feature
+//!   - spec/features/rpc024-multi-session-cycling.feature
 //!
 //! 4-row vertical layout: Header(1) / Scrollback(flex) /
 //! Input(visible_rows + 2 border) / Footer(1). RPC-020 popup overlays
 //! (slash + file search) are painted on top of the base layout.
+//! RPC-024 moved scrollback ownership onto SessionContext — AgentView
+//! no longer owns a `scrollback` field; the render path borrows the
+//! per-session ScrollbackList from `AgentViewStore`.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Widget};
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -30,7 +34,9 @@ pub mod header;
 pub mod multiline_input;
 pub mod popup_body;
 pub mod popups;
+pub mod resume_picker;
 pub mod scrollback;
+pub mod search_palette;
 pub mod slash_command_popup;
 pub mod slash_commands;
 
@@ -39,9 +45,13 @@ pub use footer::SessionFooter;
 pub use header::SessionHeader;
 pub use multiline_input::{InputEventOutcome, MultiLineInput};
 pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
+pub use resume_picker::{ResumePicker, ResumePickerOutcome};
 pub use scrollback::{ScrollState, ScrollbackList};
+pub use search_palette::{SearchPalette, SearchPaletteOutcome};
 pub use slash_command_popup::{PopupOutcome, SlashCommandPopup};
 pub use slash_commands::{SlashCommand, SlashCommandAction, SLASH_COMMANDS};
+
+use ratatui::text::Line;
 
 /// RPC-013 placeholder footer hints — kept here so the RPC-013
 /// source-shape invariant continues to hold.
@@ -59,31 +69,25 @@ pub struct RenderedChunk {
 }
 
 /// AgentView — owns only presentation state. Session id + work-unit
-/// linkage live in `AgentViewStore`.
+/// linkage + scrollback live in `AgentViewStore` (RPC-024).
+#[derive(Default)]
 pub struct AgentView {
-    pub scrollback: ScrollbackList,
     pub input: MultiLineInput,
     pub action_tx: Option<UnboundedSender<Action>>,
-    pub next_seq: u64,
     pub last_input_area: Option<Rect>,
+    /// Last observed scrollback viewport height (in rows). Updated each
+    /// `render_with_store` call and consumed by App::dispatch when
+    /// pushing chunks so stick-to-bottom math stays correct without
+    /// requiring the render path to mutate the SessionContext.
+    pub(crate) last_scrollback_viewport: u16,
     /// RPC-020: slash command palette (Some when active).
     pub slash_popup: Option<SlashCommandPopup>,
     /// RPC-020: `@file` search popup (Some when active).
     pub file_popup: Option<FileSearchPopup>,
-}
-
-impl Default for AgentView {
-    fn default() -> Self {
-        Self {
-            scrollback: ScrollbackList::new(),
-            input: MultiLineInput::new(),
-            action_tx: None,
-            next_seq: 0,
-            last_input_area: None,
-            slash_popup: None,
-            file_popup: None,
-        }
-    }
+    /// RPC-026: /resume session picker (Some when active).
+    pub resume_popup: Option<ResumePicker>,
+    /// RPC-026: /search history palette (Some when active).
+    pub search_popup: Option<SearchPalette>,
 }
 
 impl AgentView {
@@ -94,8 +98,13 @@ impl AgentView {
         }
     }
 
-    pub fn chunk_count(&self) -> usize {
-        self.scrollback.chunk_count()
+    /// Chunk count for the currently focused session, or 0 if no
+    /// session is open. RPC-024: scrollback lives on SessionContext.
+    pub fn chunk_count(&self, store: &AgentViewStore) -> usize {
+        store
+            .current_session_context()
+            .map(|c| c.scrollback.chunk_count())
+            .unwrap_or(0)
     }
 
     pub fn cursor_position(&self) -> Option<(u16, u16)> {
@@ -110,19 +119,22 @@ impl AgentView {
         Some((x, y))
     }
 
-    pub fn push_line<S: Into<String>>(&mut self, line: S) {
-        let seq = self.next_seq;
-        self.next_seq = self.next_seq.saturating_add(1);
-        self.scrollback.push(RenderedChunk {
-            seq,
-            lines: vec![Line::from(Span::raw(line.into()))],
-        });
+    /// Push a raw line into the currently focused session's scrollback.
+    /// No-op when no session is open. RPC-024: replaces the
+    /// pre-refactor field-mutating version that wrote into
+    /// `AgentView.scrollback`.
+    pub fn push_line<S: Into<String>>(&mut self, store: &mut AgentViewStore, line: S) {
+        if let Some(ctx) = store.current_session_context_mut() {
+            ctx.push_line(line);
+        }
     }
 
-    /// RPC-020: clear scrollback + input + popups (used by /clear).
-    pub fn reset_scrollback(&mut self) {
-        self.scrollback.reset();
-        self.next_seq = 0;
+    /// RPC-020: clear the currently focused session's scrollback +
+    /// input + popups. No-op when no session is open.
+    pub fn reset_scrollback(&mut self, store: &mut AgentViewStore) {
+        if let Some(ctx) = store.current_session_context_mut() {
+            ctx.reset_scrollback();
+        }
         self.input.reset();
         self.slash_popup = None;
         self.file_popup = None;
@@ -134,24 +146,16 @@ impl AgentView {
         }
     }
 
-    fn chunk_to_lines(chunk: &codelet_rpc_types::StreamChunk) -> Vec<Line<'static>> {
-        use codelet_rpc_types::StreamChunk as SC;
-        let body: String = match chunk {
-            SC::Text { text, .. } => format!("assistant> {text}"),
-            SC::Thinking { thinking, .. } => format!("(thinking) {thinking}"),
-            SC::UserNotification { message, .. } => format!("[notice] {message}"),
-            SC::Error { error } => format!("[error] {error}"),
-            SC::Done => "[done]".to_string(),
-            other => format!("{other:?}"),
-        };
-        vec![Line::from(Span::raw(body))]
-    }
-
-    pub fn record_chunk(&mut self, chunk: &codelet_rpc_types::StreamChunk) {
-        let seq = self.next_seq;
-        self.next_seq = self.next_seq.saturating_add(1);
-        let lines = Self::chunk_to_lines(chunk);
-        self.scrollback.push(RenderedChunk { seq, lines });
+    /// Record a chunk into the currently focused session's scrollback.
+    /// No-op when no session is open.
+    pub fn record_chunk(
+        &mut self,
+        store: &mut AgentViewStore,
+        chunk: &codelet_rpc_types::StreamChunk,
+    ) {
+        if let Some(ctx) = store.current_session_context_mut() {
+            ctx.record_chunk(chunk);
+        }
     }
 
     /// RPC-020: forward file-search results into the open popup.
@@ -163,7 +167,13 @@ impl AgentView {
 
     /// RPC-019 layout. RPC-020 adds popup overlay paint after the base
     /// widgets so the slash + file search popups float above the input.
-    pub fn render_with_store(&mut self, area: Rect, buf: &mut Buffer, store: &AgentViewStore) {
+    /// RPC-024 reads the scrollback from the focused SessionContext.
+    pub fn render_with_store(
+        &mut self,
+        area: Rect,
+        buf: &mut Buffer,
+        store: &mut AgentViewStore,
+    ) {
         let input_height = self.input.visible_rows().saturating_add(2);
         let split = Layout::default()
             .direction(Direction::Vertical)
@@ -178,25 +188,30 @@ impl AgentView {
             (split[0], split[1], split[2], split[3]);
         self.last_input_area = Some(input_area);
 
-        let sid = store.current_session();
-        let model = sid.and_then(|s| store.model_info_for(s));
+        let sid = store.current_session().cloned();
+        let model = sid.as_ref().and_then(|s| store.model_info_for(s));
         let thinking = sid
+            .as_ref()
             .and_then(|s| store.thinking_level_for(s).copied())
             .unwrap_or(codelet_rpc_types::ThinkingLevel::Off);
         let tokens = sid
+            .as_ref()
             .and_then(|s| store.token_state_for(s).copied())
             .unwrap_or_default();
         SessionHeader { session_index: store.session_index(), model, thinking, tokens }
             .render(header_area, buf);
 
-        let title = match sid {
+        let title = match &sid {
             Some(s) => format!(" Agent — {} ", s.value),
             None => " Agent ".to_string(),
         };
         let scrollback_block = Block::default().borders(Borders::ALL).title(title);
         let inner_scrollback = scrollback_block.inner(scrollback_area);
         scrollback_block.render(scrollback_area, buf);
-        self.scrollback.render_count_visited(inner_scrollback, buf);
+        self.last_scrollback_viewport = inner_scrollback.height;
+        if let Some(ctx) = store.current_session_context_mut() {
+            ctx.scrollback.render_count_visited(inner_scrollback, buf);
+        }
 
         let input_block = Block::default().borders(Borders::ALL);
         let inner_input = input_block.inner(input_area);
@@ -206,11 +221,18 @@ impl AgentView {
 
         SessionFooter { workspace: store.workspace() }.render(footer_area, buf);
 
-        // RPC-020 overlay paint — slash popup wins over file popup if
-        // both are somehow live (the sync logic prevents this).
+        // RPC-020/RPC-026 overlay paint — resume / search popups paint
+        // on top of slash / file when present. The dispatch routing
+        // enforces mutual exclusivity; this paint order is the
+        // belt-and-braces backstop.
         if let Some(p) = self.slash_popup.as_ref() {
             p.render(area, buf);
         } else if let Some(p) = self.file_popup.as_ref() {
+            p.render(area, buf);
+        }
+        if let Some(p) = self.resume_popup.as_ref() {
+            p.render(area, buf);
+        } else if let Some(p) = self.search_popup.as_ref() {
             p.render(area, buf);
         }
     }
