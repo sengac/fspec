@@ -352,7 +352,7 @@ fn run_pprof_window(
 /// Sort by call_count descending and return the top N entries.
 fn top_n_sorted_by_calls(entries: &[ScopeReport], top_n: usize) -> Vec<ScopeReport> {
     let mut out = entries.to_vec();
-    out.sort_by(|a, b| b.call_count.cmp(&a.call_count));
+    out.sort_by_key(|b| std::cmp::Reverse(b.call_count));
     out.truncate(top_n);
     out
 }

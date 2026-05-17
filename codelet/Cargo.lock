@@ -1094,6 +1094,8 @@ dependencies = [
  "codelet-rpc-types",
  "codelet-tools",
  "futures",
+ "globset",
+ "ignore",
  "notify",
  "notify-debouncer-mini",
  "once_cell",

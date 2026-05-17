@@ -50,3 +50,4 @@ pub use terminal::TerminalGuard;
 pub use theme::Theme;
 pub use transport::{EmbeddedFspecBackend, FspecBackend, WebSocketFspecBackend};
 pub use views::{AgentView, BoardView, Navigator, ViewMode};
+pub use views::agent::{RenderedChunk, SLASH_COMMANDS};

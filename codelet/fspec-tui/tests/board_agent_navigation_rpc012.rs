@@ -194,8 +194,7 @@ async fn navigator_renders_board_view_as_first_landing_view() {
     let board_snapshot = app.board_store();
     let agent_snapshot = app.agent_view_store();
     // Use Navigator render directly so we don't paint the old RootView on top.
-    let board_clone_units: Vec<_> = board_snapshot.column_units("backlog").into_iter().cloned().collect();
-    assert_eq!(board_clone_units.len(), 1);
+    assert_eq!(board_snapshot.column_units("backlog").len(), 1);
     // Render via mutable navigator borrow + immutable store borrows.
     let mut nav = codelet_fspec_tui::Navigator::new(
         Arc::new(codelet_fspec_tui::Theme::default()),
@@ -273,7 +272,7 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
     use ratatui::backend::TestBackend;
     use ratatui::Terminal;
     let mock = Arc::new(MockBackend::new());
-    let mut app = App::new(mock.clone());
+    let mut app = App::new(mock);
     // @step Given an App with Navigator.active_view = ViewMode::Agent
     app.navigator_mut().active_view = ViewMode::Agent;
     // @step And AgentViewStore.current_session = Some(SessionId::new("s-1"))

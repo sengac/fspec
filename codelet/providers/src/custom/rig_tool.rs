@@ -119,13 +119,11 @@ impl Tool for RhaiToolWrapper {
 }
 
 fn rhai_err_to_tool_err(e: super::error::CustomProviderError) -> ToolError {
-    ToolError::ToolCallError(Box::new(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        e.to_string(),
-    )))
+    ToolError::ToolCallError(Box::new(std::io::Error::other(e.to_string())))
 }
 
 #[cfg(test)]
+#[allow(clippy::expect_used, clippy::unwrap_used, clippy::panic)]
 mod tests {
     use super::*;
     use crate::custom::tool_facade::RhaiToolDef;

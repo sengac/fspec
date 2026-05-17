@@ -55,6 +55,7 @@ impl BroadcastLogLayer {
     /// Construct a fresh layer wired to a single broadcast sender.
     /// Retained for backward compatibility with existing rpc-embedded
     /// tests; new code should call [`register_log_layer`] instead.
+    #[allow(clippy::new_ret_no_self)]
     pub fn new(sender: broadcast::Sender<LogRecord>) -> SingleBroadcastLogLayer {
         SingleBroadcastLogLayer { sender }
     }
@@ -73,7 +74,7 @@ struct MessageVisitor {
 impl Visit for MessageVisitor {
     fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
         if field.name() == "message" {
-            let _ = write!(self.message, "{:?}", value);
+            let _ = write!(self.message, "{value:?}");
             // tracing's Display impl wraps strings in quotes when using the
             // Debug visitor; strip a single pair of leading/trailing quotes
             // so the captured message matches the user-supplied literal.

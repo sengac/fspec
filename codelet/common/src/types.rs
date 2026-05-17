@@ -354,7 +354,7 @@ mod tool_result_structured_content_tests {
         assert_eq!(value.get("tool_use_id").and_then(|v| v.as_str()), Some("tu_1"));
 
         // @step Then the JSON is_error field equals false
-        assert_eq!(value.get("is_error").and_then(|v| v.as_bool()), Some(false));
+        assert_eq!(value.get("is_error").and_then(serde_json::Value::as_bool), Some(false));
     }
 
     /// Scenario: Serialise text-only ToolResult exposes a single text part

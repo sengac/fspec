@@ -91,7 +91,7 @@ async fn two_clients_attached_simultaneously_see_the_same_chunk_stream() {
         for _ in 0..32 {
             match timeout(Duration::from_secs(2), rx.recv()).await {
                 Ok(Ok((got_sid, c))) if got_sid == *sid => {
-                    let done = matches!(c, StreamChunk::Done { .. });
+                    let done = matches!(c, StreamChunk::Done);
                     out.push(c);
                     if done {
                         break;
@@ -265,12 +265,9 @@ async fn tracing_spans_carry_client_id_on_per_connection_handler_tasks() {
     // each get a fresh process so the single global default applies
     // cleanly.
     let subscriber = tracing_subscriber::registry().with(layer);
-    let _guard = tracing::subscriber::set_global_default(subscriber)
+    let _guard: Result<(), ()> = tracing::subscriber::set_global_default(subscriber)
         .map(|_| ())
-        .or_else(|_| -> Result<(), ()> {
-            // Already set in this process — fine for our purposes.
-            Ok(())
-        });
+        .or(Ok(()));
 
     // @step Given a daemon with two simultaneous clients on peer addrs 127.0.0.1:54321 and 127.0.0.1:54322
     let (_dir, path) = make_workspace(&[("AUTH-001", "Login", "done")]);

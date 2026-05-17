@@ -4,8 +4,9 @@
 //! Feature files:
 //!   - spec/features/rpc012-board-agent-navigation.feature
 //!   - spec/features/rpc013-source-shape.feature
+//!
 //! Cards: RPC-012 (replaces RPC-009 `RootView`), RPC-013 (footer moved
-//! into each view; Navigator hands the full area to the active child).
+//!   into each view; Navigator hands the full area to the active child).
 //!
 //! Renders EXACTLY ONE child view per frame — either BoardView OR
 //! AgentView — over the full area. Each view paints its own 1-row
@@ -24,16 +25,11 @@ use crate::theme::Theme;
 use crate::views::{AgentView, BoardView};
 
 /// Which top-level view is currently visible.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ViewMode {
+    #[default]
     Board,
     Agent,
-}
-
-impl Default for ViewMode {
-    fn default() -> Self {
-        ViewMode::Board
-    }
 }
 
 /// Top-level navigator. Owns the BoardView + AgentView components; the
@@ -49,7 +45,7 @@ pub struct Navigator {
 impl Navigator {
     pub fn new(theme: Arc<Theme>, action_tx: UnboundedSender<Action>) -> Self {
         Self {
-            board: BoardView::new(theme.clone(), action_tx.clone()),
+            board: BoardView::new(theme, action_tx.clone()),
             agent: AgentView::new(action_tx.clone()),
             active_view: ViewMode::Board,
             action_tx: Some(action_tx),

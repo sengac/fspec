@@ -166,7 +166,7 @@ fn new_and_modified_board_modules_stay_under_300_lines() {
     let board_orchestrator = src_dir().join("views").join("board.rs");
     let store_board = src_dir().join("store").join("board.rs");
     // @step When a test counts the line-count of every .rs file in views/board/ plus views/board.rs plus store/board.rs
-    let mut targets: Vec<std::path::PathBuf> = vec![board_orchestrator.clone(), store_board.clone()];
+    let mut targets: Vec<std::path::PathBuf> = vec![board_orchestrator, store_board];
     let entries = std::fs::read_dir(&board_dir)
         .unwrap_or_else(|e| panic!("read_dir {}: {e}", board_dir.display()));
     for entry in entries {

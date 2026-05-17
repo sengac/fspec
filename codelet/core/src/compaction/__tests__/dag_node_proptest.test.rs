@@ -34,8 +34,7 @@ fn arb_well_formed_block() -> impl Strategy<Value = (String, &'static str, usize
         .prop_map(|(depth, a, b, label)| {
             let (start, end) = if a <= b { (a, b) } else { (b, a) };
             let block = format!(
-                r#"<dag-node depth="{}" turns="{}-{}" label="{}">"#,
-                depth, start, end, label
+                r#"<dag-node depth="{depth}" turns="{start}-{end}" label="{label}">"#,
             );
             (block, depth, start, end, label)
         })
@@ -47,8 +46,7 @@ fn arb_arbitrary_range_block() -> impl Strategy<Value = (String, usize, usize)> 
     (arb_depth(), 0usize..200, 0usize..200, arb_label())
         .prop_map(|(depth, start, end, label)| {
             let block = format!(
-                r#"<dag-node depth="{}" turns="{}-{}" label="{}">"#,
-                depth, start, end, label
+                r#"<dag-node depth="{depth}" turns="{start}-{end}" label="{label}">"#,
             );
             (block, start, end)
         })

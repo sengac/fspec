@@ -525,7 +525,7 @@ pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<D
 
     // Index by `DagDepth` ordinal so we can track the most-recently-accepted
     // node at each depth without requiring `Hash` on the enum.
-    fn depth_idx(d: &DagDepth) -> usize {
+    fn depth_idx(d: DagDepth) -> usize {
         match d {
             DagDepth::D0 => 0,
             DagDepth::D1 => 1,
@@ -537,7 +537,7 @@ pub fn parse_dag_nodes(dag_content: &str, message_count: Option<usize>) -> Vec<D
     let mut filtered: Vec<DagNodeMeta> = Vec::with_capacity(nodes.len());
 
     for node in nodes {
-        let idx = depth_idx(&node.depth);
+        let idx = depth_idx(node.depth);
         if let Some(last) = &last_per_depth[idx] {
             if node.turn_start <= last.turn_end {
                 tracing::warn!(

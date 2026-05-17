@@ -185,6 +185,7 @@ fn make_completion_request(user_text: &str) -> CompletionRequest {
 }
 
 fn happy_script(base_url: &str) -> String {
+    let base = base_url;
     format!(
         r#"
 fn build_url(config) {{ "{base}/v1/chat/completions" }}
@@ -206,7 +207,6 @@ fn parse_stream_chunk(config, data) {{ #{{ kind: "ignore" }} }}
 fn build_stream_request(ctx) {{ #{{}} }}
 fn map_error(status, body) {{ #{{ type: "api", message: "other" }} }}
 "#,
-        base = base_url
     )
 }
 

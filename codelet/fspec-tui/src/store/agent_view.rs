@@ -6,6 +6,7 @@
 //!   - spec/features/rpc012-board-agent-navigation.feature
 //!   - spec/features/rpc018-agent-chrome.feature
 //!   - spec/features/rpc018-app-bootstrap.feature
+//!
 //! Cards: RPC-012, RPC-018 (parent RPC-002).
 //!
 //! Plain owned Rust struct held by [`crate::app::App`]. Mirrors the

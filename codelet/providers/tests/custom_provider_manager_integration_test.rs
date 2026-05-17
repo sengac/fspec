@@ -448,7 +448,7 @@ fn agent_loop_dispatches_custom_provider_via_facade_override_to_existing_match_a
     // @step When the agent loop resolves the dispatch string via facade_override().unwrap_or(current_provider_name())
     let dispatch = manager
         .facade_override()
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .unwrap_or_else(|| manager.current_provider_name().to_string());
 
     // @step Then the resolved dispatch string equals 'openai'

@@ -386,14 +386,14 @@ fn lookup_item_text_by_stable_id(
         if let Some(obj) = entry.as_object() {
             let deleted = obj
                 .get("deleted")
-                .and_then(|v| v.as_bool())
+                .and_then(serde_json::Value::as_bool)
                 .unwrap_or(false);
             if deleted {
                 continue;
             }
             let id_match = obj
                 .get("id")
-                .and_then(|v| v.as_u64())
+                .and_then(serde_json::Value::as_u64)
                 .map(|n| n == stable_id)
                 .unwrap_or(false);
             if id_match {
@@ -432,7 +432,7 @@ fn collect_active_item_texts(
         if let Some(obj) = entry.as_object() {
             let deleted = obj
                 .get("deleted")
-                .and_then(|v| v.as_bool())
+                .and_then(serde_json::Value::as_bool)
                 .unwrap_or(false);
             if deleted {
                 continue;

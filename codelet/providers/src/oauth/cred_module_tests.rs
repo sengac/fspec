@@ -24,7 +24,7 @@ fn env_lock() -> MutexGuard<'static, ()> {
     static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
     LOCK.get_or_init(|| Mutex::new(()))
         .lock()
-        .unwrap_or_else(|e| e.into_inner())
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
 }
 
 /// Set `FSPEC_HOME` to a fresh temp directory, return it plus a drop-guard
@@ -199,7 +199,7 @@ fn cred_write_rejects_path_traversal_name() {
     // exist, but we can at least assert the FSPEC_HOME directory contains
     // no files at all.
     let count = std::fs::read_dir(fspec_home())
-        .map(|it| it.count())
+        .map(std::iter::Iterator::count)
         .unwrap_or(0);
     assert_eq!(count, 0, "no files should be created on traversal attempt");
 }

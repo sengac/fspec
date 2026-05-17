@@ -93,7 +93,7 @@ impl RhaiCustomProvider {
         tracing::warn!(
             provider = %self.config_name(),
             header_count = headers.len(),
-            header_names = ?headers.keys().map(|k| k.as_str()).collect::<Vec<_>>(),
+            header_names = ?headers.keys().map(http::HeaderName::as_str).collect::<Vec<_>>(),
             "[rhai-dispatch] invoke_build_headers: Rhai returned headers"
         );
         Ok(headers)

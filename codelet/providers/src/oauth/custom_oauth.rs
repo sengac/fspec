@@ -229,7 +229,7 @@ pub fn load_scripted_provider_for(provider_name: &str) -> Result<ScriptedOAuthPr
     let script_abs = resolve_script_path(&dir, &cfg.script);
     let script_config = script_config_from(&cfg, script_abs.to_string_lossy().into_owned());
     ScriptedOAuthProvider::load(&script_abs, script_config)
-        .with_context(|| format!("load script {}", provider_name))
+        .with_context(|| format!("load script {provider_name}"))
 }
 
 /// Resolve a script path against the providers directory when it is

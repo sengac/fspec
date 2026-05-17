@@ -77,7 +77,7 @@ async fn scenario_napi_co_listener_byte_equal_with_embedded_subscriber() {
         for _ in 0..32 {
             match timeout(Duration::from_secs(2), rx.recv()).await {
                 Ok(Ok((got, c))) if got == *sid => {
-                    let done = matches!(c, StreamChunk::Done { .. });
+                    let done = matches!(c, StreamChunk::Done);
                     out.push(c);
                     if done {
                         break;

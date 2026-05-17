@@ -128,6 +128,15 @@ pub trait FspecBackend: Send + Sync {
     /// `codelet_git::status::get_current_branch(cwd)`.
     async fn get_workspace_info(&self) -> Result<WorkspaceInfo>;
 
+    /// RPC-020: search the workspace for files whose path matches the
+    /// case-insensitive substring `prefix`. Returns at most `limit`
+    /// paths sorted by modification time desc. Both transports delegate
+    /// to `FspecService::search_files` which in turn calls
+    /// `codelet_core::file_search::search(cwd, prefix, limit)`. Returns
+    /// an empty Vec when no cwd is attached to the shared service or
+    /// when no files match.
+    async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>>;
+
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff
     /// sleep). Wired to the App's `r`-press handler from the

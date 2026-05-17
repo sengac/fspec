@@ -157,7 +157,7 @@ impl CustomProvider {
         )?);
 
         let agent = build_rig_agent(
-            backend.clone(),
+            backend,
             session_id,
             preamble,
             thinking_config,

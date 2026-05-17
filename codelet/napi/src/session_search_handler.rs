@@ -99,7 +99,7 @@ fn handle_recent(project_path: &Path, count: Option<usize>) -> SessionSearchResu
 
     // Sort by updated_at descending, take first n
     let mut sorted = sessions;
-    sorted.sort_by(|a, b| b.updated_at.cmp(&a.updated_at));
+    sorted.sort_by_key(|b| std::cmp::Reverse(b.updated_at));
     sorted.truncate(n);
 
     let summaries: Vec<SessionSummary> = sorted

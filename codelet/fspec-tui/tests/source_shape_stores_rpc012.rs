@@ -132,7 +132,7 @@ fn new_rpc012_modules_are_each_under_300_loc() {
         assert!(path.exists(), "expected {} to exist", path.display());
         let lines = count_lines(&path);
         if lines >= ceiling {
-            violations.push(format!("{}: {} lines >= {} ceiling", rel, lines, ceiling));
+            violations.push(format!("{rel}: {lines} lines >= {ceiling} ceiling"));
         }
     }
     // RPC-012 example [9]: legacy app.rs MUST NOT exist anymore — the

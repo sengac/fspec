@@ -244,7 +244,7 @@ impl WorkUnitsWatcher {
 
         let cb_state = Arc::clone(&state);
         let cb_tx = tx.clone();
-        let cb_path = work_units_path.clone();
+        let cb_path = work_units_path;
         let mut debouncer = new_debouncer(
             Duration::from_millis(100),
             move |res: std::result::Result<Vec<notify_debouncer_mini::DebouncedEvent>, notify::Error>| {

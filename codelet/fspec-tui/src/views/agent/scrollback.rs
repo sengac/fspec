@@ -157,6 +157,15 @@ impl ScrollbackList {
         self.recompute_offset_for_stick();
     }
 
+    /// RPC-020: drop every chunk and reset the scroll state to its
+    /// default (offset=0, stick_to_bottom=true). Called by App::dispatch
+    /// on `SlashCommandSelected(Clear)`.
+    pub fn reset(&mut self) {
+        self.chunks.clear();
+        self.scroll_state = ScrollState::default();
+        self.viewport_height = 0;
+    }
+
     /// Render the visible window into `area`. Returns the number of
     /// chunks visited during layout (exposed for the source-shape
     /// "render only lays out the visible window" assertion).

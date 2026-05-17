@@ -19,7 +19,7 @@ pub(crate) fn apply_hunks(content: &str, hunks: &[Hunk], path: &str) -> Result<S
     }
 
     // Sort descending by position so we apply from bottom to top.
-    positioned.sort_by(|a, b| b.0.cmp(&a.0));
+    positioned.sort_by_key(|b| std::cmp::Reverse(b.0));
 
     for (pos, hunk) in &positioned {
         let removal_count = hunk.context_before.len() + hunk.removals.len();

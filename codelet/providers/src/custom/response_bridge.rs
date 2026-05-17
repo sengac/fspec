@@ -130,7 +130,7 @@ pub fn rhai_to_completion_response(
     let usage = map
         .get("usage")
         .cloned()
-        .and_then(|v| v.try_cast::<Map>())
+        .and_then(rhai::Dynamic::try_cast::<Map>)
         .map(usage_from_map)
         .unwrap_or_default();
 

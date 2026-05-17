@@ -237,6 +237,10 @@ pub struct MockBackend {
     /// `Err(anyhow!(message))` so bootstrap-best-effort scenarios can
     /// exercise the failure branch.
     workspace_info_error: Mutex<Option<String>>,
+    /// RPC-020: scripted file-search results returned by
+    /// `search_files`. The mock filters by case-insensitive substring
+    /// of `prefix` and caps at `limit`.
+    file_search_results: Mutex<Vec<String>>,
 }
 
 impl Default for MockBackend {
@@ -267,6 +271,7 @@ impl Default for MockBackend {
             thinking_level: Mutex::new(ThinkingLevel::Off),
             workspace_info: Mutex::new(WorkspaceInfo::default()),
             workspace_info_error: Mutex::new(None),
+            file_search_results: Mutex::new(Vec::new()),
         }
     }
 }
@@ -372,6 +377,12 @@ impl MockBackend {
     pub fn set_workspace_info_error(&self, message: String) {
         *self.workspace_info_error.lock().expect("MockBackend mutex") = Some(message);
     }
+
+    /// RPC-020: preload the file-search result list. `search_files`
+    /// filters this Vec case-insensitively against its `prefix` arg.
+    pub fn set_file_search_results(&self, paths: Vec<String>) {
+        *self.file_search_results.lock().expect("MockBackend mutex") = paths;
+    }
 }
 
 #[async_trait]
@@ -475,6 +486,19 @@ impl FspecBackend for MockBackend {
             return Err(anyhow::anyhow!("{msg}"));
         }
         Ok(self.workspace_info.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>> {
+        // RPC-020: MockBackend returns scripted matches (or an empty
+        // Vec) so tests can drive the file search popup without
+        // touching the real filesystem.
+        let all = self.file_search_results.lock().expect("MockBackend mutex").clone();
+        let filtered: Vec<String> = all
+            .into_iter()
+            .filter(|p| p.to_lowercase().contains(&prefix.to_lowercase()))
+            .take(limit as usize)
+            .collect();
+        Ok(filtered)
     }
 }
 

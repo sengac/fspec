@@ -3,6 +3,8 @@
 //!
 //! Previously reported as: `API Error: Streaming error: RequestError: Failed to get tool definitions`
 //!
+
+#![allow(clippy::panic, clippy::doc_overindented_list_items, clippy::needless_borrows_for_generic_args)]
 //! These tests connect to the REAL Fireworks API using an inline API key fixture
 //! and progressively break down the DeepSearch code path to localize where the
 //! failure happens. The original agent (qwen) hit this in the TUI when calling

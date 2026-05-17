@@ -140,7 +140,7 @@ async fn scenario_ws_send_input_chunk_sequence_matches_embedded() {
     for _ in 0..16 {
         match timeout(Duration::from_secs(2), ws_rx.recv()).await {
             Ok(Ok((got_sid, c))) if got_sid == sid => {
-                let done = matches!(c, StreamChunk::Done { .. });
+                let done = matches!(c, StreamChunk::Done);
                 ws_chunks.push(c);
                 if done {
                     break;
@@ -153,7 +153,7 @@ async fn scenario_ws_send_input_chunk_sequence_matches_embedded() {
     for _ in 0..16 {
         match timeout(Duration::from_secs(2), em_rx.recv()).await {
             Ok(Ok((got_sid, c))) if got_sid == sid => {
-                let done = matches!(c, StreamChunk::Done { .. });
+                let done = matches!(c, StreamChunk::Done);
                 em_chunks.push(c);
                 if done {
                     break;
@@ -215,7 +215,7 @@ async fn scenario_get_session_status_reflects_idle_running_idle_on_websocket() {
     let mut rx = ws_client.chunks_rx();
     for _ in 0..32 {
         match timeout(Duration::from_secs(1), rx.recv()).await {
-            Ok(Ok((_, StreamChunk::Done { .. }))) => break,
+            Ok(Ok((_, StreamChunk::Done))) => break,
             Ok(Ok(_)) => continue,
             _ => break,
         }

@@ -36,7 +36,7 @@ use super::BoardView;
 ///   * `ScrollLeft` / `ScrollRight` inside `last_content_area`     → FocusPrev / NextColumn
 ///   * `Down(Left)` inside a `last_column_header_areas[idx]`        → SetFocusedColumn(idx)
 ///   * `Down(Left)` inside a `last_column_content_areas[idx]` cell  → SetFocusedColumn(idx)
-///                                                                    + SelectIndexInFocused(row + scroll_offset)
+///    + SelectIndexInFocused(row + scroll_offset)
 pub(super) fn handle_mouse(view: &BoardView, event: &Event, store: &BoardStore) -> EventResult {
     let MouseEvent {
         kind, column, row, ..

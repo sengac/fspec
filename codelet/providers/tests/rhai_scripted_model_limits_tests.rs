@@ -50,7 +50,7 @@ impl LogBuffer {
 impl io::Write for LogBuffer {
     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
         let mut guard = self.0.lock().map_err(|e| {
-            io::Error::new(io::ErrorKind::Other, format!("log buffer poisoned: {e}"))
+            io::Error::other(format!("log buffer poisoned: {e}"))
         })?;
         guard.extend_from_slice(data);
         Ok(data.len())

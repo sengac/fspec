@@ -158,6 +158,7 @@ impl InboundHandler for ClientInbound {
 /// server's WorkUnitsUpdate / chunks / logs fan-out tasks) — they are
 /// bincode-encoded and emitted as binary WS frames alongside the tarpc
 /// traffic.
+#[allow(clippy::too_many_arguments)]
 pub async fn run_envelope_pump<S, H>(
     mut ws_sink: SplitSink<WebSocketStream<S>, Message>,
     mut ws_stream: SplitStream<WebSocketStream<S>>,

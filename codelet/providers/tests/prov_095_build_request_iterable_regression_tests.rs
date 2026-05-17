@@ -38,8 +38,9 @@
 //!         - Preamble + user + assistant + user multi-turn
 //!         - Empty chat history (empty Vec<Message>)
 //!         - Message whose content is structured `Parts` (array-shaped)
-//!      …plus tool invocation (populated `&[ToolDefinition]`) so the
-//!      `for tool in request.tools` loop at line 77 is also covered.
+//!
+//!     …plus tool invocation (populated `&[ToolDefinition]`) so the
+//!     `for tool in request.tools` loop at line 77 is also covered.
 //!   4. Asserts the result is a serializable JSON body with the
 //!      expected Anthropic-Messages-shaped keys, and that **no**
 //!      `ProviderError` is returned — a Rhai iteration failure surfaces
@@ -424,7 +425,7 @@ async fn build_request_succeeds_with_empty_chat_history() {
     assert!(msgs.is_empty(), "empty_history: messages should be empty");
     // @step And body.system is not emitted (no system_parts collected)
     assert!(
-        body.get("system").is_none() || body["system"].as_array().map(|a| a.is_empty()).unwrap_or(false),
+        body.get("system").is_none() || body["system"].as_array().map(Vec::is_empty).unwrap_or(false),
         "empty_history: body.system should be absent or empty: {body}"
     );
 }

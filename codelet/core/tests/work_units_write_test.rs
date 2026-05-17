@@ -85,7 +85,7 @@ fn read_column(workspace: &Path, column: &str) -> Vec<String> {
         .and_then(|c| c.as_array())
         .map(|arr| {
             arr.iter()
-                .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                .filter_map(|x| x.as_str().map(std::string::ToString::to_string))
                 .collect()
         })
         .unwrap_or_default()
@@ -98,7 +98,7 @@ fn read_meta_last_updated(workspace: &Path) -> String {
     v.get("meta")
         .and_then(|m| m.get("lastUpdated"))
         .and_then(|s| s.as_str())
-        .map(|s| s.to_string())
+        .map(std::string::ToString::to_string)
         .unwrap_or_default()
 }
 

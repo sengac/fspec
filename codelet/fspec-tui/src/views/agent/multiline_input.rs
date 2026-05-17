@@ -96,7 +96,7 @@ impl MultiLineInput {
         let lines: Vec<String> = if text.is_empty() {
             vec![String::new()]
         } else {
-            text.split('\n').map(|s| s.to_string()).collect()
+            text.split('\n').map(std::string::ToString::to_string).collect()
         };
         let mut ta = TextArea::new(lines);
         ta.set_cursor_line_style(ratatui::style::Style::default());

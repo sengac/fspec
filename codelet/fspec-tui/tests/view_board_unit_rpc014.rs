@@ -326,5 +326,5 @@ fn footer_string_and_footer_separator_are_still_painted_at_the_bottom() {
         "expected ┴ on row 21 (footer separator), got: `{sep_row}`"
     );
     // Sanity: the ⏩ / 🟢 indicators must NOT appear in this slice (RPC-016).
-    let (_, _) = find_glyph(&buf, "⏩").map(|p| p).unwrap_or((0, 0));
+    let (_, _) = find_glyph(&buf, "⏩").unwrap_or((0, 0));
 }

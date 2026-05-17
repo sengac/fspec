@@ -142,7 +142,7 @@ impl ProfileRegistry {
                     .unwrap_or(std::cmp::Ordering::Equal)
             });
         } else {
-            entries.sort_by(|a, b| b.call_count.cmp(&a.call_count));
+            entries.sort_by_key(|b| std::cmp::Reverse(b.call_count));
         }
 
         entries.truncate(top_n);

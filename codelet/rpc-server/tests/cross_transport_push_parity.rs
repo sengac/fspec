@@ -73,7 +73,7 @@ async fn scenario_both_transports_produce_byte_identical_work_units_update_paylo
     );
     let embedded_bytes =
         bincode::serialize(&Envelope::WorkUnitsUpdate(embedded_payload.clone())).unwrap();
-    let ws_bytes = bincode::serialize(&Envelope::WorkUnitsUpdate(ws_payload.clone())).unwrap();
+    let ws_bytes = bincode::serialize(&Envelope::WorkUnitsUpdate(ws_payload)).unwrap();
     assert_eq!(
         embedded_bytes, ws_bytes,
         "cross-transport push: bincode-of-Envelope must be byte-identical"

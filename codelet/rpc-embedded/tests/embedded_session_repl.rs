@@ -221,7 +221,7 @@ async fn scenario_get_session_status_reflects_idle_running_idle_on_embedded() {
     let mut rx = transport.chunks_rx();
     for _ in 0..64 {
         match timeout(Duration::from_secs(1), rx.recv()).await {
-            Ok(Ok((_, StreamChunk::Done { .. }))) => break,
+            Ok(Ok((_, StreamChunk::Done))) => break,
             Ok(Ok(_)) => continue,
             _ => break,
         }

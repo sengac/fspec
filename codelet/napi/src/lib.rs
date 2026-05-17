@@ -6,6 +6,8 @@
 //! Uses the same streaming infrastructure as codelet-cli but with callbacks
 //! instead of stdout printing.
 
+#![allow(ambiguous_glob_reexports)]
+
 #[cfg_attr(not(feature = "noop"), macro_use)]
 extern crate napi_derive;
 

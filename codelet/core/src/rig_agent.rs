@@ -65,7 +65,7 @@ where
             .prompt(prompt)
             .multi_turn(self.max_depth)
             .await
-            .map_err(|e| anyhow::Error::from(e))?;
+            .map_err(anyhow::Error::from)?;
 
         debug!(
             response_length = response.len(),
@@ -100,7 +100,7 @@ where
             .stream_prompt(prompt)
             .multi_turn(self.max_depth)
             .await
-            .map(|result| result.map_err(|e| anyhow::Error::from(e)))
+            .map(|result| result.map_err(anyhow::Error::from))
     }
 
     /// Execute a prompt in streaming mode WITH conversation history (CLI-008)
@@ -134,7 +134,7 @@ where
             .with_history(history_for_rig)
             .multi_turn(self.max_depth)
             .await
-            .map(|result| result.map_err(|e| anyhow::Error::from(e)))
+            .map(|result| result.map_err(anyhow::Error::from))
     }
 
     /// Execute a prompt in streaming mode WITH conversation history AND a hook
@@ -174,7 +174,7 @@ where
             .with_hook(hook)
             .multi_turn(self.max_depth)
             .await
-            .map(|result| result.map_err(|e| anyhow::Error::from(e)))
+            .map(|result| result.map_err(anyhow::Error::from))
     }
 }
 
@@ -229,8 +229,8 @@ mod tests {
             "streaming methods must NOT use anyhow::anyhow!() in production code — it destroys the typed error chain"
         );
         assert!(
-            production_source.contains("anyhow::Error::from(e)"),
-            "must use anyhow::Error::from(e) to preserve typed error chain"
+            production_source.contains("anyhow::Error::from"),
+            "must use anyhow::Error::from to preserve typed error chain"
         );
     }
 }

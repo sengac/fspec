@@ -18,6 +18,7 @@
 
 pub mod bootstrap;
 pub mod dispatch;
+pub mod dispatch_rpc020;
 pub mod events;
 pub mod state;
 

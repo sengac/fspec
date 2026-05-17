@@ -32,7 +32,7 @@ impl BoardStore {
     /// happens regardless of whether the column is scrollable.
     pub fn move_selection(&mut self, delta: i32, viewport_height: usize) {
         let column = self.focused_column().to_string();
-        let len = self.by_column.get(&column).map(|v| v.len()).unwrap_or(0);
+        let len = self.by_column.get(&column).map(Vec::len).unwrap_or(0);
         if len == 0 || viewport_height == 0 {
             return;
         }
@@ -72,7 +72,7 @@ impl BoardStore {
     /// pull it back into view.
     pub fn select_last_in_focused(&mut self) {
         let column = self.focused_column().to_string();
-        let len = self.by_column.get(&column).map(|v| v.len()).unwrap_or(0);
+        let len = self.by_column.get(&column).map(Vec::len).unwrap_or(0);
         if len == 0 {
             return;
         }
@@ -102,7 +102,7 @@ impl BoardStore {
     /// view if it falls outside the current viewport.
     pub fn select_index_in_focused(&mut self, index: usize, viewport_height: usize) {
         let column = self.focused_column().to_string();
-        let len = self.by_column.get(&column).map(|v| v.len()).unwrap_or(0);
+        let len = self.by_column.get(&column).map(Vec::len).unwrap_or(0);
         if len == 0 {
             return;
         }

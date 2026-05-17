@@ -14,8 +14,9 @@
 //!     and the rust-tui-parity-master-plan doc).
 //!   - `codelet/napi/src/schedule_handler.rs` — refactored to delegate
 //!     to the lifted `codelet_common::file_lock` helper.
+//!
 //! Both edits are additive / refactor-only — neither touches the
-//! WorkUnitInfo shape nor the existing Vitest smoke test, which is the
+//! `WorkUnitInfo` shape nor the existing Vitest smoke test, which is the
 //! actual cross-language invariant this test guards.
 //!
 //! The mtime heuristic is therefore narrowed: ONLY `types.rs` (which

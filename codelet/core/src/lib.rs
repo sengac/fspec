@@ -5,6 +5,7 @@
 
 pub mod compaction;
 pub mod compaction_hook;
+pub mod file_search;
 pub mod gemini_history_hook;
 pub mod lifecycle_hooks;
 pub mod message_estimator;

@@ -209,7 +209,7 @@ async fn disconnect_dialog_pushed_at_priority_critical_when_action_disconnected_
 async fn disconnect_dialog_swallows_navigation_keys_while_topmost() {
     // @step Given a TestBackend App with the DisconnectDialog currently topmost
     let mock = Arc::new(MockBackend::new());
-    let backend: Arc<dyn FspecBackend> = mock.clone();
+    let backend: Arc<dyn FspecBackend> = mock;
     let (mut app, _terminal) = test_app(backend);
     app.send_action(Action::Disconnected).unwrap();
     pump_actions(&mut app);

@@ -86,10 +86,7 @@ impl WebSocketFspecBackend {
         // will retry. If it succeeds we seed the client slot so the
         // App's bootstrap RPCs can go through immediately.
         let initial_client = match tokio_tungstenite::connect_async(url.as_str()).await {
-            Ok((ws, _response)) => match ws_client_connect(ws).await {
-                Ok(c) => Some(c),
-                Err(_) => None,
-            },
+            Ok((ws, _response)) => ws_client_connect(ws).await.ok(),
             Err(_) => None,
         };
 
@@ -330,6 +327,19 @@ impl FspecBackend for WebSocketFspecBackend {
         Ok(client.client().get_workspace_info(context::current()).await?)
     }
 
+    async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>> {
+        // RPC-020: route through the shared tarpc method, returning
+        // Disconnected when the supervisor has dropped the client slot.
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .search_files(context::current(), prefix, limit)
+            .await?)
+    }
+
     /// RPC-011 rule [4]: notify the supervisor task to cancel its
     /// current backoff sleep, attempt connect immediately, and reset
     /// the backoff schedule on its next failure. Idempotent; safe to
@@ -368,7 +378,7 @@ async fn run_supervisor(
         // Wait until the initial client's chunks_rx broadcast closes.
         let initial_chunks_rx = {
             let guard = client_slot.read().await;
-            guard.as_ref().map(|c| c.chunks_rx())
+            guard.as_ref().map(codelet_rpc_server::FspecWsClient::chunks_rx)
         };
         if let Some(mut rx) = initial_chunks_rx {
             loop {

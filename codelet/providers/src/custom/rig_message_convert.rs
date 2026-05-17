@@ -264,6 +264,7 @@ fn image_media_type_to_mime(media_type: Option<ImageMediaType>) -> String {
 }
 
 #[cfg(test)]
+#[allow(clippy::panic, clippy::expect_used, clippy::unwrap_used)]
 mod tests {
     use super::*;
     use rig::OneOrMany;

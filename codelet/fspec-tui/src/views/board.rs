@@ -6,6 +6,7 @@
 //!   - spec/features/rpc014-board-grid.feature
 //!   - spec/features/rpc014-source-shape.feature
 //!   - spec/features/boardview-mouse-handling.feature (RPC-023)
+//!
 //! Cards: RPC-012 / RPC-013 / RPC-014 / RPC-016 / RPC-023.
 //!
 //! Renders the seven canonical kanban columns with box-drawing

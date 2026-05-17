@@ -242,11 +242,14 @@ impl CompletionModel for RhaiCustomProviderModel {
         // agent builder path exclusively; this factory exists only
         // because the trait requires it and is unreachable via the
         // public API.
-        panic!(
-            "RhaiCustomProviderModel must be constructed via CustomProvider::create_rig_agent — \
-             rig's `make` factory is not supported because the model carries a fully \
-             wired Rhai script handle."
-        );
+        #[allow(clippy::panic)]
+        {
+            panic!(
+                "RhaiCustomProviderModel must be constructed via CustomProvider::create_rig_agent — \
+                 rig's `make` factory is not supported because the model carries a fully \
+                 wired Rhai script handle."
+            );
+        }
     }
 
     async fn completion(
@@ -263,7 +266,7 @@ impl CompletionModel for RhaiCustomProviderModel {
         let tool_names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
         let thinking_str = thinking
             .as_ref()
-            .map(|v| v.to_string())
+            .map(std::string::ToString::to_string)
             .unwrap_or_else(|| "none".to_string());
         tracing::warn!(
             provider = %provider.config_name(),
@@ -379,7 +382,7 @@ impl CompletionModel for RhaiCustomProviderModel {
         let tool_names: Vec<&str> = tools.iter().map(|t| t.name.as_str()).collect();
         let thinking_str = thinking
             .as_ref()
-            .map(|v| v.to_string())
+            .map(std::string::ToString::to_string)
             .unwrap_or_else(|| "none".to_string());
         tracing::warn!(
             provider = %provider.config_name(),
@@ -432,7 +435,7 @@ impl CompletionModel for RhaiCustomProviderModel {
 
         let provider_for_err = provider.clone();
         let chunk_stream = open_stream(processor, status, byte_stream, move |st, body_text| {
-            let p = provider_for_err.clone();
+            let p = provider_for_err;
             async move { p.invoke_map_error(st, &body_text).await }
         });
 

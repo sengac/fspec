@@ -117,6 +117,15 @@ pub trait FspecService {
     /// been attached, falls back to `std::env::current_dir()` + a `None`
     /// branch so the SessionFooter still paints something sensible.
     async fn get_workspace_info() -> WorkspaceInfo;
+
+    /// RPC-020: search the workspace for files whose path matches the
+    /// case-insensitive substring `prefix` (using the same
+    /// `**/*<prefix>*` glob as the TS @file popup). Returns at most
+    /// `limit` paths sorted by modification time descending. Delegates
+    /// to `codelet_core::file_search::search(cwd, prefix, limit)` where
+    /// `cwd` is the workspace root attached via `with_cwd`. Returns an
+    /// empty Vec when no cwd is attached or when no files match.
+    async fn search_files(prefix: String, limit: u32) -> Vec<String>;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -533,6 +542,20 @@ impl FspecService for FspecServiceImpl {
                     git_branch: None,
                 }
             }
+        }
+    }
+
+    async fn search_files(self, _ctx: Context, prefix: String, limit: u32) -> Vec<String> {
+        // RPC-020: delegate to `codelet_core::file_search::search` when
+        // a workspace cwd is attached. Without a cwd we return an empty
+        // Vec — both transports surface the same "no matches" signal
+        // and the @file popup degrades gracefully.
+        if prefix.is_empty() {
+            return Vec::new();
+        }
+        match self.inner.cwd() {
+            Some(cwd) => codelet_core::file_search::search(cwd, &prefix, limit),
+            None => Vec::new(),
         }
     }
 }

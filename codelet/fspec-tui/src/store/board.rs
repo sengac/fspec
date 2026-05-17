@@ -101,7 +101,7 @@ impl BoardStore {
             let len = self
                 .by_column
                 .get(column)
-                .map(|v| v.len())
+                .map(Vec::len)
                 .unwrap_or(0);
             if len == 0 {
                 self.selected_index_per_column
@@ -109,10 +109,9 @@ impl BoardStore {
                 continue;
             }
             if let Some(prior_id) = prior_selected_id.get(column) {
-                let indices = self
-                    .by_column
-                    .get(column)
-                    .expect("column slot inserted above");
+                let Some(indices) = self.by_column.get(column) else {
+                    continue;
+                };
                 let new_pos = indices
                     .iter()
                     .position(|i| &self.work_units[*i].id == prior_id);
@@ -185,7 +184,7 @@ impl BoardStore {
         let len = self
             .by_column
             .get(column)
-            .map(|v| v.len())
+            .map(Vec::len)
             .unwrap_or(0);
         let clamped = if len == 0 {
             0

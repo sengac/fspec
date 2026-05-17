@@ -49,6 +49,10 @@ tiktoken-rs.workspace = true
 notify.workspace = true
 notify-debouncer-mini.workspace = true
 
+# RPC-020: file search backing for FspecService::search_files.
+ignore = { workspace = true }
+globset = { workspace = true }
+
 [dev-dependencies]
 tempfile.workspace = true
 tokio-test.workspace = true

@@ -132,4 +132,12 @@ impl FspecBackend for EmbeddedFspecBackend {
     async fn get_workspace_info(&self) -> Result<WorkspaceInfo> {
         Ok(self.client.get_workspace_info(context::current()).await?)
     }
+
+    async fn search_files(&self, prefix: String, limit: u32) -> Result<Vec<String>> {
+        // RPC-020: one-line delegate to the shared tarpc method.
+        Ok(self
+            .client
+            .search_files(context::current(), prefix, limit)
+            .await?)
+    }
 }

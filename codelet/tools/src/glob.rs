@@ -162,7 +162,7 @@ impl rig::tool::Tool for GlobTool {
         }
 
         // Sort by modification time (newest first)
-        files_with_mtime.sort_by(|a, b| b.1.cmp(&a.1));
+        files_with_mtime.sort_by_key(|b| std::cmp::Reverse(b.1));
 
         // Format output - strip search path prefix to get relative paths
         let lines: Vec<String> = files_with_mtime

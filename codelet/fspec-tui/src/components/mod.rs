@@ -129,8 +129,8 @@ pub enum Action {
     Reconnecting(u32),
     /// RPC-011 auto-reconnect: the supervisor successfully reconnected
     /// AND re-issued bootstrap (list_work_units + create_session(None)
-    /// + resubscribed three broadcasts). App.dispatch() pops the
-    /// DisconnectDialog from the Compositor.
+    ///   + resubscribed three broadcasts). App.dispatch() pops the
+    ///     DisconnectDialog from the Compositor.
     Reconnected,
     /// RPC-011 CR-1: the user pressed 'r' while DisconnectDialog was
     /// topmost. The supervisor cancels its current backoff sleep, tries
@@ -236,6 +236,21 @@ pub enum Action {
     /// RPC-019: AgentView emits this when the user presses Shift+Right.
     /// Sibling of `SessionPrev` — cycles forward through sessions.
     SessionNext,
+    /// RPC-020: AgentView emits this when the user picks a command
+    /// from the slash palette (Enter on a highlighted row). App::dispatch
+    /// branches per `SlashCommandAction` variant — Help pushes the
+    /// HelpDialog onto the Compositor, Clear resets the scrollback,
+    /// Quit sets `should_quit`, all others surface a `[notice]`
+    /// scrollback line until the future RPC card lands them.
+    SlashCommandSelected(crate::views::agent::slash_commands::SlashCommandAction),
+    /// RPC-020: AgentView emits this after the user types into the
+    /// `@<filter>` token. App::dispatch spawns a tokio task calling
+    /// `backend.search_files(prefix, 20)` and emits
+    /// `Action::FileSearchResults(matches)` on success.
+    SearchFiles(String),
+    /// RPC-020: backend search returned this list of paths — App::dispatch
+    /// forwards into AgentView's file_popup via `set_matches`.
+    FileSearchResults(Vec<String>),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

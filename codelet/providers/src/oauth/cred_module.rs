@@ -109,7 +109,7 @@ pub fn build_cred_module(provider_name: String) -> RhaiModule {
 
     // cred::delete(name) -> ()
     {
-        let bound = provider_name.clone();
+        let bound = provider_name;
         module.set_native_fn(
             "delete",
             move |name: String| -> Result<Dynamic, Box<rhai::EvalAltResult>> {

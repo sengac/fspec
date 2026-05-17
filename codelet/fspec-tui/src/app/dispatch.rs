@@ -41,12 +41,10 @@ impl App {
                 // in real time.
                 self.agent_view_store.apply_chunk_to_token_state(id, chunk);
             }
-            Action::Disconnected => {
+            Action::Disconnected if !self.compositor.contains(DISCONNECT_DIALOG_ID) => {
                 // RPC-011 CR-1 rule [1]: push the DisconnectDialog @
                 // Priority::Critical when the WebSocket drops.
-                if !self.compositor.contains(DISCONNECT_DIALOG_ID) {
-                    self.compositor.push(Box::new(DisconnectDialog::new()));
-                }
+                self.compositor.push(Box::new(DisconnectDialog::new()));
             }
             Action::ManualReconnect => {
                 // RPC-011 rule [4]: route the `r` press through the
@@ -134,7 +132,7 @@ impl App {
                 if let Some(id) = self
                     .agent_view_store
                     .current_work_unit_id()
-                    .map(|s| s.to_string())
+                    .map(std::string::ToString::to_string)
                 {
                     let _ = self
                         .action_tx
@@ -261,6 +259,22 @@ impl App {
                 // so the SessionFooter paints cwd + git branch.
                 self.agent_view_store.set_workspace(Some(info.clone()));
             }
+            Action::SlashCommandSelected(slash_action) => {
+                // RPC-020: route the user's slash command pick — Help /
+                // Clear / Quit are wired live; everything else surfaces
+                // a `[notice]` scrollback line.
+                self.handle_slash_command(*slash_action);
+            }
+            Action::SearchFiles(prefix) => {
+                // RPC-020: kick off a backend file search; the result
+                // is dispatched back via Action::FileSearchResults.
+                self.handle_search_files(prefix.clone());
+            }
+            Action::FileSearchResults(matches) => {
+                // RPC-020: fold the backend's match list into the
+                // currently-open file search popup.
+                self.handle_file_search_results(matches.clone());
+            }
             _ => {}
         }
         // Navigator may need to flip active_view; Compositor may need
@@ -268,28 +282,5 @@ impl App {
         self.navigator.apply_action(&action);
         let _ = self.compositor.update(action);
         self.should_render = true;
-    }
-
-    /// Spawn `backend.send_input` for the AgentViewStore's current
-    /// session. Handles the no-session-manager stub case by surfacing a
-    /// notice line in the scrollback rather than dispatching the call.
-    fn handle_input_submitted(&mut self, text: String) {
-        self.navigator
-            .agent
-            .push_line(format!("user> {text}"));
-        let Some(session) = self.agent_view_store.current_session().cloned() else {
-            return;
-        };
-        if session.value == "rpc-no-session-manager" {
-            self.navigator.agent.push_line(
-                "[notice] no LLM session manager attached — input recorded but \
-                 not sent to a model.",
-            );
-            return;
-        }
-        let backend = self.backend.clone();
-        tokio::spawn(async move {
-            let _ = backend.send_input(session, text).await;
-        });
     }
 }

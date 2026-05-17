@@ -56,14 +56,12 @@ fn test_session_recovers_from_image_dimension_400_error() {
                     UserContent::Image { .. } => {
                         panic!("Image content should have been replaced with text placeholder");
                     }
-                    UserContent::Text(text) => {
+                    UserContent::Text(text) if text.text.contains("[Image removed") => {
                         // If this was the replaced image, it should be a placeholder
-                        if text.text.contains("[Image removed") {
-                            assert!(
-                                text.text.contains("dimension") || text.text.contains("removed"),
-                                "Placeholder should describe the removal"
-                            );
-                        }
+                        assert!(
+                            text.text.contains("dimension") || text.text.contains("removed"),
+                            "Placeholder should describe the removal"
+                        );
                     }
                     _ => {}
                 }

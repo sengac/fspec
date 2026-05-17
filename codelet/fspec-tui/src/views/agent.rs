@@ -1,6 +1,6 @@
 //! AgentView — the always-on container. Owns presentation state for
-//! the input + scrollback widgets; reads everything else from
-//! [`AgentViewStore`].
+//! the input + scrollback widgets + popup overlays; reads everything
+//! else from [`AgentViewStore`].
 //!
 //! Feature files:
 //!   - spec/features/rpc012-board-agent-navigation.feature
@@ -8,29 +8,40 @@
 //!   - spec/features/rpc018-agent-chrome.feature
 //!   - spec/features/rpc019-multiline-input.feature
 //!   - spec/features/rpc019-scrollback.feature
+//!   - spec/features/rpc020-slash-and-file-popups.feature
 //!
 //! 4-row vertical layout: Header(1) / Scrollback(flex) /
-//! Input(visible_rows + 2 border) / Footer(1).
+//! Input(visible_rows + 2 border) / Footer(1). RPC-020 popup overlays
+//! (slash + file search) are painted on top of the base layout.
 
-use crossterm::event::{Event, KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Widget};
 use tokio::sync::mpsc::UnboundedSender;
 
-use crate::components::{Action, EventResult};
+use crate::components::Action;
 use crate::store::AgentViewStore;
 
+pub mod dispatch;
+pub mod file_search_popup;
 pub mod footer;
 pub mod header;
 pub mod multiline_input;
+pub mod popup_body;
+pub mod popups;
 pub mod scrollback;
+pub mod slash_command_popup;
+pub mod slash_commands;
 
+pub use file_search_popup::{FilePopupOutcome, FileSearchPopup};
 pub use footer::SessionFooter;
 pub use header::SessionHeader;
 pub use multiline_input::{InputEventOutcome, MultiLineInput};
+pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
 pub use scrollback::{ScrollState, ScrollbackList};
+pub use slash_command_popup::{PopupOutcome, SlashCommandPopup};
+pub use slash_commands::{SlashCommand, SlashCommandAction, SLASH_COMMANDS};
 
 /// RPC-013 placeholder footer hints — kept here so the RPC-013
 /// source-shape invariant continues to hold.
@@ -55,6 +66,10 @@ pub struct AgentView {
     pub action_tx: Option<UnboundedSender<Action>>,
     pub next_seq: u64,
     pub last_input_area: Option<Rect>,
+    /// RPC-020: slash command palette (Some when active).
+    pub slash_popup: Option<SlashCommandPopup>,
+    /// RPC-020: `@file` search popup (Some when active).
+    pub file_popup: Option<FileSearchPopup>,
 }
 
 impl Default for AgentView {
@@ -65,6 +80,8 @@ impl Default for AgentView {
             action_tx: None,
             next_seq: 0,
             last_input_area: None,
+            slash_popup: None,
+            file_popup: None,
         }
     }
 }
@@ -102,7 +119,16 @@ impl AgentView {
         });
     }
 
-    fn emit(&self, action: Action) {
+    /// RPC-020: clear scrollback + input + popups (used by /clear).
+    pub fn reset_scrollback(&mut self) {
+        self.scrollback.reset();
+        self.next_seq = 0;
+        self.input.reset();
+        self.slash_popup = None;
+        self.file_popup = None;
+    }
+
+    pub(crate) fn emit(&self, action: Action) {
         if let Some(tx) = &self.action_tx {
             let _ = tx.send(action);
         }
@@ -128,70 +154,16 @@ impl AgentView {
         self.scrollback.push(RenderedChunk { seq, lines });
     }
 
-    fn shift_arrow_to_action(code: KeyCode) -> Option<Action> {
-        match code {
-            KeyCode::Up => Some(Action::HistoryPrev),
-            KeyCode::Down => Some(Action::HistoryNext),
-            KeyCode::Left => Some(Action::SessionPrev),
-            KeyCode::Right => Some(Action::SessionNext),
-            _ => None,
+    /// RPC-020: forward file-search results into the open popup.
+    pub fn set_file_search_results(&mut self, matches: Vec<String>) {
+        if let Some(p) = self.file_popup.as_mut() {
+            p.set_matches(matches);
         }
     }
 
-    pub fn handle_event(&mut self, event: &Event) -> EventResult {
-        if let Event::Key(key) = event {
-            if key.code == KeyCode::Esc && key.modifiers.is_empty() {
-                self.emit(Action::BackToBoard);
-                return EventResult::consumed();
-            }
-            if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
-                self.emit(Action::Interrupt);
-                return EventResult::consumed();
-            }
-            if key.code == KeyCode::PageUp {
-                self.scrollback.scroll_up(self.scrollback_viewport_hint());
-                return EventResult::consumed();
-            }
-            if key.code == KeyCode::PageDown || key.code == KeyCode::End {
-                self.scrollback.scroll_down(self.scrollback_viewport_hint());
-                return EventResult::consumed();
-            }
-            if key.modifiers.contains(KeyModifiers::SHIFT) {
-                if let Some(action) = Self::shift_arrow_to_action(key.code) {
-                    self.emit(action);
-                    return EventResult::consumed();
-                }
-            }
-        }
-        match self.input.handle_event(event) {
-            InputEventOutcome::Submitted(value) => {
-                if value.is_empty() {
-                    return EventResult::ignored();
-                }
-                self.emit(Action::InputSubmitted(value));
-                EventResult::consumed()
-            }
-            InputEventOutcome::Continued => EventResult::consumed(),
-            InputEventOutcome::Ignored => EventResult::ignored(),
-        }
-    }
-
-    fn scrollback_viewport_hint(&self) -> usize {
-        // ScrollbackList caches its viewport height each render — for
-        // pre-render keystrokes fall back to a sane 10-row default
-        // (the layout reserves ≥ 1 flex row; 10 keeps tests stable).
-        10
-    }
-
-    /// RPC-019 layout. Constraint::Length(N) on the input row tracks
-    /// the textarea's `visible_rows()` so the input grows up to its
-    /// configured cap (default 6) as the user types.
-    pub fn render_with_store(
-        &mut self,
-        area: Rect,
-        buf: &mut Buffer,
-        store: &AgentViewStore,
-    ) {
+    /// RPC-019 layout. RPC-020 adds popup overlay paint after the base
+    /// widgets so the slash + file search popups float above the input.
+    pub fn render_with_store(&mut self, area: Rect, buf: &mut Buffer, store: &AgentViewStore) {
         let input_height = self.input.visible_rows().saturating_add(2);
         let split = Layout::default()
             .direction(Direction::Vertical)
@@ -202,10 +174,8 @@ impl AgentView {
                 Constraint::Length(1),
             ])
             .split(area);
-        let header_area = split[0];
-        let scrollback_area = split[1];
-        let input_area = split[2];
-        let footer_area = split[3];
+        let (header_area, scrollback_area, input_area, footer_area) =
+            (split[0], split[1], split[2], split[3]);
         self.last_input_area = Some(input_area);
 
         let sid = store.current_session();
@@ -216,13 +186,8 @@ impl AgentView {
         let tokens = sid
             .and_then(|s| store.token_state_for(s).copied())
             .unwrap_or_default();
-        SessionHeader {
-            session_index: store.session_index(),
-            model,
-            thinking,
-            tokens,
-        }
-        .render(header_area, buf);
+        SessionHeader { session_index: store.session_index(), model, thinking, tokens }
+            .render(header_area, buf);
 
         let title = match sid {
             Some(s) => format!(" Agent — {} ", s.value),
@@ -239,9 +204,14 @@ impl AgentView {
         self.input
             .render_with_prompt(inner_input, buf, INPUT_PLACEHOLDER_HINT);
 
-        SessionFooter {
-            workspace: store.workspace(),
+        SessionFooter { workspace: store.workspace() }.render(footer_area, buf);
+
+        // RPC-020 overlay paint — slash popup wins over file popup if
+        // both are somehow live (the sync logic prevents this).
+        if let Some(p) = self.slash_popup.as_ref() {
+            p.render(area, buf);
+        } else if let Some(p) = self.file_popup.as_ref() {
+            p.render(area, buf);
         }
-        .render(footer_area, buf);
     }
 }

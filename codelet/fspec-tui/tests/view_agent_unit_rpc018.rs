@@ -96,7 +96,7 @@ async fn header_paints_model_badges_and_thinking_level_when_session_has_model_in
         },
     );
     // @step And thinking_level_by_session["s-1"] is ThinkingLevel::High
-    store.set_thinking_level(sid.clone(), ThinkingLevel::High);
+    store.set_thinking_level(sid, ThinkingLevel::High);
 
     let mut view = fresh_view();
     // @step When the App renders AgentView against an 100x20 TestBackend
@@ -201,7 +201,7 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
     store.set_current_session(Some(sid.clone()));
     store.set_session_index(1, 1);
     store.set_model_info(
-        sid.clone(),
+        sid,
         ModelInfo {
             display_name: "demo".to_string(),
             supports_reasoning: false,

@@ -600,7 +600,7 @@ pub async fn ast_grep_replace(
     }
 
     // Apply replacements in reverse order to maintain byte offsets
-    replacements.sort_by(|a, b| b.0.cmp(&a.0));
+    replacements.sort_by_key(|b| std::cmp::Reverse(b.0));
     let mut new_source = source_content.clone();
     for (start, end, repl) in &replacements {
         new_source.replace_range(*start..*end, repl);

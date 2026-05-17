@@ -74,7 +74,7 @@ fn read_backlog_ids(workspace: &Path) -> Vec<String> {
     v.get("states")
         .and_then(|s| s.get("backlog"))
         .and_then(|c| c.as_array())
-        .map(|arr| arr.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect())
+        .map(|arr| arr.iter().filter_map(|x| x.as_str().map(std::string::ToString::to_string)).collect())
         .unwrap_or_default()
 }
 
