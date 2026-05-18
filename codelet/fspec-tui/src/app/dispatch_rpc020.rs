@@ -38,18 +38,14 @@ impl App {
                 self.should_quit = true;
             }
             SlashCommandAction::Resume => {
-                // RPC-026: route into the real resume-picker helper
-                // (which is the Action::OpenResumePicker arm in
-                // app/dispatch.rs). Direct invocation rather than
-                // self.action_tx.send(Action::OpenResumePicker) so the
-                // popup state lands in this dispatch tick.
-                self.handle_open_resume_picker();
+                // RPC-026: route into the resume mode-view helper. Direct
+                // invocation rather than self.action_tx.send(...) so the
+                // view state lands in this dispatch tick.
+                self.handle_open_resume_view();
             }
             SlashCommandAction::Search => {
-                // RPC-026: route into the real search-palette helper
-                // (Action::OpenSearchPalette arm). Same direct-call
-                // rationale as Resume.
-                self.handle_open_search_palette();
+                // RPC-026: route into the search mode-view helper.
+                self.handle_open_search_view();
             }
             other => {
                 let name = other.name();

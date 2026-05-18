@@ -180,6 +180,9 @@ impl FspecBackend for HistoryMockBackend {
     async fn persistence_search_history(&self, _query: String) -> Result<Vec<HistoryMatch>> {
         Ok(Vec::new())
     }
+    async fn persistence_delete_session(&self, _id: SessionId) -> Result<()> {
+        Ok(())
+    }
 }
 
 fn fresh_app() -> (App, Arc<HistoryMockBackend>) {

@@ -381,6 +381,20 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    async fn persistence_delete_session(&self, id: SessionId) -> Result<()> {
+        // RPC-026: route through the shared tarpc method, returning
+        // Disconnected when the supervisor has dropped the client slot.
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .persistence_delete_session(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     /// RPC-011 rule [4]: notify the supervisor task to cancel its
     /// current backoff sleep, attempt connect immediately, and reset
     /// the backoff schedule on its next failure. Idempotent; safe to

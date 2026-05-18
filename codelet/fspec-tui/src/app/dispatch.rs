@@ -272,26 +272,21 @@ impl App {
                 // RPC-025: apply a freshly loaded history snapshot.
                 self.handle_history_snapshot_loaded(session.clone(), snapshot.clone());
             }
-            // RPC-026: /resume + /search popup wiring. Each arm routes
-            // through a small helper in app/dispatch_rpc026.rs so this
-            // orchestrator stays under the 300-LoC ceiling.
-            Action::OpenResumePicker => self.handle_open_resume_picker(),
-            Action::SessionListLoaded(sessions) => {
-                self.handle_session_list_loaded(sessions.clone());
-            }
-            Action::AttachToSession(session) => {
-                self.handle_attach_to_session(session.clone());
-            }
-            Action::OpenSearchPalette => self.handle_open_search_palette(),
-            Action::SearchHistory(query) => self.handle_search_history(query.clone()),
-            Action::HistorySearchResults(matches) => {
-                self.handle_history_search_results(matches.clone());
-            }
-            Action::InsertIntoInput(text) => self.handle_insert_into_input(text.clone()),
+            // RPC-026: /resume + /search mode-view wiring. Each arm
+            // routes through a small helper in app/dispatch_rpc026.rs.
+            Action::OpenResumeView => self.handle_open_resume_view(),
+            Action::CloseResumeView => self.handle_close_resume_view(),
+            Action::OpenSearchView => self.handle_open_search_view(),
+            Action::CloseSearchView => self.handle_close_search_view(),
+            Action::SessionListLoaded(s) => self.handle_session_list_loaded(s.clone()),
+            Action::AttachToSession(s) => self.handle_attach_to_session(s.clone()),
+            Action::SearchHistory(q) => self.handle_search_history(q.clone()),
+            Action::HistorySearchResults(m) => self.handle_history_search_results(m.clone()),
+            Action::InsertIntoInput(t) => self.handle_insert_into_input(t.clone()),
+            Action::RequestDeleteSession(id) => self.handle_request_delete_session(id.clone()),
+            Action::ConfirmDeleteSession(id) => self.handle_confirm_delete_session(id.clone()),
             _ => {}
         }
-        // Navigator may need to flip active_view; Compositor may need
-        // to react to lifecycle actions. Both always see every Action.
         self.navigator.apply_action(&action);
         let _ = self.compositor.update(action);
         self.should_render = true;

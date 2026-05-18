@@ -268,36 +268,52 @@ pub enum Action {
     /// value with `snapshot[0]`. Dropped (no-op) when the snapshot is
     /// empty so HistoryPrev with no history leaves state untouched.
     HistorySnapshotLoaded(codelet_rpc_types::SessionId, Vec<String>),
-    /// RPC-026: open the /resume session picker. App::dispatch installs
-    /// AgentView.resume_popup AND spawns `backend.list_sessions()`.
-    OpenResumePicker,
-    /// RPC-026: open the /search history palette. App::dispatch
-    /// installs AgentView.search_popup with an empty query (no
-    /// backend call yet — that fires on the first SearchHistory).
-    OpenSearchPalette,
+    /// RPC-026: open the /resume session picker mode view. App::dispatch
+    /// installs AgentView.resume_view AND spawns `backend.list_sessions()`.
+    OpenResumeView,
+    /// RPC-026: open the /search history palette mode view.
+    /// App::dispatch installs AgentView.search_view with an empty query
+    /// (no backend call yet — that fires on the first SearchHistory).
+    OpenSearchView,
+    /// RPC-026: drop the resume view without changing focus. Emitted by
+    /// the resume view's Esc handler (Dismiss outcome).
+    CloseResumeView,
+    /// RPC-026: drop the search view without inserting anything.
+    /// Emitted by the search view's Esc handler (Dismiss outcome).
+    CloseSearchView,
     /// RPC-026: a spawned `backend.list_sessions()` task resolved.
-    /// App::dispatch folds the result into the open resume_popup via
-    /// `set_sessions`. No-op when resume_popup is None.
+    /// App::dispatch folds the result into the open resume_view via
+    /// `set_sessions`. No-op when resume_view is None.
     SessionListLoaded(Vec<codelet_rpc_types::SessionInfo>),
-    /// RPC-026: emitted by the resume picker on Enter. App::dispatch
+    /// RPC-026: emitted by the resume view on Enter. App::dispatch
     /// either moves `current_session_index` to the matching slot in
     /// AgentViewStore.open_sessions OR appends a fresh
     /// SessionContext::new(id) if the session is not yet open. Also
     /// publishes to active_session_tx and runs refresh_session_chrome.
     AttachToSession(codelet_rpc_types::SessionId),
-    /// RPC-026: emitted by the search palette as the user types.
+    /// RPC-026: emitted by the search view as the user types.
     /// App::dispatch spawns `backend.persistence_search_history(q)` and
     /// dispatches Action::HistorySearchResults on success.
     SearchHistory(String),
     /// RPC-026: a spawned `backend.persistence_search_history` task
     /// resolved. App::dispatch folds the result into the open
-    /// search_popup via `set_matches`. No-op when search_popup is None.
+    /// search_view via `set_matches`. No-op when search_view is None.
     HistorySearchResults(Vec<codelet_rpc_types::HistoryMatch>),
-    /// RPC-026: emitted by the search palette on Enter with the
+    /// RPC-026: emitted by the search view on Enter with the
     /// highlighted match's text. App::dispatch replaces the
-    /// MultiLineInput value with `text` AND drops the search_popup.
+    /// MultiLineInput value with `text` AND drops the search_view.
     /// Does NOT auto-submit — the user may edit before pressing Enter.
     InsertIntoInput(String),
+    /// RPC-026: emitted by the resume view when the user presses D on
+    /// a row. App::dispatch surfaces a ConfirmDialog inside the
+    /// resume_view — no backend call fires yet.
+    RequestDeleteSession(codelet_rpc_types::SessionId),
+    /// RPC-026: emitted by the ConfirmDialog when the user activates
+    /// the primary "Delete" button. App::dispatch spawns
+    /// `backend.persistence_delete_session(id)` and follows up with a
+    /// fresh `backend.list_sessions()` → Action::SessionListLoaded
+    /// so the resume view repaints without the deleted session.
+    ConfirmDeleteSession(codelet_rpc_types::SessionId),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

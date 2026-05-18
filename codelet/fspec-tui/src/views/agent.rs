@@ -11,6 +11,7 @@
 //!   - spec/features/rpc019-scrollback.feature
 //!   - spec/features/rpc020-slash-and-file-popups.feature
 //!   - spec/features/rpc024-multi-session-cycling.feature
+//!   - spec/features/rpc026-resume-and-search-mode-views.feature
 //!
 //! 4-row vertical layout: Header(1) / Scrollback(flex) /
 //! Input(visible_rows + 2 border) / Footer(1). RPC-020 popup overlays
@@ -18,6 +19,10 @@
 //! RPC-024 moved scrollback ownership onto SessionContext — AgentView
 //! no longer owns a `scrollback` field; the render path borrows the
 //! per-session ScrollbackList from `AgentViewStore`.
+//!
+//! RPC-026: when `resume_view` or `search_view` is `Some`, the render
+//! path EARLY-RETURNS — those mode views paint into the entire area
+//! Rect after Clear, hiding the normal layout entirely.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
@@ -27,6 +32,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use crate::components::Action;
 use crate::store::AgentViewStore;
 
+pub mod confirm_dialog;
 pub mod dispatch;
 pub mod file_search_popup;
 pub mod footer;
@@ -34,20 +40,21 @@ pub mod header;
 pub mod multiline_input;
 pub mod popup_body;
 pub mod popups;
-pub mod resume_picker;
+pub mod resume_session_view;
 pub mod scrollback;
-pub mod search_palette;
+pub mod search_history_view;
 pub mod slash_command_popup;
 pub mod slash_commands;
 
+pub use confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
 pub use file_search_popup::{FilePopupOutcome, FileSearchPopup};
 pub use footer::SessionFooter;
 pub use header::SessionHeader;
 pub use multiline_input::{InputEventOutcome, MultiLineInput};
 pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
-pub use resume_picker::{ResumePicker, ResumePickerOutcome};
+pub use resume_session_view::{ResumeSessionView, ResumeSessionViewOutcome};
 pub use scrollback::{ScrollState, ScrollbackList};
-pub use search_palette::{SearchPalette, SearchPaletteOutcome};
+pub use search_history_view::{SearchHistoryView, SearchHistoryViewOutcome};
 pub use slash_command_popup::{PopupOutcome, SlashCommandPopup};
 pub use slash_commands::{SlashCommand, SlashCommandAction, SLASH_COMMANDS};
 
@@ -84,10 +91,13 @@ pub struct AgentView {
     pub slash_popup: Option<SlashCommandPopup>,
     /// RPC-020: `@file` search popup (Some when active).
     pub file_popup: Option<FileSearchPopup>,
-    /// RPC-026: /resume session picker (Some when active).
-    pub resume_popup: Option<ResumePicker>,
-    /// RPC-026: /search history palette (Some when active).
-    pub search_popup: Option<SearchPalette>,
+    /// RPC-026: /resume full-screen mode view (Some when active).
+    pub resume_view: Option<ResumeSessionView>,
+    /// RPC-026: /search full-screen mode view (Some when active).
+    pub search_view: Option<SearchHistoryView>,
+    /// RPC-026: most-recent render area; used by dispatch.rs to size
+    /// `handle_key`'s `visible_rows` argument for the mode views.
+    pub(crate) last_render_area: Option<Rect>,
 }
 
 impl AgentView {
@@ -165,15 +175,25 @@ impl AgentView {
         }
     }
 
-    /// RPC-019 layout. RPC-020 adds popup overlay paint after the base
-    /// widgets so the slash + file search popups float above the input.
-    /// RPC-024 reads the scrollback from the focused SessionContext.
+    /// RPC-019 layout. RPC-026: when `resume_view` or `search_view`
+    /// is `Some`, EARLY-RETURN after painting the mode view into the
+    /// entire `area`. Otherwise paints the normal header/scrollback/
+    /// input/footer layout + the slash / file popup overlays.
     pub fn render_with_store(
         &mut self,
         area: Rect,
         buf: &mut Buffer,
         store: &mut AgentViewStore,
     ) {
+        self.last_render_area = Some(area);
+        if let Some(v) = self.resume_view.as_ref() {
+            v.render(area, buf);
+            return;
+        }
+        if let Some(v) = self.search_view.as_ref() {
+            v.render(area, buf);
+            return;
+        }
         let input_height = self.input.visible_rows().saturating_add(2);
         let split = Layout::default()
             .direction(Direction::Vertical)
@@ -221,18 +241,9 @@ impl AgentView {
 
         SessionFooter { workspace: store.workspace() }.render(footer_area, buf);
 
-        // RPC-020/RPC-026 overlay paint — resume / search popups paint
-        // on top of slash / file when present. The dispatch routing
-        // enforces mutual exclusivity; this paint order is the
-        // belt-and-braces backstop.
         if let Some(p) = self.slash_popup.as_ref() {
             p.render(area, buf);
         } else if let Some(p) = self.file_popup.as_ref() {
-            p.render(area, buf);
-        }
-        if let Some(p) = self.resume_popup.as_ref() {
-            p.render(area, buf);
-        } else if let Some(p) = self.search_popup.as_ref() {
             p.render(area, buf);
         }
     }

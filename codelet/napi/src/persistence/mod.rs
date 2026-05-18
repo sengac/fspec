@@ -359,13 +359,26 @@ pub fn switch_session(id: Uuid) -> Result<SessionManifest, String> {
 }
 
 /// Delete a session
+///
+/// RPC-026: now delegates to `codelet_core::persistence::delete_session`
+/// for the on-disk file removal so codelet_rpc can call into the
+/// shared store without re-introducing a `rpc → napi` dependency. The
+/// in-memory cache + last_session bookkeeping still lives on the NAPI
+/// `SessionStore`, so we additionally route through it to preserve
+/// the byte-identical TS surface.
 pub fn delete_session(id: Uuid) -> Result<(), String> {
     init_session_store()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     store
         .as_mut()
         .ok_or("Session store not initialized")?
-        .delete(id)
+        .delete(id)?;
+    drop(store);
+    // RPC-026: defensive double-delete via the lifted helper — the
+    // NAPI SessionStore::delete already removed the file, this call
+    // is idempotent and ensures parity with callers that go straight
+    // through codelet_core (e.g. FspecServiceImpl).
+    codelet_core::persistence::delete_session(id)
 }
 
 /// Rename a session

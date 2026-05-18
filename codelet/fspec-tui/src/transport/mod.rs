@@ -155,6 +155,12 @@ pub trait FspecBackend: Send + Sync {
     /// "<text>  <relative time>" lines without a chrono dep.
     async fn persistence_search_history(&self, query: String) -> Result<Vec<HistoryMatch>>;
 
+    /// RPC-026: delete an on-disk session manifest by id. Both
+    /// transports forward to `FspecService::persistence_delete_session`
+    /// which in turn calls `codelet_core::persistence::delete_session`.
+    /// Idempotent — deleting an unknown id silently succeeds.
+    async fn persistence_delete_session(&self, id: SessionId) -> Result<()>;
+
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff
     /// sleep). Wired to the App's `r`-press handler from the

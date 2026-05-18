@@ -241,6 +241,19 @@ pub struct MockBackend {
     /// `search_files`. The mock filters by case-insensitive substring
     /// of `prefix` and caps at `limit`.
     file_search_results: Mutex<Vec<String>>,
+    /// RPC-026: per-call counter for `persistence_delete_session`.
+    delete_session_calls: AtomicUsize,
+    /// RPC-026: capture of the last id passed to
+    /// `persistence_delete_session`.
+    last_deleted_session: Mutex<Option<SessionId>>,
+    /// RPC-026: scripted history-search results returned by
+    /// `persistence_search_history`. Indexed by query string.
+    history_search_results: Mutex<Vec<codelet_rpc_types::HistoryMatch>>,
+    /// RPC-026: per-call counter for `persistence_search_history`.
+    search_history_calls: AtomicUsize,
+    /// RPC-026: capture of the last query passed to
+    /// `persistence_search_history`.
+    last_history_query: Mutex<Option<String>>,
 }
 
 impl Default for MockBackend {
@@ -272,6 +285,11 @@ impl Default for MockBackend {
             workspace_info: Mutex::new(WorkspaceInfo::default()),
             workspace_info_error: Mutex::new(None),
             file_search_results: Mutex::new(Vec::new()),
+            delete_session_calls: AtomicUsize::new(0),
+            last_deleted_session: Mutex::new(None),
+            history_search_results: Mutex::new(Vec::new()),
+            search_history_calls: AtomicUsize::new(0),
+            last_history_query: Mutex::new(None),
         }
     }
 }
@@ -382,6 +400,48 @@ impl MockBackend {
     /// filters this Vec case-insensitively against its `prefix` arg.
     pub fn set_file_search_results(&self, paths: Vec<String>) {
         *self.file_search_results.lock().expect("MockBackend mutex") = paths;
+    }
+
+    /// RPC-026: how many times `persistence_delete_session` was awaited.
+    pub fn delete_session_calls(&self) -> usize {
+        self.delete_session_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-026: the last id passed to `persistence_delete_session`.
+    pub fn last_deleted_session(&self) -> Option<SessionId> {
+        self.last_deleted_session
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-026: preload the result list returned by
+    /// `persistence_search_history`. The same Vec is returned for
+    /// every query — tests script the desired outcome up front.
+    pub fn set_history_search_results(
+        &self,
+        results: Vec<codelet_rpc_types::HistoryMatch>,
+    ) {
+        *self.history_search_results.lock().expect("MockBackend mutex") = results;
+    }
+
+    /// RPC-026: how many times `persistence_search_history` was awaited.
+    pub fn search_history_calls(&self) -> usize {
+        self.search_history_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-026: the last query passed to `persistence_search_history`.
+    pub fn last_history_query(&self) -> Option<String> {
+        self.last_history_query
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-026: seed the in-memory `sessions` list returned by
+    /// `list_sessions`. Tests use this to script the resume picker.
+    pub fn seed_sessions(&self, sessions: Vec<SessionInfo>) {
+        *self.sessions.lock().expect("MockBackend mutex") = sessions;
     }
 }
 
@@ -515,9 +575,19 @@ impl FspecBackend for MockBackend {
 
     async fn persistence_search_history(
         &self,
-        _query: String,
+        query: String,
     ) -> Result<Vec<codelet_rpc_types::HistoryMatch>> {
-        Ok(Vec::new())
+        self.search_history_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_history_query.lock().expect("MockBackend mutex") = Some(query);
+        Ok(self.history_search_results.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn persistence_delete_session(&self, id: SessionId) -> Result<()> {
+        self.delete_session_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_deleted_session.lock().expect("MockBackend mutex") = Some(id.clone());
+        let mut sessions = self.sessions.lock().expect("MockBackend mutex");
+        sessions.retain(|s| s.id != id.value);
+        Ok(())
     }
 }
 

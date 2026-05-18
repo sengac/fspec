@@ -166,4 +166,12 @@ impl FspecBackend for EmbeddedFspecBackend {
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
+
+    async fn persistence_delete_session(&self, id: SessionId) -> Result<()> {
+        // RPC-026: one-line delegate to the shared tarpc method.
+        self.client
+            .persistence_delete_session(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
 }

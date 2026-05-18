@@ -145,6 +145,14 @@ pub trait FspecService {
     /// `HistoryMatch` values whose `timestamp_iso` field is the
     /// RFC3339-formatted entry timestamp.
     async fn persistence_search_history(query: String) -> Result<Vec<HistoryMatch>, String>;
+
+    /// RPC-026: delete an on-disk session manifest. Delegates to
+    /// `codelet_core::persistence::delete_session` after parsing the
+    /// `SessionId.value` field as a Uuid. Returns `Err(String)` only
+    /// on I/O failure or parse failure; deleting an unknown id is
+    /// idempotent (silently succeeds, matching the underlying core
+    /// helper's contract).
+    async fn persistence_delete_session(session: SessionId) -> Result<(), String>;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -637,6 +645,22 @@ impl FspecService for FspecServiceImpl {
                     .map(codelet_core::persistence::HistoryEntry::to_history_match)
                     .collect()
             })
+    }
+
+    async fn persistence_delete_session(
+        self,
+        _ctx: Context,
+        session: SessionId,
+    ) -> Result<(), String> {
+        // RPC-026: parse the SessionId string as a Uuid and delegate to
+        // the lifted core helper. Non-UUID SessionIds fall back to
+        // Uuid::nil() — same parse-or-nil pattern as
+        // persistence_add_history — so synthetic test ids (e.g.
+        // "s-1") still round-trip through the call without panicking
+        // at the boundary. The core helper is idempotent for unknown
+        // ids so the worst case is a silent no-op.
+        let uuid = uuid::Uuid::parse_str(&session.value).unwrap_or_else(|_| uuid::Uuid::nil());
+        codelet_core::persistence::delete_session(uuid)
     }
 }
 

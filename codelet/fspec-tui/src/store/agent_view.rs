@@ -142,6 +142,23 @@ impl AgentViewStore {
         }
     }
 
+    /// RPC-026: remove `id` from `open_sessions` and clamp index.
+    pub fn remove_session_if_open(&mut self, id: &SessionId) -> bool {
+        let Some(idx) = self.open_sessions.iter().position(|c| &c.id == id) else {
+            return false;
+        };
+        self.open_sessions.remove(idx);
+        let len = self.open_sessions.len();
+        if len == 0 {
+            self.current_session_index = 0;
+        } else if self.current_session_index >= len {
+            self.current_session_index = len - 1;
+        } else if idx < self.current_session_index {
+            self.current_session_index -= 1;
+        }
+        true
+    }
+
     pub fn current_session(&self) -> Option<&SessionId> {
         self.current_session_context().map(|c| &c.id)
     }
@@ -277,7 +294,6 @@ impl AgentViewStore {
         self.cached_history_snapshot.remove(session);
     }
 }
-
 // Inline AgentViewStore unit tests were removed in RPC-024 — the
 // equivalent coverage now lives in
 // `tests/store_agent_view_multisession_rpc024.rs`.

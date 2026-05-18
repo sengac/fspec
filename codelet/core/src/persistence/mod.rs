@@ -11,5 +11,7 @@
 //! in codelet/napi and is not yet lifted.
 
 pub mod history;
+pub mod sessions;
 
 pub use history::{add, get, search, HistoryEntry, HistoryStore, PastedContent};
+pub use sessions::delete_session;
