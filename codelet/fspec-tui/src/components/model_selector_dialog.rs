@@ -9,19 +9,21 @@
 //! cyan/black inverse highlight. Capability badges [R]/[V]/[Nk] are
 //! rendered DIM on unselected rows so they fade against the model id.
 
-use crossterm::event::{Event, KeyCode};
+use std::cell::Cell;
+
+use crossterm::event::{Event, KeyCode, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::{Modifier, Style};
-use ratatui::text::Span;
 use tokio::sync::mpsc::UnboundedSender;
 
 use codelet_rpc_types::{ProviderInfo, SessionId};
 
-use super::dialog_theme::{
-    render_dialog, Accent, DialogRow, FspecDialog, MARKER_SELECTED, MARKER_UNSELECTED,
+use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use super::model_selector_dialog_rows::{
+    build_dialog_rows, build_rows, first_selectable, last_selectable, move_down_skipping_headers,
+    move_up_skipping_headers, page_step_selectable, ModelSelectorRow,
 };
-use super::model_selector_dialog_rows::{build_rows, ModelSelectorRow};
+use super::scroll_viewport::ensure_visible;
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Canonical id used by `Compositor::remove` when the dialog is
@@ -35,6 +37,8 @@ pub struct ModelSelectorDialog {
     session_id: SessionId,
     rows: Vec<ModelSelectorRow>,
     selected_index: usize,
+    scroll_offset: usize,
+    last_visible_rows: Cell<usize>,
     action_tx: Option<UnboundedSender<Action>>,
     pending_action: Option<Action>,
 }
@@ -51,6 +55,8 @@ impl ModelSelectorDialog {
             session_id,
             rows,
             selected_index,
+            scroll_offset: 0,
+            last_visible_rows: Cell::new(12),
             action_tx: None,
             pending_action: None,
         }
@@ -68,6 +74,36 @@ impl ModelSelectorDialog {
             .iter()
             .position(|r| r.selectable)
             .unwrap_or(0);
+        self.scroll_offset = 0;
+    }
+
+    pub fn scroll_offset(&self) -> usize {
+        self.scroll_offset
+    }
+
+    fn visible_rows(&self) -> usize {
+        self.last_visible_rows.get().max(1)
+    }
+
+    fn ensure_selection_visible(&mut self) {
+        let vr = self.visible_rows();
+        let total = self.rows.len();
+        ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
+    }
+
+    fn page_step(&mut self, delta: i32) {
+        self.selected_index = page_step_selectable(&self.rows, self.selected_index, delta);
+        self.ensure_selection_visible();
+    }
+
+    fn go_home(&mut self) {
+        self.selected_index = first_selectable(&self.rows);
+        self.scroll_offset = 0;
+    }
+
+    fn go_end(&mut self) {
+        self.selected_index = last_selectable(&self.rows);
+        self.ensure_selection_visible();
     }
 
     pub fn row_count(&self) -> usize {
@@ -97,71 +133,26 @@ impl ModelSelectorDialog {
     }
 
     fn move_up(&mut self) {
-        if self.rows.is_empty() {
-            return;
-        }
-        let len = self.rows.len();
-        let mut next = self.selected_index;
-        for _ in 0..len {
-            next = if next == 0 { len - 1 } else { next - 1 };
-            if self.rows[next].selectable {
-                self.selected_index = next;
-                return;
-            }
+        if let Some(next) = move_up_skipping_headers(&self.rows, self.selected_index) {
+            self.selected_index = next;
+            self.ensure_selection_visible();
         }
     }
 
     fn move_down(&mut self) {
-        if self.rows.is_empty() {
-            return;
-        }
-        let len = self.rows.len();
-        let mut next = self.selected_index;
-        for _ in 0..len {
-            next = (next + 1) % len;
-            if self.rows[next].selectable {
-                self.selected_index = next;
-                return;
-            }
+        if let Some(next) = move_down_skipping_headers(&self.rows, self.selected_index) {
+            self.selected_index = next;
+            self.ensure_selection_visible();
         }
     }
 
     fn build_dialog_rows(&self) -> Vec<DialogRow> {
-        if self.rows.is_empty() {
-            return vec![DialogRow {
-                spans: vec![Span::raw("No providers available".to_string())],
-                selectable: false,
-                selected: false,
-            }];
-        }
-        self.rows
-            .iter()
-            .enumerate()
-            .map(|(i, row)| {
-                let is_selected = row.selectable && i == self.selected_index;
-                let mut spans = Vec::with_capacity(3);
-                let marker = if is_selected { MARKER_SELECTED } else { MARKER_UNSELECTED };
-                if row.selectable {
-                    spans.push(Span::raw(marker.to_string()));
-                    spans.push(Span::raw(row.label.clone()));
-                    if !row.badges.is_empty() {
-                        let badge_style = if is_selected {
-                            Style::default()
-                        } else {
-                            Style::default().add_modifier(Modifier::DIM)
-                        };
-                        spans.push(Span::styled(row.badges.clone(), badge_style));
-                    }
-                } else {
-                    spans.push(Span::raw(row.label.clone()));
-                }
-                DialogRow {
-                    spans,
-                    selectable: row.selectable,
-                    selected: is_selected,
-                }
-            })
-            .collect()
+        build_dialog_rows(
+            &self.rows,
+            self.selected_index,
+            self.scroll_offset,
+            self.visible_rows(),
+        )
     }
 }
 
@@ -192,6 +183,24 @@ impl Component for ModelSelectorDialog {
                     self.move_down();
                     return EventResult::consumed();
                 }
+                KeyCode::PageUp => {
+                    let vr = self.visible_rows() as i32;
+                    self.page_step(-vr);
+                    return EventResult::consumed();
+                }
+                KeyCode::PageDown => {
+                    let vr = self.visible_rows() as i32;
+                    self.page_step(vr);
+                    return EventResult::consumed();
+                }
+                KeyCode::Home => {
+                    self.go_home();
+                    return EventResult::consumed();
+                }
+                KeyCode::End => {
+                    self.go_end();
+                    return EventResult::consumed();
+                }
                 KeyCode::Enter => {
                     if let Some(row) = self.rows.get(self.selected_index) {
                         if row.selectable {
@@ -217,10 +226,28 @@ impl Component for ModelSelectorDialog {
                 _ => {}
             }
         }
+        // RPC-028: mouse-wheel navigates the selectable rows.
+        if let Event::Mouse(m) = event {
+            match m.kind {
+                MouseEventKind::ScrollUp => {
+                    self.move_up();
+                    return EventResult::consumed();
+                }
+                MouseEventKind::ScrollDown => {
+                    self.move_down();
+                    return EventResult::consumed();
+                }
+                _ => {}
+            }
+        }
         EventResult::ignored()
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
+        // Body chrome: border + padding + title + gaps + 2-line footer.
+        let vr = (area.height as usize).saturating_sub(9).clamp(1, 24);
+        self.last_visible_rows.set(vr);
+        self.ensure_selection_visible();
         let dialog = FspecDialog {
             accent: Accent::Cyan,
             title: "Select Model",

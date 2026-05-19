@@ -21,13 +21,16 @@
 //! marker, inverse cyan/black selection highlight, and dim centered
 //! footer match the TypeScript Ink reference exactly.
 
-use crossterm::event::{KeyCode, KeyModifiers};
+use std::cell::Cell;
+
+use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::text::Span;
 
-use crate::components::dialog_theme::{
-    render_dialog, Accent, DialogRow, FspecDialog, MARKER_SELECTED, MARKER_UNSELECTED,
+use super::file_search_popup_rows::build_rows as build_dialog_rows;
+use crate::components::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use crate::components::scroll_viewport::{
+    ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
 
 /// Outcome of routing a single key event through the file search popup.
@@ -50,6 +53,9 @@ pub struct FileSearchPopup {
     anchor_offset: usize,
     matches: Vec<String>,
     selected_index: usize,
+    scroll_offset: usize,
+    last_visible_rows: Cell<usize>,
+    wheel: WheelVelocity,
 }
 
 impl FileSearchPopup {
@@ -59,6 +65,9 @@ impl FileSearchPopup {
             anchor_offset,
             matches: Vec::new(),
             selected_index: 0,
+            scroll_offset: 0,
+            last_visible_rows: Cell::new(10),
+            wheel: WheelVelocity::new(),
         }
     }
 
@@ -74,16 +83,16 @@ impl FileSearchPopup {
         &self.matches
     }
 
-    pub fn selected_index(&self) -> usize {
-        self.selected_index
-    }
-
+    pub fn selected_index(&self) -> usize { self.selected_index }
     pub fn selected(&self) -> Option<&str> {
         self.matches.get(self.selected_index).map(String::as_str)
     }
-
-    pub fn match_count(&self) -> usize {
-        self.matches.len()
+    pub fn match_count(&self) -> usize { self.matches.len() }
+    pub fn scroll_offset(&self) -> usize { self.scroll_offset }
+    pub fn visible_rows(&self) -> usize { self.last_visible_rows.get().max(1) }
+    pub fn shows_up_indicator(&self) -> bool { self.scroll_offset > 0 }
+    pub fn shows_down_indicator(&self) -> bool {
+        self.scroll_offset + self.visible_rows() < self.matches.len()
     }
 
     /// Update the filter text. AgentView is expected to also emit
@@ -93,6 +102,7 @@ impl FileSearchPopup {
         if self.filter != new_filter {
             self.filter = new_filter.to_string();
             self.selected_index = 0;
+            self.scroll_offset = 0;
         }
     }
 
@@ -101,31 +111,70 @@ impl FileSearchPopup {
         self.matches = matches;
         if self.matches.is_empty() {
             self.selected_index = 0;
-        } else if self.selected_index >= self.matches.len() {
-            self.selected_index = self.matches.len() - 1;
+            self.scroll_offset = 0;
+        } else {
+            if self.selected_index >= self.matches.len() {
+                self.selected_index = self.matches.len() - 1;
+            }
+            let vr = self.visible_rows();
+            let total = self.matches.len();
+            ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
         }
     }
 
-    fn move_up(&mut self) {
+    fn move_by(&mut self, delta: i32) {
         if self.matches.is_empty() {
             return;
         }
-        if self.selected_index == 0 {
-            self.selected_index = self.matches.len() - 1;
-        } else {
-            self.selected_index -= 1;
+        self.selected_index = wrap_index(self.selected_index, delta, self.matches.len());
+        let (vr, total) = (self.visible_rows(), self.matches.len());
+        ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
+    }
+
+    fn go_end(&mut self) {
+        if self.matches.is_empty() {
+            return;
+        }
+        self.selected_index = self.matches.len() - 1;
+        let (vr, total) = (self.visible_rows(), self.matches.len());
+        ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
+    }
+
+    /// Route a mouse event hit-tested against the popup's last-rendered
+    /// rect. Outside the rect → `Ignored` so the caller can bubble.
+    pub fn handle_mouse(&mut self, ev: MouseEvent, popup_rect: Rect) -> FilePopupOutcome {
+        let inside = ev.column >= popup_rect.x
+            && ev.column < popup_rect.x + popup_rect.width
+            && ev.row >= popup_rect.y
+            && ev.row < popup_rect.y + popup_rect.height;
+        if !inside {
+            return FilePopupOutcome::Ignored;
+        }
+        match ev.kind {
+            MouseEventKind::ScrollUp => {
+                let step = self.wheel.step(WheelDirection::Up);
+                self.move_by(step);
+                FilePopupOutcome::Continued
+            }
+            MouseEventKind::ScrollDown => {
+                let step = self.wheel.step(WheelDirection::Down);
+                self.move_by(step);
+                FilePopupOutcome::Continued
+            }
+            _ => FilePopupOutcome::Ignored,
         }
     }
 
-    fn move_down(&mut self) {
-        if self.matches.is_empty() {
-            return;
-        }
-        if self.selected_index + 1 >= self.matches.len() {
-            self.selected_index = 0;
-        } else {
-            self.selected_index += 1;
-        }
+    #[doc(hidden)]
+    pub fn set_visible_rows_for_test(&mut self, vr: usize) {
+        self.last_visible_rows.set(vr);
+    }
+
+    #[doc(hidden)]
+    pub fn set_selected_for_test(&mut self, idx: usize) {
+        self.selected_index = idx.min(self.matches.len().saturating_sub(1));
+        let (vr, total) = (self.visible_rows(), self.matches.len());
+        ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
     }
 
     pub fn handle_key(&mut self, code: KeyCode, mods: KeyModifiers) -> FilePopupOutcome {
@@ -135,11 +184,30 @@ impl FileSearchPopup {
         match code {
             KeyCode::Esc => FilePopupOutcome::Dismiss,
             KeyCode::Up => {
-                self.move_up();
+                self.move_by(-1);
                 FilePopupOutcome::Continued
             }
             KeyCode::Down => {
-                self.move_down();
+                self.move_by(1);
+                FilePopupOutcome::Continued
+            }
+            KeyCode::PageUp => {
+                let step = -(self.visible_rows() as i32);
+                self.move_by(step);
+                FilePopupOutcome::Continued
+            }
+            KeyCode::PageDown => {
+                let step = self.visible_rows() as i32;
+                self.move_by(step);
+                FilePopupOutcome::Continued
+            }
+            KeyCode::Home => {
+                self.selected_index = 0;
+                self.scroll_offset = 0;
+                FilePopupOutcome::Continued
+            }
+            KeyCode::End => {
+                self.go_end();
                 FilePopupOutcome::Continued
             }
             KeyCode::Enter => match self.selected() {
@@ -155,51 +223,26 @@ impl FileSearchPopup {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let rows = self.build_rows();
+        let vr = (area.height as usize).saturating_sub(8).clamp(1, 20);
+        self.last_visible_rows.set(vr);
         let dialog = FspecDialog {
             accent: Accent::Cyan,
             title: "File Search",
-            rows,
+            rows: self.build_rows(),
             footer: "↑↓ Navigate │ Tab/Enter Select │ Esc Close",
             min_width: 45,
         };
         render_dialog(area, buf, &dialog);
     }
 
-    fn build_rows(&self) -> Vec<DialogRow> {
-        if self.matches.is_empty() {
-            let label = if self.filter.is_empty() {
-                "(type to search files)".to_string()
-            } else {
-                format!("(no files match \"{filter}\")", filter = self.filter)
-            };
-            return vec![DialogRow {
-                spans: vec![
-                    Span::raw(MARKER_UNSELECTED.to_string()),
-                    Span::raw(label),
-                ],
-                selectable: false,
-                selected: false,
-            }];
-        }
-        let mut out = Vec::new();
-        for (i, path) in self.matches.iter().take(10).enumerate() {
-            let is_sel = i == self.selected_index;
-            let marker = if is_sel {
-                MARKER_SELECTED
-            } else {
-                MARKER_UNSELECTED
-            };
-            out.push(DialogRow {
-                spans: vec![
-                    Span::raw(marker.to_string()),
-                    Span::raw(path.clone()),
-                ],
-                selectable: true,
-                selected: is_sel,
-            });
-        }
-        out
+    pub(super) fn build_rows(&self) -> Vec<DialogRow> {
+        build_dialog_rows(
+            &self.matches,
+            &self.filter,
+            self.selected_index,
+            self.scroll_offset,
+            self.visible_rows(),
+        )
     }
 }
 
@@ -209,60 +252,10 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn new_popup_has_no_matches_and_zero_index() {
-        let p = FileSearchPopup::new(5, "rea");
-        assert_eq!(p.anchor_offset(), 5);
-        assert_eq!(p.filter(), "rea");
-        assert_eq!(p.match_count(), 0);
-        assert_eq!(p.selected_index(), 0);
-    }
-
-    #[test]
-    fn set_matches_clamps_selection() {
-        let mut p = FileSearchPopup::new(0, "");
-        p.set_matches(vec!["a".to_string(), "b".to_string(), "c".to_string()]);
-        assert_eq!(p.match_count(), 3);
-    }
-
-    #[test]
-    fn enter_selects_current_match_for_splice() {
-        let mut p = FileSearchPopup::new(6, "rea");
-        p.set_matches(vec!["README.md".to_string()]);
-        match p.handle_key(KeyCode::Enter, KeyModifiers::NONE) {
-            FilePopupOutcome::SelectedEnter(path) => assert_eq!(path, "README.md"),
-            other => panic!("expected SelectedEnter, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn tab_selects_current_match_for_partial_fill() {
-        let mut p = FileSearchPopup::new(6, "rea");
-        p.set_matches(vec!["README.md".to_string()]);
-        match p.handle_key(KeyCode::Tab, KeyModifiers::NONE) {
-            FilePopupOutcome::SelectedTab(path) => assert_eq!(path, "README.md"),
-            other => panic!("expected SelectedTab, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn down_wraps_around() {
-        let mut p = FileSearchPopup::new(0, "");
-        p.set_matches(vec!["a".to_string(), "b".to_string()]);
-        p.handle_key(KeyCode::Down, KeyModifiers::NONE);
-        assert_eq!(p.selected_index(), 1);
-        p.handle_key(KeyCode::Down, KeyModifiers::NONE);
-        assert_eq!(p.selected_index(), 0);
-    }
-
-    #[test]
-    fn enter_with_no_matches_is_ignored() {
-        let mut p = FileSearchPopup::new(0, "");
-        match p.handle_key(KeyCode::Enter, KeyModifiers::NONE) {
-            FilePopupOutcome::Ignored => {}
-            other => panic!("expected Ignored, got {other:?}"),
-        }
-    }
+    // Legacy + RPC-028 tests moved to tests/rpc028_popup_scroll.rs so
+    // this file stays under the 300-LoC source-shape budget. Only the
+    // snapshot test stays inline so the insta snapshot path remains
+    // co-located with the renderer.
 
     #[test]
     fn file_search_popup_rendering_is_byte_equal_across_runs_insta_snapshot() {

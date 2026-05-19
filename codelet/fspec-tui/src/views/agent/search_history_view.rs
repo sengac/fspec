@@ -19,12 +19,16 @@
 //! NOT depend on the legacy floating-popup machinery.
 
 use codelet_rpc_types::HistoryMatch;
-use crossterm::event::{KeyCode, KeyModifiers};
+use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Clear, Paragraph, Widget};
+
+use crate::components::scroll_viewport::{
+    ensure_visible, wrap_index, WheelDirection, WheelVelocity,
+};
 
 const CHROME_ROWS: u16 = 3;
 
@@ -44,6 +48,7 @@ pub struct SearchHistoryView {
     matches: Vec<HistoryMatch>,
     selected_index: usize,
     scroll_offset: usize,
+    wheel: WheelVelocity,
 }
 
 impl Default for SearchHistoryView {
@@ -59,6 +64,7 @@ impl SearchHistoryView {
             matches: Vec::new(),
             selected_index: 0,
             scroll_offset: 0,
+            wheel: WheelVelocity::new(),
         }
     }
 
@@ -106,44 +112,49 @@ impl SearchHistoryView {
     }
 
     fn adjust_scroll(&mut self, visible_rows: usize) {
-        if visible_rows == 0 || self.matches.is_empty() {
-            self.scroll_offset = 0;
-            return;
-        }
-        if self.selected_index < self.scroll_offset {
-            self.scroll_offset = self.selected_index;
-        } else if self.selected_index >= self.scroll_offset + visible_rows {
-            self.scroll_offset = self.selected_index + 1 - visible_rows;
-        }
+        ensure_visible(
+            &mut self.scroll_offset,
+            self.selected_index,
+            visible_rows,
+            self.matches.len(),
+        );
     }
 
-    fn move_up(&mut self, visible_rows: usize) {
+    fn move_by(&mut self, delta: i32, visible_rows: usize) {
         if self.matches.is_empty() {
             return;
         }
-        if self.selected_index == 0 {
-            self.selected_index = self.matches.len() - 1;
-            self.scroll_offset = self
-                .matches
-                .len()
-                .saturating_sub(visible_rows.max(1));
-        } else {
-            self.selected_index -= 1;
-        }
+        self.selected_index = wrap_index(self.selected_index, delta, self.matches.len());
         self.adjust_scroll(visible_rows);
     }
 
-    fn move_down(&mut self, visible_rows: usize) {
-        if self.matches.is_empty() {
-            return;
+    /// Route a mouse event hit-tested against the view's `body_rect`.
+    pub fn handle_mouse(
+        &mut self,
+        ev: MouseEvent,
+        body_rect: Rect,
+        visible_rows: usize,
+    ) -> SearchHistoryViewOutcome {
+        let inside = ev.column >= body_rect.x
+            && ev.column < body_rect.x + body_rect.width
+            && ev.row >= body_rect.y
+            && ev.row < body_rect.y + body_rect.height;
+        if !inside {
+            return SearchHistoryViewOutcome::Ignored;
         }
-        if self.selected_index + 1 >= self.matches.len() {
-            self.selected_index = 0;
-            self.scroll_offset = 0;
-        } else {
-            self.selected_index += 1;
+        match ev.kind {
+            MouseEventKind::ScrollUp => {
+                let step = self.wheel.step(WheelDirection::Up);
+                self.move_by(step, visible_rows);
+                SearchHistoryViewOutcome::Continued
+            }
+            MouseEventKind::ScrollDown => {
+                let step = self.wheel.step(WheelDirection::Down);
+                self.move_by(step, visible_rows);
+                SearchHistoryViewOutcome::Continued
+            }
+            _ => SearchHistoryViewOutcome::Ignored,
         }
-        self.adjust_scroll(visible_rows);
     }
 
     /// Route a single key event through the view. `visible_rows` mirrors
@@ -154,21 +165,37 @@ impl SearchHistoryView {
         mods: KeyModifiers,
         visible_rows: usize,
     ) -> SearchHistoryViewOutcome {
-        if mods.contains(KeyModifiers::CONTROL) {
-            // Ctrl+R re-trigger while the view is open is a no-op.
-            return SearchHistoryViewOutcome::Ignored;
-        }
-        if mods.contains(KeyModifiers::ALT) {
+        if mods.contains(KeyModifiers::CONTROL) || mods.contains(KeyModifiers::ALT) {
             return SearchHistoryViewOutcome::Ignored;
         }
         match code {
             KeyCode::Esc => SearchHistoryViewOutcome::Dismiss,
             KeyCode::Up => {
-                self.move_up(visible_rows);
+                self.move_by(-1, visible_rows);
                 SearchHistoryViewOutcome::Continued
             }
             KeyCode::Down => {
-                self.move_down(visible_rows);
+                self.move_by(1, visible_rows);
+                SearchHistoryViewOutcome::Continued
+            }
+            KeyCode::PageUp => {
+                self.move_by(-(visible_rows.max(1) as i32), visible_rows);
+                SearchHistoryViewOutcome::Continued
+            }
+            KeyCode::PageDown => {
+                self.move_by(visible_rows.max(1) as i32, visible_rows);
+                SearchHistoryViewOutcome::Continued
+            }
+            KeyCode::Home => {
+                self.selected_index = 0;
+                self.scroll_offset = 0;
+                SearchHistoryViewOutcome::Continued
+            }
+            KeyCode::End => {
+                if !self.matches.is_empty() {
+                    self.selected_index = self.matches.len() - 1;
+                    self.adjust_scroll(visible_rows);
+                }
                 SearchHistoryViewOutcome::Continued
             }
             KeyCode::Enter => match self.selected() {

@@ -39,13 +39,6 @@ impl AgentView {
             && matches!(key.code, KeyCode::Char('r') | KeyCode::Char('R'))
     }
 
-    fn mode_view_visible_rows(&self) -> usize {
-        match self.last_render_area {
-            Some(area) => area.height.saturating_sub(3) as usize,
-            None => 20,
-        }
-    }
-
     /// RPC-026: route the key through resume / search mode views FIRST.
     /// Returns `Some(EventResult)` when a mode view consumed the key.
     fn handle_mode_view_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
@@ -199,6 +192,18 @@ impl AgentView {
     }
 
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
+        // RPC-028: route mouse events to popups / mode views before
+        // anything else. Implementation lives in `mouse_dispatch.rs`
+        // so this file stays under the 300-LoC source-shape budget.
+        if let Event::Mouse(m) = event {
+            if let Some(result) = self.handle_mode_view_mouse(*m) {
+                return result;
+            }
+            if let Some(result) = self.handle_popup_mouse(*m) {
+                return result;
+            }
+            return EventResult::ignored();
+        }
         if let Event::Key(key) = event {
             // RPC-026: Ctrl+R opens the search view when no popup /
             // mode view is currently active.
@@ -259,5 +264,12 @@ impl AgentView {
     pub(crate) fn scrollback_viewport_hint(&self) -> usize {
         let h = self.last_scrollback_viewport as usize;
         if h == 0 { 10 } else { h }
+    }
+
+    pub(super) fn mode_view_visible_rows(&self) -> usize {
+        match self.last_render_area {
+            Some(area) => area.height.saturating_sub(3) as usize,
+            None => 20,
+        }
     }
 }

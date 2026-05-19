@@ -21,14 +21,16 @@
 //! NOT depend on the legacy floating-popup machinery.
 
 use codelet_rpc_types::{SessionId, SessionInfo};
-use crossterm::event::{KeyCode, KeyModifiers};
+use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use ratatui::style::{Color, Modifier, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Clear, Paragraph, Widget};
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::widgets::{Clear, Widget};
 
 use super::confirm_dialog::{ConfirmDialog, ConfirmDialogOutcome};
+use super::mode_view_render::{render_footer_hint, render_session_rows, render_title_with_count};
+use crate::components::scroll_viewport::{
+    ensure_visible, wrap_index, WheelDirection, WheelVelocity,
+};
 
 const CHROME_ROWS: u16 = 3;
 
@@ -50,6 +52,7 @@ pub struct ResumeSessionView {
     selected_index: usize,
     scroll_offset: usize,
     delete_confirm: Option<ConfirmDialog>,
+    wheel: WheelVelocity,
 }
 
 impl Default for ResumeSessionView {
@@ -65,6 +68,7 @@ impl ResumeSessionView {
             selected_index: 0,
             scroll_offset: 0,
             delete_confirm: None,
+            wheel: WheelVelocity::new(),
         }
     }
 
@@ -100,44 +104,64 @@ impl ResumeSessionView {
     }
 
     fn adjust_scroll(&mut self, visible_rows: usize) {
-        if visible_rows == 0 || self.sessions.is_empty() {
-            self.scroll_offset = 0;
-            return;
-        }
-        if self.selected_index < self.scroll_offset {
-            self.scroll_offset = self.selected_index;
-        } else if self.selected_index >= self.scroll_offset + visible_rows {
-            self.scroll_offset = self.selected_index + 1 - visible_rows;
-        }
+        ensure_visible(
+            &mut self.scroll_offset,
+            self.selected_index,
+            visible_rows,
+            self.sessions.len(),
+        );
     }
 
-    fn move_up(&mut self, visible_rows: usize) {
+    fn move_by(&mut self, delta: i32, visible_rows: usize) {
         if self.sessions.is_empty() {
             return;
         }
-        if self.selected_index == 0 {
-            self.selected_index = self.sessions.len() - 1;
-            self.scroll_offset = self
-                .sessions
-                .len()
-                .saturating_sub(visible_rows.max(1));
-        } else {
-            self.selected_index -= 1;
-        }
+        self.selected_index = wrap_index(self.selected_index, delta, self.sessions.len());
         self.adjust_scroll(visible_rows);
     }
 
-    fn move_down(&mut self, visible_rows: usize) {
-        if self.sessions.is_empty() {
-            return;
+    /// Hit-test `ev` against `body_rect` — returns true when the event
+    /// falls inside the rect.
+    fn rect_contains(ev: MouseEvent, body_rect: Rect) -> bool {
+        ev.column >= body_rect.x
+            && ev.column < body_rect.x + body_rect.width
+            && ev.row >= body_rect.y
+            && ev.row < body_rect.y + body_rect.height
+    }
+
+    /// Route a mouse event hit-tested against the view's `body_rect`.
+    pub fn handle_mouse(
+        &mut self,
+        ev: MouseEvent,
+        body_rect: Rect,
+        visible_rows: usize,
+    ) -> ResumeSessionViewOutcome {
+        if !Self::rect_contains(ev, body_rect) {
+            return ResumeSessionViewOutcome::Ignored;
         }
-        if self.selected_index + 1 >= self.sessions.len() {
-            self.selected_index = 0;
-            self.scroll_offset = 0;
-        } else {
-            self.selected_index += 1;
+        match ev.kind {
+            MouseEventKind::ScrollUp => {
+                let step = self.wheel.step(WheelDirection::Up);
+                self.move_by(step, visible_rows);
+                ResumeSessionViewOutcome::Continued
+            }
+            MouseEventKind::ScrollDown => {
+                let step = self.wheel.step(WheelDirection::Down);
+                self.move_by(step, visible_rows);
+                ResumeSessionViewOutcome::Continued
+            }
+            MouseEventKind::Down(crossterm::event::MouseButton::Left) => {
+                let candidate = self.scroll_offset + (ev.row - body_rect.y) as usize;
+                if candidate < self.sessions.len() {
+                    self.selected_index = candidate;
+                    self.adjust_scroll(visible_rows);
+                    ResumeSessionViewOutcome::Continued
+                } else {
+                    ResumeSessionViewOutcome::Ignored
+                }
+            }
+            _ => ResumeSessionViewOutcome::Ignored,
         }
-        self.adjust_scroll(visible_rows);
     }
 
     /// Route a single key event through the view.
@@ -178,11 +202,31 @@ impl ResumeSessionView {
         match code {
             KeyCode::Esc => ResumeSessionViewOutcome::Dismiss,
             KeyCode::Up => {
-                self.move_up(visible_rows);
+                self.move_by(-1, visible_rows);
                 ResumeSessionViewOutcome::Continued
             }
             KeyCode::Down => {
-                self.move_down(visible_rows);
+                self.move_by(1, visible_rows);
+                ResumeSessionViewOutcome::Continued
+            }
+            KeyCode::PageUp => {
+                self.move_by(-(visible_rows.max(1) as i32), visible_rows);
+                ResumeSessionViewOutcome::Continued
+            }
+            KeyCode::PageDown => {
+                self.move_by(visible_rows.max(1) as i32, visible_rows);
+                ResumeSessionViewOutcome::Continued
+            }
+            KeyCode::Home => {
+                self.selected_index = 0;
+                self.scroll_offset = 0;
+                ResumeSessionViewOutcome::Continued
+            }
+            KeyCode::End => {
+                if !self.sessions.is_empty() {
+                    self.selected_index = self.sessions.len() - 1;
+                    self.adjust_scroll(visible_rows);
+                }
                 ResumeSessionViewOutcome::Continued
             }
             KeyCode::Enter => match self.selected() {
@@ -208,48 +252,6 @@ impl ResumeSessionView {
         }
     }
 
-    fn render_title(&self, area: Rect, buf: &mut Buffer) {
-        let text = format!("Resume Session ({} available)", self.sessions.len());
-        let style = Style::default()
-            .fg(Color::Blue)
-            .add_modifier(Modifier::BOLD);
-        Paragraph::new(Line::from(Span::styled(text, style))).render(area, buf);
-    }
-
-    fn render_footer(&self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Enter Select | ↑↓ Navigate | D Delete | Esc Cancel")
-            .render(area, buf);
-    }
-
-    fn render_body(&self, area: Rect, buf: &mut Buffer) {
-        if self.sessions.is_empty() {
-            let mid_y = area.y.saturating_add(area.height / 2);
-            let row = Rect { x: area.x, y: mid_y, width: area.width, height: 1 };
-            Paragraph::new("(no sessions to resume)")
-                .alignment(Alignment::Center)
-                .render(row, buf);
-            return;
-        }
-        let visible_rows = area.height as usize;
-        if visible_rows == 0 {
-            return;
-        }
-        let end = (self.scroll_offset + visible_rows).min(self.sessions.len());
-        for (row_idx, info) in self.sessions[self.scroll_offset..end].iter().enumerate() {
-            let global_idx = self.scroll_offset + row_idx;
-            let marker = if global_idx == self.selected_index { "▸" } else { " " };
-            let label = format!(" {marker} {} ({})", info.id, info.status);
-            let style = if global_idx == self.selected_index {
-                Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
-            } else {
-                Style::default()
-            };
-            let y = area.y + row_idx as u16;
-            let row_area = Rect { x: area.x, y, width: area.width, height: 1 };
-            Paragraph::new(Line::from(Span::styled(label, style))).render(row_area, buf);
-        }
-    }
-
     /// Paint the view into the FULL area Rect. The first statement is
     /// `Clear.render(area, buf)` so the underlying AgentView pixels are
     /// fully overwritten. When `delete_confirm` is `Some`, the dialog
@@ -268,9 +270,19 @@ impl ResumeSessionView {
         let title_area = split[0];
         let body_area = split[2];
         let footer_area = split[3];
-        self.render_title(title_area, buf);
-        self.render_body(body_area, buf);
-        self.render_footer(footer_area, buf);
+        render_title_with_count(title_area, buf, "Resume Session", self.sessions.len());
+        render_session_rows(
+            body_area,
+            buf,
+            &self.sessions,
+            self.selected_index,
+            self.scroll_offset,
+        );
+        render_footer_hint(
+            footer_area,
+            buf,
+            "Enter Select | ↑↓ Navigate | D Delete | Esc Cancel",
+        );
         if let Some(dialog) = self.delete_confirm.as_ref() {
             dialog.render(area, buf);
         }

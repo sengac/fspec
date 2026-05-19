@@ -20,6 +20,7 @@ pub mod hello;
 pub mod help_dialog;
 pub mod model_selector_dialog;
 pub mod model_selector_dialog_rows;
+pub mod scroll_viewport;
 pub mod thinking_level_dialog;
 
 /// Event-handling priority for layered components (RPC-002 doc 09 §A.1).

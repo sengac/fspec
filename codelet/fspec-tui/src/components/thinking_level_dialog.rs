@@ -8,7 +8,7 @@
 //! yellow accent. Adds the missing 'D Set Default' keybinding that
 //! the TS reference has (ThinkingLevelDialog.tsx lines 93–96).
 
-use crossterm::event::{Event, KeyCode};
+use crossterm::event::{Event, KeyCode, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use tokio::sync::mpsc::UnboundedSender;
@@ -148,6 +148,23 @@ impl Component for ThinkingLevelDialog {
                         level,
                     );
                     self.emit_action(action);
+                    return EventResult::consumed();
+                }
+                _ => {}
+            }
+        }
+        // RPC-028: mouse-wheel advances/retreats the selection like the
+        // arrow keys. The dialog renders centered so we don't bother
+        // hit-testing — wheel events while the dialog is topmost belong
+        // to it.
+        if let Event::Mouse(m) = event {
+            match m.kind {
+                MouseEventKind::ScrollUp => {
+                    self.move_up();
+                    return EventResult::consumed();
+                }
+                MouseEventKind::ScrollDown => {
+                    self.move_down();
                     return EventResult::consumed();
                 }
                 _ => {}

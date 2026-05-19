@@ -9,15 +9,17 @@
 //! selects+executes; Tab fills the input without executing; Esc
 //! dismisses. RPC-027 renders via the shared dialog_theme renderer.
 
-use crossterm::event::{KeyCode, KeyModifiers};
+use std::cell::Cell;
+
+use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::{Modifier, Style};
-use ratatui::text::Span;
 
+use super::slash_command_popup_rows::build_rows as build_dialog_rows;
 use super::slash_commands::{filter_commands, SlashCommand, SlashCommandAction, SLASH_COMMANDS};
-use crate::components::dialog_theme::{
-    render_dialog, Accent, DialogRow, FspecDialog, MARKER_SELECTED, MARKER_UNSELECTED,
+use crate::components::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
+use crate::components::scroll_viewport::{
+    ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
 
 /// Outcome of routing a single key event through the slash popup.
@@ -35,6 +37,13 @@ pub struct SlashCommandPopup {
     filter: String,
     matches: Vec<&'static SlashCommand>,
     selected_index: usize,
+    scroll_offset: usize,
+    /// Body rows the most recent `render` decided to paint. Updated on
+    /// every render so subsequent key/mouse handlers can produce
+    /// correctly-sized scroll steps (mirrors BoardView's
+    /// `last_viewport_height` idiom in views/board.rs:58-95).
+    last_visible_rows: Cell<usize>,
+    wheel: WheelVelocity,
 }
 
 impl Default for SlashCommandPopup {
@@ -51,6 +60,9 @@ impl SlashCommandPopup {
             filter: String::new(),
             matches: SLASH_COMMANDS.iter().collect(),
             selected_index: 0,
+            scroll_offset: 0,
+            last_visible_rows: Cell::new(10),
+            wheel: WheelVelocity::new(),
         }
     }
 
@@ -74,33 +86,100 @@ impl SlashCommandPopup {
         self.matches.get(self.selected_index).copied()
     }
 
+    pub fn scroll_offset(&self) -> usize {
+        self.scroll_offset
+    }
+
+    pub fn visible_rows(&self) -> usize {
+        self.last_visible_rows.get().max(1)
+    }
+
+    /// Body shows the `↑` glyph on its top row when there are rows above
+    /// the current viewport.
+    pub fn shows_up_indicator(&self) -> bool {
+        self.scroll_offset > 0
+    }
+
+    /// Body shows the `↓` glyph on its bottom row when there are rows
+    /// below the current viewport.
+    pub fn shows_down_indicator(&self) -> bool {
+        self.scroll_offset + self.visible_rows() < self.matches.len()
+    }
+
+    #[doc(hidden)]
+    pub fn set_matches_for_test(&mut self, n: usize) {
+        // Cycle the registry to fabricate a Vec of N commands.
+        self.matches.clear();
+        for i in 0..n {
+            self.matches.push(&SLASH_COMMANDS[i % SLASH_COMMANDS.len()]);
+        }
+        self.selected_index = 0;
+        self.scroll_offset = 0;
+    }
+
+    #[doc(hidden)]
+    pub fn set_visible_rows_for_test(&mut self, vr: usize) {
+        self.last_visible_rows.set(vr);
+    }
+
+    #[doc(hidden)]
+    pub fn set_selected_for_test(&mut self, idx: usize) {
+        self.selected_index = idx.min(self.matches.len().saturating_sub(1));
+        let (vr, total) = (self.visible_rows(), self.matches.len());
+        ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
+    }
+
     /// Update the filter (text after the leading `/`). Resets the
     /// selection to index 0 so the top match is highlighted.
     pub fn set_filter(&mut self, new_filter: &str) {
         self.filter = new_filter.to_string();
         self.matches = filter_commands(&self.filter);
         self.selected_index = 0;
+        self.scroll_offset = 0;
     }
 
-    fn move_up(&mut self) {
+    fn move_by(&mut self, delta: i32) {
         if self.matches.is_empty() {
             return;
         }
-        if self.selected_index == 0 {
-            self.selected_index = self.matches.len() - 1;
-        } else {
-            self.selected_index -= 1;
-        }
+        self.selected_index = wrap_index(self.selected_index, delta, self.matches.len());
+        let (vr, total) = (self.visible_rows(), self.matches.len());
+        ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
     }
 
-    fn move_down(&mut self) {
+    fn go_end(&mut self) {
         if self.matches.is_empty() {
             return;
         }
-        if self.selected_index + 1 >= self.matches.len() {
-            self.selected_index = 0;
-        } else {
-            self.selected_index += 1;
+        self.selected_index = self.matches.len() - 1;
+        let (vr, total) = (self.visible_rows(), self.matches.len());
+        ensure_visible(&mut self.scroll_offset, self.selected_index, vr, total);
+    }
+
+    /// Route a mouse event hit-tested against the popup's last-rendered
+    /// rect. Events that fall outside `popup_rect` return
+    /// [`PopupOutcome::Ignored`] so the caller can bubble them to the
+    /// underlying view.
+    pub fn handle_mouse(&mut self, ev: MouseEvent, popup_rect: Rect) -> PopupOutcome {
+        let inside = ev.column >= popup_rect.x
+            && ev.column < popup_rect.x + popup_rect.width
+            && ev.row >= popup_rect.y
+            && ev.row < popup_rect.y + popup_rect.height;
+        if !inside {
+            return PopupOutcome::Ignored;
+        }
+        match ev.kind {
+            MouseEventKind::ScrollUp => {
+                let step = self.wheel.step(WheelDirection::Up);
+                self.move_by(step);
+                PopupOutcome::Continued
+            }
+            MouseEventKind::ScrollDown => {
+                let step = self.wheel.step(WheelDirection::Down);
+                self.move_by(step);
+                PopupOutcome::Continued
+            }
+            _ => PopupOutcome::Ignored,
         }
     }
 
@@ -115,11 +194,30 @@ impl SlashCommandPopup {
         match code {
             KeyCode::Esc => PopupOutcome::Dismiss,
             KeyCode::Up => {
-                self.move_up();
+                self.move_by(-1);
                 PopupOutcome::Continued
             }
             KeyCode::Down => {
-                self.move_down();
+                self.move_by(1);
+                PopupOutcome::Continued
+            }
+            KeyCode::PageUp => {
+                let step = -(self.visible_rows() as i32);
+                self.move_by(step);
+                PopupOutcome::Continued
+            }
+            KeyCode::PageDown => {
+                let step = self.visible_rows() as i32;
+                self.move_by(step);
+                PopupOutcome::Continued
+            }
+            KeyCode::Home => {
+                self.selected_index = 0;
+                self.scroll_offset = 0;
+                PopupOutcome::Continued
+            }
+            KeyCode::End => {
+                self.go_end();
                 PopupOutcome::Continued
             }
             KeyCode::Enter => match self.selected() {
@@ -135,63 +233,25 @@ impl SlashCommandPopup {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let rows = self.build_rows();
+        let vr = (area.height as usize).saturating_sub(8).clamp(1, 20);
+        self.last_visible_rows.set(vr);
         let dialog = FspecDialog {
             accent: Accent::Cyan,
             title: "Slash Commands",
-            rows,
+            rows: self.build_rows(),
             footer: "↑↓ Navigate │ Tab/Enter Select │ Esc Close",
             min_width: 45,
         };
         render_dialog(area, buf, &dialog);
     }
 
-    fn build_rows(&self) -> Vec<DialogRow> {
-        if self.matches.is_empty() {
-            return vec![DialogRow {
-                spans: vec![
-                    Span::raw(MARKER_UNSELECTED.to_string()),
-                    Span::raw("(no matching commands)".to_string()),
-                ],
-                selectable: false,
-                selected: false,
-            }];
-        }
-        let max_name = self
-            .matches
-            .iter()
-            .map(|c| c.name().len())
-            .max()
-            .unwrap_or(8);
-        let mut out = Vec::new();
-        for (i, cmd) in self.matches.iter().take(10).enumerate() {
-            let is_sel = i == self.selected_index;
-            let marker = if is_sel {
-                MARKER_SELECTED
-            } else {
-                MARKER_UNSELECTED
-            };
-            let name_token = format!("/{name:<width$}", name = cmd.name(), width = max_name);
-            let mut spans: Vec<Span<'static>> = vec![
-                Span::raw(marker.to_string()),
-                Span::raw(name_token),
-                Span::raw("  ".to_string()),
-            ];
-            if is_sel {
-                spans.push(Span::raw(cmd.description.to_string()));
-            } else {
-                spans.push(Span::styled(
-                    cmd.description.to_string(),
-                    Style::default().add_modifier(Modifier::DIM),
-                ));
-            }
-            out.push(DialogRow {
-                spans,
-                selectable: true,
-                selected: is_sel,
-            });
-        }
-        out
+    pub(super) fn build_rows(&self) -> Vec<DialogRow> {
+        build_dialog_rows(
+            &self.matches,
+            self.selected_index,
+            self.scroll_offset,
+            self.visible_rows(),
+        )
     }
 }
 
@@ -201,76 +261,10 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn new_popup_has_full_registry_and_first_selected() {
-        let p = SlashCommandPopup::new();
-        assert_eq!(p.match_count(), SLASH_COMMANDS.len());
-        assert_eq!(p.selected_index(), 0);
-        assert_eq!(p.filter(), "");
-        assert!(p.selected().is_some());
-    }
-
-    #[test]
-    fn set_filter_narrows_matches() {
-        let mut p = SlashCommandPopup::new();
-        p.set_filter("he");
-        assert!(p.match_count() >= 1);
-        assert_eq!(p.matches()[0].name(), "help");
-        assert_eq!(p.selected_index(), 0);
-    }
-
-    #[test]
-    fn down_wraps_around() {
-        let mut p = SlashCommandPopup::new();
-        for _ in 0..p.match_count() {
-            p.handle_key(KeyCode::Down, KeyModifiers::NONE);
-        }
-        assert_eq!(p.selected_index(), 0);
-    }
-
-    #[test]
-    fn up_wraps_to_end() {
-        let mut p = SlashCommandPopup::new();
-        p.handle_key(KeyCode::Up, KeyModifiers::NONE);
-        assert_eq!(p.selected_index(), p.match_count() - 1);
-    }
-
-    #[test]
-    fn enter_emits_selected_action() {
-        let mut p = SlashCommandPopup::new();
-        match p.handle_key(KeyCode::Enter, KeyModifiers::NONE) {
-            PopupOutcome::Selected(a) => assert_eq!(a, SlashCommandAction::Help),
-            other => panic!("expected Selected, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn tab_returns_filled_with_command_name() {
-        let mut p = SlashCommandPopup::new();
-        p.set_filter("c");
-        match p.handle_key(KeyCode::Tab, KeyModifiers::NONE) {
-            PopupOutcome::Filled(s) => assert!(s.starts_with('/'), "got: {s}"),
-            other => panic!("expected Filled, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn esc_returns_dismiss() {
-        let mut p = SlashCommandPopup::new();
-        match p.handle_key(KeyCode::Esc, KeyModifiers::NONE) {
-            PopupOutcome::Dismiss => {}
-            other => panic!("expected Dismiss, got {other:?}"),
-        }
-    }
-
-    #[test]
-    fn ordinary_char_is_ignored_so_caller_can_route_to_input() {
-        let mut p = SlashCommandPopup::new();
-        match p.handle_key(KeyCode::Char('q'), KeyModifiers::NONE) {
-            PopupOutcome::Ignored => {}
-            other => panic!("expected Ignored, got {other:?}"),
-        }
-    }
+    // Unit/legacy tests live in tests/rpc028_popup_scroll.rs as
+    // integration tests so this file stays under the 300-LoC
+    // source-shape budget. Only the snapshot test stays inline so the
+    // insta snapshot path remains co-located with the renderer.
 
     #[test]
     fn slash_command_popup_rendering_is_byte_equal_across_runs_insta_snapshot() {
