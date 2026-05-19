@@ -203,20 +203,29 @@ fn agent_view_vertical_layout_reserves_input_box_rows_tracking_the_textarea() {
         .last_input_area
         .map(|r| r.height as usize)
         .expect("input area recorded after render");
-    assert_eq!(input_height, 5, "input box should be 3 content + 2 border = 5 rows, got {input_height}");
+    // RPC-029: the input area no longer carries a 4-sided border, so
+    // it occupies exactly visible_rows() == 3 rows (no +2 border budget).
+    assert_eq!(input_height, 3, "input box should be 3 content rows after RPC-029, got {input_height}");
 
     // @step And the scrollback region occupies the remaining flex rows between the header and input
-    let scrollback_rows = input_top_idx - 1; // minus header row 0
+    // RPC-029: the footer row sits between scrollback and input now, so
+    // the layout is: header(1) + scrollback(flex) + footer(1) + input(3).
+    let scrollback_rows = input_top_idx.saturating_sub(2); // minus header row 0 and footer row above input
     assert!(
         scrollback_rows > 0,
-        "scrollback region should sit between header and input"
+        "scrollback region should sit between header and footer"
     );
 
     // @step And the SessionFooter still paints "Enter=send" on the bottom row
-    let bottom = rows.last().expect("bottom row");
+    // RPC-029: the footer's old hints (Enter=send / Ctrl+C / ESC=back)
+    // are removed to match the canonical TS layout. We instead pin
+    // the footer-above-input invariant by checking the footer row
+    // does NOT contain those hints AND lies above the input row.
+    let footer_y = input_top_idx.saturating_sub(1);
+    let footer_row = &rows[footer_y];
     assert!(
-        bottom.contains("Enter=send"),
-        "bottom row should still paint footer hints; got {bottom:?}"
+        !footer_row.contains("Enter=send"),
+        "footer should NOT paint 'Enter=send' after RPC-029; got {footer_row:?}"
     );
 }
 

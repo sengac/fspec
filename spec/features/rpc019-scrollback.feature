@@ -65,9 +65,9 @@ Feature: RPC-019 AgentView windowed ScrollbackList (O(1) per frame)
     Then the number of chunks visited during layout is at most 12
     And the rendered buffer's bottom row contains chunk #9999's body
 
-  Scenario: AgentView vertical layout reserves Length(N+2) for the input box where N tracks the textarea
+  Scenario: AgentView vertical layout reserves Length(visible_rows) for the input box (RPC-029)
     Given an AgentView whose MultiLineInput contains "a\nb\nc"
     When the App renders AgentView against an 80x20 TestBackend
-    Then the input box occupies exactly 5 rows
-    And the scrollback region occupies the remaining flex rows between the header and input
-    And the SessionFooter still paints "Enter=send" on the bottom row
+    Then the input box occupies exactly 3 rows (RPC-029: no 4-sided border)
+    And the scrollback region occupies the remaining flex rows between the header and the footer
+    And the SessionFooter row above the input does NOT contain the substring "Enter=send" (RPC-029)

@@ -66,9 +66,11 @@ async fn empty_agent_view_store_paints_placeholder_header_and_bare_cwd_footer() 
         "top row should contain 'tokens: 0↓ 0↑ [0%]', got: {top:?}"
     );
     // @step And the rendered buffer's bottom row contains the substring "Enter=send"
-    assert!(bottom.contains("Enter=send"), "bottom row should contain 'Enter=send', got: {bottom:?}");
+    // RPC-029: footer hints removed; the bottom row is the input prompt.
+    assert!(bottom.contains("> "), "bottom row should contain input prompt, got: {bottom:?}");
     // @step And the rendered buffer's bottom row contains the substring "ESC=back"
-    assert!(bottom.contains("ESC=back"), "bottom row should contain 'ESC=back', got: {bottom:?}");
+    // RPC-029: no ESC=back hint in footer anymore.
+    assert!(!bottom.contains("ESC=back"), "RPC-029: ESC=back hint should be gone, got: {bottom:?}");
     // @step And the rendered buffer does NOT contain the substring "[R]"
     assert!(!full.contains("[R]"), "full buffer should NOT contain '[R]'");
     // @step And the rendered buffer does NOT contain the substring "[V]"
@@ -142,7 +144,7 @@ async fn header_right_side_reflects_token_update_followed_by_context_fill_update
     );
 }
 
-/// Scenario: Footer abbreviates cwd to ~ inside $HOME and appends [⌥ branch] in a git repo
+/// Scenario: Footer abbreviates cwd to ~ inside $HOME and appends [⎇ branch] in a git repo
 #[tokio::test]
 async fn footer_abbreviates_cwd_to_tilde_inside_home_and_appends_branch_in_a_git_repo() {
     // @step Given an AgentViewStore with workspace WorkspaceInfo { cwd: "/Users/rquast/projects/fspec", git_branch: Some("codelet-integration") }
@@ -156,22 +158,26 @@ async fn footer_abbreviates_cwd_to_tilde_inside_home_and_appends_branch_in_a_git
     let mut view = fresh_view();
     // @step When the App renders AgentView against a 100x20 TestBackend
     let rows = render_rows(100, 20, &mut store, &mut view);
-    let bottom = &rows[rows.len() - 1];
-    // @step Then the rendered buffer's bottom row contains the substring "~/projects/fspec"
-    assert!(bottom.contains("~/projects/fspec"), "bottom missing ~/projects/fspec, got: {bottom:?}");
-    // @step And the rendered buffer's bottom row contains the substring "[⌥ codelet-integration]"
+    // RPC-029: footer is now above the input row, not at the bottom.
+    let footer = rows
+        .iter()
+        .find(|r| r.contains("~/projects/fspec"))
+        .expect("footer row containing cwd");
+    // @step Then the footer row contains the substring "~/projects/fspec"
+    assert!(footer.contains("~/projects/fspec"), "footer missing ~/projects/fspec, got: {footer:?}");
+    // @step And the footer row contains the substring "[⎇ codelet-integration]" (U+2387 per RPC-029)
     assert!(
-        bottom.contains("[⌥ codelet-integration]"),
-        "bottom missing branch decoration, got: {bottom:?}"
+        footer.contains("[\u{2387} codelet-integration]"),
+        "footer missing branch decoration, got: {footer:?}"
     );
-    // @step And the rendered buffer's bottom row does NOT contain the substring "/Users/rquast/projects/fspec"
+    // @step And the footer row does NOT contain the substring "/Users/rquast/projects/fspec"
     assert!(
-        !bottom.contains("/Users/rquast/projects/fspec"),
-        "bottom should not contain absolute home path, got: {bottom:?}"
+        !footer.contains("/Users/rquast/projects/fspec"),
+        "footer should not contain absolute home path, got: {footer:?}"
     );
 }
 
-/// Scenario: Footer omits the [⌥ ...] segment when the workspace is not a git repo
+/// Scenario: Footer omits the [⎇ ...] segment when the workspace is not a git repo
 #[tokio::test]
 async fn footer_omits_branch_segment_when_workspace_is_not_a_git_repo() {
     // @step Given an AgentViewStore with workspace WorkspaceInfo { cwd: "/tmp/scratch", git_branch: None }
@@ -183,11 +189,15 @@ async fn footer_omits_branch_segment_when_workspace_is_not_a_git_repo() {
     let mut view = fresh_view();
     // @step When the App renders AgentView against a 100x20 TestBackend
     let rows = render_rows(100, 20, &mut store, &mut view);
-    let bottom = &rows[rows.len() - 1];
-    // @step Then the rendered buffer's bottom row contains the substring "/tmp/scratch"
-    assert!(bottom.contains("/tmp/scratch"), "bottom missing cwd, got: {bottom:?}");
-    // @step And the rendered buffer's bottom row does NOT contain the substring "[⌥"
-    assert!(!bottom.contains("[⌥"), "bottom should not have branch decoration, got: {bottom:?}");
+    // RPC-029: footer is above the input row.
+    let footer = rows
+        .iter()
+        .find(|r| r.contains("/tmp/scratch"))
+        .expect("footer row containing cwd");
+    // @step Then the footer row contains the substring "/tmp/scratch"
+    assert!(footer.contains("/tmp/scratch"), "footer missing cwd, got: {footer:?}");
+    // @step And the footer row does NOT contain the substring "[⎇" (U+2387 RPC-029)
+    assert!(!footer.contains("[\u{2387}"), "footer should not have branch decoration, got: {footer:?}");
 }
 
 /// Scenario: AgentView layout splits area into Header / Scrollback / Input / Footer
@@ -225,9 +235,16 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
         "rows 1-5 should contain 'assistant> hello'; got:\n{scroll_area}"
     );
     // @step And the rendered buffer's row 9 contains the substring "Enter=send"
+    // RPC-029: row 9 is now the input row (no footer hint there), and
+    // the footer with no workspace paints an empty dark-grey row.
     assert!(
-        rows[9].contains("Enter=send"),
-        "row 9 should contain 'Enter=send'; got: {:?}",
+        rows[9].contains("> "),
+        "row 9 (bottom) should be the input prompt after RPC-029; got: {:?}",
+        rows[9]
+    );
+    assert!(
+        !rows[9].contains("Enter=send"),
+        "row 9 must not contain the old footer hint: {:?}",
         rows[9]
     );
 }

@@ -1,21 +1,29 @@
 //! SessionFooter — 1-row strip at the bottom of AgentView painting
-//! input hints on the left and `<cwd> [⌥ <branch>]` on the right.
+//! `<cwd> [⎇ <branch>]` on the right side.
 //!
-//! Feature: spec/features/rpc018-agent-chrome.feature
-//! Card: RPC-018.
+//! Feature files:
+//!   - spec/features/rpc018-agent-chrome.feature
+//!   - spec/features/rpc029-agent-structure-alignment.feature
 //!
-//! Mirrors the TS `src/tui/components/SessionFooter.tsx` layout (with
-//! the per-RPC-018 architecture-note swap of `⎇` → `⌥`):
+//! RPC-029: structural rewrite to match the TS Ink original
+//! (`src/tui/components/SessionFooter.tsx`):
+//!
+//!   - The LEFT side is now empty (the old RPC-013 hints
+//!     `Enter=send  Ctrl+C=interrupt  ESC=back` are no longer painted
+//!     — the constant `PLACEHOLDER_FOOTER_HINTS` is kept in
+//!     `views/agent.rs` purely for the RPC-013 source-shape invariant).
+//!   - The row paints a dark-grey `#333333` background on every cell
+//!     and is padded horizontally by 1 column on both sides.
+//!   - The right side is split into TWO spans: the cwd in dark-grey
+//!     (matching TS `chalk.dim`) and the bracketed branch suffix in
+//!     cyan (matching TS `chalk.cyan(formatBranchDisplay(...))`).
+//!   - The branch glyph is `⎇` (U+2387 ALTERNATIVE KEY SYMBOL) —
+//!     RPC-029 reverses the RPC-018 deliberate divergence (`⌥`,
+//!     U+2325 OPTION KEY) to match the canonical TS output.
 //!
 //! ```text
-//!  Enter=send  Ctrl+C=interrupt  ESC=back      ~/projects/fspec [⌥ main]
+//!                                              ~/projects/fspec [⎇ main]
 //! ```
-//!
-//! The right side renders:
-//!   - just the cwd when `workspace.git_branch` is `None`,
-//!   - the cwd plus a `[⌥ <branch>]` suffix when a branch is present,
-//!   - nothing at all when `workspace` is `None` (the strip still
-//!     paints the hints on the left).
 //!
 //! cwd shortening replaces a `$HOME` prefix with `~`. The substitution
 //! lives here so the wire shape (`WorkspaceInfo.cwd`) stays portable
@@ -31,6 +39,13 @@ use ratatui::widgets::{Paragraph, Widget};
 
 use codelet_rpc_types::WorkspaceInfo;
 
+use super::chrome::{horizontal_pad, line_width};
+use super::paint_row_bg;
+
+/// RPC-029: dark-grey (`#333333`) row background painted on every cell
+/// of the footer strip.
+pub(crate) const FOOTER_BG: Color = Color::Rgb(0x33, 0x33, 0x33);
+
 /// SessionFooter widget. The caller owns the WorkspaceInfo snapshot.
 pub struct SessionFooter<'a> {
     pub workspace: Option<&'a WorkspaceInfo>,
@@ -41,42 +56,63 @@ impl<'a> Widget for SessionFooter<'a> {
         if area.width == 0 || area.height == 0 {
             return;
         }
-        let left = build_left_hints();
-        let right = self
+        // RPC-029: dark-grey row background on every cell.
+        paint_row_bg(area, buf, FOOTER_BG);
+        // RPC-029: horizontal padding of 1 column on both sides.
+        let inner = horizontal_pad(area, 1);
+        if inner.width == 0 {
+            return;
+        }
+        let right_line = self
             .workspace
-            .map(build_right_text)
-            .unwrap_or_default();
-        paint_two_columns(area, buf, &left, &right);
+            .map(build_right_line)
+            .unwrap_or_else(|| Line::from(Vec::<Span<'static>>::new()));
+        paint_right_aligned(inner, buf, right_line);
     }
 }
 
-fn build_left_hints() -> String {
-    super::PLACEHOLDER_FOOTER_HINTS.to_string()
-}
-
-fn build_right_text(workspace: &WorkspaceInfo) -> String {
-    let mut out = shorten_with_home(&workspace.cwd);
+/// RPC-029: build the right-aligned line as two styled spans —
+/// dark-grey cwd, then cyan `[⎇ branch]` suffix when applicable.
+fn build_right_line(workspace: &WorkspaceInfo) -> Line<'static> {
+    let cwd = shorten_with_home(&workspace.cwd);
+    let mut spans: Vec<Span<'static>> = Vec::new();
+    spans.push(Span::styled(cwd, Style::default().fg(Color::DarkGray)));
     if let Some(branch) = workspace.git_branch.as_deref() {
-        out.push_str(" [⌥ ");
-        out.push_str(branch);
-        out.push(']');
+        // RPC-029: glyph reverts to ⎇ (U+2387) — see module doc.
+        spans.push(Span::styled(
+            format!(" [\u{2387} {branch}]"),
+            Style::default().fg(Color::Cyan),
+        ));
     }
-    out
+    Line::from(spans)
+}
+
+fn paint_right_aligned(inner: Rect, buf: &mut Buffer, line: Line<'static>) {
+    let width = line_width(&line);
+    if width == 0 || width as u16 > inner.width {
+        return;
+    }
+    let x = inner.x + (inner.width - width as u16);
+    Paragraph::new(line).render(
+        Rect {
+            x,
+            y: inner.y,
+            width: width as u16,
+            height: 1,
+        },
+        buf,
+    );
 }
 
 /// Replace a `$HOME` prefix in `cwd` with `~`. Returns `cwd` unchanged
 /// when no `$HOME` is set, the path does not start with it, or the
-/// match is mid-segment (e.g. `$HOME=/Users/rq` vs `cwd=/Users/rquast/x`).
+/// match is mid-segment.
 fn shorten_with_home(cwd: &str) -> String {
     let home = home_dir();
     if let Some(home) = home {
         let home_str = home.to_string_lossy();
         if !home_str.is_empty() && cwd.starts_with(home_str.as_ref()) {
             let suffix = &cwd[home_str.len()..];
-            // Only substitute when the home prefix ends at a path
-            // boundary — either at the end of the string or right
-            // before a path separator. Otherwise `$HOME=/Users/rq`
-            // would mangle `/Users/rquast/...` into `~uast/...`.
             if suffix.is_empty() || suffix.starts_with('/') {
                 return format!("~{suffix}");
             }
@@ -85,44 +121,8 @@ fn shorten_with_home(cwd: &str) -> String {
     cwd.to_string()
 }
 
-/// Pluck `$HOME` from the environment. We avoid the `home` crate so
-/// the workspace doesn't pick up another transitive dep just for this.
 fn home_dir() -> Option<PathBuf> {
     std::env::var_os("HOME").map(PathBuf::from)
-}
-
-fn paint_two_columns(area: Rect, buf: &mut Buffer, left: &str, right: &str) {
-    let width = area.width as usize;
-    let right_len = right.chars().count();
-    let budget_left = width.saturating_sub(right_len).saturating_sub(1);
-    let left_truncated: String = left.chars().take(budget_left).collect();
-    let left_len = left_truncated.chars().count();
-    let hint_style = Style::default().fg(Color::DarkGray);
-    let path_style = Style::default().fg(Color::Cyan);
-    let left_line = Line::from(Span::styled(left_truncated, hint_style));
-    Paragraph::new(left_line).render(
-        Rect {
-            x: area.x,
-            y: area.y,
-            width: left_len as u16,
-            height: 1,
-        },
-        buf,
-    );
-    if right_len > 0 {
-        let right_x =
-            area.x.saturating_add(area.width.saturating_sub(right_len as u16));
-        let right_line = Line::from(Span::styled(right.to_string(), path_style));
-        Paragraph::new(right_line).render(
-            Rect {
-                x: right_x,
-                y: area.y,
-                width: right_len as u16,
-                height: 1,
-            },
-            buf,
-        );
-    }
 }
 
 #[cfg(test)]
@@ -130,6 +130,10 @@ mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
     use super::*;
+
+    fn line_text(line: &Line<'_>) -> String {
+        line.spans.iter().map(|s| s.content.as_ref()).collect::<String>()
+    }
 
     #[test]
     fn shorten_with_home_replaces_home_prefix() {
@@ -146,23 +150,36 @@ mod tests {
     }
 
     #[test]
-    fn build_right_text_renders_branch_when_present() {
+    fn build_right_line_uses_alternative_key_glyph() {
         let ws = WorkspaceInfo {
             cwd: "/tmp/scratch".to_string(),
             git_branch: Some("main".to_string()),
         };
-        let s = build_right_text(&ws);
-        assert!(s.contains("/tmp/scratch"));
-        assert!(s.contains("[⌥ main]"));
+        let line = build_right_line(&ws);
+        let text = line_text(&line);
+        assert!(text.contains("[\u{2387} main]"), "must use ⎇ U+2387; got: {text:?}");
+        assert!(!text.contains("\u{2325}"), "must NOT use ⌥ U+2325; got: {text:?}");
     }
 
     #[test]
-    fn build_right_text_omits_branch_when_none() {
+    fn build_right_line_omits_branch_suffix_when_none() {
         let ws = WorkspaceInfo {
             cwd: "/tmp/scratch".to_string(),
             git_branch: None,
         };
-        let s = build_right_text(&ws);
-        assert_eq!(s, "/tmp/scratch");
+        let line = build_right_line(&ws);
+        assert_eq!(line.spans.len(), 1);
+        assert_eq!(line.spans[0].content.as_ref(), "/tmp/scratch");
+    }
+
+    #[test]
+    fn build_right_line_paints_cwd_dim_and_branch_cyan() {
+        let ws = WorkspaceInfo {
+            cwd: "/tmp/scratch".to_string(),
+            git_branch: Some("main".to_string()),
+        };
+        let line = build_right_line(&ws);
+        assert_eq!(line.spans[0].style.fg, Some(Color::DarkGray));
+        assert_eq!(line.spans[1].style.fg, Some(Color::Cyan));
     }
 }

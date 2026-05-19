@@ -183,8 +183,10 @@ mod tests {
         let mut agent = AgentViewStore::default();
         agent.append_session(crate::store::SessionContext::new(SessionId::new("s-1")));
         let out = render(&mut nav, &board, &mut agent);
-        assert!(out.contains("Agent"));
-        assert!(out.contains("s-1"));
+        // RPC-029: scrollback no longer paints an " Agent — s-1 " title;
+        // the only header-side anchor for AgentView is the input
+        // placeholder hint (or the empty header itself).
+        assert!(out.contains("Type a message..."));
         assert!(!out.contains("BACKLOG"));
     }
 

@@ -306,8 +306,10 @@ async fn navigator_renders_agent_view_when_active_view_is_agent() {
         joined.push('\n');
     }
     // @step Then the rendered buffer contains the AgentView "Agent" block title
-    assert!(joined.contains("Agent"));
-    assert!(joined.contains("s-1"));
+    // RPC-029: AgentView no longer paints an "Agent — <sid>" title;
+    // the visible AgentView anchor is the input placeholder hint.
+    assert!(joined.contains("Type a message..."), "AgentView placeholder hint must be visible");
+    assert!(joined.contains("Agent"), "header should render 'Agent' placeholder when no model");
     // @step And the rendered buffer does NOT contain the BACKLOG SPECIFYING column headers
     assert!(!joined.contains("BACKLOG"));
 }

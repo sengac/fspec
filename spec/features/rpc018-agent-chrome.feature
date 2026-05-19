@@ -53,8 +53,8 @@ Feature: RPC-018 AgentView chrome — SessionHeader + SessionFooter widgets
     When the App renders AgentView against an 80x20 TestBackend
     Then the rendered buffer's top row contains the substring "Agent"
     And the rendered buffer's top row contains the substring "tokens: 0↓ 0↑ [0%]"
-    And the rendered buffer's bottom row contains the substring "Enter=send"
-    And the rendered buffer's bottom row contains the substring "ESC=back"
+    And the rendered buffer's bottom row contains the substring "> " (RPC-029: footer hints removed; bottom row is the input prompt)
+    And the rendered buffer's bottom row does NOT contain the substring "ESC=back" (RPC-029: footer left side is empty)
     And the rendered buffer does NOT contain the substring "[R]"
     And the rendered buffer does NOT contain the substring "[V]"
     And the rendered buffer does NOT contain the substring "[T:"
@@ -77,28 +77,29 @@ Feature: RPC-018 AgentView chrome — SessionHeader + SessionFooter widgets
     When the App renders AgentView against an 100x20 TestBackend
     Then the rendered buffer's top row contains the substring "tokens: 1234↓ 567↑ [45%]"
 
-  Scenario: Footer abbreviates cwd to ~ inside $HOME and appends [⌥ branch] in a git repo
+  Scenario: Footer abbreviates cwd to ~ inside $HOME and appends [⎇ branch] in a git repo
     Given an AgentViewStore with workspace WorkspaceInfo { cwd: "/Users/rquast/projects/fspec", git_branch: Some("codelet-integration") }
     And the env var HOME is "/Users/rquast"
     When the App renders AgentView against a 100x20 TestBackend
-    Then the rendered buffer's bottom row contains the substring "~/projects/fspec"
-    And the rendered buffer's bottom row contains the substring "[⌥ codelet-integration]"
-    And the rendered buffer's bottom row does NOT contain the substring "/Users/rquast/projects/fspec"
+    Then the rendered buffer's footer row contains the substring "~/projects/fspec"
+    And the rendered buffer's footer row contains the substring "[⎇ codelet-integration]" (RPC-029: glyph reverted to U+2387)
+    And the rendered buffer's footer row does NOT contain the substring "/Users/rquast/projects/fspec"
 
-  Scenario: Footer omits the [⌥ ...] segment when the workspace is not a git repo
+  Scenario: Footer omits the [⎇ ...] segment when the workspace is not a git repo
     Given an AgentViewStore with workspace WorkspaceInfo { cwd: "/tmp/scratch", git_branch: None }
     When the App renders AgentView against a 100x20 TestBackend
-    Then the rendered buffer's bottom row contains the substring "/tmp/scratch"
-    And the rendered buffer's bottom row does NOT contain the substring "[⌥"
+    Then the rendered buffer's footer row contains the substring "/tmp/scratch"
+    And the rendered buffer's footer row does NOT contain the substring "[⎇"
 
-  Scenario: AgentView layout splits area into Header / Scrollback / Input / Footer
+  Scenario: AgentView layout splits area into Header / Scrollback / Footer / Input
     Given an AgentViewStore with current_session "s-1" listed as session #1 of 1
     And the AgentView has pushed two scrollback lines "user> hi" and "assistant> hello"
     When the App renders AgentView against an 80x10 TestBackend
     Then the rendered buffer's row 0 contains the substring "#1:"
     And the rendered buffer's rows 1 through 5 contain the substring "user> hi"
     And the rendered buffer's rows 1 through 5 contain the substring "assistant> hello"
-    And the rendered buffer's row 9 contains the substring "Enter=send"
+    And the rendered buffer's row 9 is the input prompt row (RPC-029: footer hints removed)
+    And the rendered buffer's row 9 does NOT contain the substring "Enter=send"
 
   Scenario: StreamChunk::TokenUpdate updates AgentViewStore.token_state_by_session for the current session
     Given an App with current_session "s-1"

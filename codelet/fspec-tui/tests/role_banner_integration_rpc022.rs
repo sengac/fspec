@@ -54,17 +54,34 @@ fn store_with_session(id: &str) -> AgentViewStore {
 }
 
 fn scrollback_block_height(rows: &[String]) -> usize {
-    // The scrollback Block is bordered, so its top/bottom borders form
-    // the `┌─…─┐` / `└─…─┘` boundary lines. Count the rows from the
-    // first row that opens the block down to the row that closes it
-    // (inclusive of both borders) — that yields the rendered Block
-    // height.
-    let top = rows.iter().position(|r| r.contains('┌'));
-    let bot = rows.iter().rposition(|r| r.contains('└'));
-    match (top, bot) {
-        (Some(t), Some(b)) if b >= t => b - t + 1,
-        _ => 0,
+    // RPC-029: AgentView no longer wraps scrollback in a border Block,
+    // so the old ┌…└ counting strategy no longer applies. The
+    // scrollback slot is the contiguous span of blank/text rows
+    // between the header (row 0) and the footer/input rows at the
+    // bottom. To measure it portably across with-/without-role
+    // renders, we count rows from index 1 (skip header) down to the
+    // first row containing the input prompt "> " or the cwd marker.
+    // The "Role:" row, when present, sits at index 1 — we count it
+    // as part of the area that the banner reserves, but exclude it
+    // from the scrollback height (the no-role layout has 0 rows of
+    // banner so the scrollback height is exactly 1 row larger).
+    let mut bottom = rows.len();
+    for (i, row) in rows.iter().enumerate().rev() {
+        if row.contains("> Type a message")
+            || row.contains("> ")
+            || (i > 0 && row.contains('/'))
+        {
+            bottom = i;
+            break;
+        }
     }
+    let mut top = 1usize; // skip header row 0
+    if let Some(first) = rows.get(top) {
+        if first.trim_start().starts_with("Role:") {
+            top += 1;
+        }
+    }
+    bottom.saturating_sub(top)
 }
 
 /// Scenario: RoleBanner renders zero rows when no role is set on the focused session
@@ -84,13 +101,14 @@ fn role_banner_renders_zero_rows_when_no_role_set() {
         rows.join("\n")
     );
     // @step And the scrollback Block consumes the entire flex region between header and input
-    // 80x24: 1 header + 1 footer + multi-line input (visible_rows+2 borders). The flex
-    // region available for scrollback is therefore the remainder. Just sanity-check
-    // the block is at least 14 rows tall (no banner row stole any space).
+    // RPC-029: there is no Block any more; the scrollback area is the
+    // span between the header (row 0) and the footer/input rows. A
+    // healthy AgentView render in an 80x24 area gives this span at
+    // least 14 rows of headroom when no banner is present.
     let block_height = scrollback_block_height(&rows);
     assert!(
         block_height >= 14,
-        "scrollback Block height = {block_height} rows, expected >= 14 with no role banner"
+        "scrollback span = {block_height} rows, expected >= 14 with no role banner"
     );
 }
 
@@ -126,7 +144,7 @@ fn role_banner_renders_one_row_when_role_is_set() {
     assert_eq!(
         no_role_block_height,
         with_role_block_height + 1,
-        "scrollback Block must shrink by exactly 1 row when banner appears (no-role={no_role_block_height}, with-role={with_role_block_height})"
+        "scrollback span must shrink by exactly 1 row when banner appears (no-role={no_role_block_height}, with-role={with_role_block_height})"
     );
 }
 

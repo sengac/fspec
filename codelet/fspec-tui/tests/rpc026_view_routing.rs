@@ -158,7 +158,9 @@ fn render_paints_normal_layout_when_no_mode_view_active() {
         .collect();
     let joined = rows.join("\n");
     // @step Then the next AgentView.render_with_store paints the normal header/scrollback/input/footer layout
-    assert!(joined.contains("Agent —"));
+    // RPC-029: scrollback no longer paints an " Agent — <sid> " title;
+    // the visible "normal layout" anchor is the input placeholder hint.
+    assert!(joined.contains("Type a message..."));
 }
 
 /// Scenario fragment: resume_view consumes keys before normal handlers
