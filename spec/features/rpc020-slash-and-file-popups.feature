@@ -103,11 +103,11 @@ Feature: Slash command palette + @file search popup in AgentView
     And the slash popup is closed
 
   Scenario: Pressing Enter on an unimplemented command emits a scrollback notice
-    Given an AgentView whose slash popup is open with "/model" highlighted
+    Given an AgentView whose slash popup is open with "/compact" highlighted
     When the user presses Enter
-    Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Model)
+    Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Compact)
     And dispatching that action appends one scrollback chunk whose text contains "[notice]"
-    And that scrollback chunk's text contains "model"
+    And that scrollback chunk's text contains "compact"
     And that scrollback chunk's text contains "not yet implemented"
     And the slash popup is closed
 

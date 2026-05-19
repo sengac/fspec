@@ -1,0 +1,28 @@
+---
+source: fspec-tui/src/views/agent/slash_command_popup.rs
+expression: rows
+---
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "               ╭───────────────────────────────────────────────╮                "
+- "               │                                               │                "
+- "               │ Slash Commands                                │                "
+- "               │                                               │                "
+- "               │ ▸ /help            Show help dialog           │                "
+- "               │   /clear           Clear conversation history │                "
+- "               │   /quit            Quit fspec TUI             │                "
+- "               │   /model           Select AI model            │                "
+- "               │   /thinking        Set base thinking level    │                "
+- "               │   /role            Set or edit session role   │                "
+- "               │   /resume          Resume a previous session  │                "
+- "               │   /search          Search command history     │                "
+- "               │   /provider        Configure API providers    │                "
+- "               │   /providers       Open provider settings     │                "
+- "               │                                               │                "
+- "               │  ↑↓ Navigate │ Tab/Enter Select │ Esc Close   │                "
+- "               │                                               │                "
+- "               ╰───────────────────────────────────────────────╯                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "

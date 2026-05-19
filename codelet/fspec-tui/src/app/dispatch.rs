@@ -285,7 +285,9 @@ impl App {
             Action::InsertIntoInput(t) => self.handle_insert_into_input(t.clone()),
             Action::RequestDeleteSession(id) => self.handle_request_delete_session(id.clone()),
             Action::ConfirmDeleteSession(id) => self.handle_confirm_delete_session(id.clone()),
-            _ => {}
+            // RPC-022 dispatch arms route through `try_dispatch_rpc022`
+            // so this file stays under the 300-LoC ceiling.
+            _ => { let _ = self.try_dispatch_rpc022(&action); }
         }
         self.navigator.apply_action(&action);
         let _ = self.compositor.update(action);

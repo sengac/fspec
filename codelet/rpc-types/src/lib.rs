@@ -319,6 +319,53 @@ pub struct WorkspaceInfo {
 }
 
 // ============================================================================
+// RPC-022: Modal dialog shared types — ProviderInfo + ModelEntry consumed by
+// the new `list_providers`, `set_session_model`, `set_thinking_level`,
+// `get_session_role`, `set_session_role` RPC methods.
+// ============================================================================
+
+/// One entry in the per-provider model list returned by
+/// `FspecService::list_providers`. Mirrors the relevant fields of the
+/// TS `NapiModelInfo` shape (codelet/napi/src/models/napi_bindings.rs)
+/// so the Rust ratatui `ModelSelectorDialog` can paint capability
+/// badges using the SAME source of truth that the Ink
+/// `ModelSelectorView.tsx` consumes.
+///
+/// `Default` returns a "blank" entry — `display_name` empty, every
+/// capability false, `context_window` 0, `is_custom` false. The
+/// `ModelSelectorDialog` hides empty rows so the UI degrades
+/// gracefully when no session manager is attached (the RPC-022
+/// default-impl path).
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ModelEntry {
+    pub id: String,
+    pub display_name: String,
+    pub context_window: u32,
+    pub supports_reasoning: bool,
+    pub supports_vision: bool,
+    pub is_custom: bool,
+}
+
+/// One provider's display metadata plus its set of available models —
+/// returned (in a Vec) by `FspecService::list_providers`. Mirrors the
+/// TS `NapiProviderModels` shape (codelet/napi/src/models/napi_bindings.rs)
+/// so the Rust ratatui `ModelSelectorDialog` and the Ink
+/// `ModelSelectorView.tsx` consume the same provider/model tree.
+///
+/// The `key` field is the stable provider identifier (e.g. "openai",
+/// "anthropic") passed back through `set_session_model`. The
+/// `display_name` is the human-readable label rendered in the
+/// provider rows.
+#[cfg_attr(feature = "napi", napi_derive::napi(object))]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProviderInfo {
+    pub key: String,
+    pub display_name: String,
+    pub models: Vec<ModelEntry>,
+}
+
+// ============================================================================
 // RPC-007: StreamChunk supporting types (lifted verbatim from
 //   codelet/napi/src/types.rs)
 // ============================================================================

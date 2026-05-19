@@ -18,8 +18,8 @@ use async_trait::async_trait;
 use codelet_rpc::{FspecServiceClient, SharedFspecService};
 use codelet_rpc_embedded::EmbeddedTransport;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
-    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, ProviderInfo, SessionId,
+    SessionInfo, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::broadcast;
@@ -171,6 +171,53 @@ impl FspecBackend for EmbeddedFspecBackend {
         // RPC-026: one-line delegate to the shared tarpc method.
         self.client
             .persistence_delete_session(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {
+        // RPC-022: one-line delegate to the shared tarpc method.
+        Ok(self.client.list_providers(context::current()).await?)
+    }
+
+    async fn set_session_model(
+        &self,
+        session_id: SessionId,
+        provider_id: String,
+        model_id: String,
+    ) -> Result<()> {
+        // RPC-022: one-line delegate, lifting the String error into anyhow.
+        self.client
+            .set_session_model(context::current(), session_id, provider_id, model_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn set_thinking_level(
+        &self,
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<()> {
+        self.client
+            .set_thinking_level(context::current(), session_id, level)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {
+        Ok(self
+            .client
+            .get_session_role(context::current(), session_id)
+            .await?)
+    }
+
+    async fn set_session_role(
+        &self,
+        session_id: SessionId,
+        role: Option<String>,
+    ) -> Result<()> {
+        self.client
+            .set_session_role(context::current(), session_id, role)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }

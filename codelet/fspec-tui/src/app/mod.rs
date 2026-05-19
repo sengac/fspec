@@ -20,11 +20,14 @@ pub mod bootstrap;
 pub mod dispatch;
 pub mod dispatch_rpc018;
 pub mod dispatch_rpc020;
+pub mod dispatch_rpc022;
 pub mod dispatch_rpc024;
 pub mod dispatch_rpc025;
 pub mod dispatch_rpc026;
 pub mod events;
+pub mod slash_parser;
 pub mod state;
 
 pub use events::synth_key;
+pub use slash_parser::{parse_slash_command, SlashCommandParse};
 pub use state::App;

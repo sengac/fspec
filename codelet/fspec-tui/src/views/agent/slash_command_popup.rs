@@ -1,37 +1,26 @@
-//! RPC-020 — Slash command popup widget.
+//! RPC-020 + RPC-027 — Slash command popup widget.
 //!
 //! Feature: spec/features/rpc020-slash-and-file-popups.feature
+//! Feature: spec/features/rpc027-slash-file-popups.feature
 //!
 //! Centred floating overlay rendered above AgentView's MultiLineInput
 //! when the user types a leading `/`. Filter text tracks the
 //! characters after the `/`; ↑/↓ navigate (wrap-around); Enter
 //! selects+executes; Tab fills the input without executing; Esc
-//! dismisses. Other keys propagate so the user can keep typing.
-//!
-//! Ownership: AgentView holds an `Option<SlashCommandPopup>`. When
-//! `Some`, AgentView routes its keystrokes through `handle_key` BEFORE
-//! forwarding to MultiLineInput. `AgentView::sync_popups` invokes
-//! `set_filter` after every input event so the list reflects the
-//! post-edit buffer.
+//! dismisses. RPC-027 renders via the shared dialog_theme renderer.
 
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::widgets::Widget;
-use tui_popup::Popup;
+use ratatui::style::{Modifier, Style};
+use ratatui::text::Span;
 
-use super::popup_body::{widest_line, PopupBody};
 use super::slash_commands::{filter_commands, SlashCommand, SlashCommandAction, SLASH_COMMANDS};
+use crate::components::dialog_theme::{
+    render_dialog, Accent, DialogRow, FspecDialog, MARKER_SELECTED, MARKER_UNSELECTED,
+};
 
 /// Outcome of routing a single key event through the slash popup.
-///
-/// `Selected` carries the action the App should dispatch; AgentView
-/// drops the popup before propagating. `Filled(text)` requests
-/// MultiLineInput to set its buffer to `text` AND drop the popup
-/// without executing. `Dismiss` closes the popup but leaves the input
-/// unchanged. `Continued` means the popup handled the key internally
-/// (navigation). `Ignored` means the popup ignored the key — the
-/// caller should forward to MultiLineInput.
 #[derive(Debug, Clone)]
 pub enum PopupOutcome {
     Selected(SlashCommandAction),
@@ -146,21 +135,27 @@ impl SlashCommandPopup {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let body = self.build_body();
-        let width = widest_line(&body) + 2;
-        let height = body.lines().count() as u16;
-        let sized = PopupBody {
-            text: body,
-            selected_index: self.selected_index,
-            width,
-            height,
+        let rows = self.build_rows();
+        let dialog = FspecDialog {
+            accent: Accent::Cyan,
+            title: "Slash Commands",
+            rows,
+            footer: "↑↓ Navigate │ Tab/Enter Select │ Esc Close",
+            min_width: 45,
         };
-        Popup::new(sized).title("Slash Commands").render(area, buf);
+        render_dialog(area, buf, &dialog);
     }
 
-    fn build_body(&self) -> String {
+    fn build_rows(&self) -> Vec<DialogRow> {
         if self.matches.is_empty() {
-            return "(no matching commands)".to_string();
+            return vec![DialogRow {
+                spans: vec![
+                    Span::raw(MARKER_UNSELECTED.to_string()),
+                    Span::raw("(no matching commands)".to_string()),
+                ],
+                selectable: false,
+                selected: false,
+            }];
         }
         let max_name = self
             .matches
@@ -168,18 +163,34 @@ impl SlashCommandPopup {
             .map(|c| c.name().len())
             .max()
             .unwrap_or(8);
-        let mut out = String::new();
+        let mut out = Vec::new();
         for (i, cmd) in self.matches.iter().take(10).enumerate() {
-            let marker = if i == self.selected_index { "▸" } else { " " };
-            out.push_str(&format!(
-                "{marker} /{name:<width$}  {desc}\n",
-                marker = marker,
-                name = cmd.name(),
-                width = max_name,
-                desc = cmd.description
-            ));
+            let is_sel = i == self.selected_index;
+            let marker = if is_sel {
+                MARKER_SELECTED
+            } else {
+                MARKER_UNSELECTED
+            };
+            let name_token = format!("/{name:<width$}", name = cmd.name(), width = max_name);
+            let mut spans: Vec<Span<'static>> = vec![
+                Span::raw(marker.to_string()),
+                Span::raw(name_token),
+                Span::raw("  ".to_string()),
+            ];
+            if is_sel {
+                spans.push(Span::raw(cmd.description.to_string()));
+            } else {
+                spans.push(Span::styled(
+                    cmd.description.to_string(),
+                    Style::default().add_modifier(Modifier::DIM),
+                ));
+            }
+            out.push(DialogRow {
+                spans,
+                selectable: true,
+                selected: is_sel,
+            });
         }
-        out.push_str("\n↑↓ Navigate │ Tab/Enter Select │ Esc Close");
         out
     }
 }
@@ -259,5 +270,29 @@ mod tests {
             PopupOutcome::Ignored => {}
             other => panic!("expected Ignored, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn slash_command_popup_rendering_is_byte_equal_across_runs_insta_snapshot() {
+        use ratatui::backend::TestBackend;
+        use ratatui::Terminal;
+        let popup = SlashCommandPopup::new();
+        let backend = TestBackend::new(80, 24);
+        let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+        terminal
+            .draw(|frame| {
+                popup.render(frame.area(), frame.buffer_mut());
+            })
+            .expect("draw");
+        let buf = terminal.backend().buffer().clone();
+        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
+        for y in 0..buf.area.height {
+            let mut row = String::with_capacity(buf.area.width as usize);
+            for x in 0..buf.area.width {
+                row.push_str(buf[(x, y)].symbol());
+            }
+            rows.push(row);
+        }
+        insta::assert_yaml_snapshot!("slash_command_popup__centered_popup_80x24", rows);
     }
 }

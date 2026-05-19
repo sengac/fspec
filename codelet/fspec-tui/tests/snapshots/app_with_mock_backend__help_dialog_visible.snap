@@ -1,27 +1,26 @@
 ---
 source: fspec-tui/tests/app_with_mock_backend.rs
-assertion_line: 149
 expression: rows_visible
 ---
 - ┌──────────────────────────────────────────────────────────────────────────────┐
 - "│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                │"
 - │ ┣ ┗┓┃┃┣ ┃                                                                    │
 - │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────── │
-- │             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent  │
-- ├──────────────────────────────────────────────────────────────────────────────┤
-- │                                                                              │
-- │                       ┌Help─────────────────────────┐                        │
-- │                       │j/k     Navigate             │                        │
-- │                       │Tab     Switch pane          │                        │
-- │                       │?       Toggle this help     │                        │
-- ├───────────┬───────────│q       Quit fspec-tui       │──┬──────────┬──────────┤
-- │BACKLOG    │SPECIFYING │Enter   Send                 │NG│DONE      │BLOCKED   │
-- ├───────────┼───────────│Ctrl+C  Interrupt            │──┼──────────┼──────────┤
-- │           │           │ESC     Dismiss this dialog  │  │          │          │
-- │           │           └─────────────────────────────┘  │          │          │
-- │           │           │          │          │          │          │          │
-- │           │           │          │          │          │          │          │
-- │           │           │          │          │          │          │          │
+- │             C Checkpo╭────────────────────────────────╮ION.md ◆ / New Agent  │
+- ├──────────────────────│                                │──────────────────────┤
+- │                      │ Help                           │                      │
+- │                      │                                │                      │
+- │                      │ j/k     Navigate               │                      │
+- │                      │ Tab     Switch pane            │                      │
+- │                      │ ?       Toggle this help       │                      │
+- ├───────────┬──────────│ q       Quit fspec-tui         │┬──────────┬──────────┤
+- │BACKLOG    │SPECIFYING│ Enter   Send                   ││DONE      │BLOCKED   │
+- ├───────────┼──────────│ Ctrl+C  Interrupt              │┼──────────┼──────────┤
+- │           │          │ ESC     Dismiss this dialog    ││          │          │
+- │           │          │                                ││          │          │
+- │           │          │          ESC to close          ││          │          │
+- │           │          │                                ││          │          │
+- │           │          ╰────────────────────────────────╯│          │          │
 - │           │           │          │          │          │          │          │
 - │           │           │          │          │          │          │          │
 - ├───────────┴───────────┴──────────┴──────────┴──────────┴──────────┴──────────┤

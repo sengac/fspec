@@ -38,9 +38,9 @@ pub mod file_search_popup;
 pub mod footer;
 pub mod header;
 pub mod multiline_input;
-pub mod popup_body;
 pub mod popups;
 pub mod resume_session_view;
+pub mod role_banner;
 pub mod scrollback;
 pub mod search_history_view;
 pub mod slash_command_popup;
@@ -53,6 +53,7 @@ pub use header::SessionHeader;
 pub use multiline_input::{InputEventOutcome, MultiLineInput};
 pub use popups::{classify_buffer, splice_file_selection, PopupTrigger};
 pub use resume_session_view::{ResumeSessionView, ResumeSessionViewOutcome};
+pub use role_banner::RoleBanner;
 pub use scrollback::{ScrollState, ScrollbackList};
 pub use search_history_view::{SearchHistoryView, SearchHistoryViewOutcome};
 pub use slash_command_popup::{PopupOutcome, SlashCommandPopup};
@@ -195,20 +196,31 @@ impl AgentView {
             return;
         }
         let input_height = self.input.visible_rows().saturating_add(2);
+
+        // RPC-022: carve out a 1-row banner above the scrollback when
+        // the current session has a role overlay set. When no role is
+        // active the constraint is `Length(0)` so the scrollback Block
+        // reclaims the full flex region (zero-row collapse).
+        let sid = store.current_session().cloned();
+        let role_height: u16 = sid
+            .as_ref()
+            .and_then(|s| store.role_for(s))
+            .map(|_| 1)
+            .unwrap_or(0);
         let split = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(1),
+                Constraint::Length(role_height),
                 Constraint::Min(0),
                 Constraint::Length(input_height),
                 Constraint::Length(1),
             ])
             .split(area);
-        let (header_area, scrollback_area, input_area, footer_area) =
-            (split[0], split[1], split[2], split[3]);
+        let (header_area, role_area, scrollback_area, input_area, footer_area) =
+            (split[0], split[1], split[2], split[3], split[4]);
         self.last_input_area = Some(input_area);
 
-        let sid = store.current_session().cloned();
         let model = sid.as_ref().and_then(|s| store.model_info_for(s));
         let thinking = sid
             .as_ref()
@@ -220,6 +232,15 @@ impl AgentView {
             .unwrap_or_default();
         SessionHeader { session_index: store.session_index(), model, thinking, tokens }
             .render(header_area, buf);
+
+        // RPC-022: paint the RoleBanner into the carved-out role_area
+        // when a role is active. The widget is constructed fresh per
+        // frame from `store.role_for(sid)`.
+        if role_height > 0 {
+            if let Some(role_text) = sid.as_ref().and_then(|s| store.role_for(s)) {
+                RoleBanner { role_text }.render(role_area, buf);
+            }
+        }
 
         let title = match &sid {
             Some(s) => format!(" Agent — {} ", s.value),

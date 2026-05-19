@@ -14,6 +14,7 @@ use crate::components::Action;
 use crate::components::help_dialog::HelpDialog;
 use crate::views::agent::slash_commands::SlashCommandAction;
 
+use super::slash_parser::{parse_slash_command, SlashCommandParse};
 use super::state::App;
 
 impl App {
@@ -46,6 +47,28 @@ impl App {
             SlashCommandAction::Search => {
                 // RPC-026: route into the search mode-view helper.
                 self.handle_open_search_view();
+            }
+            SlashCommandAction::Model => {
+                // RPC-022: open the ModelSelectorDialog + spawn list_providers.
+                self.handle_open_model_dialog();
+            }
+            SlashCommandAction::Thinking => {
+                // RPC-022: open the ThinkingLevelDialog seeded with the
+                // cached level for the focused session.
+                self.handle_open_thinking_dialog();
+            }
+            SlashCommandAction::Role => {
+                // RPC-022 rule [5]: the notice fallback handler stops
+                // surfacing `[notice] /role not yet implemented` for
+                // the popup `/role` route. The popup picker emits
+                // `Role` with no argument (the popup auto-closes the
+                // moment the user types a space, so `/role <text>`
+                // never reaches this arm). Bare `/role` clears the
+                // session role — matching the `parse_slash_command`
+                // submit-line semantics in dispatch_rpc022.rs.
+                if let Some(sid) = self.agent_view_store.current_session().cloned() {
+                    self.handle_set_session_role(sid, None);
+                }
             }
             other => {
                 let name = other.name();
@@ -87,13 +110,46 @@ impl App {
     ///
     /// Moved out of `app/dispatch.rs` as part of RPC-020 to keep the
     /// orchestrator under the 300-LoC ceiling.
+    ///
+    /// RPC-022: BEFORE forwarding the text to `backend.send_input` we
+    /// run `parse_slash_command` to intercept `/model`, `/thinking`,
+    /// and `/role …`. Slash commands DO NOT publish to
+    /// `backend.send_input` or to `persistence_add_history` — they
+    /// dispatch their own follow-up actions and the user-facing line
+    /// is suppressed too (the dialog itself is the user-visible
+    /// response).
     pub(crate) fn handle_input_submitted(&mut self, text: String) {
+        let Some(session) = self.agent_view_store.current_session().cloned() else {
+            // Without a session we cannot route anything sensibly —
+            // mirror the legacy behaviour and silently drop. The TS
+            // Ink TUI does the same.
+            return;
+        };
+
+        // RPC-022 slash-command interception.
+        match parse_slash_command(&text) {
+            SlashCommandParse::OpenModelDialog => {
+                self.handle_open_model_dialog();
+                return;
+            }
+            SlashCommandParse::OpenThinkingDialog => {
+                self.handle_open_thinking_dialog();
+                return;
+            }
+            SlashCommandParse::ClearRole => {
+                self.handle_set_session_role(session, None);
+                return;
+            }
+            SlashCommandParse::SetRole(role) => {
+                self.handle_set_session_role(session, Some(role));
+                return;
+            }
+            SlashCommandParse::NotASlashCommand => {}
+        }
+
         self.navigator
             .agent
             .push_line(&mut self.agent_view_store, format!("user> {text}"));
-        let Some(session) = self.agent_view_store.current_session().cloned() else {
-            return;
-        };
         if session.value == "rpc-no-session-manager" {
             self.navigator.agent.push_line(
                 &mut self.agent_view_store,

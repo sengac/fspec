@@ -116,15 +116,15 @@ fn dispatch_quit_flips_should_quit() {
 /// Scenario: Pressing Enter on an unimplemented command emits a scrollback notice
 #[test]
 fn dispatch_unimplemented_command_emits_scrollback_notice() {
-    // @step Given an AgentView whose slash popup is open with "/model" highlighted
+    // @step Given an AgentView whose slash popup is open with "/compact" highlighted
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app);
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
 
     // @step When the user presses Enter
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Model));
+    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
 
-    // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Model)
+    // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Compact)
     // (Action is dispatched directly above; this test asserts the
     // App::dispatch reaction to that Action.)
 

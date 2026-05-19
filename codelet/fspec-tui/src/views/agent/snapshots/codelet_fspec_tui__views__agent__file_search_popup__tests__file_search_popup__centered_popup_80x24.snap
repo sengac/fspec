@@ -1,0 +1,28 @@
+---
+source: fspec-tui/src/views/agent/file_search_popup.rs
+expression: rows
+---
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "               ╭───────────────────────────────────────────────╮                "
+- "               │                                               │                "
+- "               │ File Search                                   │                "
+- "               │                                               │                "
+- "               │ ▸ README.md                                   │                "
+- "               │   src/readme.rs                               │                "
+- "               │                                               │                "
+- "               │  ↑↓ Navigate │ Tab/Enter Select │ Esc Close   │                "
+- "               │                                               │                "
+- "               ╰───────────────────────────────────────────────╯                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "

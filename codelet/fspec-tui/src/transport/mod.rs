@@ -18,8 +18,8 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
-    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, ProviderInfo, SessionId,
+    SessionInfo, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use thiserror::Error;
 use tokio::sync::broadcast;
@@ -160,6 +160,60 @@ pub trait FspecBackend: Send + Sync {
     /// which in turn calls `codelet_core::persistence::delete_session`.
     /// Idempotent — deleting an unknown id silently succeeds.
     async fn persistence_delete_session(&self, id: SessionId) -> Result<()>;
+
+    /// RPC-022: list providers and their models. Both transports
+    /// delegate to `FspecService::list_providers` which in turn
+    /// delegates to the optional `SessionManagerHandle`. Returns
+    /// an empty Vec when no session manager is attached.
+    async fn list_providers(&self) -> Result<Vec<ProviderInfo>>;
+
+    /// RPC-022: set the model bound to a session. Both transports
+    /// delegate to `FspecService::set_session_model`. Returns
+    /// `Ok(())` (silent no-op) when no session manager is attached;
+    /// `Err` when the underlying handle reports a failure.
+    async fn set_session_model(
+        &self,
+        session_id: SessionId,
+        provider_id: String,
+        model_id: String,
+    ) -> Result<()>;
+
+    /// RPC-022: set the per-session thinking/reasoning level.
+    /// Mirrors `set_session_model` in shape.
+    async fn set_thinking_level(
+        &self,
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<()>;
+
+    /// RPC-027: set the per-user DEFAULT thinking/reasoning level.
+    /// Sister of `set_thinking_level`; persists the level so subsequent
+    /// sessions inherit it. Default impl is `Ok(())` (silent no-op)
+    /// so embedded transports without a session manager attached
+    /// compile unchanged.
+    async fn set_thinking_level_default(
+        &self,
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<()> {
+        let _ = (session_id, level);
+        Ok(())
+    }
+
+
+    /// RPC-022: read the session's current role overlay text. Both
+    /// transports delegate to `FspecService::get_session_role`.
+    /// Returns `Ok(None)` when no role is active OR when no session
+    /// manager is attached.
+    async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>>;
+
+    /// RPC-022: set or clear the session's role overlay. Passing
+    /// `None` clears.
+    async fn set_session_role(
+        &self,
+        session_id: SessionId,
+        role: Option<String>,
+    ) -> Result<()>;
 
     /// RPC-011 rule [4]: trigger the transport's manual-reconnect signal
     /// (resets the backoff schedule + cancels any in-flight backoff

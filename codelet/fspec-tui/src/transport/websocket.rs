@@ -16,8 +16,8 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
-    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, ProviderInfo, SessionId,
+    SessionInfo, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::{broadcast, mpsc::UnboundedSender, Notify, RwLock};
@@ -391,6 +391,75 @@ impl FspecBackend for WebSocketFspecBackend {
         client
             .client()
             .persistence_delete_session(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {
+        // RPC-022: route through the shared tarpc method.
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        Ok(client.client().list_providers(context::current()).await?)
+    }
+
+    async fn set_session_model(
+        &self,
+        session_id: SessionId,
+        provider_id: String,
+        model_id: String,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_session_model(context::current(), session_id, provider_id, model_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn set_thinking_level(
+        &self,
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_thinking_level(context::current(), session_id, level)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_session_role(context::current(), session_id)
+            .await?)
+    }
+
+    async fn set_session_role(
+        &self,
+        session_id: SessionId,
+        role: Option<String>,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard
+            .as_ref()
+            .ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_session_role(context::current(), session_id, role)
             .await?
             .map_err(|e| anyhow::anyhow!("{e}"))
     }

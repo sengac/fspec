@@ -1,22 +1,21 @@
 //! RPC-026 — ConfirmDialog: centred confirmation overlay.
 //!
 //! Feature: spec/features/rpc026-resume-and-search-mode-views.feature
+//! Feature: spec/features/rpc027-model-confirm-dialogs.feature
 //!
-//! Rust equivalent of the TS ThreeButtonDialog (AgentView.tsx).
-//! Hosts up to three labelled buttons (primary / secondary / cancel)
-//! laid out in the dialog's footer row. Left/Right cycle focus; Enter
-//! activates the focused button; Esc returns `Cancel`.
-//!
-//! Unlike the resume / search mode views, this widget IS conceptually
-//! a popup — it's rendered as a small centred floating block over the
-//! parent view. Used by `ResumeSessionView` to confirm deletion.
+//! RPC-027 update: renders via the shared dialog_theme renderer
+//! (rounded yellow border, bold yellow inner title, opaque black
+//! background, inverse highlight on the focused button).
 
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Layout, Rect};
-use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, Clear, Paragraph, Widget};
+use ratatui::layout::Rect;
+use ratatui::style::{Color, Modifier, Style};
+use ratatui::text::Span;
+
+use crate::components::dialog_theme::{
+    render_dialog, Accent, DialogRow, FspecDialog, FOOTER_SEPARATOR,
+};
 
 /// Outcome of routing a single key event through the dialog.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -160,48 +159,88 @@ impl ConfirmDialog {
         }
     }
 
-    fn dialog_rect(&self, area: Rect) -> Rect {
-        let body_width = self.body.chars().count().max(self.title.chars().count()) as u16;
-        let width = body_width.saturating_add(4).max(40).min(area.width);
-        let height: u16 = 6;
-        let height = height.min(area.height);
-        let x = area.x.saturating_add(area.width.saturating_sub(width) / 2);
-        let y = area.y.saturating_add(area.height.saturating_sub(height) / 2);
-        Rect { x, y, width, height }
-    }
-
-    fn render_buttons(&self, area: Rect, buf: &mut Buffer) {
+    fn build_button_row(&self) -> DialogRow {
+        let accent = Accent::Yellow.color();
         let mut spans: Vec<Span<'static>> = Vec::new();
         for (i, label) in self.buttons.iter().enumerate() {
             if i > 0 {
-                spans.push(Span::raw(" │ "));
+                spans.push(Span::raw(FOOTER_SEPARATOR.to_string()));
             }
             let style = if i == self.focused {
-                Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
+                Style::default()
+                    .bg(accent)
+                    .fg(Color::Black)
+                    .add_modifier(Modifier::BOLD)
             } else {
                 Style::default()
             };
             spans.push(Span::styled(format!(" {label} "), style));
         }
-        Paragraph::new(Line::from(spans)).render(area, buf);
+        DialogRow {
+            spans,
+            selectable: false,
+            selected: false,
+        }
     }
 
-    /// Render the dialog as a centred overlay inside `area`. Paints
-    /// `Clear` over the dialog rect first so the parent view is
-    /// hidden behind the dialog body.
+    /// Render the dialog as a centred overlay inside `area`. Uses the
+    /// shared dialog_theme renderer for the rounded yellow border +
+    /// black background + bold inner title; appends a button row.
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let dialog = self.dialog_rect(area);
-        Clear.render(dialog, buf);
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .title(self.title.clone());
-        let inner = block.inner(dialog);
-        block.render(dialog, buf);
-        let layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([Constraint::Min(0), Constraint::Length(1)])
-            .split(inner);
-        Paragraph::new(self.body.clone()).render(layout[0], buf);
-        self.render_buttons(layout[1], buf);
+        let body_row = DialogRow {
+            spans: vec![Span::raw(self.body.clone())],
+            selectable: false,
+            selected: false,
+        };
+        let spacer = DialogRow {
+            spans: vec![Span::raw(String::new())],
+            selectable: false,
+            selected: false,
+        };
+        let dialog = FspecDialog {
+            accent: Accent::Yellow,
+            title: &self.title,
+            rows: vec![body_row, spacer, self.build_button_row()],
+            footer: "",
+            min_width: 40,
+        };
+        render_dialog(area, buf, &dialog);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
+    use super::*;
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    #[test]
+    fn confirm_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
+        let dialog = ConfirmDialog::new(
+            "Delete Session",
+            "This action cannot be undone.",
+            "Delete",
+            None,
+            "Cancel",
+        );
+        let backend = TestBackend::new(80, 24);
+        let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+        terminal
+            .draw(|frame| {
+                dialog.render(frame.area(), frame.buffer_mut());
+            })
+            .expect("draw");
+        let buf = terminal.backend().buffer().clone();
+        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
+        for y in 0..buf.area.height {
+            let mut row = String::with_capacity(buf.area.width as usize);
+            for x in 0..buf.area.width {
+                row.push_str(buf[(x, y)].symbol());
+            }
+            rows.push(row);
+        }
+        insta::assert_yaml_snapshot!("confirm_dialog__centered_popup_80x24", rows);
     }
 }

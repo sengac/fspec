@@ -40,10 +40,12 @@ pub mod views;
 #[cfg(test)]
 mod compositor_tests;
 
-pub use app::{synth_key, App};
+pub use app::{parse_slash_command, synth_key, App, SlashCommandParse};
 pub use components::{Action, Callback, Component, EventResult, Priority};
 pub use components::hello::HelloComponent;
 pub use components::help_dialog::HelpDialog;
+pub use components::model_selector_dialog::{ModelSelectorDialog, MODEL_SELECTOR_DIALOG_ID};
+pub use components::thinking_level_dialog::{ThinkingLevelDialog, THINKING_LEVEL_DIALOG_ID};
 pub use compositor::Compositor;
 pub use store::{AgentViewStore, BoardStore, SessionContext, COLUMN_ORDER};
 pub use terminal::TerminalGuard;

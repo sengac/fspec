@@ -18,8 +18,8 @@ use anyhow::Result;
 use async_trait::async_trait;
 use codelet_fspec_tui::{Action, App, FspecBackend};
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
-    StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, ProviderInfo, SessionId,
+    SessionInfo, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tokio::sync::{broadcast, Notify};
 
@@ -181,6 +181,34 @@ impl FspecBackend for HistoryMockBackend {
         Ok(Vec::new())
     }
     async fn persistence_delete_session(&self, _id: SessionId) -> Result<()> {
+        Ok(())
+    }
+    async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {
+        Ok(Vec::new())
+    }
+    async fn set_session_model(
+        &self,
+        _session_id: SessionId,
+        _provider_id: String,
+        _model_id: String,
+    ) -> Result<()> {
+        Ok(())
+    }
+    async fn set_thinking_level(
+        &self,
+        _session_id: SessionId,
+        _level: ThinkingLevel,
+    ) -> Result<()> {
+        Ok(())
+    }
+    async fn get_session_role(&self, _session_id: SessionId) -> Result<Option<String>> {
+        Ok(None)
+    }
+    async fn set_session_role(
+        &self,
+        _session_id: SessionId,
+        _role: Option<String>,
+    ) -> Result<()> {
         Ok(())
     }
 }

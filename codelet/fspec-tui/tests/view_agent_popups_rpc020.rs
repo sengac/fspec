@@ -228,32 +228,32 @@ fn pressing_enter_on_help_emits_help_action() {
 /// Scenario: Pressing Enter on an unimplemented command emits a scrollback notice
 #[test]
 fn pressing_enter_on_unimplemented_command_emits_notice() {
-    // @step Given an AgentView whose slash popup is open with "/model" highlighted
+    // @step Given an AgentView whose slash popup is open with "/compact" highlighted
     let (mut view, mut rx) = fresh_view();
-    type_chars(&mut view, "/model");
+    type_chars(&mut view, "/compact");
     let _ = drain(&mut rx);
 
     // @step When the user presses Enter
     view.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
 
-    // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Model)
+    // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Compact)
     let actions = drain(&mut rx);
     assert!(
         actions
             .iter()
-            .any(|a| matches!(a, Action::SlashCommandSelected(SlashCommandAction::Model))),
-        "expected SlashCommandSelected(Model), got {actions:?}"
+            .any(|a| matches!(a, Action::SlashCommandSelected(SlashCommandAction::Compact))),
+        "expected SlashCommandSelected(Compact), got {actions:?}"
     );
     // @step And dispatching that action appends one scrollback chunk whose text contains "[notice]"
     let mut app = fresh_app();
     seed_session(&mut app, "s-1");
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Model));
+    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 1);
     let text = scrollback_text(&app);
     assert!(text.contains("[notice]"), "expected '[notice]' in {text:?}");
-    // @step And that scrollback chunk's text contains "model"
-    assert!(text.contains("model"), "expected 'model' in {text:?}");
+    // @step And that scrollback chunk's text contains "compact"
+    assert!(text.contains("compact"), "expected 'compact' in {text:?}");
     // @step And that scrollback chunk's text contains "not yet implemented"
     assert!(
         text.contains("not yet implemented"),

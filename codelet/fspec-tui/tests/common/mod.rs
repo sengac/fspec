@@ -184,8 +184,8 @@ use anyhow::Result;
 use async_trait::async_trait;
 use codelet_fspec_tui::FspecBackend;
 use codelet_rpc_types::{
-    CheckpointCounts, LogRecord, ModelInfo, SessionId, SessionInfo, StreamChunk, ThinkingLevel,
-    WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, LogRecord, ModelInfo, ProviderInfo, SessionId, SessionInfo, StreamChunk,
+    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use tokio::sync::broadcast;
 
@@ -254,6 +254,27 @@ pub struct MockBackend {
     /// RPC-026: capture of the last query passed to
     /// `persistence_search_history`.
     last_history_query: Mutex<Option<String>>,
+    /// RPC-022: scripted providers returned by `list_providers`.
+    providers: Mutex<Vec<ProviderInfo>>,
+    /// RPC-022: counters + captures for the five new RPC methods.
+    list_providers_calls: AtomicUsize,
+    set_session_model_calls: AtomicUsize,
+    set_thinking_level_calls: AtomicUsize,
+    get_session_role_calls: AtomicUsize,
+    set_session_role_calls: AtomicUsize,
+    last_set_session_model: Mutex<Option<(SessionId, String, String)>>,
+    last_set_thinking_level: Mutex<Option<(SessionId, ThinkingLevel)>>,
+    last_get_session_role: Mutex<Option<SessionId>>,
+    last_set_session_role: Mutex<Option<(SessionId, Option<String>)>>,
+    /// RPC-022: scripted per-session role overlay returned by
+    /// `get_session_role` and overwritten by `set_session_role`. Mutex
+    /// of a Vec because tests sometimes seed multiple sessions.
+    session_roles: Mutex<Vec<(SessionId, Option<String>)>>,
+    /// RPC-022: per-call counter for `persistence_add_history`.
+    persistence_add_history_calls: AtomicUsize,
+    /// RPC-022: capture of the last `(SessionId, text)` passed to
+    /// `persistence_add_history`.
+    last_persistence_add_history: Mutex<Option<(SessionId, String)>>,
 }
 
 impl Default for MockBackend {
@@ -290,6 +311,19 @@ impl Default for MockBackend {
             history_search_results: Mutex::new(Vec::new()),
             search_history_calls: AtomicUsize::new(0),
             last_history_query: Mutex::new(None),
+            providers: Mutex::new(Vec::new()),
+            list_providers_calls: AtomicUsize::new(0),
+            set_session_model_calls: AtomicUsize::new(0),
+            set_thinking_level_calls: AtomicUsize::new(0),
+            get_session_role_calls: AtomicUsize::new(0),
+            set_session_role_calls: AtomicUsize::new(0),
+            last_set_session_model: Mutex::new(None),
+            last_set_thinking_level: Mutex::new(None),
+            last_get_session_role: Mutex::new(None),
+            last_set_session_role: Mutex::new(None),
+            session_roles: Mutex::new(Vec::new()),
+            persistence_add_history_calls: AtomicUsize::new(0),
+            last_persistence_add_history: Mutex::new(None),
         }
     }
 }
@@ -443,6 +477,95 @@ impl MockBackend {
     pub fn seed_sessions(&self, sessions: Vec<SessionInfo>) {
         *self.sessions.lock().expect("MockBackend mutex") = sessions;
     }
+
+    /// RPC-022: preload the provider registry returned by
+    /// `list_providers`.
+    pub fn seed_providers(&self, providers: Vec<ProviderInfo>) {
+        *self.providers.lock().expect("MockBackend mutex") = providers;
+    }
+
+    /// RPC-022: how many times `list_providers` was awaited.
+    pub fn list_providers_calls(&self) -> usize {
+        self.list_providers_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-022: how many times `set_session_model` was awaited.
+    pub fn set_session_model_calls(&self) -> usize {
+        self.set_session_model_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-022: how many times `set_thinking_level` was awaited.
+    pub fn set_thinking_level_calls(&self) -> usize {
+        self.set_thinking_level_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-022: how many times `get_session_role` was awaited.
+    pub fn get_session_role_calls(&self) -> usize {
+        self.get_session_role_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-022: how many times `set_session_role` was awaited.
+    pub fn set_session_role_calls(&self) -> usize {
+        self.set_session_role_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-022: the last `(SessionId, provider_id, model_id)` triple
+    /// passed to `set_session_model`.
+    pub fn last_set_session_model(&self) -> Option<(SessionId, String, String)> {
+        self.last_set_session_model
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-022: the last `(SessionId, ThinkingLevel)` pair passed to
+    /// `set_thinking_level`.
+    pub fn last_set_thinking_level(&self) -> Option<(SessionId, ThinkingLevel)> {
+        self.last_set_thinking_level
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-022: the last SessionId passed to `get_session_role`.
+    pub fn last_get_session_role(&self) -> Option<SessionId> {
+        self.last_get_session_role
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-022: the last `(SessionId, Option<String>)` passed to
+    /// `set_session_role`.
+    pub fn last_set_session_role(&self) -> Option<(SessionId, Option<String>)> {
+        self.last_set_session_role
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-022: preload `(SessionId, role)` pairs so
+    /// `get_session_role(id)` returns the seeded role overlay (None
+    /// when the SessionId is not in the table).
+    pub fn seed_session_role(&self, session: SessionId, role: Option<String>) {
+        let mut roles = self.session_roles.lock().expect("MockBackend mutex");
+        roles.retain(|(s, _)| s != &session);
+        roles.push((session, role));
+    }
+
+    /// RPC-022: how many times `persistence_add_history` was awaited.
+    pub fn persistence_add_history_calls(&self) -> usize {
+        self.persistence_add_history_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-022: the last `(SessionId, text)` pair passed to
+    /// `persistence_add_history`.
+    pub fn last_persistence_add_history(&self) -> Option<(SessionId, String)> {
+        self.last_persistence_add_history
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
 }
 
 #[async_trait]
@@ -561,7 +684,13 @@ impl FspecBackend for MockBackend {
         Ok(filtered)
     }
 
-    async fn persistence_add_history(&self, _session: SessionId, _text: String) -> Result<()> {
+    async fn persistence_add_history(&self, session: SessionId, text: String) -> Result<()> {
+        self.persistence_add_history_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_persistence_add_history
+            .lock()
+            .expect("MockBackend mutex") = Some((session, text));
         Ok(())
     }
 
@@ -587,6 +716,69 @@ impl FspecBackend for MockBackend {
         *self.last_deleted_session.lock().expect("MockBackend mutex") = Some(id.clone());
         let mut sessions = self.sessions.lock().expect("MockBackend mutex");
         sessions.retain(|s| s.id != id.value);
+        Ok(())
+    }
+
+    async fn list_providers(&self) -> Result<Vec<ProviderInfo>> {
+        self.list_providers_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(self.providers.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn set_session_model(
+        &self,
+        session_id: SessionId,
+        provider_id: String,
+        model_id: String,
+    ) -> Result<()> {
+        self.set_session_model_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_session_model
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id, provider_id, model_id));
+        Ok(())
+    }
+
+    async fn set_thinking_level(
+        &self,
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<()> {
+        self.set_thinking_level_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_thinking_level
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id, level));
+        Ok(())
+    }
+
+    async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {
+        self.get_session_role_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_get_session_role.lock().expect("MockBackend mutex") =
+            Some(session_id.clone());
+        let roles = self.session_roles.lock().expect("MockBackend mutex");
+        let role = roles
+            .iter()
+            .find(|(s, _)| s == &session_id)
+            .and_then(|(_, r)| r.clone());
+        Ok(role)
+    }
+
+    async fn set_session_role(
+        &self,
+        session_id: SessionId,
+        role: Option<String>,
+    ) -> Result<()> {
+        self.set_session_role_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_session_role
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id.clone(), role.clone()));
+        // Mirror the SessionManager production behaviour: overwrite the
+        // overlay when set, drop it when cleared.
+        let mut roles = self.session_roles.lock().expect("MockBackend mutex");
+        roles.retain(|(s, _)| s != &session_id);
+        roles.push((session_id, role));
         Ok(())
     }
 }

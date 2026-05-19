@@ -1,0 +1,383 @@
+{
+  "scenarios": [
+    {
+      "name": "list_providers returns empty Vec when no session manager is attached (embedded)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "82-96",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                178,
+                179,
+                180,
+                181
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "list_providers crosses tarpc cleanly when no session manager is attached",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "98-117",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both transports return identical providers for the same SharedFspecService",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "119-148",
+          "implMappings": [
+            {
+              "file": "codelet/rpc/src/lib.rs",
+              "lines": [
+                708,
+                709,
+                710,
+                711,
+                712,
+                713,
+                714,
+                715,
+                716,
+                717,
+                718
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_session_model returns Ok when no session manager is attached (embedded)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "150-170",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_session_model crosses tarpc cleanly when no session manager is attached",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "172-197",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_thinking_level returns Ok when no session manager is attached (embedded)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "199-215",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_thinking_level crosses tarpc cleanly with safe default",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "217-238",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "get_session_role returns None when no session manager is attached (embedded)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "240-257",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "get_session_role crosses tarpc cleanly with safe default",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "259-281",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_session_role returns Ok when no session manager is attached (embedded)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "283-305",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "set_session_role crosses tarpc cleanly with safe default",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "307-328",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StubSessionManagerHandle inherits the default SessionManagerHandle implementations for the five new RPC methods",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs",
+          "lines": "330-373",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/session_manager_handle.rs",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/modal_dialog_parity_rpc022.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/transport/embedded.rs",
+      "codelet/fspec-tui/src/transport/websocket.rs",
+      "codelet/rpc/src/lib.rs",
+      "codelet/core/src/session_manager_handle.rs"
+    ],
+    "totalLinesCovered": 453
+  }
+}

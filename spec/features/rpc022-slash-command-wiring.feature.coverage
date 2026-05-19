@@ -1,0 +1,376 @@
+{
+  "scenarios": [
+    {
+      "name": "parse_slash_command recognises the four wired commands",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "52-85",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submitting \"/model\" opens the ModelSelectorDialog and spawns list_providers",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "86-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submitting \"/thinking\" opens the ThinkingLevelDialog seeded with the cached level",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "158-214",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submitting \"/role You are a reviewer\" sets the role and shows the RoleBanner",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "215-246",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submitting \"/role clear\" clears the role and hides the RoleBanner",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "247-272",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "lines": [
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submitting bare \"/role\" is treated as a clear",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "273-292",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+              "lines": [
+                59,
+                60,
+                61
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Submitting plain text falls through to backend.send_input unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "293-316",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slash commands are NOT appended to the per-session history",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "317-349",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slash popup selection of /model also opens the ModelSelectorDialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "350-378",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slash popup selection of /role is treated as a clear and does not surface a [notice]",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs",
+          "lines": "377-424",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/slash_command_wiring_rpc022.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc022.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc020.rs"
+    ],
+    "totalLinesCovered": 574
+  }
+}

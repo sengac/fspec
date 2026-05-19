@@ -1,0 +1,28 @@
+---
+source: fspec-tui/src/views/agent/confirm_dialog.rs
+expression: rows
+---
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                  ╭──────────────────────────────────────────╮                  "
+- "                  │                                          │                  "
+- "                  │ Delete Session                           │                  "
+- "                  │                                          │                  "
+- "                  │ This action cannot be undone.            │                  "
+- "                  │                                          │                  "
+- "                  │  Delete  │  Cancel                       │                  "
+- "                  │                                          │                  "
+- "                  ╰──────────────────────────────────────────╯                  "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "

@@ -1,0 +1,28 @@
+---
+source: fspec-tui/src/components/thinking_level_dialog.rs
+expression: rows
+---
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "           ╭────────────────────────────────────────────────────────╮           "
+- "           │                                                        │           "
+- "           │ Thinking Level                                         │           "
+- "           │                                                        │           "
+- "           │ ▸ Off - No extended thinking                           │           "
+- "           │   Low - ~4K tokens, quick analysis                     │           "
+- "           │   Medium - ~10K tokens, balanced                       │           "
+- "           │   High - ~32K tokens, deep reasoning                   │           "
+- "           │                                                        │           "
+- "           │ ↑↓ Navigate │ Enter Select │ D Set Default │ Esc Close │           "
+- "           │                                                        │           "
+- "           ╰────────────────────────────────────────────────────────╯           "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "

@@ -19,7 +19,9 @@ use codelet_rpc_types::{
     WorkspaceInfo,
 };
 
+pub mod chrome_state;
 pub mod history_state;
+pub mod role_state;
 pub mod session_context;
 pub use history_state::HistoryNavState;
 pub use session_context::SessionContext;
@@ -84,6 +86,15 @@ pub struct AgentViewStore {
     /// Per-session cached history snapshot loaded by the first
     /// Action::HistoryPrev. Cleared on Action::InputSubmitted.
     cached_history_snapshot: HashMap<SessionId, Vec<String>>,
+
+    // ── RPC-022 per-session role overlay state ──────────────────────────
+    /// Optional role overlay text per session — `Some(text)` paints the
+    /// inline RoleBanner above the scrollback; `None` collapses the
+    /// banner. Populated by `Action::SessionRoleLoaded` (bootstrap +
+    /// SessionCreated paths) and `Action::SetSessionRole` (user-driven
+    /// `/role` slash command). Mutated only on the App task per the
+    /// RPC-009 single-task invariant.
+    role_by_session: HashMap<SessionId, String>,
 }
 
 impl AgentViewStore {
@@ -207,11 +218,12 @@ impl AgentViewStore {
         self.show_create_session_dialog = false;
         self.should_auto_create_session = false;
     }
-}
 
-impl AgentViewStore {
-    // ── RPC-018 chrome accessors ───────────────────────────────────────
-
+    /// 1-based `(current, total)` index of the focused session.
+    /// Kept inline in `agent_view.rs` (rather than `chrome_state.rs`)
+    /// to satisfy the RPC-024 source-shape invariant
+    /// `agent_view_store_no_longer_exposes_set_session_index`, which
+    /// pins `pub fn session_index` to this file.
     pub fn session_index(&self) -> (usize, usize) {
         let len = self.open_sessions.len();
         if len == 0 {
@@ -219,46 +231,6 @@ impl AgentViewStore {
         } else {
             (self.current_session_index + 1, len)
         }
-    }
-
-    pub fn model_info_for(&self, session_id: &SessionId) -> Option<&ModelInfo> {
-        self.model_info_by_session.get(session_id)
-    }
-
-    pub fn set_model_info(&mut self, session_id: SessionId, info: ModelInfo) {
-        self.model_info_by_session.insert(session_id, info);
-    }
-
-    pub fn thinking_level_for(&self, session_id: &SessionId) -> Option<&ThinkingLevel> {
-        self.thinking_level_by_session.get(session_id)
-    }
-
-    pub fn set_thinking_level(&mut self, session_id: SessionId, level: ThinkingLevel) {
-        self.thinking_level_by_session.insert(session_id, level);
-    }
-
-    pub fn token_state_for(&self, session_id: &SessionId) -> Option<&TokenState> {
-        self.token_state_by_session.get(session_id)
-    }
-
-    pub fn set_token_state(&mut self, session_id: SessionId, state: TokenState) {
-        self.token_state_by_session.insert(session_id, state);
-    }
-
-    pub fn apply_chunk_to_token_state(&mut self, session_id: &SessionId, chunk: &StreamChunk) {
-        let entry = self
-            .token_state_by_session
-            .entry(session_id.clone())
-            .or_default();
-        entry.apply_chunk(chunk);
-    }
-
-    pub fn workspace(&self) -> Option<&WorkspaceInfo> {
-        self.workspace.as_ref()
-    }
-
-    pub fn set_workspace(&mut self, workspace: Option<WorkspaceInfo>) {
-        self.workspace = workspace;
     }
 }
 
@@ -294,6 +266,15 @@ impl AgentViewStore {
         self.cached_history_snapshot.remove(session);
     }
 }
+
+// RPC-018 per-session chrome accessors live in
+// `store/agent_view/chrome_state.rs`.
+//
+// RPC-022 per-session role accessors live in
+// `store/agent_view/role_state.rs`.
+//
+// Both blocks were extracted to keep `agent_view.rs` under 300 LoC
+// (RPC-024 + RPC-025 source-shape invariants).
 // Inline AgentViewStore unit tests were removed in RPC-024 — the
 // equivalent coverage now lives in
 // `tests/store_agent_view_multisession_rpc024.rs`.

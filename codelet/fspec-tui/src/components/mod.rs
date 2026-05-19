@@ -14,14 +14,24 @@ use ratatui::layout::Rect;
 use crate::compositor::Compositor;
 
 pub mod disconnect_dialog;
+pub mod dialog_theme;
+pub mod dialog_theme_rows;
 pub mod hello;
 pub mod help_dialog;
+pub mod model_selector_dialog;
+pub mod model_selector_dialog_rows;
+pub mod thinking_level_dialog;
 
 /// Event-handling priority for layered components (RPC-002 doc 09 §A.1).
 ///
 /// `#[repr(u32)]` with discriminants from RPC-008 rule [5]. The exact
 /// numeric values matter for cross-binary stability and for the
 /// dispatcher's `sort_by_key` ordering.
+///
+/// RPC-022 added [`Priority::Foreground`] (900) between `High` and
+/// `Critical` so the new modal dialogs (ModelSelectorDialog,
+/// ThinkingLevelDialog) sit above the always-on background views but
+/// still beneath `Critical` dialogs (HelpDialog / DisconnectDialog).
 #[repr(u32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Priority {
@@ -29,6 +39,7 @@ pub enum Priority {
     Low = 200,
     Medium = 500,
     High = 800,
+    Foreground = 900,
     Critical = 1000,
 }
 
@@ -314,6 +325,58 @@ pub enum Action {
     /// fresh `backend.list_sessions()` → Action::SessionListLoaded
     /// so the resume view repaints without the deleted session.
     ConfirmDeleteSession(codelet_rpc_types::SessionId),
+    /// RPC-022: emitted by the slash command popup (on Enter over the
+    /// Model row) AND by `parse_slash_command("/model")`.
+    /// App::dispatch pushes a fresh ModelSelectorDialog onto the
+    /// Compositor at Priority::Foreground AND spawns
+    /// `backend.list_providers()` whose result returns via
+    /// `Action::ListProvidersLoaded`.
+    OpenModelDialog,
+    /// RPC-022: emitted by the slash command popup (on Enter over the
+    /// Thinking row) AND by `parse_slash_command("/thinking")`.
+    /// App::dispatch pushes a fresh ThinkingLevelDialog onto the
+    /// Compositor at Priority::Foreground seeded with the cached
+    /// thinking level for the focused session.
+    OpenThinkingDialog,
+    /// RPC-022: a spawned `backend.list_providers()` task resolved.
+    /// App::dispatch folds the result into the open
+    /// ModelSelectorDialog. No-op when no dialog is open.
+    ListProvidersLoaded(Vec<codelet_rpc_types::ProviderInfo>),
+    /// RPC-022: emitted by ModelSelectorDialog on Enter over a model
+    /// row. App::dispatch spawns `backend.set_session_model(...)` then
+    /// re-runs `backend.get_model_info(...)` to refresh the
+    /// SessionHeader chrome via `Action::ModelInfoLoaded`.
+    ModelSelected(
+        codelet_rpc_types::SessionId,
+        String,
+        String,
+    ),
+    /// RPC-022: emitted by ThinkingLevelDialog on Enter over a level
+    /// row. App::dispatch spawns `backend.set_thinking_level(...)`
+    /// then re-runs `backend.get_thinking_level(...)` to refresh the
+    /// `[T:Level]` badge via `Action::ThinkingLevelLoaded`.
+    ThinkingLevelSelected(
+        codelet_rpc_types::SessionId,
+        codelet_rpc_types::ThinkingLevel,
+    ),
+    /// RPC-022: emitted by `parse_slash_command("/role …")` and by
+    /// the bare `/role clear` path. App::dispatch updates
+    /// AgentViewStore.role_by_session AND spawns
+    /// `backend.set_session_role(...)`.
+    SetSessionRole(codelet_rpc_types::SessionId, Option<String>),
+    /// RPC-022: a spawned `backend.get_session_role(...)` task
+    /// resolved. App::dispatch folds the result into
+    /// AgentViewStore.role_by_session so the RoleBanner repaints. No
+    /// backend write is fired for this — it is purely a read path.
+    SessionRoleLoaded(codelet_rpc_types::SessionId, Option<String>),
+    /// RPC-027: emitted by ThinkingLevelDialog on the `D` / `d` key.
+    /// App::dispatch spawns `backend.set_thinking_level_default(...)`.
+    /// The dialog stays open; no badge refresh fires because the
+    /// default does not change the current session's effective level.
+    SetThinkingLevelDefault(
+        codelet_rpc_types::SessionId,
+        codelet_rpc_types::ThinkingLevel,
+    ),
 }
 
 /// Visible UI element that participates in event dispatch + rendering.

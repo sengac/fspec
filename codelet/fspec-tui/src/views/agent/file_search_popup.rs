@@ -1,6 +1,7 @@
 //! RPC-020 — File search popup widget.
 //!
 //! Feature: spec/features/rpc020-slash-and-file-popups.feature
+//! Feature: spec/features/rpc027-slash-file-popups.feature
 //!
 //! Centred floating overlay rendered above AgentView's MultiLineInput
 //! when the user types `@` followed by zero-or-more non-space chars.
@@ -14,14 +15,20 @@
 //! dispatch fires a tokio task calling `backend.search_files`, then
 //! emits `Action::FileSearchResults(matches)` which AgentView folds
 //! back into this popup via `set_matches`.
+//!
+//! RPC-027: now renders via the shared dialog_theme renderer so the
+//! cyan border, bold "File Search" inner title, two-character row
+//! marker, inverse cyan/black selection highlight, and dim centered
+//! footer match the TypeScript Ink reference exactly.
 
 use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::widgets::Widget;
-use tui_popup::Popup;
+use ratatui::text::Span;
 
-use super::popup_body::{widest_line, PopupBody};
+use crate::components::dialog_theme::{
+    render_dialog, Accent, DialogRow, FspecDialog, MARKER_SELECTED, MARKER_UNSELECTED,
+};
 
 /// Outcome of routing a single key event through the file search popup.
 #[derive(Debug, Clone)]
@@ -148,33 +155,50 @@ impl FileSearchPopup {
     }
 
     pub fn render(&self, area: Rect, buf: &mut Buffer) {
-        let body = self.build_body();
-        let width = widest_line(&body) + 2;
-        let height = body.lines().count() as u16;
-        let sized = PopupBody {
-            text: body,
-            selected_index: self.selected_index,
-            width,
-            height,
+        let rows = self.build_rows();
+        let dialog = FspecDialog {
+            accent: Accent::Cyan,
+            title: "File Search",
+            rows,
+            footer: "↑↓ Navigate │ Tab/Enter Select │ Esc Close",
+            min_width: 45,
         };
-        Popup::new(sized).title("File Search").render(area, buf);
+        render_dialog(area, buf, &dialog);
     }
 
-    fn build_body(&self) -> String {
+    fn build_rows(&self) -> Vec<DialogRow> {
         if self.matches.is_empty() {
             let label = if self.filter.is_empty() {
                 "(type to search files)".to_string()
             } else {
                 format!("(no files match \"{filter}\")", filter = self.filter)
             };
-            return label;
+            return vec![DialogRow {
+                spans: vec![
+                    Span::raw(MARKER_UNSELECTED.to_string()),
+                    Span::raw(label),
+                ],
+                selectable: false,
+                selected: false,
+            }];
         }
-        let mut out = String::new();
+        let mut out = Vec::new();
         for (i, path) in self.matches.iter().take(10).enumerate() {
-            let marker = if i == self.selected_index { "▸" } else { " " };
-            out.push_str(&format!("{marker} {path}\n"));
+            let is_sel = i == self.selected_index;
+            let marker = if is_sel {
+                MARKER_SELECTED
+            } else {
+                MARKER_UNSELECTED
+            };
+            out.push(DialogRow {
+                spans: vec![
+                    Span::raw(marker.to_string()),
+                    Span::raw(path.clone()),
+                ],
+                selectable: true,
+                selected: is_sel,
+            });
         }
-        out.push_str("\n↑↓ Navigate │ Tab/Enter Select │ Esc Close");
         out
     }
 }
@@ -238,5 +262,33 @@ mod tests {
             FilePopupOutcome::Ignored => {}
             other => panic!("expected Ignored, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn file_search_popup_rendering_is_byte_equal_across_runs_insta_snapshot() {
+        use ratatui::backend::TestBackend;
+        use ratatui::Terminal;
+        let mut popup = FileSearchPopup::new(0, "rea");
+        popup.set_matches(vec![
+            "README.md".to_string(),
+            "src/readme.rs".to_string(),
+        ]);
+        let backend = TestBackend::new(80, 24);
+        let mut terminal = Terminal::new(backend).expect("Terminal::new(TestBackend)");
+        terminal
+            .draw(|frame| {
+                popup.render(frame.area(), frame.buffer_mut());
+            })
+            .expect("draw");
+        let buf = terminal.backend().buffer().clone();
+        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
+        for y in 0..buf.area.height {
+            let mut row = String::with_capacity(buf.area.width as usize);
+            for x in 0..buf.area.width {
+                row.push_str(buf[(x, y)].symbol());
+            }
+            rows.push(row);
+        }
+        insta::assert_yaml_snapshot!("file_search_popup__centered_popup_80x24", rows);
     }
 }

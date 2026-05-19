@@ -1,0 +1,28 @@
+---
+source: fspec-tui/src/components/model_selector_dialog.rs
+expression: rows
+---
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "             ╭────────────────────────────────────────────────────╮             "
+- "             │                                                    │             "
+- "             │ Select Model                                       │             "
+- "             │                                                    │             "
+- "             │ No providers available                             │             "
+- "             │                                                    │             "
+- "             │       ↑↓ Navigate │ Enter Select │ Esc Close       │             "
+- "             │          Custom models: not yet supported          │             "
+- "             │                                                    │             "
+- "             ╰────────────────────────────────────────────────────╯             "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "

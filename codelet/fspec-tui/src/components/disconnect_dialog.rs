@@ -1,24 +1,19 @@
 //! Critical-priority Disconnect dialog (RPC-011 CR-1 baseline).
 //!
 //! Feature: spec/features/disconnect-dialog-cr1-baseline.feature
-//! Rules: [1] CR-1 BASELINE: pushed at Priority::Critical when
-//!       Action::Disconnected fires; renders the literal strings
-//!       'daemon disconnected', 'q to quit', 'r to reconnect'.
-//! Rules: [2] CR-1 BASELINE: while topmost, j/k/?/Tab are no-ops;
-//!       only 'q' (Action::Quit) and 'r' (Action::ManualReconnect) are
-//!       honoured.
+//! Feature: spec/features/rpc027-help-disconnect-thinking-dialogs.feature
 //!
-//! On Action::Reconnecting(attempt) the dialog body re-renders to
-//! "auto-reconnecting (attempt N)…" inline — NO new dialog layer is
-//! pushed.
+//! RPC-027: now renders via the shared dialog_theme renderer so the
+//! red rounded border, bold red inner title, and black background
+//! match the TypeScript reference. Behaviour (q/r/swallow nav keys)
+//! is unchanged.
 
 use crossterm::event::{Event, KeyCode};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::text::Text;
-use ratatui::widgets::{Widget, WidgetRef};
-use tui_popup::{Popup, SizedWidgetRef};
+use ratatui::text::Span;
 
+use super::dialog_theme::{render_dialog, Accent, DialogRow, FspecDialog};
 use super::{Action, Callback, Component, EventResult, Priority};
 
 /// Stable id used by Compositor::remove on Action::Reconnected.
@@ -65,30 +60,16 @@ impl DisconnectDialog {
         };
         format!("{header}\n\nq to quit\nr to reconnect")
     }
-}
 
-/// Adapter from `Text<'static>` to the `SizedWidgetRef` trait the
-/// `tui_popup::Popup` needs.
-#[derive(Debug)]
-struct DisconnectBody {
-    text: Text<'static>,
-    width: u16,
-    height: u16,
-}
-
-impl WidgetRef for DisconnectBody {
-    fn render_ref(&self, area: Rect, buf: &mut Buffer) {
-        Widget::render(self.text.clone(), area, buf);
-    }
-}
-
-impl SizedWidgetRef for DisconnectBody {
-    fn width(&self) -> usize {
-        self.width as usize
-    }
-
-    fn height(&self) -> usize {
-        self.height as usize
+    fn body_rows(&self) -> Vec<DialogRow> {
+        self.body()
+            .lines()
+            .map(|line| DialogRow {
+                spans: vec![Span::raw(line.to_string())],
+                selectable: false,
+                selected: false,
+            })
+            .collect()
     }
 }
 
@@ -103,16 +84,11 @@ impl Component for DisconnectDialog {
 
     /// CR-1 rule [2]: while topmost, j/k/?/Tab are no-ops. ONLY 'q'
     /// (which emits Action::Quit via the App run loop's main dispatch)
-    /// and 'r' (which emits Action::ManualReconnect) are honoured. We
-    /// `Consume` every key we handle so it cannot leak to underlying
-    /// layers, and we ALSO consume j/k/?/Tab to actively swallow them.
+    /// and 'r' (which emits Action::ManualReconnect) are honoured.
     fn handle_event(&mut self, event: &Event) -> EventResult {
         if let Event::Key(key) = event {
             match key.code {
                 KeyCode::Char('q') => {
-                    // 'q' propagates to the App as Action::Quit via the
-                    // run loop's KeyEvent → Action mapping. We consume
-                    // the key here too so it does not double-trigger.
                     let id = self.id.clone();
                     let callback: Callback = Box::new(move |compositor| {
                         let _ = compositor.remove(&id);
@@ -120,20 +96,12 @@ impl Component for DisconnectDialog {
                     return EventResult::Consumed(Some(callback));
                 }
                 KeyCode::Char('r') => {
-                    // Manual reconnect — the App's run loop reads this
-                    // KeyEvent independently and emits
-                    // Action::ManualReconnect onto the action bus. We
-                    // consume here so the keypress is not re-dispatched
-                    // to other layers.
                     return EventResult::consumed();
                 }
                 KeyCode::Char('j')
                 | KeyCode::Char('k')
                 | KeyCode::Char('?')
                 | KeyCode::Tab => {
-                    // CR-1 rule [2]: actively swallow navigation keys
-                    // so the WorkUnitsListView / HelpDialog / Tab pane
-                    // flip cannot fire while we're topmost.
                     return EventResult::consumed();
                 }
                 _ => {}
@@ -142,10 +110,6 @@ impl Component for DisconnectDialog {
         EventResult::ignored()
     }
 
-    /// On Action::Reconnecting(n) we update our attempt counter so the
-    /// next render() shows "auto-reconnecting (attempt N)…" inline. On
-    /// Action::Reconnected the App.dispatch() side removes us from the
-    /// compositor — we do not handle Reconnected here.
     fn update(&mut self, action: Action) -> Option<Action> {
         if let Action::Reconnecting(n) = action {
             self.attempt = Some(n);
@@ -154,20 +118,14 @@ impl Component for DisconnectDialog {
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let body = self.body();
-        let widest = body
-            .lines()
-            .map(|l| l.chars().count() as u16)
-            .max()
-            .unwrap_or(0);
-        let height = body.lines().count() as u16;
-        let sized = DisconnectBody {
-            text: Text::raw(body),
-            width: widest + 2,
-            height,
+        let dialog = FspecDialog {
+            accent: Accent::Red,
+            title: "Disconnected",
+            rows: self.body_rows(),
+            footer: "",
+            min_width: 50,
         };
-        let popup = Popup::new(sized).title("Disconnected");
-        popup.render(area, buf);
+        render_dialog(area, buf, &dialog);
     }
 }
 
@@ -227,5 +185,20 @@ mod tests {
         let buf = render_dialog_80x24(&mut dialog);
         let text = buffer_text(&buf);
         assert!(text.contains("auto-reconnecting (attempt 3)"));
+    }
+
+    #[test]
+    fn disconnect_dialog_rendering_is_byte_equal_across_runs_insta_snapshot() {
+        let mut dialog = DisconnectDialog::new();
+        let buf = render_dialog_80x24(&mut dialog);
+        let mut rows: Vec<String> = Vec::with_capacity(buf.area.height as usize);
+        for y in 0..buf.area.height {
+            let mut row = String::with_capacity(buf.area.width as usize);
+            for x in 0..buf.area.width {
+                row.push_str(buf[(x, y)].symbol());
+            }
+            rows.push(row);
+        }
+        insta::assert_yaml_snapshot!("disconnect_dialog__centered_popup_80x24", rows);
     }
 }

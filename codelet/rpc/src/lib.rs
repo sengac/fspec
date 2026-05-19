@@ -26,8 +26,8 @@
 use codelet_core::session_manager_handle::SessionManagerHandle;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, SessionId, SessionInfo,
-    SessionStatus, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, ProviderInfo, SessionId,
+    SessionInfo, SessionStatus, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
 };
 use arc_swap::ArcSwap;
 use std::path::PathBuf;
@@ -153,6 +153,48 @@ pub trait FspecService {
     /// idempotent (silently succeeds, matching the underlying core
     /// helper's contract).
     async fn persistence_delete_session(session: SessionId) -> Result<(), String>;
+
+    /// RPC-022: list every provider and its available models. Delegates
+    /// through the optional `SessionManagerHandle::list_providers` —
+    /// when no handle is attached the default returns
+    /// `Vec::new()`. The codelet/napi `SessionManager` override reads
+    /// the cached `ModelRegistry` and maps each provider/model into
+    /// the transport-portable `ProviderInfo` / `ModelEntry` shape.
+    async fn list_providers() -> Vec<ProviderInfo>;
+
+    /// RPC-022: set the model bound to a session. Delegates through
+    /// the optional `SessionManagerHandle::set_model`. Returns
+    /// `Err(String)` only when the underlying handle returns an error
+    /// (e.g. unknown model). Without an attached handle returns
+    /// `Ok(())` (silent no-op, idempotent like `send_input`).
+    async fn set_session_model(
+        session_id: SessionId,
+        provider_id: String,
+        model_id: String,
+    ) -> Result<(), String>;
+
+    /// RPC-022: set the per-session thinking/reasoning level.
+    /// Delegates through `SessionManagerHandle::set_thinking_level`.
+    /// Returns `Err(String)` on handle error; without an attached
+    /// handle returns `Ok(())`.
+    async fn set_thinking_level(
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<(), String>;
+
+    /// RPC-022: read the session's current role overlay text.
+    /// Delegates through `SessionManagerHandle::get_role`. Without an
+    /// attached handle returns `None`.
+    async fn get_session_role(session_id: SessionId) -> Option<String>;
+
+    /// RPC-022: set or clear the session's role overlay. Passing
+    /// `None` clears. Delegates through
+    /// `SessionManagerHandle::set_role`. Without an attached handle
+    /// returns `Ok(())` (silent no-op).
+    async fn set_session_role(
+        session_id: SessionId,
+        role: Option<String>,
+    ) -> Result<(), String>;
 }
 
 /// RPC-011 broadcast capacity for the StreamChunk channel — sized to
@@ -661,6 +703,71 @@ impl FspecService for FspecServiceImpl {
         // ids so the worst case is a silent no-op.
         let uuid = uuid::Uuid::parse_str(&session.value).unwrap_or_else(|_| uuid::Uuid::nil());
         codelet_core::persistence::delete_session(uuid)
+    }
+
+    async fn list_providers(self, _ctx: Context) -> Vec<ProviderInfo> {
+        // RPC-022: delegate to the optional SessionManagerHandle. The
+        // trait carries a default impl returning `Vec::new()`, so
+        // callers without an attached handle get the safe sentinel —
+        // matching the same defaulting pattern used by RPC-018
+        // `get_model_info`.
+        match self.inner.session_manager() {
+            Some(handle) => handle.list_providers(),
+            None => Vec::new(),
+        }
+    }
+
+    async fn set_session_model(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        provider_id: String,
+        model_id: String,
+    ) -> Result<(), String> {
+        // RPC-022: delegate through the optional SessionManagerHandle.
+        // Default impl returns `Ok(())` — silent no-op for the
+        // no-handle case.
+        match self.inner.session_manager() {
+            Some(handle) => handle.set_model(&session_id, &provider_id, &model_id),
+            None => Ok(()),
+        }
+    }
+
+    async fn set_thinking_level(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<(), String> {
+        // RPC-022: delegate through the optional SessionManagerHandle.
+        match self.inner.session_manager() {
+            Some(handle) => handle.set_thinking_level(&session_id, level),
+            None => Ok(()),
+        }
+    }
+
+    async fn get_session_role(self, _ctx: Context, session_id: SessionId) -> Option<String> {
+        // RPC-022: delegate through the optional SessionManagerHandle.
+        // Default impl returns `None` so callers without an attached
+        // handle paint no banner — matching the RPC-018 safe-defaults
+        // pattern.
+        match self.inner.session_manager() {
+            Some(handle) => handle.get_role(&session_id),
+            None => None,
+        }
+    }
+
+    async fn set_session_role(
+        self,
+        _ctx: Context,
+        session_id: SessionId,
+        role: Option<String>,
+    ) -> Result<(), String> {
+        // RPC-022: delegate through the optional SessionManagerHandle.
+        match self.inner.session_manager() {
+            Some(handle) => handle.set_role(&session_id, role),
+            None => Ok(()),
+        }
     }
 }
 

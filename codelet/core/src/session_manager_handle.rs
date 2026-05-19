@@ -27,7 +27,8 @@
 //! codelet-providers, OAuth, persistence, ghost commits, etc.).
 
 use codelet_rpc_types::{
-    LogRecord, ModelInfo, SessionId, SessionInfo, SessionStatus, StreamChunk, ThinkingLevel,
+    LogRecord, ModelInfo, ProviderInfo, SessionId, SessionInfo, SessionStatus, StreamChunk,
+    ThinkingLevel,
 };
 use std::sync::{
     atomic::{AtomicU64, Ordering},
@@ -111,6 +112,86 @@ pub trait SessionManagerHandle: Send + Sync + 'static {
         let _ = session_id;
         ThinkingLevel::Off
     }
+
+    /// RPC-022: return the available provider/model registry for the
+    /// /model modal dialog. Default returns `Vec::new()` so handles
+    /// that have not yet wired the model registry — including the
+    /// `StubSessionManagerHandle` used by integration tests — compile
+    /// without per-test wiring. The concrete codelet/napi
+    /// `SessionManager` overrides this to read the cached
+    /// `ModelRegistry` and map each provider/model into the
+    /// transport-portable `ProviderInfo` / `ModelEntry` shape.
+    fn list_providers(&self) -> Vec<ProviderInfo> {
+        Vec::new()
+    }
+
+    /// RPC-022: set the model bound to a session. Default returns
+    /// `Ok(())` (silent no-op) so handles that have not yet wired
+    /// model selection — including the stub used by tests — compile
+    /// without per-test wiring. The codelet/napi `SessionManager`
+    /// overrides this to delegate to the existing
+    /// `session_set_model`-style flow (model_string parsing +
+    /// `ProviderManager::select_model`).
+    fn set_model(
+        &self,
+        session_id: &SessionId,
+        provider_id: &str,
+        model_id: &str,
+    ) -> Result<(), String> {
+        let _ = (session_id, provider_id, model_id);
+        Ok(())
+    }
+
+    /// RPC-022: set the base thinking/reasoning level for a session.
+    /// Default returns `Ok(())` (silent no-op). The codelet/napi
+    /// override forwards to the existing
+    /// `session_set_base_thinking_level` flow.
+    fn set_thinking_level(
+        &self,
+        session_id: &SessionId,
+        level: ThinkingLevel,
+    ) -> Result<(), String> {
+        let _ = (session_id, level);
+        Ok(())
+    }
+
+    /// RPC-027: set the PER-USER DEFAULT thinking/reasoning level.
+    /// Unlike `set_thinking_level` (which is session-scoped), this
+    /// persists the level so new sessions inherit it. Default returns
+    /// `Ok(())` (silent no-op). The codelet/napi override forwards
+    /// to the future `session_set_default_thinking_level` flow.
+    fn set_thinking_level_default(
+        &self,
+        session_id: &SessionId,
+        level: ThinkingLevel,
+    ) -> Result<(), String> {
+        let _ = (session_id, level);
+        Ok(())
+    }
+
+    /// RPC-022: read the session's current role overlay text. Default
+    /// returns `None` so handles that have not yet wired role state —
+    /// including the stub — compile without per-test wiring. The
+    /// codelet/napi override forwards to the existing
+    /// `session_get_role` flow (which returns
+    /// `Option<SupervisorRoleInfo>` on the JS surface).
+    fn get_role(&self, session_id: &SessionId) -> Option<String> {
+        let _ = session_id;
+        None
+    }
+
+    /// RPC-022: set or clear the session's role overlay. Passing
+    /// `None` clears. Default returns `Ok(())` (silent no-op). The
+    /// codelet/napi override forwards to the existing
+    /// `session_set_role` / `session.clear_role` flow.
+    fn set_role(
+        &self,
+        session_id: &SessionId,
+        role: Option<String>,
+    ) -> Result<(), String> {
+        let _ = (session_id, role);
+        Ok(())
+    }
 }
 
 // ============================================================================
@@ -129,6 +210,7 @@ pub struct StubSessionManagerHandle {
     logs_tx: broadcast::Sender<LogRecord>,
     sessions: Arc<Mutex<Vec<SessionRecord>>>,
     next_id: AtomicU64,
+    providers: Arc<Mutex<Vec<ProviderInfo>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -167,6 +249,17 @@ impl StubSessionManagerHandle {
             logs_tx,
             sessions: Arc::new(Mutex::new(Vec::new())),
             next_id: AtomicU64::new(1),
+            providers: Arc::new(Mutex::new(Vec::new())),
+        }
+    }
+
+    /// RPC-022: pre-seed the provider/model registry returned by
+    /// `list_providers`. Used by cross-transport parity tests that need
+    /// the stub to return a non-empty registry without dragging in the
+    /// real `SessionManager` + `ProviderManager` dependency tree.
+    pub fn set_providers(&self, providers: Vec<ProviderInfo>) {
+        if let Ok(mut guard) = self.providers.lock() {
+            *guard = providers;
         }
     }
 
@@ -289,5 +382,12 @@ impl SessionManagerHandle for StubSessionManagerHandle {
 
     fn logs_tx(&self) -> broadcast::Sender<LogRecord> {
         self.logs_tx.clone()
+    }
+
+    fn list_providers(&self) -> Vec<ProviderInfo> {
+        match self.providers.lock() {
+            Ok(guard) => guard.clone(),
+            Err(_) => Vec::new(),
+        }
     }
 }

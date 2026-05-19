@@ -602,6 +602,7 @@ Tags tracking development status of features.
 | `@remind-008` | Feature file prefill detection and CLI enforcement work unit |
 | `@rpc-006` | Work unit identifier tag for RPC-006: real work-units backing + first streaming envelope variant (WorkUnitsUpdate) |
 | `@rpc-010` | Work unit identifier tag for RPC-010: fspec binary with combined/daemon/client subcommands replacing codelet-rpc-server for production |
+| `@rpc-022` | Work unit identifier tag for RPC-022 — modal dialogs (ModelSelector, ThinkingLevel, RoleBanner) |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -908,7 +909,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-05-17T12:05:31.682Z_
+_Last updated: 2026-05-18T11:26:44.577Z_
 
 **Update Command**: `fspec tag-stats`
 
