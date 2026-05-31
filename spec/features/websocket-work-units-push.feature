@@ -16,7 +16,7 @@ Feature: WebSocket WorkUnitsUpdate envelope variant
 
   RPC-006 lights up the first non-`Rpc` envelope variant on the
   WebSocket transport:
-    Envelope::WorkUnitsUpdate(Vec<WorkUnitInfo>)
+  Envelope::WorkUnitsUpdate(Vec<WorkUnitInfo>)
 
   Per RPC-002 §5.2, push events ride a sibling `tokio::sync::broadcast`
   channel alongside the existing tarpc request/response surface — NOT a
@@ -36,7 +36,7 @@ Feature: WebSocket WorkUnitsUpdate envelope variant
   Wire format remains bincode-of-Envelope (RPC-005 architecture rule [5]).
 
   References: spec/attachments/RPC-006/plan.md (Step 3);
-              spec/attachments/RPC-002/rpc-002-feasibility.md §5.2.
+  spec/attachments/RPC-002/rpc-002-feasibility.md §5.2.
   """
 
   Background: User Story

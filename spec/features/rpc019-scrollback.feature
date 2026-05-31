@@ -8,28 +8,27 @@
 @scroll
 @ui-enhancement
 Feature: RPC-019 AgentView windowed ScrollbackList (O(1) per frame)
-
   """
   RPC-019 (scrollback slice) — AgentView's flat `Vec<RenderedChunk>` and
   manual scroll math are replaced by a `ScrollbackList` widget that
   paints O(1) rows per frame regardless of total chunk count.
 
   Layout stays the 4-row vertical split established by RPC-018:
-    [SessionHeader (Length 1), Scrollback (Min 0), Input (Length N+2),
-     SessionFooter (Length 1)]
+  [SessionHeader (Length 1), Scrollback (Min 0), Input (Length N+2),
+  SessionFooter (Length 1)]
   where N is the MultiLineInput's current visible-row count, clamped
   to `[1, max_visible_rows]` (default cap = 6).
 
   ScrollbackList semantics:
-    - `push(chunk)` appends; while `stick_to_bottom` is true, `offset`
-      auto-advances so the latest chunk stays visible.
-    - PageUp disables stick_to_bottom and decrements `offset` by exactly
-      one viewport height (capped at 0).
-    - PageDown / End increment `offset` by one viewport height; reaching
-      `total_lines - viewport_height` re-enables stick_to_bottom.
-    - `render(area, buf)` only iterates the chunks that fall in
-      `offset..offset+area.height` — total chunk count does NOT affect
-      per-frame work.
+  - `push(chunk)` appends; while `stick_to_bottom` is true, `offset`
+  auto-advances so the latest chunk stays visible.
+  - PageUp disables stick_to_bottom and decrements `offset` by exactly
+  one viewport height (capped at 0).
+  - PageDown / End increment `offset` by one viewport height; reaching
+  `total_lines - viewport_height` re-enables stick_to_bottom.
+  - `render(area, buf)` only iterates the chunks that fall in
+  `offset..offset+area.height` — total chunk count does NOT affect
+  per-frame work.
 
   Pair: render tests live in
   codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs.

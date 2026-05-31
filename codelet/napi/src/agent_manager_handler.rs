@@ -17,7 +17,7 @@ use codelet_tools::agent_manager::types::ContextReference;
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::session_manager::{IncomingMessage, SessionManager};
+use crate::session_bindings::{IncomingMessage, SessionManager};
 use crate::session_search_handler::resolve_message_content;
 
 /// Create an AgentManagerHandler closure for a specific session.

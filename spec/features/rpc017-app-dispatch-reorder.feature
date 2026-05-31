@@ -5,7 +5,6 @@
 @board-view
 @work-units
 Feature: RPC-017 App dispatch wiring for Action::ReorderUp / ReorderDown
-
   """
   RPC-017 (slice 3 of 3) — `App::dispatch` no longer drops
   `Action::ReorderUp` / `Action::ReorderDown` to a no-op handler.
@@ -49,4 +48,3 @@ Feature: RPC-017 App dispatch wiring for Action::ReorderUp / ReorderDown
     When store.replace_work_units is called with [A-001 backlog, C-003 backlog, B-002 backlog] (C-003 moved up by one)
     Then store.selected_index_for("backlog") returns 1 (C-003's new position)
     Then store.selected_work_unit().map(|u| u.id.as_str()) returns Some("C-003")
-

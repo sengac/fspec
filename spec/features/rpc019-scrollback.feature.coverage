@@ -117,49 +117,14 @@
       ]
     },
     {
-      "name": "AgentView vertical layout reserves Length(N+2) for the input box where N tracks the textarea",
-      "testMappings": [
-        {
-          "file": "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs",
-          "lines": "170-209",
-          "implMappings": [
-            {
-              "file": "codelet/fspec-tui/src/views/agent.rs",
-              "lines": [
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211
-              ]
-            }
-          ]
-        }
-      ]
+      "name": "AgentView vertical layout reserves Length(visible_rows) for the input box (RPC-029)",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 5,
-    "coveredScenarios": 5,
-    "coveragePercent": 100,
+    "coveredScenarios": 4,
+    "coveragePercent": 80,
     "testFiles": [
       "codelet/fspec-tui/tests/view_agent_scrollback_rpc019.rs"
     ],

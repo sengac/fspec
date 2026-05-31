@@ -7,7 +7,6 @@
 @thinking
 @agent-view
 Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
-
   """
   ThinkingLevelDialog lives at codelet/fspec-tui/src/components/thinking_level_dialog.rs
   and is the Rust port of src/tui/components/ThinkingLevelDialog.tsx
@@ -33,13 +32,16 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
     I want to pick a thinking/reasoning level from a modal dialog opened via /thinking
     So that I can tune the agent's reasoning effort without dropping back to the Ink TS TUI
 
-  @priority @foreground @smoke
+  @priority
+  @foreground
+  @smoke
   Scenario: ThinkingLevelDialog renders at Priority::Foreground
     Given a fresh ThinkingLevelDialog with id "thinking-level-dialog"
     When its priority() method is invoked
     Then the result is Priority::Foreground
 
-  @ui-rendering @tui-popup
+  @ui-rendering
+  @tui-popup
   Scenario: ThinkingLevelDialog renders the four canonical labels
     Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Off
     When the dialog is rendered onto an 80x24 TestBackend
@@ -51,29 +53,33 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
     And the production source uses Popup::new(...) wrapping a SizedWidgetRef adapter
     And the production source does NOT define a hand-rolled centered_rect helper
 
-  @ui-rendering @initial-selection
+  @ui-rendering
+  @initial-selection
   Scenario: Dialog opens with the currently-active level pre-selected
     Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Medium
     When the dialog is rendered
     Then the Medium row is rendered with the selection marker "▸"
     And the Off / Low / High rows are rendered without the selection marker
 
-  @navigation @keyboard-navigation
+  @navigation
+  @keyboard-navigation
   Scenario Outline: Arrow keys navigate the 4 levels with wrap-around
     Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Off
     When the user presses <key> <count> times
     Then the highlighted row has label <expected>
-    Examples:
-      | key       | count | expected |
-      | Down      | 1     | Low      |
-      | Down      | 2     | Medium   |
-      | Down      | 3     | High     |
-      | Down      | 4     | Off      |
-      | Up        | 1     | High     |
-      | Up        | 2     | Medium   |
-      | Up        | 4     | Off      |
 
-  @navigation @selection
+    Examples:
+      | key  | count | expected |
+      | Down | 1     | Low      |
+      | Down | 2     | Medium   |
+      | Down | 3     | High     |
+      | Down | 4     | Off      |
+      | Up   | 1     | High     |
+      | Up   | 2     | Medium   |
+      | Up   | 4     | Off      |
+
+  @navigation
+  @selection
   Scenario: Enter on a level emits Action::ThinkingLevelSelected
     Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::Off
     And the dialog was constructed against SessionId::new("s-1")
@@ -83,7 +89,8 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
     And the callback emits Action::ThinkingLevelSelected(SessionId::new("s-1"), ThinkingLevel::High)
     And the callback removes the dialog from the Compositor via its id
 
-  @navigation @dismiss
+  @navigation
+  @dismiss
   Scenario: Esc dismisses the ThinkingLevelDialog without side effects
     Given a ThinkingLevelDialog seeded with current_level = ThinkingLevel::High
     When the user presses Esc
@@ -91,7 +98,8 @@ Feature: ThinkingLevelDialog component for picking Off/Low/Medium/High
     And the callback removes the dialog from the Compositor via its id
     And no Action::ThinkingLevelSelected is emitted
 
-  @line-budget @source-shape
+  @line-budget
+  @source-shape
   Scenario: thinking_level_dialog.rs stays under 300 lines
     Given the file codelet/fspec-tui/src/components/thinking_level_dialog.rs after RPC-022 lands
     When a test counts the line-count of the file

@@ -5,7 +5,6 @@
 @rust
 @CMPCT-037
 Feature: Prevent clamping from inverting turn ranges in parse_dag_nodes (FV-003-c)
-
   """
   On completion, FORMAL_VERIFICATION.md MUST be updated: (1) Remove FV-003-c row from Findings table at line 198. (2) Update the FV-003 row of Proofs status table — if all three limitations now resolved, change to 'Cross-checked'. (3) Remove the limitation_clamping_can_invert_range test from dag_node_proptest.test.rs.
   """
@@ -32,7 +31,6 @@ Feature: Prevent clamping from inverting turn ranges in parse_dag_nodes (FV-003-
   #   7. Proptest: for arbitrary well-formed dag-node input AND any message_count, every output node satisfies turn_start <= turn_end AND turn_end < message_count
   #
   # ========================================
-
   Background: User Story
     As a developer relying on parse_dag_nodes
     I want to have parse_dag_nodes drop nodes whose turn_start is beyond message_count and only clamp turn_end when turn_start is in range

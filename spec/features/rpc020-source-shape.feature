@@ -6,43 +6,42 @@
 @tui
 @rpc
 Feature: RPC-020 source-shape regression for the slash + file search popup port
-
   """
   RPC-020 introduces several new source artefacts that downstream cards
   (RPC-021 / RPC-022) rely on. This feature pins the file layout +
   symbol surface so future refactors cannot silently regress the
   integration shape:
 
-    1. codelet/core/src/file_search.rs — new helper module exposing
-       `pub fn search(cwd, prefix, limit) -> Vec<String>` backed by
-       `ignore::WalkBuilder` + `globset::GlobBuilder` (case-insensitive).
-    2. codelet/rpc/src/lib.rs — `FspecService` trait gains
-       `async fn search_files(prefix: String, limit: u32) -> Vec<String>`.
-    3. codelet/fspec-tui/src/transport/mod.rs — `FspecBackend` trait
-       declares `async fn search_files(prefix: String, limit: u32) -> Result<Vec<String>>`.
-    4. codelet/fspec-tui/src/transport/embedded.rs +
-       codelet/fspec-tui/src/transport/websocket.rs — both implement
-       the new trait method.
-    5. codelet/fspec-tui/src/views/agent/slash_commands.rs — new module
-       declaring `SlashCommand`, `SlashCommandAction`, `SLASH_COMMANDS`,
-       and `filter_commands`. Under 300 LoC.
-    6. codelet/fspec-tui/src/views/agent/slash_command_popup.rs — new
-       widget module declaring `SlashCommandPopup`. Under 300 LoC.
-    7. codelet/fspec-tui/src/views/agent/file_search_popup.rs — new
-       widget module declaring `FileSearchPopup`. Under 300 LoC.
-    8. codelet/fspec-tui/src/views/agent.rs (orchestrator) — owns
-       `slash_popup: Option<SlashCommandPopup>` and
-       `file_popup: Option<FileSearchPopup>`. Stays under 300 LoC.
-    9. codelet/fspec-tui/src/components/mod.rs — Action enum gains
-       three additive variants: SlashCommandSelected,
-       SearchFiles, FileSearchResults.
+  1. codelet/core/src/file_search.rs — new helper module exposing
+  `pub fn search(cwd, prefix, limit) -> Vec<String>` backed by
+  `ignore::WalkBuilder` + `globset::GlobBuilder` (case-insensitive).
+  2. codelet/rpc/src/lib.rs — `FspecService` trait gains
+  `async fn search_files(prefix: String, limit: u32) -> Vec<String>`.
+  3. codelet/fspec-tui/src/transport/mod.rs — `FspecBackend` trait
+  declares `async fn search_files(prefix: String, limit: u32) -> Result<Vec<String>>`.
+  4. codelet/fspec-tui/src/transport/embedded.rs +
+  codelet/fspec-tui/src/transport/websocket.rs — both implement
+  the new trait method.
+  5. codelet/fspec-tui/src/views/agent/slash_commands.rs — new module
+  declaring `SlashCommand`, `SlashCommandAction`, `SLASH_COMMANDS`,
+  and `filter_commands`. Under 300 LoC.
+  6. codelet/fspec-tui/src/views/agent/slash_command_popup.rs — new
+  widget module declaring `SlashCommandPopup`. Under 300 LoC.
+  7. codelet/fspec-tui/src/views/agent/file_search_popup.rs — new
+  widget module declaring `FileSearchPopup`. Under 300 LoC.
+  8. codelet/fspec-tui/src/views/agent.rs (orchestrator) — owns
+  `slash_popup: Option<SlashCommandPopup>` and
+  `file_popup: Option<FileSearchPopup>`. Stays under 300 LoC.
+  9. codelet/fspec-tui/src/components/mod.rs — Action enum gains
+  three additive variants: SlashCommandSelected,
+  SearchFiles, FileSearchResults.
 
   Existing TS code paths
   (src/tui/components/SlashCommandPalette.tsx,
-   src/tui/components/FileSearchPopup.tsx,
-   src/tui/hooks/useSlashCommandInput.ts,
-   src/tui/hooks/useFileSearchInput.ts,
-   src/tui/utils/slashCommands.ts) are NOT touched.
+  src/tui/components/FileSearchPopup.tsx,
+  src/tui/hooks/useSlashCommandInput.ts,
+  src/tui/hooks/useFileSearchInput.ts,
+  src/tui/utils/slashCommands.ts) are NOT touched.
   """
 
   Background: User Story

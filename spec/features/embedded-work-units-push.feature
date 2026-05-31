@@ -18,7 +18,7 @@ Feature: Embedded transport push channel for work-units updates
   the future ratatui frontend (RPC-008/RPC-009) consumes regardless of
   whether it is in-process or remote:
 
-    EmbeddedTransport::work_units_rx() -> tokio::sync::broadcast::Receiver<Vec<WorkUnitInfo>>
+  EmbeddedTransport::work_units_rx() -> tokio::sync::broadcast::Receiver<Vec<WorkUnitInfo>>
 
   This method returns the watcher's broadcast subscription DIRECTLY — no
   envelope encoding, no fan-out task on the embedded read path (zero-cost
@@ -26,8 +26,8 @@ Feature: Embedded transport push channel for work-units updates
   preserved: any spawning that does occur uses `self.handle.spawn(...)`.
 
   References: spec/attachments/RPC-006/plan.md (Steps 2, 4);
-              spec/attachments/RPC-002/rpc-002-feasibility.md §5.1;
-              RPC-005 architecture rule [4].
+  spec/attachments/RPC-002/rpc-002-feasibility.md §5.1;
+  RPC-005 architecture rule [4].
   """
 
   Background: User Story

@@ -256,8 +256,11 @@ fn scenario_codelet_fspec_is_registered_as_a_workspace_member() {
         "members must contain `fspec`; got {members_list:?}"
     );
 
-    // @step And `fspec` appears between `core` and `fspec-tui` in the members list (preserving alphabetical order: cli, common, core, fspec, fspec-tui, git, napi, providers, rpc, rpc-embedded, rpc-server, rpc-types, tools, tui)
+    // @step And `fspec` appears between `core` and `fspec-tui` in the members list (preserving alphabetical order, with the RPC-067 `test-helpers` crate appended after `sessions` and the RPC-072 `agent-loop` crate prepended before `cli`)
     let expected = [
+        // RPC-072: NAPI-free FspecAgentHooks + agent_loop. Sorts ahead
+        // of `cli` alphabetically.
+        "agent-loop",
         "cli",
         "common",
         "core",
@@ -270,6 +273,10 @@ fn scenario_codelet_fspec_is_registered_as_a_workspace_member() {
         "rpc-embedded",
         "rpc-server",
         "rpc-types",
+        // RPC-038/044: NAPI-free home for SessionManager + BackgroundSession.
+        "sessions",
+        // RPC-067: shared no-codelet-napi dependency-rule helpers.
+        "test-helpers",
         "tools",
         "tui",
     ];
@@ -376,7 +383,19 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // crate (no `[lib]` target — adding one would break the locked
     // file layout scenario above), so integration tests cannot import
     // `common::build_service`.
-    let common_cap: usize = 600;
+    //
+    // RPC-044 raised the cap again from 600 to 750 to accommodate the
+    // two new inline regression tests
+    // `build_service_wires_session_manager_into_shared_service` and
+    // `fspec_cargo_toml_declares_sessions_dep_and_not_napi` (which
+    // assert the `fspec → sessions` wiring and the absence of the
+    // forbidden `fspec → napi` arrow respectively). Same `[[bin]]`-only
+    // constraint applies — these tests must live inline.
+    // RPC-072 raised the cap from 750 to 800 to accommodate the
+    // build_service_installs_fspec_agent_hooks regression test plus
+    // the `strip_cargo_comments` helper. Same `[[bin]]`-only
+    // constraint applies — these tests must live inline.
+    let common_cap: usize = 800;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);
@@ -652,8 +671,18 @@ fn extract_members(workspace_section: &str) -> Option<Vec<String>> {
     let open = after.find('[')?;
     let close = after.find(']')?;
     let inside = &after[open + 1..close];
+    // Strip `# ...` line comments before tokenising so commented entries
+    // (e.g. "# RPC-038: ...") don't get fused with the next member token.
+    let stripped: String = inside
+        .lines()
+        .map(|line| match line.find('#') {
+            Some(i) => &line[..i],
+            None => line,
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
     let mut members = Vec::new();
-    for tok in inside.split(',') {
+    for tok in stripped.split(',') {
         let t = tok.trim().trim_matches('"').trim_matches('\'').trim();
         if !t.is_empty() {
             members.push(t.to_string());

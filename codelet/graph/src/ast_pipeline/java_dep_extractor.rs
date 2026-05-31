@@ -6,7 +6,7 @@
 use std::path::Path;
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Extract Java dependencies from pom.xml and/or build.gradle.
 pub fn extract_java_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {

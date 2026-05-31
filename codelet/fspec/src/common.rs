@@ -22,8 +22,11 @@ use std::sync::Arc;
 use std::sync::Once;
 
 use anyhow::{anyhow, Context, Result};
+use codelet_agent_loop::FspecAgentHooks;
 use codelet_core::work_units::WorkUnitsWatcher;
+use codelet_core::SessionManagerHandle;
 use codelet_rpc::{register_log_layer, BroadcastLogLayer, SharedFspecService};
+use codelet_sessions::SessionManager;
 use serde::Deserialize;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
@@ -65,9 +68,20 @@ pub enum ShutdownReason {
 /// live binary. `build_service` is the chokepoint for both
 /// `combined::run` and `daemon::run`; `client::run` does NOT call it
 /// (client mode inherits the daemon's data dir over tarpc).
+///
+/// RPC-044 fix: construct a real `codelet_sessions::SessionManager` and
+/// pass it into `SharedFspecService::with_session_manager` as
+/// `Arc<dyn SessionManagerHandle>`. After this, the `fspec` binary
+/// drives real agent sessions through the NAPI-free `codelet-sessions`
+/// crate; AgentView observes the live session manager's `chunks_rx`
+/// instead of the empty fallback broadcast. The default
+/// `NoopSessionManagerHooks` is left in place — the full agent-loop /
+/// scheduler / footer-poller / IsolationStateChange hooks are wired in
+/// RPC-045+ when the AgentView is connected to the new RPC surface.
 pub fn build_service(workspace: &Path) -> Result<Arc<SharedFspecService>> {
     // RPC-025: initialise the global data directory BEFORE any
-    // persistence-touching code path can observe it.
+    // persistence-touching code path can observe it (including any
+    // persistence lazily reached through SessionManager below).
     let data_dir = home_fspec_dir()?;
     codelet_common::set_data_directory(data_dir)
         .map_err(|e| anyhow!("codelet_common::set_data_directory: {e}"))?;
@@ -76,13 +90,77 @@ pub fn build_service(workspace: &Path) -> Result<Arc<SharedFspecService>> {
         WorkUnitsWatcher::new(workspace)
             .with_context(|| format!("WorkUnitsWatcher::new({})", workspace.display()))?,
     );
+
+    // RPC-044: construct a real SessionManager and pass it as a
+    // SessionManagerHandle. SharedFspecService::with_session_manager
+    // already delegates chunks_rx / logs_rx / status_changes_rx to the
+    // attached handle (codelet/rpc/src/lib.rs lines 526-580), so the
+    // broadcast wiring is complete without any additional fan-out task.
+    //
+    // RPC-072: install `FspecAgentHooks` (from the NAPI-free
+    // `codelet-agent-loop` crate) so the session's `spawn_agent_loop`
+    // actually drains `input_rx`, dispatches to the session's
+    // `LlmProvider`, and emits `StreamChunk::Text` + `Done` chunks back
+    // through `BackgroundSession::handle_output`. Before RPC-072, the
+    // hooks impl installed here was the no-op `FspecSessionManagerHooks`
+    // — typed input vanished into a dropped channel and the AgentView
+    // saw `Running → Idle` with no assistant chunks. The loop-cleanup
+    // behaviour that `FspecSessionManagerHooks::cleanup_session_loops`
+    // used to provide is preserved 1:1 by
+    // `FspecAgentHooks::cleanup_session_loops`.
+    let manager = SessionManager::new();
+    manager.set_hooks(Arc::new(FspecAgentHooks::new()));
+
+    // RPC-066: under the `test-stub-provider` feature, install the
+    // deterministic stub LlmProvider into the process-global in-memory
+    // registry and pin the session manager's default model to
+    // "stub/canned" so `create_session(role)` over the WS backend
+    // creates sessions backed by the stub. The feature is OFF in
+    // production builds — this branch compiles out entirely.
+    //
+    // Architecture notes [E], [J], [K] from RPC-066.
+    #[cfg(feature = "test-stub-provider")]
+    {
+        codelet_providers::stub_provider::register_stub_provider();
+        manager.set_default_model("stub/canned");
+    }
+
+    let session_manager: Arc<dyn SessionManagerHandle> = Arc::new(manager);
+
     Ok(Arc::new(
-        SharedFspecService::new(watcher).with_cwd(workspace.to_path_buf()),
+        SharedFspecService::with_session_manager(watcher, session_manager)
+            .with_cwd(workspace.to_path_buf()),
     ))
 }
 
+/// LOG-005: per-target directives applied on top of the base level.
+///
+/// `tarpc::client` and `tarpc::server` emit 6–8 `INFO` span events
+/// per RPC round-trip (`SendRequest`, `ReceiveRequest`, `BeginRequest`,
+/// `CompleteRequest`, `BufferResponse`, `SendResponse`,
+/// `ReceiveResponse`). In a single TUI session this floods
+/// `~/.fspec/logs/fspec-combined.log` — ~98% of lines were tarpc
+/// ceremony — drowning out real diagnostic events. Pin those two
+/// targets to `warn` by default. The user can still override via
+/// `RUST_LOG=tarpc=info` if they want the full RPC trace.
+const TARPC_QUIET_DIRECTIVES: &[&str] = &["tarpc::client=warn", "tarpc::server=warn"];
+
 fn env_filter() -> EnvFilter {
-    EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"))
+    // If RUST_LOG is set, honour the user's directives verbatim — they
+    // know what they're asking for. Otherwise fall back to
+    // `info,tarpc::client=warn,tarpc::server=warn` so the file
+    // appender isn't dominated by tarpc INFO span events.
+    EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+        let mut filter = EnvFilter::new("info");
+        for directive in TARPC_QUIET_DIRECTIVES {
+            filter = filter.add_directive(
+                directive
+                    .parse()
+                    .expect("hardcoded tarpc directive must parse"),
+            );
+        }
+        filter
+    })
 }
 
 /// Combined mode: tracing → rolling file under ~/.fspec/logs/ AND the
@@ -560,5 +638,148 @@ mod tests {
             set_idx < watcher_idx,
             "set_data_directory must be called BEFORE WorkUnitsWatcher::new in build_service",
         );
+    }
+
+    /// RPC-044 regression: production `build_service` MUST construct a
+    /// real `codelet_sessions::SessionManager` and pass it as an
+    /// `Arc<dyn SessionManagerHandle>` into
+    /// `SharedFspecService::with_session_manager(watcher, session_manager)`
+    /// — the prior `SharedFspecService::new(watcher)` call is replaced.
+    /// Without this, the `fspec` binary cannot drive real agent sessions
+    /// through the NAPI-free `codelet-sessions` crate; the AgentView
+    /// would observe an empty fallback `chunks_rx` and see no output.
+    #[test]
+    fn build_service_wires_session_manager_into_shared_service() {
+        // @step Given the RPC-044 changes are applied to the codelet workspace
+        let src = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/src/common.rs"))
+            .expect("read common.rs");
+
+        // @step When I open codelet/fspec/src/common.rs
+        // @step Then the file contains the literal substring `use codelet_sessions::SessionManager`
+        assert!(
+            src.contains("use codelet_sessions::SessionManager"),
+            "common.rs must `use codelet_sessions::SessionManager` after RPC-044"
+        );
+
+        // @step And the file contains the literal substring `use codelet_core::SessionManagerHandle`
+        assert!(
+            src.contains("use codelet_core::SessionManagerHandle"),
+            "common.rs must `use codelet_core::SessionManagerHandle` after RPC-044"
+        );
+
+        // @step And the `build_service` function constructs `let session_manager: Arc<dyn SessionManagerHandle> = Arc::new(SessionManager::new());`
+        assert!(
+            src.contains("Arc<dyn SessionManagerHandle>"),
+            "common.rs must declare a `Arc<dyn SessionManagerHandle>` binding after RPC-044"
+        );
+        assert!(
+            src.contains("Arc::new(SessionManager::new())"),
+            "common.rs must construct the session manager via `Arc::new(SessionManager::new())` after RPC-044"
+        );
+
+        // @step And the `build_service` function calls `SharedFspecService::with_session_manager(watcher, session_manager)` instead of `SharedFspecService::new(watcher)`
+        assert!(
+            src.contains("SharedFspecService::with_session_manager(watcher, session_manager)"),
+            "common.rs must wire the session_manager through `SharedFspecService::with_session_manager(watcher, session_manager)` after RPC-044"
+        );
+        let bs_start = src
+            .find("pub fn build_service")
+            .expect("build_service definition must exist");
+        let bs_end = src[bs_start..]
+            .find("\n}\n")
+            .map(|i| bs_start + i)
+            .unwrap_or(src.len());
+        let body = &src[bs_start..bs_end];
+        assert!(
+            !body.contains("SharedFspecService::new(watcher)"),
+            "build_service must NOT use the bare `SharedFspecService::new(watcher)` constructor after RPC-044"
+        );
+
+        // @step And the `set_data_directory` call still appears before the SessionManager construction
+        let set_idx = src
+            .find("codelet_common::set_data_directory")
+            .expect("set_data_directory call must exist");
+        let sm_idx = src
+            .find("SessionManager::new()")
+            .expect("SessionManager::new() call must exist in build_service after RPC-044");
+        assert!(
+            set_idx < sm_idx,
+            "set_data_directory must be called BEFORE SessionManager::new() in build_service"
+        );
+
+        // @step When `build_service` is invoked against a temp workspace
+        let tmp = tempfile::tempdir().expect("tempdir");
+        let workspace = tmp.path();
+        let service = build_service(workspace).expect("build_service");
+
+        // @step Then `service.cwd()` returns `Some(temp_workspace_path)` as before
+        assert_eq!(
+            service.cwd(),
+            Some(&workspace.to_path_buf()),
+            "build_service must still call SharedFspecService::with_cwd(workspace) after RPC-044"
+        );
+
+        // @step And the literal substring `SharedFspecService::with_session_manager(watcher, session_manager)` is present in codelet/fspec/src/common.rs
+        assert!(
+            src.contains("SharedFspecService::with_session_manager(watcher, session_manager)"),
+            "common.rs must contain the literal `SharedFspecService::with_session_manager(watcher, session_manager)` substring (RPC-044)"
+        );
+
+        // @step And a chunk sent through `service.chunks_tx()` is received via `service.chunks_rx()` proving the SessionManager broadcast is live
+        let tx = service.chunks_tx();
+        let mut rx = service.chunks_rx();
+        let session_id = codelet_rpc_types::SessionId::new("00000000-0000-0000-0000-000000000000".to_string());
+        let chunk = codelet_rpc_types::StreamChunk::text("hello-rpc-044".to_string());
+        tx.send((session_id.clone(), chunk.clone()))
+            .expect("send chunk through service.chunks_tx()");
+        let (got_id, got_chunk) = rx
+            .try_recv()
+            .expect("service.chunks_rx() must receive the chunk sent through service.chunks_tx()");
+        assert_eq!(got_id, session_id);
+        match got_chunk {
+            codelet_rpc_types::StreamChunk::Text { text, .. } => assert_eq!(text, "hello-rpc-044"),
+            other => panic!("unexpected chunk variant: {other:?}"),
+        }
+    }
+
+    /// RPC-044 regression: codelet/fspec/Cargo.toml MUST declare a
+    /// `codelet-sessions` dependency and MUST NOT declare a
+    /// `codelet-napi` dependency (the forbidden `fspec → napi` arrow).
+    #[test]
+    fn fspec_cargo_toml_declares_sessions_dep_and_not_napi() {
+        // @step Given the RPC-044 changes are applied to the codelet workspace
+        let cargo = std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/Cargo.toml"))
+            .expect("read Cargo.toml");
+
+        // @step When I open codelet/fspec/Cargo.toml
+        // @step Then the `[dependencies]` table contains `codelet-sessions.workspace = true` or `codelet-sessions = { workspace = true }`
+        let has_sessions_dep = cargo.contains("codelet-sessions.workspace = true")
+            || cargo.contains("codelet-sessions = { workspace = true }");
+        assert!(
+            has_sessions_dep,
+            "codelet/fspec/Cargo.toml must declare codelet-sessions as a workspace dependency after RPC-044"
+        );
+
+        // @step And the file contains zero occurrences of the literal substring `codelet-napi` (outside comments)
+        let stripped = strip_cargo_comments(&cargo);
+        assert!(
+            !stripped.contains("codelet-napi"),
+            "codelet/fspec/Cargo.toml MUST NOT declare `codelet-napi` (the forbidden `fspec → napi` arrow)"
+        );
+    }
+
+    /// Strip `#` line-comments from a Cargo.toml source string. Used by
+    /// the RPC-044 boundary regression so that prose like
+    /// `# RPC-067: shared no-codelet-napi dependency-rule helpers`
+    /// (added in dev-dependency comments) doesn't false-positive the
+    /// substring check.
+    fn strip_cargo_comments(src: &str) -> String {
+        src.lines()
+            .map(|line| match line.find('#') {
+                Some(i) => &line[..i],
+                None => line,
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }

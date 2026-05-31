@@ -1,0 +1,248 @@
+{
+  "scenarios": [
+    {
+      "name": "Idempotent re-init replaces the entry without leaking the previous receiver",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "lines": "111-152",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837,
+                838,
+                839,
+                840,
+                841,
+                842,
+                843,
+                844,
+                845,
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cleanup_mcp_session on an unknown uuid is a silent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "lines": "158-178",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "init_mcp_session registers per-session state and get_mcp_connections returns Some",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "lines": "44-77",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837,
+                838,
+                839
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cleanup_mcp_session removes per-session state and get_mcp_connections returns None",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "lines": "83-105",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MCP_SESSIONS registry isolates entries per session uuid",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_lifecycle.rs",
+          "lines": "184-225",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/mcp.rs",
+              "lines": [
+                820,
+                821,
+                822,
+                823,
+                824,
+                825,
+                826,
+                827,
+                828,
+                829,
+                830,
+                831,
+                832,
+                833,
+                834,
+                835,
+                836,
+                837,
+                838,
+                839,
+                840,
+                841,
+                842,
+                843,
+                844,
+                845,
+                846,
+                847,
+                848,
+                849,
+                850,
+                851,
+                852,
+                853,
+                854,
+                855,
+                856,
+                857,
+                858,
+                859,
+                860,
+                861,
+                862,
+                863,
+                864,
+                865,
+                866,
+                867,
+                868,
+                869,
+                870,
+                871,
+                872
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/mcp_injection_lifecycle.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/mcp.rs"
+    ],
+    "totalLinesCovered": 314
+  }
+}

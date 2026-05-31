@@ -6,7 +6,6 @@
 @tui
 @RPC-028
 Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust dialog/popup/picker views
-
   """
   [0] Introduce codelet/fspec-tui/src/components/scroll_viewport.rs with three primitives: wrap_index(current, delta, total) using rem_euclid (mirrors store/board_viewport.rs:42-44), ensure_visible(scroll_offset, selected, visible_rows, total) (popup-flavour of board_viewport::adjust_scroll_offset without the two-pass arrow correction), and WheelVelocity with last/vel Cells and a step(direction) method that mirrors TS AgentView.tsx:4435-4458.
   [1] Each migrated view adds scroll_offset: usize and last_visible_rows: Cell<usize> fields, replaces iter().take(10) with iter().skip(scroll_offset).take(visible_rows), and wires Up/Down/PgUp/PgDn/Home/End + ScrollUp/ScrollDown through wrap_index + ensure_visible. The dialog frame in components/dialog_theme.rs already provides the body height — exposing it via dialog_rect is enough; visible_rows = body.height - title - gap - footer.
@@ -41,13 +40,13 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
   #   9. User scrolls the trackpad wheel over the underlying AgentView region OUTSIDE the open SlashCommandPopup rect: the popup ignores the event so the scrollback scrolls normally (popup hit-tests its last-rendered rect).
   #
   # ========================================
-
   Background: User Story
     As a fspec-tui user
     I want to navigate every selectable dialog/popup/picker with scroll, mouse-wheel, and wrap-around just like BoardView does
     So that no list view silently hides rows past index 9 and trackpad scroll works everywhere
 
-  @slash-popup @scrolling
+  @slash-popup
+  @scrolling
   Scenario: SlashCommandPopup scrolls the viewport when the selection moves past visible_rows
     Given the SlashCommandPopup is open with 14 matching commands and visible_rows is 10
     And the popup is at scroll_offset 0 with selected_index 0
@@ -56,7 +55,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     And the scroll_offset has advanced so the selected row is inside the visible window
     And the top body row paints the "↑" glyph
 
-  @slash-popup @wrap-around
+  @slash-popup
+  @wrap-around
   Scenario: SlashCommandPopup wraps from the last match back to the first on Down
     Given the SlashCommandPopup is open with 14 matching commands
     And the selected_index is at the last match (13)
@@ -64,7 +64,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     Then the selected_index wraps to 0
     And the scroll_offset is reset to 0 so row 0 is visible
 
-  @slash-popup @wrap-around
+  @slash-popup
+  @wrap-around
   Scenario: SlashCommandPopup wraps from the first match to the last on Up
     Given the SlashCommandPopup is open with 14 matching commands
     And the selected_index is 0
@@ -73,7 +74,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     And the scroll_offset advances so the last row is visible
     And the bottom body row stops painting the "↓" glyph
 
-  @file-popup @mouse
+  @file-popup
+  @mouse
   Scenario: FileSearchPopup mouse-wheel up moves the selection up one row
     Given the FileSearchPopup is open with 12 matches and visible_rows is 10
     And the selected_index is 5
@@ -81,7 +83,9 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     Then the selected_index decreases to 4
     And the popup remains visible with the selection inside the window
 
-  @file-popup @mouse @wrap-around
+  @file-popup
+  @mouse
+  @wrap-around
   Scenario: FileSearchPopup mouse-wheel up at the first row wraps to the last match
     Given the FileSearchPopup is open with 12 matches and visible_rows is 10
     And the selected_index is 0 with scroll_offset 0
@@ -89,7 +93,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     Then the selected_index wraps to 11
     And the scroll_offset advances so the last row is visible
 
-  @model-selector @page-keys
+  @model-selector
+  @page-keys
   Scenario: ModelSelectorDialog PageDown jumps by visible_rows and skips non-selectable headers
     Given the ModelSelectorDialog is open with 30 rows including provider headers
     And visible_rows is 12 and selected_index is on the first selectable row
@@ -98,7 +103,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     And the scroll_offset has advanced so the new selection is visible
     And the bottom body row paints the "↓" glyph if more rows lie below
 
-  @resume @page-keys
+  @resume
+  @page-keys
   Scenario: ResumeSessionView Home jumps to the first session and scrolls to the top
     Given the /resume session picker is open with 20 sessions and visible_rows is 8
     And the selected_index is 15 with scroll_offset 8
@@ -107,7 +113,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     And the scroll_offset is 0
     And the top body row no longer paints the "↑" glyph
 
-  @search @page-keys
+  @search
+  @page-keys
   Scenario: SearchHistoryView End jumps to the last match and scrolls so it is visible
     Given the /search history palette has 25 matches and visible_rows is 10
     And the selected_index is 0 with scroll_offset 0
@@ -116,7 +123,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     And the scroll_offset has advanced so row 24 is on the bottom visible row
     And the top body row paints the "↑" glyph
 
-  @resume @mouse
+  @resume
+  @mouse
   Scenario: Left-click on a row in /resume picker selects that row
     Given the /resume session picker is open with 20 sessions and visible_rows is 8
     And the scroll_offset is 5 so rows 5..12 are visible
@@ -124,14 +132,18 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     Then the selected_index becomes 6
     And the row is highlighted with the inverse style
 
-  @thinking-level @mouse @wrap-around
+  @thinking-level
+  @mouse
+  @wrap-around
   Scenario: ThinkingLevelDialog mouse-wheel down advances and wraps at the last level
     Given the ThinkingLevelDialog is open with the High level selected
     When the user emits MouseEventKind::ScrollDown inside the dialog rect
     Then the selection wraps to Off
     And the dialog remains visible with the inverse highlight on the new row
 
-  @slash-popup @mouse @hit-test
+  @slash-popup
+  @mouse
+  @hit-test
   Scenario: Mouse-wheel outside the SlashCommandPopup rect is ignored so the scrollback scrolls
     Given the SlashCommandPopup is open above AgentView's MultiLineInput
     And the mouse cursor is over the scrollback area, outside the popup rect
@@ -153,7 +165,8 @@ Feature: Add proper scrolling, mouse wheel support, and wrap-around to all Rust 
     When ensure_visible(&mut scroll_offset, 10, 8, 20) is called
     Then scroll_offset is updated so 10 lies in [scroll_offset, scroll_offset + 8)
 
-  @shared-helper @wheel-velocity
+  @shared-helper
+  @wheel-velocity
   Scenario: WheelVelocity ramps up to 5x within 150ms then resets after the gap
     Given a fresh WheelVelocity
     When the user emits 5 ScrollDown events within 100ms of each other

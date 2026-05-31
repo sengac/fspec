@@ -103,9 +103,10 @@ fn session_prev_decrements_without_wrap() {
     assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-2")));
 }
 
-/// Scenario: Action::SessionPrev wraps around from index 0 to len-1; SessionNext wraps back
+/// Scenario: RPC-096 — Action::SessionPrev at first index exits to Board; SessionNext at last index opens Create Session dialog
 #[test]
-fn session_prev_wraps_zero_to_last_then_next_wraps_back() {
+fn session_prev_zero_exits_to_board_and_next_at_last_opens_create_dialog() {
+    use codelet_fspec_tui::views::ViewMode;
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     let (mut app, _mock) = fresh_app();
     app.dispatch(Action::SessionCreated(sid("s-1")));
@@ -115,18 +116,24 @@ fn session_prev_wraps_zero_to_last_then_next_wraps_back() {
     app.dispatch(Action::SessionPrev); // 2 -> 1
     app.dispatch(Action::SessionPrev); // 1 -> 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
-    // @step When App::dispatch handles Action::SessionPrev
+    app.navigator_mut().active_view = ViewMode::Agent;
+    // @step When App::dispatch handles Action::SessionPrev (off the left end)
     app.dispatch(Action::SessionPrev);
-    // @step Then current_session_index is 2
-    assert_eq!(app.agent_view_store().current_session_index(), 2);
-    // @step And current_session() returns Some("s-3")
-    assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-3")));
-    // @step When App::dispatch handles Action::SessionNext
-    app.dispatch(Action::SessionNext);
-    // @step Then current_session_index is 0
+    // @step Then navigator.active_view is ViewMode::Board (RPC-096 — no wrap)
+    assert_eq!(app.active_view(), ViewMode::Board);
+    // @step And current_session_index stays 0
     assert_eq!(app.agent_view_store().current_session_index(), 0);
-    // @step And current_session() returns Some("s-1")
-    assert_eq!(app.agent_view_store().current_session(), Some(&sid("s-1")));
+    // Walk to last index via dispatch (mid-list cycling still works).
+    app.navigator_mut().active_view = ViewMode::Agent;
+    app.dispatch(Action::SessionNext); // 0 -> 1
+    app.dispatch(Action::SessionNext); // 1 -> 2
+    assert_eq!(app.agent_view_store().current_session_index(), 2);
+    // @step When App::dispatch handles Action::SessionNext (off the right end)
+    app.dispatch(Action::SessionNext);
+    // @step Then show_create_session_dialog becomes true (RPC-096 — no wrap)
+    assert!(app.agent_view_store().show_create_session_dialog());
+    // @step And current_session_index stays 2
+    assert_eq!(app.agent_view_store().current_session_index(), 2);
 }
 
 /// Scenario: SessionPrev and SessionNext are self-loops when only one session is open
@@ -186,17 +193,19 @@ fn each_session_keeps_its_own_scrollback_across_cycling() {
     app.dispatch(Action::SessionCreated(sid("s-1")));
     app.dispatch(Action::SessionCreated(sid("s-2")));
     // @step And open_sessions[0].scrollback contains 3 chunks
-    for _ in 0..3 {
+    // RPC-091: Text deltas accumulate; use UserInput (non-accumulating)
+    // to get N distinct scrollback chunks per session.
+    for i in 0..3 {
         app.dispatch(Action::ChunkReceived(
             sid("s-1"),
-            StreamChunk::text("from-s1".to_string()),
+            StreamChunk::user_input(format!("from-s1-{i}")),
         ));
     }
     // @step And open_sessions[1].scrollback contains 5 chunks
-    for _ in 0..5 {
+    for i in 0..5 {
         app.dispatch(Action::ChunkReceived(
             sid("s-2"),
-            StreamChunk::text("from-s2".to_string()),
+            StreamChunk::user_input(format!("from-s2-{i}")),
         ));
     }
     // @step And current_session_index is 1

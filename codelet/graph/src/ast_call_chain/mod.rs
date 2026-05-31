@@ -12,8 +12,8 @@
 pub mod bfs;
 pub mod snapshot;
 
-use crate::graph::ast_dispatch::AST_QUERIES;
-use crate::graph::database::GraphDatabase;
+use crate::ast_dispatch::AST_QUERIES;
+use crate::database::GraphDatabase;
 use bfs::{AdjEntry, CallEdgeInfo};
 use serde_json::Value;
 use std::collections::HashMap;

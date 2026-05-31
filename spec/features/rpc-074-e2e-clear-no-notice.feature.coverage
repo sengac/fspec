@@ -1,0 +1,53 @@
+{
+  "scenarios": [
+    {
+      "name": "Real fspec binary /clear keystroke leaves no divergent notice in rendered scrollback",
+      "testMappings": [
+        {
+          "file": "e2e/rpc-074-slash-clear-no-notice.test.ts",
+          "lines": "57-130",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "e2e/rpc-074-slash-clear-no-notice.test.ts"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc046.rs"
+    ],
+    "totalLinesCovered": 95
+  }
+}

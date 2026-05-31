@@ -60,7 +60,7 @@ fn parse_slash_command_recognises_the_four_wired_commands() {
         parse_slash_command("/thinking"),
         SlashCommandParse::OpenThinkingDialog
     );
-    assert_eq!(parse_slash_command("/role"), SlashCommandParse::ClearRole);
+    assert_eq!(parse_slash_command("/role"), SlashCommandParse::OpenRoleDialog);
     assert_eq!(
         parse_slash_command("/role clear"),
         SlashCommandParse::ClearRole
@@ -270,24 +270,36 @@ async fn submitting_slash_role_clear_clears_role() {
     assert_eq!(last.1, None);
 }
 
-/// Scenario: Submitting bare "/role" is treated as a clear
+/// Scenario: Submitting bare "/role" opens the RoleDialog (RPC-063 supersedes the old "treated as a clear" semantics)
 #[tokio::test]
-async fn submitting_bare_slash_role_is_treated_as_a_clear() {
+async fn submitting_bare_slash_role_opens_the_role_dialog() {
+    use codelet_fspec_tui::ROLE_DIALOG_ID;
     // @step Given an App with one open session SessionId("s-1") whose role is Some("Reviewer A")
     let (mut app, _mock) = fresh_app();
+    _mock.seed_session_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    app.agent_view_store_mut()
-        .set_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     drain_pending(&mut app).await;
+    assert_eq!(
+        app.agent_view_store()
+            .role_for(&SessionId::new("s-1"))
+            .map(str::to_string),
+        Some("Reviewer A".to_string())
+    );
     // @step When the input is submitted with text "/role"
     submit_input(&mut app, "/role");
     drain_pending(&mut app).await;
-    // @step Then Action::SetSessionRole(SessionId("s-1"), None) is dispatched
-    // @step And AgentViewStore.role_for(SessionId("s-1")) becomes None
-    assert!(app
-        .agent_view_store()
-        .role_for(&SessionId::new("s-1"))
-        .is_none());
+    // @step Then RPC-063 routes through SlashCommandParse::OpenRoleDialog
+    //        and a RoleDialog is pushed onto the Compositor seeded with
+    //        the existing role
+    // @step And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
+    assert!(app.compositor().contains(ROLE_DIALOG_ID));
+    assert_eq!(
+        app.agent_view_store()
+            .role_for(&SessionId::new("s-1"))
+            .map(str::to_string),
+        Some("Reviewer A".to_string()),
+        "bare /role must NOT clear the role any more (RPC-063)"
+    );
 }
 
 /// Scenario: Submitting plain text falls through to backend.send_input unchanged
@@ -374,15 +386,21 @@ async fn slash_popup_selection_of_model_opens_the_dialog() {
     );
 }
 
-/// Scenario: Slash popup selection of /role is treated as a clear and does not surface a [notice]
+/// Scenario: Slash popup selection of /role opens the RoleDialog (RPC-063 supersedes the old "treated as a clear" semantics)
 #[tokio::test]
-async fn slash_popup_selection_of_role_is_treated_as_a_clear_with_no_notice() {
+async fn slash_popup_selection_of_role_opens_the_role_dialog() {
+    use codelet_fspec_tui::ROLE_DIALOG_ID;
     // @step Given an App with one open session SessionId("s-1") whose role is Some("Reviewer A") and the slash popup open with selected command Role
     let (mut app, mock) = fresh_app();
+    mock.seed_session_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     app.dispatch(Action::SessionCreated(SessionId::new("s-1")));
-    app.agent_view_store_mut()
-        .set_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     drain_pending(&mut app).await;
+    assert_eq!(
+        app.agent_view_store()
+            .role_for(&SessionId::new("s-1"))
+            .map(str::to_string),
+        Some("Reviewer A".to_string())
+    );
     let prior_role = mock.set_session_role_calls();
     let prior_chunks = app
         .navigator()
@@ -391,27 +409,25 @@ async fn slash_popup_selection_of_role_is_treated_as_a_clear_with_no_notice() {
     // @step When the user presses Enter inside the popup
     app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Role));
     // @step Then Action::SlashCommandSelected(SlashCommandAction::Role) is dispatched
-    // (Already dispatched above.)
     drain_pending(&mut app).await;
-    // @step And AgentViewStore.role_for(SessionId("s-1")) becomes None
-    assert!(
+    // @step And RPC-063 routes through handle_open_role_dialog and pushes
+    //        the RoleDialog onto the Compositor
+    assert!(app.compositor().contains(ROLE_DIALOG_ID));
+    // @step And AgentViewStore.role_for(SessionId("s-1")) remains Some("Reviewer A")
+    assert_eq!(
         app.agent_view_store()
             .role_for(&SessionId::new("s-1"))
-            .is_none(),
-        "popup-picker `/role` must clear the session role"
+            .map(str::to_string),
+        Some("Reviewer A".to_string()),
+        "popup-picker `/role` must NOT clear the role any more (RPC-063)"
     );
-    // @step And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), None)
+    // @step And NO tokio task is spawned that calls backend.set_session_role (the dialog defers persistence)
     assert_eq!(
         mock.set_session_role_calls(),
-        prior_role + 1,
-        "popup-picker `/role` must persist the clear via backend.set_session_role"
+        prior_role,
+        "popup-picker `/role` must NOT call backend.set_session_role any more (RPC-063 routes through the dialog)"
     );
-    let last = mock.last_set_session_role().expect("last set_session_role");
-    assert_eq!(last.0, SessionId::new("s-1"));
-    assert_eq!(last.1, None);
     // @step And no scrollback line containing the substring "[notice] /role" is appended
-    // Rule [5] of RPC-022 explicitly removes the
-    // `[notice] /role not yet implemented` fallback for this route.
     let chunk_delta = app
         .navigator()
         .agent

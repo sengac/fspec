@@ -1,0 +1,97 @@
+{
+  "scenarios": [
+    {
+      "name": "scheduler/agent_job.rs uses inline-capture format args exclusively",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc075_scheduler_format_args_shape.rs",
+          "lines": "119-142",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/scheduler/agent_job.rs",
+              "lines": [
+                57,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scheduler/shell_job.rs uses inline-capture format args exclusively",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc075_scheduler_format_args_shape.rs",
+          "lines": "148-171",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/scheduler/shell_job.rs",
+              "lines": [
+                34,
+                39,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cargo clippy on codelet-core passes with -D warnings for the scheduler module",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc075_scheduler_format_args_shape.rs",
+          "lines": "188-242",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/scheduler/agent_job.rs",
+              "lines": [
+                57,
+                77
+              ]
+            },
+            {
+              "file": "codelet/core/src/scheduler/shell_job.rs",
+              "lines": [
+                34,
+                39,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "format! output strings are byte-identical to the legacy positional form",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/rpc075_scheduler_format_args_shape.rs",
+          "lines": "279-299",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/scheduler/agent_job.rs",
+              "lines": [
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/rpc075_scheduler_format_args_shape.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/scheduler/agent_job.rs",
+      "codelet/core/src/scheduler/shell_job.rs"
+    ],
+    "totalLinesCovered": 135
+  }
+}

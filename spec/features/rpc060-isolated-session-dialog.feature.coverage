@@ -1,0 +1,498 @@
+{
+  "scenarios": [
+    {
+      "name": "CreateSessionDialog defaults selection to \"Yes\" when opened without a preselection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "105-121",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog renders work-unit-aware title when a work_unit is bound",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "123-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog can be preselected to \"Yes - Isolated\" via /isolation shortcut",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "137-143",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog Right arrow cycles forward with wrap-around",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "145-164",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog Left arrow cycles backward with wrap-around",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "166-181",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog Enter on \"Yes\" emits CreateSessionSubmitted{isolated:false}",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "183-209",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog Enter on \"Yes - Isolated\" emits CreateSessionSubmitted{isolated:true}",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "211-237",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog Enter on \"Cancel\" emits CreateSessionCancelled",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "239-265",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionDialog Esc emits CreateSessionCancelled",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "267-291",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/create_session_dialog.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/isolation slash command opens the CreateSessionDialog with \"Yes - Isolated\" preselected",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "307-330",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionSubmitted{isolated:true} spawns backend.create_isolated_session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "332-373",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionSubmitted{isolated:false} spawns backend.create_session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "375-413",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateSessionCancelled is a silent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "415-434",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create_isolated_session error emits an error notice into the focused session scrollback",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "436-460",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create_isolated_session error with no open session is a silent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs",
+          "lines": "462-484",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc060.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/isolated_session_dialog_rpc060.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/components/create_session_dialog.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc060.rs"
+    ],
+    "totalLinesCovered": 592
+  }
+}

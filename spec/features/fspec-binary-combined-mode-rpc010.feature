@@ -1,8 +1,12 @@
 @critical
 @infrastructure
-@RPC-010 @rpc @rust @tarpc @websocket @workspace
+@RPC-010
+@rpc
+@rust
+@tarpc
+@websocket
+@workspace
 Feature: fspec combined mode — TUI + always-on WS server in one process
-
   """
   RPC-010 (parent RPC-002, depends on RPC-009). Combined mode (`fspec` with
   no subcommand) starts the shared service + ratatui frontend (via
@@ -11,29 +15,31 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
   point the user invokes the most.
 
   Architecture invariants (locked by rules [3] [4] [5] [7] [23]):
-    • SAME bind_and_serve as daemon mode — no second WS server.
-    • PORT=<n> line goes to STDERR (stdout is reserved for the alt-screen
-      TUI canvas; corrupting stdout would garble the ratatui buffer).
-    • daemon.json is written on bootstrap so a sibling `fspec client`
-      can autodiscover the running combined process.
-    • EmbeddedFspecBackend is constructed with tokio::runtime::Handle::current()
-      — preserving the RPC-005 Q9 host-supplied-runtime invariant.
-    • On clean exit: App::run().await → JoinHandle::abort() →
-      remove_daemon_json → return Ok(()) → tokio::main returns.
+  • SAME bind_and_serve as daemon mode — no second WS server.
+  • PORT=<n> line goes to STDERR (stdout is reserved for the alt-screen
+  TUI canvas; corrupting stdout would garble the ratatui buffer).
+  • daemon.json is written on bootstrap so a sibling `fspec client`
+  can autodiscover the running combined process.
+  • EmbeddedFspecBackend is constructed with tokio::runtime::Handle::current()
+  — preserving the RPC-005 Q9 host-supplied-runtime invariant.
+  • On clean exit: App::run().await → JoinHandle::abort() →
+  remove_daemon_json → return Ok(()) → tokio::main returns.
 
   Source artifacts:
-    • codelet/fspec/src/combined.rs (NEW)
-    • codelet/fspec/src/common.rs::build_service (NEW)
-    • codelet/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
-    • codelet/fspec-tui/src/transport/embedded.rs::EmbeddedFspecBackend (existing — RPC-008)
-    • codelet/fspec-tui/src/app.rs::App (existing — RPC-008/RPC-009)
+  • codelet/fspec/src/combined.rs (NEW)
+  • codelet/fspec/src/common.rs::build_service (NEW)
+  • codelet/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
+  • codelet/fspec-tui/src/transport/embedded.rs::EmbeddedFspecBackend (existing — RPC-008)
+  • codelet/fspec-tui/src/app.rs::App (existing — RPC-008/RPC-009)
   """
 
-  Background:
+  Background: 
     Given the fspec binary has been built via `cargo build -p fspec --release`
     And a temp workspace exists with a seeded spec/work-units.json containing at least one WorkUnit
 
-  @smoke @end-to-end @integration-test
+  @smoke
+  @end-to-end
+  @integration-test
   Scenario: Combined mode boots the TUI and starts the WS server in one process
     Given the developer has cd'd into the temp workspace
     When the developer spawns `fspec` as a subprocess with stdin/stdout/stderr piped
@@ -41,7 +47,8 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
     And the child has bound a WebSocket listener on 127.0.0.1:<ephemeral-port>
     And the same child has called ratatui::init() (alt-screen + raw mode active)
 
-  @smoke @end-to-end
+  @smoke
+  @end-to-end
   Scenario: Combined mode emits the PORT=<n> banner on STDERR (not stdout)
     When the developer spawns `fspec` as a subprocess
     And waits until the WS server is listening
@@ -57,7 +64,8 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
     And the captured STDOUT buffer contains NO occurrence of the literal text "listening"
     And the captured STDOUT buffer contains only ratatui's escape-sequence cell stream
 
-  @end-to-end @integration-test
+  @end-to-end
+  @integration-test
   Scenario: External WS client can attach to combined mode and call list_work_units
     Given the developer has spawned `fspec --workspace <temp-workspace>` as a subprocess
     And the test has parsed the `PORT=<n>` line from the child's STDERR
@@ -66,7 +74,8 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
     Then the call returns a non-empty Vec<WorkUnitInfo>
     And the Vec contains every WorkUnit seeded in the temp workspace's spec/work-units.json
 
-  @end-to-end @integration-test
+  @end-to-end
+  @integration-test
   Scenario: Combined mode writes daemon.json on bootstrap and removes it on clean exit
     Given the developer has set HOME to a tempdir BEFORE spawning the child
     When the developer spawns `fspec` as a subprocess
@@ -88,7 +97,8 @@ Feature: fspec combined mode — TUI + always-on WS server in one process
     And after the connection-closed error the child's daemon.json file is gone
     And finally the child process exits with code 0
 
-  @parity @integration-test
+  @parity
+  @integration-test
   Scenario: Combined mode and daemon mode share the SAME bind_and_serve function
     """
     Source-shape regression: both combined.rs AND daemon.rs MUST call

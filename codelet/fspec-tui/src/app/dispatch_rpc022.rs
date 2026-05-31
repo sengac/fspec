@@ -206,10 +206,11 @@ impl App {
         self.pending_tasks.push(handle);
     }
 
-    /// Route the seven RPC-022 Action variants through their helpers.
-    /// Called from the catch-all arm of `App::dispatch`'s match so the
-    /// orchestrator file `app/dispatch.rs` stays under the 300-LoC
-    /// ceiling. Returns `true` if the action was handled.
+    /// Route the RPC-022 (model / thinking / role) and RPC-050
+    /// (work-unit attach / detach) Action variants through their
+    /// helpers. Called from the catch-all arm of `App::dispatch`'s
+    /// match so the orchestrator file `app/dispatch.rs` stays under
+    /// the 300-LoC ceiling. Returns `true` if the action was handled.
     pub(crate) fn try_dispatch_rpc022(&mut self, action: &Action) -> bool {
         match action {
             Action::OpenModelDialog => self.handle_open_model_dialog(),
@@ -227,6 +228,27 @@ impl App {
             Action::SetSessionRole(s, r) => self.handle_set_session_role(s.clone(), r.clone()),
             Action::SessionRoleLoaded(s, r) => {
                 self.handle_session_role_loaded(s.clone(), r.clone());
+            }
+            // RPC-050 work-unit binding — helpers in dispatch_rpc050.rs.
+            Action::AttachWorkUnitToSession(id) => {
+                self.handle_attach_work_unit_to_session(id.clone());
+            }
+            Action::WorkUnitAttached(s, ctx) => {
+                self.handle_work_unit_attached(s.clone(), ctx.clone());
+            }
+            Action::WorkUnitDetached(s) => self.handle_work_unit_detached(s.clone()),
+            // RPC-051 Esc cascade — helper in dispatch_rpc051.rs.
+            Action::AgentEscPressed => self.handle_agent_esc_pressed(),
+            // RPC-098 ESC exit-confirmation dispatcher.
+            Action::AgentExitChoice { choice } => {
+                self.handle_agent_exit_choice(*choice)
+            }
+            // RPC-052 pending-input debounce + hydration — helpers in dispatch_rpc052.rs.
+            Action::PendingInputChanged(text) => {
+                self.handle_pending_input_changed(text.clone());
+            }
+            Action::SeedPendingInput { session_id, text } => {
+                self.handle_seed_pending_input(session_id.clone(), text.clone());
             }
             _ => return false,
         }

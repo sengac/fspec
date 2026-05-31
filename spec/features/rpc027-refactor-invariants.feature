@@ -7,7 +7,6 @@
 @rpc
 @RPC-027
 Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
-
   """
   RPC-027 Sections I (structural invariants) and J (snapshot regeneration).
 
@@ -25,7 +24,6 @@ Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
   # ============================================================
   # Section I — Structural invariants
   # ============================================================
-
   Scenario: popup_body.rs is deleted from the codebase
     Given the codelet/fspec-tui crate
     Then the file codelet/fspec-tui/src/views/agent/popup_body.rs does not exist
@@ -50,7 +48,6 @@ Feature: RPC-027 — Refactor structural invariants and snapshot regeneration
   # ============================================================
   # Section J — Snapshot regeneration
   # ============================================================
-
   Scenario: Insta snapshot for HelpDialog is regenerated against the new theme
     Given the insta snapshot help_dialog__centered_popup_80x24
     When I render the migrated HelpDialog onto an 80x24 TestBackend buffer

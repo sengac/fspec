@@ -173,7 +173,6 @@ pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
     );
 
     // Body rows start at body.y + 2 (title + blank gap)
-    let mut y = body.y + 2;
     let inverse = Style::default()
         .bg(accent)
         .fg(Color::Black)
@@ -184,7 +183,7 @@ pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
     } else {
         body.y + body.height
     };
-    for row in &dialog.rows {
+    for (y, row) in (body.y + 2..).zip(dialog.rows.iter()) {
         if y >= body_row_end {
             break;
         }
@@ -212,7 +211,6 @@ pub fn render_dialog(area: Rect, buf: &mut Buffer, dialog: &FspecDialog<'_>) {
         } else {
             paint_left_aligned(buf, row_rect, &row.spans, bg_style);
         }
-        y += 1;
     }
 
     // Footer pinned to the bottom of the body block.
@@ -281,14 +279,9 @@ fn paint_left_aligned(
 /// Paint a plain text string at (x, y) with the given style, capped at
 /// `max_width` cells.
 fn paint_text(buf: &mut Buffer, x: u16, y: u16, max_width: u16, text: &str, style: Style) {
-    let mut cx = x;
     let end = x + max_width;
-    for ch in text.chars() {
-        if cx >= end {
-            return;
-        }
+    for (cx, ch) in (x..end).zip(text.chars()) {
         buf[(cx, y)].set_style(style);
         buf[(cx, y)].set_symbol(&ch.to_string());
-        cx += 1;
     }
 }

@@ -4,7 +4,6 @@
 @persistence
 @command-history
 Feature: RPC-025 HistoryStore lifted from codelet_napi into codelet_core
-
   """
   RPC-025 (core history lift slice) — Move the HistoryStore +
   HistoryEntry surface from codelet/napi/src/persistence/{history.rs,

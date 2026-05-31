@@ -79,51 +79,59 @@ mod register_global_chunk_callback_at_startup {
 mod emit_chunk_with_session_id_through_global_callback {
     use super::*;
 
-    /// Feature: Global chunk callback NAPI for session-agnostic chunk emission
-    /// Scenario: Emit chunk with session_id through global callback
+    /// Feature: spec/features/replace-global-chunk-callback-with-broadcast.feature
+    /// Scenario: Emit chunk with session_id through global callback (RPC-041 inverted)
     ///
-    /// @step Given a global chunk callback is registered
-    /// @step And a session exists with id "session-abc"
-    /// @step When the session emits a TextDelta chunk via handle_output
-    /// @step Then the global callback should be invoked with session_id "session-abc"
-    /// @step And the global callback should receive the TextDelta chunk
+    /// @step Given the chunk fan-out has been replaced by a tokio::broadcast subscriber
+    /// @step When the session emits a TextDelta chunk via handle_output in codelet-sessions
+    /// @step Then the napi shell must no longer reference GLOBAL_CHUNK_CALLBACK in executable code
+    /// @step And the napi shell must subscribe to SessionManager::instance().chunks_tx() instead
     #[test]
-    fn test_handle_output_uses_global_callback() {
+    fn test_handle_output_does_not_use_global_callback() {
         let source = read_session_manager_source();
-        
-        // Verify handle_output calls the global callback
-        // The code should contain: GLOBAL_CHUNK_CALLBACK.get() and global_cb.call(self.id.to_string()
-        let has_global_callback_usage = source.contains("GLOBAL_CHUNK_CALLBACK.get()");
-        
+
+        // RPC-041: handle_output now lives in codelet-sessions and routes through
+        // self.chunks_tx.send(...). The napi shell must NOT mention GLOBAL_CHUNK_CALLBACK.
+        let mut violations: Vec<String> = Vec::new();
+        for (idx, line) in source.lines().enumerate() {
+            let code = match line.find("//") {
+                Some(pos) => &line[..pos],
+                None => line,
+            };
+            if code.contains("GLOBAL_CHUNK_CALLBACK") {
+                violations.push(format!("{}: {}", idx + 1, line));
+            }
+        }
         assert!(
-            has_global_callback_usage,
-            "BRIDGE-012: handle_output should use GLOBAL_CHUNK_CALLBACK to emit chunks."
+            violations.is_empty(),
+            "RPC-041: codelet/napi/src/session_manager.rs must no longer reference GLOBAL_CHUNK_CALLBACK in executable code. Got {} violations:\n{}",
+            violations.len(),
+            violations.join("\n")
         );
     }
 
     #[test]
-    fn test_global_callback_receives_session_id() {
+    fn test_global_callback_receives_session_id_via_broadcast() {
         let source = read_session_manager_source();
-        
-        // Verify the global callback is called with session_id (self.id.to_string())
-        let has_session_id_in_call = source.contains("global_cb.call(self.id.to_string()");
-        
+
+        // RPC-041: the subscriber task in session_set_global_chunk_callback receives the
+        // (SessionId, StreamChunk) tuple from `SessionManager::instance().chunks_tx().subscribe()`
+        // and forwards `session_id` (sid.to_string()) into the JS ThreadsafeFunction.
         assert!(
-            has_session_id_in_call,
-            "BRIDGE-012: Global callback should be called with session_id (self.id.to_string())."
+            source.contains(".chunks_tx().subscribe()"),
+            "RPC-041: codelet/napi/src/session_manager.rs must subscribe to chunks_tx via SessionManager::instance().chunks_tx().subscribe()"
         );
     }
 
     #[test]
-    fn test_global_callback_receives_chunk() {
+    fn test_global_callback_receives_chunk_via_broadcast() {
         let source = read_session_manager_source();
-        
-        // Verify the chunk is passed to global callback: global_cb.call(session_id, chunk)
-        let has_chunk_in_call = source.contains("global_cb.call(self.id.to_string(), chunk");
-        
+
+        // RPC-041: the subscriber forwards each (SessionId, StreamChunk) tuple to the JS
+        // ThreadsafeFunction. The new CHUNK_FANOUT_TSFN static is the storage location.
         assert!(
-            has_chunk_in_call,
-            "BRIDGE-012: Global callback should be called with the chunk."
+            source.contains("CHUNK_FANOUT_TSFN"),
+            "RPC-041: codelet/napi/src/session_manager.rs must declare CHUNK_FANOUT_TSFN as the new TSFN storage"
         );
     }
 }
@@ -139,32 +147,47 @@ mod multiple_sessions_emit_through_same_global_callback {
     /// @step And session "session-b" exists
     /// @step When session "session-a" emits a chunk
     /// @step And session "session-b" emits a chunk
-    /// @step Then both chunks should go through the same global callback
-    /// @step And each chunk should have its respective session_id
+    /// @step Then GLOBAL_CHUNK_CALLBACK no longer exists as a static (RPC-041 replaced it with a tokio::broadcast subscriber)
     #[test]
-    fn test_global_callback_is_static_singleton() {
+    fn test_global_callback_static_is_removed() {
         let source = read_session_manager_source();
-        
-        // Verify GLOBAL_CHUNK_CALLBACK is a static OnceCell
-        let has_static_global_callback = source.contains("static GLOBAL_CHUNK_CALLBACK: OnceCell<GlobalChunkCallback>");
-        
+
+        // RPC-041: the OnceCell<GlobalChunkCallback> static is deleted; the per-session fan-out
+        // is owned by SessionManager::chunks_tx() and a CHUNK_FANOUT_TSFN OnceCell stores the
+        // ThreadsafeFunction the napi subscriber forwards into.
+        let has_static_global_callback = source.contains("static GLOBAL_CHUNK_CALLBACK");
         assert!(
-            has_static_global_callback,
-            "BRIDGE-012: GLOBAL_CHUNK_CALLBACK should be a static OnceCell, shared by all sessions."
+            !has_static_global_callback,
+            "RPC-041: GLOBAL_CHUNK_CALLBACK static must be deleted from codelet/napi/src/session_manager.rs"
+        );
+        assert!(
+            source.contains("CHUNK_FANOUT_TSFN"),
+            "RPC-041: the replacement CHUNK_FANOUT_TSFN static must exist"
         );
     }
 
+    /// @step And each session's chunk emit still carries its self.id (through the tuple delivered on chunks_tx)
     #[test]
-    fn test_each_session_passes_own_id_to_callback() {
-        let source = read_session_manager_source();
-        
-        // Each session uses self.id.to_string() when calling the global callback
-        // This ensures each chunk carries its session's ID
-        let has_self_id_pattern = source.contains("self.id.to_string()");
-        
+    fn test_each_session_id_still_flows_through_broadcast() {
+        // RPC-041: the BackgroundSession now lives in codelet-sessions. The id flows through
+        // chunks_tx as `(SessionId::from(self.id.to_string()), chunk)`. This test asserts the
+        // chunks_tx-based contract in the codelet-sessions crate via grep of the moved file.
+        use std::path::Path;
+        let bg_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .expect("napi manifest_dir parent")
+            .join("sessions")
+            .join("src")
+            .join("background_session.rs");
+        let bg = std::fs::read_to_string(&bg_path)
+            .expect("codelet/sessions/src/background_session.rs must exist");
         assert!(
-            has_self_id_pattern,
-            "BRIDGE-012: Each session should pass self.id.to_string() to the global callback."
+            bg.contains("self.chunks_tx.send("),
+            "RPC-041: BackgroundSession::handle_output must call self.chunks_tx.send(...)"
+        );
+        assert!(
+            bg.contains("self.id.to_string()"),
+            "RPC-041: BackgroundSession::handle_output must pass self.id.to_string() into the chunks_tx tuple"
         );
     }
 }

@@ -21,6 +21,7 @@ pub(super) fn build_left_line(
     is_isolated: bool,
     is_debug_enabled: bool,
     is_select_mode: bool,
+    subordinate_label: Option<&str>,
 ) -> Line<'static> {
     let mut spans: Vec<Span<'static>> = Vec::new();
 
@@ -93,8 +94,33 @@ pub(super) fn build_left_line(
             Style::default().fg(Color::Yellow),
         ));
     }
+    if let Some(label) = subordinate_label {
+        if !label.is_empty() {
+            spans.push(Span::styled(
+                format!(" [Subordinate of: {label}]"),
+                Style::default().fg(Color::Cyan),
+            ));
+        }
+    }
 
     Line::from(spans)
+}
+
+/// RPC-061: build the short-id label used by `SessionHeader.subordinate_label`.
+/// Returns `None` when the supervisor list is empty, `Some("first8")`
+/// for a single supervisor, and `Some("first8+N")` when more than one
+/// supervisor is registered (N = count of additional supervisors).
+pub fn format_subordinate_label(supervisors: &[codelet_rpc_types::SessionId]) -> Option<String> {
+    if supervisors.is_empty() {
+        return None;
+    }
+    let first = supervisors.first()?;
+    let short: String = first.value.chars().take(8).collect();
+    if supervisors.len() == 1 {
+        Some(short)
+    } else {
+        Some(format!("{short}+{}", supervisors.len() - 1))
+    }
 }
 
 /// RPC-029 — build the multi-span right line. Two spans: the dark-grey

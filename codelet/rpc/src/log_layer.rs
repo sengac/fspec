@@ -107,11 +107,40 @@ fn build_record(event: &Event<'_>) -> LogRecord {
     }
 }
 
+/// LOG-004: prevent infinite recursive amplification of broadcast log
+/// records.
+///
+/// The TUI bootstrap subscriber (`codelet_fspec_tui::app::bootstrap`)
+/// drains `logs_rx` and re-emits every received [`LogRecord`] via
+/// `debug!()` so the file-appender layer captures them. Without this
+/// filter, that re-emit re-enters [`BroadcastLogLayer::on_event`],
+/// which pushes a fresh [`LogRecord`] onto every registered
+/// `logs_tx`, which the bootstrap subscriber receives, re-emits, …
+/// — geometrically amplifying log file size by ~one wrap of escaped
+/// quotes per round-trip. The `~/.fspec/logs/fspec-combined.log` grew
+/// to 8 GB in under a day in production.
+///
+/// Skipping events whose target IS the TUI bootstrap subscriber breaks
+/// the cycle at the source without losing diagnostic data: the
+/// originating events (from `codelet_agent_loop::*`, `tarpc::*`,
+/// `rig::*`, etc.) are still captured AND the bootstrap re-emission is
+/// still written to the file appender — it is ONLY excluded from the
+/// broadcast channel that would feed the cycle.
+fn should_skip(event: &Event<'_>) -> bool {
+    event.metadata().target() == "codelet_fspec_tui::app::bootstrap"
+}
+
 impl<S> Layer<S> for BroadcastLogLayer
 where
     S: Subscriber,
 {
     fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
+        // LOG-004: skip events whose target is the TUI bootstrap
+        // subscriber that re-emits broadcast records — broadcasting
+        // them would cycle back through the same subscriber.
+        if should_skip(event) {
+            return;
+        }
         let record = build_record(event);
         if let Ok(guard) = senders().lock() {
             for sender in guard.iter() {
@@ -126,6 +155,10 @@ where
     S: Subscriber,
 {
     fn on_event(&self, event: &Event<'_>, _ctx: Context<'_, S>) {
+        // LOG-004: same skip predicate as the global BroadcastLogLayer.
+        if should_skip(event) {
+            return;
+        }
         let record = build_record(event);
         let _ = self.sender.send(record);
     }

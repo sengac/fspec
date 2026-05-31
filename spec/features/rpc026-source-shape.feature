@@ -7,7 +7,6 @@
 @tui
 @RPC-026
 Feature: Source-shape regression for RPC-026 mode-view files (RPC-021c)
-
   """
   Source-shape regressions guard the architectural decisions: new mode-view files must exist with the required structure (each < 300 LoC, first render statement is Clear, no tui_popup/popup_body imports), and the old popup files (resume_picker.rs, search_palette.rs) plus their identifiers (ResumePicker, SearchPalette) must be fully removed.
   """
@@ -15,7 +14,6 @@ Feature: Source-shape regression for RPC-026 mode-view files (RPC-021c)
   # See spec/features/rpc026-* for the broader RPC-026 example-mapping context.
   # This file covers source-shape regressions: file existence, line-count caps,
   # forbidden imports, and removal of the old popup implementations.
-
   Background: User Story
     As a developer using the Rust ratatui TUI
     I want to press /resume or /search (and Ctrl+R) to open full-screen mode views that mirror the TypeScript Ink TUI — listing resumable sessions or filtering submitted-input history with delete confirmation — rather than small floating popups

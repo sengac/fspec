@@ -1,0 +1,257 @@
+{
+  "scenarios": [
+    {
+      "name": "AttachToSession spawns backend.resume_session for the selected session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "lines": "95-128",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionResumeComplete seeds scrollback from get_buffered_output on Ok",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "lines": "135-175",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionResumeFailed emits an error notice and skips get_buffered_output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "lines": "183-208",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Idempotent re-restore — AttachToSession on an already-open session still calls resume_session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_resume_rpc049.rs",
+          "lines": "217-241",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/slash_resume_rpc049.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc026.rs"
+    ],
+    "totalLinesCovered": 303
+  }
+}

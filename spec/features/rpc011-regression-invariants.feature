@@ -5,7 +5,6 @@
 @rpc
 @RPC-011
 Feature: RPC-011 regression invariants (prior RPC-005..010 signatures and architecture preserved)
-
   """
   RPC-011 is ADDITIVE only: bind_and_serve signature unchanged, WebSocketFspecBackend::connect
   signature unchanged, build_service unchanged, no second App / no second envelope format / no

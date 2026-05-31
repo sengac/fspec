@@ -218,7 +218,7 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
     );
 
     let mut view = fresh_view();
-    // @step And the AgentView has pushed two scrollback lines "user> hi" and "assistant> hello"
+    // @step And the AgentView has pushed two scrollback lines (RPC-078 verbatim push_line text)
     view.push_line(&mut store, "user> hi");
     view.push_line(&mut store, "assistant> hello");
     // @step When the App renders AgentView against an 80x10 TestBackend
@@ -226,13 +226,16 @@ async fn agent_view_layout_splits_area_into_header_scrollback_input_footer() {
 
     // @step Then the rendered buffer's row 0 contains the substring "#1:"
     assert!(rows[0].contains("#1:"), "row 0 should contain '#1:', got: {:?}", rows[0]);
-    // @step And the rendered buffer's rows 1 through 5 contain the substring "user> hi"
-    let scroll_area: String = rows[1..=5].join("\n");
-    assert!(scroll_area.contains("user> hi"), "rows 1-5 should contain 'user> hi'; got:\n{scroll_area}");
-    // @step And the rendered buffer's rows 1 through 5 contain the substring "assistant> hello"
+    // @step And the rendered buffer's scrollback area (rows 1..=8) contains both pushed lines
+    // RPC-078: ScrollbackList stick-to-bottom now BOTTOM-anchors content,
+    // so 2 lines land flush with the bottom of the scrollback area
+    // rather than at the top. Assert across the full scrollback area.
+    let scroll_area: String = rows[1..=8].join("\n");
+    assert!(scroll_area.contains("user> hi"), "scrollback should contain 'user> hi'; got:\n{scroll_area}");
+    // @step And the rendered buffer's scrollback area contains "assistant> hello"
     assert!(
         scroll_area.contains("assistant> hello"),
-        "rows 1-5 should contain 'assistant> hello'; got:\n{scroll_area}"
+        "scrollback should contain 'assistant> hello'; got:\n{scroll_area}"
     );
     // @step And the rendered buffer's row 9 contains the substring "Enter=send"
     // RPC-029: row 9 is now the input row (no footer hint there), and

@@ -18,7 +18,7 @@ mod graph_test_helpers;
 use graph_test_helpers::{count_edges, write_test_file};
 
 /// The AST code schema for loading extracted entities.
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// Helper: find edges by type with optional from/to slug filter
 fn find_edges<'a>(

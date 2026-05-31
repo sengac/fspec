@@ -28,9 +28,21 @@ use super::state::App;
 const RENDER_TICK: Duration = Duration::from_millis(16);
 
 impl App {
-    /// Process a single crossterm event. The DisconnectDialog (when
-    /// topmost) intercepts everything; app-level shortcuts (`?`, `q`,
-    /// Ctrl+D) fire next; then the Compositor; then the Navigator.
+    /// Process a single crossterm event. Dispatch order:
+    ///   1. DisconnectDialog (critical, unchanged — RPC-011 CR-1).
+    ///   2. Compositor (popups, modals — RPC-009/RPC-020).
+    ///   3. Navigator (BoardView or AgentView with its MultiLineInput).
+    ///   4. App-level fallback shortcuts (`?`, `q`, `Ctrl+D`) — only
+    ///      fire when 2 and 3 returned `Ignored`.
+    ///
+    /// RPC-073: pre-fix the App-level shortcuts ran at Stage 2 (before
+    /// Compositor and Navigator). That trapped `?` and `q` keystrokes
+    /// destined for the AgentView's input field — typing `is this card
+    /// done?` opened the HelpDialog instead of inserting `?`, and any
+    /// message containing `q` quit the app. Mirrors the TS Ink frontend's
+    /// `InputManager` priority chain (text input MEDIUM > view shortcuts
+    /// LOW), where focused inputs always win against view-level
+    /// shortcuts.
     pub fn handle_event(&mut self, event: &Event) -> EventResult {
         let topmost_is_critical = matches!(
             self.compositor.topmost_priority(),
@@ -39,10 +51,40 @@ impl App {
         let topmost_is_disconnect =
             self.compositor.topmost_id().as_deref() == Some(DISCONNECT_DIALOG_ID);
 
+        // Stage 1 (unchanged): DisconnectDialog (RPC-011 CR-1)
         if topmost_is_disconnect {
             return self.handle_disconnect_dialog_event(event);
         }
 
+        // Stage 2: Compositor (popups, modals, dialogs) gets first
+        // crack at the event. HelpDialog (already open), file/slash
+        // popups, etc. handle Esc / arrow / Enter here.
+        let composer_result = self.compositor.handle_event(event);
+        if let EventResult::Consumed(Some(callback)) = composer_result {
+            callback(&mut self.compositor);
+            self.should_render = true;
+            return EventResult::consumed();
+        }
+        if composer_result.is_consumed() {
+            self.should_render = true;
+            return composer_result;
+        }
+
+        // Stage 3: Navigator (current view: BoardView or AgentView
+        // with its MultiLineInput). The AgentView's input field
+        // receives `?`, `q`, etc. here so users can type them into
+        // messages.
+        let nav_result = self.navigator.handle_event(event, &self.board_store);
+        if nav_result.is_consumed() {
+            self.should_render = true;
+            return nav_result;
+        }
+
+        // Stage 4: App-level fallback shortcuts — only fire when
+        // neither the Compositor nor the Navigator consumed the key.
+        // Suppressed under a critical-priority modal (other than
+        // DisconnectDialog, handled at Stage 1) so the modal stays in
+        // focus.
         if !topmost_is_critical {
             if let Event::Key(key) = event {
                 if key.kind != KeyEventKind::Release {
@@ -53,20 +95,6 @@ impl App {
             }
         }
 
-        let result = self.compositor.handle_event(event);
-        if let EventResult::Consumed(Some(callback)) = result {
-            callback(&mut self.compositor);
-            self.should_render = true;
-            return EventResult::consumed();
-        }
-        if result.is_consumed() {
-            self.should_render = true;
-            return result;
-        }
-        let nav_result = self.navigator.handle_event(event, &self.board_store);
-        if nav_result.is_consumed() {
-            self.should_render = true;
-        }
         nav_result
     }
 
@@ -144,6 +172,7 @@ impl App {
 
         // Initial draw.
         if self.should_render {
+            let session_status = self.current_session_status();
             guard.terminal().draw(|frame| {
                 self.navigator.render_with_stores(
                     frame.area(),
@@ -153,8 +182,10 @@ impl App {
                 );
                 self.compositor.render(frame.area(), frame.buffer_mut());
                 if let ViewMode::Agent = self.navigator.active_view {
-                    if let Some((x, y)) = self.navigator.agent.cursor_position() {
-                        frame.set_cursor_position((x, y));
+                    if self.navigator.agent.is_cursor_visible(session_status) {
+                        if let Some((x, y)) = self.navigator.agent.cursor_position() {
+                            frame.set_cursor_position((x, y));
+                        }
                     }
                 }
             })?;
@@ -181,7 +212,10 @@ impl App {
                     self.dispatch(action);
                 }
                 _ = tick.tick() => {
-                    if self.should_render {
+                    let is_busy = self.is_session_busy();
+                    let is_animating = self.is_input_animating();
+                    if super::tick_should_draw(self.should_render, is_busy, is_animating) {
+                        let session_status = self.current_session_status();
                         guard.terminal().draw(|frame| {
                             self.navigator.render_with_stores(
                                 frame.area(),
@@ -191,8 +225,10 @@ impl App {
                             );
                             self.compositor.render(frame.area(), frame.buffer_mut());
                             if let ViewMode::Agent = self.navigator.active_view {
-                                if let Some((x, y)) = self.navigator.agent.cursor_position() {
-                                    frame.set_cursor_position((x, y));
+                                if self.navigator.agent.is_cursor_visible(session_status) {
+                                    if let Some((x, y)) = self.navigator.agent.cursor_position() {
+                                        frame.set_cursor_position((x, y));
+                                    }
                                 }
                             }
                         })?;

@@ -5,7 +5,6 @@
 @agent-view
 @header
 Feature: RoleBanner — inline one-row banner above scrollback when a session role is active
-
   """
   RoleBanner lives at codelet/fspec-tui/src/views/agent/role_banner.rs
   and is the Rust port of src/tui/components/RoleBanner.tsx (TUI-081).
@@ -32,14 +31,16 @@ Feature: RoleBanner — inline one-row banner above scrollback when a session ro
     I want a visible "Role: <text>" banner above the conversation when a custom role is active
     So that I can tell at a glance which agent persona is bound to the session
 
-  @visibility @hidden
+  @visibility
+  @hidden
   Scenario: RoleBanner renders zero rows when no role is set on the focused session
     Given an AgentViewStore with one open session "s-1" and role_for("s-1") = None
     When AgentView.render_with_store paints into a 80x24 area
     Then no row in the rendered buffer starts with "Role:"
     And the scrollback Block consumes the entire flex region between header and input
 
-  @visibility @visible
+  @visibility
+  @visible
   Scenario: RoleBanner renders one row when a role is set on the focused session
     Given an AgentViewStore with one open session "s-1" and role_for("s-1") = Some("You are a security reviewer")
     When AgentView.render_with_store paints into a 80x24 area
@@ -47,7 +48,8 @@ Feature: RoleBanner — inline one-row banner above scrollback when a session ro
     And the substring "You are a security reviewer" appears on that row
     And the scrollback Block height shrinks by exactly 1 row compared to the no-role layout
 
-  @multi-line @collapse
+  @multi-line
+  @collapse
   Scenario: Multi-line role text is collapsed to a single line
     Given an AgentViewStore with role_for("s-1") = Some("You are a security reviewer.\nAnalyze code for vulnerabilities.")
     When AgentView.render_with_store paints into a 100x24 area
@@ -61,7 +63,8 @@ Feature: RoleBanner — inline one-row banner above scrollback when a session ro
     Then exactly one row contains the "Role:" prefix
     And that row occupies exactly 40 columns and does not wrap to a second row
 
-  @multi-session @per-session-state
+  @multi-session
+  @per-session-state
   Scenario: RoleBanner reflects the focused session only, not background sessions
     Given an AgentViewStore with two open sessions "s-1" and "s-2"
     And role_for("s-1") = Some("Reviewer A") and role_for("s-2") = None
@@ -86,7 +89,8 @@ Feature: RoleBanner — inline one-row banner above scrollback when a session ro
     When AgentView.render_with_store paints into a 80x24 area
     Then no row in the rendered buffer starts with "Role:"
 
-  @line-budget @source-shape
+  @line-budget
+  @source-shape
   Scenario: role_banner.rs stays under 300 lines
     Given the file codelet/fspec-tui/src/views/agent/role_banner.rs after RPC-022 lands
     When a test counts the line-count of the file

@@ -606,6 +606,10 @@
           "description": "Local LLM model support"
         },
         {
+          "name": "@loop-management",
+          "description": "Session-scoped /loop slash command, loop store, and recurring-prompt infrastructure"
+        },
+        {
           "name": "@masked-display",
           "description": "Masked display of sensitive data"
         },
@@ -1546,6 +1550,10 @@
           "description": "Machine learning and adaptive features based on usage patterns"
         },
         {
+          "name": "@lift",
+          "description": "File-layout lift regression scenarios — pin module relocations from codelet-napi into codelet-core (persistence, scheduler, loops, etc.) and prevent NAPI dependencies re-creeping back in"
+        },
+        {
           "name": "@llm-integration",
           "description": "LLM integration and response handling"
         },
@@ -1576,6 +1584,10 @@
         {
           "name": "@max-tokens",
           "description": "Max tokens limit scenarios"
+        },
+        {
+          "name": "@mcp",
+          "description": "Model Context Protocol (MCP) per-session injection plumbing — init_mcp_session / cleanup_mcp_session / McpInjection wiring through codelet-tools and codelet-sessions"
         },
         {
           "name": "@mermaid",
@@ -2230,6 +2242,34 @@
           "description": "Work unit identifier tag for RPC-022 — modal dialogs (ModelSelector, ThinkingLevel, RoleBanner)"
         },
         {
+          "name": "@rpc-041",
+          "description": "Work unit identifier tag for RPC-041 — replace GLOBAL_CHUNK_CALLBACK with tokio::broadcast"
+        },
+        {
+          "name": "@rpc-057",
+          "description": "Work unit identifier tag for RPC-057 — /merge-worktree flow + worktree RPC surface"
+        },
+        {
+          "name": "@rpc-058",
+          "description": "Work unit identifier tag for RPC-058 — lift scheduler engine into codelet-core::scheduler; /schedule subcommand handler"
+        },
+        {
+          "name": "@rpc-059",
+          "description": "Work unit identifier tag for RPC-059 — lift loop store into codelet-core::loops + /loop subcommand handler (Phase 7.6 of RPC-030)"
+        },
+        {
+          "name": "@rpc-062",
+          "description": "Work unit identifier tag for RPC-062 — MCP injection plumbing audit in extracted SessionManager (Phase 7.9 of RPC-030)"
+        },
+        {
+          "name": "@rpc-078",
+          "description": "Work unit identifier tag for RPC-078 — AgentView scrollback TS Ink parity port (chunk prefix correction, no-duplicate UserInput, viewport-width-aware wrapping, visual-row stick-to-bottom)"
+        },
+        {
+          "name": "@rpc-097-reopen2",
+          "description": "RPC-097 reopen #2: BoardView Shift+Right must consult global open-session list before showing CreateSessionDialog"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
@@ -2344,6 +2384,10 @@
         {
           "name": "@happy-path",
           "description": "Happy path test scenarios"
+        },
+        {
+          "name": "@ignore",
+          "description": "Marks a scenario as ignored — paired with #[ignore] on the corresponding test. Used for placeholder behaviour-parity assertions whose test body compiles but is awaiting a future work unit to wire the production behaviour."
         },
         {
           "name": "@integration-test",
@@ -2670,7 +2714,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-05-18T11:26:44.577Z",
+    "lastUpdated": "2026-05-31T04:10:17.415Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

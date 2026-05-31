@@ -1,0 +1,17 @@
+[package]
+name = "codelet-test-helpers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+description = "Shared test-only helpers for the codelet workspace (dependency-rule regression tests, source-scan utilities). Lives outside the napi/sessions arrow graph so any test crate can consume it without fear of pulling forbidden dependencies."
+
+[dependencies]
+# Used to parse the JSON output of `cargo metadata --format-version 1`
+# when walking the transitive dependency graph in
+# dependency_rules::assert_no_transitive_dependency.
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

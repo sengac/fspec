@@ -8,7 +8,6 @@
 @rpc
 @RPC-008
 Feature: App shell + run loop (RPC-008)
-
   The ratatui App struct + run loop. App::new(backend) pre-populates a
   Compositor with a Background-priority HelloComponent. App-level `?`
   pushes the HelpDialog onto the compositor; ESC removes it via the

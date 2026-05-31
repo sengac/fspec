@@ -8,7 +8,6 @@
 @rpc
 @RPC-008
 Feature: WebSocketFspecBackend smoke + connect-shape
-
   End-to-end smoke test exercising WebSocketFspecBackend against a real
   bind_and_serve rpc-server bound to 127.0.0.1:0 plus the source-shape
   invariant that connect uses tokio_tungstenite::connect_async directly

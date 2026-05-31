@@ -8,7 +8,6 @@
 @tui
 @RPC-020
 Feature: Slash command palette + @file search popup in AgentView
-
   """
   Popups are owned directly by AgentView as `Option<SlashCommandPopup>` and `Option<FileSearchPopup>` fields (presentation state). Critical-priority dialogs still live on the Compositor and overlay these popups. New FspecBackend method `search_files(prefix, limit)` is additive; both transports delegate to a new `codelet_core::file_search::search` helper using `ignore::WalkBuilder` + `globset::GlobBuilder` (case-insensitive). Three new Action variants: `SlashCommandSelected(SlashCommandAction)`, `SearchFiles(String)`, `FileSearchResults(Vec<String>)`. File-size discipline: every new file under `views/agent/` stays under 300 LoC — split via submodules if needed. Filter sync is presentation-only: `AgentView::sync_popups()` runs after each input event and decides open/close/refilter based on the joined buffer; no Action dispatch is involved in filter changes. The `/help`, `/clear`, `/quit` handlers are wired live in this card; every other command emits a `[notice]` scrollback line referring the user to the future RPC card.
   """
@@ -58,7 +57,6 @@ Feature: Slash command palette + @file search popup in AgentView
   #   A: AgentView-owned (Option<SlashCommandPopup>, Option<FileSearchPopup>) — captured in rule [13].
   #
   # ========================================
-
   Background: User Story
     As a Rust fspec TUI developer
     I want to trigger a slash-command palette by typing '/' on a new line and a @file search popup by typing '@' inside the AgentView's MultiLineInput, with /help, /clear, /quit handlers wired live
@@ -103,11 +101,11 @@ Feature: Slash command palette + @file search popup in AgentView
     And the slash popup is closed
 
   Scenario: Pressing Enter on an unimplemented command emits a scrollback notice
-    Given an AgentView whose slash popup is open with "/compact" highlighted
+    Given an AgentView whose slash popup is open with "/isolation" highlighted
     When the user presses Enter
-    Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Compact)
+    Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Isolation)
     And dispatching that action appends one scrollback chunk whose text contains "[notice]"
-    And that scrollback chunk's text contains "compact"
+    And that scrollback chunk's text contains "isolation"
     And that scrollback chunk's text contains "not yet implemented"
     And the slash popup is closed
 

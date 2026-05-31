@@ -5,7 +5,6 @@
 @tui
 @work-units
 Feature: RPC-017 production fspec binary build_service cwd attachment
-
   """
   RPC-017 (split from rpc017-cross-transport-parity): the inline unit
   test that asserts `codelet-fspec`'s `common::build_service` chains

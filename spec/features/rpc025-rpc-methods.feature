@@ -5,14 +5,13 @@
 @persistence
 @parity
 Feature: RPC-025 FspecService persistence_*_history RPCs over both EmbeddedFspecBackend and WebSocketFspecBackend
-
   """
   RPC-025 (RPC methods slice) — Add three new RPC methods to FspecService
   in codelet/rpc/src/lib.rs and to the FspecBackend trait in
   codelet/fspec-tui/src/transport/mod.rs:
-    - persistence_add_history(session: SessionId, text: String) -> Result<()>
-    - persistence_get_history(session: SessionId, limit: u32) -> Result<Vec<String>>
-    - persistence_search_history(query: String) -> Result<Vec<HistoryMatch>>
+  - persistence_add_history(session: SessionId, text: String) -> Result<()>
+  - persistence_get_history(session: SessionId, limit: u32) -> Result<Vec<String>>
+  - persistence_search_history(query: String) -> Result<Vec<HistoryMatch>>
 
   EmbeddedFspecBackend forwards via its in-process FspecServiceImpl;
   WebSocketFspecBackend forwards via tarpc over WS. Both must produce

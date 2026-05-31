@@ -59,6 +59,21 @@ pub struct App {
     /// whenever `Action::SessionCreated` updates the AgentViewStore.
     pub(crate) active_session_tx: watch::Sender<Option<SessionId>>,
     pub(crate) active_session_rx: watch::Receiver<Option<SessionId>>,
+    /// RPC-052: single in-flight debounced save handle for the
+    /// per-session pending-input draft. `App::handle_pending_input_changed`
+    /// aborts any previous handle then stores the fresh one so a second
+    /// edit within the 300ms debounce window cancels the previous save.
+    pub(crate) pending_input_save_handle: Option<JoinHandle<()>>,
+    /// RPC-064: single in-flight debounced backend call abort handle
+    /// for the `/search` history-search round-trip. `App::handle_search_history`
+    /// aborts any previous handle then stores the fresh one so rapid
+    /// keystrokes inside the 150ms debounce window collapse to a single
+    /// `backend.persistence_search_history(query)` call carrying the
+    /// final query. The actual `JoinHandle` is parked on
+    /// `pending_tasks` so the existing RPC-026 test harness — which
+    /// awaits via `App::next_pending_task` — can still observe the
+    /// task deterministically.
+    pub(crate) search_history_debounce_handle: Option<tokio::task::AbortHandle>,
 }
 
 impl App {
@@ -96,6 +111,8 @@ impl App {
             pending_tasks: Vec::new(),
             active_session_tx,
             active_session_rx,
+            pending_input_save_handle: None,
+            search_history_debounce_handle: None,
         }
     }
 
@@ -160,6 +177,33 @@ impl App {
     /// `Action::AttachToSession` republished the new SessionId.
     pub fn active_session_rx_snapshot(&self) -> Option<SessionId> {
         self.active_session_rx.borrow().clone()
+    }
+
+    /// RPC-093: lookup the current session's status (Running /
+    /// Compacting / Idle / etc) from the AgentViewStore. Returns
+    /// `None` if no session is active.
+    pub fn current_session_status(&self) -> Option<codelet_rpc_types::SessionStatus> {
+        let sid = self.agent_view_store.current_session()?;
+        self.agent_view_store.session_status_for(sid).copied()
+    }
+
+    /// RPC-093 rule [6]: true iff the current session is Running or
+    /// Compacting — drives the run-loop "redraw every tick" bypass so
+    /// the spinner advances even without inbound chunks.
+    pub fn is_session_busy(&self) -> bool {
+        matches!(
+            self.current_session_status(),
+            Some(codelet_rpc_types::SessionStatus::Running)
+                | Some(codelet_rpc_types::SessionStatus::Compacting)
+        )
+    }
+
+    /// RPC-093: true iff the AgentView input row is mid-finish-animation
+    /// (Hiding/Showing). Plumbed into `tick_should_draw` so the
+    /// run loop keeps drawing every 16ms tick even AFTER the session
+    /// has gone Idle, letting the 5 char/17ms sweep complete.
+    pub fn is_input_animating(&self) -> bool {
+        self.navigator.agent.is_input_animating()
     }
 
     /// Drain a single Action from the bus (test helper).

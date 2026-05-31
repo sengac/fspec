@@ -53,11 +53,34 @@ notify-debouncer-mini.workspace = true
 ignore = { workspace = true }
 globset = { workspace = true }
 
+# RPC-032: persistence::messages dependencies — MessageStore uses an LRU
+# cache of deserialized messages, and compute_hash renders a SHA-256
+# hex digest. sha2 is workspace-shared (it's already declared on the
+# workspace level for the codex provider); lru and hex are added here
+# because they are not yet workspace deps.
+lru = "0.12"
+sha2.workspace = true
+hex = "0.4"
+
+# RPC-033: persistence::manifest hosts the MESSAGE_STORE + SESSION_STORE
+# global singletons that the free-function facade (load_session,
+# append_message_with_metadata, …) routes through. lazy_static is the
+# same crate codelet-napi already uses; not yet in workspace.dependencies.
+lazy_static = "1.4"
+
+# RPC-058: scheduler engine lift requires cron parsing + timezone +
+# proper-lockfile-compatible file lock from codelet-common.
+croner = { workspace = true }
+chrono-tz = { workspace = true }
+
 [dev-dependencies]
 tempfile.workspace = true
 tokio-test.workspace = true
 serial_test.workspace = true
 proptest.workspace = true
+# RPC-067: shared no-codelet-napi dependency-rule helpers used by
+# tests/no_napi_dependency.rs.
+codelet-test-helpers.workspace = true
 
 [lints]
 workspace = true

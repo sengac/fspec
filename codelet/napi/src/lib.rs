@@ -35,8 +35,43 @@ mod glob;
 pub mod models;
 #[cfg(not(feature = "noop"))]
 pub mod navigation;
+// RPC-043: codelet/napi/src/session_manager.rs deleted. Its contents
+// were split into seven sibling modules under the same
+// #[cfg(not(feature = "noop"))] gate that previously protected
+// session_manager.rs:
+//
+//   - session_bindings: the 66+ #[napi] free-function wrappers and the
+//     12 #[napi(object)] result/argument shapes.
+//   - agent_loop: pub(crate) async fn agent_loop, the run_with_provider!
+//     macro, agent_loop_dispatch_supports_provider, the InputWithImages
+//     helper struct, BackgroundOutput + BackgroundProgressEmitter
+//     StreamOutput sinks, and the agent_loop_dispatch_tests module.
+//   - persist: the five persist_* helpers used by agent_loop.rs and a
+//     pair of #[napi] restore wrappers in session_bindings.rs.
+//   - footer_poller: FOOTER_POLLER_TOKENS + spawn/stop helpers invoked
+//     by NapiSessionManagerHooks.
+//   - bridges: init_block_notification_callbacks /
+//     init_bridge_metadata_providers /
+//     init_bridge_session_and_terminal_creators /
+//     emit_block_notification_to_tui / register_deep_search_handler /
+//     register_agent_manager_handler + the four #[cfg(test)] companions
+//     previously embedded in session_manager.rs.
+//   - session_hooks: NapiSessionManagerHooks + install helper.
+//   - interjection: parse_interjection + Interjection struct.
 #[cfg(not(feature = "noop"))]
-pub mod session_manager;
+pub mod session_bindings;
+#[cfg(not(feature = "noop"))]
+pub mod agent_loop;
+#[cfg(not(feature = "noop"))]
+pub mod session_hooks;
+#[cfg(not(feature = "noop"))]
+pub mod interjection;
+#[cfg(not(feature = "noop"))]
+pub mod footer_poller;
+#[cfg(not(feature = "noop"))]
+pub mod persist;
+#[cfg(not(feature = "noop"))]
+pub mod bridges;
 #[cfg(not(feature = "noop"))]
 mod thinking_config;
 #[cfg(not(feature = "noop"))]
@@ -110,7 +145,7 @@ pub use glob::*;
 #[cfg(not(feature = "noop"))]
 pub use models::*;
 #[cfg(not(feature = "noop"))]
-pub use session_manager::*;
+pub use session_bindings::*;
 #[cfg(not(feature = "noop"))]
 pub use thinking_config::{
     extract_thinking_text, get_thinking_config, is_thinking_content, JsThinkingLevel,

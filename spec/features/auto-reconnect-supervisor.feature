@@ -9,7 +9,6 @@
 @rpc
 @RPC-011
 Feature: Auto-reconnect supervisor (exponential backoff + Reconnecting/Reconnected actions)
-
   """
   WebSocketFspecBackend gains a second constructor `connect_with_supervisor(url, action_tx)` that
   spawns a reconnect supervisor task living at the transport layer. Backoff schedule is 250ms →

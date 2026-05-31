@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Extract Go dependencies from go.mod.
 pub fn extract_go_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {

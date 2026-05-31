@@ -1,0 +1,203 @@
+{
+  "scenarios": [
+    {
+      "name": "create_session does not panic when invoked from a multi-thread tokio runtime worker",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "lines": "120-170",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create_session over the live tarpc embedded transport returns without panicking",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "lines": "173-225",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every Handle::current().block_on call inside handle_impl.rs is wrapped in tokio::task::block_in_place",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "lines": "228-300",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "test_provider_connection no longer constructs its own runtime",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "lines": "303-325",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pre-existing SessionManagerHandle shape tests still pass",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc070_create_session_no_panic.rs",
+          "lines": "328-372",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/rpc070_create_session_no_panic.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 352
+  }
+}

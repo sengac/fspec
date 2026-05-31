@@ -6,7 +6,6 @@
 @rpc
 @RPC-008
 Feature: FspecBackend trait surface + transport-agnostic consumer
-
   Source-shape regressions for the public FspecBackend trait declaration
   in codelet/fspec-tui/src/transport/mod.rs plus the compile-time
   guarantee that a single Arc<dyn FspecBackend> consumer compiles

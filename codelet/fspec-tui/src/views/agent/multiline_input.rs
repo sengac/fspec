@@ -43,6 +43,13 @@ pub enum InputEventOutcome {
     Ignored,
 }
 
+/// RPC-095: per-keystroke gate. See parent doc.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct InputGate {
+    pub block_edits: bool,
+    pub suppress_enter: bool,
+}
+
 /// Multi-line input wrapper. Owns a `TextArea<'static>` and a fixed
 /// visible-row cap. The widget itself renders into a 1+N-row region —
 /// the AgentView is responsible for the surrounding border + the
@@ -135,14 +142,39 @@ impl MultiLineInput {
     /// for unit tests. Returns the outcome the caller (AgentView)
     /// should translate into an EventResult + Action.
     pub fn handle_key(&mut self, code: KeyCode, mods: KeyModifiers) -> InputEventOutcome {
-        // Plain Enter → submit.
+        self.handle_key_gated(code, mods, InputGate::default())
+    }
+
+    /// RPC-095 — Move cursor to column 0 of the current line. Used by
+    /// the input-clear path of the Esc cascade so callers can position
+    /// the cursor without sending a key event.
+    pub fn move_cursor_home(&mut self) {
+        self.textarea.move_cursor(tui_textarea::CursorMove::Head);
+    }
+
+    /// RPC-095 — Gated variant of `handle_key`. The `gate` is
+    /// computed by the AgentView orchestrator per-frame.
+    pub fn handle_key_gated(
+        &mut self,
+        code: KeyCode,
+        mods: KeyModifiers,
+        gate: InputGate,
+    ) -> InputEventOutcome {
+        // Plain Enter → submit, unless suppressed.
         if code == KeyCode::Enter && mods.is_empty() {
+            if gate.suppress_enter {
+                return InputEventOutcome::Continued;
+            }
             let buf = self.value();
             self.reset();
             return InputEventOutcome::Submitted(buf);
         }
-        // Shift+Enter → literal newline (Continued).
+        // Shift+Enter → literal newline (Continued). Treated as an
+        // edit, so block_edits swallows it too.
         if code == KeyCode::Enter && mods.contains(KeyModifiers::SHIFT) {
+            if gate.block_edits {
+                return InputEventOutcome::Continued;
+            }
             self.textarea.insert_newline();
             return InputEventOutcome::Continued;
         }
@@ -164,6 +196,16 @@ impl MultiLineInput {
             if at_top || at_bottom {
                 return InputEventOutcome::Ignored;
             }
+        }
+        // RPC-073: Ctrl+D bubbles up so App::handle_app_shortcut
+        // (Stage 4) fires the global quit fallback.
+        if mods.contains(KeyModifiers::CONTROL) && matches!(code, KeyCode::Char('d') | KeyCode::Char('D')) {
+            return InputEventOutcome::Ignored;
+        }
+        // RPC-095 — block edits gate. Swallow Backspace, Delete,
+        // forward-delete, and printable character insertion.
+        if gate.block_edits && is_edit_keystroke(code, mods) {
+            return InputEventOutcome::Continued;
         }
         // Everything else → forward to the textarea.
         let input = Input::from(crossterm::event::KeyEvent::new(code, mods));
@@ -237,58 +279,12 @@ impl MultiLineInput {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-
-    #[test]
-    fn new_input_is_empty_one_row() {
-        let i = MultiLineInput::new();
-        assert!(i.is_empty());
-        assert_eq!(i.visible_rows(), 1);
-        assert_eq!(i.value(), "");
-    }
-
-    #[test]
-    fn plain_enter_submits_and_resets() {
-        let mut i = MultiLineInput::new();
-        i.handle_key(KeyCode::Char('h'), KeyModifiers::NONE);
-        i.handle_key(KeyCode::Char('i'), KeyModifiers::NONE);
-        let outcome = i.handle_key(KeyCode::Enter, KeyModifiers::NONE);
-        match outcome {
-            InputEventOutcome::Submitted(s) => assert_eq!(s, "hi"),
-            other => panic!("expected Submitted, got {other:?}"),
-        }
-        assert!(i.is_empty());
-    }
-
-    #[test]
-    fn shift_enter_inserts_newline() {
-        let mut i = MultiLineInput::new();
-        i.handle_key(KeyCode::Char('a'), KeyModifiers::NONE);
-        i.handle_key(KeyCode::Enter, KeyModifiers::SHIFT);
-        i.handle_key(KeyCode::Char('b'), KeyModifiers::NONE);
-        assert_eq!(i.value(), "a\nb");
-        assert_eq!(i.visible_rows(), 2);
-    }
-
-    #[test]
-    fn visible_rows_caps_at_max() {
-        let mut i = MultiLineInput::with_max_visible_rows(3);
-        for _ in 0..5 {
-            i.handle_key(KeyCode::Enter, KeyModifiers::SHIFT);
-        }
-        assert_eq!(i.line_count(), 6);
-        assert_eq!(i.visible_rows(), 3);
-    }
-
-    #[test]
-    fn paste_preserves_embedded_newlines() {
-        let mut i = MultiLineInput::new();
-        i.handle_event(&Event::Paste("a\nb\nc".to_string()));
-        assert_eq!(i.value(), "a\nb\nc");
-        assert_eq!(i.line_count(), 3);
-    }
+/// RPC-095 — returns true if the keystroke would otherwise insert
+/// text or delete characters. Used by `handle_key_gated` to swallow
+/// input while the session is Compacting (`gate.block_edits = true`).
+fn is_edit_keystroke(code: KeyCode, _mods: KeyModifiers) -> bool {
+    matches!(
+        code,
+        KeyCode::Char(_) | KeyCode::Backspace | KeyCode::Delete | KeyCode::Tab
+    )
 }

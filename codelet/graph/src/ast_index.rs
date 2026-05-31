@@ -14,11 +14,11 @@
 
 use std::collections::HashSet;
 
-use crate::graph::ast_pipeline::incremental::{
+use crate::ast_pipeline::incremental::{
     collect_file_mtimes, filter_reusable_entities, partition_changed_files, read_stored_mtimes,
     stamp_file_mtimes,
 };
-use crate::graph::dispatch_helpers::format_graph_stats;
+use crate::dispatch_helpers::format_graph_stats;
 
 /// Index (or re-index) the project codebase into the AST graph.
 ///

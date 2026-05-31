@@ -37,8 +37,29 @@ codelet-core.workspace = true
 # this, HistoryStore::new() returns Err and Shift+↑/↓ silently does
 # nothing in the live binary even though all unit tests pass.
 codelet-common.workspace = true
+# RPC-044: wire codelet-sessions::SessionManager into build_service so the
+# `fspec` binary drives real agent sessions through the NAPI-free
+# codelet-sessions crate. The forbidden `fspec -> NAPI bridge` dependency
+# arrow stays absent by virtue of there being no NAPI-bridge entry here.
+codelet-sessions.workspace = true
+# RPC-072: NAPI-free FspecAgentHooks + agent_loop. Replaces the prior
+# no-op FspecSessionManagerHooks so typed input actually drives an LLM.
+codelet-agent-loop.workspace = true
+# RPC-059: FspecSessionManagerHooks::cleanup_session_loops calls
+# `codelet_tools::McpInjection` (re-used through the SessionManagerHooks
+# trait's spawn_agent_loop signature) and `uuid::Uuid` for session ids.
+codelet-tools.workspace = true
+uuid = { version = "1", features = ["v4"] }
 ratatui.workspace = true
 crossterm.workspace = true
+
+# RPC-066: codelet-providers is pulled in as an OPTIONAL dependency so
+# the `test-stub-provider` feature can flip it on (binary build) while
+# the default release build excludes it entirely. The crate is reached
+# through `codelet-sessions` for normal builds anyway — this optional
+# arrow only adds the direct `use codelet_providers::stub_provider::...`
+# import path needed by build_service's feature-gated block.
+codelet-providers = { workspace = true, optional = true }
 
 [target.'cfg(unix)'.dependencies]
 nix = { version = "0.29", features = ["signal"] }
@@ -50,3 +71,39 @@ predicates.workspace = true
 tokio-tungstenite.workspace = true
 futures.workspace = true
 serde_json.workspace = true
+regex = "1"
+# RPC-067: shared no-codelet-napi dependency-rule helpers used by
+# tests/no_napi_dependency.rs.
+codelet-test-helpers.workspace = true
+# RPC-070: tests/rpc070_create_session_no_panic.rs needs a tarpc
+# client to drive the EmbeddedTransport server in-process. tarpc is
+# already a workspace dependency (it lives in codelet-rpc); pulling it
+# in as a dev-dep here avoids a `pub use` re-export from codelet-rpc.
+tarpc.workspace = true
+# RPC-078: real PTY-driven E2E test for AgentView scrollback parity.
+# `portable-pty` allocates a master/slave PTY so the spawned `fspec`
+# binary thinks it owns a real terminal (alt-screen + raw mode are
+# legitimate). `vt100` is a pure-Rust VT100 parser that consumes the
+# raw escape stream off the master PTY and exposes the rendered cell
+# grid for substring assertions — the same primitive @microsoft/tui-test
+# uses internally on the TS side.
+portable-pty = { workspace = true }
+vt100 = "0.15"
+
+[features]
+# RPC-066: enable the deterministic stub LlmProvider inside the
+# compiled `fspec` binary. Propagates to codelet-providers/test-support
+# so register_stub_provider() is compiled in and build_service's
+# gated registration call lands. Without this feature the binary is
+# identical to a release build.
+#
+# RPC-072: also propagates to codelet-agent-loop/test-support so the
+# agent loop's Custom("stub") provider-dispatch branch consults the
+# in-memory stub registry. Without this propagation, send_input("hello")
+# in a stub-backed session would emit StreamChunk::Error from the loop
+# instead of the canned "hi back" Text chunk.
+test-stub-provider = [
+    "dep:codelet-providers",
+    "codelet-providers/test-support",
+    "codelet-agent-loop/test-support",
+]

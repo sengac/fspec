@@ -546,6 +546,24 @@ export declare function copilotOauthDeviceLoginStart(
 export declare function copilotOauthGetCredential(): Promise<NapiCopilotCredential | null>;
 
 /**
+ * RPC-015: Count manual + auto checkpoints across all work units.
+ *
+ * Mirrors the TS `countCheckpoints(cwd)` helper from
+ * `src/utils/checkpoint-index.ts` but reads directly from
+ * `refs/fspec-checkpoints/...` git refs (rather than the
+ * `.git/fspec-checkpoints-index/{workUnitId}.json` sidecar files)
+ * so both UIs converge on the SAME source of truth.
+ *
+ * The existing TS pure-JS `countCheckpoints` helper is NOT changed by
+ * this card — it can switch to this NAPI export at its own pace.
+ * Both paths converge in `codelet_git::ghost_commit::count_checkpoints`.
+ *
+ * @param cwd - Path to the workspace root (containing `.git/`)
+ * @returns CheckpointCounts with `manual` + `auto` u32 fields
+ */
+export declare function countCheckpoints(cwd: string): CheckpointCounts;
+
+/**
  * Create a ghost commit checkpoint capturing current working tree state
  *
  * Ghost commits are detached commits that capture complete working tree state
@@ -788,6 +806,21 @@ export declare function getFileDiff(
 ): string | null;
 
 /**
+ * RPC-018: Return display + capability metadata for the model currently
+ * bound to a session.
+ *
+ * Mirrors `FspecService::get_model_info` (codelet/rpc/src/lib.rs). Both
+ * bindings call into the SAME `SessionManagerHandle::get_model_info`
+ * path, so the JS Ink frontend and the Rust ratatui frontend converge
+ * on identical data once the codelet/napi `SessionManager` overrides
+ * the trait method (deferred to RPC-022). For RPC-018 the default
+ * trait impl returns `ModelInfo::default()` — the additive NAPI export
+ * preserves the call site so that the TS code can wire up to the new
+ * shape ahead of the override.
+ */
+export declare function getModelInfo(sessionId: string): ModelInfo;
+
+/**
  * Get session diff comparing base commit to current worktree state
  *
  * This compares the base_commit tree against the worktree's working directory,
@@ -864,6 +897,19 @@ export declare function getUnstagedFiles(dir: string): Array<string>;
  * @returns Array of file paths that are not tracked by git
  */
 export declare function getUntrackedFiles(dir: string): Array<string>;
+
+/**
+ * RPC-018: Return the workspace snapshot (cwd + optional git branch).
+ *
+ * Mirrors `FspecService::get_workspace_info` — both bindings (NAPI for
+ * the JS frontend, tarpc for the Rust ratatui frontend) call the SAME
+ * `codelet_git::get_current_branch` helper so the cwd + branch string
+ * is computed identically regardless of which UI consumes it.
+ *
+ * @param cwd - Path to the workspace root
+ * @returns WorkspaceInfo with `cwd` + `git_branch: Option<String>`
+ */
+export declare function getWorkspaceInfo(cwd: string): WorkspaceInfo;
 
 export declare function getWorkUnit(workUnitId: string): WorkUnitInfo | null;
 
@@ -1374,6 +1420,34 @@ export declare function modelsListLocalOpenai(
  */
 export declare function modelsRefreshCache(): Promise<number>;
 
+/**
+ * RPC-017: mirror of [`move_work_unit_up`] for the DOWN direction.
+ *
+ * @param cwd - Path to the workspace root (containing `spec/work-units.json`)
+ * @param id  - Work unit ID to reorder
+ */
+export declare function moveWorkUnitDown(cwd: string, id: string): void;
+
+/**
+ * RPC-017: move the work unit with `id` one position UP in its current
+ * `states[<column>]` array in `<cwd>/spec/work-units.json`. Delegates
+ * to the shared `codelet_core::work_units_write::move_work_unit`
+ * helper so both this NAPI export AND the new
+ * `FspecService::move_work_unit_up` RPC method converge on a single
+ * inter-process-locked atomic-write code path. No-op at the top
+ * boundary. Returns an error when the unit lives in the done column,
+ * is unknown, or on I/O / data-integrity failure.
+ *
+ * Additive: the existing TS `fspec prioritize-work-unit` command path
+ * continues to use `fileManager.transaction` and is NOT changed by
+ * RPC-017. Both paths cooperate through the same proper-lockfile-
+ * compatible mkdir lock on `spec/work-units.json.lock`.
+ *
+ * @param cwd - Path to the workspace root (containing `spec/work-units.json`)
+ * @param id  - Work unit ID to reorder
+ */
+export declare function moveWorkUnitUp(cwd: string, id: string): void;
+
 export interface NapiAppendResult {
   messageId: string;
   session: NapiSessionManifest;
@@ -1824,6 +1898,10 @@ export declare function persistenceGetMessageEnvelopeRaw(
 /**
  * Get all messages for a session as envelope JSON array with blob content rehydrated
  * (respects compaction - use for LLM context)
+ *
+ * RPC-049: the implementation lives in `codelet_core::persistence::manifest`.
+ * This NAPI binding is a thin one-line delegate that converts the
+ * `String` error from `codelet_core` into a `napi::Error`.
  */
 export declare function persistenceGetSessionMessageEnvelopes(
   sessionId: string
@@ -1913,6 +1991,13 @@ export declare function persistenceSetCompactionState(
  * Set the data directory for persistence (e.g., ~/.fspec)
  *
  * This must be called at startup before any other persistence operations.
+ *
+ * RPC-035: the credentials + knowledge-graph reset logic that previously
+ * lived in `persistence/mod.rs::set_data_directory` is inlined here, the
+ * single non-test caller. The persistence-store resets delegate to
+ * `codelet_core::persistence::reset_stores_for_tests` (which covers every
+ * lifted singleton: MESSAGE_STORE + SESSION_STORE + BLOB_STORE +
+ * HistoryStore).
  */
 export declare function persistenceSetDataDirectory(dir: string): void;
 
@@ -2469,7 +2554,15 @@ export declare function sessionSendHitlResponse(
   response: HitlResponseInfo
 ): void;
 
-/** Send input to a session with optional thinking config */
+/**
+ * Send input to a session with optional thinking config.
+ *
+ * RPC-039: `BackgroundSession::send_input` now returns
+ * `Result<(), String>` (the moved type lives in
+ * `codelet_sessions::background_session` and is NAPI-free). This
+ * thin wrapper maps the String error back into the napi `Result<()>`
+ * shape so the TypeScript `Promise<void>` signature is preserved.
+ */
 export declare function sessionSendInput(
   sessionId: string,
   input: string,
@@ -2512,6 +2605,12 @@ export declare function sessionSetDebugEnabled(
  *
  * This should be called ONCE at application startup by GlobalSessionStreamManager.
  * Calling it again will fail (callback can only be set once).
+ *
+ * RPC-041: The TSFN is stored inside `CHUNK_FANOUT_TSFN` and a single
+ * long-running tokio task subscribes to
+ * `SessionManager::instance().chunks_tx()` and forwards every
+ * `(SessionId, StreamChunk)` tuple into the stored TSFN. This
+ * replaces the old chunk-callback OnceCell static.
  */
 export declare function sessionSetGlobalChunkCallback(
   callback: (err: Error | null, arg: GlobalChunkCallbackArgs) => any
@@ -2777,6 +2876,65 @@ export interface WorktreeInfoJs {
   /** Whether the worktree is in detached HEAD mode */
   isDetached: boolean;
 }
+/** Per-blocklist approval choice surfaced by the triple-pause dialog. */
+export declare const enum ApprovalChoice {
+  Approve = 'Approve',
+  ApproveSession = 'ApproveSession',
+  Deny = 'Deny',
+}
+
+/**
+ * One row in the `/blocklist` view, surfaced by the `blocklist_list`
+ * RPC method. Mirrors the TS `BlocklistRule` interface
+ * (`src/tui/components/BlocklistListView.tsx` lines 20-34) field-for-field
+ * with the addition of the explicit `source` provenance tag — the TS
+ * frontend stamps `'system' | 'project'` on each rule client-side after
+ * loading from `blocklistLoad(cwd)`; the Rust pipeline carries the
+ * provenance over the wire so the frontend does not need to know how to
+ * split the two configs.
+ *
+ * `action` is one of `"block" | "allow" | "prompt"` (matches
+ * `BlocklistAction` lowercased serde tag).
+ * `source` is one of `"system" | "project"`.
+ * `guidance` is `None` when the rule has no educational follow-up.
+ *
+ * Wire shape is a flat struct so `napi_derive::napi(object)` stays valid;
+ * no discriminated enums.
+ */
+export interface BlocklistRuleInfo {
+  id: string;
+  pattern: string;
+  /** "block" | "allow" | "prompt" */
+  action: string;
+  reason: string;
+  guidance?: string;
+  /** "system" | "project" */
+  source: string;
+}
+
+/**
+ * RPC-015: paired manual + automatic checkpoint counts across all work
+ * units in a workspace.
+ *
+ * Mirrors the TS interface `{ manual: number; auto: number }` from
+ * `src/utils/checkpoint-index.ts` so both the existing Ink TUI (which
+ * reads via the pure-JS `countCheckpoints` helper) and the new Rust
+ * ratatui TUI (which reads via `FspecService::checkpoint_counts`)
+ * converge on the same shape. The `napi` cfg-gate preserves the JS
+ * shape so the additive `napi::count_checkpoints` export can return
+ * the same type verbatim.
+ */
+export interface CheckpointCounts {
+  /** Count of manual (user-created) checkpoints. */
+  manual: number;
+  /**
+   * Count of automatic (state-transition) checkpoints — those whose
+   * names contain the `-auto-` substring per
+   * `src/utils/checkpoint-index.ts::AUTO_CHECKPOINT_PATTERN`.
+   */
+  auto: number;
+}
+
 export interface CompactionProgress {
   phase: string;
   current: number;
@@ -2871,9 +3029,78 @@ export interface HealthInfo {
   version: string;
 }
 
+/**
+ * RPC-025: transport-portable match returned by
+ * `FspecService::persistence_search_history`. Mirrors the relevant
+ * fields of `codelet_core::persistence::history::HistoryEntry` but
+ * formats the timestamp as an RFC3339 string so non-Rust consumers
+ * don't need a chrono dependency.
+ */
+export interface HistoryMatch {
+  sessionId: SessionId;
+  text: string;
+  timestampIso: string;
+}
+
+/** One option presented to the user inside an HITL question. */
+export interface HitlOption {
+  label: string;
+  description: string;
+}
+
+/**
+ * Single HITL question to render in the AgentView modal — wire-facing
+ * slice of `codelet_tools::request_user_input::HitlQuestion`. The
+ * internal type wraps multiple questions; the AgentView wire surface
+ * represents one question per outgoing request.
+ */
+export interface HitlRequest {
+  id: string;
+  question: string;
+  header: string;
+  options: Array<HitlOption>;
+  allowTextInput: boolean;
+}
+
+/**
+ * User's response to an `HitlRequest`. The `value` field carries
+ * either the selected option label or the freeform text the user
+ * entered.
+ */
+export interface HitlResponse {
+  id: string;
+  value: string;
+}
+
 export interface IncomingMessageImage {
   data: string;
   mediaType: string;
+}
+
+/**
+ * RPC-061: wire-portable payload for `receive_incoming_message`. Mirrors
+ * the fields of `codelet_sessions::IncomingMessage` (formerly
+ * `SupervisorInput` — see WATCH-003/006/008/011/019/020) so the
+ * supervisor → subordinate injection path round-trips identically
+ * across both embedded and WebSocket transports.
+ */
+export interface IncomingMessageInput {
+  sourceSessionId: string;
+  roleName: string;
+  message: string;
+  images?: Array<IncomingMessageImage>;
+}
+
+/**
+ * Result of `create_isolated_session`: identifies the new session,
+ * its git worktree path on disk, and the baseline commit SHA the
+ * worktree was forked from. Drives the AgentView isolation badge and
+ * the merge/discard flow.
+ */
+export interface IsolatedSessionInfo {
+  sessionId: SessionId;
+  worktreePath: string;
+  baseCommit: string;
 }
 
 /**
@@ -2888,10 +3115,261 @@ export interface LogRecord {
   timestampMs: number;
 }
 
+/**
+ * Outcome of a `merge_session_worktree` RPC call.
+ *
+ * * `status` — terminal state classification.
+ * * `conflicts` — non-empty only when `status == Conflict`; lists the
+ *   relative paths whose merge produced a conflict.
+ * * `merge_commit` — short SHA of the resulting merge commit if the
+ *   underlying codelet-git layer surfaces one; `None` otherwise.
+ *
+ * Wire shape is a flat struct so `napi_derive::napi(object)` stays
+ * valid; no discriminated enums.
+ */
+export interface MergeOutcome {
+  status: MergeStatus;
+  conflicts: Array<string>;
+  mergeCommit?: string;
+}
+
+/**
+ * Result status of a merge attempt. `Success` and `NoChanges` are
+ * terminal outcomes; `Conflict` carries the conflicting file paths in
+ * the surrounding `MergeOutcome` so the LLM can be seeded with a
+ * context message and asked to resolve them. Serialised as a
+ * snake_case string for napi compatibility.
+ */
+export declare const enum MergeStatus {
+  Success = 'Success',
+  Conflict = 'Conflict',
+  NoChanges = 'NoChanges',
+}
+
+/**
+ * The merge algorithm to use. Currently the codelet-git layer only
+ * supports a single fast-forward-style merge; `Squash` and `ThreeWay`
+ * are reserved on the wire so future cards can add support without
+ * breaking the trait surface. Serialised as a snake_case string so
+ * napi consumers receive plain strings.
+ */
+export declare const enum MergeStrategy {
+  FastForward = 'FastForward',
+  Squash = 'Squash',
+  ThreeWay = 'ThreeWay',
+}
+
+/**
+ * One entry in the per-provider model list returned by
+ * `FspecService::list_providers`. Mirrors the relevant fields of the
+ * TS `NapiModelInfo` shape (codelet/napi/src/models/napi_bindings.rs)
+ * so the Rust ratatui `ModelSelectorDialog` can paint capability
+ * badges using the SAME source of truth that the Ink
+ * `ModelSelectorView.tsx` consumes.
+ *
+ * `Default` returns a "blank" entry — `display_name` empty, every
+ * capability false, `context_window` 0, `is_custom` false. The
+ * `ModelSelectorDialog` hides empty rows so the UI degrades
+ * gracefully when no session manager is attached (the RPC-022
+ * default-impl path).
+ */
+export interface ModelEntry {
+  id: string;
+  displayName: string;
+  contextWindow: number;
+  supportsReasoning: boolean;
+  supportsVision: boolean;
+  isCustom: boolean;
+}
+
+/**
+ * Capability + display metadata for the model attached to a session.
+ *
+ * Mirrors the TS `useModelStore.getCapabilities` shape so the SessionHeader
+ * in the Rust ratatui TUI can paint `[R]` / `[V]` / `[Nk]` badges using
+ * the SAME source of truth that the Ink SessionHeader.tsx consumes.
+ *
+ * `Default` returns an "unknown model" sentinel — `display_name` is empty,
+ * every capability is false, and `context_window` is 0. The SessionHeader
+ * widget hides empty badges so the UI degrades gracefully when no
+ * session manager is attached (the RPC-018 default-impl path).
+ */
+export interface ModelInfo {
+  displayName: string;
+  supportsReasoning: boolean;
+  supportsVision: boolean;
+  contextWindow: number;
+}
+
 export declare const enum NotificationSeverity {
   Info = 'Info',
   Warning = 'Warning',
   Error = 'Error',
+}
+
+/**
+ * Kind of pause the user-facing dialog should render. Wire-portable
+ * slice of the internal `codelet_tools::tool_pause::PauseKind` —
+ * `Continue` (a loop-control signal) is intentionally omitted.
+ */
+export declare const enum PauseKind {
+  Confirm = 'Confirm',
+  Triple = 'Triple',
+}
+
+/**
+ * Response the user can send back to dismiss the pause dialog. Maps
+ * 1-to-1 onto the AgentView buttons (`Resume`, `ConfirmAccept`,
+ * `ConfirmDeny` for two-choice prompts; `TripleApprove`,
+ * `TripleApproveSession`, `TripleDeny` for three-choice prompts).
+ */
+export declare const enum PauseResponse {
+  Resume = 'Resume',
+  ConfirmAccept = 'ConfirmAccept',
+  ConfirmDeny = 'ConfirmDeny',
+  TripleApprove = 'TripleApprove',
+  TripleApproveSession = 'TripleApproveSession',
+  TripleDeny = 'TripleDeny',
+}
+
+/**
+ * Snapshot of the AgentView pause dialog state — the question to
+ * render plus the tool-call ID (if any) the pause is gating.
+ */
+export interface PauseState {
+  kind: PauseKind;
+  prompt: string;
+  toolCallId?: string;
+}
+
+/**
+ * Summary entry per provider returned by
+ * `FspecService::list_provider_credentials`. Drives the left-pane
+ * provider list in `ProviderSettingsView`.
+ *
+ * `credential_type` is one of `"api_key" | "oauth" | "custom"` and
+ * matches the variant tag used in `ProviderCredentialInput::kind`.
+ * `configured` reflects [`ProviderCredentials::detect`] (env var set,
+ * auth file present, etc.). `model_count` is the number of models the
+ * provider's config currently exposes — drives the
+ * "(n models)" suffix in each row.
+ */
+export interface ProviderCredentialInfo {
+  providerId: string;
+  displayName: string;
+  configured: boolean;
+  /**
+   * One of "api_key", "oauth", or "custom" — mirrors the variant
+   * discriminant used in [`ProviderCredentialInput::kind`].
+   */
+  credentialType: string;
+  modelCount: number;
+}
+
+/**
+ * Credential write payload consumed by
+ * `FspecService::set_provider_credentials`. Encoded as a struct with a
+ * `kind` discriminant (rather than a Rust enum) so that the
+ * `napi(object)` derive remains valid — `napi_derive::napi(object)`
+ * does not support discriminated enums and the JS surface needs to
+ * re-export the same shape.
+ *
+ * `kind` is one of:
+ *   * `"api_key"`     — `api_key` MUST be Some
+ *   * `"oauth"`       — `oauth_token` MUST be Some; `oauth_refresh_token` optional
+ *   * `"custom"`      — `custom_endpoint` MUST be Some; `custom_api_key` optional
+ */
+export interface ProviderCredentialInput {
+  /** "api_key" | "oauth" | "custom" */
+  kind: string;
+  apiKey?: string;
+  oauthToken?: string;
+  oauthRefreshToken?: string;
+  customEndpoint?: string;
+  customApiKey?: string;
+}
+
+/**
+ * One provider's display metadata plus its set of available models —
+ * returned (in a Vec) by `FspecService::list_providers`. Mirrors the
+ * TS `NapiProviderModels` shape (codelet/napi/src/models/napi_bindings.rs)
+ * so the Rust ratatui `ModelSelectorDialog` and the Ink
+ * `ModelSelectorView.tsx` consume the same provider/model tree.
+ *
+ * The `key` field is the stable provider identifier (e.g. "openai",
+ * "anthropic") passed back through `set_session_model`. The
+ * `display_name` is the human-readable label rendered in the
+ * provider rows.
+ */
+export interface ProviderInfo {
+  key: string;
+  displayName: string;
+  models: Array<ModelEntry>;
+}
+
+/**
+ * Flat wire shape for a single registered session-scoped loop. Mirrors
+ * the internal `codelet_core::loops::LoopEntry` but flattens the
+ * `chrono::DateTime<Utc>` fields into RFC-3339 String timestamps and
+ * wraps the session UUID in a `SessionId` so the struct stays
+ * `napi_derive::napi(object)`-compatible (no chrono on the JS side).
+ */
+export interface RegisteredLoop {
+  id: string;
+  sessionId: SessionId;
+  prompt: string;
+  intervalSeconds: number;
+  /** RFC-3339 UTC timestamp. */
+  createdAt: string;
+  /** RFC-3339 UTC timestamp. */
+  expiresAt: string;
+  /** RFC-3339 UTC timestamp, or `None` if the loop has not fired yet. */
+  lastRunAt?: string;
+}
+
+/**
+ * Flat wire shape for a single scheduled job (agent or shell). Mirrors
+ * `ScheduleEntry` from codelet/napi/src/scheduler/types.rs but flattens
+ * the nested agent/shell config into top-level `role`/`prompt`/`command`
+ * so the struct stays `napi_derive::napi(object)`-compatible (no
+ * discriminated enums on the wire).
+ */
+export interface ScheduledJob {
+  name: string;
+  cron: string;
+  timezone: string;
+  /** "agent" | "shell" */
+  jobType: string;
+  /** "active" | "paused" */
+  status: string;
+  createdAt?: string;
+  lastRunAt?: string;
+  lastRunStatus?: string;
+  /** Agent-only — role text injected on session spawn. */
+  role?: string;
+  /** Agent-only — initial prompt sent to the spawned session. */
+  prompt?: string;
+  /** Shell-only — the command line to spawn. */
+  command?: string;
+  /** "skip" | "queue" (when None, the engine treats as "skip") */
+  overlapPolicy?: string;
+}
+
+/**
+ * Summary payload returned by `inspect_session_changes`. The
+ * MergeConfirmDialog renders the counts inline (e.g. "1 file changed,
+ * +4 / -2, 1 commit") so the user has explicit feedback before
+ * confirming a destructive merge.
+ */
+export interface SessionChangesSummary {
+  filesChanged: number;
+  insertions: number;
+  deletions: number;
+  /**
+   * Short SHAs (typically 7 chars) of every commit on the session
+   * branch that is not yet on the base branch.
+   */
+  commits: Array<string>;
 }
 
 /**
@@ -2928,6 +3406,19 @@ export interface SessionInfo {
   role?: string;
 }
 
+/**
+ * Per-session model binding: which provider+model the session uses
+ * plus the derived limits (context window, max output tokens, and the
+ * compaction threshold at which the session manager auto-compacts).
+ */
+export interface SessionModel {
+  providerId: string;
+  modelId: string;
+  contextWindow: number;
+  maxOutputTokens: number;
+  compactionThreshold: number;
+}
+
 export declare const enum SessionState {
   Idle = 'Idle',
   Running = 'Running',
@@ -2957,6 +3448,29 @@ export declare const enum SessionStatus {
   Compacting = 'Compacting',
   /** RPC-007: Session has been cleared (post-cleanup terminal state). */
   Cleared = 'Cleared',
+}
+
+/**
+ * Per-session token totals (input + output) as currently observed.
+ * Mirrors what `BackgroundSession::get_tokens()` produces on the JS
+ * side.
+ */
+export interface SessionTokens {
+  inputTokens: number;
+  outputTokens: number;
+}
+
+/**
+ * One row in the `list_session_worktrees` RPC response. Mirrors
+ * `codelet_git::WorktreeInfo` plus the `derive_session_status` +
+ * dirty heuristic computed from a non-empty `get_session_diff`.
+ */
+export interface SessionWorktreeInfo {
+  sessionId: SessionId;
+  worktreePath: string;
+  baseCommit: string;
+  headCommit: string;
+  dirty: boolean;
 }
 
 /**
@@ -3019,7 +3533,17 @@ export type StreamChunk =
   | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
   | { type: 'FspecCommandResult'; fspecResult: FspecResult }
   | { type: 'WorkUnitsUpdate'; workUnits: Array<WorkUnitInfo> }
-  | { type: 'IsolationStateChange'; isIsolated: boolean; worktreePath?: string }
+  | {
+      type: 'IsolationStateChange';
+      isIsolated: boolean;
+      worktreePath?: string /**
+       * RPC-036: the git commit SHA the worktree was forked from.
+       * `None` when the chunk was emitted without baseline info (e.g.
+       * the legacy 2-arg constructor path). The Rust AgentView uses
+       * this to render the isolation diff against the origin commit.
+       */;
+      baseCommit?: string;
+    }
   | {
       type: 'FooterStateUpdate';
       cwd: string;
@@ -3032,6 +3556,58 @@ export type StreamChunk =
 export interface SupervisorPendingInjectionInfo {
   urgent: boolean;
   content: string;
+}
+
+/**
+ * Result returned by `FspecService::test_provider_connection`. Drives
+ * the right-pane status area in `ProviderSettingsView` — a `success:
+ * true` value renders "✓ ok (latency_ms ms)" and a `success: false`
+ * value renders "✗ <error>".
+ */
+export interface TestConnectionResult {
+  success: boolean;
+  error?: string;
+  latencyMs: number;
+}
+
+/**
+ * Provider-specific thinking-config payload. The `config_json` field
+ * is the JSON-encoded blob produced by `getThinkingConfig(providerId,
+ * level)` on the JS side — store it as a string instead of
+ * `serde_json::Value` to keep `codelet-rpc-types` free of any
+ * `serde_json` runtime dependency. Mirrors the precedent set by
+ * `FspecRequest::args_json`.
+ */
+export interface ThinkingConfig {
+  providerId: string;
+  level: ThinkingLevel;
+  configJson: string;
+}
+
+/**
+ * Per-session thinking/reasoning level. Mirrors the
+ * `JsThinkingLevel` enum that the existing TS code consumes via
+ * `@sengac/codelet-napi` (`codelet/napi/src/thinking_config.rs`).
+ */
+export declare const enum ThinkingLevel {
+  Off = 'Off',
+  Low = 'Low',
+  Medium = 'Medium',
+  High = 'High',
+}
+
+/**
+ * Per-session token-restore state — used by `/resume` to rehydrate the
+ * cumulative-billed counters and cache totals so the SessionFooter's
+ * context-fill / billing badges keep their numbers across reopens.
+ */
+export interface TokenRestoreState {
+  currentContext: number;
+  cumulativeBilledOutput: number;
+  cacheRead: number;
+  cacheCreation: number;
+  cumulativeBilledInput: number;
+  cumulativeBilledOutputSecond: number;
 }
 
 export interface TokenTracker {
@@ -3065,6 +3641,32 @@ export interface ToolResultInfo {
 }
 
 /**
+ * Workspace snapshot — cwd + git branch — returned by
+ * `FspecService::get_workspace_info`. Mirrors the data the TS
+ * `SessionFooter.tsx` derives from a Rust-side `FooterStateUpdate`
+ * poller; the new RPC method is a single-shot pull alternative that the
+ * Rust ratatui SessionFooter widget consumes via `Action::WorkspaceInfoLoaded`.
+ *
+ * `cwd` is returned RAW (not `~`-shortened) — the SessionFooter widget
+ * performs the `home::home_dir()` substitution at render time so the
+ * wire shape stays portable across hosts whose `$HOME` differs.
+ */
+export interface WorkspaceInfo {
+  cwd: string;
+  gitBranch?: string;
+}
+
+/**
+ * The work-unit this session is currently attached to (BoardView →
+ * AgentView attach path). `None` when the session is detached.
+ */
+export interface WorkUnitContext {
+  id: string;
+  title: string;
+  status: string;
+}
+
+/**
  * Work unit information shared across all transports and the NAPI surface.
  *
  * Field order and naming match the original NAPI definition so that the
@@ -3086,4 +3688,14 @@ export interface WorkUnitInfo {
    * `attachments: string[]`.
    */
   attachments: Array<string>;
+  /**
+   * RPC-016: ISO-8601 UTC timestamp of the latest entry in this work
+   * unit's `stateHistory` array (i.e. when the unit most recently
+   * changed status). `None` for legacy records without
+   * `stateHistory`. Drives the `⏩` last-changed indicator in the
+   * Rust BoardView. Additive — the TS Ink BoardView continues to
+   * derive its `lastChangedWorkUnit` from `stateHistory[last]`
+   * directly so this field is invisible on the TS side.
+   */
+  lastStateChangeAt?: string;
 }

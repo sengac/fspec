@@ -7,7 +7,6 @@
 @RPC-009
 @critical
 Feature: Root layout + Tab focus cycling + footer hint bar (RPC-009)
-
   """
   RootView is the new top-level Component (priority Background, id "root") replacing HelloComponent in App::new. State: `RootView { work_units: WorkUnitsListView, repl: AgentReplView, footer: FooterView, focused_pane: FocusedPane }` where `enum FocusedPane { WorkUnits, Repl }`. Layout: outer `Layout::vertical([Constraint::Min(0), Constraint::Length(1)])` reserves the bottom row for the footer hint bar; the upper region splits horizontally via `Layout::horizontal([Constraint::Length(32), Constraint::Min(0)])`; the right column splits vertically via `Layout::vertical([Constraint::Min(0), Constraint::Length(3)])` into scrollback + 3-row input box. handle_event intercepts Tab → emits Action::FocusNext on the action bus and returns Consumed (no callback); otherwise forwards to whichever sub-pane is focused. Sub-panes are CHILDREN of RootView (NOT separate compositor layers) — only the help dialog uses the compositor's modal layering. Footer hint bar (FooterView): 1-row Component rendering `?`-help, `q`-quit, `Tab`-switch-pane via styled `Spans` against the existing Theme. NO tui-prompts, NO throbber-widgets-tui.
   """

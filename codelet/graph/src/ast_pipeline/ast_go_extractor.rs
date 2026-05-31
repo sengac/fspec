@@ -18,7 +18,7 @@ use super::metadata;
 use super::variables;
 use super::edge_helpers;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for Go functions and methods.
 const GO_FUNC_KINDS: &[&str] = &["function_declaration", "method_declaration"];

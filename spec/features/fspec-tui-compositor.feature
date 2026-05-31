@@ -5,7 +5,6 @@
 @rpc
 @RPC-008
 Feature: Compositor priority dispatcher
-
   Layered priority dispatcher (~30 LoC core) per RPC-002 doc 09 §A.7 +
   §D.1. Stable priority sort with FIFO tiebreak (newer registrations
   win), short-circuit on Consumed, skip on is_active() == false,

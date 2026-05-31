@@ -12,7 +12,7 @@ use serde_json::{Map, Value};
 use std::io::Read;
 
 /// The AST code schema.
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// Helper: create a populated graph for export testing.
 async fn setup_export_db(temp_dir: &std::path::Path) -> GraphDatabase {

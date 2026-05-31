@@ -244,7 +244,7 @@ fn a_new_insta_snapshot_exists_for_every_migrated_dialog() {
         }
         let entries: Vec<String> = fs::read_dir(dir)
             .expect("read_dir")
-            .filter_map(|e| e.ok())
+            .filter_map(std::result::Result::ok)
             .filter_map(|e| e.file_name().into_string().ok())
             .collect();
         all_entries.extend(entries);

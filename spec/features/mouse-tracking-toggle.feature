@@ -3,7 +3,6 @@
 @tui
 @RPC-023
 Feature: MouseTrackingToggle — TUI-078 native text-selection scaffolding
-
   """
   Decision (Q6): MouseTrackingToggle is generic over W: Write + Send with `with_stdout()` as the production constructor; tests inject Vec<u8> and assert exact escape bytes.
   Decision (Q9): BoardView does NOT opt into TUI-078 button-press (native text selection deferred to RPC-019 AgentView/VirtualList).

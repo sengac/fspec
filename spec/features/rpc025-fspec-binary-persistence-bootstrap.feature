@@ -6,7 +6,6 @@
 @source-shape
 @bootstrap
 Feature: RPC-025 fspec binary persistence bootstrap initialises the global data directory
-
   """
   RPC-025 (binary bootstrap slice) — the `fspec` binary MUST call
   `codelet_common::set_data_directory(~/.fspec)` at startup BEFORE

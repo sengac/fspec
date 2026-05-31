@@ -1,8 +1,26 @@
 //! NAPI bindings for session persistence functions
 //!
 //! Exposes the Rust persistence API to TypeScript/JavaScript via NAPI-RS.
+//!
+//! RPC-035: every callee is sourced through an explicit
+//! `use codelet_core::persistence::{...};` block so the dependency
+//! direction (napi → core) is documented at the call site instead of
+//! being buried in a wildcard re-export. The four pre-RPC-035 helpers
+//! that lived in `persistence/mod.rs` (`set_data_directory`,
+//! `get_data_dir`, `add_history_entry`, `get_history`, `search_history`)
+//! are absorbed inline into the corresponding `#[napi]` entry points.
 
-use super::*;
+use codelet_core::persistence::{
+    append_message, append_message_with_metadata, blob_exists, cherry_pick,
+    cleanup_orphaned_messages, clear_compaction_state, create_session, create_session_with_provider,
+    delete_session, fork_session, get_blob, get_message, get_session_messages,
+    get_session_messages_full, history, list_sessions, load_session, merge_messages,
+    process_envelope_for_blob_storage, rehydrate_envelope_blobs, rename_session, reset_stores_for_tests,
+    resume_last_session, set_compaction_state, set_session_tokens, store_blob,
+    update_session_tokens, AssistantContent, CompactionState, ForkPoint, HistoryEntry,
+    MergeRecord, MessageEnvelope, MessagePayload, SessionManifest, StoredMessage, TokenUsage,
+    UserContent,
+};
 use napi::bindgen_prelude::*;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -14,15 +32,26 @@ use std::path::PathBuf;
 /// Set the data directory for persistence (e.g., ~/.fspec)
 ///
 /// This must be called at startup before any other persistence operations.
+///
+/// RPC-035: the credentials + knowledge-graph reset logic that previously
+/// lived in `persistence/mod.rs::set_data_directory` is inlined here, the
+/// single non-test caller. The persistence-store resets delegate to
+/// `codelet_core::persistence::reset_stores_for_tests` (which covers every
+/// lifted singleton: MESSAGE_STORE + SESSION_STORE + BLOB_STORE +
+/// HistoryStore).
 #[napi]
 pub fn persistence_set_data_directory(dir: String) -> Result<()> {
-    set_data_directory(PathBuf::from(dir)).map_err(Error::from_reason)
+    codelet_common::set_data_directory(PathBuf::from(dir)).map_err(Error::from_reason)?;
+    reset_stores_for_tests();
+    crate::credentials::reset_credential_store();
+    crate::graph::reset_graph_db();
+    Ok(())
 }
 
 /// Get the current data directory
 #[napi]
 pub fn persistence_get_data_directory() -> Result<String> {
-    get_data_dir()
+    codelet_common::get_data_dir()
         .map(|p| p.to_string_lossy().to_string())
         .map_err(Error::from_reason)
 }
@@ -265,7 +294,7 @@ pub fn persistence_blob_exists(hash: String) -> Result<bool> {
 pub fn persistence_add_history(display: String, project: String, session_id: String) -> Result<()> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
     let entry = HistoryEntry::new(display, PathBuf::from(project), uuid);
-    add_history_entry(entry).map_err(Error::from_reason)
+    history::add(entry).map_err(Error::from_reason)
 }
 
 /// Get history entries
@@ -275,7 +304,7 @@ pub fn persistence_get_history(
     limit: Option<u32>,
 ) -> Result<Vec<NapiHistoryEntry>> {
     let project_path = project.map(PathBuf::from);
-    get_history(project_path.as_deref(), limit.map(|l| l as usize))
+    history::get(project_path.as_deref(), limit.map(|l| l as usize))
         .map(|entries| entries.into_iter().map(|e| e.into()).collect())
         .map_err(Error::from_reason)
 }
@@ -287,7 +316,7 @@ pub fn persistence_search_history(
     project: Option<String>,
 ) -> Result<Vec<NapiHistoryEntry>> {
     let project_path = project.map(PathBuf::from);
-    search_history(&query, project_path.as_deref())
+    history::search(&query, project_path.as_deref())
         .map(|entries| entries.into_iter().map(|e| e.into()).collect())
         .map_err(Error::from_reason)
 }
@@ -576,11 +605,9 @@ pub struct NapiCherryPickResult {
 // Message Envelope Types (NAPI-008: Claude Code Format)
 // ============================================================================
 
-// Re-export blob processing functions from the pure Rust module for use in this module
-use super::blob_processing::{
-    process_envelope_for_blob_storage as process_envelope_impl,
-    rehydrate_envelope_blobs as rehydrate_envelope_impl,
-};
+// Re-export blob processing functions from the lifted module
+// (codelet_core::persistence::blob_processing, sourced via the explicit
+// import block at the top of this file — RPC-035).
 
 /// Store a message envelope as JSON
 ///
@@ -595,7 +622,7 @@ pub fn persistence_store_message_envelope(
     let mut session = load_session(uuid).map_err(Error::from_reason)?;
 
     // Parse and validate the envelope
-    let envelope: super::MessageEnvelope = serde_json::from_str(&envelope_json)
+    let envelope: MessageEnvelope = serde_json::from_str(&envelope_json)
         .map_err(|e| Error::from_reason(format!("Invalid message envelope JSON: {}", e)))?;
 
     // CRITICAL FIX: Calculate actual token count BEFORE blob storage processing.
@@ -607,7 +634,7 @@ pub fn persistence_store_message_envelope(
 
     // Process envelope for blob storage (extracts large content)
     let (processed_envelope, blob_refs) =
-        process_envelope_impl(&envelope).map_err(Error::from_reason)?;
+        process_envelope_for_blob_storage(&envelope).map_err(Error::from_reason)?;
 
     // Determine role from envelope
     let role = processed_envelope.message_type.clone();
@@ -665,7 +692,7 @@ pub fn persistence_get_message_envelope(id: String) -> Result<Option<String>> {
             let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
 
             // Rehydrate blob references to restore original content
-            let rehydrated = rehydrate_envelope_impl(&envelope_json).map_err(Error::from_reason)?;
+            let rehydrated = rehydrate_envelope_blobs(&envelope_json).map_err(Error::from_reason)?;
             Ok(Some(rehydrated))
         }
         None => Ok(None),
@@ -698,51 +725,14 @@ pub fn persistence_get_message_envelope_raw(id: String) -> Result<Option<String>
 
 /// Get all messages for a session as envelope JSON array with blob content rehydrated
 /// (respects compaction - use for LLM context)
+///
+/// RPC-049: the implementation lives in `codelet_core::persistence::manifest`.
+/// This NAPI binding is a thin one-line delegate that converts the
+/// `String` error from `codelet_core` into a `napi::Error`.
 #[napi]
 pub fn persistence_get_session_message_envelopes(session_id: String) -> Result<Vec<String>> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
-    let session = load_session(uuid).map_err(Error::from_reason)?;
-    let messages = get_session_messages(&session).map_err(Error::from_reason)?;
-
-    let mut envelopes: Vec<String> = Vec::with_capacity(messages.len());
-    for stored_msg in messages {
-        // Handle synthetic compaction summary messages
-        if stored_msg.id == uuid::Uuid::nil() {
-            // Create a proper MessageEnvelope-compatible structure for compaction summaries
-            // MessageEnvelope uses #[serde(rename_all = "camelCase")] and #[serde(rename = "type")]
-            // Required fields: uuid, timestamp, type, provider, message
-            let synthetic_envelope = serde_json::json!({
-                "uuid": "00000000-0000-0000-0000-000000000000",
-                "parentUuid": null,
-                "timestamp": stored_msg.created_at.to_rfc3339(),
-                "type": "user",
-                "provider": "compaction",
-                "message": {
-                    "role": "user",
-                    "content": [{"type": "text", "text": stored_msg.content}]
-                },
-                "requestId": null,
-                "_synthetic": true,
-                "_compactionSummary": true
-            });
-            envelopes.push(serde_json::to_string(&synthetic_envelope).unwrap_or_default());
-            continue;
-        }
-
-        let metadata_value = serde_json::Value::Object(
-            stored_msg
-                .metadata
-                .into_iter()
-                .collect::<serde_json::Map<String, serde_json::Value>>(),
-        );
-        let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
-
-        // Rehydrate blob references to restore original content
-        let rehydrated = rehydrate_envelope_impl(&envelope_json).map_err(Error::from_reason)?;
-        envelopes.push(rehydrated);
-    }
-
-    Ok(envelopes)
+    codelet_core::persistence::get_session_message_envelopes(uuid).map_err(Error::from_reason)
 }
 
 /// Get all messages for a session as envelope JSON array - FULL history (ignores compaction)
@@ -763,7 +753,7 @@ pub fn persistence_get_session_message_envelopes_full(session_id: String) -> Res
         let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
 
         // Rehydrate blob references to restore original content
-        let rehydrated = rehydrate_envelope_impl(&envelope_json).map_err(Error::from_reason)?;
+        let rehydrated = rehydrate_envelope_blobs(&envelope_json).map_err(Error::from_reason)?;
         envelopes.push(rehydrated);
     }
 
@@ -851,46 +841,46 @@ fn truncate_chars(s: &str, max_chars: usize) -> String {
 
 /// Calculate the actual token count from the ORIGINAL envelope content before blob processing.
 /// This is critical for accurate context tracking - blob references are much shorter than actual content.
-fn calculate_envelope_tokens(envelope: &super::MessageEnvelope) -> u32 {
+fn calculate_envelope_tokens(envelope: &MessageEnvelope) -> u32 {
     use codelet_common::token_estimator::count_tokens;
 
     let mut total_tokens: usize = 0;
 
     match &envelope.message {
-        super::MessagePayload::User(user_msg) => {
+        MessagePayload::User(user_msg) => {
             for content in &user_msg.content {
                 match content {
-                    super::UserContent::Text { text } => {
+                    UserContent::Text { text } => {
                         total_tokens += count_tokens(text);
                     }
-                    super::UserContent::ToolResult { content, .. } => {
+                    UserContent::ToolResult { content, .. } => {
                         // This is the critical fix - count tokens from actual tool result content
                         total_tokens += count_tokens(content);
                     }
-                    super::UserContent::Image { .. } => {
+                    UserContent::Image { .. } => {
                         // Images are sent as base64, estimate ~85 tokens for image content block
                         // (actual tokens depend on image size, but base64 is large)
                         total_tokens += 85;
                     }
-                    super::UserContent::Document { .. } => {
+                    UserContent::Document { .. } => {
                         // Documents similarly estimated
                         total_tokens += 100;
                     }
                 }
             }
         }
-        super::MessagePayload::Assistant(assistant_msg) => {
+        MessagePayload::Assistant(assistant_msg) => {
             for content in &assistant_msg.content {
                 match content {
-                    super::AssistantContent::Text { text } => {
+                    AssistantContent::Text { text } => {
                         total_tokens += count_tokens(text);
                     }
-                    super::AssistantContent::ToolUse { input, .. } => {
+                    AssistantContent::ToolUse { input, .. } => {
                         // Count tokens in tool input JSON
                         let input_str = serde_json::to_string(input).unwrap_or_default();
                         total_tokens += count_tokens(&input_str);
                     }
-                    super::AssistantContent::Thinking { thinking, .. } => {
+                    AssistantContent::Thinking { thinking, .. } => {
                         total_tokens += count_tokens(thinking);
                     }
                 }
@@ -902,29 +892,29 @@ fn calculate_envelope_tokens(envelope: &super::MessageEnvelope) -> u32 {
 }
 
 /// Helper function to extract a text summary from a message envelope
-fn extract_content_summary(envelope: &super::MessageEnvelope) -> String {
+fn extract_content_summary(envelope: &MessageEnvelope) -> String {
     match &envelope.message {
-        super::MessagePayload::User(user_msg) => {
+        MessagePayload::User(user_msg) => {
             if let Some(content) = user_msg.content.first() {
                 match content {
-                    super::UserContent::Text { text } => return text.clone(),
-                    super::UserContent::ToolResult { content, .. } => {
+                    UserContent::Text { text } => return text.clone(),
+                    UserContent::ToolResult { content, .. } => {
                         return truncate_chars(content, 200);
                     }
-                    super::UserContent::Image { .. } => return "[image]".to_string(),
-                    super::UserContent::Document { .. } => return "[document]".to_string(),
+                    UserContent::Image { .. } => return "[image]".to_string(),
+                    UserContent::Document { .. } => return "[document]".to_string(),
                 }
             }
             "[empty user message]".to_string()
         }
-        super::MessagePayload::Assistant(assistant_msg) => {
+        MessagePayload::Assistant(assistant_msg) => {
             if let Some(content) = assistant_msg.content.first() {
                 match content {
-                    super::AssistantContent::Text { text } => return text.clone(),
-                    super::AssistantContent::ToolUse { name, .. } => {
+                    AssistantContent::Text { text } => return text.clone(),
+                    AssistantContent::ToolUse { name, .. } => {
                         return format!("[tool_use: {name}]");
                     }
-                    super::AssistantContent::Thinking { thinking, .. } => {
+                    AssistantContent::Thinking { thinking, .. } => {
                         let summary = truncate_chars(thinking, 200);
                         if summary.ends_with("...") {
                             return format!("[thinking: {summary}]");

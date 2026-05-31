@@ -7,7 +7,6 @@
 @rpc
 @RPC-027
 Feature: RPC-027 — HelpDialog, DisconnectDialog and ThinkingLevelDialog migration
-
   """
   RPC-027 Sections B (HelpDialog), C (DisconnectDialog), D (ThinkingLevelDialog).
 
@@ -27,7 +26,6 @@ Feature: RPC-027 — HelpDialog, DisconnectDialog and ThinkingLevelDialog migrat
   # ============================================================
   # Section B — HelpDialog
   # ============================================================
-
   Scenario: HelpDialog renders with the cyan accent and inner-title body
     Given an isolated HelpDialog component
     When I render it onto an 80x24 TestBackend buffer
@@ -56,7 +54,6 @@ Feature: RPC-027 — HelpDialog, DisconnectDialog and ThinkingLevelDialog migrat
   # ============================================================
   # Section C — DisconnectDialog
   # ============================================================
-
   Scenario: DisconnectDialog renders with the red accent and the "Disconnected" inner title
     Given a fresh DisconnectDialog with no Reconnecting action applied
     When I render it onto an 80x24 TestBackend buffer
@@ -78,7 +75,6 @@ Feature: RPC-027 — HelpDialog, DisconnectDialog and ThinkingLevelDialog migrat
   # ============================================================
   # Section D — ThinkingLevelDialog
   # ============================================================
-
   Scenario: ThinkingLevelDialog renders with the yellow accent and inner-title body
     Given a ThinkingLevelDialog seeded with ThinkingLevel::Off
     When I render it onto an 80x24 TestBackend buffer

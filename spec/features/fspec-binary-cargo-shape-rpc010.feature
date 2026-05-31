@@ -1,8 +1,11 @@
 @critical
 @infrastructure
-@RPC-010 @rpc @rust @workspace @build
+@RPC-010
+@rpc
+@rust
+@workspace
+@build
 Feature: fspec binary — crate layout, source-shape invariants, and build artifact
-
   """
   RPC-010 (parent RPC-002, depends on RPC-009). Source-shape +
   workspace-layout regression rules. Locks the new codelet/fspec/
@@ -11,25 +14,25 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
   binary entry point.
 
   Invariants locked in this card (rules [0] [7] [13] [16]):
-    • codelet/fspec/ is a workspace member with [[bin]] name = "fspec",
-      path = "src/main.rs".
-    • cargo build -p fspec --release produces codelet/target/release/fspec.
-    • codelet/fspec/Cargo.toml [dependencies] does NOT list codelet-napi.
-    • codelet/fspec/Cargo.toml [dev-dependencies] does NOT list codelet-napi.
-    • codelet/fspec/src/ contains NO `tokio::runtime::Builder`,
-      `Runtime::new`, `Runtime::new()`, `runtime::Builder::new_*` calls
-      (preserving the RPC-005 Q9 host-supplied-runtime invariant).
-    • The existing `codelet-rpc-server` dev-helper binary stays in place;
-      its stdout port-line contract is preserved verbatim by `fspec daemon`.
-    • An `npm run build:rust:fspec` script copies the artifact to dist/fspec
-      for parity with the TS layout; npm `bin` stays on the TS shim.
+  • codelet/fspec/ is a workspace member with [[bin]] name = "fspec",
+  path = "src/main.rs".
+  • cargo build -p fspec --release produces codelet/target/release/fspec.
+  • codelet/fspec/Cargo.toml [dependencies] does NOT list codelet-napi.
+  • codelet/fspec/Cargo.toml [dev-dependencies] does NOT list codelet-napi.
+  • codelet/fspec/src/ contains NO `tokio::runtime::Builder`,
+  `Runtime::new`, `Runtime::new()`, `runtime::Builder::new_*` calls
+  (preserving the RPC-005 Q9 host-supplied-runtime invariant).
+  • The existing `codelet-rpc-server` dev-helper binary stays in place;
+  its stdout port-line contract is preserved verbatim by `fspec daemon`.
+  • An `npm run build:rust:fspec` script copies the artifact to dist/fspec
+  for parity with the TS layout; npm `bin` stays on the TS shim.
 
   Source artifacts:
-    • codelet/Cargo.toml [workspace] (modified — add `fspec` to members)
-    • codelet/fspec/Cargo.toml (NEW)
-    • codelet/fspec/src/{main,combined,daemon,client,common}.rs (NEW)
-    • codelet/rpc-embedded/tests/architecture_invariants.rs (modified — widen scan)
-    • package.json (modified — add `build:rust:fspec` script)
+  • codelet/Cargo.toml [workspace] (modified — add `fspec` to members)
+  • codelet/fspec/Cargo.toml (NEW)
+  • codelet/fspec/src/{main,combined,daemon,client,common}.rs (NEW)
+  • codelet/rpc-embedded/tests/architecture_invariants.rs (modified — widen scan)
+  • package.json (modified — add `build:rust:fspec` script)
   """
 
   @smoke
@@ -93,7 +96,8 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     Then it contains keys: `clap`, `tokio`, `anyhow`, `tracing`, `tracing-subscriber`, `tracing-appender`, `dirs`, `serde`, `serde_json`, `url`
     And it contains keys: `codelet-rpc`, `codelet-rpc-types`, `codelet-rpc-embedded`, `codelet-rpc-server`, `codelet-fspec-tui`, `codelet-core`
 
-  @smoke @regression
+  @smoke
+  @regression
   Scenario: No source file under codelet/fspec/src/ constructs its own tokio runtime
     """
     Preserves RPC-005 Q9 at the binary boundary. The only runtime is
@@ -108,7 +112,8 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     And no file contains the literal substring `tokio::runtime::Runtime::new`
     And no file contains the literal substring `Runtime::new()`
 
-  @smoke @regression
+  @smoke
+  @regression
   Scenario: The RPC-005 source-shape invariant is widened to scan codelet/fspec/src/
     """
     The existing source-shape regression at
@@ -126,14 +131,16 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     And `codelet/rpc-server/Cargo.toml` still declares the binary
     And no commit in this card has removed those files
 
-  @smoke @parity
+  @smoke
+  @parity
   Scenario: Existing codelet-rpc-server test harness still works (port-line contract preserved)
     Given the test `codelet/rpc-server/tests/websocket_transport.rs::spawn_rpc_server` exists
     When the developer runs `cargo test -p codelet-rpc-server`
     Then the test passes with the OLD `codelet-rpc-server` binary path
     And no behaviour change has been introduced to the RPC-006 binary
 
-  @smoke @parity
+  @smoke
+  @parity
   Scenario: A new spawn_fspec_daemon helper proves the port-line contract is verbatim
     """
     Locks the cross-binary parity: `fspec daemon` is a drop-in
@@ -152,7 +159,8 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     And the script invokes `cargo build -p fspec --release` (or runs a wrapper that does)
     And the script copies `codelet/target/release/fspec` to `dist/fspec`
 
-  @smoke @end-to-end
+  @smoke
+  @end-to-end
   Scenario: npm run build:rust:fspec produces dist/fspec for parity with the TS layout
     When the developer runs `npm run build:rust:fspec` from the repo root
     Then the command exits with code 0
@@ -165,14 +173,16 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     Then the `fspec` binary path still points at the existing TS shim (NOT `dist/fspec`)
     And the README has NOT been updated to advertise the Rust binary as the npm install path
 
-  @smoke @regression
+  @smoke
+  @regression
   Scenario: --workspace defaults to CWD when omitted
     Given a tempdir `<W>` containing a seeded spec/work-units.json
     When the developer runs `cd <W> && fspec daemon` (no --workspace flag)
     Then the daemon's WorkUnitsWatcher is rooted at `<W>`
     And calls to `list_work_units` return the work units seeded in `<W>/spec/work-units.json`
 
-  @smoke @regression
+  @smoke
+  @regression
   Scenario: --workspace <path> overrides CWD for the WorkUnitsWatcher root
     Given a tempdir `<A>` containing seeded work-units (id "A-1")
     And a different tempdir `<B>` containing seeded work-units (id "B-1")
@@ -180,7 +190,8 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     Then the daemon's WorkUnitsWatcher is rooted at `<B>`
     And `list_work_units` returns the work units from `<B>` (NOT `<A>`)
 
-  @smoke @regression
+  @smoke
+  @regression
   Scenario: Both `fspec` (combined) and `fspec daemon` honour the same --workspace resolution
     Given a tempdir `<W>` containing seeded work-units
     When the developer runs `fspec --workspace <W>` (combined)
@@ -188,13 +199,15 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     When the developer runs `fspec daemon --workspace <W>`
     Then the WebSocket-attached client's `list_work_units` returns the same seeded units
 
-  @smoke @regression
+  @smoke
+  @regression
   Scenario: Existing Vitest smoke at napi-workunitinfo-shape.test.ts remains green
     When the developer runs `npm test -- src/__tests__/napi-workunitinfo-shape.test.ts`
     Then the test passes unchanged
     And no NAPI surface has been altered by this card
 
-  @smoke @regression
+  @smoke
+  @regression
   Scenario: Existing cargo test suites for RPC-005..009 remain green
     When the developer runs `cargo test -p codelet-rpc-embedded -p codelet-rpc-server -p codelet-fspec-tui` from `codelet/`
     Then every test passes unchanged

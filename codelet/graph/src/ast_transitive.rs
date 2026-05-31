@@ -11,9 +11,9 @@
 //!
 //! CGC equivalent: `find_all_callers()` / `find_all_callees()`.
 
-use crate::graph::ast_call_chain::bfs::{find_all_reachable, reverse_adjacency};
-use crate::graph::ast_call_chain::{build_adjacency_list, snapshot::GraphSnapshot};
-use crate::graph::database::GraphDatabase;
+use crate::ast_call_chain::bfs::{find_all_reachable, reverse_adjacency};
+use crate::ast_call_chain::{build_adjacency_list, snapshot::GraphSnapshot};
+use crate::database::GraphDatabase;
 use serde_json::Value;
 
 /// Default max BFS depth for transitive traversal.
@@ -122,7 +122,7 @@ pub async fn dispatch_ast_callees(
 /// lineStart, lineEnd, depth, etc. — matching CGC's output format.
 fn enrich_results(
     snapshot: &GraphSnapshot,
-    reachable: &[crate::graph::ast_call_chain::bfs::ReachableNode],
+    reachable: &[crate::ast_call_chain::bfs::ReachableNode],
 ) -> Vec<Value> {
     reachable
         .iter()

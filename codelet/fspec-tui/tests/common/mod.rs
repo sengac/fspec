@@ -5,6 +5,9 @@
 //! header). Used by integration tests for fspec-tui-embedded-backend,
 //! fspec-tui-ws-backend, and fspec-tui-app-shell.
 //!
+//! RPC-065: also exposes the `harness` sub-module which provides the
+//! reusable `AppTestHarness` consumed by `behaviour_parity_rpc065.rs`.
+//!
 //! These fixtures construct REAL services — real `WorkUnitsWatcher` over a
 //! tempdir, real `SharedFspecService`, real `bind_and_serve` rpc-server
 //! when needed — so integration tests exercise actual production code
@@ -179,13 +182,17 @@ pub fn strip_rust_comments(src: &str) -> String {
 
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::collections::HashMap;
 
 use anyhow::Result;
 use async_trait::async_trait;
 use codelet_fspec_tui::FspecBackend;
 use codelet_rpc_types::{
-    CheckpointCounts, LogRecord, ModelInfo, ProviderInfo, SessionId, SessionInfo, StreamChunk,
-    ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionResult, FspecResult,
+    HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord, ModelEntry,
+    ModelInfo, PauseState, ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo,
+    SessionId, SessionInfo, SessionStatus, StreamChunk, TestConnectionResult, ThinkingLevel,
+    WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use tokio::sync::broadcast;
 
@@ -208,8 +215,16 @@ pub struct MockBackend {
     work_units: Mutex<Vec<WorkUnitInfo>>,
     sessions: Mutex<Vec<SessionInfo>>,
     work_units_tx: broadcast::Sender<Vec<WorkUnitInfo>>,
-    chunks_tx: broadcast::Sender<(SessionId, StreamChunk)>,
+    /// RPC-045: wrapped in `Mutex<Option>` so tests can deliberately
+    /// drop the Sender via `close_chunks_tx()` to simulate a
+    /// SessionManager shutdown and assert the subscriber loop exits
+    /// without panicking.
+    chunks_tx: Mutex<Option<broadcast::Sender<(SessionId, StreamChunk)>>>,
     logs_tx: broadcast::Sender<LogRecord>,
+    /// RPC-045: push-driven (SessionId, SessionStatus) broadcast Sender.
+    /// Tests use `push_status_change` to drive synthetic transitions
+    /// without going through a real SessionManager.
+    status_changes_tx: broadcast::Sender<(SessionId, SessionStatus)>,
     list_work_units_calls: AtomicUsize,
     create_session_calls: AtomicUsize,
     send_input_calls: AtomicUsize,
@@ -226,6 +241,13 @@ pub struct MockBackend {
     scripted_session: Mutex<Option<SessionId>>,
     last_send_input: Mutex<Option<(SessionId, String)>>,
     last_interrupt: Mutex<Option<SessionId>>,
+    /// RPC-098: counter incremented every time `destroy_session` is called
+    /// via the FspecBackend trait. Lets ESC exit-confirmation tests assert
+    /// that Close Session reaches the backend and Detach/Cancel do NOT.
+    destroy_session_calls: AtomicUsize,
+    /// RPC-098: most recently destroyed SessionId — paired counterpart to
+    /// `destroy_session_calls`.
+    last_destroyed_session: Mutex<Option<SessionId>>,
     checkpoint_counts: Mutex<CheckpointCounts>,
     /// RPC-018: scripted ModelInfo returned by `get_model_info`.
     model_info: Mutex<ModelInfo>,
@@ -275,6 +297,294 @@ pub struct MockBackend {
     /// RPC-022: capture of the last `(SessionId, text)` passed to
     /// `persistence_add_history`.
     last_persistence_add_history: Mutex<Option<(SessionId, String)>>,
+    /// RPC-045: per-call counter for `send_fspec_result`.
+    send_fspec_result_calls: AtomicUsize,
+    /// RPC-045: capture of the last `FspecResult` passed to
+    /// `send_fspec_result`. The matching `SessionId` is co-stored so
+    /// tests assert both pieces of the round-trip.
+    last_fspec_result: Mutex<Option<(SessionId, FspecResult)>>,
+    /// RPC-046: per-call counter for `clear_history`.
+    clear_history_calls: AtomicUsize,
+    /// RPC-046: capture of the last SessionId passed to
+    /// `clear_history`.
+    last_clear_history_session: Mutex<Option<SessionId>>,
+    /// RPC-046: when `Some`, `clear_history` returns
+    /// `Err(anyhow!(message))` so failure-path scenarios can exercise
+    /// the error-notice branch.
+    clear_history_error: Mutex<Option<String>>,
+    /// RPC-047: per-call counter for `compact_session`.
+    compact_session_calls: AtomicUsize,
+    /// RPC-047: capture of the last SessionId passed to
+    /// `compact_session`.
+    last_compact_session: Mutex<Option<SessionId>>,
+    /// RPC-047: scripted result returned by `compact_session`. Defaults
+    /// to a 1.0 compression-ratio Ok response so scenarios that don't
+    /// care about the body still get a well-formed reply.
+    compact_session_result: Mutex<Result<CompactionResult, String>>,
+    /// RPC-049: per-call counter for `resume_session`.
+    resume_session_calls: AtomicUsize,
+    /// RPC-049: capture of the last SessionId passed to `resume_session`.
+    last_resume_session: Mutex<Option<SessionId>>,
+    /// RPC-049: when `Some`, `resume_session` returns
+    /// `Err(anyhow!(message))` so failure-path scenarios can exercise
+    /// the error-notice branch.
+    resume_session_error: Mutex<Option<String>>,
+    /// RPC-049: scripted replay-buffer returned by `get_buffered_output`.
+    buffered_output: Mutex<Vec<StreamChunk>>,
+    /// RPC-049: per-call counter for `get_buffered_output`.
+    get_buffered_output_calls: AtomicUsize,
+    /// RPC-049: capture of the last (id, limit) pair passed to
+    /// `get_buffered_output`.
+    last_get_buffered_output: Mutex<Option<(SessionId, u32)>>,
+    /// RPC-050: per-call counter for `set_work_unit_context`.
+    set_work_unit_context_calls: AtomicUsize,
+    /// RPC-050: per-call counter for `get_work_unit_context`.
+    get_work_unit_context_calls: AtomicUsize,
+    /// RPC-050: capture of the last `(SessionId, Option<WorkUnitContext>)`
+    /// passed to `set_work_unit_context`.
+    last_set_work_unit_context: Mutex<Option<(SessionId, Option<WorkUnitContext>)>>,
+    /// RPC-050: in-memory work-unit context store so `get_work_unit_context`
+    /// reads back what `set_work_unit_context` wrote. Mirrors the
+    /// production StubSessionManagerHandle's `work_unit_ctx` map.
+    work_unit_contexts: Mutex<HashMap<SessionId, WorkUnitContext>>,
+    /// RPC-050: when `Some`, `set_work_unit_context` returns
+    /// `Err(anyhow!(message))` so failure-path scenarios can exercise
+    /// the error-notice branch without touching the in-memory store.
+    set_work_unit_context_error: Mutex<Option<String>>,
+    /// RPC-051: per-session scripted return for
+    /// `persistence_get_history`. Tests use `script_history` to seed
+    /// the snapshot the App's Shift+↑ first-press fetch task receives.
+    scripted_history: Mutex<HashMap<SessionId, Vec<String>>>,
+    /// RPC-052: per-call counter for `set_pending_input`.
+    set_pending_input_calls: AtomicUsize,
+    /// RPC-052: per-call counter for `get_pending_input`.
+    get_pending_input_calls: AtomicUsize,
+    /// RPC-052: capture of every `(SessionId, Option<String>)` passed to
+    /// `set_pending_input` in call order so the debounce-coalescing
+    /// scenarios can assert how many distinct writes landed AND the
+    /// final value the backend was left holding.
+    pending_input_writes: Mutex<Vec<(SessionId, Option<String>)>>,
+    /// RPC-052: in-memory pending-input store so `get_pending_input`
+    /// reads back what `set_pending_input` wrote AND so test fixtures
+    /// can seed a value via `script_pending_input`.
+    pending_input_store: Mutex<HashMap<SessionId, Option<String>>>,
+    /// RPC-052: when `Some`, `get_pending_input` returns
+    /// `Err(anyhow!(message))` so failure-path scenarios can exercise
+    /// the hydration error branch.
+    get_pending_input_error: Mutex<Option<String>>,
+    /// RPC-052: when `Some`, `set_pending_input` returns
+    /// `Err(anyhow!(message))` so failure-path scenarios can exercise
+    /// the silent-drop branch.
+    set_pending_input_error: Mutex<Option<String>>,
+    // ── RPC-053 pause / HITL surface ─────────────────────────────────
+    /// RPC-053: per-session scripted pause-state return from
+    /// `get_pause_state`. None when no pause is active for the session.
+    pause_state_store: Mutex<HashMap<SessionId, Option<PauseState>>>,
+    /// RPC-053: per-session scripted hitl-request return from
+    /// `get_hitl_request`. None when no HITL request is pending.
+    hitl_request_store: Mutex<HashMap<SessionId, Option<HitlRequest>>>,
+    /// RPC-053: per-call counters for the six pause / HITL methods.
+    get_pause_state_calls: AtomicUsize,
+    get_hitl_request_calls: AtomicUsize,
+    pause_resume_calls: AtomicUsize,
+    pause_confirm_calls: AtomicUsize,
+    pause_triple_calls: AtomicUsize,
+    send_hitl_response_calls: AtomicUsize,
+    /// RPC-053: capture of every `(SessionId, accept)` passed to
+    /// `pause_confirm` in call order.
+    pause_confirm_calls_log: Mutex<Vec<(SessionId, bool)>>,
+    /// RPC-053: capture of every `(SessionId, ApprovalChoice)` passed
+    /// to `pause_triple` in call order.
+    pause_triple_calls_log: Mutex<Vec<(SessionId, ApprovalChoice)>>,
+    /// RPC-053: capture of every SessionId passed to `pause_resume`.
+    pause_resume_calls_log: Mutex<Vec<SessionId>>,
+    /// RPC-053: capture of every `(SessionId, HitlResponse)` passed to
+    /// `send_hitl_response` in call order.
+    send_hitl_response_calls_log: Mutex<Vec<(SessionId, HitlResponse)>>,
+    /// RPC-053: scripted error slots — when `Some`, the matching
+    /// method returns `Err(anyhow!(message))`.
+    get_pause_state_error: Mutex<Option<String>>,
+    get_hitl_request_error: Mutex<Option<String>>,
+    pause_resume_error: Mutex<Option<String>>,
+    pause_confirm_error: Mutex<Option<String>>,
+    pause_triple_error: Mutex<Option<String>>,
+    send_hitl_response_error: Mutex<Option<String>>,
+    // ── RPC-054 provider-credentials surface ─────────────────────────
+    /// RPC-054: ordered list of provider credential infos returned by
+    /// `list_provider_credentials`. Tests use `seed_provider_credentials`
+    /// to set the initial list AND `set_post_save_provider_credentials`
+    /// / `set_post_delete_provider_credentials` / `set_post_refresh_provider_credentials`
+    /// to script the next list returned after the App's follow-up refresh.
+    provider_credentials: Mutex<Vec<ProviderCredentialInfo>>,
+    /// RPC-054: next-list-after-save override. When `Some`, the very next
+    /// `list_provider_credentials` call after `set_provider_credentials`
+    /// returns this value instead of the seeded list, then clears the
+    /// override.
+    provider_credentials_after_save: Mutex<Option<Vec<ProviderCredentialInfo>>>,
+    /// RPC-054: next-list-after-delete override.
+    provider_credentials_after_delete: Mutex<Option<Vec<ProviderCredentialInfo>>>,
+    /// RPC-054: next-list-after-refresh override.
+    provider_credentials_after_refresh: Mutex<Option<Vec<ProviderCredentialInfo>>>,
+    /// RPC-054: when set, the next `list_provider_credentials` call
+    /// returns this override (one-shot).
+    next_list_override: Mutex<Option<Vec<ProviderCredentialInfo>>>,
+    /// RPC-054: per-call counters for the credential surface.
+    list_provider_credentials_calls: AtomicUsize,
+    get_provider_credential_calls: AtomicUsize,
+    set_provider_credentials_calls: AtomicUsize,
+    delete_provider_credentials_calls: AtomicUsize,
+    test_provider_connection_calls: AtomicUsize,
+    refresh_models_cache_calls: AtomicUsize,
+    /// RPC-054: capture of the last (provider_id, input) tuple passed to
+    /// `set_provider_credentials`.
+    last_set_provider_credentials: Mutex<Option<(String, ProviderCredentialInput)>>,
+    /// RPC-054: capture of the last provider_id passed to
+    /// `delete_provider_credentials`.
+    last_delete_provider_credentials: Mutex<Option<String>>,
+    /// RPC-054: capture of the last provider_id passed to
+    /// `test_provider_connection`.
+    last_test_provider_connection: Mutex<Option<String>>,
+    /// RPC-054: capture of the last provider_id passed to
+    /// `refresh_models_cache`.
+    last_refresh_models_cache: Mutex<Option<String>>,
+    /// RPC-054: per-provider scripted result for
+    /// `test_provider_connection`. Defaults to `Ok(success: true, latency 0)`.
+    test_connection_results: Mutex<HashMap<String, TestConnectionResult>>,
+    /// RPC-054: per-provider scripted model list returned by
+    /// `refresh_models_cache`.
+    refresh_models_results: Mutex<HashMap<String, Vec<ModelEntry>>>,
+    /// RPC-054: when `Some`, `set_provider_credentials` returns
+    /// `Err(anyhow!(message))` so the silent-error scenario can exercise
+    /// the tracing::warn! branch.
+    set_provider_credentials_error: Mutex<Option<String>>,
+    /// RPC-054: when `Some`, `list_provider_credentials` returns
+    /// `Err(anyhow!(message))`.
+    list_provider_credentials_error: Mutex<Option<String>>,
+    /// RPC-054: when `Some`, `delete_provider_credentials` returns
+    /// `Err(anyhow!(message))`.
+    delete_provider_credentials_error: Mutex<Option<String>>,
+    /// RPC-054: when `Some`, `test_provider_connection` returns
+    /// `Err(anyhow!(message))`.
+    test_provider_connection_error: Mutex<Option<String>>,
+    /// RPC-054: when `Some`, `refresh_models_cache` returns
+    /// `Err(anyhow!(message))`.
+    refresh_models_cache_error: Mutex<Option<String>>,
+    // ── RPC-055 debug-capture surface ────────────────────────────────
+    /// RPC-055: per-call counter for `toggle_debug`.
+    toggle_debug_calls: AtomicUsize,
+    /// RPC-055: capture of the last `(SessionId, debug_dir)` pair passed
+    /// to `toggle_debug`.
+    last_toggle_debug: Mutex<Option<(SessionId, String)>>,
+    /// RPC-055: scripted result returned by `toggle_debug`. Default is
+    /// `Ok(String::new())` so scenarios that don't care about the body
+    /// still get a well-formed Ok reply.
+    toggle_debug_result: Mutex<Result<String, String>>,
+    /// RPC-055: per-call counter for `set_debug_directory`.
+    set_debug_directory_calls: AtomicUsize,
+    /// RPC-055: capture of the last path passed to `set_debug_directory`.
+    last_set_debug_directory: Mutex<Option<String>>,
+    /// RPC-055: when `Some`, `set_debug_directory` returns
+    /// `Err(anyhow!(message))`.
+    set_debug_directory_error: Mutex<Option<String>>,
+    // ── RPC-056 blocklist surface ────────────────────────────────────
+    /// RPC-056: in-memory rule list returned by `blocklist_list`.
+    blocklist_rules: Mutex<Vec<BlocklistRuleInfo>>,
+    /// RPC-056: per-call counter for `blocklist_list`.
+    blocklist_list_calls: AtomicUsize,
+    /// RPC-056: when `Some`, `blocklist_list` returns
+    /// `Err(anyhow!(message))`.
+    blocklist_list_error: Mutex<Option<String>>,
+    // ── RPC-057 /merge-worktree surface ──────────────────────────────
+    /// RPC-057: seeded `MergeOutcome` returned by `merge_session_worktree`.
+    merge_outcome: Mutex<codelet_rpc_types::MergeOutcome>,
+    /// RPC-057: per-call counter for `merge_session_worktree`.
+    merge_session_worktree_calls: AtomicUsize,
+    /// RPC-057: when `Some`, `merge_session_worktree` returns
+    /// `Err(anyhow!(message))`.
+    merge_session_worktree_error: Mutex<Option<String>>,
+    /// RPC-057: per-call counter for `discard_session_worktree`.
+    discard_session_worktree_calls: AtomicUsize,
+    /// RPC-057: when `Some`, `discard_session_worktree` returns
+    /// `Err(anyhow!(message))`.
+    discard_session_worktree_error: Mutex<Option<String>>,
+    /// RPC-057: per-call counter for `prune_orphaned_worktrees`.
+    prune_orphaned_worktrees_calls: AtomicUsize,
+    /// RPC-057: seeded pruned session ids list.
+    pruned_sessions: Mutex<Vec<String>>,
+    /// RPC-057: per-call counter for `list_session_worktrees`.
+    list_session_worktrees_calls: AtomicUsize,
+    /// RPC-057: seeded `SessionWorktreeInfo` list.
+    session_worktrees: Mutex<Vec<codelet_rpc_types::SessionWorktreeInfo>>,
+    /// RPC-057: per-call counter for `inspect_session_changes`.
+    inspect_session_changes_calls: AtomicUsize,
+    /// RPC-057: seeded `SessionChangesSummary`.
+    session_changes_summary: Mutex<codelet_rpc_types::SessionChangesSummary>,
+    // ── RPC-058 /schedule surface ────────────────────────────────────
+    /// RPC-058: seeded `Result<ScheduledJob, String>` returned by
+    /// `schedule_add`. Defaults to `Ok(ScheduledJob::default())`.
+    schedule_add_result:
+        Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
+    /// RPC-058: seeded `Result<Vec<ScheduledJob>, String>` returned by
+    /// `schedule_list`.
+    schedule_list_result:
+        Mutex<std::result::Result<Vec<codelet_rpc_types::ScheduledJob>, String>>,
+    /// RPC-058: seeded `Result<ScheduledJob, String>` returned by
+    /// `schedule_pause`.
+    schedule_pause_result:
+        Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
+    /// RPC-058: seeded `Result<ScheduledJob, String>` returned by
+    /// `schedule_resume`.
+    schedule_resume_result:
+        Mutex<std::result::Result<codelet_rpc_types::ScheduledJob, String>>,
+    /// RPC-058: seeded `Result<(), String>` returned by `schedule_remove`.
+    schedule_remove_result: Mutex<std::result::Result<(), String>>,
+    /// RPC-058: per-call counters.
+    schedule_add_calls: AtomicUsize,
+    schedule_list_calls: AtomicUsize,
+    schedule_pause_calls: AtomicUsize,
+    schedule_resume_calls: AtomicUsize,
+    schedule_remove_calls: AtomicUsize,
+
+    // ── RPC-059 /loop surface ────────────────────────────────────────
+    /// RPC-059: seeded `Result<RegisteredLoop, String>` returned by
+    /// `loop_add`. Defaults to `Ok(RegisteredLoop::default())`.
+    loop_add_result:
+        Mutex<std::result::Result<codelet_rpc_types::RegisteredLoop, String>>,
+    /// RPC-059: seeded `Result<bool, String>` returned by `loop_cancel`.
+    loop_cancel_result: Mutex<std::result::Result<bool, String>>,
+    /// RPC-059: seeded `Result<Vec<RegisteredLoop>, String>` returned by
+    /// `loop_list`.
+    loop_list_result:
+        Mutex<std::result::Result<Vec<codelet_rpc_types::RegisteredLoop>, String>>,
+    /// RPC-059: per-call counters.
+    loop_add_calls: AtomicUsize,
+    loop_cancel_calls: AtomicUsize,
+    loop_list_calls: AtomicUsize,
+    /// RPC-060: seeded `Result<IsolatedSessionInfo, String>` returned by
+    /// `create_isolated_session`.
+    create_isolated_session_result:
+        Mutex<std::result::Result<IsolatedSessionInfo, String>>,
+    /// RPC-060: per-call counter for `create_isolated_session`.
+    create_isolated_session_calls: AtomicUsize,
+    /// RPC-061: scripted per-session supervisors list returned by
+    /// `get_supervisors`. Indexed by SessionId.
+    supervisors_results: Mutex<HashMap<SessionId, Vec<SessionId>>>,
+    /// RPC-061: scripted `Result<(), String>` returned by `add_supervisor`.
+    /// Default `Ok(())`.
+    add_supervisor_result: Mutex<std::result::Result<(), String>>,
+    /// RPC-061: scripted `Result<(), String>` returned by
+    /// `receive_incoming_message`. Default `Ok(())`.
+    receive_incoming_message_result: Mutex<std::result::Result<(), String>>,
+    /// RPC-061: per-call counters for the five new methods.
+    add_supervisor_calls: AtomicUsize,
+    remove_supervisor_calls: AtomicUsize,
+    get_supervisors_calls: AtomicUsize,
+    get_subordinate_calls: AtomicUsize,
+    get_subordinates_calls: AtomicUsize,
+    receive_incoming_message_calls: AtomicUsize,
+    /// RPC-061: capture of the last payload passed to
+    /// `receive_incoming_message`.
+    last_received_incoming_message: Mutex<Option<(SessionId, IncomingMessageInput)>>,
 }
 
 impl Default for MockBackend {
@@ -282,12 +592,14 @@ impl Default for MockBackend {
         let (work_units_tx, _) = broadcast::channel(64);
         let (chunks_tx, _) = broadcast::channel(64);
         let (logs_tx, _) = broadcast::channel(64);
+        let (status_changes_tx, _) = broadcast::channel(64);
         Self {
             work_units: Mutex::new(Vec::new()),
             sessions: Mutex::new(Vec::new()),
             work_units_tx,
-            chunks_tx,
+            chunks_tx: Mutex::new(Some(chunks_tx)),
             logs_tx,
+            status_changes_tx,
             list_work_units_calls: AtomicUsize::new(0),
             create_session_calls: AtomicUsize::new(0),
             send_input_calls: AtomicUsize::new(0),
@@ -300,6 +612,8 @@ impl Default for MockBackend {
             scripted_session: Mutex::new(None),
             last_send_input: Mutex::new(None),
             last_interrupt: Mutex::new(None),
+            destroy_session_calls: AtomicUsize::new(0),
+            last_destroyed_session: Mutex::new(None),
             checkpoint_counts: Mutex::new(CheckpointCounts::default()),
             model_info: Mutex::new(ModelInfo::default()),
             thinking_level: Mutex::new(ThinkingLevel::Off),
@@ -324,6 +638,142 @@ impl Default for MockBackend {
             session_roles: Mutex::new(Vec::new()),
             persistence_add_history_calls: AtomicUsize::new(0),
             last_persistence_add_history: Mutex::new(None),
+            send_fspec_result_calls: AtomicUsize::new(0),
+            last_fspec_result: Mutex::new(None),
+            clear_history_calls: AtomicUsize::new(0),
+            last_clear_history_session: Mutex::new(None),
+            clear_history_error: Mutex::new(None),
+            compact_session_calls: AtomicUsize::new(0),
+            last_compact_session: Mutex::new(None),
+            compact_session_result: Mutex::new(Ok(CompactionResult {
+                original_tokens: 0,
+                compacted_tokens: 0,
+                compression_ratio: 1.0,
+                turns_summarized: 0,
+                turns_kept: 0,
+            })),
+            resume_session_calls: AtomicUsize::new(0),
+            last_resume_session: Mutex::new(None),
+            resume_session_error: Mutex::new(None),
+            buffered_output: Mutex::new(Vec::new()),
+            get_buffered_output_calls: AtomicUsize::new(0),
+            last_get_buffered_output: Mutex::new(None),
+            set_work_unit_context_calls: AtomicUsize::new(0),
+            get_work_unit_context_calls: AtomicUsize::new(0),
+            last_set_work_unit_context: Mutex::new(None),
+            work_unit_contexts: Mutex::new(HashMap::new()),
+            set_work_unit_context_error: Mutex::new(None),
+            scripted_history: Mutex::new(HashMap::new()),
+            set_pending_input_calls: AtomicUsize::new(0),
+            get_pending_input_calls: AtomicUsize::new(0),
+            pending_input_writes: Mutex::new(Vec::new()),
+            pending_input_store: Mutex::new(HashMap::new()),
+            get_pending_input_error: Mutex::new(None),
+            set_pending_input_error: Mutex::new(None),
+            pause_state_store: Mutex::new(HashMap::new()),
+            hitl_request_store: Mutex::new(HashMap::new()),
+            get_pause_state_calls: AtomicUsize::new(0),
+            get_hitl_request_calls: AtomicUsize::new(0),
+            pause_resume_calls: AtomicUsize::new(0),
+            pause_confirm_calls: AtomicUsize::new(0),
+            pause_triple_calls: AtomicUsize::new(0),
+            send_hitl_response_calls: AtomicUsize::new(0),
+            pause_confirm_calls_log: Mutex::new(Vec::new()),
+            pause_triple_calls_log: Mutex::new(Vec::new()),
+            pause_resume_calls_log: Mutex::new(Vec::new()),
+            send_hitl_response_calls_log: Mutex::new(Vec::new()),
+            get_pause_state_error: Mutex::new(None),
+            get_hitl_request_error: Mutex::new(None),
+            pause_resume_error: Mutex::new(None),
+            pause_confirm_error: Mutex::new(None),
+            pause_triple_error: Mutex::new(None),
+            send_hitl_response_error: Mutex::new(None),
+            // ── RPC-054 ──────────────────────────────────────────────
+            provider_credentials: Mutex::new(Vec::new()),
+            provider_credentials_after_save: Mutex::new(None),
+            provider_credentials_after_delete: Mutex::new(None),
+            provider_credentials_after_refresh: Mutex::new(None),
+            next_list_override: Mutex::new(None),
+            list_provider_credentials_calls: AtomicUsize::new(0),
+            get_provider_credential_calls: AtomicUsize::new(0),
+            set_provider_credentials_calls: AtomicUsize::new(0),
+            delete_provider_credentials_calls: AtomicUsize::new(0),
+            test_provider_connection_calls: AtomicUsize::new(0),
+            refresh_models_cache_calls: AtomicUsize::new(0),
+            last_set_provider_credentials: Mutex::new(None),
+            last_delete_provider_credentials: Mutex::new(None),
+            last_test_provider_connection: Mutex::new(None),
+            last_refresh_models_cache: Mutex::new(None),
+            test_connection_results: Mutex::new(HashMap::new()),
+            refresh_models_results: Mutex::new(HashMap::new()),
+            set_provider_credentials_error: Mutex::new(None),
+            list_provider_credentials_error: Mutex::new(None),
+            delete_provider_credentials_error: Mutex::new(None),
+            test_provider_connection_error: Mutex::new(None),
+            refresh_models_cache_error: Mutex::new(None),
+            // ── RPC-055 ──────────────────────────────────────────────
+            toggle_debug_calls: AtomicUsize::new(0),
+            last_toggle_debug: Mutex::new(None),
+            toggle_debug_result: Mutex::new(Ok(String::new())),
+            set_debug_directory_calls: AtomicUsize::new(0),
+            last_set_debug_directory: Mutex::new(None),
+            set_debug_directory_error: Mutex::new(None),
+            // ── RPC-056 ──────────────────────────────────────────────
+            blocklist_rules: Mutex::new(Vec::new()),
+            blocklist_list_calls: AtomicUsize::new(0),
+            blocklist_list_error: Mutex::new(None),
+            merge_outcome: Mutex::new(codelet_rpc_types::MergeOutcome {
+                status: codelet_rpc_types::MergeStatus::NoChanges,
+                conflicts: Vec::new(),
+                merge_commit: None,
+            }),
+            merge_session_worktree_calls: AtomicUsize::new(0),
+            merge_session_worktree_error: Mutex::new(None),
+            discard_session_worktree_calls: AtomicUsize::new(0),
+            discard_session_worktree_error: Mutex::new(None),
+            prune_orphaned_worktrees_calls: AtomicUsize::new(0),
+            pruned_sessions: Mutex::new(Vec::new()),
+            list_session_worktrees_calls: AtomicUsize::new(0),
+            session_worktrees: Mutex::new(Vec::new()),
+            inspect_session_changes_calls: AtomicUsize::new(0),
+            session_changes_summary: Mutex::new(codelet_rpc_types::SessionChangesSummary {
+                files_changed: 0,
+                insertions: 0,
+                deletions: 0,
+                commits: Vec::new(),
+            }),
+            schedule_add_result: Mutex::new(Ok(codelet_rpc_types::ScheduledJob::default())),
+            schedule_list_result: Mutex::new(Ok(Vec::new())),
+            schedule_pause_result: Mutex::new(Ok(codelet_rpc_types::ScheduledJob::default())),
+            schedule_resume_result: Mutex::new(Ok(codelet_rpc_types::ScheduledJob::default())),
+            schedule_remove_result: Mutex::new(Ok(())),
+            schedule_add_calls: AtomicUsize::new(0),
+            schedule_list_calls: AtomicUsize::new(0),
+            schedule_pause_calls: AtomicUsize::new(0),
+            schedule_resume_calls: AtomicUsize::new(0),
+            schedule_remove_calls: AtomicUsize::new(0),
+            loop_add_result: Mutex::new(Ok(codelet_rpc_types::RegisteredLoop::default())),
+            loop_cancel_result: Mutex::new(Ok(true)),
+            loop_list_result: Mutex::new(Ok(Vec::new())),
+            loop_add_calls: AtomicUsize::new(0),
+            loop_cancel_calls: AtomicUsize::new(0),
+            loop_list_calls: AtomicUsize::new(0),
+            create_isolated_session_result: Mutex::new(Ok(IsolatedSessionInfo {
+                session_id: SessionId::new("mock-isolated"),
+                worktree_path: String::new(),
+                base_commit: String::new(),
+            })),
+            create_isolated_session_calls: AtomicUsize::new(0),
+            supervisors_results: Mutex::new(HashMap::new()),
+            add_supervisor_result: Mutex::new(Ok(())),
+            receive_incoming_message_result: Mutex::new(Ok(())),
+            add_supervisor_calls: AtomicUsize::new(0),
+            remove_supervisor_calls: AtomicUsize::new(0),
+            get_supervisors_calls: AtomicUsize::new(0),
+            get_subordinate_calls: AtomicUsize::new(0),
+            get_subordinates_calls: AtomicUsize::new(0),
+            receive_incoming_message_calls: AtomicUsize::new(0),
+            last_received_incoming_message: Mutex::new(None),
         }
     }
 }
@@ -350,7 +800,48 @@ impl MockBackend {
 
     /// Push a chunk onto the chunks broadcast (RPC-009 test helper).
     pub fn push_chunk(&self, id: SessionId, chunk: StreamChunk) {
-        let _ = self.chunks_tx.send((id, chunk));
+        if let Some(tx) = self.chunks_tx.lock().expect("MockBackend mutex").as_ref() {
+            let _ = tx.send((id, chunk));
+        }
+    }
+
+    /// RPC-045: drop the chunks_tx Sender to simulate a SessionManager
+    /// shutdown. Subsequent `chunks_rx().recv()` calls observe
+    /// `RecvError::Closed` and the subscriber loop exits cleanly.
+    pub fn close_chunks_tx(&self) {
+        *self.chunks_tx.lock().expect("MockBackend mutex") = None;
+    }
+
+    /// RPC-045: push a (SessionId, SessionStatus) broadcast frame so
+    /// status-subscriber tests can drive scripted transitions without
+    /// touching a real SessionManager.
+    pub fn push_status_change(&self, id: SessionId, status: SessionStatus) {
+        let _ = self.status_changes_tx.send((id, status));
+    }
+
+    /// RPC-045: per-call counter for `send_fspec_result`.
+    pub fn send_fspec_result_calls(&self) -> usize {
+        self.send_fspec_result_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-045: the most recent `FspecResult` captured by
+    /// `send_fspec_result`. `None` until the runner round-trips.
+    pub fn last_fspec_result(&self) -> Option<FspecResult> {
+        self.last_fspec_result
+            .lock()
+            .expect("MockBackend mutex")
+            .as_ref()
+            .map(|(_, r)| r.clone())
+    }
+
+    /// RPC-045: the matching `(SessionId, FspecResult)` tuple captured
+    /// by `send_fspec_result`. Useful when a test seeds multiple
+    /// sessions and needs to assert which one the result was routed to.
+    pub fn last_fspec_result_with_session(&self) -> Option<(SessionId, FspecResult)> {
+        self.last_fspec_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
     }
 
     pub fn list_work_units_calls(&self) -> usize {
@@ -370,6 +861,19 @@ impl MockBackend {
     }
     pub fn last_interrupt(&self) -> Option<SessionId> {
         self.last_interrupt.lock().expect("MockBackend mutex").clone()
+    }
+
+    /// RPC-098: count of `destroy_session` calls observed by this mock.
+    pub fn destroy_session_calls(&self) -> usize {
+        self.destroy_session_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-098: most recently destroyed SessionId.
+    pub fn last_destroyed_session(&self) -> Option<SessionId> {
+        self.last_destroyed_session
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
     }
 
     /// RPC-015: preload the CheckpointCounts the next `checkpoint_counts`
@@ -566,6 +1070,780 @@ impl MockBackend {
             .expect("MockBackend mutex")
             .clone()
     }
+
+    /// RPC-046: how many times `clear_history` was awaited.
+    pub fn clear_history_calls(&self) -> usize {
+        self.clear_history_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-046: the last SessionId passed to `clear_history`.
+    pub fn last_clear_history_session(&self) -> Option<SessionId> {
+        self.last_clear_history_session
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-046: force the next `clear_history` call to fail with the
+    /// supplied message — exercises the error-notice branch.
+    pub fn set_clear_history_error(&self, message: String) {
+        *self.clear_history_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-047: how many times `compact_session` was awaited.
+    pub fn compact_session_calls(&self) -> usize {
+        self.compact_session_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-047: the last SessionId passed to `compact_session`.
+    pub fn last_compact_session(&self) -> Option<SessionId> {
+        self.last_compact_session
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-047: script the next `compact_session` call to return
+    /// `Ok(result)`.
+    pub fn set_compact_session_result_ok(&self, result: CompactionResult) {
+        *self
+            .compact_session_result
+            .lock()
+            .expect("MockBackend mutex") = Ok(result);
+    }
+
+    /// RPC-047: script the next `compact_session` call to return
+    /// `Err(message)` — exercises the error-notice branch.
+    pub fn set_compact_session_result_err(&self, message: String) {
+        *self
+            .compact_session_result
+            .lock()
+            .expect("MockBackend mutex") = Err(message);
+    }
+
+    /// RPC-049: how many times `resume_session` was awaited.
+    pub fn resume_session_calls(&self) -> usize {
+        self.resume_session_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-049: the last SessionId passed to `resume_session`.
+    pub fn last_resume_session(&self) -> Option<SessionId> {
+        self.last_resume_session
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-049: force the next `resume_session` call to fail with the
+    /// supplied message — exercises the error-notice branch.
+    pub fn set_resume_session_error(&self, message: String) {
+        *self
+            .resume_session_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-049: script the replay-buffer returned by
+    /// `get_buffered_output` (used by `SessionResumeComplete`).
+    pub fn set_buffered_output(&self, chunks: Vec<StreamChunk>) {
+        *self.buffered_output.lock().expect("MockBackend mutex") = chunks;
+    }
+
+    /// RPC-049: how many times `get_buffered_output` was awaited.
+    pub fn get_buffered_output_calls(&self) -> usize {
+        self.get_buffered_output_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-049: the last `(SessionId, limit)` pair passed to
+    /// `get_buffered_output`.
+    pub fn last_get_buffered_output(&self) -> Option<(SessionId, u32)> {
+        self.last_get_buffered_output
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-050: how many times `set_work_unit_context` was awaited.
+    pub fn set_work_unit_context_calls(&self) -> usize {
+        self.set_work_unit_context_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-050: how many times `get_work_unit_context` was awaited.
+    pub fn get_work_unit_context_calls(&self) -> usize {
+        self.get_work_unit_context_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-050: the last `(SessionId, Option<WorkUnitContext>)` passed to
+    /// `set_work_unit_context`. `None` until the first call.
+    pub fn last_set_work_unit_context(&self) -> Option<(SessionId, Option<WorkUnitContext>)> {
+        self.last_set_work_unit_context
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-050: force the next `set_work_unit_context` call to fail
+    /// with the supplied message — exercises the error-notice branch.
+    pub fn set_work_unit_context_error(&self, message: String) {
+        *self
+            .set_work_unit_context_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-051: seed the snapshot the App's Shift+↑ first-press fetch
+    /// task receives via `persistence_get_history`. Defaults to an
+    /// empty Vec for sessions that have not been scripted.
+    pub fn script_history(&self, session: SessionId, entries: Vec<String>) {
+        self.scripted_history
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(session, entries);
+    }
+
+    // ── RPC-052 helpers ──────────────────────────────────────────────────
+
+    /// RPC-052: how many times `set_pending_input` was awaited.
+    pub fn set_pending_input_calls(&self) -> usize {
+        self.set_pending_input_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-052: how many times `get_pending_input` was awaited.
+    pub fn get_pending_input_calls(&self) -> usize {
+        self.get_pending_input_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-052: every `(SessionId, Option<String>)` write captured by
+    /// `set_pending_input`, in call order. Lets debounce-coalescing
+    /// tests assert that only ONE write landed AND its final value.
+    pub fn pending_input_writes(&self) -> Vec<(SessionId, Option<String>)> {
+        self.pending_input_writes
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-052: convenience accessor for the most recent
+    /// `set_pending_input` argument tuple.
+    pub fn last_set_pending_input(&self) -> Option<(SessionId, Option<String>)> {
+        self.pending_input_writes
+            .lock()
+            .expect("MockBackend mutex")
+            .last()
+            .cloned()
+    }
+
+    /// RPC-052: seed the value `get_pending_input(session)` returns.
+    /// Pass `Some(text)` to simulate a restored draft; pass `None` to
+    /// simulate "no draft" (the default for un-scripted sessions is
+    /// also `None`).
+    pub fn script_pending_input(&self, session: SessionId, value: Option<String>) {
+        self.pending_input_store
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(session, value);
+    }
+
+    /// RPC-052: force the next `get_pending_input` call to fail with
+    /// the supplied message.
+    pub fn set_get_pending_input_error(&self, message: String) {
+        *self.get_pending_input_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-052: force the next `set_pending_input` call to fail with
+    /// the supplied message.
+    pub fn set_set_pending_input_error(&self, message: String) {
+        *self.set_pending_input_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    // ── RPC-053 helpers ──────────────────────────────────────────────────
+
+    /// RPC-053: seed the value `get_pause_state(session)` returns.
+    /// Pass `Some(state)` to simulate an active pause; pass `None` to
+    /// simulate "no pause" (the default for un-scripted sessions is
+    /// also `None`).
+    pub fn script_pause_state(&self, session: SessionId, value: Option<PauseState>) {
+        self.pause_state_store
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(session, value);
+    }
+
+    /// RPC-053: seed the value `get_hitl_request(session)` returns.
+    pub fn script_hitl_request(&self, session: SessionId, value: Option<HitlRequest>) {
+        self.hitl_request_store
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(session, value);
+    }
+
+    /// RPC-053: per-call counter for `get_pause_state`.
+    pub fn get_pause_state_calls(&self) -> usize {
+        self.get_pause_state_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-053: per-call counter for `get_hitl_request`.
+    pub fn get_hitl_request_calls(&self) -> usize {
+        self.get_hitl_request_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-053: per-call counter for `pause_resume`.
+    pub fn pause_resume_calls(&self) -> usize {
+        self.pause_resume_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-053: per-call counter for `pause_confirm`.
+    pub fn pause_confirm_calls(&self) -> usize {
+        self.pause_confirm_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-053: per-call counter for `pause_triple`.
+    pub fn pause_triple_calls(&self) -> usize {
+        self.pause_triple_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-053: per-call counter for `send_hitl_response`.
+    pub fn send_hitl_response_calls(&self) -> usize {
+        self.send_hitl_response_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-053: full call log for `pause_confirm` (every (session, accept)).
+    pub fn pause_confirm_log(&self) -> Vec<(SessionId, bool)> {
+        self.pause_confirm_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-053: full call log for `pause_triple`.
+    pub fn pause_triple_log(&self) -> Vec<(SessionId, ApprovalChoice)> {
+        self.pause_triple_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-053: full call log for `pause_resume`.
+    pub fn pause_resume_log(&self) -> Vec<SessionId> {
+        self.pause_resume_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-053: full call log for `send_hitl_response`.
+    pub fn send_hitl_response_log(&self) -> Vec<(SessionId, HitlResponse)> {
+        self.send_hitl_response_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-053: force the next `get_pause_state` call to fail.
+    pub fn set_get_pause_state_error(&self, message: String) {
+        *self.get_pause_state_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-053: force the next `get_hitl_request` call to fail.
+    pub fn set_get_hitl_request_error(&self, message: String) {
+        *self.get_hitl_request_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-053: force the next `pause_resume` call to fail.
+    pub fn set_pause_resume_error(&self, message: String) {
+        *self.pause_resume_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-053: force the next `pause_confirm` call to fail.
+    pub fn set_pause_confirm_error(&self, message: String) {
+        *self.pause_confirm_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-053: force the next `pause_triple` call to fail.
+    pub fn set_pause_triple_error(&self, message: String) {
+        *self.pause_triple_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-053: force the next `send_hitl_response` call to fail.
+    pub fn set_send_hitl_response_error(&self, message: String) {
+        *self.send_hitl_response_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    // ── RPC-054 seed / mutator helpers ───────────────────────────────────
+
+    /// RPC-054: replace the in-memory provider credential list returned
+    /// by `list_provider_credentials`.
+    pub fn seed_provider_credentials(&self, list: Vec<ProviderCredentialInfo>) {
+        *self.provider_credentials.lock().expect("MockBackend mutex") = list;
+    }
+
+    /// RPC-054: script the list returned by the very NEXT
+    /// `list_provider_credentials` call after a successful save
+    /// (one-shot — consumed by the call).
+    pub fn set_post_save_provider_credentials(
+        &self,
+        list: Vec<ProviderCredentialInfo>,
+    ) {
+        *self
+            .provider_credentials_after_save
+            .lock()
+            .expect("MockBackend mutex") = Some(list);
+    }
+
+    /// RPC-054: script the list returned by the very NEXT
+    /// `list_provider_credentials` call after a successful delete.
+    pub fn set_post_delete_provider_credentials(
+        &self,
+        list: Vec<ProviderCredentialInfo>,
+    ) {
+        *self
+            .provider_credentials_after_delete
+            .lock()
+            .expect("MockBackend mutex") = Some(list);
+    }
+
+    /// RPC-054: script the list returned by the very NEXT
+    /// `list_provider_credentials` call after a successful refresh.
+    pub fn set_post_refresh_provider_credentials(
+        &self,
+        list: Vec<ProviderCredentialInfo>,
+    ) {
+        *self
+            .provider_credentials_after_refresh
+            .lock()
+            .expect("MockBackend mutex") = Some(list);
+    }
+
+    /// RPC-054: script the result returned by
+    /// `test_provider_connection` for the given provider_id.
+    pub fn set_test_connection_result(
+        &self,
+        provider_id: impl Into<String>,
+        result: TestConnectionResult,
+    ) {
+        self.test_connection_results
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(provider_id.into(), result);
+    }
+
+    /// RPC-054: script the model list returned by
+    /// `refresh_models_cache` for the given provider_id.
+    pub fn set_refresh_models_result(
+        &self,
+        provider_id: impl Into<String>,
+        models: Vec<ModelEntry>,
+    ) {
+        self.refresh_models_results
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(provider_id.into(), models);
+    }
+
+    /// RPC-054: force the next `set_provider_credentials` call to fail.
+    pub fn set_set_provider_credentials_error(&self, message: String) {
+        *self
+            .set_provider_credentials_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-054: force the next `list_provider_credentials` call to fail.
+    pub fn set_list_provider_credentials_error(&self, message: String) {
+        *self
+            .list_provider_credentials_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-054: per-call counter for `list_provider_credentials`.
+    pub fn list_provider_credentials_calls(&self) -> usize {
+        self.list_provider_credentials_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-054: per-call counter for `set_provider_credentials`.
+    pub fn set_provider_credentials_calls(&self) -> usize {
+        self.set_provider_credentials_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-054: per-call counter for `delete_provider_credentials`.
+    pub fn delete_provider_credentials_calls(&self) -> usize {
+        self.delete_provider_credentials_calls
+            .load(Ordering::SeqCst)
+    }
+
+    /// RPC-054: per-call counter for `test_provider_connection`.
+    pub fn test_provider_connection_calls(&self) -> usize {
+        self.test_provider_connection_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-054: per-call counter for `refresh_models_cache`.
+    pub fn refresh_models_cache_calls(&self) -> usize {
+        self.refresh_models_cache_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-054: capture of the last `(provider_id, input)` tuple passed
+    /// to `set_provider_credentials`.
+    pub fn last_set_provider_credentials(
+        &self,
+    ) -> Option<(String, ProviderCredentialInput)> {
+        self.last_set_provider_credentials
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-054: capture of the last provider_id passed to
+    /// `test_provider_connection`.
+    pub fn last_test_provider_connection(&self) -> Option<String> {
+        self.last_test_provider_connection
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-054: capture of the last provider_id passed to
+    /// `refresh_models_cache`.
+    pub fn last_refresh_models_cache(&self) -> Option<String> {
+        self.last_refresh_models_cache
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-054: capture of the last provider_id passed to
+    /// `delete_provider_credentials`.
+    pub fn last_delete_provider_credentials(&self) -> Option<String> {
+        self.last_delete_provider_credentials
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    // ── RPC-055 debug-capture surface helpers ────────────────────────
+
+    /// RPC-055: how many times `toggle_debug` was awaited.
+    pub fn toggle_debug_calls(&self) -> usize {
+        self.toggle_debug_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-055: the last `(SessionId, debug_dir)` tuple passed to
+    /// `toggle_debug`.
+    pub fn last_toggle_debug(&self) -> Option<(SessionId, String)> {
+        self.last_toggle_debug
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    /// RPC-055: script the next `toggle_debug` call to return `Ok(path)`.
+    pub fn set_toggle_debug_result_ok(&self, path: String) {
+        *self.toggle_debug_result.lock().expect("MockBackend mutex") = Ok(path);
+    }
+
+    /// RPC-055: script the next `toggle_debug` call to return
+    /// `Err(message)` — exercises the error-notice branch.
+    pub fn set_toggle_debug_result_err(&self, message: String) {
+        *self.toggle_debug_result.lock().expect("MockBackend mutex") = Err(message);
+    }
+
+    /// RPC-055: how many times `set_debug_directory` was awaited.
+    pub fn set_debug_directory_calls(&self) -> usize {
+        self.set_debug_directory_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-055: the last path passed to `set_debug_directory`.
+    pub fn last_set_debug_directory(&self) -> Option<String> {
+        self.last_set_debug_directory
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
+
+    // ── RPC-056 blocklist surface helpers ────────────────────────────
+
+    /// RPC-056: replace the in-memory rule list returned by
+    /// `blocklist_list`.
+    pub fn seed_blocklist_rules(&self, rules: Vec<BlocklistRuleInfo>) {
+        *self.blocklist_rules.lock().expect("MockBackend mutex") = rules;
+    }
+
+    /// RPC-056: how many times `blocklist_list` was awaited.
+    pub fn blocklist_list_calls(&self) -> usize {
+        self.blocklist_list_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-056: force the next `blocklist_list` call to fail.
+    #[allow(dead_code)]
+    pub fn set_blocklist_list_error(&self, message: String) {
+        *self.blocklist_list_error.lock().expect("MockBackend mutex") = Some(message);
+    }
+
+    // ── RPC-057 /merge-worktree surface helpers ──────────────────────
+
+    /// RPC-057: seed the `MergeOutcome` returned by `merge_session_worktree`.
+    #[allow(dead_code)]
+    pub fn seed_merge_outcome(&self, outcome: codelet_rpc_types::MergeOutcome) {
+        *self.merge_outcome.lock().expect("MockBackend mutex") = outcome;
+    }
+
+    /// RPC-057: force the next `merge_session_worktree` call to fail.
+    #[allow(dead_code)]
+    pub fn set_merge_session_worktree_error(&self, message: String) {
+        *self
+            .merge_session_worktree_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-057: per-call counter for `merge_session_worktree`.
+    #[allow(dead_code)]
+    pub fn merge_session_worktree_calls(&self) -> usize {
+        self.merge_session_worktree_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-057: force the next `discard_session_worktree` call to fail.
+    #[allow(dead_code)]
+    pub fn set_discard_session_worktree_error(&self, message: String) {
+        *self
+            .discard_session_worktree_error
+            .lock()
+            .expect("MockBackend mutex") = Some(message);
+    }
+
+    /// RPC-057: per-call counter for `discard_session_worktree`.
+    #[allow(dead_code)]
+    pub fn discard_session_worktree_calls(&self) -> usize {
+        self.discard_session_worktree_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-057: seed the pruned session ids list.
+    #[allow(dead_code)]
+    pub fn seed_pruned_sessions(&self, ids: Vec<String>) {
+        *self.pruned_sessions.lock().expect("MockBackend mutex") = ids;
+    }
+
+    /// RPC-057: per-call counter for `prune_orphaned_worktrees`.
+    #[allow(dead_code)]
+    pub fn prune_orphaned_worktrees_calls(&self) -> usize {
+        self.prune_orphaned_worktrees_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-057: seed the `SessionWorktreeInfo` rows.
+    #[allow(dead_code)]
+    pub fn seed_session_worktrees(
+        &self,
+        rows: Vec<codelet_rpc_types::SessionWorktreeInfo>,
+    ) {
+        *self.session_worktrees.lock().expect("MockBackend mutex") = rows;
+    }
+
+    /// RPC-057: per-call counter for `list_session_worktrees`.
+    #[allow(dead_code)]
+    pub fn list_session_worktrees_calls(&self) -> usize {
+        self.list_session_worktrees_calls.load(Ordering::SeqCst)
+    }
+
+    /// RPC-057: seed the `SessionChangesSummary`.
+    #[allow(dead_code)]
+    pub fn seed_session_changes_summary(
+        &self,
+        summary: codelet_rpc_types::SessionChangesSummary,
+    ) {
+        *self.session_changes_summary.lock().expect("MockBackend mutex") = summary;
+    }
+
+    /// RPC-057: per-call counter for `inspect_session_changes`.
+    #[allow(dead_code)]
+    pub fn inspect_session_changes_calls(&self) -> usize {
+        self.inspect_session_changes_calls.load(Ordering::SeqCst)
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-058 — /schedule seeds + counters.
+    // ─────────────────────────────────────────────────────────────────
+
+    #[allow(dead_code)]
+    pub fn seed_schedule_add_result(
+        &self,
+        result: std::result::Result<codelet_rpc_types::ScheduledJob, String>,
+    ) {
+        *self.schedule_add_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn seed_schedule_list_result(
+        &self,
+        result: std::result::Result<Vec<codelet_rpc_types::ScheduledJob>, String>,
+    ) {
+        *self.schedule_list_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn seed_schedule_pause_result(
+        &self,
+        result: std::result::Result<codelet_rpc_types::ScheduledJob, String>,
+    ) {
+        *self.schedule_pause_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn seed_schedule_resume_result(
+        &self,
+        result: std::result::Result<codelet_rpc_types::ScheduledJob, String>,
+    ) {
+        *self.schedule_resume_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn seed_schedule_remove_result(&self, result: std::result::Result<(), String>) {
+        *self.schedule_remove_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn schedule_add_calls(&self) -> usize {
+        self.schedule_add_calls.load(Ordering::SeqCst)
+    }
+
+    #[allow(dead_code)]
+    pub fn schedule_list_calls(&self) -> usize {
+        self.schedule_list_calls.load(Ordering::SeqCst)
+    }
+
+    #[allow(dead_code)]
+    pub fn schedule_pause_calls(&self) -> usize {
+        self.schedule_pause_calls.load(Ordering::SeqCst)
+    }
+
+    #[allow(dead_code)]
+    pub fn schedule_resume_calls(&self) -> usize {
+        self.schedule_resume_calls.load(Ordering::SeqCst)
+    }
+
+    #[allow(dead_code)]
+    pub fn schedule_remove_calls(&self) -> usize {
+        self.schedule_remove_calls.load(Ordering::SeqCst)
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-059 — /loop seeds + counters.
+    // ─────────────────────────────────────────────────────────────────
+
+    #[allow(dead_code)]
+    pub fn seed_loop_add_result(
+        &self,
+        result: std::result::Result<codelet_rpc_types::RegisteredLoop, String>,
+    ) {
+        *self.loop_add_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn seed_loop_cancel_result(&self, result: std::result::Result<bool, String>) {
+        *self.loop_cancel_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn seed_loop_list_result(
+        &self,
+        result: std::result::Result<Vec<codelet_rpc_types::RegisteredLoop>, String>,
+    ) {
+        *self.loop_list_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn loop_add_calls(&self) -> usize {
+        self.loop_add_calls.load(Ordering::SeqCst)
+    }
+
+    #[allow(dead_code)]
+    pub fn loop_cancel_calls(&self) -> usize {
+        self.loop_cancel_calls.load(Ordering::SeqCst)
+    }
+
+    #[allow(dead_code)]
+    pub fn loop_list_calls(&self) -> usize {
+        self.loop_list_calls.load(Ordering::SeqCst)
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-060 — create_isolated_session seeds + counter.
+    // ─────────────────────────────────────────────────────────────────
+
+    #[allow(dead_code)]
+    pub fn seed_create_isolated_session_result(
+        &self,
+        result: std::result::Result<IsolatedSessionInfo, String>,
+    ) {
+        *self
+            .create_isolated_session_result
+            .lock()
+            .expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn create_isolated_session_calls(&self) -> usize {
+        self.create_isolated_session_calls.load(Ordering::SeqCst)
+    }
+
+    // ── RPC-061 seeders / accessors ─────────────────────────────────────
+
+    /// Seed the per-session supervisors list returned by `get_supervisors`.
+    pub fn seed_supervisors_for(&self, session: SessionId, supervisors: Vec<SessionId>) {
+        self.supervisors_results
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(session, supervisors);
+    }
+
+    /// Seed the `Result<(), String>` returned by `add_supervisor`.
+    #[allow(dead_code)]
+    pub fn seed_add_supervisor_result(&self, result: std::result::Result<(), String>) {
+        *self.add_supervisor_result.lock().expect("MockBackend mutex") = result;
+    }
+
+    /// Seed the `Result<(), String>` returned by `receive_incoming_message`.
+    pub fn seed_receive_incoming_message_result(
+        &self,
+        result: std::result::Result<(), String>,
+    ) {
+        *self
+            .receive_incoming_message_result
+            .lock()
+            .expect("MockBackend mutex") = result;
+    }
+
+    #[allow(dead_code)]
+    pub fn add_supervisor_calls(&self) -> u64 {
+        self.add_supervisor_calls.load(Ordering::SeqCst) as u64
+    }
+    #[allow(dead_code)]
+    pub fn remove_supervisor_calls(&self) -> u64 {
+        self.remove_supervisor_calls.load(Ordering::SeqCst) as u64
+    }
+    #[allow(dead_code)]
+    pub fn get_supervisors_calls(&self) -> u64 {
+        self.get_supervisors_calls.load(Ordering::SeqCst) as u64
+    }
+    #[allow(dead_code)]
+    pub fn get_subordinate_calls(&self) -> u64 {
+        self.get_subordinate_calls.load(Ordering::SeqCst) as u64
+    }
+    #[allow(dead_code)]
+    pub fn get_subordinates_calls(&self) -> u64 {
+        self.get_subordinates_calls.load(Ordering::SeqCst) as u64
+    }
+    pub fn receive_incoming_message_calls(&self) -> u64 {
+        self.receive_incoming_message_calls.load(Ordering::SeqCst) as u64
+    }
+
+    /// Borrow the last `(SessionId, IncomingMessageInput)` payload
+    /// passed to `receive_incoming_message`.
+    pub fn last_received_incoming_message(&self) -> Option<(SessionId, IncomingMessageInput)> {
+        self.last_received_incoming_message
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+    }
 }
 
 #[async_trait]
@@ -602,16 +1880,41 @@ impl FspecBackend for MockBackend {
         Ok(())
     }
 
+    /// RPC-098: ESC exit-confirmation tests rely on this override to
+    /// verify that `Close Session` reaches the backend and that
+    /// `Detach`/`Cancel` do NOT.
+    async fn destroy_session(&self, session_id: SessionId) -> Result<()> {
+        self.destroy_session_calls.fetch_add(1, Ordering::SeqCst);
+        *self.last_destroyed_session.lock().expect("MockBackend mutex") =
+            Some(session_id);
+        Ok(())
+    }
+
     fn work_units_rx(&self) -> broadcast::Receiver<Vec<WorkUnitInfo>> {
         self.work_units_tx.subscribe()
     }
 
     fn chunks_rx(&self) -> broadcast::Receiver<(SessionId, StreamChunk)> {
-        self.chunks_tx.subscribe()
+        let guard = self.chunks_tx.lock().expect("MockBackend mutex");
+        match guard.as_ref() {
+            Some(tx) => tx.subscribe(),
+            None => {
+                // chunks_tx was dropped by `close_chunks_tx` — hand back a
+                // pre-closed receiver so the subscriber's next recv()
+                // returns `RecvError::Closed`.
+                let (closed_tx, closed_rx) = broadcast::channel(1);
+                drop(closed_tx);
+                closed_rx
+            }
+        }
     }
 
     fn logs_rx(&self) -> broadcast::Receiver<LogRecord> {
         self.logs_tx.subscribe()
+    }
+
+    fn status_changes_rx(&self) -> broadcast::Receiver<(SessionId, SessionStatus)> {
+        self.status_changes_tx.subscribe()
     }
 
     async fn health(&self) -> Result<codelet_rpc_types::HealthInfo> {
@@ -696,10 +1999,16 @@ impl FspecBackend for MockBackend {
 
     async fn persistence_get_history(
         &self,
-        _session: SessionId,
+        session: SessionId,
         _limit: u32,
     ) -> Result<Vec<String>> {
-        Ok(Vec::new())
+        Ok(self
+            .scripted_history
+            .lock()
+            .expect("MockBackend mutex")
+            .get(&session)
+            .cloned()
+            .unwrap_or_default())
     }
 
     async fn persistence_search_history(
@@ -781,6 +2090,776 @@ impl FspecBackend for MockBackend {
         roles.push((session_id, role));
         Ok(())
     }
+
+    async fn send_fspec_result(
+        &self,
+        session_id: SessionId,
+        result: FspecResult,
+    ) -> Result<()> {
+        self.send_fspec_result_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_fspec_result
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id, result));
+        Ok(())
+    }
+
+    async fn clear_history(&self, session_id: SessionId) -> Result<()> {
+        self.clear_history_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_clear_history_session
+            .lock()
+            .expect("MockBackend mutex") = Some(session_id);
+        if let Some(msg) = self
+            .clear_history_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn compact_session(&self, session_id: SessionId) -> Result<CompactionResult> {
+        self.compact_session_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_compact_session
+            .lock()
+            .expect("MockBackend mutex") = Some(session_id);
+        match self
+            .compact_session_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(result) => Ok(result),
+            Err(msg) => Err(anyhow::anyhow!("{msg}")),
+        }
+    }
+
+    async fn resume_session(&self, session_id: SessionId) -> Result<()> {
+        self.resume_session_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_resume_session
+            .lock()
+            .expect("MockBackend mutex") = Some(session_id);
+        if let Some(msg) = self
+            .resume_session_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn get_buffered_output(
+        &self,
+        session_id: SessionId,
+        limit: u32,
+    ) -> Result<Vec<StreamChunk>> {
+        self.get_buffered_output_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_get_buffered_output
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id, limit));
+        Ok(self.buffered_output.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn get_work_unit_context(
+        &self,
+        session_id: SessionId,
+    ) -> Result<Option<WorkUnitContext>> {
+        self.get_work_unit_context_calls
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(self
+            .work_unit_contexts
+            .lock()
+            .expect("MockBackend mutex")
+            .get(&session_id)
+            .cloned())
+    }
+
+    async fn set_work_unit_context(
+        &self,
+        session_id: SessionId,
+        context: Option<WorkUnitContext>,
+    ) -> Result<()> {
+        self.set_work_unit_context_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_work_unit_context
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id.clone(), context.clone()));
+        if let Some(msg) = self
+            .set_work_unit_context_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let mut guard = self.work_unit_contexts.lock().expect("MockBackend mutex");
+        match context {
+            Some(c) => {
+                guard.insert(session_id, c);
+            }
+            None => {
+                guard.remove(&session_id);
+            }
+        }
+        Ok(())
+    }
+
+    // ── RPC-052: pending-input draft persistence ─────────────────────────
+
+    async fn get_pending_input(&self, session_id: SessionId) -> Result<Option<String>> {
+        self.get_pending_input_calls.fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .get_pending_input_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let store = self
+            .pending_input_store
+            .lock()
+            .expect("MockBackend mutex");
+        Ok(store.get(&session_id).cloned().unwrap_or(None))
+    }
+
+    async fn set_pending_input(
+        &self,
+        session_id: SessionId,
+        text: Option<String>,
+    ) -> Result<()> {
+        self.set_pending_input_calls.fetch_add(1, Ordering::SeqCst);
+        self.pending_input_writes
+            .lock()
+            .expect("MockBackend mutex")
+            .push((session_id.clone(), text.clone()));
+        if let Some(msg) = self
+            .set_pending_input_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        self.pending_input_store
+            .lock()
+            .expect("MockBackend mutex")
+            .insert(session_id, text);
+        Ok(())
+    }
+
+    // ── RPC-053: pause / HITL surface ────────────────────────────────────
+
+    async fn get_pause_state(&self, session_id: SessionId) -> Result<Option<PauseState>> {
+        self.get_pause_state_calls.fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .get_pause_state_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let store = self.pause_state_store.lock().expect("MockBackend mutex");
+        Ok(store.get(&session_id).cloned().unwrap_or(None))
+    }
+
+    async fn get_hitl_request(&self, session_id: SessionId) -> Result<Option<HitlRequest>> {
+        self.get_hitl_request_calls.fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .get_hitl_request_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let store = self.hitl_request_store.lock().expect("MockBackend mutex");
+        Ok(store.get(&session_id).cloned().unwrap_or(None))
+    }
+
+    async fn pause_resume(&self, session_id: SessionId) -> Result<()> {
+        self.pause_resume_calls.fetch_add(1, Ordering::SeqCst);
+        self.pause_resume_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .push(session_id);
+        if let Some(msg) = self
+            .pause_resume_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn pause_confirm(&self, session_id: SessionId, accept: bool) -> Result<()> {
+        self.pause_confirm_calls.fetch_add(1, Ordering::SeqCst);
+        self.pause_confirm_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .push((session_id, accept));
+        if let Some(msg) = self
+            .pause_confirm_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn pause_triple(
+        &self,
+        session_id: SessionId,
+        choice: ApprovalChoice,
+    ) -> Result<()> {
+        self.pause_triple_calls.fetch_add(1, Ordering::SeqCst);
+        self.pause_triple_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .push((session_id, choice));
+        if let Some(msg) = self
+            .pause_triple_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn send_hitl_response(
+        &self,
+        session_id: SessionId,
+        response: HitlResponse,
+    ) -> Result<()> {
+        self.send_hitl_response_calls
+            .fetch_add(1, Ordering::SeqCst);
+        self.send_hitl_response_calls_log
+            .lock()
+            .expect("MockBackend mutex")
+            .push((session_id, response));
+        if let Some(msg) = self
+            .send_hitl_response_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    // ── RPC-054 provider-credentials surface ─────────────────────────────
+
+    async fn list_provider_credentials(&self) -> Result<Vec<ProviderCredentialInfo>> {
+        self.list_provider_credentials_calls
+            .fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .list_provider_credentials_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        // One-shot overrides take priority: after-save → after-delete →
+        // after-refresh → next_list_override → seeded list.
+        if let Some(list) = self
+            .provider_credentials_after_save
+            .lock()
+            .expect("MockBackend mutex")
+            .take()
+        {
+            *self.provider_credentials.lock().expect("MockBackend mutex") = list.clone();
+            return Ok(list);
+        }
+        if let Some(list) = self
+            .provider_credentials_after_delete
+            .lock()
+            .expect("MockBackend mutex")
+            .take()
+        {
+            *self.provider_credentials.lock().expect("MockBackend mutex") = list.clone();
+            return Ok(list);
+        }
+        if let Some(list) = self
+            .provider_credentials_after_refresh
+            .lock()
+            .expect("MockBackend mutex")
+            .take()
+        {
+            *self.provider_credentials.lock().expect("MockBackend mutex") = list.clone();
+            return Ok(list);
+        }
+        if let Some(list) = self
+            .next_list_override
+            .lock()
+            .expect("MockBackend mutex")
+            .take()
+        {
+            *self.provider_credentials.lock().expect("MockBackend mutex") = list.clone();
+            return Ok(list);
+        }
+        Ok(self
+            .provider_credentials
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
+    }
+
+    async fn get_provider_credential(
+        &self,
+        provider_id: String,
+    ) -> Result<Option<ProviderCredentialInfo>> {
+        self.get_provider_credential_calls
+            .fetch_add(1, Ordering::SeqCst);
+        let store = self.provider_credentials.lock().expect("MockBackend mutex");
+        Ok(store.iter().find(|p| p.provider_id == provider_id).cloned())
+    }
+
+    async fn set_provider_credentials(
+        &self,
+        provider_id: String,
+        creds: ProviderCredentialInput,
+    ) -> Result<()> {
+        self.set_provider_credentials_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_provider_credentials
+            .lock()
+            .expect("MockBackend mutex") = Some((provider_id.clone(), creds));
+        if let Some(msg) = self
+            .set_provider_credentials_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        // Mark the row as configured in the in-memory store so a follow-
+        // up `list_provider_credentials` reflects the save (unless a
+        // one-shot post-save override is set).
+        let mut store = self.provider_credentials.lock().expect("MockBackend mutex");
+        if let Some(row) = store.iter_mut().find(|p| p.provider_id == provider_id) {
+            row.configured = true;
+        }
+        Ok(())
+    }
+
+    async fn delete_provider_credentials(&self, provider_id: String) -> Result<()> {
+        self.delete_provider_credentials_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_delete_provider_credentials
+            .lock()
+            .expect("MockBackend mutex") = Some(provider_id.clone());
+        if let Some(msg) = self
+            .delete_provider_credentials_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let mut store = self.provider_credentials.lock().expect("MockBackend mutex");
+        if let Some(row) = store.iter_mut().find(|p| p.provider_id == provider_id) {
+            row.configured = false;
+            row.model_count = 0;
+        }
+        Ok(())
+    }
+
+    async fn test_provider_connection(
+        &self,
+        provider_id: String,
+    ) -> Result<TestConnectionResult> {
+        self.test_provider_connection_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_test_provider_connection
+            .lock()
+            .expect("MockBackend mutex") = Some(provider_id.clone());
+        if let Some(msg) = self
+            .test_provider_connection_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let scripted = self
+            .test_connection_results
+            .lock()
+            .expect("MockBackend mutex")
+            .get(&provider_id)
+            .cloned();
+        Ok(scripted.unwrap_or(TestConnectionResult {
+            success: true,
+            error: None,
+            latency_ms: 0,
+        }))
+    }
+
+    async fn refresh_models_cache(&self, provider_id: String) -> Result<Vec<ModelEntry>> {
+        self.refresh_models_cache_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_refresh_models_cache
+            .lock()
+            .expect("MockBackend mutex") = Some(provider_id.clone());
+        if let Some(msg) = self
+            .refresh_models_cache_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        let scripted = self
+            .refresh_models_results
+            .lock()
+            .expect("MockBackend mutex")
+            .get(&provider_id)
+            .cloned();
+        Ok(scripted.unwrap_or_default())
+    }
+
+    // ── RPC-055 debug-capture surface ────────────────────────────────
+
+    async fn toggle_debug(
+        &self,
+        session_id: SessionId,
+        debug_dir: String,
+    ) -> Result<String> {
+        self.toggle_debug_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_toggle_debug
+            .lock()
+            .expect("MockBackend mutex") = Some((session_id, debug_dir));
+        match self
+            .toggle_debug_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(path) => Ok(path),
+            Err(msg) => Err(anyhow::anyhow!("{msg}")),
+        }
+    }
+
+    async fn set_debug_directory(&self, path: String) -> Result<()> {
+        self.set_debug_directory_calls.fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_set_debug_directory
+            .lock()
+            .expect("MockBackend mutex") = Some(path);
+        if let Some(msg) = self
+            .set_debug_directory_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn blocklist_list(&self) -> Result<Vec<BlocklistRuleInfo>> {
+        self.blocklist_list_calls.fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .blocklist_list_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(self.blocklist_rules.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn merge_session_worktree(
+        &self,
+        _session_id: SessionId,
+        _strategy: codelet_rpc_types::MergeStrategy,
+    ) -> Result<codelet_rpc_types::MergeOutcome> {
+        self.merge_session_worktree_calls
+            .fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .merge_session_worktree_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(self.merge_outcome.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn discard_session_worktree(&self, _session_id: SessionId) -> Result<()> {
+        self.discard_session_worktree_calls
+            .fetch_add(1, Ordering::SeqCst);
+        if let Some(msg) = self
+            .discard_session_worktree_error
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            return Err(anyhow::anyhow!("{msg}"));
+        }
+        Ok(())
+    }
+
+    async fn prune_orphaned_worktrees(&self) -> Result<Vec<String>> {
+        self.prune_orphaned_worktrees_calls
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(self.pruned_sessions.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn list_session_worktrees(
+        &self,
+    ) -> Result<Vec<codelet_rpc_types::SessionWorktreeInfo>> {
+        self.list_session_worktrees_calls
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(self.session_worktrees.lock().expect("MockBackend mutex").clone())
+    }
+
+    async fn inspect_session_changes(
+        &self,
+        _session_id: SessionId,
+    ) -> Result<codelet_rpc_types::SessionChangesSummary> {
+        self.inspect_session_changes_calls
+            .fetch_add(1, Ordering::SeqCst);
+        Ok(self
+            .session_changes_summary
+            .lock()
+            .expect("MockBackend mutex")
+            .clone())
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-058 — /schedule.
+    // ─────────────────────────────────────────────────────────────────
+
+    async fn schedule_add(
+        &self,
+        _job: codelet_rpc_types::ScheduledJob,
+    ) -> Result<codelet_rpc_types::ScheduledJob> {
+        self.schedule_add_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .schedule_add_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(j) => Ok(j),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn schedule_list(&self) -> Result<Vec<codelet_rpc_types::ScheduledJob>> {
+        self.schedule_list_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .schedule_list_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(v) => Ok(v),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn schedule_pause(
+        &self,
+        _name: String,
+    ) -> Result<codelet_rpc_types::ScheduledJob> {
+        self.schedule_pause_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .schedule_pause_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(j) => Ok(j),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn schedule_resume(
+        &self,
+        _name: String,
+    ) -> Result<codelet_rpc_types::ScheduledJob> {
+        self.schedule_resume_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .schedule_resume_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(j) => Ok(j),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn schedule_remove(&self, _name: String) -> Result<()> {
+        self.schedule_remove_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .schedule_remove_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(()) => Ok(()),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-059 — /loop.
+    // ─────────────────────────────────────────────────────────────────
+
+    async fn loop_add(
+        &self,
+        _session_id: SessionId,
+        _interval_seconds: u32,
+        _prompt: String,
+    ) -> Result<codelet_rpc_types::RegisteredLoop> {
+        self.loop_add_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .loop_add_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(j) => Ok(j),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn loop_cancel(&self, _id: String) -> Result<bool> {
+        self.loop_cancel_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .loop_cancel_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(b) => Ok(b),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn loop_list(
+        &self,
+        _session_id: SessionId,
+    ) -> Result<Vec<codelet_rpc_types::RegisteredLoop>> {
+        self.loop_list_calls.fetch_add(1, Ordering::SeqCst);
+        match self
+            .loop_list_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(v) => Ok(v),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn create_isolated_session(
+        &self,
+        _role: Option<String>,
+    ) -> Result<IsolatedSessionInfo> {
+        self.create_isolated_session_calls
+            .fetch_add(1, Ordering::SeqCst);
+        match self
+            .create_isolated_session_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(info) => Ok(info),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    // ── RPC-061 supervisor / subordinate forwarders ─────────────────────
+
+    async fn get_supervisors(&self, session_id: SessionId) -> Result<Vec<SessionId>> {
+        self.get_supervisors_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(self
+            .supervisors_results
+            .lock()
+            .expect("MockBackend mutex")
+            .get(&session_id)
+            .cloned()
+            .unwrap_or_default())
+    }
+
+    async fn add_supervisor(
+        &self,
+        _subordinate_id: SessionId,
+        _supervisor_id: SessionId,
+    ) -> Result<()> {
+        self.add_supervisor_calls.fetch_add(1, Ordering::SeqCst);
+        match self.add_supervisor_result.lock().expect("MockBackend mutex").clone() {
+            Ok(()) => Ok(()),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
+
+    async fn remove_supervisor(&self, _supervisor_id: SessionId) -> Result<()> {
+        self.remove_supervisor_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(())
+    }
+
+    async fn get_subordinate(&self, _supervisor_id: SessionId) -> Result<Option<SessionId>> {
+        self.get_subordinate_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(None)
+    }
+
+    async fn get_subordinates(&self, _supervisor_id: SessionId) -> Result<Vec<SessionId>> {
+        self.get_subordinates_calls.fetch_add(1, Ordering::SeqCst);
+        Ok(Vec::new())
+    }
+
+    async fn receive_incoming_message(
+        &self,
+        subordinate_id: SessionId,
+        message: IncomingMessageInput,
+    ) -> Result<()> {
+        self.receive_incoming_message_calls
+            .fetch_add(1, Ordering::SeqCst);
+        *self
+            .last_received_incoming_message
+            .lock()
+            .expect("MockBackend mutex") = Some((subordinate_id, message));
+        match self
+            .receive_incoming_message_result
+            .lock()
+            .expect("MockBackend mutex")
+            .clone()
+        {
+            Ok(()) => Ok(()),
+            Err(e) => Err(anyhow::anyhow!(e)),
+        }
+    }
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -830,3 +2909,10 @@ pub fn buffer_to_rows(buf: &Buffer) -> Vec<String> {
     }
     rows
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// RPC-065 — AppTestHarness sub-module
+// ─────────────────────────────────────────────────────────────────────────
+
+pub mod harness;
+

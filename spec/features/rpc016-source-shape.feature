@@ -8,26 +8,25 @@
 @rpc
 @source-shape
 Feature: RPC-016 source-shape regressions — viewport module + WorkUnitInfo.last_state_change_at + Action variants
-
   """
   RPC-016 (slice 3 of 3) — Source-shape regressions pin the file layout
   and cross-crate invariants introduced by the BoardView per-column
   scroll port:
 
-    - WorkUnitInfo in codelet/rpc-types/src/lib.rs gains
-      `pub last_state_change_at: Option<String>` (ISO-8601 UTC).
-    - codelet/core/src/work_units.rs reads `stateHistory[last].timestamp`
-      from spec/work-units.json and writes it into
-      `WorkUnitInfo.last_state_change_at`.
-    - The Action enum in codelet/fspec-tui/src/components/mod.rs gains
-      four new variants: ScrollFocusedColumnUp, ScrollFocusedColumnDown,
-      SelectFirstInFocused, SelectLastInFocused.
-    - The BoardStore in codelet/fspec-tui/src/store/board.rs declares
-      the new `scroll_offsets` field and the matching mutation methods.
-    - The new viewport painter module exists under
-      codelet/fspec-tui/src/views/board/ and stays < 300 LoC.
-    - RPC-012 / RPC-013 / RPC-014 / RPC-015 source-shape invariants
-      stay green.
+  - WorkUnitInfo in codelet/rpc-types/src/lib.rs gains
+  `pub last_state_change_at: Option<String>` (ISO-8601 UTC).
+  - codelet/core/src/work_units.rs reads `stateHistory[last].timestamp`
+  from spec/work-units.json and writes it into
+  `WorkUnitInfo.last_state_change_at`.
+  - The Action enum in codelet/fspec-tui/src/components/mod.rs gains
+  four new variants: ScrollFocusedColumnUp, ScrollFocusedColumnDown,
+  SelectFirstInFocused, SelectLastInFocused.
+  - The BoardStore in codelet/fspec-tui/src/store/board.rs declares
+  the new `scroll_offsets` field and the matching mutation methods.
+  - The new viewport painter module exists under
+  codelet/fspec-tui/src/views/board/ and stays < 300 LoC.
+  - RPC-012 / RPC-013 / RPC-014 / RPC-015 source-shape invariants
+  stay green.
   """
 
   Background: User Story

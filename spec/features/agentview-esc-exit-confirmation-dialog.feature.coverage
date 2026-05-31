@@ -1,0 +1,735 @@
+{
+  "scenarios": [
+    {
+      "name": "Idle session ESC opens dialog with idle description and Detach focused",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "184-274",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Running session ESC first interrupts then second ESC opens dialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "275-320",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compacting session ESC routes to interrupt and not to dialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "321-345",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No active session ESC dispatches BackToBoard without dialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "346-375",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cyclic Left/Right navigation across the three buttons",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "376-411",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on Detach dispatches BackToBoard without destroying the session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "412-446",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc098.rs",
+              "lines": [
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on Close Session destroys the session then dispatches BackToBoard",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "447-510",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc098.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on Cancel removes the dialog and stays on AgentView",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "489-525",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc098.rs",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ESC inside the dialog is equivalent to Cancel",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "526-556",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing ESC twice from L7 only opens one dialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "557-608",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Snapshot of the dialog rendered on 80x24 with is_busy=true",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "609-663",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "lines": [
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Snapshot of the dialog rendered on 80x24 with is_busy=false",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "664-714",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+              "lines": [
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End-to-end App render overlays the dialog on top of the AgentView chrome",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "715-774",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right on the same work unit after Close Session does not navigate back to the destroyed session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "620-679",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc098.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cycling sessions in AgentView after Close Session does not list the destroyed session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs",
+          "lines": "517-615",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc098.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agentview_esc_exit_confirmation_rpc098.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+      "codelet/fspec-tui/src/components/exit_confirmation_dialog.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc098.rs"
+    ],
+    "totalLinesCovered": 1249
+  }
+}

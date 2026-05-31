@@ -5,14 +5,13 @@
 @agent-view
 @session-switch
 Feature: RPC-024 App::dispatch routes SessionPrev/Next/ChunkReceived through multi-session AgentViewStore
-
   """
   RPC-024 (App dispatch slice) — wire the new multi-session
   AgentViewStore primitives into App::dispatch:
-    - Action::SessionCreated → calls `append_session` (was set_current_session).
-    - Action::SessionPrev / SessionNext → save outgoing draft, cycle, restore incoming draft.
-    - Action::ChunkReceived(id, chunk) → route scrollback into the
-      SessionContext whose id matches `id` (was `navigator.agent.record_chunk`).
+  - Action::SessionCreated → calls `append_session` (was set_current_session).
+  - Action::SessionPrev / SessionNext → save outgoing draft, cycle, restore incoming draft.
+  - Action::ChunkReceived(id, chunk) → route scrollback into the
+  SessionContext whose id matches `id` (was `navigator.agent.record_chunk`).
 
   These were already emitted by RPC-019's MultiLineInput on Shift+←/→
   but until RPC-024 the catch-all `_ => {}` arm in App::dispatch

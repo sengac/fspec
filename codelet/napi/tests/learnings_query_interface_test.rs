@@ -14,7 +14,7 @@ use codelet_napi::graph::learnings_dispatch;
 use serde_json::Value;
 
 /// The Learnings schema.
-const LEARNINGS_SCHEMA: &str = include_str!("../schemas/learnings.pg");
+const LEARNINGS_SCHEMA: &str = include_str!("../../graph/schemas/learnings.pg");
 
 /// Helper: create a Learnings graph database pre-loaded with test data.
 async fn setup_test_learnings_db(temp_dir: &std::path::Path) -> GraphDatabase {

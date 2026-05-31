@@ -5,7 +5,6 @@
 @rpc
 @RPC-008
 Feature: HelloComponent (Background-priority placeholder)
-
   Background-priority placeholder Component that renders a centered
   static greeting via Layout::vertical([Min, Length, Min]) +
   Layout::horizontal([Min, Length, Min]) — the doc 06 centered-modal

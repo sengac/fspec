@@ -9,19 +9,18 @@
 @header
 @kanban
 Feature: RPC-015 BoardView header — FSPEC Logo + CheckpointStatus + KeybindingShortcuts
-
   """
   RPC-015 (slice 2 of 3) — BoardView gains a 4-row header strip with separator
   inserted between the top box-drawing border and the existing 5-row
   work-unit details strip.
 
-    - Left of the header (12 chars wide): the FSPEC ASCII art logo, rendered
-      glyph-for-glyph identical to src/tui/components/Logo.tsx.
-    - Right of the header (row 0): blank.
-    - Right of the header (row 1): `Checkpoints: None` when both counts are 0,
-      otherwise `Checkpoints: {manual} Manual, {auto} Auto`.
-    - Right of the header (row 2): a `─` divider line matching TS borderTop.
-    - Right of the header (row 3): `C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent`.
+  - Left of the header (12 chars wide): the FSPEC ASCII art logo, rendered
+  glyph-for-glyph identical to src/tui/components/Logo.tsx.
+  - Right of the header (row 0): blank.
+  - Right of the header (row 1): `Checkpoints: None` when both counts are 0,
+  otherwise `Checkpoints: {manual} Manual, {auto} Auto`.
+  - Right of the header (row 2): a `─` divider line matching TS borderTop.
+  - Right of the header (row 3): `C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent`.
 
   The C / F / D / / keybindings are HINT-ONLY in this card — wiring lands in
   subsequent RPC-002 children. BoardStore gains a `checkpoint_counts` field

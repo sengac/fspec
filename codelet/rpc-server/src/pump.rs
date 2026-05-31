@@ -21,7 +21,7 @@
 //! channel (it keeps the sender alive so the receiver stays `Pending`).
 
 use crate::envelope::Envelope;
-use codelet_rpc_types::{LogRecord, SessionId, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk, WorkUnitInfo};
 use futures::{stream::SplitSink, stream::SplitStream, SinkExt, StreamExt};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
@@ -73,6 +73,16 @@ pub trait InboundHandler: Send + 'static {
     fn on_log_event(&self, _record: LogRecord) {
         self.on_reserved("LogEvent");
     }
+
+    /// Called when an `Envelope::StatusUpdate { session_id, status }`
+    /// arrives (RPC-037). Default implementation defers to
+    /// [`Self::on_reserved`] — status updates only flow server →
+    /// client, so a client-pushed `StatusUpdate` is rejected on the
+    /// server side. Client-side handlers override this to forward the
+    /// payload to their status broadcast.
+    fn on_status_update(&self, _session_id: SessionId, _status: SessionStatus) {
+        self.on_reserved("StatusUpdate");
+    }
 }
 
 /// Server-side reserved-variant handler — increments a counter and warns.
@@ -117,6 +127,9 @@ pub struct ClientInbound {
     pub work_units_tx: tokio::sync::watch::Sender<Option<Vec<WorkUnitInfo>>>,
     pub chunks_tx: tokio::sync::broadcast::Sender<(SessionId, StreamChunk)>,
     pub logs_tx: tokio::sync::broadcast::Sender<LogRecord>,
+    /// RPC-037: status updates broadcast forwarded onto
+    /// `FspecWsClient::status_changes_rx()` subscribers.
+    pub status_tx: tokio::sync::broadcast::Sender<(SessionId, SessionStatus)>,
 }
 
 impl InboundHandler for ClientInbound {
@@ -144,6 +157,13 @@ impl InboundHandler for ClientInbound {
 
     fn on_log_event(&self, record: LogRecord) {
         let _ = self.logs_tx.send(record);
+    }
+
+    fn on_status_update(&self, session_id: SessionId, status: SessionStatus) {
+        // Broadcast to all subscribers. `send` returns `Err` only if
+        // there are no active receivers — that's fine, the next
+        // subscribe() call will see the next status update.
+        let _ = self.status_tx.send((session_id, status));
     }
 }
 
@@ -277,6 +297,9 @@ fn pump_dispatch_inbound<H: InboundHandler>(
                 }
                 Envelope::LogEvent(record) => {
                     inbound.on_log_event(record);
+                }
+                Envelope::StatusUpdate { session_id, status } => {
+                    inbound.on_status_update(session_id, status);
                 }
                 other => {
                     inbound.on_reserved(other.variant_name());

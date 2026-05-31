@@ -8,8 +8,8 @@
 //! `dispatch_ast_dead_code` lives in `ast_dead_code.rs` (extracted for
 //! file-size compliance).
 
-use crate::graph::database::GraphDatabase;
-use crate::graph::dispatch_helpers::{
+use crate::database::GraphDatabase;
+use crate::dispatch_helpers::{
     fields_for_search_mode, format_graph_stats, matches_decorator, matches_fields,
     matches_parameter,
 };
@@ -18,7 +18,7 @@ use serde_json::Value;
 use tracing::warn;
 
 /// Bundled AST query source for named queries.
-pub const AST_QUERIES: &str = include_str!("../../schemas/ast-queries.gq");
+pub const AST_QUERIES: &str = include_str!("../schemas/ast-queries.gq");
 
 /// A named query with metadata about the edge type it represents.
 struct NeighborQuery {

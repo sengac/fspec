@@ -6,8 +6,6 @@
 use napi::Result;
 use napi_derive::napi;
 
-use super::store::credentials_reload as internal_credentials_reload;
-
 /// Force reload credentials from disk
 ///
 /// Call this after TypeScript saves credentials to ensure Rust picks up changes.
@@ -17,5 +15,5 @@ use super::store::credentials_reload as internal_credentials_reload;
 #[napi]
 #[allow(dead_code)]
 pub fn credentials_reload() -> Result<bool> {
-    internal_credentials_reload().map_err(napi::Error::from_reason)
+    codelet_sessions::credentials::credentials_reload().map_err(napi::Error::from_reason)
 }

@@ -8,9 +8,11 @@ pub mod compaction_hook;
 pub mod file_search;
 pub mod gemini_history_hook;
 pub mod lifecycle_hooks;
+pub mod loops;
 pub mod message_estimator;
 pub mod persistence;
 pub mod rig_agent;
+pub mod scheduler;
 pub mod session_manager_handle;
 pub mod streaming_display;
 pub mod token_usage;
@@ -28,6 +30,13 @@ pub use streaming_display::{
 pub use token_usage::ApiTokenUsage;
 pub use rig_agent::{RigAgent, DEFAULT_MAX_DEPTH};
 pub use tool_specs::ToolSpec;
+
+// RPC-042: re-export `SessionManagerHandle` at the crate root so the
+// production impl in `codelet/sessions/src/handle_impl.rs` (and any
+// future consumers) can name it via the short path
+// `codelet_core::SessionManagerHandle` rather than the long
+// `codelet_core::session_manager_handle::SessionManagerHandle`.
+pub use session_manager_handle::SessionManagerHandle;
 
 // Re-export turn completion facade from codelet-tools for convenience
 pub use codelet_tools::facade::{

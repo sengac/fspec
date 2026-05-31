@@ -24,12 +24,21 @@ napi = { version = "3", default-features = false, features = ["napi4", "async", 
 napi-derive = "3"
 
 # Codelet crates
-codelet-cli = { path = "../cli" }
-codelet-core = { path = "../core" }
-codelet-git = { path = "../git" }
-codelet-providers = { path = "../providers" }
-codelet-tools = { path = "../tools" }
-codelet-common = { path = "../common" }
+codelet-cli = { path = "../cli" }       # RPC-043: agent_loop.rs (run_interactive_session, StreamOutput), persist.rs (codelet_cli::session::Session, system_reminders), bridges.rs (handler closures), session_bindings.rs (session_compact, session_set_model)
+codelet-core = { path = "../core" }     # RPC-043: agent_loop.rs (lifecycle_hooks engine fns), persist.rs (AssistantContent persistence)
+codelet-git = { path = "../git" }       # RPC-043: agent_loop.rs (worktree helpers), bridges.rs (git bridge wiring), footer_poller.rs (get_current_branch)
+codelet-graph = { path = "../graph" }   # RPC-092: KGraph DB + AST pipeline + Learnings extraction — lifted out of codelet/napi/src/graph/ into the NAPI-free codelet-graph crate. codelet/napi/src/graph.rs is now a thin `pub use codelet_graph::*;` shim.
+codelet-providers = { path = "../providers" }  # RPC-043: session_bindings.rs (list/show/validate/test/init_provider wrappers), bridges.rs (handler closures capture ProviderManager), agent_loop.rs (provider lookup, CopilotProvider, custom resolver)
+codelet-tools = { path = "../tools" }   # RPC-043: agent_loop.rs (McpInjection, tool_pause), session_bindings.rs (PauseState <-> NapiPauseState), bridges.rs (facade, deep_search/agent_manager handlers), footer_poller.rs (footer_cwd), session_hooks.rs (McpInjection signature)
+codelet-common = { path = "../common" } # RPC-043: session_bindings.rs (get_data_dir, handle_debug_command_with_dir, SessionMetadata, DebugCommandResult)
+# RPC-039: codelet-napi now consumes BackgroundSession + companion types
+# from the NAPI-free codelet-sessions crate via `pub use` re-exports in
+# codelet/napi/src/session_manager.rs. The agent loop, SessionManager,
+# and the `#[napi]` free-function shells stay napi-side for this card;
+# RPC-040 moves SessionManager into codelet-sessions and RPC-043 turns
+# the entire napi crate into the thin adapter described by the RPC-030
+# roadmap.
+codelet-sessions = { path = "../sessions" }
 # RPC-005: re-export shared serde types from rpc-types with NAPI derives
 # applied via the optional `napi` feature gate.
 codelet-rpc-types = { path = "../rpc-types", features = ["napi"] }
@@ -44,6 +53,9 @@ rig-core = { version = "0.28.0", default-features = false }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }
+
+# RPC-058: NapiSchedulerHooks impls codelet_core::scheduler::SchedulerHooks
+async-trait = { workspace = true }
 futures = "0.3"
 
 # Error handling

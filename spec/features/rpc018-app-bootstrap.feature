@@ -6,7 +6,6 @@
 @bootstrap
 @dispatch
 Feature: RPC-018 App bootstrap + dispatch wiring for AgentView chrome state
-
   """
   RPC-018 extends `App::bootstrap` to fetch the workspace snapshot once
   via `backend.get_workspace_info()` and dispatch

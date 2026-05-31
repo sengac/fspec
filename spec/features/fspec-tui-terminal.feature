@@ -5,7 +5,6 @@
 @rpc
 @RPC-008
 Feature: Terminal lifecycle + panic-hook idempotency
-
   TerminalGuard::init() enables alt-screen + raw mode + mouse capture
   + bracketed paste, registers an idempotent panic hook (guarded by
   std::sync::Once) that restores the terminal before delegating to

@@ -8,7 +8,7 @@ use std::path::Path;
 use serde_json::Value;
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Extract npm dependencies from a project's package.json.
 ///

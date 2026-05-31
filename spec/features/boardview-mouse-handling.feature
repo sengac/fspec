@@ -3,7 +3,6 @@
 @tui
 @RPC-023
 Feature: BoardView mouse handling — wheel scroll + click focus
-
   """
   Decision (Q7): Horizontal wheel (ScrollLeft/ScrollRight) inside content area emits FocusPrev/NextColumn (Rust-port-only opportunity vs TS).
   Decision (Q8): Click-to-focus is INCLUDED in this card — adds Action::SetFocusedColumn(usize) and Action::SelectIndexInFocused(usize) variants; BoardStore gains select_index_in_focused().

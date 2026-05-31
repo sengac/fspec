@@ -1,0 +1,124 @@
+{
+  "scenarios": [
+    {
+      "name": "NAPI re-export shim preserves existing crate::persistence imports",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/message_envelope_lift_shim_test.rs",
+          "lines": "16-109",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All NAPI persistence tests continue to pass after the lift",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/message_envelope_lift_shim_test.rs",
+          "lines": "111-176",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/message_envelope.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/message_envelope_lift_shim_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/persistence/message_envelope.rs"
+    ],
+    "totalLinesCovered": 236
+  }
+}

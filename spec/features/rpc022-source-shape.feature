@@ -5,34 +5,33 @@
 @rpc
 @tui
 Feature: RPC-022 source-shape regression for the modal dialogs port + shared types + new RPC methods
-
   """
   RPC-022 introduces several new source artefacts. This feature pins
   the file layout + symbol surface so future refactors cannot silently
   regress the integration shape:
 
-    1. `codelet/rpc-types/src/lib.rs` — two new types
-       `ProviderInfo` and `ModelEntry` (cfg-gated for napi).
-    2. `codelet/rpc/src/lib.rs` — `FspecService` trait gains five new
-       methods: `list_providers`, `set_session_model`,
-       `set_thinking_level`, `get_session_role`, `set_session_role`.
-    3. `codelet/core/src/session_manager_handle.rs` — trait gains
-       `set_model`, `set_thinking_level`, `get_role`, `set_role`,
-       `list_providers` with default impls returning safe defaults.
-    4. `codelet/fspec-tui/src/transport/mod.rs` — `FspecBackend` trait
-       declares the same five methods.
-    5. `codelet/fspec-tui/src/transport/embedded.rs` +
-       `codelet/fspec-tui/src/transport/websocket.rs` — both implement
-       the five new trait methods.
-    6. `codelet/fspec-tui/src/components/model_selector_dialog.rs` +
-       `codelet/fspec-tui/src/components/thinking_level_dialog.rs` —
-       new modal dialog modules.
-    7. `codelet/fspec-tui/src/views/agent/role_banner.rs` — new inline
-       widget module under views/agent/.
-    8. `codelet/fspec-tui/src/app/dispatch_rpc022.rs` — new dispatch
-       helper module.
-    9. `codelet/fspec-tui/src/components/mod.rs::Priority` — gains a
-       new `Foreground = 900` variant.
+  1. `codelet/rpc-types/src/lib.rs` — two new types
+  `ProviderInfo` and `ModelEntry` (cfg-gated for napi).
+  2. `codelet/rpc/src/lib.rs` — `FspecService` trait gains five new
+  methods: `list_providers`, `set_session_model`,
+  `set_thinking_level`, `get_session_role`, `set_session_role`.
+  3. `codelet/core/src/session_manager_handle.rs` — trait gains
+  `set_model`, `set_thinking_level`, `get_role`, `set_role`,
+  `list_providers` with default impls returning safe defaults.
+  4. `codelet/fspec-tui/src/transport/mod.rs` — `FspecBackend` trait
+  declares the same five methods.
+  5. `codelet/fspec-tui/src/transport/embedded.rs` +
+  `codelet/fspec-tui/src/transport/websocket.rs` — both implement
+  the five new trait methods.
+  6. `codelet/fspec-tui/src/components/model_selector_dialog.rs` +
+  `codelet/fspec-tui/src/components/thinking_level_dialog.rs` —
+  new modal dialog modules.
+  7. `codelet/fspec-tui/src/views/agent/role_banner.rs` — new inline
+  widget module under views/agent/.
+  8. `codelet/fspec-tui/src/app/dispatch_rpc022.rs` — new dispatch
+  helper module.
+  9. `codelet/fspec-tui/src/components/mod.rs::Priority` — gains a
+  new `Foreground = 900` variant.
 
   Existing TS code paths
   (src/tui/components/ModelSelectorScreen.tsx,

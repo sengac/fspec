@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use std::path::Path;
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Extract Cargo dependencies from a project root.
 ///

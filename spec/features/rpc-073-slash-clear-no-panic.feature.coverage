@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "Calling clear_history over embedded tarpc on a multi-thread runtime returns Ok and does not panic",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc073_clear_history_no_panic.rs",
+          "lines": "148-217",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Calling SessionManagerHandle::clear_history directly from an async task on a multi-thread runtime does not panic",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc073_clear_history_no_panic.rs",
+          "lines": "223-263",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape regression: every sync trait method in handle_impl.rs whose body contains .blocking_lock or .blocking_read or .blocking_write is wrapped in tokio::task::block_in_place",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc073_clear_history_no_panic.rs",
+          "lines": "269-335",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "After /clear the session output_buffer is empty and a SessionState::Cleared chunk is broadcast",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/rpc073_clear_history_no_panic.rs",
+          "lines": "341-403",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/handle_impl.rs",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/rpc073_clear_history_no_panic.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/handle_impl.rs"
+    ],
+    "totalLinesCovered": 333
+  }
+}

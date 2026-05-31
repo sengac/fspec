@@ -7,7 +7,6 @@
 @rpc
 @RPC-011
 Feature: Health RPC + ServerStats extensions (HealthInfo lifted type + lag counters + watcher event timestamp)
-
   """
   FspecService gains one new RPC: health() -> HealthInfo. HealthInfo is a new lifted type in
   codelet-rpc-types, cfg-gated napi(object) like its siblings (WorkUnitInfo, SessionInfo).

@@ -7,7 +7,6 @@
 @ui-enhancement
 @board-view
 Feature: RPC-013 BoardView footer — literal port of TS UnifiedBoardLayout footer string
-
   """
   RPC-013 (slice 1 of 3) — BoardView paints its own 1-row footer at the
   bottom of its render area. The string is the literal port of

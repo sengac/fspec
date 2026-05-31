@@ -14,7 +14,7 @@
 use ast_grep_language::{LanguageExt, SupportLang};
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Per-language variable extraction configuration.
 struct VariableConfig {

@@ -79,20 +79,17 @@ impl App {
         });
         self.subscriber_tasks.push(work_units_task);
 
-        // (b) chunks_rx → Action::ChunkReceived (filtered by active session)
+        // (b) chunks_rx → Action::ChunkReceived (RPC-045: no active-session
+        //     filter — every (SessionId, StreamChunk) is forwarded so
+        //     background sessions accumulate scrollback + per-session
+        //     state regardless of focus).
         let tx = self.action_tx.clone();
         let mut rx = self.backend.chunks_rx();
-        let active_rx = self.active_session_rx.clone();
         let chunks_task = tokio::spawn(async move {
             loop {
                 match rx.recv().await {
                     Ok((id, chunk)) => {
-                        // RPC-009 rule [8]: filter by the AgentViewStore's
-                        // current_session BEFORE emitting.
-                        let active = active_rx.borrow().clone();
-                        if active.as_ref() == Some(&id) {
-                            let _ = tx.send(Action::ChunkReceived(id, chunk));
-                        }
+                        let _ = tx.send(Action::ChunkReceived(id, chunk));
                     }
                     Err(broadcast::error::RecvError::Lagged(n)) => {
                         debug!("chunks subscriber lagged by {n}; continuing");
@@ -119,5 +116,28 @@ impl App {
             }
         });
         self.subscriber_tasks.push(logs_task);
+
+        // (d) RPC-045: status_changes_rx → Action::SessionStatusChanged.
+        //     Push-driven replacement for the polling get_session_status
+        //     path. Subscribers exit cleanly on RecvError::Closed; lag
+        //     is logged via tracing::warn but does NOT crash the loop.
+        let tx = self.action_tx.clone();
+        let mut rx = self.backend.status_changes_rx();
+        let status_task = tokio::spawn(async move {
+            loop {
+                match rx.recv().await {
+                    Ok((id, status)) => {
+                        let _ = tx.send(Action::SessionStatusChanged(id, status));
+                    }
+                    Err(broadcast::error::RecvError::Lagged(n)) => {
+                        tracing::warn!(
+                            "status_changes subscriber lagged by {n}; continuing"
+                        );
+                    }
+                    Err(broadcast::error::RecvError::Closed) => break,
+                }
+            }
+        });
+        self.subscriber_tasks.push(status_task);
     }
 }

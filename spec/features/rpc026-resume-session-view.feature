@@ -7,7 +7,6 @@
 @tui
 @RPC-026
 Feature: ResumeSessionView — full-screen resume session list (RPC-021c)
-
   """
   RPC-021c depends on RPC-024 (multi-session AgentViewStore — gives us open_sessions / append_session / cycle_session / session_index) and RPC-025 (persistence_search_history RPC method + HistoryMatch type). RPC-026 does NOT introduce new RPC methods or new shared types — only consumes them.
   Render shape: ResumeSessionView::render(area, buf, store) and SearchHistoryView::render(area, buf, store) take the FULL area Rect. Their first statement is `Clear.render(area, buf)` so the underlying AgentView pixels are fully overwritten. They then split `area` vertically with Layout::default().constraints([Length(1), Length(1), Min(0), Length(1)]) for title row, separator, scrollable list, and footer hint — mirroring TS AgentView.tsx:5053-5191. Pattern reference inside this repo: see existing full-screen views like BoardView (codelet/fspec-tui/src/views/board.rs) — they paint directly into the supplied Rect, NOT into a sub-rect.
@@ -17,13 +16,13 @@ Feature: ResumeSessionView — full-screen resume session list (RPC-021c)
 
   # See spec/features/rpc026-* for the broader RPC-026 example-mapping context.
   # This file covers ResumeSessionView scrolling, delete-confirm flow, and empty-state placeholder.
-
   Background: User Story
     As a developer using the Rust ratatui TUI
     I want to press /resume or /search (and Ctrl+R) to open full-screen mode views that mirror the TypeScript Ink TUI — listing resumable sessions or filtering submitted-input history with delete confirmation — rather than small floating popups
     So that the Rust frontend's `/resume` and `/search` UX matches the existing TypeScript frontend pixel-for-pixel and feature-for-feature, so habits and integration tests carry across implementations unchanged
 
-  @resume @scrolling
+  @resume
+  @scrolling
   Scenario: ResumeSessionView scrolls beyond 10 rows using terminal height
     Given resume_view has 40 SessionInfo values
     And the render area height is 24
@@ -32,7 +31,9 @@ Feature: ResumeSessionView — full-screen resume session list (RPC-021c)
     And resume_view.scroll_offset has advanced so row 20 falls inside the visible window
     And the rendered list shows the row at index 20
 
-  @resume @delete @dialog
+  @resume
+  @delete
+  @dialog
   Scenario: D opens the ConfirmDialog and Enter on Primary deletes the session
     Given resume_view is open with sessions ["s-1", "s-2", "s-3"]
     And resume_view.selected_index is 1
@@ -48,7 +49,8 @@ Feature: ResumeSessionView — full-screen resume session list (RPC-021c)
     And resume_view.sessions equals ["s-1", "s-3"]
     And resume_view.delete_confirm is None
 
-  @resume @placeholder
+  @resume
+  @placeholder
   Scenario: Empty session list renders the no-sessions placeholder
     Given resume_view is open
     When Action::SessionListLoaded with an empty Vec is folded in

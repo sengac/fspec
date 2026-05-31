@@ -1,7 +1,7 @@
 //! Pre-fetched graph data to avoid redundant database queries.
 
-use crate::graph::ast_dispatch::AST_QUERIES;
-use crate::graph::database::GraphDatabase;
+use crate::ast_dispatch::AST_QUERIES;
+use crate::database::GraphDatabase;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 

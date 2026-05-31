@@ -8,25 +8,24 @@
 @rpc
 @header
 Feature: RPC-015 source-shape regressions — header widgets + shared CheckpointCounts type
-
   """
   RPC-015 (slice 3 of 3) — Source-shape regressions pin the file layout and
   cross-crate invariants introduced by the BoardView header port:
 
-    - CheckpointCounts shared type lives in codelet/rpc-types/src/lib.rs and
-      carries `pub manual: u32` + `pub auto: u32` fields plus the napi cfg
-      attribute for cross-binding parity.
-    - The FspecService trait in codelet/rpc/src/lib.rs gains the new
-      `async fn checkpoint_counts() -> CheckpointCounts` method.
-    - The NAPI surface gains an additive `pub fn count_checkpoints` export
-      in codelet/napi/src/git.rs that delegates to the shared
-      `codelet_git::ghost_commit::count_checkpoints` helper.
-    - The three new header widgets logo.rs / checkpoint_status.rs /
-      keybinding_shortcuts.rs exist under codelet/fspec-tui/src/views/board/
-      and stay under the 300 LoC ceiling.
-    - The orchestrator codelet/fspec-tui/src/views/board.rs stays under
-      300 LoC after the new layout split lands.
-    - RPC-013 and RPC-014 source-shape invariants stay green.
+  - CheckpointCounts shared type lives in codelet/rpc-types/src/lib.rs and
+  carries `pub manual: u32` + `pub auto: u32` fields plus the napi cfg
+  attribute for cross-binding parity.
+  - The FspecService trait in codelet/rpc/src/lib.rs gains the new
+  `async fn checkpoint_counts() -> CheckpointCounts` method.
+  - The NAPI surface gains an additive `pub fn count_checkpoints` export
+  in codelet/napi/src/git.rs that delegates to the shared
+  `codelet_git::ghost_commit::count_checkpoints` helper.
+  - The three new header widgets logo.rs / checkpoint_status.rs /
+  keybinding_shortcuts.rs exist under codelet/fspec-tui/src/views/board/
+  and stay under the 300 LoC ceiling.
+  - The orchestrator codelet/fspec-tui/src/views/board.rs stays under
+  300 LoC after the new layout split lands.
+  - RPC-013 and RPC-014 source-shape invariants stay green.
   """
 
   Background: User Story

@@ -3,7 +3,6 @@
 @tui
 @RPC-023
 Feature: App run-loop forwards Event::Mouse to the active view
-
   """
   Pre-RPC-023, App::handle_event and the Navigator silently dropped
   Event::Mouse(_) because every layer matched Event::Key only.

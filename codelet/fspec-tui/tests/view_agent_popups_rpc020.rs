@@ -48,9 +48,11 @@ fn push_chunk(app: &mut App, body: &str) {
     ctx.scrollback.push(RenderedChunk {
         seq: 0,
         lines: vec![Line::from(body.to_string())],
+        source: None,
     });
 }
 
+#[allow(dead_code)]
 fn scrollback_text(app: &App) -> String {
     let chunks = app
         .agent_view_store()
@@ -159,6 +161,7 @@ fn pressing_enter_on_clear_emits_clear_action() {
             ctx.scrollback.push(RenderedChunk {
                 seq: 0,
                 lines: vec![Line::from("x")],
+                source: None,
             });
         }
     }
@@ -225,39 +228,51 @@ fn pressing_enter_on_help_emits_help_action() {
     assert!(view.slash_popup.is_none());
 }
 
-/// Scenario: Pressing Enter on an unimplemented command emits a scrollback notice
+/// Scenario: Pressing Enter on /isolation opens the CreateSessionDialog
+///
+/// RPC-060: replaces the legacy "unimplemented command emits a notice"
+/// behaviour. /isolation now dispatches
+/// `Action::OpenCreateSessionDialog { preselect: Some(Isolated) }` —
+/// the catch-all `[notice] /<name> not yet implemented` fallback was
+/// removed because every SlashCommandAction variant has a handler.
 #[test]
 fn pressing_enter_on_unimplemented_command_emits_notice() {
-    // @step Given an AgentView whose slash popup is open with "/compact" highlighted
+    use codelet_fspec_tui::CreateSessionOption;
+    // @step Given an AgentView whose slash popup is open with "/isolation" highlighted
     let (mut view, mut rx) = fresh_view();
-    type_chars(&mut view, "/compact");
+    type_chars(&mut view, "/isolation");
     let _ = drain(&mut rx);
 
     // @step When the user presses Enter
     view.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
 
-    // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Compact)
+    // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Isolation)
     let actions = drain(&mut rx);
     assert!(
         actions
             .iter()
-            .any(|a| matches!(a, Action::SlashCommandSelected(SlashCommandAction::Compact))),
-        "expected SlashCommandSelected(Compact), got {actions:?}"
+            .any(|a| matches!(a, Action::SlashCommandSelected(SlashCommandAction::Isolation))),
+        "expected SlashCommandSelected(Isolation), got {actions:?}"
     );
-    // @step And dispatching that action appends one scrollback chunk whose text contains "[notice]"
+    // @step And App::dispatch routes that action into Action::OpenCreateSessionDialog{preselect:Some(Isolated)}
     let mut app = fresh_app();
     seed_session(&mut app, "s-1");
     assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
-    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 1);
-    let text = scrollback_text(&app);
-    assert!(text.contains("[notice]"), "expected '[notice]' in {text:?}");
-    // @step And that scrollback chunk's text contains "compact"
-    assert!(text.contains("compact"), "expected 'compact' in {text:?}");
-    // @step And that scrollback chunk's text contains "not yet implemented"
-    assert!(
-        text.contains("not yet implemented"),
-        "expected 'not yet implemented' in {text:?}"
+    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Isolation));
+    let pending = app
+        .try_recv_action()
+        .expect("OpenCreateSessionDialog should be queued");
+    match pending {
+        Action::OpenCreateSessionDialog { preselect } => {
+            assert_eq!(preselect, Some(CreateSessionOption::Isolated));
+        }
+        other => panic!("expected OpenCreateSessionDialog, got {other:?}"),
+    }
+    // @step And NO scrollback notice chunk is pushed for /isolation
+    assert_eq!(
+        app.navigator().agent.chunk_count(app.agent_view_store()),
+        0,
+        "no [notice] chunk should be pushed for /isolation"
     );
     // @step And the slash popup is closed
     assert!(view.slash_popup.is_none());

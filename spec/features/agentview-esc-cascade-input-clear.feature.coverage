@@ -1,0 +1,114 @@
+{
+  "scenarios": [
+    {
+      "name": "Esc when idle with non-empty input clears the buffer",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "533-552",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc when idle with whitespace-only input is treated as empty",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "557-578",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc051.rs"
+    ],
+    "totalLinesCovered": 108
+  }
+}

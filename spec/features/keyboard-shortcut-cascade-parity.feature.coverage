@@ -1,0 +1,492 @@
+{
+  "scenarios": [
+    {
+      "name": "Esc level 1 — slash popup dismiss takes precedence over interrupt",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "121-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc level 2 — HelpDialog dismiss takes precedence over interrupt",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "153-177",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/events.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc level 3 — resume mode-view dismiss takes precedence over interrupt",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "180-206",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc level 3 — search mode-view dismiss takes precedence over interrupt",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "209-231",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc level 4 — Running session interrupts without navigating back",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "234-267",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc level 4 — Compacting session interrupts without navigating back",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "270-294",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc level 5 — no current session navigates back to Board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "349-368",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Ctrl+R opens SearchHistoryView with the input field focused on mount",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "371-403",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/dispatch.rs",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+up/down snapshots draft, walks history, and restores draft on return",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "406-488",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc025.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+up at end of history is a no-op (clamped at tail)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs",
+          "lines": "491-529",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc025.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc level 5 — Idle session opens ExitConfirmationDialog (RPC-098)",
+      "testMappings": []
+    },
+    {
+      "name": "Esc level 5 — session with unknown status opens ExitConfirmationDialog (RPC-098)",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 10,
+    "coveragePercent": 83,
+    "testFiles": [
+      "codelet/fspec-tui/tests/keyboard_cascade_rpc051.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/dispatch.rs",
+      "codelet/fspec-tui/src/app/events.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc051.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc025.rs"
+    ],
+    "totalLinesCovered": 748
+  }
+}

@@ -8,18 +8,17 @@
 @board-view
 @kanban
 Feature: RPC-014 BoardView rich box-drawing grid + work-unit details strip
-
   """
   RPC-014 (slice 1 of 3) — BoardView is upgraded from the placeholder single-Block
   skeleton to the full UnifiedBoardLayout grid topology:
 
-    - box-drawing column separators (├ ┼ ┤ ┬ ┴) computed once per frame from
-      the terminal width;
-    - a 5-row work-unit details strip mirroring the TS components
-      WorkUnitTitle / WorkUnitDescription / WorkUnitAttachments /
-      WorkUnitMetadata;
-    - focused-column highlighting and work-type color coding inside the
-      column cells.
+  - box-drawing column separators (├ ┼ ┤ ┬ ┴) computed once per frame from
+  the terminal width;
+  - a 5-row work-unit details strip mirroring the TS components
+  WorkUnitTitle / WorkUnitDescription / WorkUnitAttachments /
+  WorkUnitMetadata;
+  - focused-column highlighting and work-type color coding inside the
+  column cells.
 
   All RPC-012 actions and the RPC-013 literal footer remain intact. No
   TypeScript code is modified.

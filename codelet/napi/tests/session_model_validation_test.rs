@@ -20,7 +20,7 @@ mod tests {
         env::set_var("ANTHROPIC_API_KEY", "sk-test-key");
 
         // Get SessionManager instance
-        let manager = codelet_napi::session_manager::SessionManager::instance();
+        let manager = codelet_napi::session_bindings::SessionManager::instance();
 
         // Test 1: Valid model string with provider/model-id format should work
         let valid_id = Uuid::new_v4();
@@ -84,7 +84,7 @@ mod tests {
     async fn test_model_format_validation_examples() {
         env::set_var("ANTHROPIC_API_KEY", "sk-test-key");
 
-        let manager = codelet_napi::session_manager::SessionManager::instance();
+        let manager = codelet_napi::session_bindings::SessionManager::instance();
 
         // Test various invalid formats
         let invalid_formats = vec![

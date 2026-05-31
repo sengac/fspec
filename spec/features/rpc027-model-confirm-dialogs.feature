@@ -7,7 +7,6 @@
 @rpc
 @RPC-027
 Feature: RPC-027 — ModelSelectorDialog and ConfirmDialog migration
-
   """
   RPC-027 Sections E (ModelSelectorDialog) and F (ConfirmDialog).
   Both consume the shared dialog_theme.rs renderer.
@@ -21,7 +20,6 @@ Feature: RPC-027 — ModelSelectorDialog and ConfirmDialog migration
   # ============================================================
   # Section E — ModelSelectorDialog
   # ============================================================
-
   Scenario: ModelSelectorDialog renders with the cyan accent and "Select Model" inner title
     Given a ModelSelectorDialog seeded with a non-empty provider list
     When I render it onto an 80x24 TestBackend buffer
@@ -53,7 +51,6 @@ Feature: RPC-027 — ModelSelectorDialog and ConfirmDialog migration
   # ============================================================
   # Section F — ConfirmDialog
   # ============================================================
-
   Scenario: ConfirmDialog renders with the yellow accent and caller-supplied title
     Given a ConfirmDialog with title "Delete Session" and body "Delete this session?"
     When I render it onto an 80x24 TestBackend buffer

@@ -16,7 +16,7 @@ use super::metadata;
 use super::variables;
 use super::edge_helpers;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Scala function declarations.
 const SCALA_FUNCTION_PATTERNS: &[&str] = &[

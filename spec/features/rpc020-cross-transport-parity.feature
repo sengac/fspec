@@ -6,7 +6,6 @@
 @cross-transport
 @parity
 Feature: RPC-020 cross-transport parity for search_files
-
   """
   RPC-020 adds a new `search_files(prefix, limit)` RPC method to the
   shared FspecService trait. Both FspecBackend impls

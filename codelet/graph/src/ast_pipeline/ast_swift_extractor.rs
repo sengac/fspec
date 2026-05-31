@@ -16,7 +16,7 @@ use super::complexity;
 use super::metadata;
 use super::variables;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Swift function declarations.
 const SWIFT_FUNCTION_PATTERNS: &[&str] = &[

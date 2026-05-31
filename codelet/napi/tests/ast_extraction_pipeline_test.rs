@@ -22,7 +22,7 @@ mod graph_test_helpers;
 use graph_test_helpers::{count_edges, count_nodes, find_node, write_test_file};
 
 /// The AST code schema for loading extracted entities.
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// Inline queries for verifying loaded data.
 const AST_QUERIES: &str = r#"

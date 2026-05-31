@@ -1,0 +1,458 @@
+{
+  "scenarios": [
+    {
+      "name": "navigate_next returns CreateDialog and navigate_prev returns Board when the store is empty",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "37-50",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "navigate_next returns CreateDialog at the last session index",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "52-65",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "navigate_prev returns Session(idx-1) when not at the first session index",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "67-79",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "navigate_next returns Session(idx+1) when not at the last session index",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "81-98",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "navigate_prev returns Board at the first session index",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "100-116",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right with a single attached session opens the Create Session dialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "118-137",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left with a single attached session exits AgentView back to the Board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "139-156",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right at the last index preserves the typed draft when opening the Create Session dialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "158-178",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left at the first index snapshots the outgoing draft before exiting to the Board",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "180-206",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mid-list Shift+Right preserves the RPC-024 draft round-trip and session switch",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "208-238",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc024.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cycle_session is removed from the AgentViewStore public API",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs",
+          "lines": "240-275",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+              "lines": [
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/shift_arrow_end_of_list_rpc096.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/navigation.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc024.rs"
+    ],
+    "totalLinesCovered": 494
+  }
+}

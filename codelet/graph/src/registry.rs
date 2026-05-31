@@ -23,8 +23,8 @@ pub const AST_CODE_GRAPH: &str = "ast-code";
 pub const LEARNINGS_GRAPH: &str = "learnings";
 
 /// Bundled schemas, compiled into the binary.
-const AST_CODE_SCHEMA: &str = include_str!("../../schemas/ast-code.pg");
-const LEARNINGS_SCHEMA: &str = include_str!("../../schemas/learnings.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const LEARNINGS_SCHEMA: &str = include_str!("../schemas/learnings.pg");
 
 /// Get a graph database by name, initializing it if needed.
 ///
@@ -105,7 +105,13 @@ pub fn delete_graph_data(name: &str, db_path: &std::path::Path) -> Result<bool, 
 }
 
 /// Insert a graph database into the registry (for testing).
-#[cfg(test)]
+///
+/// RPC-092: Exposed as a public test-helper so the lifted
+/// `tests/graph_reset_test.rs` integration test can drive the registry
+/// from outside the crate. Production callers should use `get_graph` —
+/// this function is documented but kept available unconditionally so
+/// downstream consumers (the codelet/napi shim, future codelet-agent-loop
+/// tests) can reuse it.
 pub fn insert_graph_for_test(name: &str, db: super::database::GraphDatabase) {
     let mut guard = REGISTRY
         .lock()

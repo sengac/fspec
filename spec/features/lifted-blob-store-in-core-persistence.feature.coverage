@@ -1,0 +1,309 @@
+{
+  "scenarios": [
+    {
+      "name": "Envelope tool_result round-trips through the lifted blob storage in codelet-core",
+      "testMappings": [
+        {
+          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "lines": "54-141",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/blob_processing.rs",
+              "lines": [
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identical blobs deduplicate to a single on-disk file",
+      "testMappings": [
+        {
+          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "lines": "147-188",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/blob.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet-core consumers can hash-store and rehydrate envelope blobs without depending on codelet-napi",
+      "testMappings": [
+        {
+          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "lines": "199-227",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/mod.rs",
+              "lines": [
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pre-lift blob files at {data_dir}/blobs/{first2}/{hash} remain resolvable",
+      "testMappings": [
+        {
+          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "lines": "233-265",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/blob.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BLOB_REF_PREFIX wire-format value is preserved exactly",
+      "testMappings": [
+        {
+          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "lines": "271-296",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/blob_processing.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "should_use_blob_storage preserves the 10KB threshold from the pre-lift implementation",
+      "testMappings": [
+        {
+          "file": "codelet/core/tests/blob_store_lifted_test.rs",
+          "lines": "302-334",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/persistence/blob.rs",
+              "lines": [
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/core/tests/blob_store_lifted_test.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/persistence/blob_processing.rs",
+      "codelet/core/src/persistence/blob.rs",
+      "codelet/core/src/persistence/mod.rs"
+    ],
+    "totalLinesCovered": 446
+  }
+}

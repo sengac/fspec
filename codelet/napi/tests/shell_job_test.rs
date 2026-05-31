@@ -385,7 +385,7 @@ async fn test_shell_job_updates_timestamps() {
     // @step When the scheduler fires the shell job and it completes
     // Use evaluate_and_run which handles the full trigger_and_update flow
     let state = codelet_napi::scheduler::SchedulerState::new();
-    codelet_napi::scheduler::evaluate_and_run(project_path, &state)
+    codelet_napi::scheduler::evaluate_and_run(project_path, &state, std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks))
         .await
         .expect("evaluate_and_run should succeed");
 
@@ -418,7 +418,7 @@ async fn test_engine_routes_shell_job() {
     // Run evaluate_and_run — cron may or may not trigger, but we verify
     // the shell_job module is accessible and the routing doesn't error
     let state = codelet_napi::scheduler::SchedulerState::new();
-    let result = codelet_napi::scheduler::evaluate_and_run(project_path, &state).await;
+    let result = codelet_napi::scheduler::evaluate_and_run(project_path, &state, std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks)).await;
 
     // @step Then it calls trigger_shell_job instead of trigger_agent_job
     // The fact that evaluate_and_run doesn't error proves routing works.

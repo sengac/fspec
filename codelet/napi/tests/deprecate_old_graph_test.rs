@@ -142,10 +142,19 @@ fn test_deepsearch_uses_learnings_graph() {
 fn test_graph_module_only_exports_dual_graph() {
     // @step Given the old monolithic graph infrastructure has been removed
     // Verify old files have been deleted by checking file existence
+    //
+    // RPC-092: The graph module was lifted from codelet/napi/src/graph/ to
+    // codelet/graph/src/ (peer workspace crate). codelet/napi/src/graph.rs is
+    // now a thin `pub use codelet_graph::*;` shim. Source-of-truth paths now
+    // resolve under the codelet-graph crate.
 
-    let base = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let graph_dir = base.join("src/graph");
-    let schemas_dir = base.join("schemas");
+    let napi_base = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let graph_crate = napi_base
+        .parent()
+        .expect("napi parent")
+        .join("graph");
+    let graph_dir = graph_crate.join("src");
+    let schemas_dir = graph_crate.join("schemas");
 
     // @step When the graph module is compiled
 
@@ -161,6 +170,13 @@ fn test_graph_module_only_exports_dual_graph() {
     assert!(graph_dir.join("dispatch_helpers.rs").exists(), "dispatch_helpers.rs should exist");
     assert!(graph_dir.join("graph_entities.rs").exists(), "graph_entities.rs should exist");
     assert!(graph_dir.join("llm_response_parser.rs").exists(), "llm_response_parser.rs should exist");
+
+    // RPC-092: verify the codelet-napi shim file still exists so legacy
+    // crate::graph::* import paths keep working without modification.
+    assert!(
+        napi_base.join("src/graph.rs").exists(),
+        "codelet/napi/src/graph.rs shim should exist after RPC-092 lift"
+    );
 
     // @step And it should not export entity_pipeline, extractors, merge, watermark, indexing, session_scanner, compaction, or old dispatch and queries modules
     let old_files = vec![
@@ -214,7 +230,7 @@ async fn test_existing_graphs_functional_after_migration() {
     let tmp = tempfile::tempdir().expect("temp dir");
     let db_path = tmp.path().join("test-ast.nano");
 
-    let ast_schema = include_str!("../schemas/ast-code.pg");
+    let ast_schema = include_str!("../../graph/schemas/ast-code.pg");
     let db = GraphDatabase::init(&db_path, ast_schema)
         .await
         .expect("AST graph should initialize");
@@ -232,7 +248,7 @@ async fn test_existing_graphs_functional_after_migration() {
 
     // Verify Learnings graph can also be created
     let learnings_path = tmp.path().join("test-learnings.nano");
-    let learnings_schema = include_str!("../schemas/learnings.pg");
+    let learnings_schema = include_str!("../../graph/schemas/learnings.pg");
     let learnings_db = GraphDatabase::init(&learnings_path, learnings_schema)
         .await
         .expect("Learnings graph should initialize");

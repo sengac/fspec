@@ -353,7 +353,9 @@ async fn test_job_completion_updates_last_run_timestamp() {
     // @step When the job executes successfully
     let before = Utc::now();
     let state = codelet_napi::scheduler::SchedulerState::new();
-    codelet_napi::scheduler::evaluate_and_run(project_path, &state).await.unwrap();
+    let hooks: codelet_napi::scheduler::Hooks =
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks);
+    codelet_napi::scheduler::evaluate_and_run(project_path, &state, hooks).await.unwrap();
     let after = Utc::now();
 
     // @step Then last_run_at should be updated to the current time

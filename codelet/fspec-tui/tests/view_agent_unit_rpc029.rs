@@ -400,6 +400,7 @@ async fn header_debug_badge_paints_red_bold_when_debug_enabled() {
         reasoning_tokens: 0,
         compaction_reduction: None,
         is_loading: false,
+        subordinate_label: None,
     };
     // @step When the SessionHeader renders against an 80x1 buffer
     let buf = render_header_row(header);
@@ -446,6 +447,7 @@ async fn header_isolated_badge_paints_green_when_session_is_isolated() {
         reasoning_tokens: 0,
         compaction_reduction: None,
         is_loading: false,
+        subordinate_label: None,
     };
     // @step When the SessionHeader renders against an 80x1 buffer
     let buf = render_header_row(header);

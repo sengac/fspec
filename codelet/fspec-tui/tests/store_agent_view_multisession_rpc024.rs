@@ -5,10 +5,11 @@
 //! These tests pin the new public surface of `AgentViewStore`:
 //!   * `open_sessions: Vec<SessionContext>` + `current_session_index: usize`
 //!     replace the single-slot `current_session: Option<SessionId>`.
-//!   * `append_session(SessionContext)` is the sole producer (previously
-//!     `set_current_session`).
-//!   * `cycle_session(±1)` rotates `current_session_index` with wrap-around;
-//!     no-op when `open_sessions` has length 0 or 1.
+//!   * `append_session(SessionContext)` is the sole producer.
+//!   * `focus_session_index(idx)` repositions focus (RPC-096, replaces
+//!     the RPC-024 `cycle_session(±1)` wrap-around which was removed
+//!     in favour of TS-parity end-of-list semantics — see
+//!     `agentview-shift-arrow-end-of-list-parity.feature`).
 //!   * `current_session_context[_mut]()` returns the focused SessionContext.
 //!   * `set_input_draft(idx, value)` persists the outgoing MultiLineInput
 //!     buffer before a switch.
@@ -28,9 +29,9 @@ fn sid(s: &str) -> SessionId {
     SessionId::new(s)
 }
 
-/// Scenario: An empty AgentViewStore reports zero open sessions and a no-op cycle_session
+/// Scenario: An empty AgentViewStore reports zero open sessions
 #[test]
-fn empty_store_reports_zero_sessions_and_noop_cycle() {
+fn empty_store_reports_zero_sessions_and_noop_focus() {
     // @step Given a default AgentViewStore
     let mut store = AgentViewStore::default();
     // @step Then open_sessions is empty
@@ -39,8 +40,8 @@ fn empty_store_reports_zero_sessions_and_noop_cycle() {
     assert_eq!(store.session_index(), (0, 0));
     // @step And current_session() returns None
     assert!(store.current_session().is_none());
-    // @step When cycle_session(1) is called
-    store.cycle_session(1);
+    // @step When focus_session_index(0) is called on the empty store
+    store.focus_session_index(0);
     // @step Then current_session_index is still 0
     assert_eq!(store.current_session_index(), 0);
     // @step And open_sessions is still empty
@@ -91,9 +92,9 @@ fn append_session_accumulates_in_creation_order() {
     assert_eq!(store.current_session(), Some(&sid("s-3")));
 }
 
-/// Scenario: cycle_session(-1) decrements current_session_index without wrap when not at zero
+/// Scenario: focus_session_index(idx) decrements current_session_index when idx < current
 #[test]
-fn cycle_session_prev_decrements_without_wrap() {
+fn focus_session_index_decrements_focus() {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -101,8 +102,8 @@ fn cycle_session_prev_decrements_without_wrap() {
     store.append_session(SessionContext::new(sid("s-3")));
     // @step And current_session_index is 2
     assert_eq!(store.current_session_index(), 2);
-    // @step When cycle_session(-1) is called
-    store.cycle_session(-1);
+    // @step When focus_session_index(1) is called
+    store.focus_session_index(1);
     // @step Then current_session_index is 1
     assert_eq!(store.current_session_index(), 1);
     // @step And session_index() returns (2, 3)
@@ -111,45 +112,34 @@ fn cycle_session_prev_decrements_without_wrap() {
     assert_eq!(store.current_session(), Some(&sid("s-2")));
 }
 
-/// Scenario: cycle_session(-1) wraps from index 0 to len-1; cycle_session(1) wraps back
+/// Scenario: focus_session_index out-of-range is a no-op (RPC-096 removed wrap-around)
 #[test]
-fn cycle_session_wraps_both_directions() {
+fn focus_session_index_out_of_range_is_noop() {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2", "s-3"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
     store.append_session(SessionContext::new(sid("s-2")));
     store.append_session(SessionContext::new(sid("s-3")));
-    // @step And current_session_index is 0
-    store.cycle_session(1); // 2 -> 0 (wraps)
+    store.focus_session_index(0);
     assert_eq!(store.current_session_index(), 0);
-    // @step When cycle_session(-1) is called
-    store.cycle_session(-1);
-    // @step Then current_session_index is 2
-    assert_eq!(store.current_session_index(), 2);
-    // @step And current_session() returns Some("s-3")
-    assert_eq!(store.current_session(), Some(&sid("s-3")));
-    // @step When cycle_session(1) is called
-    store.cycle_session(1);
-    // @step Then current_session_index is 0
+    // @step When focus_session_index(99) is called
+    store.focus_session_index(99);
+    // @step Then current_session_index is unchanged at 0
     assert_eq!(store.current_session_index(), 0);
-    // @step And current_session() returns Some("s-1")
+    // @step And current_session() still returns Some("s-1")
     assert_eq!(store.current_session(), Some(&sid("s-1")));
 }
 
-/// Scenario: cycle_session is a self-loop when only one session is open
+/// Scenario: focus_session_index on a single-session store is a self-loop
 #[test]
-fn cycle_session_is_self_loop_for_single_session() {
+fn focus_session_index_single_session_self_loop() {
     // @step Given an AgentViewStore with open_sessions ["s-1"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
     // @step And current_session_index is 0
     assert_eq!(store.current_session_index(), 0);
-    // @step When cycle_session(-1) is called
-    store.cycle_session(-1);
-    // @step Then current_session_index is 0
-    assert_eq!(store.current_session_index(), 0);
-    // @step When cycle_session(1) is called
-    store.cycle_session(1);
+    // @step When focus_session_index(0) is called
+    store.focus_session_index(0);
     // @step Then current_session_index is 0
     assert_eq!(store.current_session_index(), 0);
     // @step And current_session() returns Some("s-1")
@@ -158,7 +148,7 @@ fn cycle_session_is_self_loop_for_single_session() {
 
 /// Scenario: set_input_draft writes into the indexed SessionContext
 #[test]
-fn set_input_draft_round_trip_via_cycle() {
+fn set_input_draft_round_trip_via_focus() {
     // @step Given an AgentViewStore with open_sessions ["s-1", "s-2"]
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
@@ -169,12 +159,12 @@ fn set_input_draft_round_trip_via_cycle() {
     store.set_input_draft(1, "hello world".to_string());
     // @step Then open_sessions[1].input_draft equals "hello world"
     assert_eq!(store.open_sessions()[1].input_draft, "hello world");
-    // @step When cycle_session(-1) is called
-    store.cycle_session(-1);
+    // @step When focus_session_index(0) is called
+    store.focus_session_index(0);
     // @step Then the incoming draft is the saved (empty) draft on s-1
     assert_eq!(store.open_sessions()[0].input_draft, "");
-    // @step When cycle_session(1) is called
-    store.cycle_session(1);
+    // @step When focus_session_index(1) is called
+    store.focus_session_index(1);
     // @step Then the outgoing draft was preserved on s-2
     assert_eq!(store.open_sessions()[1].input_draft, "hello world");
 }
@@ -187,21 +177,23 @@ fn each_session_owns_its_own_scrollback() {
     store.append_session(SessionContext::new(sid("s-1")));
     store.append_session(SessionContext::new(sid("s-2")));
     use codelet_rpc_types::StreamChunk;
-    // @step When three text chunks are recorded on s-1's SessionContext
+    // @step When three user-input chunks are recorded on s-1's SessionContext
+    // RPC-091: Text deltas accumulate into one chunk — use UserInput
+    // (non-accumulating) to assert per-chunk count invariants.
     {
         let ctx = store.session_context_mut_for(&sid("s-1")).expect("s-1");
-        ctx.record_chunk(&StreamChunk::text("a".to_string()));
-        ctx.record_chunk(&StreamChunk::text("b".to_string()));
-        ctx.record_chunk(&StreamChunk::text("c".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("a".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("b".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("c".to_string()));
     }
-    // @step And five text chunks are recorded on s-2's SessionContext
+    // @step And five user-input chunks are recorded on s-2's SessionContext
     {
         let ctx = store.session_context_mut_for(&sid("s-2")).expect("s-2");
-        ctx.record_chunk(&StreamChunk::text("1".to_string()));
-        ctx.record_chunk(&StreamChunk::text("2".to_string()));
-        ctx.record_chunk(&StreamChunk::text("3".to_string()));
-        ctx.record_chunk(&StreamChunk::text("4".to_string()));
-        ctx.record_chunk(&StreamChunk::text("5".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("1".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("2".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("3".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("4".to_string()));
+        ctx.record_chunk(&StreamChunk::user_input("5".to_string()));
     }
     // @step Then s-1 still has 3 scrollback chunks
     assert_eq!(store.open_sessions()[0].scrollback.chunk_count(), 3);
@@ -216,7 +208,7 @@ fn session_context_mut_for_routes_chunks_by_id() {
     let mut store = AgentViewStore::default();
     store.append_session(SessionContext::new(sid("s-1")));
     store.append_session(SessionContext::new(sid("s-2")));
-    store.cycle_session(-1); // focus s-1
+    store.focus_session_index(0); // focus s-1
     // @step And current_session_index is 0
     assert_eq!(store.current_session_index(), 0);
     // @step And open_sessions[1].scrollback contains 0 chunks

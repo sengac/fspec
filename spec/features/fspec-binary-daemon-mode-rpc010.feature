@@ -1,8 +1,11 @@
 @critical
 @infrastructure
-@RPC-010 @rpc @rust @tarpc @websocket
+@RPC-010
+@rpc
+@rust
+@tarpc
+@websocket
 Feature: fspec daemon mode — headless WS server with signal handling
-
   """
   RPC-010 (parent RPC-002, depends on RPC-009). Daemon mode
   (`fspec daemon`) starts the shared service + WebSocket server ONLY —
@@ -12,25 +15,27 @@ Feature: fspec daemon mode — headless WS server with signal handling
   binary stays as a development helper with verbatim port-line contract.
 
   Key extensions over RPC-005:
-    • Configurable `--bind <addr>` clap arg (default 127.0.0.1:0).
-    • REJECTS non-loopback bind addresses at clap-arg validation
-      (preserves RPC-005 architecture rule [13] explicitly).
-    • Blocks on BOTH `tokio::signal::ctrl_c()` AND SIGTERM
-      (RPC-005 was ctrl_c-only).
-    • Writes `daemon.json` for `fspec client` autodiscovery.
-    • Optional `--pidfile <path>` for systemd-style PID tracking.
+  • Configurable `--bind <addr>` clap arg (default 127.0.0.1:0).
+  • REJECTS non-loopback bind addresses at clap-arg validation
+  (preserves RPC-005 architecture rule [13] explicitly).
+  • Blocks on BOTH `tokio::signal::ctrl_c()` AND SIGTERM
+  (RPC-005 was ctrl_c-only).
+  • Writes `daemon.json` for `fspec client` autodiscovery.
+  • Optional `--pidfile <path>` for systemd-style PID tracking.
 
   Source artifacts:
-    • codelet/fspec/src/daemon.rs (NEW)
-    • codelet/fspec/src/common.rs (NEW)
-    • codelet/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
+  • codelet/fspec/src/daemon.rs (NEW)
+  • codelet/fspec/src/common.rs (NEW)
+  • codelet/rpc-server/src/server.rs::bind_and_serve (existing — RPC-005)
   """
 
-  Background:
+  Background: 
     Given the fspec binary has been built via `cargo build -p fspec --release`
     And a temp workspace exists with a seeded spec/work-units.json
 
-  @smoke @end-to-end @integration-test
+  @smoke
+  @end-to-end
+  @integration-test
   Scenario: Daemon mode emits the port on STDOUT (RPC-005 contract verbatim)
     """
     The existing `codelet/rpc-server/tests/websocket_transport.rs::spawn_rpc_server`
@@ -61,7 +66,8 @@ Feature: fspec daemon mode — headless WS server with signal handling
     And the `init_tracing_daemon()` body in `common.rs` registers a `tracing_subscriber::fmt` layer that writes to `std::io::stderr`
     And the same body also registers the LogEvent broadcast layer from `codelet_rpc::register_log_layer`
 
-  @smoke @integration-test
+  @smoke
+  @integration-test
   Scenario: --bind defaults to 127.0.0.1:0 when omitted
     When the developer spawns `fspec daemon` with no `--bind` flag
     And reads the port line from STDOUT
@@ -80,7 +86,8 @@ Feature: fspec daemon mode — headless WS server with signal handling
     When the developer spawns `fspec daemon --bind '[::1]:0'`
     Then the daemon starts and the listening IP equals `::1`
 
-  @smoke @error
+  @smoke
+  @error
   Scenario: --bind 0.0.0.0:8080 is REJECTED at clap-arg validation
     When the developer spawns `fspec daemon --bind 0.0.0.0:8080`
     Then the child process exits with a non-zero code BEFORE binding any socket
@@ -88,13 +95,16 @@ Feature: fspec daemon mode — headless WS server with signal handling
     And the child's STDERR contains a reference to `auth/TLS for external binds is out of scope`
     And no WebSocket listener was ever opened on 0.0.0.0
 
-  @smoke @error
+  @smoke
+  @error
   Scenario: --bind with any non-loopback host is REJECTED
     When the developer spawns `fspec daemon --bind 192.168.1.5:0`
     Then the child process exits with a non-zero code BEFORE binding any socket
     And the child's STDERR contains the substring `error: --bind must be a loopback address`
 
-  @smoke @end-to-end @integration-test
+  @smoke
+  @end-to-end
+  @integration-test
   Scenario: Daemon handles SIGTERM cleanly (extension over RPC-005)
     """
     RPC-005's `codelet-rpc-server` binary handled `tokio::signal::ctrl_c()`
@@ -107,14 +117,18 @@ Feature: fspec daemon mode — headless WS server with signal handling
     Then the child exits with code 0 within 5 seconds
     And the child's daemon.json file is gone after exit
 
-  @smoke @end-to-end @integration-test
+  @smoke
+  @end-to-end
+  @integration-test
   Scenario: Daemon handles ctrl_c (SIGINT) cleanly
     Given the developer has spawned `fspec daemon` as a subprocess
     When the test sends SIGINT to the child
     Then the child exits with code 0 within 5 seconds
     And the child's daemon.json file is gone after exit
 
-  @smoke @end-to-end @integration-test
+  @smoke
+  @end-to-end
+  @integration-test
   Scenario: --pidfile <path> writes pid + port on bootstrap
     Given a tempfile path `<P>`
     When the developer spawns `fspec daemon --pidfile <P>` as a subprocess

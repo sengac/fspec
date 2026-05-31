@@ -130,8 +130,9 @@ fn agent_view_footer_lives_on_the_bottom_row() {
 //     after the RPC-013 footer row addition). The Feature header for
 //     these is the RPC-012 feature; the @step comments are preserved.
 
-/// Scenario: ESC from AgentView returns to BoardView preserving focus and selection
-/// (Migrated from RPC-012 inline tests; mirrors `esc_emits_back_to_board`.)
+/// Scenario: ESC from AgentView emits Action::AgentEscPressed
+/// (RPC-051 cascade — App::dispatch routes onward to either
+/// `backend.interrupt` or `Action::BackToBoard`).
 #[test]
 fn esc_emits_back_to_board() {
     let (mut view, mut rx) = fresh();
@@ -141,8 +142,8 @@ fn esc_emits_back_to_board() {
         result,
         codelet_fspec_tui::EventResult::Consumed(None)
     ));
-    let action = rx.try_recv().expect("Action::BackToBoard on bus");
-    assert!(matches!(action, Action::BackToBoard));
+    let action = rx.try_recv().expect("Action::AgentEscPressed on bus");
+    assert!(matches!(action, Action::AgentEscPressed));
 }
 
 /// Migrated from RPC-012 inline tests: Enter on non-empty input emits

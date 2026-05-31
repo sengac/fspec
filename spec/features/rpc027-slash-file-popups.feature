@@ -7,7 +7,6 @@
 @rpc
 @RPC-027
 Feature: RPC-027 — SlashCommandPopup and FileSearchPopup migration
-
   """
   RPC-027 Sections G (SlashCommandPopup) and H (FileSearchPopup).
   Both replace the old popup_body.rs adapter with the shared
@@ -24,7 +23,6 @@ Feature: RPC-027 — SlashCommandPopup and FileSearchPopup migration
   # ============================================================
   # Section G — SlashCommandPopup
   # ============================================================
-
   Scenario: SlashCommandPopup renders with the cyan accent and "Slash Commands" inner title
     Given a SlashCommandPopup with at least one matching command
     When I render it onto an 80x24 TestBackend buffer
@@ -54,7 +52,6 @@ Feature: RPC-027 — SlashCommandPopup and FileSearchPopup migration
   # ============================================================
   # Section H — FileSearchPopup
   # ============================================================
-
   Scenario: FileSearchPopup renders with the cyan accent and "File Search" inner title
     Given a FileSearchPopup with at least one match
     When I render it onto an 80x24 TestBackend buffer

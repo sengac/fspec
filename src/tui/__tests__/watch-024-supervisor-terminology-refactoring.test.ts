@@ -14,6 +14,7 @@ import { join } from 'path';
 
 const PROJECT_ROOT = process.cwd();
 const CODELET_NAPI_SRC = join(PROJECT_ROOT, 'codelet', 'napi', 'src');
+const CODELET_SESSIONS_SRC = join(PROJECT_ROOT, 'codelet', 'sessions', 'src');
 const TUI_COMPONENTS = join(PROJECT_ROOT, 'src', 'tui', 'components');
 const TUI_TYPES = join(PROJECT_ROOT, 'src', 'tui', 'types');
 const TUI_UTILS = join(PROJECT_ROOT, 'src', 'tui', 'utils');
@@ -27,27 +28,54 @@ function readFile(filePath: string): string {
 }
 
 /**
- * Helper: check if a pattern exists in a file (case-sensitive)
+ * Helper: read multiple files (skipping missing ones) and return concatenated content.
+ *
+ * RPC-068: After the RPC-030 → RPC-043 chain, the original
+ * `codelet/napi/src/session_manager.rs` was split across multiple crates.
+ * Identifiers we used to assert in a single file now live across:
+ *   - codelet/sessions/src/{session_manager.rs, background_session.rs,
+ *                          chain_of_command.rs, handle_impl.rs, navigation.rs}
+ *   - codelet/napi/src/{session_bindings.rs, agent_loop.rs, bridges.rs}
+ * The naming invariants this test encodes are unchanged — only the file
+ * layout moved. We model the "session-manager surface" as the union of
+ * these files.
  */
-function fileContains(filePath: string, pattern: string): boolean {
-  if (!existsSync(filePath)) {
-    return false;
+function readFiles(filePaths: string[]): string {
+  const parts: string[] = [];
+  for (const fp of filePaths) {
+    if (existsSync(fp)) {
+      parts.push(readFile(fp));
+    }
   }
-  return readFile(filePath).includes(pattern);
+  return parts.join('\n');
 }
 
 /**
- * Helper: check if a pattern exists as a word boundary match in file
- * (avoids false positives from partial matches like "work_units_watcher")
+ * Helper: check if a pattern exists in a file (case-sensitive) or in any of
+ * a set of files when an array is given.
  */
-function fileContainsRustIdentifier(
-  filePath: string,
-  identifier: string
-): boolean {
-  if (!existsSync(filePath)) {
+function fileContains(filePath: string | string[], pattern: string): boolean {
+  const paths = Array.isArray(filePath) ? filePath : [filePath];
+  const content = readFiles(paths);
+  if (content === '') {
     return false;
   }
-  const content = readFile(filePath);
+  return content.includes(pattern);
+}
+
+/**
+ * Helper: check if a Rust identifier exists in a file (or in any of a set
+ * of files when an array is given) as a word-boundary match.
+ */
+function fileContainsRustIdentifier(
+  filePath: string | string[],
+  identifier: string
+): boolean {
+  const paths = Array.isArray(filePath) ? filePath : [filePath];
+  const content = readFiles(paths);
+  if (content === '') {
+    return false;
+  }
   // Use word boundary-like matching for Rust identifiers
   const regex = new RegExp(`\\b${identifier}\\b`);
   return regex.test(content);
@@ -74,9 +102,22 @@ function collectTsFiles(dir: string): string[] {
   return results;
 }
 
-const SESSION_MANAGER_RS = join(CODELET_NAPI_SRC, 'session_manager.rs');
+// RPC-068: After RPC-030 → RPC-043 the original
+// `codelet/napi/src/session_manager.rs` was split across `codelet-sessions`
+// and the thin `codelet/napi/src/session_bindings.rs` adapter. The
+// invariants this test encodes are unchanged; we just point at the new
+// places those identifiers live.
+const SESSION_MANAGER_RS = [
+  join(CODELET_SESSIONS_SRC, 'session_manager.rs'),
+  join(CODELET_SESSIONS_SRC, 'background_session.rs'),
+  join(CODELET_SESSIONS_SRC, 'chain_of_command.rs'),
+  join(CODELET_SESSIONS_SRC, 'handle_impl.rs'),
+  join(CODELET_NAPI_SRC, 'session_bindings.rs'),
+  join(CODELET_NAPI_SRC, 'agent_loop.rs'),
+  join(CODELET_NAPI_SRC, 'bridges.rs'),
+];
 const TYPES_RS = join(CODELET_NAPI_SRC, 'types.rs');
-const NAVIGATION_RS = join(CODELET_NAPI_SRC, 'navigation.rs');
+const NAVIGATION_RS = join(CODELET_SESSIONS_SRC, 'navigation.rs');
 
 describe('Feature: Refactor watcher terminology to supervisor/subordinate', () => {
   describe('Scenario: ChainOfCommand replaces WatchGraph with renamed methods', () => {
@@ -234,7 +275,7 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       // @step And sessionClearRole is no longer exported
       // session_clear_role was replaced with a comment, so it exists as text
       // but is NOT an actual function anymore. Check there's no #[napi] fn
-      const smContent2 = readFile(SESSION_MANAGER_RS);
+      const smContent2 = readFiles(SESSION_MANAGER_RS);
       expect(smContent2).not.toMatch(/fn session_clear_role/);
     });
   });
@@ -323,7 +364,7 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       expect(fileContains(SESSION_MANAGER_RS, 'run_watcher_loop')).toBe(false);
 
       // @step And old watcher types do not exist in session_manager.rs
-      const smContent = readFile(SESSION_MANAGER_RS);
+      const smContent = readFiles(SESSION_MANAGER_RS);
       expect(smContent).not.toMatch(/\bWatcherState\b/);
       expect(smContent).not.toMatch(/\bWatcherOutput\b/);
     });
@@ -450,8 +491,12 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
 
       // @step When the supervisor/subordinate refactoring is complete
       // @step Then work_units_watcher.rs is unchanged
-      // The file should still use its own WatcherState (filesystem concept)
-      expect(fileContains(fsWatcher, 'WatcherState')).toBe(true);
+      // RPC-006 lifted the real watcher into codelet-core::work_units;
+      // codelet/napi/src/work_units_watcher.rs is now a thin NAPI shim
+      // around `WorkUnitsWatcher`. The original `WatcherState` struct lives
+      // in core. We assert the shim still exposes the work-units watcher
+      // surface so the filesystem-watcher concept is intact.
+      expect(fileContains(fsWatcher, 'WorkUnitsWatcher')).toBe(true);
 
       // @step And useWorkUnitsWatcher hook is unchanged
       const hookFile = join(TUI_HOOKS, 'useWorkUnitsWatcher.ts');
@@ -479,7 +524,7 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       // Verify key old terms are gone from the main source files (excluding filesystem watcher)
 
       // Check session_manager.rs has no old domain-watcher terms
-      const smContent = readFile(SESSION_MANAGER_RS);
+      const smContent = readFiles(SESSION_MANAGER_RS);
       expect(smContent).not.toMatch(/\bWatchGraph\b/);
       expect(smContent).not.toMatch(/\bSessionRole\b/);
       expect(smContent).not.toMatch(/\bRoleAuthority\b/);
@@ -507,7 +552,7 @@ describe('Feature: Refactor watcher terminology to supervisor/subordinate', () =
       // @step When the full test suite is executed
       // @step Then all tests pass with zero behavioral changes
       // Verified by running the full test suite — this scenario validates the naming sweep
-      const smContent2 = readFile(SESSION_MANAGER_RS);
+      const smContent2 = readFiles(SESSION_MANAGER_RS);
       // Ensure no old function names remain in production code
       expect(smContent2).not.toMatch(/fn session_clear_role/);
       expect(smContent2).not.toMatch(/\bcreate_watcher_session_with_id\b/);

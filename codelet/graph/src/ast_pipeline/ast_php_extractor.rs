@@ -18,7 +18,7 @@ use super::metadata;
 use super::variables;
 use super::edge_helpers;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for PHP functions/methods.
 const PHP_FUNC_KINDS: &[&str] = &["method_declaration", "function_definition"];

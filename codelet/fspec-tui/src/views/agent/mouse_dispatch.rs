@@ -4,12 +4,14 @@
 //! 300-LoC source-shape budget enforced by `tests/source_shape_rpc019.rs`.
 //!
 //! Routes a single `Event::Mouse` through (in order): the open
-//! mode-view (resume / search), then the open popup (slash / file).
-//! Returns `None` when nothing absorbs the event.
+//! mode-view (resume / search), then the open popup (slash / file),
+//! then (RPC-094) the scrollback rect itself. Returns `None` when
+//! nothing absorbs the event.
 
-use crossterm::event::MouseEvent;
+use crossterm::event::{MouseEvent, MouseEventKind};
 use ratatui::layout::Rect;
 
+use crate::components::scroll_viewport::WheelDirection;
 use crate::components::{Action, EventResult};
 
 use super::file_search_popup::FilePopupOutcome;
@@ -66,5 +68,36 @@ impl AgentView {
             }
         }
         None
+    }
+
+    /// RPC-094: route mouse wheel events that fall inside the
+    /// scrollback rect into the focused SessionContext via the new
+    /// `Action::ScrollbackMouseWheel{Up,Down}(velocity)` variants.
+    /// Hit-tests the cached `last_scrollback_area` (set in
+    /// `render_with_store`). Wheel events outside the rect bubble.
+    pub(super) fn handle_scrollback_mouse(&mut self, ev: MouseEvent) -> Option<EventResult> {
+        let rect = self.last_scrollback_area?;
+        let inside = ev.column >= rect.x
+            && ev.column < rect.x.saturating_add(rect.width)
+            && ev.row >= rect.y
+            && ev.row < rect.y.saturating_add(rect.height);
+        if !inside {
+            return None;
+        }
+        match ev.kind {
+            MouseEventKind::ScrollUp => {
+                let step = self.scrollback_wheel.step(WheelDirection::Up);
+                let velocity = step.unsigned_abs();
+                self.emit(Action::ScrollbackMouseWheelUp(velocity));
+                Some(EventResult::consumed())
+            }
+            MouseEventKind::ScrollDown => {
+                let step = self.scrollback_wheel.step(WheelDirection::Down);
+                let velocity = step.unsigned_abs();
+                self.emit(Action::ScrollbackMouseWheelDown(velocity));
+                Some(EventResult::consumed())
+            }
+            _ => None,
+        }
     }
 }

@@ -9,26 +9,25 @@
 @header
 @footer
 Feature: RPC-018 AgentView chrome — SessionHeader + SessionFooter widgets
-
   """
   RPC-018 (slice 1 of 4) — AgentView gains a 1-row SessionHeader at the
   top and a 1-row SessionFooter at the bottom, sandwiching the existing
   Scrollback (flex) and single-line Input (3 rows) from RPC-009/RPC-012.
 
   SessionHeader layout (mirrors src/tui/components/SessionHeader.tsx):
-    Left:  `#N: <model display name> [R] [V] [Nk] [T:<level>]`
-           - `#N:` only when current_session is populated (1-based index)
-           - `[R]` only when supports_reasoning
-           - `[V]` only when supports_vision
-           - `[Nk]` only when context_window > 0 (compact form, e.g. `192k`)
-           - `[T:<level>]` only when thinking_level != Off (Low/Med/High)
-    Right: `tokens: <in>↓ <out>↑ [<fill>%]`
+  Left:  `#N: <model display name> [R] [V] [Nk] [T:<level>]`
+  - `#N:` only when current_session is populated (1-based index)
+  - `[R]` only when supports_reasoning
+  - `[V]` only when supports_vision
+  - `[Nk]` only when context_window > 0 (compact form, e.g. `192k`)
+  - `[T:<level>]` only when thinking_level != Off (Low/Med/High)
+  Right: `tokens: <in>↓ <out>↑ [<fill>%]`
 
   SessionFooter layout (mirrors src/tui/components/SessionFooter.tsx):
-    Left:  `Enter=send  Ctrl+C=interrupt  ESC=back` (kept from RPC-013)
-    Right: `<cwd> [⌥ <branch>]`
-           - cwd shortened with `~` when inside $HOME
-           - `[⌥ <branch>]` segment omitted when not a git repo
+  Left:  `Enter=send  Ctrl+C=interrupt  ESC=back` (kept from RPC-013)
+  Right: `<cwd> [⌥ <branch>]`
+  - cwd shortened with `~` when inside $HOME
+  - `[⌥ <branch>]` segment omitted when not a git repo
 
   Token state for the current session is derived live from
   `StreamChunk::TokenUpdate { tokens: TokenTracker }` and

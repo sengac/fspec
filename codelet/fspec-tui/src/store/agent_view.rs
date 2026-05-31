@@ -1,30 +1,38 @@
 //! AgentViewStore — single source of truth for the AgentView session
 //! navigation state PLUS the per-session model/token/thinking chrome
 //! state introduced by RPC-018 and the multi-session container
-//! introduced by RPC-024.
+//! introduced by RPC-024. End-of-list navigation (RPC-096) lives in
+//! the `navigation` sibling module.
 //!
-//! Feature files:
-//!   - spec/features/rpc012-board-agent-navigation.feature
-//!   - spec/features/rpc018-agent-chrome.feature
-//!   - spec/features/rpc018-app-bootstrap.feature
-//!   - spec/features/rpc024-multi-session-store.feature
-//!   - spec/features/rpc025-source-shape.feature (per-session history)
-//!
-//! Cards: RPC-012, RPC-018, RPC-024, RPC-025 (parent RPC-002).
+//! Feature files: rpc012-board-agent-navigation, rpc018-agent-chrome,
+//! rpc018-app-bootstrap, rpc024-multi-session-store,
+//! rpc025-source-shape, agentview-shift-arrow-end-of-list-parity.
 
 use std::collections::HashMap;
 
 use codelet_rpc_types::{
-    ContextFillInfo, ModelInfo, SessionId, StreamChunk, ThinkingLevel, TokenTracker,
-    WorkspaceInfo,
+    CompactionProgress, ContextFillInfo, ModelInfo, SessionId, SessionStatus, StreamChunk,
+    ThinkingLevel, TokenTracker, WorkUnitContext, WorkspaceInfo,
 };
 
+pub mod blocklist_state;
 pub mod chrome_state;
+pub mod chunk_processor;
+pub mod chunk_wrap;
 pub mod history_state;
+pub mod isolation_state;
+pub mod markdown_tables;
+pub mod navigation;
 pub mod role_state;
 pub mod session_context;
+pub mod supervisor_state;
+pub mod tool_args;
+pub mod work_unit_state;
 pub use history_state::HistoryNavState;
+pub use isolation_state::IsolationState;
+pub use navigation::NavTarget;
 pub use session_context::SessionContext;
+pub use tool_args::extract_tool_args_display;
 
 /// Per-session token state derived from `StreamChunk::TokenUpdate` +
 /// `StreamChunk::ContextFillUpdate` events. Mirrors `ExtractedTokenState`
@@ -83,18 +91,37 @@ pub struct AgentViewStore {
     /// Walk position into the cached history snapshot. See
     /// [`HistoryNavState`] for semantics.
     history_state_by_session: HashMap<SessionId, HistoryNavState>,
-    /// Per-session cached history snapshot loaded by the first
-    /// Action::HistoryPrev. Cleared on Action::InputSubmitted.
+    /// Cached history snapshot per session — loaded by the first
+    /// Action::HistoryPrev, cleared on Action::InputSubmitted.
     cached_history_snapshot: HashMap<SessionId, Vec<String>>,
 
     // ── RPC-022 per-session role overlay state ──────────────────────────
-    /// Optional role overlay text per session — `Some(text)` paints the
-    /// inline RoleBanner above the scrollback; `None` collapses the
-    /// banner. Populated by `Action::SessionRoleLoaded` (bootstrap +
-    /// SessionCreated paths) and `Action::SetSessionRole` (user-driven
-    /// `/role` slash command). Mutated only on the App task per the
-    /// RPC-009 single-task invariant.
+    /// Optional role overlay text per session. Populated by
+    /// `Action::SessionRoleLoaded` / `Action::SetSessionRole`. Accessors
+    /// live in `store/agent_view/role_state.rs`.
     role_by_session: HashMap<SessionId, String>,
+
+    // ── RPC-045 per-session push-driven state ───────────────────────────
+    // Accessors in `isolation_state.rs`.
+    pub(crate) session_status_by_session: HashMap<SessionId, SessionStatus>,
+    pub(crate) isolation_state_by_session: HashMap<SessionId, IsolationState>,
+    pub(crate) debug_enabled_by_session: HashMap<SessionId, bool>,
+    /// RPC-047: per-session live compaction progress.
+    pub(crate) compaction_progress_by_session: HashMap<SessionId, CompactionProgress>,
+
+    // ── RPC-050 per-session work-unit binding ───────────────────────────
+    // Accessors live in `store/agent_view/work_unit_state.rs`.
+    pub(crate) work_unit_context_by_session: HashMap<SessionId, WorkUnitContext>,
+
+    // ── RPC-056 per-session blocklist-disabled set ──────────────────────
+    // Accessors live in `store/agent_view/blocklist_state.rs`.
+    pub(crate) blocklist_disabled_by_session:
+        HashMap<SessionId, std::collections::HashSet<String>>,
+
+    // ── RPC-061 per-session supervisor / subordinate state ──────────────
+    // Accessors in `supervisor_state.rs`.
+    pub(crate) supervisors_by_session: HashMap<SessionId, Vec<SessionId>>,
+    pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
 }
 
 impl AgentViewStore {
@@ -134,16 +161,11 @@ impl AgentViewStore {
         self.current_session_index = self.open_sessions.len().saturating_sub(1);
     }
 
-    /// Rotate `current_session_index` by `delta` with wrap-around.
-    pub fn cycle_session(&mut self, delta: isize) {
-        let len = self.open_sessions.len();
-        if len <= 1 {
-            return;
+    /// RPC-096: focus the SessionContext at `index` (no-op if out of range).
+    pub fn focus_session_index(&mut self, index: usize) {
+        if index < self.open_sessions.len() {
+            self.current_session_index = index;
         }
-        let len_i = len as isize;
-        let cur = self.current_session_index as isize;
-        let next = (cur + delta).rem_euclid(len_i);
-        self.current_session_index = next as usize;
     }
 
     /// Persist a string into `open_sessions[idx].input_draft`.
@@ -214,6 +236,12 @@ impl AgentViewStore {
         self.should_auto_create_session = true;
     }
 
+    /// RPC-096: open the Create Session dialog WITHOUT auto-spawning.
+    /// Mirrors TS `sessionStore.openCreateSessionDialog()`.
+    pub fn request_create_session_dialog_no_auto(&mut self) {
+        self.show_create_session_dialog = true;
+    }
+
     pub fn clear_create_session_dialog(&mut self) {
         self.show_create_session_dialog = false;
         self.should_auto_create_session = false;
@@ -267,14 +295,4 @@ impl AgentViewStore {
     }
 }
 
-// RPC-018 per-session chrome accessors live in
-// `store/agent_view/chrome_state.rs`.
-//
-// RPC-022 per-session role accessors live in
-// `store/agent_view/role_state.rs`.
-//
-// Both blocks were extracted to keep `agent_view.rs` under 300 LoC
-// (RPC-024 + RPC-025 source-shape invariants).
-// Inline AgentViewStore unit tests were removed in RPC-024 — the
-// equivalent coverage now lives in
-// `tests/store_agent_view_multisession_rpc024.rs`.
+// Other accessors live in store/agent_view/{chrome,role,work_unit,blocklist,supervisor}_state.rs.

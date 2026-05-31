@@ -11,10 +11,10 @@
 use codelet_napi::graph::database::GraphDatabase;
 
 /// The AST code schema (must include Variable node + ContainsVariable edge).
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// Bundled AST query source for named queries.
-const AST_QUERIES: &str = include_str!("../schemas/ast-queries.gq");
+const AST_QUERIES: &str = include_str!("../../graph/schemas/ast-queries.gq");
 
 /// Helper: create a graph with Variable nodes for testing search.
 async fn setup_variable_db(temp_dir: &std::path::Path) -> GraphDatabase {

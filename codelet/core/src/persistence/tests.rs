@@ -6,10 +6,25 @@
 // IMPORTANT: These tests use isolated temporary directories to avoid
 // polluting ~/.fspec with test data. Each test gets its own temp dir
 // via setup_test_env().
+//
+// RPC-035: relocated from codelet/napi/src/persistence/tests.rs into
+// codelet-core so the lifted persistence layer owns its own tests.
+// `use super::*;` becomes `use crate::persistence::*;` (the canonical
+// codelet-core import path) and the setup helper calls
+// codelet_common::set_data_directory + reset_stores_for_tests directly
+// instead of routing through the deleted NAPI shim.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    // RPC-035: the relocated tests use the pre-RPC-035 `format!("X {}", y)`
+    // style throughout. Switching to the inlined-format-args style is purely
+    // cosmetic and would obscure the relocation diff. Allow the lint here.
+    clippy::uninlined_format_args
+)]
 
-use super::*;
+use crate::persistence::*;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -26,10 +41,19 @@ lazy_static::lazy_static! {
 /// MUST be called at the start of every test to ensure:
 /// 1. Tests don't pollute ~/.fspec with test data
 /// 2. Tests don't interfere with each other
+///
+/// RPC-035: replaces the previous `crate::persistence::set_data_directory`
+/// indirection (which doubled as a credentials + knowledge-graph reset in
+/// the NAPI shim) with the codelet-core-only sequence:
+/// `codelet_common::set_data_directory` + `reset_stores_for_tests()`.
+/// Credentials + knowledge graph are NAPI-only concerns and are reset by
+/// codelet-napi's `test_support.rs::setup_test_env` for the bridge tests.
 fn setup_test_env() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
     let guard = TEST_MUTEX.lock().unwrap();
     let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
-    set_data_directory(temp_dir.path().to_path_buf()).expect("Failed to set data directory");
+    codelet_common::set_data_directory(temp_dir.path().to_path_buf())
+        .expect("Failed to set data directory");
+    reset_stores_for_tests();
     (guard, temp_dir)
 }
 
@@ -188,13 +212,13 @@ fn test_navigate_command_history() {
 
     // @step Given I have entered commands in the current project across multiple sessions
     let session = create_session("History Test", &project).expect("create_session should succeed");
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "cmd1".to_string(),
         project.clone(),
         session.id,
     ))
     .expect("add history should succeed");
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "cmd2".to_string(),
         project.clone(),
         session.id,
@@ -202,7 +226,7 @@ fn test_navigate_command_history() {
     .expect("add history should succeed");
 
     // @step When I press Shift+Arrow-Up
-    let history = get_history(Some(&project), None).expect("get_history should succeed");
+    let history = history::get(Some(&project), None).expect("get_history should succeed");
 
     // @step Then I should see my most recent command from the current project
     assert!(!history.is_empty());
@@ -289,7 +313,7 @@ fn test_search_command_history() {
 
     // @step Given I have command history containing "implement" keyword
     let session = create_session("Search Test", &project).expect("create should succeed");
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "implement feature".to_string(),
         project.clone(),
         session.id,
@@ -297,7 +321,7 @@ fn test_search_command_history() {
     .expect("add should succeed");
 
     // @step When I press Ctrl+R and type "implement"
-    let results = search_history("implement", Some(&project)).expect("search should succeed");
+    let results = history::search("implement", Some(&project)).expect("search should succeed");
 
     // @step Then I should see matching previous commands
     for r in &results {
@@ -373,7 +397,7 @@ fn test_cross_session_history() {
 
     // @step Given I entered "fix login bug" in session B at 10:00am
     let session_b = create_session("Session B", &project).expect("create");
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "fix login bug".to_string(),
         project.clone(),
         session_b.id,
@@ -384,7 +408,7 @@ fn test_cross_session_history() {
 
     // @step And I entered "implement auth flow" in session A at 11:00am
     let session_a = create_session("Session A", &project).expect("create");
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "implement auth flow".to_string(),
         project.clone(),
         session_a.id,
@@ -393,7 +417,7 @@ fn test_cross_session_history() {
 
     // @step When I switch to session A
     // @step And I press Shift+Arrow-Up
-    let history = get_history(Some(&project), None).expect("get");
+    let history = history::get(Some(&project), None).expect("get");
 
     // @step Then I should see "implement auth flow" (most recent command)
     // @step When I press Shift+Arrow-Up again
@@ -656,7 +680,7 @@ fn test_history_project_filter() {
 
     // @step Given I have history entries from project "/home/user/project-a"
     let sa = create_session("A", &project_a).expect("create");
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "cmd a".to_string(),
         project_a.clone(),
         sa.id,
@@ -665,7 +689,7 @@ fn test_history_project_filter() {
 
     // @step And I have history entries from project "/home/user/project-b"
     let sb = create_session("B", &project_b).expect("create");
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "cmd b".to_string(),
         project_b.clone(),
         sb.id,
@@ -674,7 +698,7 @@ fn test_history_project_filter() {
 
     // @step When I am in project "/home/user/project-a"
     // @step And I run "/history"
-    let hist_a = get_history(Some(&project_a), None).expect("get");
+    let hist_a = history::get(Some(&project_a), None).expect("get");
 
     // @step Then I should see only history entries from project-a
     for h in &hist_a {
@@ -682,7 +706,7 @@ fn test_history_project_filter() {
     }
 
     // @step When I run "/history --all-projects"
-    let all = get_history(None, None).expect("get");
+    let all = history::get(None, None).expect("get");
 
     // @step Then I should see history entries from both projects
     let has_a = all.iter().any(|h| h.project == project_a);
@@ -883,7 +907,7 @@ fn test_fork_before_compaction_rejected() {
 fn test_blob_reference_format() {
     let (_guard, _temp_dir) = setup_test_env();
     // Test the blob reference format helper functions
-    use super::blob_processing::{extract_blob_hash, is_blob_reference, make_blob_reference};
+    use super::{extract_blob_hash, is_blob_reference, make_blob_reference};
 
     // Valid blob reference
     let hash = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9";
@@ -932,7 +956,7 @@ fn test_tool_result_blob_storage_and_rehydration() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process_envelope_for_blob_storage should succeed");
 
     // Verify blob was created
@@ -972,7 +996,7 @@ fn test_tool_result_blob_storage_and_rehydration() {
 
     // Verify rehydration works
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
         .expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
@@ -1020,7 +1044,7 @@ fn test_image_blob_storage_and_rehydration() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify blob was created
@@ -1048,7 +1072,7 @@ fn test_image_blob_storage_and_rehydration() {
 
     // Verify rehydration restores original data
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
         .expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
@@ -1101,7 +1125,7 @@ fn test_document_blob_storage_and_rehydration() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify blob was created
@@ -1145,7 +1169,7 @@ fn test_document_blob_storage_and_rehydration() {
 
     // Verify rehydration restores original data
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
         .expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
@@ -1198,7 +1222,7 @@ fn test_thinking_blob_storage_and_rehydration() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify blob was created
@@ -1231,7 +1255,7 @@ fn test_thinking_blob_storage_and_rehydration() {
 
     // Verify rehydration restores original thinking
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
         .expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
@@ -1278,7 +1302,7 @@ fn test_small_content_not_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify NO blob was created (content too small)
@@ -1342,7 +1366,7 @@ fn test_url_sources_not_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify NO blob was created (URL sources stay inline)
@@ -1416,7 +1440,7 @@ fn test_blob_deduplication_across_envelopes() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_2".to_string(),
-                content: identical_content.clone(),
+                content: identical_content,
                 is_error: false,
                 tool_use_result: None,
             }],
@@ -1425,9 +1449,9 @@ fn test_blob_deduplication_across_envelopes() {
     };
 
     // Process both envelopes
-    let (_, blob_refs1) = super::blob_processing::process_envelope_for_blob_storage(&envelope1)
+    let (_, blob_refs1) = super::process_envelope_for_blob_storage(&envelope1)
         .expect("process should succeed");
-    let (_, blob_refs2) = super::blob_processing::process_envelope_for_blob_storage(&envelope2)
+    let (_, blob_refs2) = super::process_envelope_for_blob_storage(&envelope2)
         .expect("process should succeed");
 
     // Verify both have blob refs with SAME hash (deduplication)
@@ -1482,7 +1506,7 @@ fn test_multi_part_message_blob_storage() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify we have 2 blob refs (for the 2 large tool results)
@@ -1517,7 +1541,7 @@ fn test_multi_part_message_blob_storage() {
 
     // Verify full rehydration works
     let processed_json = serde_json::to_string(&processed).unwrap();
-    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+    let rehydrated = super::rehydrate_envelope_blobs(&processed_json)
         .expect("rehydrate should succeed");
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
@@ -1573,7 +1597,7 @@ fn test_exact_10kb_threshold_not_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify NO blob was created (threshold is >10KB, not >=10KB)
@@ -1615,7 +1639,7 @@ fn test_one_byte_over_threshold_blobified() {
             role: "user".to_string(),
             content: vec![UserContent::ToolResult {
                 tool_use_id: "toolu_over".to_string(),
-                content: just_over_10kb.clone(),
+                content: just_over_10kb,
                 is_error: false,
                 tool_use_result: None,
             }],
@@ -1625,7 +1649,7 @@ fn test_one_byte_over_threshold_blobified() {
 
     // Process for blob storage
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify blob WAS created
@@ -1679,7 +1703,7 @@ fn test_tool_use_storage_and_retrieval() {
 
     // Process for blob storage (should NOT create blobs for small content)
     let (processed, blob_refs) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+        super::process_envelope_for_blob_storage(&envelope)
             .expect("process should succeed");
 
     // Verify NO blob was created (content is small)
@@ -2256,4 +2280,116 @@ fn test_compacted_session_envelopes_can_be_parsed_end_to_end() {
         }
     }
     // Note: Could also be assistant message, which is fine
+}
+
+// ============================================================================
+// RPC-049: `get_session_message_envelopes` lifted from codelet-napi into
+// codelet-core. Validates the public free function exists and produces
+// envelopes that parse as MessageEnvelope JSON.
+// ============================================================================
+
+#[test]
+fn rpc049_get_session_message_envelopes_missing_session_returns_err() {
+    let (_guard, _temp_dir) = setup_test_env();
+
+    // @step Given a non-existent session UUID
+    let missing = uuid::Uuid::new_v4();
+
+    // @step When codelet_core::persistence::get_session_message_envelopes(uuid) is called
+    let result = get_session_message_envelopes(missing);
+
+    // @step Then the function returns Err with a message describing the missing session
+    assert!(
+        result.is_err(),
+        "expected Err for non-existent session, got {:?}",
+        result
+    );
+}
+
+/// RPC-049: source-shape assertion — the NAPI binding is reduced to a
+/// thin delegate over `codelet_core::persistence::get_session_message_envelopes`.
+/// Reads `codelet/napi/src/persistence/napi_bindings.rs` from the
+/// workspace directly so we don't need a NAPI dev-dep here.
+#[test]
+fn rpc049_napi_binding_is_thin_delegate() {
+    // @step Given the codelet/napi/src/persistence/napi_bindings.rs file after RPC-049
+    let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let napi_bindings = crate_dir
+        .parent()
+        .expect("codelet workspace root")
+        .join("napi")
+        .join("src")
+        .join("persistence")
+        .join("napi_bindings.rs");
+    let body = std::fs::read_to_string(&napi_bindings)
+        .unwrap_or_else(|e| panic!("read {}: {}", napi_bindings.display(), e));
+
+    // @step Then the codelet-napi binding persistence_get_session_message_envelopes still exists as a thin delegate
+    assert!(
+        body.contains("fn persistence_get_session_message_envelopes("),
+        "codelet-napi must keep #[napi] persistence_get_session_message_envelopes binding"
+    );
+
+    // @step And the binding's body calls codelet_core::persistence::get_session_message_envelopes(uuid)
+    assert!(
+        body.contains("codelet_core::persistence::get_session_message_envelopes")
+            || body.contains("crate::persistence::get_session_message_envelopes"),
+        "the binding body must delegate to codelet_core::persistence::get_session_message_envelopes"
+    );
+}
+
+#[test]
+fn rpc049_get_session_message_envelopes_returns_parseable_envelopes() {
+    let (_guard, _temp_dir) = setup_test_env();
+    let project = PathBuf::from("/test/project/rpc049_envelopes");
+
+    // @step Given an existing manifest with two appended messages
+    let mut session = create_session("RPC-049 envelope test", &project).expect("create");
+    for (role, text) in &[("user", "hello"), ("assistant", "hi back")] {
+        // RPC-049: messages must carry proper envelope metadata so the
+        // lifted `get_session_message_envelopes` body can rehydrate the
+        // stored envelope into a serde_json::Value with a "message"
+        // field. Mirrors the metadata-shape used by
+        // `test_compaction_envelopes_parse_as_messageenvelope` above.
+        let metadata = {
+            let mut meta = std::collections::HashMap::new();
+            let envelope = serde_json::json!({
+                "uuid": uuid::Uuid::new_v4().to_string(),
+                "parentUuid": null,
+                "timestamp": chrono::Utc::now().to_rfc3339(),
+                "type": role,
+                "provider": "test",
+                "message": {
+                    "role": role,
+                    "content": [{"type": "text", "text": text}]
+                },
+                "requestId": null
+            });
+            for (k, v) in envelope.as_object().unwrap() {
+                meta.insert(k.clone(), v.clone());
+            }
+            meta
+        };
+        append_message_with_metadata(&mut session, role, text, metadata)
+            .expect("append message with metadata");
+    }
+    let session_id = session.id;
+
+    // @step When codelet_core::persistence::get_session_message_envelopes(uuid) is called
+    let envelopes = get_session_message_envelopes(session_id).expect("get envelopes");
+
+    // @step Then the result is Ok(Vec<String>) with two JSON envelopes
+    assert_eq!(envelopes.len(), 2, "expected 2 envelopes, got {}", envelopes.len());
+
+    // @step And each envelope parses via serde_json::from_str into a serde_json::Value with a 'message' field
+    for (idx, envelope_json) in envelopes.iter().enumerate() {
+        let value: serde_json::Value =
+            serde_json::from_str(envelope_json).expect("envelope is valid JSON");
+        assert!(
+            value.get("message").is_some(),
+            "envelope {} lacks a 'message' field: {}",
+            idx,
+            envelope_json
+        );
+    }
 }

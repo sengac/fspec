@@ -1,8 +1,12 @@
 @critical
 @infrastructure
-@RPC-010 @rpc @rust @tarpc @websocket @tui
+@RPC-010
+@rpc
+@rust
+@tarpc
+@websocket
+@tui
 Feature: fspec client mode — frontend-only WS attach with autodiscovery
-
   """
   RPC-010 (parent RPC-002, depends on RPC-009). Client mode
   (`fspec client`) is a PURE WebSocket frontend — it does NOT construct
@@ -12,30 +16,32 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
   the SAME `App` used by combined mode.
 
   daemon.json autodiscovery resolution order (rule [10]):
-    1. `$XDG_RUNTIME_DIR/fspec/daemon.json` (if XDG_RUNTIME_DIR is set)
-    2. `<HOME>/.fspec/daemon.json` (fallback)
+  1. `$XDG_RUNTIME_DIR/fspec/daemon.json` (if XDG_RUNTIME_DIR is set)
+  2. `<HOME>/.fspec/daemon.json` (fallback)
 
   Disconnect dialog (rules [12] [25]):
-    • On WS connection drop mid-session, the App surfaces a
-      `Priority::Critical` dialog with text including
-      "daemon disconnected", "q to quit", "r to reconnect".
-    • `q` → exit App.
-    • `r` → FULL bootstrap: drop old backend, abort the three
-      subscriber tasks, fresh `WebSocketFspecBackend::connect(url)`,
-      fresh `list_work_units` + `create_session` + respawn subscribers.
-    • Single attempt only; full retry/backoff is RPC-011.
+  • On WS connection drop mid-session, the App surfaces a
+  `Priority::Critical` dialog with text including
+  "daemon disconnected", "q to quit", "r to reconnect".
+  • `q` → exit App.
+  • `r` → FULL bootstrap: drop old backend, abort the three
+  subscriber tasks, fresh `WebSocketFspecBackend::connect(url)`,
+  fresh `list_work_units` + `create_session` + respawn subscribers.
+  • Single attempt only; full retry/backoff is RPC-011.
 
   Source artifacts:
-    • codelet/fspec/src/client.rs (NEW)
-    • codelet/fspec-tui/src/transport/websocket.rs::WebSocketFspecBackend (existing — RPC-008)
-    • codelet/fspec-tui/src/app.rs::App + bootstrap (existing — RPC-009)
+  • codelet/fspec/src/client.rs (NEW)
+  • codelet/fspec-tui/src/transport/websocket.rs::WebSocketFspecBackend (existing — RPC-008)
+  • codelet/fspec-tui/src/app.rs::App + bootstrap (existing — RPC-009)
   """
 
-  Background:
+  Background: 
     Given the fspec binary has been built via `cargo build -p fspec --release`
     And a temp workspace exists with a seeded spec/work-units.json
 
-  @smoke @end-to-end @integration-test
+  @smoke
+  @end-to-end
+  @integration-test
   Scenario: `fspec client --connect ws://...` opens the WS connection and runs the App
     Given the developer has spawned `fspec daemon --workspace <temp-workspace>` as a subprocess
     And the test has captured the daemon's listening port `<P>` from STDOUT
@@ -44,7 +50,9 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
     And within 5 seconds the daemon has accepted exactly one new WebSocket connection
     And the client child is still running
 
-  @smoke @end-to-end @integration-test
+  @smoke
+  @end-to-end
+  @integration-test
   Scenario: Plain `fspec client` (no --connect) reads ~/.fspec/daemon.json for autodiscovery
     Given the developer has set HOME to a tempdir BEFORE spawning the daemon
     And the developer has spawned `fspec daemon` as a subprocess
@@ -62,7 +70,8 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
     Then the client resolved its connect URL from `<XDG>/fspec/daemon.json` (not `<HOME>/.fspec/daemon.json`)
     And the client successfully bootstrapped against the daemon
 
-  @smoke @error
+  @smoke
+  @error
   Scenario: Plain `fspec client` fails fast when no daemon.json exists
     Given HOME is set to a fresh tempdir with no `.fspec/` directory
     And XDG_RUNTIME_DIR is unset
@@ -99,7 +108,8 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
     And the file calls `.run().await` on that App exactly once
     And the file does not call `ratatui::init` directly (TerminalGuard inside App owns it)
 
-  @end-to-end @integration-test
+  @end-to-end
+  @integration-test
   Scenario: WS disconnect mid-session surfaces a critical-priority disconnect dialog
     Given the developer has spawned `fspec daemon` and captured port `<P>`
     And the developer has spawned `fspec client --connect ws://127.0.0.1:<P>`
@@ -111,7 +121,8 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
     And that layer's rendered body contains the substring `q to quit`
     And that layer's rendered body contains the substring `r to reconnect`
 
-  @end-to-end @integration-test
+  @end-to-end
+  @integration-test
   Scenario: Pressing `q` in the disconnect dialog quits the App
     Given a client is showing the disconnect dialog after a daemon kill
     When a synthetic `Key('q')` event is dispatched to the App
@@ -119,7 +130,8 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
     And `App::run` returns Ok(())
     And the client child process exits with code 0
 
-  @end-to-end @integration-test
+  @end-to-end
+  @integration-test
   Scenario: Pressing `r` performs a full reconnect bootstrap (new session, fresh subscribers)
     """
     Locked design (Q4 answer): reconnect = drop old WebSocketFspecBackend,
@@ -148,7 +160,9 @@ Feature: fspec client mode — frontend-only WS attach with autodiscovery
     And the App does NOT enter a retry loop or backoff timer
     And the user must press `q` to exit, or `r` again to manually retry once
 
-  @end-to-end @integration-test @smoke
+  @end-to-end
+  @integration-test
+  @smoke
   Scenario: Client bootstrap observability — daemon-side counter increments by 1
     """
     Locked design (Q2 answer): client-mode smoke tests use daemon-side

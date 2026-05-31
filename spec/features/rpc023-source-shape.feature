@@ -3,17 +3,16 @@
 @tui
 @RPC-023
 Feature: RPC-023 mouse-port source-shape invariants
-
   """
   Source-shape regressions that pin:
-    - the codelet/fspec-tui/src/mouse/ module layout,
-    - absence of raw SGR mouse escape strings outside terminal.rs,
-    - locality of EnableMouseCapture / DisableMouseCapture to
-      terminal.rs + mouse/toggle.rs,
-    - dialog-priority components remain Event::Key-only,
-    - the 300 LoC ceiling per mouse file + views/board.rs,
-    - Action enum gains the three new variants,
-    - rect_contains half-open edge semantics.
+  - the codelet/fspec-tui/src/mouse/ module layout,
+  - absence of raw SGR mouse escape strings outside terminal.rs,
+  - locality of EnableMouseCapture / DisableMouseCapture to
+  terminal.rs + mouse/toggle.rs,
+  - dialog-priority components remain Event::Key-only,
+  - the 300 LoC ceiling per mouse file + views/board.rs,
+  - Action enum gains the three new variants,
+  - rect_contains half-open edge semantics.
   """
 
   Background: User Story

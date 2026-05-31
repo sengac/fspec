@@ -15,7 +15,7 @@ use super::metadata;
 use super::variables;
 use super::edge_helpers;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for C++ class/struct/enum declarations.
 const CPP_TYPE_PATTERNS: &[(&str, &str)] = &[

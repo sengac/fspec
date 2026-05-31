@@ -16,8 +16,14 @@ use anyhow::{Context, Result};
 use async_trait::async_trait;
 use codelet_rpc_server::{ws_client_connect, FspecWsClient};
 use codelet_rpc_types::{
-    CheckpointCounts, HealthInfo, HistoryMatch, LogRecord, ModelInfo, ProviderInfo, SessionId,
-    SessionInfo, StreamChunk, ThinkingLevel, WorkUnitInfo, WorkspaceInfo,
+    ApprovalChoice, BlocklistRuleInfo, CheckpointCounts, CompactionProgress, CompactionResult,
+    FspecResult, HealthInfo, HistoryMatch, HitlRequest, HitlResponse, IncomingMessageInput,
+    IsolatedSessionInfo,
+    LogRecord, MergeOutcome, MergeStrategy, ModelEntry, ModelInfo, PauseState,
+    ProviderCredentialInfo, ProviderCredentialInput, ProviderInfo, RegisteredLoop, ScheduledJob,
+    SessionChangesSummary, SessionId, SessionInfo, SessionModel, SessionStatus, SessionTokens,
+    SessionWorktreeInfo, StreamChunk, TestConnectionResult, ThinkingConfig, ThinkingLevel,
+    TokenRestoreState, WorkUnitContext, WorkUnitInfo, WorkspaceInfo,
 };
 use tarpc::context;
 use tokio::sync::{broadcast, mpsc::UnboundedSender, Notify, RwLock};
@@ -257,6 +263,22 @@ impl FspecBackend for WebSocketFspecBackend {
         }
     }
 
+    /// RPC-037: subscribe to the WebSocket-pushed
+    /// `Envelope::StatusUpdate` stream. When the client slot is `None`
+    /// (disconnected) or the lock is contended, returns a degenerate
+    /// receiver whose sender has been dropped — subscribers observe
+    /// `RecvError::Closed` on the next `recv().await`, mirroring the
+    /// chunks/logs degenerate-on-disconnect pattern.
+    fn status_changes_rx(&self) -> broadcast::Receiver<(SessionId, SessionStatus)> {
+        match self.client.try_read() {
+            Ok(guard) => match guard.as_ref() {
+                Some(client) => client.status_changes_rx(),
+                None => empty_broadcast_rx(),
+            },
+            Err(_) => empty_broadcast_rx(),
+        }
+    }
+
     async fn health(&self) -> Result<HealthInfo> {
         let guard = self.client.read().await;
         let client = guard
@@ -437,6 +459,23 @@ impl FspecBackend for WebSocketFspecBackend {
             .map_err(|e| anyhow::anyhow!("{e}"))
     }
 
+    /// RPC-037: per-user default thinking level — routed through the
+    /// matching tarpc method now that the gap noted in the attachment
+    /// (set_thinking_level_default missing from FspecService) is closed.
+    async fn set_thinking_level_default(
+        &self,
+        session_id: SessionId,
+        level: ThinkingLevel,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_thinking_level_default(context::current(), session_id, level)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
     async fn get_session_role(&self, session_id: SessionId) -> Result<Option<String>> {
         let guard = self.client.read().await;
         let client = guard
@@ -470,6 +509,650 @@ impl FspecBackend for WebSocketFspecBackend {
     /// call even when the supervisor is not currently sleeping.
     fn request_manual_reconnect(&self) {
         self.manual_reconnect.notify_one();
+    }
+
+    // ========================================================================
+    // RPC-037: Widened FspecBackend surface. Every method follows the
+    // existing read-lock + BackendError::Disconnected guard pattern then
+    // delegates to the matching tarpc method one line down.
+    // ========================================================================
+
+    async fn send_input_with_thinking(
+        &self,
+        session_id: SessionId,
+        text: String,
+        thinking: Option<ThinkingConfig>,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .send_input_with_thinking(context::current(), session_id, text, thinking)
+            .await?;
+        Ok(())
+    }
+
+    async fn get_session_tokens(&self, session_id: SessionId) -> Result<SessionTokens> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_session_tokens(context::current(), session_id)
+            .await?)
+    }
+
+    async fn get_session_model(&self, session_id: SessionId) -> Result<SessionModel> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_session_model(context::current(), session_id)
+            .await?)
+    }
+
+    async fn get_compaction_progress(
+        &self,
+        session_id: SessionId,
+    ) -> Result<Option<CompactionProgress>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_compaction_progress(context::current(), session_id)
+            .await?)
+    }
+
+    async fn get_buffered_output(
+        &self,
+        session_id: SessionId,
+        limit: u32,
+    ) -> Result<Vec<StreamChunk>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_buffered_output(context::current(), session_id, limit)
+            .await?)
+    }
+
+    async fn clear_history(&self, session_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .clear_history(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn compact_session(&self, session_id: SessionId) -> Result<CompactionResult> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .compact_session(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn restore_session_messages(
+        &self,
+        session_id: SessionId,
+        envelopes: Vec<String>,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .restore_session_messages(context::current(), session_id, envelopes)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn restore_session_token_state(
+        &self,
+        session_id: SessionId,
+        state: TokenRestoreState,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .restore_session_token_state(context::current(), session_id, state)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn resume_session(&self, session_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .resume_session(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_work_unit_context(
+        &self,
+        session_id: SessionId,
+    ) -> Result<Option<WorkUnitContext>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_work_unit_context(context::current(), session_id)
+            .await?)
+    }
+
+    async fn set_work_unit_context(
+        &self,
+        session_id: SessionId,
+        context: Option<WorkUnitContext>,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_work_unit_context(context::current(), session_id, context)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_pending_input(&self, session_id: SessionId) -> Result<Option<String>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_pending_input(context::current(), session_id)
+            .await?)
+    }
+
+    async fn set_pending_input(
+        &self,
+        session_id: SessionId,
+        text: Option<String>,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_pending_input(context::current(), session_id, text)
+            .await?;
+        Ok(())
+    }
+
+    async fn set_active_session(&self, session_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_active_session(context::current(), session_id)
+            .await?;
+        Ok(())
+    }
+
+    async fn clear_active_session(&self) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client.client().clear_active_session(context::current()).await?;
+        Ok(())
+    }
+
+    async fn get_active_session(&self) -> Result<Option<SessionId>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client.client().get_active_session(context::current()).await?)
+    }
+
+    async fn get_effective_cwd(&self, session_id: SessionId) -> Result<String> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_effective_cwd(context::current(), session_id)
+            .await?)
+    }
+
+    async fn get_supervisors(&self, session_id: SessionId) -> Result<Vec<SessionId>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_supervisors(context::current(), session_id)
+            .await?)
+    }
+
+    async fn add_supervisor(
+        &self,
+        subordinate_id: SessionId,
+        supervisor_id: SessionId,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .add_supervisor(context::current(), subordinate_id, supervisor_id)
+            .await?
+            .map_err(anyhow::Error::msg)
+    }
+
+    async fn remove_supervisor(&self, supervisor_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .remove_supervisor(context::current(), supervisor_id)
+            .await?
+            .map_err(anyhow::Error::msg)
+    }
+
+    async fn get_subordinate(
+        &self,
+        supervisor_id: SessionId,
+    ) -> Result<Option<SessionId>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_subordinate(context::current(), supervisor_id)
+            .await?)
+    }
+
+    async fn get_subordinates(
+        &self,
+        supervisor_id: SessionId,
+    ) -> Result<Vec<SessionId>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_subordinates(context::current(), supervisor_id)
+            .await?)
+    }
+
+    async fn receive_incoming_message(
+        &self,
+        subordinate_id: SessionId,
+        message: IncomingMessageInput,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .receive_incoming_message(context::current(), subordinate_id, message)
+            .await?
+            .map_err(anyhow::Error::msg)
+    }
+
+    async fn get_debug_enabled(&self, session_id: SessionId) -> Result<bool> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_debug_enabled(context::current(), session_id)
+            .await?)
+    }
+
+    async fn set_debug_enabled(&self, session_id: SessionId, enabled: bool) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_debug_enabled(context::current(), session_id, enabled)
+            .await?;
+        Ok(())
+    }
+
+    async fn toggle_debug(
+        &self,
+        session_id: SessionId,
+        debug_dir: String,
+    ) -> Result<String> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .toggle_debug(context::current(), session_id, debug_dir)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn set_debug_directory(&self, path: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_debug_directory(context::current(), path)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn pause_resume(&self, session_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .pause_resume(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn pause_confirm(&self, session_id: SessionId, accept: bool) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .pause_confirm(context::current(), session_id, accept)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn pause_triple(
+        &self,
+        session_id: SessionId,
+        choice: ApprovalChoice,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .pause_triple(context::current(), session_id, choice)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn send_hitl_response(
+        &self,
+        session_id: SessionId,
+        response: HitlResponse,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .send_hitl_response(context::current(), session_id, response)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn get_pause_state(&self, session_id: SessionId) -> Result<Option<PauseState>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_pause_state(context::current(), session_id)
+            .await?)
+    }
+
+    async fn get_hitl_request(&self, session_id: SessionId) -> Result<Option<HitlRequest>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_hitl_request(context::current(), session_id)
+            .await?)
+    }
+
+    async fn send_fspec_result(
+        &self,
+        session_id: SessionId,
+        result: FspecResult,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .send_fspec_result(context::current(), session_id, result)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn create_isolated_session(
+        &self,
+        role: Option<String>,
+    ) -> Result<IsolatedSessionInfo> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .create_isolated_session(context::current(), role)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn destroy_session(&self, session_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .destroy_session(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // ========================================================================
+    // RPC-054: Provider credentials surface — one-line forwarders with the
+    // standard `Disconnected` guard pattern used by every other WebSocket
+    // RPC method.
+    // ========================================================================
+
+    async fn list_provider_credentials(&self) -> Result<Vec<ProviderCredentialInfo>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .list_provider_credentials(context::current())
+            .await?)
+    }
+
+    async fn get_provider_credential(
+        &self,
+        provider_id: String,
+    ) -> Result<Option<ProviderCredentialInfo>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .get_provider_credential(context::current(), provider_id)
+            .await?)
+    }
+
+    async fn set_provider_credentials(
+        &self,
+        provider_id: String,
+        creds: ProviderCredentialInput,
+    ) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .set_provider_credentials(context::current(), provider_id, creds)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn delete_provider_credentials(&self, provider_id: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .delete_provider_credentials(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn test_provider_connection(
+        &self,
+        provider_id: String,
+    ) -> Result<TestConnectionResult> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .test_provider_connection(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn refresh_models_cache(&self, provider_id: String) -> Result<Vec<ModelEntry>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .refresh_models_cache(context::current(), provider_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn blocklist_list(&self) -> Result<Vec<BlocklistRuleInfo>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client.client().blocklist_list(context::current()).await?)
+    }
+
+    async fn merge_session_worktree(
+        &self,
+        session_id: SessionId,
+        strategy: MergeStrategy,
+    ) -> Result<MergeOutcome> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .merge_session_worktree(context::current(), session_id, strategy)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn discard_session_worktree(&self, session_id: SessionId) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .discard_session_worktree(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn prune_orphaned_worktrees(&self) -> Result<Vec<String>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .prune_orphaned_worktrees(context::current())
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn list_session_worktrees(&self) -> Result<Vec<SessionWorktreeInfo>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .list_session_worktrees(context::current())
+            .await?)
+    }
+
+    async fn inspect_session_changes(
+        &self,
+        session_id: SessionId,
+    ) -> Result<SessionChangesSummary> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .inspect_session_changes(context::current(), session_id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-058 — /schedule.
+    // ─────────────────────────────────────────────────────────────────
+
+    async fn schedule_add(&self, job: ScheduledJob) -> Result<ScheduledJob> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .schedule_add(context::current(), job)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn schedule_list(&self) -> Result<Vec<ScheduledJob>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client.client().schedule_list(context::current()).await?)
+    }
+
+    async fn schedule_pause(&self, name: String) -> Result<ScheduledJob> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .schedule_pause(context::current(), name)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn schedule_resume(&self, name: String) -> Result<ScheduledJob> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .schedule_resume(context::current(), name)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn schedule_remove(&self, name: String) -> Result<()> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .schedule_remove(context::current(), name)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-059 — /loop.
+    // ─────────────────────────────────────────────────────────────────
+
+    async fn loop_add(
+        &self,
+        session_id: SessionId,
+        interval_seconds: u32,
+        prompt: String,
+    ) -> Result<RegisteredLoop> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .loop_add(context::current(), session_id, interval_seconds, prompt)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn loop_cancel(&self, id: String) -> Result<bool> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        client
+            .client()
+            .loop_cancel(context::current(), id)
+            .await?
+            .map_err(|e| anyhow::anyhow!("{e}"))
+    }
+
+    async fn loop_list(&self, session_id: SessionId) -> Result<Vec<RegisteredLoop>> {
+        let guard = self.client.read().await;
+        let client = guard.as_ref().ok_or(BackendError::Disconnected)?;
+        Ok(client
+            .client()
+            .loop_list(context::current(), session_id)
+            .await?)
     }
 }
 

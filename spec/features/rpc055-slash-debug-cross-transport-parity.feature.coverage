@@ -1,0 +1,64 @@
+{
+  "scenarios": [
+    {
+      "name": "Embedded and WebSocket set_debug_directory both reach the stub",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc055_cross_transport_parity.rs",
+          "lines": "69-100",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/session_manager_handle.rs",
+              "lines": [
+                1117,
+                1118,
+                1119,
+                1120,
+                1121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Embedded and WebSocket toggle_debug both reach the stub",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc055_cross_transport_parity.rs",
+          "lines": "106-141",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/session_manager_handle.rs",
+              "lines": [
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111,
+                1112,
+                1113,
+                1114,
+                1115,
+                1116
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc055_cross_transport_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/session_manager_handle.rs"
+    ],
+    "totalLinesCovered": 84
+  }
+}

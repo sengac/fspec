@@ -1,0 +1,194 @@
+{
+  "scenarios": [
+    {
+      "name": "codelet-sessions imports the NAPI-free McpInjection type from codelet-tools",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_source_shape.rs",
+          "lines": "111-140",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "session_manager.rs calls init_mcp_session in both create paths",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_source_shape.rs",
+          "lines": "146-189",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                600,
+                601,
+                602,
+                603,
+                604,
+                846,
+                847,
+                848
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "session_manager.rs calls cleanup_mcp_session in destroy_session",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_source_shape.rs",
+          "lines": "195-220",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                935
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionManagerHooks trait declares spawn_agent_loop with the mcp_injection_rx parameter",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_source_shape.rs",
+          "lines": "226-261",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/src/session_manager.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet-napi agent_loop consumes mcp_injection_rx inside its select! loop",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_source_shape.rs",
+          "lines": "267-291",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/agent_loop.rs",
+              "lines": [
+                307,
+                424
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No MCP injection methods leak into the RPC surface across handle, service, and backend traits",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_source_shape.rs",
+          "lines": "297-343",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/session_manager_handle.rs",
+              "lines": [
+                1
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet-sessions has no transitive napi dependency after the RPC-062 audit",
+      "testMappings": [
+        {
+          "file": "codelet/sessions/tests/mcp_injection_source_shape.rs",
+          "lines": "349-422",
+          "implMappings": [
+            {
+              "file": "codelet/sessions/Cargo.toml",
+              "lines": [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/sessions/tests/mcp_injection_source_shape.rs"
+    ],
+    "implFiles": [
+      "codelet/sessions/src/session_manager.rs",
+      "codelet/napi/src/agent_loop.rs",
+      "codelet/core/src/session_manager_handle.rs",
+      "codelet/sessions/Cargo.toml"
+    ],
+    "totalLinesCovered": 345
+  }
+}

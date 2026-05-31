@@ -7,7 +7,6 @@
 @rpc
 @RPC-011
 Feature: Multi-client broadcast capacity and tracing
-
   """
   Two-client integration: spawn daemon, attach TWO WebSocketFspecBackends, exercise create_session
   + send_input from client A, assert client B receives the SAME chunk stream in order. Broadcast

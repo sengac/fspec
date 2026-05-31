@@ -8,7 +8,6 @@
 @rpc
 @RPC-011
 Feature: Daemon lifecycle hardening (SIGTERM/SIGHUP/SIGINT + graceful drain + ConnectedClientGuard)
-
   """
   fspec daemon handles SIGTERM (drain + exit), SIGHUP (ArcSwap watcher rebuild, no exit), SIGINT
   (drain + exit). Drain protocol is Option B: stats.shutdown_signal Notify + each

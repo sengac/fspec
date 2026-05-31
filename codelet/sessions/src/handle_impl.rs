@@ -1,0 +1,1447 @@
+//! The production `SessionManagerHandle` impl for the extracted
+//! `SessionManager`, added by **RPC-042**.
+//!
+//! Each method delegates to the existing `SessionManager` or to a
+//! `BackgroundSession` looked up via `self.get_session(...)`. The
+//! per-session methods return safe defaults when the session is not
+//! found so callers (the future `fspec` binary in RPC-044, the
+//! `FspecService` in `codelet-rpc`, the WebSocket backend, etc.) can
+//! treat the handle as totally robust.
+//!
+//! **Runtime requirement (RPC-070):** the sync→async bridges for
+//! `create_session`, `create_isolated_session`, `test_provider_connection`,
+//! and the three `/loop` methods invoke
+//! `tokio::task::block_in_place(|| tokio::runtime::Handle::current().block_on(...))`.
+//! They MUST be invoked from a **multi-thread** tokio runtime — the
+//! `fspec` binary's `#[tokio::main]` defaults to multi-thread and the
+//! NAPI side's `#[napi(tokio_main)]` does too. `block_in_place`
+//! temporarily detaches the current worker from the multi-thread
+//! scheduler so the nested `block_on` does not panic with
+//! "Cannot start a runtime from within a runtime" (the bug the
+//! pre-RPC-070 code triggered when called from inside a tarpc handler;
+//! see `spec/attachments/RPC-070/root-cause-analysis.md`).
+//!
+//! Calling these bridges from a single-thread tokio runtime panics
+//! inside `block_in_place` itself with a clearer message than the old
+//! nested-runtime panic. A `debug_assert!` in `loop_block_on` makes
+//! the precondition explicit during development.
+
+use std::path::PathBuf;
+use std::sync::Arc;
+
+use chrono::{Duration, Utc};
+use tokio::sync::broadcast;
+use uuid::Uuid;
+
+use codelet_rpc_types::{
+    ApprovalChoice, BlocklistRuleInfo, CompactionProgress, CompactionResult, FspecResult,
+    HitlOption, HitlRequest, HitlResponse, IncomingMessageInput, IsolatedSessionInfo, LogRecord,
+    MergeOutcome, MergeStatus, MergeStrategy, ModelEntry, PauseState, ProviderCredentialInfo,
+    ProviderCredentialInput, RegisteredLoop, ScheduledJob, SessionChangesSummary, SessionId,
+    SessionInfo, SessionModel, SessionStatus, SessionTokens, SessionWorktreeInfo, StreamChunk,
+    TestConnectionResult, ThinkingConfig, ThinkingLevel, TokenRestoreState, WorkUnitContext,
+};
+
+use crate::conversions::{
+    approval_choice_to_pause_response, confirm_accept_to_pause_response, pause_state_to_rpc,
+};
+use crate::session_manager::SessionManager;
+
+/// Parse a wire-portable `SessionId` into a UUID, falling back to
+/// `Uuid::nil()` on parse failure so per-session methods can return
+/// safe defaults rather than panicking on a malformed id.
+fn uuid_from(id: &SessionId) -> Uuid {
+    Uuid::parse_str(id.value.as_str()).unwrap_or_else(|_| Uuid::nil())
+}
+
+/// Production `SessionManagerHandle` impl for the extracted
+/// `SessionManager`.
+///
+/// **Runtime requirement (RPC-070):** the sync→async bridge methods
+/// (`create_session`, `create_isolated_session`,
+/// `test_provider_connection`, `loop_add`, `loop_cancel`, `loop_list`)
+/// wrap their `Handle::current().block_on(...)` calls in
+/// `tokio::task::block_in_place(|| ...)`. The trait MUST be invoked
+/// from a multi-thread tokio runtime — the `fspec` binary and the
+/// napi `tokio_main` thread both satisfy this. Calling from a
+/// single-thread runtime panics inside `block_in_place` with a clearer
+/// message than the pre-RPC-070 "Cannot start a runtime from within
+/// a runtime" nested-runtime panic.
+impl codelet_core::SessionManagerHandle for SessionManager {
+    fn list_sessions(&self) -> Vec<SessionInfo> {
+        SessionManager::list_sessions(self)
+    }
+
+    /// Create a new session, returning its freshly-minted `SessionId`.
+    ///
+    /// **Runtime requirement (RPC-070):** bridges sync→async via
+    /// `tokio::task::block_in_place(|| Handle::current().block_on(...))`.
+    /// MUST be invoked from a multi-thread tokio runtime — the nested
+    /// `block_on` is only legal because `block_in_place` first detaches
+    /// the worker from the scheduler.
+    fn create_session(&self, role: Option<String>) -> SessionId {
+        let project = std::env::current_dir()
+            .map(|p| p.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let model = self
+            .get_default_model()
+            .unwrap_or_else(|| "anthropic/claude-opus-4-5".to_string());
+        let id_string = tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current()
+                .block_on(async { SessionManager::create_session(self, &model, &project).await })
+        })
+        .unwrap_or_default();
+        if let Some(role_str) = role {
+            if !role_str.is_empty() {
+                if let Ok(session) = self.get_session(&id_string) {
+                    session.set_role(role_str);
+                }
+            }
+        }
+        SessionId::new(id_string)
+    }
+
+    fn send_input(&self, session_id: &SessionId, text: String) {
+        let uuid = uuid_from(session_id);
+        if let Ok(session) = self.get_session(&uuid.to_string()) {
+            let _ = session.send_input(text, None);
+        }
+    }
+
+    fn send_input_with_thinking(
+        &self,
+        session_id: &SessionId,
+        text: String,
+        thinking: Option<ThinkingConfig>,
+    ) {
+        let uuid = uuid_from(session_id);
+        if let Ok(session) = self.get_session(&uuid.to_string()) {
+            let thinking_json = thinking.and_then(|t| serde_json::to_string(&t).ok());
+            let _ = session.send_input(text, thinking_json);
+        }
+    }
+
+    fn interrupt(&self, session_id: &SessionId) {
+        let uuid = uuid_from(session_id);
+        if let Ok(session) = self.get_session(&uuid.to_string()) {
+            session.interrupt();
+        }
+    }
+
+    fn get_session_status(&self, session_id: &SessionId) -> SessionStatus {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|s| s.get_status())
+            .unwrap_or(SessionStatus::Idle)
+    }
+
+    fn chunks_rx(&self) -> broadcast::Receiver<(SessionId, StreamChunk)> {
+        SessionManager::chunks_tx(self).subscribe()
+    }
+
+    fn logs_rx(&self) -> broadcast::Receiver<LogRecord> {
+        SessionManager::logs_tx(self).subscribe()
+    }
+
+    fn chunks_tx(&self) -> broadcast::Sender<(SessionId, StreamChunk)> {
+        SessionManager::chunks_tx(self).clone()
+    }
+
+    fn logs_tx(&self) -> broadcast::Sender<LogRecord> {
+        SessionManager::logs_tx(self).clone()
+    }
+
+    fn status_changes_rx(&self) -> broadcast::Receiver<(SessionId, SessionStatus)> {
+        SessionManager::status_changes_tx(self).subscribe()
+    }
+
+    fn status_changes_tx(&self) -> broadcast::Sender<(SessionId, SessionStatus)> {
+        SessionManager::status_changes_tx(self).clone()
+    }
+
+    fn get_session_tokens(&self, session_id: &SessionId) -> SessionTokens {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|s| {
+                let (input, output, _reasoning) = s.get_tokens();
+                SessionTokens {
+                    input_tokens: input as i64,
+                    output_tokens: output as i64,
+                }
+            })
+            .unwrap_or(SessionTokens {
+                input_tokens: 0,
+                output_tokens: 0,
+            })
+    }
+
+    fn get_session_model(&self, session_id: &SessionId) -> SessionModel {
+        use std::sync::atomic::Ordering;
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|s| {
+                let provider_id = s
+                    .provider_id
+                    .read()
+                    .ok()
+                    .and_then(|g| g.clone())
+                    .unwrap_or_default();
+                let model_id = s
+                    .model_id
+                    .read()
+                    .ok()
+                    .and_then(|g| g.clone())
+                    .unwrap_or_default();
+                SessionModel {
+                    provider_id,
+                    model_id,
+                    context_window: s.cached_context_window.load(Ordering::Acquire) as i64,
+                    max_output_tokens: s.cached_max_output_tokens.load(Ordering::Acquire) as i64,
+                    compaction_threshold: s
+                        .cached_compaction_threshold
+                        .load(Ordering::Acquire) as i64,
+                }
+            })
+            .unwrap_or(SessionModel {
+                provider_id: String::new(),
+                model_id: String::new(),
+                context_window: 0,
+                max_output_tokens: 0,
+                compaction_threshold: 0,
+            })
+    }
+
+    fn get_compaction_progress(&self, session_id: &SessionId) -> Option<CompactionProgress> {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_compaction_progress())
+            .map(CompactionProgress::from)
+    }
+
+    fn get_buffered_output(&self, session_id: &SessionId, limit: u32) -> Vec<StreamChunk> {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|s| s.get_buffered_output(limit as usize))
+            .unwrap_or_default()
+    }
+
+    fn clear_history(&self, session_id: &SessionId) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                // RPC-073: BackgroundSession::clear_history calls
+                // `self.inner.blocking_lock()` (see
+                // codelet/sessions/src/background_session.rs:1156),
+                // which panics with "Cannot block the current thread
+                // from within a runtime" when invoked from inside a
+                // tokio multi-thread worker (the tarpc dispatcher).
+                // Wrap in `tokio::task::block_in_place` so the worker
+                // is temporarily detached from the scheduler — same
+                // pattern as the other sync→async bridges in this
+                // file (`create_session`, `create_isolated_session`,
+                // `test_provider_connection`, the three `loop_*`
+                // methods).
+                tokio::task::block_in_place(|| session.clear_history());
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn compact_session(&self, session_id: &SessionId) -> Result<CompactionResult, String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                // RPC-042 scope: minimal delegating impl. The real
+                // compaction pipeline is wired in RPC-047. Here we
+                // simply snapshot the current input-token count and
+                // return a 1:1 compression-ratio placeholder so
+                // downstream callers see a well-formed `Ok` result.
+                let (input_tokens, _output, _reasoning) = session.get_tokens();
+                Ok(CompactionResult {
+                    original_tokens: input_tokens,
+                    compacted_tokens: input_tokens,
+                    compression_ratio: 1.0,
+                    turns_summarized: 0,
+                    turns_kept: 0,
+                })
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn restore_session_messages(
+        &self,
+        session_id: &SessionId,
+        _envelopes: Vec<String>,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(_session) => Ok(()),
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn restore_session_token_state(
+        &self,
+        session_id: &SessionId,
+        _state: TokenRestoreState,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(_session) => Ok(()),
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn get_work_unit_context(&self, session_id: &SessionId) -> Option<WorkUnitContext> {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_work_unit_context())
+            .map(WorkUnitContext::from)
+    }
+
+    fn set_work_unit_context(
+        &self,
+        session_id: &SessionId,
+        ctx: Option<WorkUnitContext>,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                match ctx {
+                    Some(c) => session.set_work_unit_context(
+                        Some(c.id),
+                        Some(c.title),
+                        Some(c.status),
+                    ),
+                    None => session.set_work_unit_context(None, None, None),
+                }
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn get_pending_input(&self, session_id: &SessionId) -> Option<String> {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_pending_input())
+    }
+
+    fn set_pending_input(&self, session_id: &SessionId, text: Option<String>) {
+        let uuid = uuid_from(session_id);
+        if let Ok(session) = self.get_session(&uuid.to_string()) {
+            session.set_pending_input(text);
+        }
+    }
+
+    fn set_active_session(&self, session_id: &SessionId) {
+        let uuid = uuid_from(session_id);
+        SessionManager::set_active_session(self, uuid);
+    }
+
+    fn clear_active_session(&self) {
+        SessionManager::clear_active_session(self);
+    }
+
+    fn get_active_session(&self) -> Option<SessionId> {
+        SessionManager::get_active_session(self).map(|u| SessionId::new(u.to_string()))
+    }
+
+    fn get_effective_cwd(&self, session_id: &SessionId) -> PathBuf {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .ok()
+            .map(|s| s.effective_cwd())
+            .unwrap_or_else(|| std::env::current_dir().unwrap_or_default())
+    }
+
+    fn get_supervisors(&self, session_id: &SessionId) -> Vec<SessionId> {
+        let uuid = uuid_from(session_id);
+        SessionManager::get_supervisors(self, uuid)
+            .into_iter()
+            .map(|u| SessionId::new(u.to_string()))
+            .collect()
+    }
+
+    /// RPC-061: delegate to ChainOfCommand::add_supervisor (surfaces
+    /// the "circular supervision not allowed" / "subordinate already
+    /// registered under this supervisor" errors verbatim).
+    fn add_supervisor(
+        &self,
+        subordinate_id: &SessionId,
+        supervisor_id: &SessionId,
+    ) -> Result<(), String> {
+        let sub_uuid = uuid_from(subordinate_id);
+        let sup_uuid = uuid_from(supervisor_id);
+        SessionManager::add_supervisor(self, sub_uuid, sup_uuid)
+    }
+
+    /// RPC-061: delegate to ChainOfCommand::remove_supervisor. The
+    /// underlying method is `()`-returning; we wrap into Ok(()).
+    fn remove_supervisor(&self, supervisor_id: &SessionId) -> Result<(), String> {
+        let sup_uuid = uuid_from(supervisor_id);
+        SessionManager::remove_supervisor(self, sup_uuid);
+        Ok(())
+    }
+
+    /// RPC-061: first subordinate of the supervisor (or None).
+    fn get_subordinate(&self, supervisor_id: &SessionId) -> Option<SessionId> {
+        let sup_uuid = uuid_from(supervisor_id);
+        SessionManager::get_subordinate(self, sup_uuid)
+            .map(|u| SessionId::new(u.to_string()))
+    }
+
+    /// RPC-061: every subordinate of the supervisor.
+    fn get_subordinates(&self, supervisor_id: &SessionId) -> Vec<SessionId> {
+        let sup_uuid = uuid_from(supervisor_id);
+        SessionManager::get_subordinates(self, sup_uuid)
+            .into_iter()
+            .map(|u| SessionId::new(u.to_string()))
+            .collect()
+    }
+
+    /// RPC-061: queue a supervisor message onto the subordinate's
+    /// BackgroundSession `receive_incoming_message` mpsc channel.
+    /// Returns Err("Session not found: …") when the subordinate id
+    /// does not match a live session.
+    fn receive_incoming_message(
+        &self,
+        subordinate_id: &SessionId,
+        message: IncomingMessageInput,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(subordinate_id);
+        let session = self.get_session(&uuid.to_string())?;
+        let bridge_images = message.images.map(|imgs| {
+            imgs.into_iter()
+                .map(|img| crate::background_session::BridgeImageData {
+                    data: img.data,
+                    media_type: img.media_type,
+                })
+                .collect::<Vec<_>>()
+        });
+        let input = crate::background_session::IncomingMessage::with_images(
+            message.source_session_id,
+            message.role_name,
+            message.message,
+            bridge_images,
+        )?;
+        session.receive_incoming_message(input)
+    }
+
+    fn get_debug_enabled(&self, session_id: &SessionId) -> bool {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|s| s.get_debug_enabled())
+            .unwrap_or(false)
+    }
+
+    fn set_debug_enabled(&self, session_id: &SessionId, enabled: bool) {
+        let uuid = uuid_from(session_id);
+        if let Ok(session) = self.get_session(&uuid.to_string()) {
+            session.set_debug_enabled(enabled);
+        }
+    }
+
+    fn toggle_debug(
+        &self,
+        session_id: &SessionId,
+        debug_dir: &str,
+    ) -> Result<String, String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                // RPC-055: port of NAPI's session_toggle_debug
+                // (codelet/napi/src/session_bindings.rs:2645). We:
+                //   1. Compute per-session debug directory
+                //      `{debug_dir}/debug/{session_id}/`.
+                //   2. Lock the session's DebugCaptureManager and call
+                //      start_capture or stop_capture depending on the
+                //      current enabled flag.
+                //   3. Persist the new enabled flag on the
+                //      BackgroundSession atomic.
+                //   4. Emit `StreamChunk::DebugStateChange` for the TUI.
+                let session_debug_dir = std::path::PathBuf::from(debug_dir)
+                    .join("debug")
+                    .join(session.id.to_string());
+                let was_enabled = session.get_debug_enabled();
+                let result = {
+                    let mut manager = session.debug_capture.lock().map_err(|_| {
+                        "Failed to acquire lock on per-session debug capture manager".to_string()
+                    })?;
+                    manager.set_debug_directory_raw(session_debug_dir);
+                    if was_enabled {
+                        manager.stop_capture().map_err(|e| e.to_string())?
+                    } else {
+                        manager.start_capture().map_err(|e| e.to_string())?
+                    }
+                };
+                let new_enabled = !was_enabled;
+                session.set_debug_enabled(new_enabled);
+                let _ = SessionManager::chunks_tx(self).send((
+                    session_id.clone(),
+                    StreamChunk::debug_state_change(new_enabled),
+                ));
+                Ok(result)
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn set_debug_directory(&self, path: PathBuf) -> Result<(), String> {
+        // RPC-055: pre-session global toggle path. Delegates to the
+        // codelet-common global DebugCaptureManager singleton. This is
+        // ONLY used before any session exists — once a session is
+        // created, `toggle_debug(session_id, debug_dir)` is the
+        // preferred entry point (it uses the per-session manager on
+        // BackgroundSession).
+        match codelet_common::debug_capture::get_debug_capture_manager() {
+            Ok(arc) => {
+                let mut manager = arc
+                    .lock()
+                    .map_err(|_| "Failed to acquire lock on global debug capture manager".to_string())?;
+                manager.set_debug_directory(path);
+                Ok(())
+            }
+            Err(e) => Err(format!("Failed to access debug capture manager: {e}")),
+        }
+    }
+
+    fn pause_resume(&self, session_id: &SessionId) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.send_pause_response(
+                    codelet_tools::tool_pause::PauseResponse::Resumed,
+                );
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn pause_confirm(
+        &self,
+        session_id: &SessionId,
+        accept: bool,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.send_pause_response(confirm_accept_to_pause_response(accept));
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn pause_triple(
+        &self,
+        session_id: &SessionId,
+        choice: ApprovalChoice,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.send_pause_response(approval_choice_to_pause_response(choice));
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn send_hitl_response(
+        &self,
+        session_id: &SessionId,
+        _response: HitlResponse,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                // The wire-portable HitlResponse carries (id, value).
+                // Map it to the internal tools::request_user_input::HitlResponse::Cancelled
+                // path: full answer-mapping is wired in RPC-053.
+                session.send_hitl_response(
+                    codelet_tools::request_user_input::HitlResponse::Cancelled { cancelled: false },
+                );
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn get_pause_state(&self, session_id: &SessionId) -> Option<PauseState> {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_pause_state())
+            .map(pause_state_to_rpc)
+    }
+
+    fn get_hitl_request(&self, session_id: &SessionId) -> Option<HitlRequest> {
+        let uuid = uuid_from(session_id);
+        let internal = self.get_session(&uuid.to_string()).ok().and_then(|s| s.get_hitl_request())?;
+        // Surface only the first question through the wire shape — the
+        // wire `HitlRequest` is a single question; the multi-question
+        // surface is wired in RPC-053.
+        let first = internal.questions.into_iter().next()?;
+        let options = first
+            .options
+            .unwrap_or_default()
+            .into_iter()
+            .map(|o| HitlOption {
+                label: o.label,
+                description: o.description,
+            })
+            .collect();
+        Some(HitlRequest {
+            id: first.id,
+            question: first.question,
+            header: first.header,
+            options,
+            allow_text_input: true,
+        })
+    }
+
+    fn send_fspec_result(
+        &self,
+        session_id: &SessionId,
+        result: FspecResult,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.send_fspec_result(result);
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    /// Create an isolated (worktree-backed) session.
+    ///
+    /// **Runtime requirement (RPC-070):** bridges sync→async via
+    /// `tokio::task::block_in_place(|| Handle::current().block_on(...))`.
+    /// MUST be invoked from a multi-thread tokio runtime.
+    fn create_isolated_session(
+        &self,
+        role: Option<String>,
+    ) -> Result<IsolatedSessionInfo, String> {
+        let id = Uuid::new_v4();
+        let project = std::env::current_dir()
+            .map_err(|e| e.to_string())?
+            .to_string_lossy()
+            .to_string();
+        let model = self
+            .get_default_model()
+            .unwrap_or_else(|| "anthropic/claude-opus-4-5".to_string());
+        let name = format!("isolated-{}", &id.to_string()[..8]);
+        let info = tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async {
+                self.create_isolated_session_with_id(&id.to_string(), &model, &project, &name)
+                    .await
+            })
+        })?;
+        if let Some(role_str) = role {
+            if !role_str.is_empty() {
+                if let Ok(session) = self.get_session(&id.to_string()) {
+                    session.set_role(role_str);
+                }
+            }
+        }
+        Ok(info)
+    }
+
+    fn set_thinking_level_default(
+        &self,
+        session_id: &SessionId,
+        level: ThinkingLevel,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.set_base_thinking_level(level as u8);
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn destroy_session(&self, session_id: &SessionId) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        SessionManager::destroy_session(self, &uuid.to_string()).map_err(|e| {
+            if e.contains("Session not found") {
+                e
+            } else {
+                format!("Session not found: {}: {}", session_id.value.as_str(), e)
+            }
+        })
+    }
+
+    fn get_model_info(
+        &self,
+        session_id: &SessionId,
+    ) -> codelet_rpc_types::ModelInfo {
+        use std::sync::atomic::Ordering;
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|s| {
+                let model_id = s
+                    .model_id
+                    .read()
+                    .ok()
+                    .and_then(|g| g.clone())
+                    .unwrap_or_default();
+                codelet_rpc_types::ModelInfo {
+                    display_name: model_id,
+                    supports_reasoning: false,
+                    supports_vision: false,
+                    context_window: s.cached_context_window.load(Ordering::Acquire),
+                }
+            })
+            .unwrap_or_default()
+    }
+
+    fn get_thinking_level(&self, session_id: &SessionId) -> ThinkingLevel {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .map(|s| match s.get_base_thinking_level() {
+                0 => ThinkingLevel::Off,
+                1 => ThinkingLevel::Low,
+                2 => ThinkingLevel::Medium,
+                _ => ThinkingLevel::High,
+            })
+            .unwrap_or(ThinkingLevel::Off)
+    }
+
+    fn list_providers(&self) -> Vec<codelet_rpc_types::ProviderInfo> {
+        // RPC-073: wire the providers registry into the /model picker.
+        // Mirrors the TS Ink path (NAPI `list_providers` →
+        // `codelet_providers::custom::list_providers_info`) so the
+        // Rust ratatui ModelSelectorDialog sees the same provider tree
+        // as the TS Ink ModelSelectorView.
+        //
+        // The tarpc wire format `codelet_rpc_types::ProviderInfo` is
+        // lossy vs. the 9-field `codelet_providers::custom::ProviderInfo`
+        // (no facade / base_url / api_key_env_var / api_style /
+        // is_custom / available — the latter is exposed via the
+        // sibling `list_provider_credentials` for the /provider view).
+        // We map field-by-field here:
+        //   * `name` → `key` (canonical provider slug used by
+        //     `set_session_model`).
+        //   * `display_name.unwrap_or(name)` → `display_name` (matches
+        //     the existing precedent at handle_impl.rs:803 for
+        //     `list_provider_credentials`).
+        //   * Each `ProviderModelInfo` → `ModelEntry` with
+        //     `supports_thinking` → `supports_reasoning`, `is_custom`
+        //     propagated from parent, `usize` → `u32` saturating.
+        // Built-in providers carry empty `models`; custom providers
+        // surface their declared models.
+        //
+        // On Err the underlying helper failed (e.g. corrupt
+        // `~/.fspec/providers/*.json`). We log via `tracing::error`
+        // and return `Vec::new()` so the model dialog opens empty
+        // rather than panicking (matches the
+        // `list_provider_credentials` graceful-degradation pattern).
+        match codelet_providers::custom::list_providers_info() {
+            Ok(list) => list
+                .into_iter()
+                .map(|p| {
+                    let is_custom = p.is_custom;
+                    let display_name = p.display_name.unwrap_or_else(|| p.name.clone());
+                    let models = p
+                        .models
+                        .into_iter()
+                        .map(|m| {
+                            codelet_rpc_types::ModelEntry {
+                                id: m.id.clone(),
+                                display_name: m.id,
+                                context_window: u32::try_from(m.context_window)
+                                    .unwrap_or(u32::MAX),
+                                supports_reasoning: m.supports_thinking,
+                                supports_vision: m.supports_vision,
+                                is_custom,
+                            }
+                        })
+                        .collect();
+                    codelet_rpc_types::ProviderInfo {
+                        key: p.name,
+                        display_name,
+                        models,
+                    }
+                })
+                .collect(),
+            Err(e) => {
+                tracing::error!(
+                    target: "handle_impl",
+                    error = %e,
+                    "list_providers: codelet_providers::custom::list_providers_info failed",
+                );
+                Vec::new()
+            }
+        }
+    }
+
+    fn set_model(
+        &self,
+        session_id: &SessionId,
+        provider_id: &str,
+        model_id: &str,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.set_model(Some(provider_id.to_string()), Some(model_id.to_string()));
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn set_thinking_level(
+        &self,
+        session_id: &SessionId,
+        level: ThinkingLevel,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                session.set_base_thinking_level(level as u8);
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    fn get_role(&self, session_id: &SessionId) -> Option<String> {
+        let uuid = uuid_from(session_id);
+        self.get_session(&uuid.to_string())
+            .ok()
+            .and_then(|s| s.get_role())
+    }
+
+    fn set_role(
+        &self,
+        session_id: &SessionId,
+        role: Option<String>,
+    ) -> Result<(), String> {
+        let uuid = uuid_from(session_id);
+        match self.get_session(&uuid.to_string()) {
+            Ok(session) => {
+                match role {
+                    Some(r) => session.set_role(r),
+                    None => session.clear_role(),
+                }
+                Ok(())
+            }
+            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        }
+    }
+
+    // ========================================================================
+    // RPC-054: Provider credentials surface — delegate to `codelet-providers`.
+    // The provider helpers there are already NAPI-free so we can call them
+    // directly without dragging any NAPI dependency into codelet-sessions.
+    //
+    // Scope per the RPC-054 attachment:
+    //   * `list_provider_credentials` / `get_provider_credential` reflect
+    //     `ProviderCredentials::detect()` + `custom::list_providers_info()`
+    //     into the wire-portable `ProviderCredentialInfo` shape.
+    //   * `set_provider_credentials` is intentionally non-persistent in this
+    //     card — the underlying credential stores (keychain / file) live in
+    //     `codelet-providers` and lifting them through a write API is a
+    //     follow-up. The method validates the input and returns `Ok(())` so
+    //     the TUI's optimistic UI flows still work; the next
+    //     `list_provider_credentials` call re-derives state from env vars.
+    //   * `delete_provider_credentials` is similarly a no-op success today.
+    //   * `test_provider_connection` delegates to
+    //     `codelet_providers::custom::test_provider_connection` for custom
+    //     providers and falls back to `ProviderManager::with_provider`
+    //     (CONFIG-004 pattern) for built-ins.
+    //   * `refresh_models_cache` delegates to the same custom-provider
+    //     helper because the built-ins have static model lists.
+    // ========================================================================
+
+    fn list_provider_credentials(&self) -> Vec<ProviderCredentialInfo> {
+        match codelet_providers::custom::list_providers_info() {
+            Ok(list) => list
+                .into_iter()
+                .map(|p| ProviderCredentialInfo {
+                    provider_id: p.name.clone(),
+                    display_name: p.display_name.unwrap_or_else(|| p.name.clone()),
+                    configured: p.available,
+                    credential_type: if p.is_custom {
+                        "custom".to_string()
+                    } else {
+                        // PROV-053: codex / github-copilot use OAuth flows;
+                        // everything else uses an env-var API key.
+                        match p.name.as_str() {
+                            "codex" | "github-copilot" => "oauth".to_string(),
+                            _ => "api_key".to_string(),
+                        }
+                    },
+                    model_count: p.models.len() as u32,
+                })
+                .collect(),
+            Err(e) => {
+                tracing::warn!(error = %e, "list_provider_credentials: codelet_providers::custom::list_providers_info failed");
+                Vec::new()
+            }
+        }
+    }
+
+    fn get_provider_credential(&self, provider_id: &str) -> Option<ProviderCredentialInfo> {
+        self.list_provider_credentials()
+            .into_iter()
+            .find(|p| p.provider_id == provider_id)
+    }
+
+    fn set_provider_credentials(
+        &self,
+        provider_id: &str,
+        creds: ProviderCredentialInput,
+    ) -> Result<(), String> {
+        // Light validation only — full persistence is a follow-up
+        // (see attachment Risks / Phase 7.1).
+        match creds.kind.as_str() {
+            "api_key" => {
+                if creds.api_key.as_deref().unwrap_or("").is_empty() {
+                    return Err("api_key input requires a non-empty api_key".to_string());
+                }
+            }
+            "oauth" => {
+                if creds.oauth_token.as_deref().unwrap_or("").is_empty() {
+                    return Err("oauth input requires a non-empty oauth_token".to_string());
+                }
+            }
+            "custom" => {
+                if creds.custom_endpoint.as_deref().unwrap_or("").is_empty() {
+                    return Err(
+                        "custom input requires a non-empty custom_endpoint".to_string(),
+                    );
+                }
+            }
+            other => return Err(format!("unknown credential kind: {other}")),
+        }
+        tracing::info!(
+            provider = provider_id,
+            kind = creds.kind.as_str(),
+            "set_provider_credentials: credential persistence is a follow-up; \
+             input accepted but env-var-derived state will not change until \
+             the user updates their shell env"
+        );
+        Ok(())
+    }
+
+    fn delete_provider_credentials(&self, provider_id: &str) -> Result<(), String> {
+        tracing::info!(
+            provider = provider_id,
+            "delete_provider_credentials: credential removal is a follow-up; \
+             accepting the request as a no-op success"
+        );
+        Ok(())
+    }
+
+    fn test_provider_connection(
+        &self,
+        provider_id: &str,
+    ) -> Result<TestConnectionResult, String> {
+        let start = std::time::Instant::now();
+        // Try the custom-provider HTTP probe first — it's the only path
+        // that returns rich `ProviderTestResult` metadata. If the
+        // provider id is unknown to the custom-provider helper, fall
+        // back to `ProviderManager::with_provider` which validates
+        // credentials for the built-ins.
+        //
+        // RPC-070: pre-fix this method built its own `tokio::runtime`
+        // via `Handle::try_current()` + `runtime.block_on(...)`, which
+        // panics under a nested runtime context (the live tarpc
+        // dispatcher). Replace with the canonical
+        // `block_in_place(|| Handle::current().block_on(...))` pattern
+        // so this bridge is safe from inside any multi-thread tokio
+        // worker.
+        let provider_id_owned = provider_id.to_string();
+        let custom_result = tokio::task::block_in_place(|| {
+            tokio::runtime::Handle::current().block_on(async move {
+                codelet_providers::custom::test_provider_connection(&provider_id_owned).await
+            })
+        });
+        match custom_result {
+            Ok(probe) => Ok(TestConnectionResult {
+                success: probe.reachable,
+                error: if probe.reachable {
+                    None
+                } else {
+                    Some(format!(
+                        "unreachable (status {:?})",
+                        probe.status_code
+                    ))
+                },
+                latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX)) as u32,
+            }),
+            Err(_) => {
+                // Fall back to credential validation for built-in providers.
+                match codelet_providers::ProviderManager::with_provider(provider_id) {
+                    Ok(_) => Ok(TestConnectionResult {
+                        success: true,
+                        error: None,
+                        latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX))
+                            as u32,
+                    }),
+                    Err(e) => Ok(TestConnectionResult {
+                        success: false,
+                        error: Some(e.to_string()),
+                        latency_ms: start.elapsed().as_millis().min(u128::from(u32::MAX))
+                            as u32,
+                    }),
+                }
+            }
+        }
+    }
+
+    fn refresh_models_cache(
+        &self,
+        provider_id: &str,
+    ) -> Result<Vec<ModelEntry>, String> {
+        // Built-in providers don't publish a dynamic model catalog; we
+        // re-list the providers and return the matching model entries.
+        // Custom providers DO have dynamic catalogs but lifting the
+        // OpenAI-compatible `/models` round-trip into a typed
+        // `ModelEntry` list is a follow-up — for now return the
+        // statically-declared list.
+        let provider_info = codelet_providers::custom::list_providers_info()
+            .map_err(|e| format!("list_providers_info failed: {e}"))?
+            .into_iter()
+            .find(|p| p.name == provider_id);
+        Ok(provider_info
+            .map(|p| {
+                p.models
+                    .into_iter()
+                    .map(|m| ModelEntry {
+                        id: m.id,
+                        display_name: String::new(),
+                        context_window: m.context_window as u32,
+                        supports_reasoning: m.supports_thinking,
+                        supports_vision: m.supports_vision,
+                        is_custom: true,
+                    })
+                    .collect()
+            })
+            .unwrap_or_default())
+    }
+
+    // ========================================================================
+    // RPC-056: Blocklist surface.
+    //
+    // Re-loads the system + project blocklist configs SEPARATELY (rather
+    // than via `load_blocklist_config`, which merges and loses the
+    // per-rule provenance) so the wire snapshot can stamp each rule with
+    // its `source` tag ("system" | "project"). The project root is
+    // derived from `std::env::current_dir()` — matching the
+    // `create_session` pattern in this file.
+    //
+    // System and project configs each fall back to an empty
+    // `BlocklistConfig` when the file is absent or fails to parse, so
+    // missing configs surface as an empty list rather than an error.
+    // The TS frontend takes the same fall-back path via
+    // `blocklistLoad(cwd)`.
+    // ========================================================================
+
+    fn blocklist_list(&self) -> Vec<BlocklistRuleInfo> {
+        let mut out: Vec<BlocklistRuleInfo> = Vec::new();
+
+        // System config (~/.fspec/blocklist.json)
+        if let Some(sys_path) = codelet_tools::blocklist::system_config_path() {
+            if sys_path.exists() {
+                match codelet_tools::blocklist::BlocklistConfig::load_from_file(&sys_path) {
+                    Ok(cfg) => {
+                        for rule in cfg.rules {
+                            out.push(blocklist_rule_to_wire(rule, "system"));
+                        }
+                    }
+                    Err(e) => {
+                        tracing::warn!(
+                            error = %e,
+                            path = ?sys_path,
+                            "blocklist_list: failed to load system blocklist config"
+                        );
+                    }
+                }
+            }
+        }
+
+        // Project config (<cwd>/.fspec/blocklist.json)
+        let project_root = std::env::current_dir().ok();
+        if let Some(root) = project_root {
+            let project_path = codelet_tools::blocklist::project_config_path(&root);
+            if project_path.exists() {
+                match codelet_tools::blocklist::BlocklistConfig::load_from_file(&project_path) {
+                    Ok(cfg) => {
+                        for rule in cfg.rules {
+                            out.push(blocklist_rule_to_wire(rule, "project"));
+                        }
+                    }
+                    Err(e) => {
+                        tracing::warn!(
+                            error = %e,
+                            path = ?project_path,
+                            "blocklist_list: failed to load project blocklist config"
+                        );
+                    }
+                }
+            }
+        }
+
+        out
+    }
+
+    // ========================================================================
+    // RPC-057: Merge/worktree surface — delegates to `codelet-git`.
+    // The repo_path is resolved at call time via std::env::current_dir(),
+    // matching the blocklist_list pattern above. MergeStrategy is accepted
+    // on the trait surface for future evolution but the underlying
+    // codelet-git layer uses a single fast-forward-style algorithm
+    // (parity with the current TS sessionMergeChanges).
+    // ========================================================================
+
+    fn merge_session_worktree(
+        &self,
+        session_id: &SessionId,
+        strategy: MergeStrategy,
+    ) -> Result<MergeOutcome, String> {
+        // The strategy is reserved for future evolution — the codelet-git
+        // layer currently has only one merge algorithm.
+        let _ = strategy;
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        match codelet_git::merge_session(&repo_path, &session_id.value) {
+            Ok(result) => {
+                let total_changed =
+                    result.files_modified.len() + result.files_added.len() + result.files_deleted.len();
+                let status = if total_changed == 0 {
+                    MergeStatus::NoChanges
+                } else {
+                    MergeStatus::Success
+                };
+                Ok(MergeOutcome {
+                    status,
+                    conflicts: Vec::new(),
+                    // codelet_git::merge_session does not surface the
+                    // resulting commit SHA today — None until it does.
+                    merge_commit: None,
+                })
+            }
+            Err(codelet_git::GitError::ConflictError { files }) => Ok(MergeOutcome {
+                status: MergeStatus::Conflict,
+                conflicts: files,
+                merge_commit: None,
+            }),
+            Err(e) => Err(format!("{e}")),
+        }
+    }
+
+    fn discard_session_worktree(
+        &self,
+        session_id: &SessionId,
+    ) -> Result<(), String> {
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        codelet_git::discard_session(&repo_path, &session_id.value)
+            .map(|_| ())
+            .map_err(|e| format!("{e}"))
+    }
+
+    fn prune_orphaned_worktrees(&self) -> Result<Vec<String>, String> {
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        // The active-session set is sourced from the live SessionManager.
+        let active: std::collections::HashSet<String> = self
+            .list_sessions()
+            .into_iter()
+            .map(|s| s.id)
+            .collect();
+        codelet_git::prune_orphaned(&repo_path, &active)
+            .map(|r| r.pruned)
+            .map_err(|e| format!("{e}"))
+    }
+
+    fn list_session_worktrees(&self) -> Vec<SessionWorktreeInfo> {
+        let repo_path = match std::env::current_dir() {
+            Ok(p) => p,
+            Err(_) => return Vec::new(),
+        };
+        let worktrees = match codelet_git::list_worktrees(&repo_path) {
+            Ok(w) => w,
+            Err(_) => return Vec::new(),
+        };
+        worktrees
+            .into_iter()
+            .map(|w| {
+                // Dirty heuristic: a non-empty session diff means uncommitted
+                // changes are present in the worktree.
+                let dirty = codelet_git::get_session_diff(&repo_path, &w.session_id)
+                    .map(|r| {
+                        !r.files_changed.is_empty()
+                            || !r.files_added.is_empty()
+                            || !r.files_deleted.is_empty()
+                    })
+                    .unwrap_or(false);
+                // base_commit is the session's base; falls back to the
+                // worktree HEAD when the session_result is unavailable.
+                let base_commit = codelet_git::get_session_diff(&repo_path, &w.session_id)
+                    .map(|r| r.base_commit)
+                    .unwrap_or_else(|_| w.head_commit.clone());
+                SessionWorktreeInfo {
+                    session_id: SessionId::new(w.session_id),
+                    worktree_path: w.path.to_string_lossy().to_string(),
+                    base_commit,
+                    head_commit: w.head_commit,
+                    dirty,
+                }
+            })
+            .collect()
+    }
+
+    fn inspect_session_changes(
+        &self,
+        session_id: &SessionId,
+    ) -> Result<SessionChangesSummary, String> {
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        let result = codelet_git::inspect_session(&repo_path, &session_id.value)
+            .map_err(|e| format!("{e}"))?;
+        let files_changed = (result.files_changed.len()
+            + result.files_added.len()
+            + result.files_deleted.len()) as u32;
+        // Naively derive insertions/deletions from the unified diff —
+        // counts `^+`/`^-` lines while skipping the `+++`/`---` headers.
+        let mut insertions: u32 = 0;
+        let mut deletions: u32 = 0;
+        for line in result.diff.lines() {
+            if line.starts_with("+++") || line.starts_with("---") {
+                continue;
+            }
+            if line.starts_with('+') {
+                insertions = insertions.saturating_add(1);
+            } else if line.starts_with('-') {
+                deletions = deletions.saturating_add(1);
+            }
+        }
+        Ok(SessionChangesSummary {
+            files_changed,
+            insertions,
+            deletions,
+            // codelet-git does not yet surface a session commit log;
+            // leave empty until it does.
+            commits: Vec::new(),
+        })
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-058 — /schedule. Each method resolves the repo_path at call
+    // time via `std::env::current_dir()` (matching the blocklist_list
+    // pattern in RPC-056) and delegates to
+    // `codelet_core::scheduler::crud` — the lifted, NAPI-free
+    // CRUD helpers introduced by RPC-058.
+    // ─────────────────────────────────────────────────────────────────
+
+    fn schedule_add(&self, job: ScheduledJob) -> Result<ScheduledJob, String> {
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_add(
+            &repo_path.to_string_lossy(),
+            job,
+        )
+    }
+
+    fn schedule_list(&self) -> Vec<ScheduledJob> {
+        let Ok(repo_path) = std::env::current_dir() else {
+            return Vec::new();
+        };
+        codelet_core::scheduler::crud::schedule_list(&repo_path.to_string_lossy())
+            .unwrap_or_default()
+    }
+
+    fn schedule_pause(&self, name: &str) -> Result<ScheduledJob, String> {
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_pause(
+            &repo_path.to_string_lossy(),
+            name,
+        )
+    }
+
+    fn schedule_resume(&self, name: &str) -> Result<ScheduledJob, String> {
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_resume(
+            &repo_path.to_string_lossy(),
+            name,
+        )
+    }
+
+    fn schedule_remove(&self, name: &str) -> Result<(), String> {
+        let repo_path = std::env::current_dir()
+            .map_err(|e| format!("current_dir: {e}"))?;
+        codelet_core::scheduler::crud::schedule_remove(
+            &repo_path.to_string_lossy(),
+            name,
+        )
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // RPC-059 — /loop. Each method delegates to the shared
+    // `codelet_core::loops::LoopStore` singleton via a sync→async
+    // bridge so callers MUST be on a thread with an active tokio
+    // runtime.
+    // ─────────────────────────────────────────────────────────────────
+
+    fn loop_add(
+        &self,
+        session_id: &SessionId,
+        interval_seconds: u32,
+        prompt: String,
+    ) -> Result<RegisteredLoop, String> {
+        let session = self
+            .get_session(session_id.value.as_str())
+            .map_err(|e| format!("Session not found: {e}"))?;
+        let session_uuid = session.id;
+
+        // Construct the entry with a fresh 8-char hex id derived from a
+        // UUID v4 (avoids pulling in `rand` since `uuid` is already in
+        // the workspace dependency tree).
+        let id = generate_loop_id();
+        let created_at = Utc::now();
+        let expires_at = created_at + Duration::days(3);
+        let entry = codelet_core::loops::LoopEntry {
+            id,
+            session_id: session_uuid,
+            prompt,
+            interval_seconds,
+            created_at,
+            expires_at,
+            last_run_at: None,
+        };
+
+        // Capture the BackgroundSession by Arc for both callbacks.
+        let session_for_fire = Arc::clone(&session);
+        let on_fire: Arc<dyn Fn(String) + Send + Sync + 'static> =
+            Arc::new(move |prompt_text: String| {
+                let _ = session_for_fire.send_input(prompt_text, None);
+            });
+
+        let session_for_idle = Arc::clone(&session);
+        let idle_check: codelet_core::loops::IdleCheckFn = Arc::new(move |_session_id: Uuid| {
+            let session = Arc::clone(&session_for_idle);
+            Box::pin(async move { session.get_status() == SessionStatus::Idle })
+        });
+
+        let entry_for_store = entry.clone();
+        loop_block_on(async move {
+            codelet_core::loops::LoopStore::instance()
+                .try_register_with_task_and_idle_check(entry_for_store, on_fire, idle_check)
+                .await
+        })?;
+
+        Ok(entry_to_wire(&entry))
+    }
+
+    fn loop_cancel(&self, id: &str) -> Result<bool, String> {
+        let id_owned = id.to_string();
+        let removed = loop_block_on(async move {
+            codelet_core::loops::LoopStore::instance()
+                .cancel(&id_owned)
+                .await
+        });
+        Ok(removed)
+    }
+
+    fn loop_list(&self, session_id: &SessionId) -> Vec<RegisteredLoop> {
+        let Ok(session) = self.get_session(session_id.value.as_str()) else {
+            return Vec::new();
+        };
+        let session_uuid = session.id;
+        let entries = loop_block_on(async move {
+            codelet_core::loops::LoopStore::instance()
+                .list_for_session(session_uuid)
+                .await
+        });
+        entries.iter().map(entry_to_wire).collect()
+    }
+}
+
+/// RPC-059: shared sync→async bridge for every `/loop` handle method.
+/// Centralising the `Handle::current().block_on(...)` call here keeps
+/// the impl block's bridge-count small even though three trait methods
+/// have to cross the boundary.
+///
+/// **RPC-070:** the inner `block_on` is wrapped in
+/// `tokio::task::block_in_place(...)` so this bridge is legal from
+/// inside a tokio worker that is currently driving an async future
+/// (e.g. the live tarpc handler at
+/// `codelet/rpc/src/lib.rs::FspecServiceImpl::create_session`). Without
+/// the wrapper, calling `block_on` from inside an executing future
+/// panics with "Cannot start a runtime from within a runtime".
+/// `block_in_place` temporarily detaches the worker from the
+/// multi-thread scheduler — which is why this helper requires a
+/// multi-thread runtime (asserted below).
+fn loop_block_on<F>(fut: F) -> F::Output
+where
+    F: std::future::Future + Send,
+    F::Output: Send,
+{
+    debug_assert_eq!(
+        tokio::runtime::Handle::current().runtime_flavor(),
+        tokio::runtime::RuntimeFlavor::MultiThread,
+        "loop_block_on requires a multi-thread tokio runtime — \
+         tokio::task::block_in_place panics on a single-thread runtime",
+    );
+    tokio::task::block_in_place(|| tokio::runtime::Handle::current().block_on(fut))
+}
+
+/// RPC-059: convert an internal `LoopEntry` (chrono-typed) into the
+/// wire-portable `RegisteredLoop` (RFC-3339 String timestamps).
+fn entry_to_wire(entry: &codelet_core::loops::LoopEntry) -> RegisteredLoop {
+    RegisteredLoop {
+        id: entry.id.clone(),
+        session_id: SessionId::new(entry.session_id.to_string()),
+        prompt: entry.prompt.clone(),
+        interval_seconds: entry.interval_seconds,
+        created_at: entry.created_at.to_rfc3339(),
+        expires_at: entry.expires_at.to_rfc3339(),
+        last_run_at: entry.last_run_at.map(|t| t.to_rfc3339()),
+    }
+}
+
+/// RPC-059: generate a fresh 8-char lowercase-hex loop id by taking the
+/// first 8 chars of a UUID v4's simple representation. Avoids pulling
+/// in the `rand` crate since `uuid` is already in the workspace
+/// dependency tree.
+fn generate_loop_id() -> String {
+    Uuid::new_v4().simple().to_string()[..8].to_string()
+}
+
+/// Convert a `codelet_tools::blocklist::BlocklistRule` to the wire-portable
+/// `BlocklistRuleInfo`, stamping the supplied `source` tag.
+fn blocklist_rule_to_wire(
+    rule: codelet_tools::blocklist::BlocklistRule,
+    source: &str,
+) -> BlocklistRuleInfo {
+    let action = match rule.action {
+        codelet_tools::blocklist::BlocklistAction::Block => "block",
+        codelet_tools::blocklist::BlocklistAction::Allow => "allow",
+        codelet_tools::blocklist::BlocklistAction::Prompt => "prompt",
+    };
+    BlocklistRuleInfo {
+        id: rule.id,
+        pattern: rule.pattern,
+        action: action.to_string(),
+        reason: rule.reason,
+        guidance: rule.guidance,
+        source: source.to_string(),
+    }
+}

@@ -6,7 +6,6 @@
 @rpc
 @RPC-008
 Feature: EmbeddedFspecBackend smoke test
-
   End-to-end smoke test exercising EmbeddedFspecBackend against a real
   tempdir-backed WorkUnitsWatcher hosting a real SharedFspecService.
   Round-trips list_work_units().await and the work_units_rx()

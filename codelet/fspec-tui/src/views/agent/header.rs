@@ -71,6 +71,11 @@ pub struct SessionHeader<'a> {
     pub compaction_reduction: Option<i32>,
     /// RPC-029: gates the tokens-per-second magenta segment.
     pub is_loading: bool,
+    /// RPC-061: optional subordinate-of label, e.g. `"abcdef12"` or
+    /// `"abcdef12+2"`. When `Some`, the SessionHeader renders
+    /// `[Subordinate of: <label>]` (cyan, no modifier) directly after
+    /// the model/badges block. When `None`, no badge is painted.
+    pub subordinate_label: Option<&'a str>,
 }
 
 impl<'a> Widget for SessionHeader<'a> {
@@ -94,6 +99,7 @@ impl<'a> Widget for SessionHeader<'a> {
             self.is_isolated,
             self.is_debug_enabled,
             self.is_select_mode,
+            self.subordinate_label,
         );
         let right = build_right_line(
             &self.tokens,

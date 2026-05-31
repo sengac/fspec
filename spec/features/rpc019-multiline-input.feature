@@ -7,26 +7,25 @@
 @input
 @ui-enhancement
 Feature: RPC-019 AgentView multi-line input (tui-textarea-backed MultiLineInput)
-
   """
   RPC-019 (input slice) — AgentView's single-line `tui_input::Input`
   is replaced by a tui-textarea-backed `MultiLineInput` widget.
 
   Behaviour ported from src/tui/components/MultiLineInput.tsx:
-    - Plain Enter submits the buffer (emits Action::InputSubmitted)
-      and resets the textarea.
-    - Shift+Enter inserts a literal newline.
-    - Pasted text with embedded '\n' becomes multi-line in-place.
-    - Up/Down arrows move between visual lines while the cursor has a
-      neighbour line; on the top/bottom boundary they are forwarded
-      Ignored.
-    - Shift+arrow chords are translated into navigation Actions
-      (HistoryPrev, HistoryNext, SessionPrev, SessionNext) — RPC-019
-      ONLY emits them; RPC-021 will route them through App::dispatch.
-    - ESC always emits Action::BackToBoard (preserved from RPC-012).
-    - When the buffer is empty, the input row paints
-      "> Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions
-      | 'Tab' select turn)" in dim grey + green prompt.
+  - Plain Enter submits the buffer (emits Action::InputSubmitted)
+  and resets the textarea.
+  - Shift+Enter inserts a literal newline.
+  - Pasted text with embedded '\n' becomes multi-line in-place.
+  - Up/Down arrows move between visual lines while the cursor has a
+  neighbour line; on the top/bottom boundary they are forwarded
+  Ignored.
+  - Shift+arrow chords are translated into navigation Actions
+  (HistoryPrev, HistoryNext, SessionPrev, SessionNext) — RPC-019
+  ONLY emits them; RPC-021 will route them through App::dispatch.
+  - ESC always emits Action::BackToBoard (preserved from RPC-012).
+  - When the buffer is empty, the input row paints
+  "> Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions
+  | 'Tab' select turn)" in dim grey + green prompt.
 
   Pair: render tests live in
   codelet/fspec-tui/tests/view_agent_multiline_input_rpc019.rs.

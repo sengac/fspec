@@ -72,7 +72,12 @@ async fn app_bootstrap_calls_list_work_units_and_seeds_the_left_pane() {
     assert_eq!(app.board_store().selected_index_for("backlog"), 0);
 }
 
-/// Scenario: App bootstrap spawns three subscriber tasks via tokio::spawn on the host runtime
+/// Scenario: App bootstrap spawns the subscriber tasks via tokio::spawn on the host runtime
+///
+/// RPC-045 superseded the original RPC-009 "three subscriber tasks"
+/// contract by adding a fourth subscriber for `status_changes_rx`. The
+/// scenario name and assertion below were updated to assert the new
+/// task count.
 #[tokio::test]
 async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host_runtime() {
     // @step Given an App constructed against a MockBackend on a `#[tokio::test]` runtime
@@ -81,8 +86,9 @@ async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host
     let mut app = App::new(backend);
     // @step When the App's bootstrap runs
     app.bootstrap().await.expect("bootstrap");
-    // @step Then exactly three subscriber tasks are alive on the current tokio Handle
-    assert_eq!(app.subscriber_task_count(), 3);
+    // @step Then exactly four subscriber tasks are alive on the current tokio Handle
+    //         (RPC-045: work_units_rx + chunks_rx + logs_rx + status_changes_rx)
+    assert_eq!(app.subscriber_task_count(), 4);
     // RPC-012 lazy-session: prime the chunks filter with a session id
     // so the chunks subscriber forwards.
     app.dispatch(Action::SessionCreated(SessionId::new("s-mock-1")));
@@ -92,14 +98,14 @@ async fn app_bootstrap_spawns_three_subscriber_tasks_via_tokio_spawn_on_the_host
         .await
         .expect("Action::WorkUnitsLoaded on bus");
     assert!(matches!(action, Action::WorkUnitsLoaded(units) if units.len() == 1));
-    // @step And one task drains `backend.chunks_rx()` filters by the active session id and sends `Action::ChunkReceived(id, chunk)` to the action bus
+    // @step And one task drains `backend.chunks_rx()` and forwards `Action::ChunkReceived(id, chunk)` for EVERY session (RPC-045 removed the active-session filter)
     mock.push_chunk(SessionId::new("s-mock-1"), StreamChunk::text("x".to_string()));
     let action = wait_for_action(&mut app, |a| matches!(a, Action::ChunkReceived(_, _)))
         .await
         .expect("Action::ChunkReceived on bus");
     assert!(matches!(action, Action::ChunkReceived(_, _)));
     // @step And one task drains `backend.logs_rx()` and forwards records to the action bus or tracing layer
-    // (subscriber_task_count == 3 above proves all three are alive).
+    // (subscriber_task_count == 4 above proves all four are alive).
     // @step And no `tokio::runtime::Builder` or `Runtime::new()` call appears in the App bootstrap path
     // (asserted by source_shape_rpc009.rs)
 }
@@ -150,7 +156,12 @@ async fn chunks_broadcast_events_for_the_active_session_become_action_chunkrecei
     assert!(matches!(action, Action::ChunkReceived(id, _) if id == SessionId::new("s-mock-1")));
 }
 
-/// Scenario: chunks broadcast events for an OTHER session do NOT become Action::ChunkReceived
+/// Scenario: chunks broadcast events for an OTHER session ALSO become Action::ChunkReceived
+///
+/// RPC-045 supersedes the original RPC-009 behaviour where the chunks
+/// subscriber filtered by `AgentViewStore.current_session`. Background
+/// sessions now accumulate scrollback + per-session state regardless of
+/// focus, so the subscriber forwards every `(SessionId, StreamChunk)`.
 #[tokio::test]
 async fn chunks_broadcast_events_for_an_other_session_do_not_become_action_chunkreceived() {
     // @step Given an App with active_session = Some(SessionId("s-mock-1")) and bootstrap complete
@@ -161,9 +172,15 @@ async fn chunks_broadcast_events_for_an_other_session_do_not_become_action_chunk
     app.dispatch(Action::SessionCreated(SessionId::new("s-mock-1")));
     // @step When the test calls `mock.push_chunk(SessionId::new("s-other"), StreamChunk::text("not for us".into()))`
     mock.push_chunk(SessionId::new("s-other"), StreamChunk::text("not for us".to_string()));
-    // @step Then within 200ms the App's action bus receives no `Action::ChunkReceived`
-    let action = wait_for_action(&mut app, |a| matches!(a, Action::ChunkReceived(_, _))).await;
-    assert!(action.is_none(), "expected no ChunkReceived for other session");
+    // @step Then within 200ms the App's action bus receives an `Action::ChunkReceived` for the other session (RPC-045: no active-session filter)
+    let action = wait_for_action(&mut app, |a| {
+        matches!(a, Action::ChunkReceived(id, _) if id == &SessionId::new("s-other"))
+    })
+    .await;
+    assert!(
+        action.is_some(),
+        "RPC-045 expects ChunkReceived to be forwarded for background sessions"
+    );
 }
 
 /// Scenario: Action::InputSubmitted dispatches backend.send_input and is forwarded to compositor.update
@@ -222,7 +239,8 @@ async fn subscriber_tasks_honour_recverror_lagged_by_logging_at_debug_and_contin
     // @step When the work_units subscriber task observes `RecvError::Lagged(n)`
     // @step Then the task does NOT panic
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-    assert_eq!(app.subscriber_task_count(), 3);
+    // RPC-045 added a 4th subscriber (status_changes_rx) so the count is now 4.
+    assert_eq!(app.subscriber_task_count(), 4);
     // @step And the task subsequently re-fetches a snapshot via `backend.list_work_units()` and emits a fresh `Action::WorkUnitsLoaded`
     mock.seed_work_units(vec![wu("FRESH-001", "done")]);
     let action = wait_for_action(&mut app, |a| matches!(a, Action::WorkUnitsLoaded(_)))

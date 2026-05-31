@@ -19,7 +19,7 @@ use codelet_napi::graph::learnings_extraction::extract_learnings_from_text;
 use graph_test_helpers::{count_nodes, find_node, make_decision};
 
 /// The Learnings graph schema.
-const LEARNINGS_SCHEMA: &str = include_str!("../schemas/learnings.pg");
+const LEARNINGS_SCHEMA: &str = include_str!("../../graph/schemas/learnings.pg");
 
 /// Helper: create an isolated Learnings graph database in a temp directory.
 async fn setup_learnings_db(temp_dir: &std::path::Path) -> GraphDatabase {

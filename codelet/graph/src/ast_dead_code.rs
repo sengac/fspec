@@ -5,7 +5,7 @@
 //!
 //! Extracted from `ast_dispatch.rs` for file size compliance.
 
-use crate::graph::database::GraphDatabase;
+use crate::database::GraphDatabase;
 use serde_json::Value;
 use tracing::warn;
 

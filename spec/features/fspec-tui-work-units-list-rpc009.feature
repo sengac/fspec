@@ -7,7 +7,6 @@
 @RPC-009
 @critical
 Feature: Work units list view (RPC-009)
-
   """
   Renders via ratatui core `List` + `ListState` + `Block::default().borders(Borders::ALL)` (NOT tui-widget-list — that's RPC-002 Slice 03/04). State: `WorkUnitsListView { items: Vec<WorkUnitInfo>, state: ListState, focused: bool }`. Each `ListItem` is `format!("{} {}", id, status)` styled by status from the existing Theme. Selection is single-item via `state.select(Some(idx))`. j/Down → `state.select(Some((i+1).min(items.len().saturating_sub(1))))`; k/Up → `state.select(Some(i.saturating_sub(1)))`. Focused border style swaps on the wrapping Block based on `focused: bool`. Reads `backend.work_units_rx()` for live updates (via App-level subscriber task converting messages into Action::WorkUnitsLoaded) and is seeded by `backend.list_work_units()` during App bootstrap.
   """

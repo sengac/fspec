@@ -21,10 +21,10 @@ Feature: Pure-Rust WorkUnitsWatcher in codelet-core
   and the WebSocket fan-out task in codelet/rpc-server).
 
   Public surface (pure-Rust):
-    pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>>
-    pub struct WorkUnitsWatcher with new(&Path) -> Result<Self>,
-                                     snapshot() -> Vec<WorkUnitInfo>,
-                                     subscribe() -> tokio::sync::broadcast::Receiver<Vec<WorkUnitInfo>>
+  pub fn read_snapshot(workspace: &Path) -> Result<Vec<WorkUnitInfo>>
+  pub struct WorkUnitsWatcher with new(&Path) -> Result<Self>,
+  snapshot() -> Vec<WorkUnitInfo>,
+  subscribe() -> tokio::sync::broadcast::Receiver<Vec<WorkUnitInfo>>
 
   Broadcast capacity is a bounded `broadcast::channel(64)` per
   architecture note 12 — lagging subscribers receive `RecvError::Lagged`
@@ -32,8 +32,8 @@ Feature: Pure-Rust WorkUnitsWatcher in codelet-core
   full snapshot, not an incremental delta).
 
   References: spec/attachments/RPC-006/plan.md (Step 1);
-              spec/attachments/RPC-002/rpc-002-feasibility.md §5.1;
-              spec/attachments/RPC-006/ast-research-watcher-lift.md §1.
+  spec/attachments/RPC-002/rpc-002-feasibility.md §5.1;
+  spec/attachments/RPC-006/ast-research-watcher-lift.md §1.
   """
 
   Background: User Story

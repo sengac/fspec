@@ -11,7 +11,6 @@
 @rpc
 @RPC-011
 Feature: DisconnectDialog CR-1 baseline (action bus + critical dialog + r/q handlers)
-
   """
   CR-1 baseline absorbed from RPC-010 review. The DisconnectDialog Component is pushed onto the
   Compositor at Priority::Critical when Action::Disconnected fires. While topmost, j/k/?/Tab are

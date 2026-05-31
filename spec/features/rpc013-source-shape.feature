@@ -5,21 +5,20 @@
 @infrastructure
 @rpc
 Feature: RPC-013 source-shape — Navigator restructure + FooterView deletion + AgentView layout
-
   """
   RPC-013 (slice 3 of 3) — Source-shape regression locking the structural
   invariants for the view-aware footer refactor:
-    [1] codelet/fspec-tui/src/views/footer.rs is DELETED.
-    [2] `FooterView` identifier disappears from views/mod.rs, lib.rs, and
-        app/state.rs (after comment stripping).
-    [3] Navigator::render_with_stores no longer reserves a Length(1)
-        footer row.
-    [4] AgentView::render_with_store splits into Min(0) + Length(3) +
-        Length(1) and paints the placeholder footer literal.
-    [5] BoardView source carries the literal UnifiedBoardLayout footer
-        string.
-    [6] File-size invariant (< 300 LoC) preserved for every modified
-        view file.
+  [1] codelet/fspec-tui/src/views/footer.rs is DELETED.
+  [2] `FooterView` identifier disappears from views/mod.rs, lib.rs, and
+  app/state.rs (after comment stripping).
+  [3] Navigator::render_with_stores no longer reserves a Length(1)
+  footer row.
+  [4] AgentView::render_with_store splits into Min(0) + Length(3) +
+  Length(1) and paints the placeholder footer literal.
+  [5] BoardView source carries the literal UnifiedBoardLayout footer
+  string.
+  [6] File-size invariant (< 300 LoC) preserved for every modified
+  view file.
 
   Pair: tests live in codelet/fspec-tui/tests/source_shape_rpc013.rs.
   """

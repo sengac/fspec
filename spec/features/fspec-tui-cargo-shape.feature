@@ -6,7 +6,6 @@
 @rpc
 @RPC-008
 Feature: codelet/fspec-tui Cargo.toml + workspace shape
-
   Source-shape regressions for the codelet/fspec-tui crate's workspace
   registration, [dependencies] / [dev-dependencies] policy, and the
   ban on own-runtime construction. Mirrors the pattern in

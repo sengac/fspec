@@ -80,9 +80,25 @@ async fn enter_work_unit_hands_off_to_agent_view_and_triggers_lazy_session_creat
     assert_eq!(mock.create_session_calls(), 1);
 }
 
-/// Scenario: Shift+Right on an unattached work unit raises the create-session dialog flag
+/// Scenario: Shift+Right on an unattached work unit mounts the
+/// CreateSessionDialog onto the compositor.
+///
+/// Originally this test asserted only that two orphan store flags
+/// (`show_create_session_dialog`, `should_auto_create_session`) were
+/// raised. That contract was a bug surfaced by the RPC-097 re-review:
+/// no render-pipeline subscriber consumed those flags, so the dialog
+/// never appeared on the first Shift+Right from BoardView — the user
+/// had to press it a second time to trigger the working AgentView
+/// dispatch path.
+///
+/// The RPC-097 re-review fix rewires this arm to call the canonical
+/// RPC-060 helper `handle_open_create_session_dialog(None)` so the
+/// dialog is actually pushed onto the Compositor. `should_auto_create_session`
+/// is intentionally NOT set — the dialog gives the user an explicit
+/// Yes / Yes - Isolated / Cancel choice; auto-create is the wrong
+/// semantic for this path.
 #[tokio::test]
-async fn open_agent_view_with_none_raises_create_session_dialog_flag() {
+async fn open_agent_view_with_none_mounts_create_session_dialog() {
     // @step Given an App with bootstrap complete and BoardStore seeded with [AUTH-001 backlog]
     let mock = Arc::new(MockBackend::new());
     mock.seed_work_units(vec![wu("AUTH-001", "backlog")]);
@@ -92,12 +108,28 @@ async fn open_agent_view_with_none_raises_create_session_dialog_flag() {
     assert!(app.board_store().session_for("AUTH-001").is_none());
     // @step When the App dispatches Action::OpenAgentView(None)
     app.dispatch(Action::OpenAgentView(None));
-    // @step Then AgentViewStore.show_create_session_dialog returns true
+    // @step Then the Compositor contains CREATE_SESSION_DIALOG_ID (RPC-097 re-review)
+    assert!(
+        app.compositor().contains(
+            codelet_fspec_tui::components::create_session_dialog::CREATE_SESSION_DIALOG_ID
+        ),
+        "Action::OpenAgentView(None) must mount CreateSessionDialog onto the compositor"
+    );
+    // @step And AgentViewStore.show_create_session_dialog returns true (backward-compat flag)
     assert!(app.agent_view_store().show_create_session_dialog());
-    // @step And AgentViewStore.should_auto_create_session returns true
-    assert!(app.agent_view_store().should_auto_create_session());
-    // @step And the Navigator's active_view equals ViewMode::Agent
-    assert_eq!(app.active_view(), ViewMode::Agent);
+    // @step And AgentViewStore.should_auto_create_session returns false (no auto-spawn — dialog handles user choice)
+    assert!(
+        !app.agent_view_store().should_auto_create_session(),
+        "should_auto_create_session must be false: the dialog itself collects the user's \
+         Yes / Yes-Isolated / Cancel choice via Action::CreateSessionSubmitted/Cancelled"
+    );
+    // @step And the Navigator's active_view stays ViewMode::Board (RPC-097: dialog overlays board; view switch only on confirm)
+    assert_eq!(
+        app.active_view(),
+        ViewMode::Board,
+        "Action::OpenAgentView(None) must NOT switch the active view — dialog overlays BoardView; \
+         view switch is deferred to handle_create_session_submitted (TS parity with BoardView.tsx onConfirm)"
+    );
 }
 
 /// Scenario: Shift+Right on an attached work unit sets the navigation target
@@ -227,7 +259,14 @@ async fn navigator_renders_board_view_as_first_landing_view() {
     assert!(!joined.contains("Agent — "));
 }
 
-/// Scenario: Chunks subscriber filter follows AgentViewStore.current_session via watch channel
+/// Scenario: Chunks subscriber forwards every (SessionId, StreamChunk) regardless of focus
+///
+/// RPC-045 removed the original RPC-012 active-session filter on the
+/// chunks subscriber so background sessions accumulate state without
+/// being dropped. This test was rewritten to pin the NEW behaviour
+/// (both chunks reach the bus) and lives here to keep the source-shape
+/// invariant that ties `rpc012-board-agent-navigation.feature` to this
+/// test file.
 #[tokio::test]
 async fn chunks_subscriber_filter_follows_current_session_via_watch_channel() {
     let mock = Arc::new(MockBackend::new());
@@ -248,24 +287,26 @@ async fn chunks_subscriber_filter_follows_current_session_via_watch_channel() {
         Some(&SessionId::new("s-2"))
     );
     // @step And the App publishes Some(SessionId::new("s-2")) onto the chunks watch channel
-    //   (Visible via subscriber behaviour below.)
-    // @step And a subsequent chunk for SessionId::new("s-1") is dropped by the chunks subscriber
-    // @step And a subsequent chunk for SessionId::new("s-2") becomes Action::ChunkReceived on the action bus
-    mock.push_chunk(SessionId::new("s-1"), StreamChunk::text("dropped".to_string()));
-    mock.push_chunk(SessionId::new("s-2"), StreamChunk::text("kept".to_string()));
+    //   (RPC-045: the watch channel is no longer consumed by the
+    //   chunks subscriber — every chunk is forwarded regardless. The
+    //   watch channel itself is preserved for RPC-026 attach paths.)
+    // @step And a subsequent chunk for SessionId::new("s-1") is forwarded as Action::ChunkReceived (RPC-045: no filter)
+    // @step And a subsequent chunk for SessionId::new("s-2") is forwarded as Action::ChunkReceived
+    mock.push_chunk(SessionId::new("s-1"), StreamChunk::text("background".to_string()));
+    mock.push_chunk(SessionId::new("s-2"), StreamChunk::text("foreground".to_string()));
     // Allow the subscriber task to forward.
     tokio::time::sleep(std::time::Duration::from_millis(50)).await;
-    let mut saw_kept = false;
-    let mut saw_dropped = false;
+    let mut saw_s2 = false;
+    let mut saw_s1 = false;
     while let Some(action) = app.try_recv_action() {
         match action {
-            Action::ChunkReceived(sid, _) if sid == SessionId::new("s-2") => saw_kept = true,
-            Action::ChunkReceived(sid, _) if sid == SessionId::new("s-1") => saw_dropped = true,
+            Action::ChunkReceived(sid, _) if sid == SessionId::new("s-2") => saw_s2 = true,
+            Action::ChunkReceived(sid, _) if sid == SessionId::new("s-1") => saw_s1 = true,
             _ => {}
         }
     }
-    assert!(saw_kept, "expected a chunk for s-2 to reach the bus");
-    assert!(!saw_dropped, "chunk for s-1 must be filtered out");
+    assert!(saw_s2, "expected ChunkReceived for s-2 (focused) on the bus");
+    assert!(saw_s1, "expected ChunkReceived for s-1 (background) on the bus per RPC-045");
 }
 
 /// Scenario: Navigator renders AgentView when active_view is Agent

@@ -8,45 +8,54 @@
 //
 // Layer 2 (binary index + LRU) and Layer 3 (TypeScript deferral)
 // tests are added during implementing phase once those APIs exist.
+//
+// RPC-035: relocated from codelet/napi/src/persistence/lazy_init_tests.rs
+// into codelet-core. `use super::*;` becomes `use crate::persistence::*;`
+// (the canonical codelet-core import path) and the setup helper calls
+// codelet_common::set_data_directory + reset_stores_for_tests directly.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    // RPC-035: see note in tests.rs — preserve the pre-relocation
+    // `format!("X {}", y)` style.
+    clippy::uninlined_format_args
+)]
 
-use super::*;
+use crate::persistence::*;
 use super::tests::TEST_MUTEX;
 use std::path::PathBuf;
 
 /// Setup an isolated temp directory for a test.
+///
+/// RPC-035: replaces the previous `crate::persistence::set_data_directory`
+/// indirection (the deleted NAPI shim) with the codelet-core-only sequence:
+/// `codelet_common::set_data_directory` + `reset_stores_for_tests()`.
 fn setup_lazy_test_env() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
     let guard = TEST_MUTEX.lock().unwrap();
     let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
-    set_data_directory(temp_dir.path().to_path_buf()).expect("Failed to set data directory");
+    codelet_common::set_data_directory(temp_dir.path().to_path_buf())
+        .expect("Failed to set data directory");
+    reset_stores_for_tests();
     (guard, temp_dir)
 }
 
 /// Check whether a specific store's global singleton is initialized (Some) or not (None).
 fn is_message_store_initialized() -> bool {
-    MESSAGE_STORE
-        .lock()
-        .map(|store| store.is_some())
-        .unwrap_or(false)
+    crate::persistence::is_message_store_initialized_for_tests()
 }
 
 fn is_session_store_initialized() -> bool {
-    SESSION_STORE
-        .lock()
-        .map(|store| store.is_some())
-        .unwrap_or(false)
+    crate::persistence::is_session_store_initialized_for_tests()
 }
 
 fn is_history_store_initialized() -> bool {
-    codelet_core::persistence::history::is_initialized_for_tests()
+    crate::persistence::history::is_initialized_for_tests()
 }
 
 fn is_blob_store_initialized() -> bool {
-    BLOB_STORE
-        .lock()
-        .map(|store| store.is_some())
-        .unwrap_or(false)
+    crate::persistence::is_blob_store_initialized_for_tests()
 }
 
 // ============================================================================
@@ -65,7 +74,7 @@ fn test_lazy_get_history_only_inits_history_store() {
     assert!(!is_history_store_initialized());
 
     // @step When get_history() is called
-    let result = get_history(Some(project.as_path()), Some(100));
+    let result = history::get(Some(project.as_path()), Some(100));
     assert!(result.is_ok());
 
     // @step Then only HistoryStore is initialized
@@ -178,9 +187,9 @@ fn test_lazy_session_resume_loads_only_that_session() {
     }
 
     // Reset store to verify messages load from storage
-    let mut msg = MESSAGE_STORE.lock().unwrap();
-    *msg = None;
-    drop(msg);
+    crate::persistence::reset_message_store_for_tests();
+
+
 
     // @step When get_session_messages() is called for that session
     let messages =
@@ -218,9 +227,9 @@ fn test_lazy_cross_session_search_loads_on_demand() {
     }
 
     // Reset store
-    let mut msg = MESSAGE_STORE.lock().unwrap();
-    *msg = None;
-    drop(msg);
+    crate::persistence::reset_message_store_for_tests();
+
+
 
     // @step And a MessageStore with a binary index
     // (Initialized lazily on first access)
@@ -252,7 +261,7 @@ fn test_lazy_shell_history_cross_session() {
     // @step Given 5 sessions exist for the current project with different command histories
     for i in 0..5 {
         let session = create_session(&format!("Hist Session {}", i), &project).expect("create");
-        add_history_entry(HistoryEntry::new(
+        history::add(HistoryEntry::new(
             format!("Command from session {}", i),
             project.clone(),
             session.id,
@@ -262,7 +271,7 @@ fn test_lazy_shell_history_cross_session() {
 
     // @step When the developer opens a new session
     // @step And presses Shift+Up to recall history
-    let history = get_history(Some(project.as_path()), Some(100)).expect("get_history");
+    let history = history::get(Some(project.as_path()), Some(100)).expect("get_history");
 
     // @step Then entries from all 5 previous sessions are available
     assert_eq!(history.len(), 5, "Should have entries from all 5 sessions");
@@ -285,14 +294,14 @@ fn test_lazy_search_command_cross_session() {
     let session3 = create_session("Session 3", &project).expect("create");
 
     // @step And session 1 has a command containing "deploy"
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "deploy to staging".to_string(),
         project.clone(),
         session1.id,
     ))
     .expect("add_history_entry");
 
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "run tests".to_string(),
         project.clone(),
         session2.id,
@@ -300,7 +309,7 @@ fn test_lazy_search_command_cross_session() {
     .expect("add_history_entry");
 
     // @step And session 3 has a command containing "deploy production"
-    add_history_entry(HistoryEntry::new(
+    history::add(HistoryEntry::new(
         "deploy production release".to_string(),
         project.clone(),
         session3.id,
@@ -309,7 +318,7 @@ fn test_lazy_search_command_cross_session() {
 
     // @step When the developer runs /search and types "deploy"
     let results =
-        search_history("deploy", Some(project.as_path())).expect("search_history");
+        history::search("deploy", Some(project.as_path())).expect("search_history");
 
     // @step Then results from both session 1 and session 3 are shown
     assert_eq!(results.len(), 2, "Should find 2 results matching 'deploy'");
@@ -344,9 +353,9 @@ fn test_lazy_forked_message_accessible() {
         .any(|m| m.message_id == original_msg_id));
 
     // Reset store to force reload from storage
-    let mut msg = MESSAGE_STORE.lock().unwrap();
-    *msg = None;
-    drop(msg);
+    crate::persistence::reset_message_store_for_tests();
+
+
 
     // @step When get_session_messages() is called for session B
     let messages_b = get_session_messages(&session_b).expect("get messages B");
@@ -385,9 +394,9 @@ fn test_lazy_append_and_immediate_read() {
 
     // @step And the binary index is updated on disk
     // Verify by resetting store and re-loading
-    let mut msg = MESSAGE_STORE.lock().unwrap();
-    *msg = None;
-    drop(msg);
+    crate::persistence::reset_message_store_for_tests();
+
+
 
     let loaded_again = get_message(msg_id)
         .expect("get after reset should succeed")

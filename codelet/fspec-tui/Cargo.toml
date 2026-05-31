@@ -39,6 +39,13 @@ tarpc.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
 
+# RPC-045: FspecCommandRequest runner serialises work-unit query results
+# back into the FspecResult.data String slot via serde_json::to_string.
+serde_json.workspace = true
+
+# RPC-059: `/loop` parser uses regex for leading/trailing interval matching.
+regex.workspace = true
+
 # Logging
 tracing.workspace = true
 
@@ -46,9 +53,10 @@ tracing.workspace = true
 insta.workspace = true
 tempfile.workspace = true
 tokio-test.workspace = true
-# RPC-017: cross-transport parity tests for move_work_unit_up/_down
-# build seed work-units.json blobs inline.
-serde_json.workspace = true
+# RPC-079: NotificationDialog / StatusDialog auto-dismiss timer tests
+# use `#[tokio::test(start_paused = true)]` + `tokio::time::advance` to
+# exercise the countdown without sleeping in wall-clock time.
+tokio = { workspace = true, features = ["test-util"] }
 
 # Real services used by integration fixtures
 codelet-core.workspace = true
@@ -64,6 +72,12 @@ uuid = { version = "1", features = ["v4"] }
 # RPC-025: timestamp_iso assertions parse RFC3339 strings round-tripped
 # through HistoryMatch.
 chrono = { version = "0.4" }
+# RPC-037: cross-transport parity tests compare bincode-encoded chunk
+# sequences across both transports.
+bincode = { workspace = true }
+# RPC-067: shared no-codelet-napi dependency-rule helpers used by
+# tests/no_napi_dependency.rs.
+codelet-test-helpers.workspace = true
 
 [lints]
 workspace = true

@@ -24,6 +24,7 @@ fn chunk(seq: u64, body: &str) -> AgentRenderedChunk {
     AgentRenderedChunk {
         seq,
         lines: vec![Line::from(Span::raw(body.to_string()))],
+        source: None,
     }
 }
 

@@ -1,0 +1,102 @@
+{
+  "scenarios": [
+    {
+      "name": "No codelet_napi reference and the 300-LoC ceiling holds",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc049.rs",
+          "lines": "57-93",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch.rs",
+              "lines": [
+                289,
+                290,
+                291,
+                292,
+                293,
+                294
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "components::Action declares the SessionResumeComplete variant",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc049.rs",
+          "lines": "96-106",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/components/mod.rs",
+              "lines": [
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dispatch_rpc026 declares the handle_session_resume_complete helper",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc049.rs",
+          "lines": "109-119",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc026.rs",
+              "lines": [
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/source_shape_rpc049.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch.rs",
+      "codelet/fspec-tui/src/components/mod.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc026.rs"
+    ],
+    "totalLinesCovered": 95
+  }
+}

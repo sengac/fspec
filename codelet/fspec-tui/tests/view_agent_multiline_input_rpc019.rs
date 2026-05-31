@@ -37,6 +37,30 @@ fn type_chars(view: &mut AgentView, s: &str) {
     }
 }
 
+/// RPC-052: each keystroke now emits `Action::PendingInputChanged` for
+/// debounced backend persistence. RPC-019 scenarios were written
+/// before that, so this helper skips the keystroke stream and yields
+/// the next "real" Action (submit / chord / nav).
+fn next_non_pending_input_changed(
+    rx: &mut UnboundedReceiver<Action>,
+) -> Option<Action> {
+    loop {
+        match rx.try_recv() {
+            Ok(Action::PendingInputChanged(_)) => continue,
+            Ok(other) => return Some(other),
+            Err(_) => return None,
+        }
+    }
+}
+
+/// RPC-052: assert no non-`PendingInputChanged` Action remains on the
+/// bus. Drains any keystroke `PendingInputChanged` events first.
+fn assert_no_non_pending_action(rx: &mut UnboundedReceiver<Action>) {
+    if let Some(other) = next_non_pending_input_changed(rx) {
+        panic!("unexpected Action on bus after draining PendingInputChanged: {other:?}");
+    }
+}
+
 fn render_rows(width: u16, height: u16, store: &mut AgentViewStore, view: &mut AgentView) -> Vec<String> {
     let mut term = Terminal::new(TestBackend::new(width, height)).expect("Terminal::new");
     term.draw(|frame| {
@@ -67,7 +91,8 @@ fn plain_enter_on_multi_line_input_submits_and_resets_the_buffer() {
     let _ = view.handle_event(&key(KeyCode::Enter, KeyModifiers::NONE));
 
     // @step Then AgentView emits Action::InputSubmitted("hello world")
-    let action = rx.try_recv().expect("Action::InputSubmitted on bus");
+    let action = next_non_pending_input_changed(&mut rx)
+        .expect("Action::InputSubmitted on bus");
     match action {
         Action::InputSubmitted(s) => assert_eq!(s, "hello world"),
         other => panic!("expected InputSubmitted, got {other:?}"),
@@ -92,10 +117,7 @@ fn shift_enter_inserts_a_literal_newline_instead_of_submitting() {
     type_chars(&mut view, "world");
 
     // @step Then no Action::InputSubmitted is emitted yet
-    assert!(
-        rx.try_recv().is_err(),
-        "no submit Action expected after Shift+Enter"
-    );
+    assert_no_non_pending_action(&mut rx);
 
     // @step And the MultiLineInput's buffer is exactly "hello\nworld"
     assert_eq!(view.input.value(), "hello\nworld");
@@ -272,7 +294,15 @@ fn shift_right_emits_action_session_next_without_modifying_the_buffer() {
     assert_eq!(view.input.value(), "draft");
 }
 
-/// Scenario: ESC inside AgentView emits Action::BackToBoard
+/// Scenario: ESC inside AgentView emits Action::AgentEscPressed
+///
+/// RPC-051: AgentView's default Esc arm no longer hard-codes
+/// `Action::BackToBoard` — it emits the cascade-aware
+/// `Action::AgentEscPressed`. `App::dispatch` then decides between
+/// interrupting a Running/Compacting session (level 4) and dispatching
+/// `Action::BackToBoard` (level 5). At the AgentView level we only
+/// assert that the cascade action is emitted; the routing decision
+/// belongs to `tests/keyboard_cascade_rpc051.rs`.
 #[test]
 fn esc_inside_agent_view_emits_action_back_to_board() {
     // @step Given an AgentView whose MultiLineInput contains "draft\nstill drafting"
@@ -283,9 +313,12 @@ fn esc_inside_agent_view_emits_action_back_to_board() {
     let result = view.handle_event(&key(KeyCode::Esc, KeyModifiers::NONE));
     assert!(matches!(result, EventResult::Consumed(_)), "ESC should be Consumed");
 
-    // @step Then AgentView emits Action::BackToBoard
-    let action = rx.try_recv().expect("Action::BackToBoard on bus");
-    assert!(matches!(action, Action::BackToBoard), "expected BackToBoard, got {action:?}");
+    // @step Then AgentView emits Action::AgentEscPressed (RPC-051 cascade entry point)
+    let action = rx.try_recv().expect("Action::AgentEscPressed on bus");
+    assert!(
+        matches!(action, Action::AgentEscPressed),
+        "expected AgentEscPressed, got {action:?}"
+    );
 
     // @step And the MultiLineInput's buffer is still exactly "draft\nstill drafting"
     assert_eq!(view.input.value(), "draft\nstill drafting");

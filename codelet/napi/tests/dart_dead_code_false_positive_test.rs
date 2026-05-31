@@ -21,10 +21,10 @@ mod graph_test_helpers;
 use graph_test_helpers::{find_edges, write_test_file};
 
 /// The AST code schema for loading extracted entities.
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// The AST queries for dead code detection.
-const AST_QUERIES: &str = include_str!("../schemas/ast-queries.gq");
+const AST_QUERIES: &str = include_str!("../../graph/schemas/ast-queries.gq");
 
 // ============================================================================
 // Scenario: Exclude test file functions from dead code results

@@ -16,10 +16,8 @@ use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use crate::components::{Action, EventResult};
 
 use super::file_search_popup::{FilePopupOutcome, FileSearchPopup};
-use super::multiline_input::InputEventOutcome;
+use super::multiline_input::{InputEventOutcome, InputGate};
 use super::popups::{classify_buffer, splice_file_selection, PopupTrigger};
-use super::resume_session_view::ResumeSessionViewOutcome;
-use super::search_history_view::SearchHistoryViewOutcome;
 use super::slash_command_popup::{PopupOutcome, SlashCommandPopup};
 use super::AgentView;
 
@@ -40,7 +38,6 @@ impl AgentView {
     }
 
     /// RPC-026: route the key through resume / search mode views FIRST.
-    /// Returns `Some(EventResult)` when a mode view consumed the key.
     fn handle_mode_view_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
         if let Some(result) = self.handle_resume_view_key(key) {
             return Some(result);
@@ -49,57 +46,6 @@ impl AgentView {
             return Some(result);
         }
         None
-    }
-
-    fn handle_resume_view_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
-        let visible_rows = self.mode_view_visible_rows();
-        let view = self.resume_view.as_mut()?;
-        match view.handle_key(key.code, key.modifiers, visible_rows) {
-            ResumeSessionViewOutcome::Selected(session_id) => {
-                self.resume_view = None;
-                self.emit(Action::AttachToSession(session_id));
-                Some(EventResult::consumed())
-            }
-            ResumeSessionViewOutcome::Dismiss => {
-                self.resume_view = None;
-                self.emit(Action::CloseResumeView);
-                Some(EventResult::consumed())
-            }
-            ResumeSessionViewOutcome::RequestDelete(session_id) => {
-                self.emit(Action::RequestDeleteSession(session_id));
-                Some(EventResult::consumed())
-            }
-            ResumeSessionViewOutcome::ConfirmedDelete(session_id) => {
-                self.emit(Action::ConfirmDeleteSession(session_id));
-                Some(EventResult::consumed())
-            }
-            ResumeSessionViewOutcome::CancelledDelete => Some(EventResult::consumed()),
-            ResumeSessionViewOutcome::Continued => Some(EventResult::consumed()),
-            ResumeSessionViewOutcome::Ignored => Some(EventResult::consumed()),
-        }
-    }
-
-    fn handle_search_view_key(&mut self, key: &KeyEvent) -> Option<EventResult> {
-        let visible_rows = self.mode_view_visible_rows();
-        let view = self.search_view.as_mut()?;
-        match view.handle_key(key.code, key.modifiers, visible_rows) {
-            SearchHistoryViewOutcome::FilterChanged(query) => {
-                self.emit(Action::SearchHistory(query));
-                Some(EventResult::consumed())
-            }
-            SearchHistoryViewOutcome::Selected(text) => {
-                self.search_view = None;
-                self.emit(Action::InsertIntoInput(text));
-                Some(EventResult::consumed())
-            }
-            SearchHistoryViewOutcome::Dismiss => {
-                self.search_view = None;
-                self.emit(Action::CloseSearchView);
-                Some(EventResult::consumed())
-            }
-            SearchHistoryViewOutcome::Continued => Some(EventResult::consumed()),
-            SearchHistoryViewOutcome::Ignored => Some(EventResult::consumed()),
-        }
     }
 
     /// RPC-020: route the key through the slash / file popup overlays.
@@ -202,6 +148,10 @@ impl AgentView {
             if let Some(result) = self.handle_popup_mouse(*m) {
                 return result;
             }
+            // RPC-094: wheel events that hit the scrollback rect.
+            if let Some(result) = self.handle_scrollback_mouse(*m) {
+                return result;
+            }
             return EventResult::ignored();
         }
         if let Event::Key(key) = event {
@@ -224,7 +174,9 @@ impl AgentView {
                 return result;
             }
             if key.code == KeyCode::Esc && key.modifiers.is_empty() {
-                self.emit(Action::BackToBoard);
+                // RPC-051 Esc-cascade: levels 1-3 consumed above;
+                // levels 4-5 decided in App::dispatch (need backend).
+                self.emit(Action::AgentEscPressed);
                 return EventResult::consumed();
             }
             if key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -239,6 +191,11 @@ impl AgentView {
                 self.emit(Action::ScrollbackPageDown);
                 return EventResult::consumed();
             }
+            // RPC-094: Home on an empty input jumps scrollback to 0.
+            if key.code == KeyCode::Home && key.modifiers.is_empty() && self.input.is_empty() {
+                self.emit(Action::ScrollbackHome);
+                return EventResult::consumed();
+            }
             if key.modifiers.contains(KeyModifiers::SHIFT) {
                 if let Some(action) = Self::shift_arrow_to_action(key.code) {
                     self.emit(action);
@@ -246,7 +203,27 @@ impl AgentView {
                 }
             }
         }
-        let outcome = self.input.handle_event(event);
+        let before = self.input.value();
+        // RPC-094: capture arrow direction for the Ignored branch.
+        let arrow_kind = match event {
+            Event::Key(k) if k.modifiers.is_empty() => match k.code {
+                KeyCode::Up => Some(KeyCode::Up),
+                KeyCode::Down => Some(KeyCode::Down),
+                _ => None,
+            },
+            _ => None,
+        };
+        // RPC-095: compute the gate from cached session status +
+        // popup state. block_edits while Compacting; suppress_enter
+        // also true during Compacting (Enter must NOT submit).
+        let gate = InputGate {
+            block_edits: self.last_is_compacting,
+            suppress_enter: self.last_is_compacting,
+        };
+        let outcome = match event {
+            Event::Key(key) => self.input.handle_key_gated(key.code, key.modifiers, gate),
+            other => self.input.handle_event(other),
+        };
         self.sync_popups();
         match outcome {
             InputEventOutcome::Submitted(value) => {
@@ -256,8 +233,27 @@ impl AgentView {
                 self.emit(Action::InputSubmitted(value));
                 EventResult::consumed()
             }
-            InputEventOutcome::Continued => EventResult::consumed(),
-            InputEventOutcome::Ignored => EventResult::ignored(),
+            InputEventOutcome::Continued => {
+                // RPC-052: emit PendingInputChanged ONLY when the
+                // buffer text actually changed.
+                let after = self.input.value();
+                if after != before {
+                    self.emit(Action::PendingInputChanged(after));
+                }
+                EventResult::consumed()
+            }
+            InputEventOutcome::Ignored => match arrow_kind {
+                // RPC-094: arrow at textarea edge → scrollback line.
+                Some(KeyCode::Up) => {
+                    self.emit(Action::ScrollbackLineUp);
+                    EventResult::consumed()
+                }
+                Some(KeyCode::Down) => {
+                    self.emit(Action::ScrollbackLineDown);
+                    EventResult::consumed()
+                }
+                _ => EventResult::ignored(),
+            },
         }
     }
 

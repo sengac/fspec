@@ -5,7 +5,6 @@
 @rpc
 @RPC-008
 Feature: HelpDialog (Critical-priority modal)
-
   Critical-priority modal triggered by the `?` key at App-level. Body
   lists exactly the `?`, ESC, and `q` keybindings via a tui_popup::Popup
   wrapped in a SizedWidgetRef adapter (per RPC-002 Q5 — production

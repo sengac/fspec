@@ -1,17 +1,32 @@
 [workspace]
 members = [
+    # RPC-072: NAPI-free home for the FspecAgentHooks impl + the agent
+    # loop that drains input_rx, dispatches to the session's LlmProvider,
+    # and emits StreamChunk::Text + Done back through
+    # BackgroundSession::handle_output. Created here so the `fspec`
+    # binary actually drives an LLM (RPC-072 supersedes RPC-030's
+    # planning-only scope).
+    "agent-loop",
     "cli",
     "common",
     "core",
     "fspec",
     "fspec-tui",
     "git",
+    "graph",
     "napi",
     "providers",
     "rpc",
     "rpc-embedded",
     "rpc-server",
     "rpc-types",
+    # RPC-038: NAPI-free home for SessionManager + BackgroundSession.
+    # Populated by RPC-039/RPC-040.
+    "sessions",
+    # RPC-067: shared test-only helpers for forbidden-arrow regression
+    # tests. Lives outside the napi/sessions arrow graph so any test
+    # crate can consume it without pulling forbidden dependencies.
+    "test-helpers",
     "tools",
     "tui",
 ]
@@ -26,15 +41,27 @@ repository = "https://github.com/rquast/codelet"
 [workspace.dependencies]
 # Internal
 codelet-cli = { path = "cli" }
+# RPC-072: NAPI-free hooks impl + agent_loop. Consumed by codelet-fspec.
+codelet-agent-loop = { path = "agent-loop" }
 codelet-common = { path = "common" }
 codelet-core = { path = "core" }
 codelet-fspec-tui = { path = "fspec-tui" }
 codelet-git = { path = "git" }
+codelet-graph = { path = "graph" }
 codelet-providers = { path = "providers" }
 codelet-rpc = { path = "rpc" }
 codelet-rpc-embedded = { path = "rpc-embedded" }
 codelet-rpc-server = { path = "rpc-server" }
 codelet-rpc-types = { path = "rpc-types" }
+# RPC-038: NAPI-free session manager crate skeleton. Populated by
+# RPC-039/RPC-040; downstream crates (codelet-fspec, codelet-napi) start
+# depending on it from Phase 4 onward.
+codelet-sessions = { path = "sessions" }
+# RPC-067: shared test-only helpers for forbidden-arrow regression
+# tests. Consumed under [dev-dependencies] by every workspace crate
+# that needs to enforce a no-codelet-napi (or any other forbidden-arrow)
+# rule from its tests/*.rs binaries.
+codelet-test-helpers = { path = "test-helpers" }
 codelet-tools = { path = "tools" }
 codelet-tui = { path = "tui" }
 
@@ -106,6 +133,15 @@ croner = "2"
 regex = "1"
 ctrlc = "3.4"
 once_cell = "1.19"
+lazy_static = "1.4"
+arc-swap = "1.7"
+# RPC-038: codelet-sessions hosts a per-session map keyed by SessionId
+# where insertion order matters (the JS SessionManager uses an ordered
+# Map). indexmap and parking_lot are pulled to the workspace level so
+# every future crate that needs them ("All dependencies are
+# workspace-versioned" — RPC-038 attachment) shares the same version.
+indexmap = "2"
+parking_lot = "0.12"
 
 # === Token Estimation (PROV-002) ===
 tiktoken-rs = "0.6"
@@ -247,3 +283,30 @@ codegen-units = 1
 debug = 1
 inherits = "test"
 opt-level = 0
+
+# RPC-043: Disk-bloat mitigation.
+#
+# Background: cargo has no built-in GC for stale build artifacts
+# (rust-lang/cargo#10589). The `target/debug/incremental/` directory
+# accumulates ~10-20 GB per `cargo test` cycle in this workspace
+# because:
+#   1. `codelet-napi` has 89 integration test files in tests/*.rs, each
+#      becoming its own test binary that statically links the full
+#      crate (which transitively pulls in nanograph + arrow +
+#      datafusion + lance + tantivy).
+#   2. Each test binary keeps its own incremental cache under
+#      target/debug/incremental/<crate-hash>/.
+#   3. Shape tests (codelet/napi/tests/session_bindings_shape.rs) spawn
+#      nested `cargo test --no-run -p codelet-napi` from within an
+#      already-running test binary, doubling the cache footprint.
+#
+# Setting `incremental = false` on the test profile kills the largest
+# single contributor to disk bloat without affecting the interactive
+# dev loop (`cargo build` / `cargo check` still use `[profile.dev]`
+# with incremental enabled).
+#
+# Per the Cargo book: "Incremental compilation is only used for
+# workspace members and 'path' dependencies" — i.e. exactly the
+# crates whose 89-binary fan-out is hurting us.
+[profile.test]
+incremental = false

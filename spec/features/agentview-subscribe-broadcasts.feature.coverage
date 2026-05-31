@@ -1,0 +1,348 @@
+{
+  "scenarios": [
+    {
+      "name": "Background-session chunks are routed by SessionId, not by focus",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "44-86",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionStateChange chunk updates per-session status in the store",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "88-111",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IsolationStateChange chunk updates per-session isolation state",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "113-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DebugStateChange chunk updates per-session debug flag",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "150-171",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FooterStateUpdate chunk refreshes the shared workspace info",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "173-208",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecCommandRequest for list-work-units round-trips back via send_fspec_result",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "209-286",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FspecCommandRequest with an unsupported command returns an error result",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "287-336",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionStatusChanged Action updates per-session status push-driven from status_changes_rx",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "338-360",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "chunks_rx Sender drop terminates the subscriber loop without panicking",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs",
+          "lines": "361-407",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/bootstrap.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agent_view_chunk_dispatch_rpc045.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/bootstrap.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc045.rs"
+    ],
+    "totalLinesCovered": 546
+  }
+}

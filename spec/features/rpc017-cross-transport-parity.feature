@@ -7,7 +7,6 @@
 @parity
 @work-units
 Feature: RPC-017 cross-transport parity for FspecBackend::move_work_unit_up/_down
-
   """
   RPC-017 (slice 2 of 3) — Both `EmbeddedFspecBackend` and
   `WebSocketFspecBackend` implement the new `move_work_unit_up` /

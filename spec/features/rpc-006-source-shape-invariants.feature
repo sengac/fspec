@@ -19,21 +19,21 @@ Feature: RPC-006 source-shape architecture invariants
 
   - The fixture from RPC-005 must become unreachable from production code.
   - The embedded transport must continue to honour the runtime-Handle
-    invariant from RPC-002 Q9 even though it now spawns a fan-out task.
+  invariant from RPC-002 Q9 even though it now spawns a fan-out task.
   - The shared service crate (codelet/rpc) widens its dep arrow: it MAY
-    now depend on codelet-core (for the watcher lift) but MUST NOT
-    depend on codelet-napi.
+  now depend on codelet-core (for the watcher lift) but MUST NOT
+  depend on codelet-napi.
   - The rpc-server binary must still bind only to 127.0.0.1 (RPC-005
-    rule [13]).
+  rule [13]).
   - WorkUnitInfo must remain defined exactly once in codelet/rpc-types,
-    re-exported by both codelet/napi AND codelet/core wherever they
-    reference it.
+  re-exported by both codelet/napi AND codelet/core wherever they
+  reference it.
   - The embedded read path must remain bincode-free (zero-cost embedded
-    push per RPC-002 §5.1).
+  push per RPC-002 §5.1).
 
   References: spec/attachments/RPC-006/plan.md ("Architecture conformance with RPC-002");
-              RPC-005 architecture rules [1], [4], [10], [13];
-              spec/attachments/RPC-006/ast-research-watcher-lift.md §3.
+  RPC-005 architecture rules [1], [4], [10], [13];
+  spec/attachments/RPC-006/ast-research-watcher-lift.md §3.
   """
 
   Background: User Story

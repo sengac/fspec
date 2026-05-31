@@ -8,7 +8,6 @@
 @tarpc
 @websocket
 Feature: RPC-015 cross-transport parity for FspecBackend::checkpoint_counts
-
   """
   RPC-015 (slice 1b of 3) — Both `EmbeddedFspecBackend` and `WebSocketFspecBackend`
   implement the new `checkpoint_counts()` method on `FspecBackend` and produce

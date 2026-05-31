@@ -11,28 +11,27 @@
 @scroll
 @indicators
 Feature: RPC-016 BoardView per-column scroll viewport + ⏩/🟢 indicators + keyboard navigation
-
   """
   RPC-016 (slice 1 of 3) — BoardView gains the per-column scroll viewport
   semantics from src/tui/components/UnifiedBoardLayout.tsx. Each of the
   seven kanban columns owns its own `scroll_offset` and renders at most
   `viewport_height` rows of work units.
 
-    - When `scroll_offset > 0`, the first viewport row of that column
-      renders `↑` centered.
-    - When `scroll_offset + viewport_height < units.len()`, the last
-      viewport row of that column renders `↓` centered.
-    - The most-recently-changed work unit (derived from the new
-      `WorkUnitInfo.last_state_change_at` ISO-8601 field) renders as
-      `⏩ {session_indicator}{id}{points} ⏩` in every column it appears.
-    - Work units with an entry in `BoardStore.session_attachments`
-      render with a `🟢 ` prefix before the id.
-    - Moving the selection past the visible viewport auto-scrolls the
-      focused column so the selection stays visible (accounting for the
-      ↑/↓ arrow rows each consuming one viewport row).
-    - `PageUp`/`PageDown` scroll the focused column's selection by
-      `viewport_height` rows. `Home`/`End` jump the focused column's
-      selection to the first / last unit.
+  - When `scroll_offset > 0`, the first viewport row of that column
+  renders `↑` centered.
+  - When `scroll_offset + viewport_height < units.len()`, the last
+  viewport row of that column renders `↓` centered.
+  - The most-recently-changed work unit (derived from the new
+  `WorkUnitInfo.last_state_change_at` ISO-8601 field) renders as
+  `⏩ {session_indicator}{id}{points} ⏩` in every column it appears.
+  - Work units with an entry in `BoardStore.session_attachments`
+  render with a `🟢 ` prefix before the id.
+  - Moving the selection past the visible viewport auto-scrolls the
+  focused column so the selection stays visible (accounting for the
+  ↑/↓ arrow rows each consuming one viewport row).
+  - `PageUp`/`PageDown` scroll the focused column's selection by
+  `viewport_height` rows. `Home`/`End` jump the focused column's
+  selection to the first / last unit.
 
   No new RPC methods land in this card — the session-attached indicator
   reuses the existing `BoardStore::session_attachments` map already wired

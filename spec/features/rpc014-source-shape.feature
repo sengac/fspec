@@ -7,21 +7,20 @@
 @file-structure
 @rpc
 Feature: RPC-014 source-shape regressions — board grid + details strip modules
-
   """
   RPC-014 (slice 3 of 3) — Source-shape regressions pin the file layout
   and cross-crate invariants introduced by the rich BoardView port:
 
-    - WorkUnitInfo gains a `pub attachments: Vec<String>` field;
-    - codelet/core/src/work_units.rs parses `attachments` with
-      `#[serde(default)]` so legacy JSON without the field still loads;
-    - the new modules `codelet/fspec-tui/src/views/board/grid.rs` and
-      `codelet/fspec-tui/src/views/board/details_strip.rs` exist and stay
-      under the 300 LoC ceiling;
-    - the orchestrator `codelet/fspec-tui/src/views/board.rs` stays under
-      the 300 LoC ceiling;
-    - RPC-013 source-shape invariants stay green — Navigator still does
-      not reserve a Length(1) footer row, FooterView is still removed.
+  - WorkUnitInfo gains a `pub attachments: Vec<String>` field;
+  - codelet/core/src/work_units.rs parses `attachments` with
+  `#[serde(default)]` so legacy JSON without the field still loads;
+  - the new modules `codelet/fspec-tui/src/views/board/grid.rs` and
+  `codelet/fspec-tui/src/views/board/details_strip.rs` exist and stay
+  under the 300 LoC ceiling;
+  - the orchestrator `codelet/fspec-tui/src/views/board.rs` stays under
+  the 300 LoC ceiling;
+  - RPC-013 source-shape invariants stay green — Navigator still does
+  not reserve a Length(1) footer row, FooterView is still removed.
   """
 
   Background: User Story

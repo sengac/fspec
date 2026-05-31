@@ -6,18 +6,17 @@
 @agent-view
 @slash-command
 Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSessionRole
-
   """
   App::dispatch in src/app/dispatch.rs gains five new match arms wired
   through helpers in src/app/dispatch_rpc022.rs (mirroring the
   dispatch_rpc020.rs / dispatch_rpc024.rs / dispatch_rpc026.rs split
   pattern from earlier RPC cards):
 
-    - Action::ModelSelected(sid, provider, model)        → handle_model_selected
-    - Action::ThinkingLevelSelected(sid, level)          → handle_thinking_level_selected
-    - Action::SetSessionRole(sid, Option<String>)        → handle_set_session_role
-    - Action::SessionRoleLoaded(sid, Option<String>)     → handle_session_role_loaded
-    - Action::ListProvidersLoaded(Vec<ProviderInfo>)     → handle_list_providers_loaded
+  - Action::ModelSelected(sid, provider, model)        → handle_model_selected
+  - Action::ThinkingLevelSelected(sid, level)          → handle_thinking_level_selected
+  - Action::SetSessionRole(sid, Option<String>)        → handle_set_session_role
+  - Action::SessionRoleLoaded(sid, Option<String>)     → handle_session_role_loaded
+  - Action::ListProvidersLoaded(Vec<ProviderInfo>)     → handle_list_providers_loaded
 
   The existing RPC-018 Action::ModelInfoLoaded /
   Action::ThinkingLevelLoaded arms (unchanged) are re-used after
@@ -44,7 +43,8 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
     I want the App::dispatch surface to host all the action-routing logic for the new modal dialogs
     So that every store mutation happens on the App task per the RPC-009 single-task invariant
 
-  @model-selection @dispatch
+  @model-selection
+  @dispatch
   Scenario: Action::ModelSelected spawns set_session_model and refreshes SessionHeader chrome
     Given an App attached to an EmbeddedFspecBackend wrapping a SharedFspecService with a session manager attached
     And an open session SessionId("s-1") with current_session_index = 0
@@ -54,7 +54,8 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
     Then a follow-up tokio task is spawned that calls backend.get_model_info(SessionId("s-1"))
     And Action::ModelInfoLoaded(SessionId("s-1"), <fresh ModelInfo>) is dispatched
 
-  @thinking-level @dispatch
+  @thinking-level
+  @dispatch
   Scenario: Action::ThinkingLevelSelected spawns set_thinking_level and refreshes the [T:] badge
     Given an App attached to an EmbeddedFspecBackend with a session manager attached
     And an open session SessionId("s-1")
@@ -64,7 +65,8 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
     Then a follow-up tokio task is spawned that calls backend.get_thinking_level(SessionId("s-1"))
     And Action::ThinkingLevelLoaded(SessionId("s-1"), ThinkingLevel::High) is dispatched
 
-  @set-role @dispatch
+  @set-role
+  @dispatch
   Scenario: Action::SetSessionRole(Some) spawns set_session_role and updates AgentViewStore.role_by_session
     Given an App attached to an EmbeddedFspecBackend with a session manager attached
     And an open session SessionId("s-1") whose role_for is None
@@ -72,7 +74,8 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
     Then AgentViewStore.role_for(&SessionId("s-1")) equals Some("You are a security reviewer")
     And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), Some("You are a security reviewer".to_string()))
 
-  @set-role @dispatch
+  @set-role
+  @dispatch
   Scenario: Action::SetSessionRole(None) clears the role and persists via backend
     Given an App attached to an EmbeddedFspecBackend with a session manager attached
     And an open session SessionId("s-1") whose role_for is Some("Reviewer A")
@@ -80,7 +83,8 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
     Then AgentViewStore.role_for(&SessionId("s-1")) equals None
     And a tokio task is spawned that calls backend.set_session_role(SessionId("s-1"), None)
 
-  @session-role-loaded @dispatch
+  @session-role-loaded
+  @dispatch
   Scenario: Action::SessionRoleLoaded folds a backend-fetched role into AgentViewStore
     Given an App attached to an EmbeddedFspecBackend with a session manager attached
     And an open session SessionId("s-1") whose role_for is None
@@ -88,13 +92,15 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
     Then AgentViewStore.role_for(&SessionId("s-1")) equals Some("Reviewer A")
     And no backend task is spawned in response
 
-  @list-providers @dispatch
+  @list-providers
+  @dispatch
   Scenario: Action::ListProvidersLoaded folds the provider list into the open ModelSelectorDialog
     Given an App with a ModelSelectorDialog already pushed onto the Compositor against SessionId("s-1") with empty provider list
     When the App dispatches Action::ListProvidersLoaded(vec![ProviderInfo { key: "openai", display_name: "OpenAI", models: vec![ModelEntry{ id: "gpt-5.1-codex", display_name: "gpt-5.1-codex", context_window: 200_000, supports_reasoning: true, supports_vision: false, is_custom: false }]}])
     Then the ModelSelectorDialog's provider list has length 1 with key "openai"
 
-  @bootstrap @session-role-loaded
+  @bootstrap
+  @session-role-loaded
   Scenario: Action::SessionCreated triggers a backend.get_session_role spawn that fills AgentViewStore.role_by_session
     Given an App attached to an EmbeddedFspecBackend with a session manager that returns Some("Reviewer A") from get_session_role
     When the App dispatches Action::SessionCreated(SessionId("s-9"))
@@ -112,7 +118,8 @@ Feature: App::dispatch wiring for ModelSelected / ThinkingLevelSelected / SetSes
     Then no panic occurs
     And no spawned task fails
 
-  @line-budget @source-shape
+  @line-budget
+  @source-shape
   Scenario: dispatch_rpc022.rs stays under 300 lines
     Given the file codelet/fspec-tui/src/app/dispatch_rpc022.rs after RPC-022 lands
     When a test counts the line-count of the file

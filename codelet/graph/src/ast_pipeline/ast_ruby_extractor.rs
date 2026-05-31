@@ -17,7 +17,7 @@ use super::metadata;
 use super::variables;
 use super::edge_helpers;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// ast-grep patterns for Ruby method declarations.
 const RUBY_METHOD_PATTERNS: &[(&str, bool)] = &[

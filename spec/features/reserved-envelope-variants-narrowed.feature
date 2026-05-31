@@ -24,7 +24,7 @@ Feature: Reserved envelope variants narrowed after WorkUnitsUpdate
   RPC-007 will lift `Event` and `LogEvent` next.
 
   References: spec/attachments/RPC-006/plan.md (Step 5);
-              RPC-005 architecture rule [6].
+  RPC-005 architecture rule [6].
   """
 
   Background: User Story

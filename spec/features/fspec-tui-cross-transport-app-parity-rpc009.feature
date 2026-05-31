@@ -9,7 +9,6 @@
 @RPC-009
 @critical
 Feature: Cross-transport App-layer parity (RPC-009)
-
   """
   Two integration tests under codelet/fspec-tui/tests/: (a) embedded_app_smoke.rs constructs an EmbeddedFspecBackend wrapping a real tempdir-backed WorkUnitsWatcher (codelet_core::work_units) hosting a real SharedFspecService (codelet_rpc), wraps it in App::new, drives one render cycle, mutates `<tempdir>/spec/work-units.json` to add a third entry, awaits the broadcast via the work_units subscriber task (bounded `tokio::time::timeout(Duration::from_millis(200), ...)` — NO sleep), drives another render cycle, and asserts the rendered left pane reflects the new state; (b) ws_app_smoke.rs spawns a real `bind_and_serve` rpc-server on 127.0.0.1:0 against the same fixture, builds a `WebSocketFspecBackend::connect(ws_url)`, wraps it in App, and asserts the same observable left-pane behaviour. Both tests reuse the Q-FIX-1 fixtures from codelet/fspec-tui/tests/common/mod.rs (temp_service, start_ws_server, test_app, render_one_frame, buffer_to_rows). The cross-transport assertion compares the post-mutation row text from each App's rendered buffer — they must be byte-identical (or at minimum semantically identical: same set of work-unit ids/statuses in the same order).
   """

@@ -6,23 +6,22 @@
 @store
 @session-switch
 Feature: RPC-024 AgentViewStore multi-session state primitives
-
   """
   RPC-024 (store slice) — Replace the single-slot
   `current_session: Option<SessionId>` on `AgentViewStore` with a
   `Vec<SessionContext>` plus `current_session_index: usize`.
 
   Adds:
-    - `pub fn append_session(SessionContext)` — sole producer.
-    - `pub fn cycle_session(delta: isize)` — wraps with `.rem_euclid`,
-      no-op for length 0 / 1.
-    - `pub fn current_session_context[_mut]()` — focused SessionContext.
-    - `pub fn session_context_mut_for(&SessionId)` — id-keyed lookup.
-    - `pub fn set_input_draft(idx, String)` — persist outgoing draft.
+  - `pub fn append_session(SessionContext)` — sole producer.
+  - `pub fn cycle_session(delta: isize)` — wraps with `.rem_euclid`,
+  no-op for length 0 / 1.
+  - `pub fn current_session_context[_mut]()` — focused SessionContext.
+  - `pub fn session_context_mut_for(&SessionId)` — id-keyed lookup.
+  - `pub fn set_input_draft(idx, String)` — persist outgoing draft.
 
   Removes:
-    - `pub fn set_current_session(...)` — implicit via `append_session`.
-    - `pub fn set_session_index(...)` — replaced by derived getter.
+  - `pub fn set_current_session(...)` — implicit via `append_session`.
+  - `pub fn set_session_index(...)` — replaced by derived getter.
 
   SessionContext lives in a sibling module
   `codelet/fspec-tui/src/store/agent_view/session_context.rs` so

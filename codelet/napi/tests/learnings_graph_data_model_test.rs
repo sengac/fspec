@@ -14,7 +14,7 @@ use serde_json::Value;
 use std::sync::Mutex;
 
 /// The Learnings schema, same as what's bundled in the binary.
-const LEARNINGS_SCHEMA: &str = include_str!("../schemas/learnings.pg");
+const LEARNINGS_SCHEMA: &str = include_str!("../../graph/schemas/learnings.pg");
 
 /// Inline query source for traversing Learnings graph.
 const LEARNINGS_QUERIES: &str = r#"

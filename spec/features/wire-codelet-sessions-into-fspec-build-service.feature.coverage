@@ -1,0 +1,120 @@
+{
+  "scenarios": [
+    {
+      "name": "build_service constructs a real SessionManager and passes it via with_session_manager",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/common.rs",
+          "lines": "565-668",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/common.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "codelet/fspec/Cargo.toml adds codelet-sessions and does not add codelet-napi",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/common.rs",
+          "lines": "660-680",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/Cargo.toml",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "build_service returns a SharedFspecService whose session-manager handle has been attached",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/src/common.rs",
+          "lines": "565-668",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/common.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/src/common.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/common.rs",
+      "codelet/fspec/Cargo.toml"
+    ],
+    "totalLinesCovered": 284
+  }
+}

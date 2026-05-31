@@ -21,7 +21,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 /// The AST code schema.
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// Helper: create a temp project with source files and return their paths.
 fn create_test_project(dir: &Path) -> Vec<std::path::PathBuf> {

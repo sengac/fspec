@@ -7,15 +7,14 @@
 @rpc
 @RPC-027
 Feature: RPC-027 — Shared dialog_theme renderer fundamentals
-
   """
   RPC-027 Section A — the shared dialog_theme.rs renderer module.
 
   Companion features split per migrated dialog (1 feature ↔ 1 test file):
-    spec/features/rpc027-help-disconnect-thinking-dialogs.feature
-    spec/features/rpc027-model-confirm-dialogs.feature
-    spec/features/rpc027-slash-file-popups.feature
-    spec/features/rpc027-refactor-invariants.feature
+  spec/features/rpc027-help-disconnect-thinking-dialogs.feature
+  spec/features/rpc027-model-confirm-dialogs.feature
+  spec/features/rpc027-slash-file-popups.feature
+  spec/features/rpc027-refactor-invariants.feature
 
   See spec/attachments/RPC-027/dialog-theme-refactor.md for the full
   style spec and per-dialog migration plan.

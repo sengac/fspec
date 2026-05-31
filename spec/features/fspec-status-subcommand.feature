@@ -7,7 +7,6 @@
 @rpc
 @RPC-011
 Feature: fspec status subcommand (one-shot health RPC against autodiscovered or --connect'd daemon)
-
   """
   New subcommand `fspec status` on the existing fspec binary's Cli enum (Mode::Status { connect:
   Option<String> }). Lives in codelet/fspec/src/status.rs (~80 lines). Mirrors client.rs's

@@ -13,5 +13,5 @@ pub mod agent_view;
 pub mod board;
 mod board_viewport;
 
-pub use agent_view::{AgentViewStore, SessionContext, TokenState};
+pub use agent_view::{AgentViewStore, IsolationState, NavTarget, SessionContext, TokenState};
 pub use board::{column_index, BoardStore, COLUMN_ORDER};

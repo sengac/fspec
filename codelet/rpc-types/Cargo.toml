@@ -23,3 +23,13 @@ napi = ["dep:napi", "dep:napi-derive"]
 serde = { workspace = true }
 napi = { version = "3", default-features = false, features = ["napi4"], optional = true }
 napi-derive = { version = "3", optional = true }
+
+# RPC-036: JSON round-trip tests for every wire-portable shape. Pinned to
+# [dev-dependencies] so the default release build of codelet-rpc-types
+# remains free of any serde_json runtime dependency (matches the
+# codelet-common / codelet-core dev-dep pattern).
+[dev-dependencies]
+serde_json = { workspace = true }
+# RPC-067: shared no-codelet-napi dependency-rule helpers used by
+# tests/no_napi_dependency.rs.
+codelet-test-helpers = { workspace = true }

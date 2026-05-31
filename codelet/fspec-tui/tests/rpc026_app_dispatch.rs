@@ -139,7 +139,7 @@ fn attach_to_existing_session_moves_focus_without_duplicate() {
         .append_session(SessionContext::new(SessionId::new("s-3")));
     // Cycle back to index 0.
     while app.agent_view_store().current_session_index() != 0 {
-        app.agent_view_store_mut().cycle_session(-1);
+        app.agent_view_store_mut().focus_session_index(0);
     }
     assert_eq!(app.agent_view_store().current_session_index(), 0);
 

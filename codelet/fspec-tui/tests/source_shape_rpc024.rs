@@ -105,8 +105,9 @@ fn agent_view_store_exposes_multi_session_surface() {
     assert!(body.contains("current_session_index"));
     // @step And the file declares "pub fn append_session"
     assert!(body.contains("pub fn append_session"));
-    // @step And the file declares "pub fn cycle_session"
-    assert!(body.contains("pub fn cycle_session"));
+    // @step And the file declares "pub fn focus_session_index" (RPC-096
+    // replaced cycle_session with end-of-list-aware focus + navigate_*)
+    assert!(body.contains("pub fn focus_session_index"));
     // @step And the file declares "pub fn set_input_draft"
     assert!(body.contains("pub fn set_input_draft"));
     // @step And the file declares "pub fn session_context_mut_for"

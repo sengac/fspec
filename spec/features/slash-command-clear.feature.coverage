@@ -1,0 +1,253 @@
+{
+  "scenarios": [
+    {
+      "name": "/clear resets local scrollback synchronously for the focused session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "lines": "107-124",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/clear calls backend.clear_history for the focused session",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "lines": "130-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/clear with no current session is a silent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "lines": "212-241",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/clear only affects the focused session — background sessions are untouched",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "lines": "248-304",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "lines": "248-304",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/slash_clear_rpc046.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc046.rs"
+    ],
+    "totalLinesCovered": 520
+  }
+}

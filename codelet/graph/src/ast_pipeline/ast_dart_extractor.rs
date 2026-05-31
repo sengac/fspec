@@ -19,7 +19,7 @@ use super::complexity;
 use super::metadata;
 use super::edge_helpers;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Dart language instance for AST parsing.
 const DART: DartLang = DartLang;

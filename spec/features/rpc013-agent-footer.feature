@@ -7,7 +7,6 @@
 @ui-enhancement
 @agent-interaction
 Feature: RPC-013 AgentView footer — placeholder hint for the RPC-013 slice
-
   """
   RPC-013 (slice 2 of 3) — AgentView paints its own 1-row footer with a
   placeholder hint. The rich `~/projects/fspec [⌥ codelet-integration]`

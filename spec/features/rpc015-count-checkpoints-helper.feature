@@ -6,7 +6,6 @@
 @checkpoint-management
 @git-ops
 Feature: RPC-015 count_checkpoints helper — classify refs/fspec-checkpoints/
-
   """
   RPC-015 (slice 1a of 3) — Adds a new `codelet_git::ghost_commit::count_checkpoints`
   helper that iterates every git ref under `refs/fspec-checkpoints/` and
@@ -15,8 +14,8 @@ Feature: RPC-015 count_checkpoints helper — classify refs/fspec-checkpoints/
   others as manual.
 
   Mirrors the TS rule from src/utils/checkpoint-index.ts:
-    AUTO_CHECKPOINT_PATTERN = '-auto-'
-    isAutomaticCheckpoint(name) === name.includes('-auto-')
+  AUTO_CHECKPOINT_PATTERN = '-auto-'
+  isAutomaticCheckpoint(name) === name.includes('-auto-')
 
   Test pair: codelet/git/tests/count_checkpoints_rpc015.rs.
   """

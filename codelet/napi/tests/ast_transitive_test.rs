@@ -15,7 +15,7 @@ use codelet_napi::graph::database::GraphDatabase;
 use serde_json::Value;
 
 /// The AST code schema.
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// Helper: create an AST graph database with a linear call chain: A → B → C → D
 /// plus an isolated function with no incoming or outgoing calls.

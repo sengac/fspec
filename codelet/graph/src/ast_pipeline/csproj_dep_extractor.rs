@@ -5,7 +5,7 @@
 use std::path::Path;
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Extract C# dependencies from .csproj files.
 pub fn extract_csproj_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {

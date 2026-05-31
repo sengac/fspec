@@ -195,54 +195,62 @@ fn agent_view_store_stays_under_300_loc_with_history_fields() {
 /// Scenario: The NAPI persistence surface becomes a thin delegate layer
 #[test]
 fn napi_persistence_surface_becomes_thin_delegate_layer() {
-    // @step Given codelet/napi/src/persistence/history.rs after the lift
-    let napi_history = read_raw(&napi_src().join("persistence").join("history.rs"));
-    // @step Then the file does NOT declare its own struct HistoryStore (re-exports from codelet_core instead)
+    // @step Given codelet/napi/src/persistence/mod.rs after the lift
+    let napi_persistence_dir = napi_src().join("persistence");
+    let napi_mod = read_raw(&napi_persistence_dir.join("mod.rs"));
+
+    // @step Then codelet/napi/src/persistence/history.rs does NOT exist (persistence types live in codelet_core)
     assert!(
-        !napi_history.contains("pub struct HistoryStore"),
-        "codelet/napi/src/persistence/history.rs must NOT declare its own `pub struct HistoryStore` — it should re-export from codelet_core"
-    );
-    assert!(
-        napi_history.contains("codelet_core::persistence")
-            || napi_history.contains("codelet_core_persistence")
-            || napi_history.contains("use codelet_core"),
-        "codelet/napi/src/persistence/history.rs must import from codelet_core::persistence after the lift"
+        !napi_persistence_dir.join("history.rs").exists(),
+        "codelet/napi/src/persistence/history.rs must NOT exist — persistence types live in codelet_core after RPC-035"
     );
 
-    // @step And codelet/napi/src/persistence/mod.rs::add_history_entry is a one-line delegate to codelet_core::persistence::history::add
-    let napi_mod = read_raw(&napi_src().join("persistence").join("mod.rs"));
-    let stripped = common::strip_rust_comments(&napi_mod);
+    // @step And codelet/napi/src/persistence/mod.rs flat re-exports codelet_core::persistence
+    let stripped_mod = common::strip_rust_comments(&napi_mod);
     assert!(
-        stripped.contains("codelet_core::persistence::history::add")
-            || stripped.contains("history::add"),
-        "codelet/napi/src/persistence/mod.rs::add_history_entry must delegate to codelet_core::persistence::history::add"
+        stripped_mod.contains("pub use codelet_core::persistence::*"),
+        "codelet/napi/src/persistence/mod.rs must flat re-export codelet_core::persistence"
     );
-    // @step And codelet/napi/src/persistence/mod.rs::get_history is a one-line delegate to codelet_core::persistence::history::get
+
+    // @step And codelet/napi/src/persistence/napi_bindings.rs::persistence_add_history delegates to history::add
+    let napi_bindings = read_raw(&napi_persistence_dir.join("napi_bindings.rs"));
+    let stripped_bindings = common::strip_rust_comments(&napi_bindings);
     assert!(
-        stripped.contains("codelet_core::persistence::history::get")
-            || stripped.contains("history::get"),
-        "codelet/napi/src/persistence/mod.rs::get_history must delegate to codelet_core::persistence::history::get"
+        stripped_bindings.contains("pub fn persistence_add_history")
+            && stripped_bindings.contains("history::add"),
+        "persistence_add_history NAPI export must delegate to codelet_core::persistence::history::add"
     );
-    // @step And codelet/napi/src/persistence/mod.rs::search_history is a one-line delegate to codelet_core::persistence::history::search
+    // @step And codelet/napi/src/persistence/napi_bindings.rs::persistence_get_history delegates to history::get
     assert!(
-        stripped.contains("codelet_core::persistence::history::search")
-            || stripped.contains("history::search"),
-        "codelet/napi/src/persistence/mod.rs::search_history must delegate to codelet_core::persistence::history::search"
+        stripped_bindings.contains("pub fn persistence_get_history")
+            && stripped_bindings.contains("history::get"),
+        "persistence_get_history NAPI export must delegate to codelet_core::persistence::history::get"
+    );
+    // @step And codelet/napi/src/persistence/napi_bindings.rs::persistence_search_history delegates to history::search
+    assert!(
+        stripped_bindings.contains("pub fn persistence_search_history")
+            && stripped_bindings.contains("history::search"),
+        "persistence_search_history NAPI export must delegate to codelet_core::persistence::history::search"
     );
 
     // @step And the existing #[napi] persistence_add_history / persistence_get_history / persistence_search_history exports keep their JS-facing signatures byte-identical
-    let napi_bindings = read_raw(&napi_src().join("persistence").join("napi_bindings.rs"));
     assert!(
-        napi_bindings.contains("pub fn persistence_add_history"),
-        "persistence_add_history NAPI export must still exist"
+        napi_bindings.contains("pub fn persistence_add_history(display: String, project: String, session_id: String) -> Result<()>"),
+        "persistence_add_history NAPI signature must remain byte-identical"
     );
     assert!(
-        napi_bindings.contains("pub fn persistence_get_history"),
-        "persistence_get_history NAPI export must still exist"
+        napi_bindings.contains("pub fn persistence_get_history(")
+            && napi_bindings.contains("project: Option<String>")
+            && napi_bindings.contains("limit: Option<u32>")
+            && napi_bindings.contains("Result<Vec<NapiHistoryEntry>>"),
+        "persistence_get_history NAPI signature must remain byte-identical"
     );
     assert!(
-        napi_bindings.contains("pub fn persistence_search_history"),
-        "persistence_search_history NAPI export must still exist"
+        napi_bindings.contains("pub fn persistence_search_history(")
+            && napi_bindings.contains("query: String")
+            && napi_bindings.contains("project: Option<String>")
+            && napi_bindings.contains("Result<Vec<NapiHistoryEntry>>"),
+        "persistence_search_history NAPI signature must remain byte-identical"
     );
 }
 

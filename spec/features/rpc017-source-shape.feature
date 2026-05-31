@@ -6,32 +6,31 @@
 @rust
 @source-shape
 Feature: RPC-017 source-shape regression for the priority-reorder persistence port
-
   """
   RPC-017 introduces six new source artefacts that downstream cards
   (RPC-018+) rely on. This feature pins the file layout + symbol surface
   so that future refactors cannot silently regress the integration
   shape:
 
-    1. `codelet/common/src/file_lock.rs` — new module exposing
-       `pub fn with_file_lock<F, T>(lock_dir, f)` lifted from
-       `codelet/napi/src/schedule_handler.rs`.
-    2. `codelet/napi/src/schedule_handler.rs` — refactored to call
-       `codelet_common::file_lock::with_file_lock` (no more inlined
-       `acquire_lock` / `release_lock` / `is_lock_stale`).
-    3. `codelet/core/src/work_units_write.rs` — new sibling module
-       exposing `pub enum Direction { Up, Down }` +
-       `pub fn move_work_unit(cwd, id, direction)`. Kept under the
-       300 LoC ceiling.
-    4. `codelet/rpc/src/lib.rs` — `FspecService` declares
-       `async fn move_work_unit_up(id: String) -> Result<(), String>`
-       and `_down`. Errors are serialised as String so they cross
-       tarpc cleanly.
-    5. `codelet/fspec-tui/src/transport/mod.rs` — `FspecBackend`
-       trait declares `async fn move_work_unit_up(&self, id: String)`
-       and `_down`.
-    6. `codelet/napi/src/work_units_watcher.rs` — additive NAPI
-       exports `pub fn move_work_unit_up(cwd, id)` and `_down`.
+  1. `codelet/common/src/file_lock.rs` — new module exposing
+  `pub fn with_file_lock<F, T>(lock_dir, f)` lifted from
+  `codelet/napi/src/schedule_handler.rs`.
+  2. `codelet/napi/src/schedule_handler.rs` — refactored to call
+  `codelet_common::file_lock::with_file_lock` (no more inlined
+  `acquire_lock` / `release_lock` / `is_lock_stale`).
+  3. `codelet/core/src/work_units_write.rs` — new sibling module
+  exposing `pub enum Direction { Up, Down }` +
+  `pub fn move_work_unit(cwd, id, direction)`. Kept under the
+  300 LoC ceiling.
+  4. `codelet/rpc/src/lib.rs` — `FspecService` declares
+  `async fn move_work_unit_up(id: String) -> Result<(), String>`
+  and `_down`. Errors are serialised as String so they cross
+  tarpc cleanly.
+  5. `codelet/fspec-tui/src/transport/mod.rs` — `FspecBackend`
+  trait declares `async fn move_work_unit_up(&self, id: String)`
+  and `_down`.
+  6. `codelet/napi/src/work_units_watcher.rs` — additive NAPI
+  exports `pub fn move_work_unit_up(cwd, id)` and `_down`.
 
   Existing TS code paths (`src/commands/prioritize-work-unit.ts` +
   `src/tui/components/BoardView.tsx`) are NOT touched.

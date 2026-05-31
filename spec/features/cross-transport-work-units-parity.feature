@@ -24,7 +24,7 @@ Feature: Cross-transport push parity for WorkUnitsUpdate
   irrespective of which transport produced the snapshot.
 
   References: spec/attachments/RPC-006/plan.md (Step 5);
-              RPC-005 architecture rule [3] (single source of truth).
+  RPC-005 architecture rule [3] (single source of truth).
   """
 
   Background: User Story

@@ -16,7 +16,7 @@ use super::metadata;
 use super::variables;
 use super::edge_helpers;
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// AST node kinds for C# functions/methods.
 const CSHARP_FUNC_KINDS: &[&str] = &["method_declaration", "constructor_declaration"];

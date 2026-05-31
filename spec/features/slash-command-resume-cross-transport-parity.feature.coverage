@@ -1,0 +1,51 @@
+{
+  "scenarios": [
+    {
+      "name": "resume_session round-trips identically across both transports",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc049_cross_transport_parity.rs",
+          "lines": "73-99",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/session_manager_handle.rs",
+              "lines": [
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc049_cross_transport_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/core/src/session_manager_handle.rs"
+    ],
+    "totalLinesCovered": 46
+  }
+}

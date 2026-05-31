@@ -1,16 +1,10 @@
-//! Credential Management Module
+//! Credential Management Module (NAPI shim)
 //!
-//! Implements credential resolution for provider API keys with support for:
-//! - Credentials file (~/.fspec/credentials/credentials.json)
-//! - Environment variables
-//! - Project .env files
-//!
-//! This module is the single source of truth for credential resolution.
-//! TypeScript only saves/deletes credentials - Rust handles all resolution.
-
-mod resolver;
-mod store;
-mod types;
+//! Lifted to `codelet-sessions` by **RPC-040**. The NAPI-free portion
+//! (resolver, store, types) now lives in
+//! `codelet/sessions/src/credentials/`. This module re-exports from
+//! `codelet_sessions::credentials` and keeps `napi_bindings.rs` so the
+//! `#[napi] pub fn credentials_reload` symbol stays available to TS.
 
 #[cfg(not(feature = "noop"))]
 mod napi_bindings;
@@ -18,6 +12,4 @@ mod napi_bindings;
 #[cfg(test)]
 mod tests;
 
-pub use resolver::*;
-pub use store::*;
-pub use types::*;
+pub use codelet_sessions::credentials::*;

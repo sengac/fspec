@@ -153,7 +153,7 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
                 Ok(db) => db,
                 Err(err_json) => return err_json,
             };
-            let schema = include_str!("graph/../../schemas/ast-code.pg");
+            let schema = include_str!("../../graph/schemas/ast-code.pg");
             let path = std::path::Path::new(&output_path);
             match db.export_bundle(path, schema).await {
                 Ok(()) => {
@@ -173,7 +173,7 @@ async fn dispatch_action(action: GraphSearchAction) -> String {
                 Ok(db) => db,
                 Err(err_json) => return err_json,
             };
-            let schema = include_str!("graph/../../schemas/ast-code.pg");
+            let schema = include_str!("../../graph/schemas/ast-code.pg");
             let path = std::path::Path::new(&input_path);
             let mode = merge_mode.as_deref().unwrap_or("overwrite");
             match db.import_bundle(path, schema, mode).await {

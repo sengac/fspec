@@ -5,13 +5,12 @@
 @cross-transport
 @parity
 Feature: RPC-018 cross-transport parity for get_model_info / get_thinking_level / get_workspace_info
-
   """
   RPC-018 adds three new RPC methods to the shared FspecService trait:
 
-    * get_model_info(session_id) -> ModelInfo
-    * get_thinking_level(session_id) -> ThinkingLevel
-    * get_workspace_info() -> WorkspaceInfo
+  * get_model_info(session_id) -> ModelInfo
+  * get_thinking_level(session_id) -> ThinkingLevel
+  * get_workspace_info() -> WorkspaceInfo
 
   Both FspecBackend impls (EmbeddedFspecBackend + WebSocketFspecBackend)
   delegate to the same SharedFspecService — so a single scripted scenario

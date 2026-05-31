@@ -5,19 +5,18 @@
 @agent-view
 @command-history
 Feature: RPC-025 App::dispatch wires Shift+↑/↓ history recall and fire-and-forget submission persistence
-
   """
   RPC-025 (App dispatch slice) — Wire the new history primitives into
   App::dispatch:
 
-    - Action::HistoryPrev (already emitted by RPC-019's MultiLineInput
-      on Shift+↑) walks backwards through the session's history,
-      caching the live draft on entry and clamping at len-1.
-    - Action::HistoryNext (Shift+↓) walks forwards, exits recall at
-      index 0 and restores the cached_draft.
-    - Action::InputSubmitted now fires backend.persistence_add_history
-      via tokio::spawn (fire-and-forget) and resets the session's
-      HistoryNavState plus cached_history_snapshot.
+  - Action::HistoryPrev (already emitted by RPC-019's MultiLineInput
+  on Shift+↑) walks backwards through the session's history,
+  caching the live draft on entry and clamping at len-1.
+  - Action::HistoryNext (Shift+↓) walks forwards, exits recall at
+  index 0 and restores the cached_draft.
+  - Action::InputSubmitted now fires backend.persistence_add_history
+  via tokio::spawn (fire-and-forget) and resets the session's
+  HistoryNavState plus cached_history_snapshot.
 
   Per-session HistoryNavState lives in AgentViewStore.history_state_by_session
   so each open session keeps its own recall position even after the

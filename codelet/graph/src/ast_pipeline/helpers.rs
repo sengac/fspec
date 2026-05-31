@@ -7,7 +7,7 @@
 
 use serde_json::{Map, Value};
 
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Slugify a relative file path for use as a graph node key.
 ///

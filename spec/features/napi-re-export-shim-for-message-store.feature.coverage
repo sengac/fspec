@@ -1,0 +1,76 @@
+{
+  "scenarios": [
+    {
+      "name": "NAPI re-export shim preserves existing crate::persistence imports",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/message_store_lift_shim_test.rs",
+          "lines": "95-117",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/storage.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All NAPI persistence test suites continue to pass after the lift",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/message_store_lift_shim_test.rs",
+          "lines": "123-152",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/types.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/message_store_lift_shim_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/persistence/storage.rs",
+      "codelet/napi/src/persistence/types.rs"
+    ],
+    "totalLinesCovered": 80
+  }
+}

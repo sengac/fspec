@@ -5,38 +5,37 @@
 @rpc
 @tui
 Feature: RPC-018 source-shape regression for the AgentView chrome port + shared types + new RPC methods
-
   """
   RPC-018 introduces several new source artefacts that downstream cards
   (RPC-019..022) rely on. This feature pins the file layout + symbol
   surface so that future refactors cannot silently regress the
   integration shape:
 
-    1. `codelet/rpc-types/src/lib.rs` — three new types
-       `ModelInfo`, `ThinkingLevel`, `WorkspaceInfo` (cfg-gated for napi).
-    2. `codelet/rpc/src/lib.rs` — `FspecService` trait gains three new
-       methods: `get_model_info`, `get_thinking_level`,
-       `get_workspace_info`.
-    3. `codelet/core/src/session_manager_handle.rs` — trait gains
-       `get_model_info` + `get_thinking_level` with default impls
-       returning safe defaults.
-    4. `codelet/fspec-tui/src/transport/mod.rs` — `FspecBackend` trait
-       declares the same three methods (one-line tarpc delegates).
-    5. `codelet/fspec-tui/src/transport/embedded.rs` +
-       `codelet/fspec-tui/src/transport/websocket.rs` — both implement
-       the three new trait methods.
-    6. `codelet/fspec-tui/src/views/agent/header.rs` +
-       `codelet/fspec-tui/src/views/agent/footer.rs` — new widget
-       modules under 300 LoC each.
-    7. `codelet/fspec-tui/src/views/agent.rs` OR
-       `codelet/fspec-tui/src/views/agent/mod.rs` — orchestrator stays
-       under 300 LoC.
-    8. `codelet/napi/src/git.rs` (or sibling) — additive
-       `napi::get_workspace_info(cwd)` export delegates to
-       `codelet_git::status::get_current_branch`.
-    9. `codelet/napi/src/session_manager.rs` (or sibling) — additive
-       `napi::get_model_info(session_id)` export delegates through the
-       SessionManagerHandle path.
+  1. `codelet/rpc-types/src/lib.rs` — three new types
+  `ModelInfo`, `ThinkingLevel`, `WorkspaceInfo` (cfg-gated for napi).
+  2. `codelet/rpc/src/lib.rs` — `FspecService` trait gains three new
+  methods: `get_model_info`, `get_thinking_level`,
+  `get_workspace_info`.
+  3. `codelet/core/src/session_manager_handle.rs` — trait gains
+  `get_model_info` + `get_thinking_level` with default impls
+  returning safe defaults.
+  4. `codelet/fspec-tui/src/transport/mod.rs` — `FspecBackend` trait
+  declares the same three methods (one-line tarpc delegates).
+  5. `codelet/fspec-tui/src/transport/embedded.rs` +
+  `codelet/fspec-tui/src/transport/websocket.rs` — both implement
+  the three new trait methods.
+  6. `codelet/fspec-tui/src/views/agent/header.rs` +
+  `codelet/fspec-tui/src/views/agent/footer.rs` — new widget
+  modules under 300 LoC each.
+  7. `codelet/fspec-tui/src/views/agent.rs` OR
+  `codelet/fspec-tui/src/views/agent/mod.rs` — orchestrator stays
+  under 300 LoC.
+  8. `codelet/napi/src/git.rs` (or sibling) — additive
+  `napi::get_workspace_info(cwd)` export delegates to
+  `codelet_git::status::get_current_branch`.
+  9. `codelet/napi/src/session_manager.rs` (or sibling) — additive
+  `napi::get_model_info(session_id)` export delegates through the
+  SessionManagerHandle path.
 
   Existing TS code paths
   (src/tui/components/SessionHeader.tsx,

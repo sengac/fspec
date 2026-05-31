@@ -1,0 +1,650 @@
+{
+  "scenarios": [
+    {
+      "name": "parse_loop_command resolves bare /loop to Help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "93-100",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command resolves /loop list",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "101-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command resolves /loop cancel <id>",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "109-121",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command resolves leading-interval seconds",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "122-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command resolves leading-interval minutes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "136-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command resolves leading-interval hours",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "150-163",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command resolves leading-interval days",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "164-177",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command resolves trailing-every clause",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "178-191",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command defaults to 10 minutes when no interval is specified",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "192-205",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                137,
+                138,
+                139,
+                140,
+                141
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_loop_command treats minimum interval as 1 second",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "206-223",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/loop_parser.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_slash_command routes a /loop submit-line input to LoopSubcommand",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "224-234",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/slash_parser.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "parse_slash_command routes bare /loop to LoopSubcommand::Help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "235-249",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/slash_parser.rs",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop popup pick with no current session is a silent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "250-279",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop popup pick with an open session emits the Help notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "280-308",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop list with two loops emits a multi-line list notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "309-345",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop list with no loops emits \"No active loops.\"",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "346-370",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop add success emits the \"scheduled\" notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "371-408",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop add error emits an error notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "409-437",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop cancel success emits the \"cancelled\" notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "438-474",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/loop cancel unknown id emits a \"not found\" error notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "475-502",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bare /loop submit-line input emits the Help notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs",
+          "lines": "503-530",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc059.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 21,
+    "coveredScenarios": 21,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/loop_dispatch_rpc059.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/loop_parser.rs",
+      "codelet/fspec-tui/src/app/slash_parser.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc059.rs"
+    ],
+    "totalLinesCovered": 734
+  }
+}

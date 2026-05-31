@@ -93,6 +93,7 @@ async fn test_spawn_agent_session_with_role_and_prompt() {
             prompt: Some("Review recent changes".to_string()),
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -144,6 +145,7 @@ async fn test_spawn_agent_session_prompt_only() {
             prompt: Some("Check for issues".to_string()),
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -190,6 +192,7 @@ async fn test_agent_job_fails_empty_prompt() {
             prompt: Some("".to_string()),
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -244,6 +247,7 @@ async fn test_agent_job_fails_no_agent_config() {
             overlap_policy: None,
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -285,6 +289,7 @@ async fn test_agent_job_fails_no_prompt_field() {
             prompt: None,
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -329,6 +334,7 @@ async fn test_agent_job_fails_session_limit() {
             prompt: Some("Run analysis".to_string()),
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -374,6 +380,7 @@ async fn test_schedule_metadata_set_on_session() {
             prompt: Some("Review code".to_string()),
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -469,6 +476,7 @@ async fn test_agent_session_natural_completion() {
             prompt: Some("Say hello".to_string()),
         },
         "anthropic/claude-sonnet-4",
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -517,6 +525,7 @@ async fn test_default_model_resolved_at_fire_time() {
             prompt: Some("Test model".to_string()),
         },
         model,
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 
@@ -564,6 +573,7 @@ async fn test_agent_job_fails_no_default_model() {
             prompt: Some("Run task".to_string()),
         },
         model,
+        std::sync::Arc::new(codelet_napi::scheduler::NoopSchedulerHooks),
     )
     .await;
 

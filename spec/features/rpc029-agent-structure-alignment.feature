@@ -9,36 +9,35 @@
 @footer
 @ui-enhancement
 Feature: RPC-029 AgentView structure alignment with TS Ink original
-
   """
   RPC-029 — make the Rust ratatui AgentView render structurally identical
   to the canonical TS Ink AgentView (src/tui/components/AgentView.tsx).
 
   Structural changes from the previous RPC-018/RPC-019 layout:
-    - The scrollback area no longer has a Block border or "Agent — <sid>" title.
-    - The input area no longer has any border at all — only horizontal padding
-      of 1 column on the left and right.
-    - The footer row is now rendered ABOVE the input row (was below).
-    - The header and footer rows each paint a dark grey background
-      (RGB 0x33, 0x33, 0x33) on every cell, with paddingX=1.
+  - The scrollback area no longer has a Block border or "Agent — <sid>" title.
+  - The input area no longer has any border at all — only horizontal padding
+  of 1 column on the left and right.
+  - The footer row is now rendered ABOVE the input row (was below).
+  - The header and footer rows each paint a dark grey background
+  (RGB 0x33, 0x33, 0x33) on every cell, with paddingX=1.
 
   Header semantic changes:
-    - The left text inserts a work-unit prefix between the session number
-      and the model name: '#N (ID: status): model'.
-    - The left text paints multi-span colours: cyan-bold prefix+work-unit
-      +model, magenta [R], blue [V], dark-grey [Nk], red-bold [DEBUG],
-      cyan [SELECT], yellow [T:<level>], green [ISOLATED].
-    - The right text paints 'tokens: in↓ out↑' in dark-grey and the
-      percent bracket in a context-fill colour (green<50, yellow<70,
-      magenta<85, red>=85).
+  - The left text inserts a work-unit prefix between the session number
+  and the model name: '#N (ID: status): model'.
+  - The left text paints multi-span colours: cyan-bold prefix+work-unit
+  +model, magenta [R], blue [V], dark-grey [Nk], red-bold [DEBUG],
+  cyan [SELECT], yellow [T:<level>], green [ISOLATED].
+  - The right text paints 'tokens: in↓ out↑' in dark-grey and the
+  percent bracket in a context-fill colour (green<50, yellow<70,
+  magenta<85, red>=85).
 
   Footer semantic changes:
-    - The left side is now empty (the old hints 'Enter=send  Ctrl+C=interrupt
-      ESC=back' are removed).
-    - The branch glyph reverts from ⌥ (U+2325 OPTION KEY) to ⎇ (U+2387
-      ALTERNATIVE KEY SYMBOL) to match TS canonical output.
-    - The right side splits into two spans: dim/dark-grey cwd then cyan
-      '[⎇ branch]' suffix.
+  - The left side is now empty (the old hints 'Enter=send  Ctrl+C=interrupt
+  ESC=back' are removed).
+  - The branch glyph reverts from ⌥ (U+2325 OPTION KEY) to ⎇ (U+2387
+  ALTERNATIVE KEY SYMBOL) to match TS canonical output.
+  - The right side splits into two spans: dim/dark-grey cwd then cyan
+  '[⎇ branch]' suffix.
 
   Out of scope (deferred): InputTransition character-by-character
   animation, inline pause/HITL/compaction indicators, tokens-per-second

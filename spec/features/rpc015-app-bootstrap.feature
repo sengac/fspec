@@ -7,7 +7,6 @@
 @bootstrap
 @state-management
 Feature: RPC-015 App bootstrap dispatches CheckpointCountsLoaded into the BoardStore
-
   """
   RPC-015 (slice 2b of 3) — App bootstrap fires off `backend.checkpoint_counts()`
   alongside `list_work_units()` and emits `Action::CheckpointCountsLoaded(counts)`

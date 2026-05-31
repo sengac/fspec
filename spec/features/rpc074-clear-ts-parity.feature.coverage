@@ -1,0 +1,90 @@
+{
+  "scenarios": [
+    {
+      "name": "/clear resets scrollback but does NOT append any [notice] line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "lines": "111-145",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/clear with backend Err does NOT append any [error] line to scrollback",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_clear_rpc046.rs",
+          "lines": "153-173",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc046.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/slash_clear_rpc046.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc046.rs"
+    ],
+    "totalLinesCovered": 98
+  }
+}

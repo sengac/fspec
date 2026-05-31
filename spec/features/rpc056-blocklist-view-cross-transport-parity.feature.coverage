@@ -1,0 +1,46 @@
+{
+  "scenarios": [
+    {
+      "name": "Embedded and WebSocket blocklist_list both reach the stub",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc056_cross_transport_parity.rs",
+          "lines": "97-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                580,
+                581,
+                582
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/transport/websocket.rs",
+              "lines": [
+                944,
+                945,
+                946,
+                947,
+                948
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc056_cross_transport_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/transport/embedded.rs",
+      "codelet/fspec-tui/src/transport/websocket.rs"
+    ],
+    "totalLinesCovered": 43
+  }
+}

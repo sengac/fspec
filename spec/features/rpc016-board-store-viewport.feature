@@ -8,19 +8,18 @@
 @scroll
 @kanban
 Feature: RPC-016 BoardStore scroll_offsets + viewport math
-
   """
   RPC-016 (slice 2 of 3) — BoardStore gains per-column `scroll_offsets`
   plus four pure mutation methods that the App task calls inside
   `App::dispatch`:
 
-    - `scroll_offset_for(column) -> usize`
-    - `set_scroll_offset_for(column, offset)`
-    - `move_selection(delta, viewport_height)` — clamps selection and
-      auto-scrolls the focused column.
-    - `scroll_focused_column(delta, viewport_height)` — PageUp/PageDown.
-    - `select_first_in_focused()` / `select_last_in_focused()` —
-      Home/End.
+  - `scroll_offset_for(column) -> usize`
+  - `set_scroll_offset_for(column, offset)`
+  - `move_selection(delta, viewport_height)` — clamps selection and
+  auto-scrolls the focused column.
+  - `scroll_focused_column(delta, viewport_height)` — PageUp/PageDown.
+  - `select_first_in_focused()` / `select_last_in_focused()` —
+  Home/End.
 
   All mutations remain on the App task per the RPC-009 single-task
   invariant. No Mutex / RwLock / atomics anywhere on the store surface.

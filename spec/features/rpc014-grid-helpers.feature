@@ -8,7 +8,6 @@
 @responsive
 @unit
 Feature: RPC-014 BoardView grid pure-function helpers
-
   """
   RPC-014 (slice 2 of 3) — Pure-function helpers shared by the BoardView
   orchestrator and the source-shape regressions.

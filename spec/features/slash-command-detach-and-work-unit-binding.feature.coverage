@@ -1,0 +1,170 @@
+{
+  "scenarios": [
+    {
+      "name": "/detach with a bound work unit clears the binding, resets scrollback and TokenState",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "lines": "126-218",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/detach with no active session is a silent no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "lines": "224-249",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "lines": [
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/detach with a session but no work unit attached emits a notice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "lines": "256-283",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "lines": [
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/detach failure surfaces an error notice and preserves local state",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/slash_detach_rpc050.rs",
+          "lines": "290-320",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc050.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/slash_detach_rpc050.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/app/dispatch_rpc050.rs"
+    ],
+    "totalLinesCovered": 268
+  }
+}

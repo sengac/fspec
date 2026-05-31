@@ -1,0 +1,105 @@
+{
+  "scenarios": [
+    {
+      "name": "End-to-end via tui-test: user typing produces correct prefixes, no duplicates, no truncation",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/scrollback_pty_rpc078.rs",
+          "lines": "123-277",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/session_context.rs",
+              "lines": [
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/scrollback_pty_rpc078.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/session_context.rs"
+    ],
+    "totalLinesCovered": 228
+  }
+}

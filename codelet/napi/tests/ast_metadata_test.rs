@@ -15,7 +15,7 @@ use codelet_napi::graph::ast_pipeline::metadata;
 use codelet_napi::graph::database::GraphDatabase;
 
 /// The AST code schema (must include new metadata fields).
-const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
 /// Helper: create a graph with Functions and Types that have metadata fields.
 async fn setup_metadata_db(temp_dir: &std::path::Path) -> GraphDatabase {
@@ -42,7 +42,7 @@ async fn setup_metadata_db(temp_dir: &std::path::Path) -> GraphDatabase {
 }
 
 /// Bundled AST query source for named queries.
-const AST_QUERIES: &str = include_str!("../schemas/ast-queries.gq");
+const AST_QUERIES: &str = include_str!("../../graph/schemas/ast-queries.gq");
 
 // ============================================================================
 // Scenario: Function nodes include metadata after indexing

@@ -129,6 +129,16 @@ impl ProviderType {
 /// registry lookup that otherwise fails with "Unknown provider:
 /// 'claude-rhai'" for any non-builtin provider slug.
 pub fn custom_provider_registered(slug: &str) -> bool {
+    // RPC-066: consult the in-memory stub registry FIRST so the
+    // cross-frontend parity test can register its stub provider via
+    // `codelet_providers::stub_provider::register_stub_provider()`
+    // without touching disk. Architecture note [J].
+    #[cfg(feature = "test-support")]
+    {
+        if crate::stub_provider::is_stub_registered(slug) {
+            return true;
+        }
+    }
     match crate::custom::discover_provider_configs() {
         Ok(configs) => configs.iter().any(|c| c.name == slug),
         Err(_) => false,

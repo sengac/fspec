@@ -15,8 +15,8 @@
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-use crate::graph::database::GraphDatabase;
-use crate::graph::graph_entities::GraphEntity;
+use crate::database::GraphDatabase;
+use crate::graph_entities::GraphEntity;
 
 /// Collect filesystem modification times for a set of source files.
 ///

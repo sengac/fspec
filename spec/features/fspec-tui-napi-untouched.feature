@@ -6,7 +6,6 @@
 @rpc
 @RPC-008
 Feature: NAPI / TypeScript surface unaffected by RPC-008
-
   Cross-language invariant: RPC-008 lands a brand-new Rust crate
   (codelet/fspec-tui) without touching any NAPI or TypeScript source
   file. The existing Vitest smoke test for the WorkUnitInfo NAPI shape

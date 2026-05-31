@@ -5,26 +5,25 @@
 @persistence
 @source-shape
 Feature: RPC-025 source-shape regressions for the history-store lift and per-session history state
-
   """
   RPC-025 (source-shape slice) — pin the file layout invariants for
   the history-store lift and the AgentViewStore per-session history
   state additions:
-    - codelet/core/src/persistence/mod.rs and history.rs exist and are
-      under their respective ceilings (mod.rs < 100 LoC, history.rs <
-      300 LoC).
-    - codelet/fspec-tui/src/store/agent_view/history_state.rs exists
-      and is under 100 LoC; HistoryNavState lives there so
-      agent_view.rs stays under 300 LoC after the new fields are added.
-    - codelet/napi/src/persistence/history.rs and the helpers in
-      codelet/napi/src/persistence/mod.rs (add_history_entry,
-      get_history, search_history) become one-line delegates to the
-      lifted core helpers (no business logic remains in napi).
-    - codelet/rpc-types/src/lib.rs declares HistoryMatch with the
-      expected three fields (session_id, text, timestamp_iso) and is
-      gated on the existing napi feature alongside other shared types.
-    - No file under codelet/fspec-tui/src/views/ imports forbidden crates
-      (codelet_core, codelet_napi, tarpc, tokio_tungstenite).
+  - codelet/core/src/persistence/mod.rs and history.rs exist and are
+  under their respective ceilings (mod.rs < 100 LoC, history.rs <
+  300 LoC).
+  - codelet/fspec-tui/src/store/agent_view/history_state.rs exists
+  and is under 100 LoC; HistoryNavState lives there so
+  agent_view.rs stays under 300 LoC after the new fields are added.
+  - codelet/napi/src/persistence/history.rs and the helpers in
+  codelet/napi/src/persistence/mod.rs (add_history_entry,
+  get_history, search_history) become one-line delegates to the
+  lifted core helpers (no business logic remains in napi).
+  - codelet/rpc-types/src/lib.rs declares HistoryMatch with the
+  expected three fields (session_id, text, timestamp_iso) and is
+  gated on the existing napi feature alongside other shared types.
+  - No file under codelet/fspec-tui/src/views/ imports forbidden crates
+  (codelet_core, codelet_napi, tarpc, tokio_tungstenite).
 
   Tests: codelet/fspec-tui/tests/source_shape_rpc025.rs.
   """
@@ -68,11 +67,12 @@ Feature: RPC-025 source-shape regressions for the history-store lift and per-ses
     And the file declares "pub fn set_history_snapshot"
 
   Scenario: The NAPI persistence surface becomes a thin delegate layer
-    Given codelet/napi/src/persistence/history.rs after the lift
-    Then the file does NOT declare its own struct HistoryStore (re-exports from codelet_core instead)
-    And codelet/napi/src/persistence/mod.rs::add_history_entry is a one-line delegate to codelet_core::persistence::history::add
-    And codelet/napi/src/persistence/mod.rs::get_history is a one-line delegate to codelet_core::persistence::history::get
-    And codelet/napi/src/persistence/mod.rs::search_history is a one-line delegate to codelet_core::persistence::history::search
+    Given codelet/napi/src/persistence/mod.rs after the lift
+    Then codelet/napi/src/persistence/history.rs does NOT exist (persistence types live in codelet_core)
+    And codelet/napi/src/persistence/mod.rs flat re-exports codelet_core::persistence
+    And codelet/napi/src/persistence/napi_bindings.rs::persistence_add_history delegates to history::add
+    And codelet/napi/src/persistence/napi_bindings.rs::persistence_get_history delegates to history::get
+    And codelet/napi/src/persistence/napi_bindings.rs::persistence_search_history delegates to history::search
     And the existing #[napi] persistence_add_history / persistence_get_history / persistence_search_history exports keep their JS-facing signatures byte-identical
 
   Scenario: HistoryMatch is declared in codelet/rpc-types with the expected fields

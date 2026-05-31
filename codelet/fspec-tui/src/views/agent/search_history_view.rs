@@ -21,14 +21,14 @@
 use codelet_rpc_types::HistoryMatch;
 use crossterm::event::{KeyCode, KeyModifiers, MouseEvent, MouseEventKind};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
-use ratatui::style::{Modifier, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Clear, Paragraph, Widget};
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::widgets::{Clear, Widget};
 
 use crate::components::scroll_viewport::{
     ensure_visible, wrap_index, WheelDirection, WheelVelocity,
 };
+
+use super::search_history_view_render::{render_body, render_footer, render_title};
 
 const CHROME_ROWS: u16 = 3;
 
@@ -212,6 +212,21 @@ impl SearchHistoryView {
                     SearchHistoryViewOutcome::FilterChanged(self.query.clone())
                 }
             }
+            // RPC-064: vim-style j/k navigation. Lowercase `j`/`k` with
+            // no modifiers move the selection ±1 (wrapping) without
+            // appending to the query buffer. Uppercase `J`/`K` (which
+            // carry KeyModifiers::SHIFT for the char) still flow into
+            // the generic `KeyCode::Char(c)` branch so they're typed
+            // into the filter — only the lowercase forms hijack the
+            // selection cursor.
+            KeyCode::Char('j') if mods.is_empty() => {
+                self.move_by(1, visible_rows);
+                SearchHistoryViewOutcome::Continued
+            }
+            KeyCode::Char('k') if mods.is_empty() => {
+                self.move_by(-1, visible_rows);
+                SearchHistoryViewOutcome::Continued
+            }
             KeyCode::Char(c) => {
                 self.query.push(c);
                 self.selected_index = 0;
@@ -219,54 +234,6 @@ impl SearchHistoryView {
                 SearchHistoryViewOutcome::FilterChanged(self.query.clone())
             }
             _ => SearchHistoryViewOutcome::Ignored,
-        }
-    }
-
-    fn render_title(&self, area: Rect, buf: &mut Buffer) {
-        let cursor_style = Style::default().add_modifier(Modifier::REVERSED);
-        let spans = vec![
-            Span::raw("(search): "),
-            Span::raw(self.query.clone()),
-            Span::styled(" ", cursor_style),
-        ];
-        Paragraph::new(Line::from(spans)).render(area, buf);
-    }
-
-    fn render_footer(&self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Enter Select | ↑↓ Navigate | Esc Cancel").render(area, buf);
-    }
-
-    fn render_body(&self, area: Rect, buf: &mut Buffer) {
-        if self.matches.is_empty() {
-            let placeholder = if self.query.is_empty() {
-                "(type to search history)".to_string()
-            } else {
-                format!("(no history matches \"{}\")", self.query)
-            };
-            let mid_y = area.y.saturating_add(area.height / 2);
-            let row = Rect { x: area.x, y: mid_y, width: area.width, height: 1 };
-            Paragraph::new(placeholder)
-                .alignment(Alignment::Center)
-                .render(row, buf);
-            return;
-        }
-        let visible_rows = area.height as usize;
-        if visible_rows == 0 {
-            return;
-        }
-        let end = (self.scroll_offset + visible_rows).min(self.matches.len());
-        for (row_idx, m) in self.matches[self.scroll_offset..end].iter().enumerate() {
-            let global_idx = self.scroll_offset + row_idx;
-            let marker = if global_idx == self.selected_index { "▸" } else { " " };
-            let label = format!(" {marker} {}", m.text);
-            let style = if global_idx == self.selected_index {
-                Style::default().add_modifier(Modifier::REVERSED | Modifier::BOLD)
-            } else {
-                Style::default()
-            };
-            let y = area.y + row_idx as u16;
-            let row_area = Rect { x: area.x, y, width: area.width, height: 1 };
-            Paragraph::new(Line::from(Span::styled(label, style))).render(row_area, buf);
         }
     }
 
@@ -284,9 +251,9 @@ impl SearchHistoryView {
                 Constraint::Length(1),
             ])
             .split(area);
-        self.render_title(split[0], buf);
-        self.render_body(split[2], buf);
-        self.render_footer(split[3], buf);
+        render_title(self, split[0], buf);
+        render_body(self, split[2], buf);
+        render_footer(self, split[3], buf);
     }
 
     /// Heuristic visible-row hint used by AgentView when computing

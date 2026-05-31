@@ -17,7 +17,7 @@ use crate::pump::{run_envelope_pump, ServerInbound};
 use crate::transport::ChannelTransport;
 use crate::ServerStats;
 use codelet_rpc::{FspecService, FspecServiceImpl, SharedFspecService};
-use codelet_rpc_types::{LogRecord, SessionId, StreamChunk};
+use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk};
 use futures::StreamExt;
 use std::net::SocketAddr;
 use std::sync::atomic::Ordering;
@@ -177,6 +177,21 @@ async fn handle_connection(
     let logs_fanout =
         tokio::spawn(log_events_fanout(logs_rx, envelope_out_tx_for_logs, lag_logs));
 
+    // RPC-037: per-connection fanout for push-driven session status
+    // updates. Drains `SharedFspecService::status_changes_rx` (which
+    // delegates to the attached `SessionManagerHandle`) and forwards
+    // each `(SessionId, SessionStatus)` tuple as an
+    // `Envelope::StatusUpdate` frame onto the per-connection
+    // envelope-out channel — mirroring the chunks/logs fanout pattern.
+    let status_rx = service.status_changes_rx();
+    let envelope_out_tx_for_status = envelope_out_tx.clone();
+    let lag_status = Arc::clone(&stats.lag_status);
+    let status_fanout = tokio::spawn(status_changes_fanout(
+        status_rx,
+        envelope_out_tx_for_status,
+        lag_status,
+    ));
+
     let transport = ChannelTransport::new(rpc_bytes_rx, server_out_tx);
     let service_impl = FspecServiceImpl::new(Arc::clone(&service));
     let server = BaseChannel::with_defaults(transport);
@@ -208,9 +223,11 @@ async fn handle_connection(
     watcher_fanout.abort();
     chunks_fanout.abort();
     logs_fanout.abort();
+    status_fanout.abort();
     let _ = watcher_fanout.await;
     let _ = chunks_fanout.await;
     let _ = logs_fanout.await;
+    let _ = status_fanout.await;
     result
 }
 
@@ -295,6 +312,36 @@ async fn log_events_fanout(
             Err(RecvError::Lagged(skipped)) => {
                 lag_logs.fetch_add(skipped, Ordering::SeqCst);
                 tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws logs fan-out lagged; some log records dropped");
+                continue;
+            }
+            Err(RecvError::Closed) => break,
+        }
+    }
+}
+
+/// RPC-037: drain push-driven status updates and forward as
+/// `Envelope::StatusUpdate`. Mirrors `stream_chunks_fanout` /
+/// `log_events_fanout` — see [`crate::pump::ClientInbound::on_status_update`]
+/// for the client-side decoder.
+async fn status_changes_fanout(
+    mut status_rx: tokio::sync::broadcast::Receiver<(SessionId, SessionStatus)>,
+    envelope_out_tx: tokio::sync::mpsc::UnboundedSender<Envelope>,
+    lag_status: Arc<std::sync::atomic::AtomicU64>,
+) {
+    use tokio::sync::broadcast::error::RecvError;
+    loop {
+        match status_rx.recv().await {
+            Ok((session_id, status)) => {
+                if envelope_out_tx
+                    .send(Envelope::StatusUpdate { session_id, status })
+                    .is_err()
+                {
+                    break;
+                }
+            }
+            Err(RecvError::Lagged(skipped)) => {
+                lag_status.fetch_add(skipped, Ordering::SeqCst);
+                tracing::warn!(target: "codelet_rpc_server::server", skipped, "ws status fan-out lagged; some status updates dropped");
                 continue;
             }
             Err(RecvError::Closed) => break,

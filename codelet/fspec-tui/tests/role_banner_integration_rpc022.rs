@@ -203,8 +203,8 @@ fn role_banner_reflects_focused_session_only() {
     store.set_role(SessionId::new("s-1"), Some("Reviewer A".to_string()));
     // @step And current_session_index = 0
     // append_session pushes and focuses the new entry, so we need to
-    // cycle back to s-1 (index 0).
-    store.cycle_session(-1);
+    // re-focus s-1 (index 0).
+    store.focus_session_index(0);
     assert_eq!(store.current_session_index(), 0);
     let mut view = fresh_view();
     // @step When AgentView.render_with_store paints
@@ -219,7 +219,7 @@ fn role_banner_reflects_focused_session_only() {
         "expected `Role: Reviewer A`, got {role_row:?}"
     );
     // @step When current_session_index is set to 1
-    store.cycle_session(1);
+    store.focus_session_index(1);
     assert_eq!(store.current_session_index(), 1);
     // @step And AgentView.render_with_store paints
     let rows = render_rows(80, 24, &mut store, &mut view);

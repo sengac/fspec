@@ -423,7 +423,7 @@ async fn test_dart_dead_code_detection() {
     let project_dir = temp_dir.path();
 
     /// The AST code schema for loading extracted entities.
-    const AST_CODE_SCHEMA: &str = include_str!("../schemas/ast-code.pg");
+    const AST_CODE_SCHEMA: &str = include_str!("../../graph/schemas/ast-code.pg");
 
     // @step Given a Dart project with function "unusedHelper" that is never called and file "lib/orphan.dart" that is never imported
     let main_source = r#"

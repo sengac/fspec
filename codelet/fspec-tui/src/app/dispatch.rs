@@ -1,6 +1,5 @@
 //! `App::dispatch` — single mutation surface for [`BoardStore`] +
 //! [`AgentViewStore`] per the RPC-009 single-task tenere pattern.
-
 use crate::components::Action;
 use crate::components::disconnect_dialog::{DisconnectDialog, DISCONNECT_DIALOG_ID};
 use crate::views::ViewMode;
@@ -27,26 +26,23 @@ impl App {
                 }
             }
             Action::ChunkReceived(id, chunk) => {
-                // RPC-024: route the chunk into the SessionContext whose
-                // id matches `id`, not the currently focused one — this
-                // allows background sessions to accumulate scrollback
-                // while the user is on another session. Unknown ids are
-                // dropped silently (race with session destruction).
                 if let Some(ctx) = self.agent_view_store.session_context_mut_for(id) {
                     ctx.record_chunk(chunk);
                 }
-                // RPC-018: per-session token state fold (unchanged).
                 self.agent_view_store.apply_chunk_to_token_state(id, chunk);
+                self.handle_stream_chunk_state_updates(id, chunk); // RPC-045
+                self.maybe_push_error_dialog_for_chunk(chunk); // RPC-079
+            }
+            Action::SessionStatusChanged(id, status) => {
+                // RPC-045: push-driven SessionStatus from status_changes_rx.
+                self.handle_session_status_changed(id.clone(), *status);
             }
             Action::Disconnected if !self.compositor.contains(DISCONNECT_DIALOG_ID) => {
-                // RPC-011 CR-1 rule [1]: push the DisconnectDialog @
-                // Priority::Critical when the WebSocket drops.
+                // RPC-011 CR-1: DisconnectDialog @ Priority::Critical.
                 self.compositor.push(Box::new(DisconnectDialog::new()));
             }
             Action::ManualReconnect => {
-                // RPC-011 rule [4]: route the `r` press through the
-                // FspecBackend trait. Default impl is a no-op for
-                // backends without a supervisor.
+                // RPC-011: route `r` through FspecBackend (no-op default).
                 self.backend.request_manual_reconnect();
             }
             Action::Reconnected => {
@@ -84,7 +80,9 @@ impl App {
                 self.agent_view_store
                     .set_current_work_unit(Some(id.clone()), status);
                 self.navigator.active_view = ViewMode::Agent;
-                // Lazy session creation: only if no current_session yet.
+                // RPC-050: bind work unit to current session via the
+                // attach action; lazy SessionCreated re-dispatches below.
+                let _ = self.action_tx.send(Action::AttachWorkUnitToSession(id.clone()));
                 if self.agent_view_store.current_session().is_none() {
                     let backend = self.backend.clone();
                     let action_tx = self.action_tx.clone();
@@ -99,16 +97,7 @@ impl App {
                 }
             }
             Action::OpenAgentView(target) => {
-                match target {
-                    Some(sid) => {
-                        self.agent_view_store
-                            .set_navigation_target(Some(sid.clone()));
-                    }
-                    None => {
-                        self.agent_view_store.request_create_session_dialog();
-                    }
-                }
-                self.navigator.active_view = ViewMode::Agent;
+                self.handle_open_agent_view(target.clone());
             }
             Action::BackToBoard => {
                 self.navigator.active_view = ViewMode::Board;
@@ -121,8 +110,6 @@ impl App {
                     .attach_session(work_unit_id, session.clone());
             }
             Action::SessionCreated(session) => {
-                // RPC-024: append the new session to open_sessions and
-                // focus it. Replaces the pre-RPC-024 set_current_session.
                 self.agent_view_store
                     .append_session(crate::store::SessionContext::new(session.clone()));
                 let _ = self.active_session_tx.send(Some(session.clone()));
@@ -133,17 +120,16 @@ impl App {
                 {
                     let _ = self
                         .action_tx
-                        .send(Action::AttachSession(id, session.clone()));
+                        .send(Action::AttachSession(id.clone(), session.clone()));
+                    // RPC-050: late-binding attach for the lazy-session path.
+                    let _ = self.action_tx.send(Action::AttachWorkUnitToSession(id));
                 }
-                // RPC-018: refresh per-session chrome state.
                 self.refresh_session_chrome(session.clone());
+                self.spawn_hydrate_pending_input(session.clone()); // RPC-052
+                self.spawn_load_supervisors(session.clone()); // RPC-061
             }
-            Action::FocusPrevColumn => {
-                self.board_store.focus_prev_column();
-            }
-            Action::FocusNextColumn => {
-                self.board_store.focus_next_column();
-            }
+            Action::FocusPrevColumn => self.board_store.focus_prev_column(),
+            Action::FocusNextColumn => self.board_store.focus_next_column(),
             Action::SelectNext => {
                 // RPC-016: auto-scrolling arrow nav.
                 let vh = self.navigator.board.last_viewport_height();
@@ -159,12 +145,8 @@ impl App {
             Action::ScrollFocusedColumnDown(vh) => {
                 self.board_store.scroll_focused_column(1, *vh);
             }
-            Action::SelectFirstInFocused => {
-                self.board_store.select_first_in_focused();
-            }
-            Action::SelectLastInFocused => {
-                self.board_store.select_last_in_focused();
-            }
+            Action::SelectFirstInFocused => self.board_store.select_first_in_focused(),
+            Action::SelectLastInFocused => self.board_store.select_last_in_focused(),
             Action::SetFocusedColumn(idx) => {
                 // RPC-023: map idx via COLUMN_ORDER.
                 use crate::store::COLUMN_ORDER;
@@ -181,7 +163,6 @@ impl App {
                 // RPC-023 scaffolding: no toggle registry yet.
             }
             Action::ReorderUp => {
-                // RPC-017: persist a one-step UP move; watcher re-seeds.
                 if let Some(unit) = self.board_store.selected_work_unit() {
                     let id = unit.id.clone();
                     let backend = self.backend.clone();
@@ -193,7 +174,6 @@ impl App {
                 }
             }
             Action::ReorderDown => {
-                // RPC-017: mirror of ReorderUp.
                 if let Some(unit) = self.board_store.selected_work_unit() {
                     let id = unit.id.clone();
                     let backend = self.backend.clone();
@@ -243,23 +223,17 @@ impl App {
                 // with wrap-around, restore incoming draft.
                 self.handle_session_cycle(1);
             }
-            Action::ScrollbackPageUp => {
-                // RPC-024: route scrollback PageUp into the focused
-                // SessionContext's ScrollbackList so scroll state stays
-                // per-session.
-                let vh = self.navigator.agent.scrollback_viewport_hint();
+            Action::ScrollbackPageUp => self.scroll_focused(-(self.navigator.agent.scrollback_viewport_hint() as i64)),
+            Action::ScrollbackPageDown => self.scroll_focused(self.navigator.agent.scrollback_viewport_hint() as i64),
+            Action::ScrollbackLineUp => self.scroll_focused(-1),
+            Action::ScrollbackLineDown => self.scroll_focused(1),
+            Action::ScrollbackHome => {
                 if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
-                    ctx.scrollback.scroll_up(vh);
+                    ctx.scrollback.jump_to_top();
                 }
             }
-            Action::ScrollbackPageDown => {
-                // RPC-024: sibling of `ScrollbackPageUp` — advances
-                // offset and re-snaps to stick-mode at the tail.
-                let vh = self.navigator.agent.scrollback_viewport_hint();
-                if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
-                    ctx.scrollback.scroll_down(vh);
-                }
-            }
+            Action::ScrollbackMouseWheelUp(velocity) => self.scroll_focused(-(*velocity as i64)),
+            Action::ScrollbackMouseWheelDown(velocity) => self.scroll_focused(*velocity as i64),
             Action::HistoryPrev => {
                 // RPC-025: load or step into per-session history recall.
                 self.handle_history_prev();
@@ -272,8 +246,7 @@ impl App {
                 // RPC-025: apply a freshly loaded history snapshot.
                 self.handle_history_snapshot_loaded(session.clone(), snapshot.clone());
             }
-            // RPC-026: /resume + /search mode-view wiring. Each arm
-            // routes through a small helper in app/dispatch_rpc026.rs.
+            // RPC-026 /resume + /search wiring → helpers in app/dispatch_rpc026.rs.
             Action::OpenResumeView => self.handle_open_resume_view(),
             Action::CloseResumeView => self.handle_close_resume_view(),
             Action::OpenSearchView => self.handle_open_search_view(),
@@ -281,16 +254,36 @@ impl App {
             Action::SessionListLoaded(s) => self.handle_session_list_loaded(s.clone()),
             Action::AttachToSession(s) => self.handle_attach_to_session(s.clone()),
             Action::SearchHistory(q) => self.handle_search_history(q.clone()),
-            Action::HistorySearchResults(m) => self.handle_history_search_results(m.clone()),
+            Action::HistorySearchResults { query, matches } => self.handle_history_search_results(query.clone(), matches.clone()),
             Action::InsertIntoInput(t) => self.handle_insert_into_input(t.clone()),
             Action::RequestDeleteSession(id) => self.handle_request_delete_session(id.clone()),
             Action::ConfirmDeleteSession(id) => self.handle_confirm_delete_session(id.clone()),
-            // RPC-022 dispatch arms route through `try_dispatch_rpc022`
-            // so this file stays under the 300-LoC ceiling.
-            _ => { let _ = self.try_dispatch_rpc022(&action); }
+            Action::EmitSessionNotice(sid, text) => self.handle_emit_session_notice(sid, text.clone()),
+            Action::SessionResumeComplete(id) => self.handle_session_resume_complete(id.clone()),
+            // RPC-022/050/053/054/056/057/058/059/060/061/079: try_dispatch_* fallbacks (keep <300 LoC).
+            _ => {
+                let _ = self.try_dispatch_rpc022(&action)
+                    || self.try_dispatch_rpc053(&action)
+                    || self.try_dispatch_rpc054(&action)
+                    || self.try_dispatch_rpc056(&action)
+                    || self.try_dispatch_rpc057(&action)
+                    || self.try_dispatch_rpc058(&action)
+                    || self.try_dispatch_rpc059(&action)
+                    || self.try_dispatch_rpc060(&action)
+                    || self.try_dispatch_rpc061(&action)
+                    || self.try_dispatch_rpc079(&action);
+            }
         }
         self.navigator.apply_action(&action);
         let _ = self.compositor.update(action);
         self.should_render = true;
+    }
+
+    /// RPC-094: shared scrollback dispatch helper.
+    fn scroll_focused(&mut self, delta: i64) {
+        if let Some(ctx) = self.agent_view_store.current_session_context_mut() {
+            if delta < 0 { ctx.scrollback.scroll_up(delta.unsigned_abs() as usize); }
+            else if delta > 0 { ctx.scrollback.scroll_down(delta as usize); }
+        }
     }
 }

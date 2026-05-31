@@ -147,6 +147,18 @@ async fn repl_after_submit_snapshot_captures_input_cleared_after_enter() {
         mock.last_send_input(),
         Some((SessionId::new("s-mock-1"), "hi".to_string())),
     );
+    // RPC-078: in production `codelet/sessions/src/background_session.rs`
+    // broadcasts the submitted text back as a `StreamChunk::UserInput`
+    // so it lands in scrollback via the single chunk path. MockBackend
+    // doesn't broadcast, so we replay it here to keep snapshot parity
+    // with the production rendered frame.
+    let session = app
+        .current_session()
+        .expect("current session must exist after Enter");
+    app.dispatch(Action::ChunkReceived(
+        session,
+        StreamChunk::user_input("hi".to_string()),
+    ));
     let buf = render_one_frame(&mut term, &mut app);
     let rows = buffer_to_rows(&buf);
     insta::assert_yaml_snapshot!("repl_after_submit_rpc012", rows);

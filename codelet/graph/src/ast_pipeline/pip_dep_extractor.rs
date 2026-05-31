@@ -6,7 +6,7 @@
 use std::path::Path;
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Extract Python dependencies from a project root.
 ///

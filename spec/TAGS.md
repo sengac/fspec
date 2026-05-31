@@ -169,6 +169,7 @@ Tags that categorize features by functional area.
 | `@lifecycle-hooks` | Lifecycle hook system for agent session events and CLI command events |
 | `@list` | List operations |
 | `@local-models` | Local LLM model support |
+| `@loop-management` | Session-scoped /loop slash command, loop store, and recurring-prompt infrastructure |
 | `@masked-display` | Masked display of sensitive data |
 | `@merge-preserves-references` | Merge reference preservation |
 | `@metrics` | Metrics and measurements |
@@ -411,6 +412,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@kotlin` | Kotlin language and JVM features |
 | `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
+| `@lift` | File-layout lift regression scenarios — pin module relocations from codelet-napi into codelet-core (persistence, scheduler, loops, etc.) and prevent NAPI dependencies re-creeping back in |
 | `@llm-integration` | LLM integration and response handling |
 | `@local` | Local-only functionality |
 | `@logging` | Logging and diagnostics features |
@@ -419,6 +421,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@markdown-formatting` | Markdown formatting and rendering features |
 | `@marked` | Marked library for markdown parsing |
 | `@max-tokens` | Max tokens limit scenarios |
+| `@mcp` | Model Context Protocol (MCP) per-session injection plumbing — init_mcp_session / cleanup_mcp_session / McpInjection wiring through codelet-tools and codelet-sessions |
 | `@mermaid` | Mermaid Diagram Support |
 | `@message-deduplication` | Message deduplication and content-addressing scenarios |
 | `@message-id` | Message ID preservation scenarios |
@@ -603,6 +606,13 @@ Tags tracking development status of features.
 | `@rpc-006` | Work unit identifier tag for RPC-006: real work-units backing + first streaming envelope variant (WorkUnitsUpdate) |
 | `@rpc-010` | Work unit identifier tag for RPC-010: fspec binary with combined/daemon/client subcommands replacing codelet-rpc-server for production |
 | `@rpc-022` | Work unit identifier tag for RPC-022 — modal dialogs (ModelSelector, ThinkingLevel, RoleBanner) |
+| `@rpc-041` | Work unit identifier tag for RPC-041 — replace GLOBAL_CHUNK_CALLBACK with tokio::broadcast |
+| `@rpc-057` | Work unit identifier tag for RPC-057 — /merge-worktree flow + worktree RPC surface |
+| `@rpc-058` | Work unit identifier tag for RPC-058 — lift scheduler engine into codelet-core::scheduler; /schedule subcommand handler |
+| `@rpc-059` | Work unit identifier tag for RPC-059 — lift loop store into codelet-core::loops + /loop subcommand handler (Phase 7.6 of RPC-030) |
+| `@rpc-062` | Work unit identifier tag for RPC-062 — MCP injection plumbing audit in extracted SessionManager (Phase 7.9 of RPC-030) |
+| `@rpc-078` | Work unit identifier tag for RPC-078 — AgentView scrollback TS Ink parity port (chunk prefix correction, no-duplicate UserInput, viewport-width-aware wrapping, visual-row stick-to-bottom) |
+| `@rpc-097-reopen2` | RPC-097 reopen #2: BoardView Shift+Right must consult global open-session list before showing CreateSessionDialog |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -639,6 +649,7 @@ Tags for test-related scenarios and requirements.
 | `@error-invalid-fork-index` | Error handling for invalid fork |
 | `@error-invalid-merge-session` | Error handling for invalid merge |
 | `@happy-path` | Happy path test scenarios |
+| `@ignore` | Marks a scenario as ignored — paired with #[ignore] on the corresponding test. Used for placeholder behaviour-parity assertions whose test body compiles but is awaiting a future work unit to wire the production behaviour. |
 | `@integration-test` | Integration Test Required |
 | `@interrupted-tool` | Interrupted tool execution scenarios |
 | `@large-session` | Large session edge case scenarios |
@@ -909,7 +920,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-05-18T11:26:44.577Z_
+_Last updated: 2026-05-31T04:10:17.415Z_
 
 **Update Command**: `fspec tag-stats`
 

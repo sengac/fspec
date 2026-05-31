@@ -5,19 +5,18 @@
 @agent-view
 @source-shape
 Feature: RPC-024 source-shape regressions for the multi-session AgentViewStore refactor
-
   """
   RPC-024 (source-shape slice) — pin the file layout invariants for
   the AgentViewStore multi-session refactor:
-    - `codelet/fspec-tui/src/store/agent_view/session_context.rs` exists
-      and is under 300 LoC.
-    - `codelet/fspec-tui/src/store/agent_view.rs` stays under 300 LoC
-      after the field replacement.
-    - No file under `codelet/fspec-tui/src/views/` imports forbidden crates.
-    - The RPC-018 `set_session_index` setter is GONE; the
-      `session_index()` getter is derived.
-    - AgentView no longer owns `pub scrollback: ScrollbackList` or
-      `pub next_seq: u64` — both moved to SessionContext.
+  - `codelet/fspec-tui/src/store/agent_view/session_context.rs` exists
+  and is under 300 LoC.
+  - `codelet/fspec-tui/src/store/agent_view.rs` stays under 300 LoC
+  after the field replacement.
+  - No file under `codelet/fspec-tui/src/views/` imports forbidden crates.
+  - The RPC-018 `set_session_index` setter is GONE; the
+  `session_index()` getter is derived.
+  - AgentView no longer owns `pub scrollback: ScrollbackList` or
+  `pub next_seq: u64` — both moved to SessionContext.
 
   Tests: codelet/fspec-tui/tests/source_shape_rpc024.rs.
   """

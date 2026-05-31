@@ -15,8 +15,8 @@ Feature: NAPI work-units watcher callback compatibility after the lift
   surface MUST be preserved bit-for-bit so that the Ink/TS frontend
   keeps working unchanged:
 
-    startWorkUnitsWatcher(projectRoot: string, callback: (chunk: StreamChunk) => void): void
-    stopWorkUnitsWatcher(): void
+  startWorkUnitsWatcher(projectRoot: string, callback: (chunk: StreamChunk) => void): void
+  stopWorkUnitsWatcher(): void
 
   Internally, the NAPI shim wraps a `codelet_core::work_units::WorkUnitsWatcher`,
   drains its `subscribe()` broadcast receiver, and forwards each
@@ -28,7 +28,7 @@ Feature: NAPI work-units watcher callback compatibility after the lift
   silently breaks the Node-side callback fires loudly in CI.
 
   References: spec/attachments/RPC-006/plan.md (Step 2);
-              RPC-005 architecture rule [9].
+  RPC-005 architecture rule [9].
   """
 
   Background: User Story

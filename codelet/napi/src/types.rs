@@ -332,10 +332,12 @@ pub fn stream_chunk_to_json_value(chunk: &StreamChunk) -> serde_json::Value {
         StreamChunk::IsolationStateChange {
             is_isolated,
             worktree_path,
+            base_commit,
         } => json!({
             "type": "isolationStateChange",
             "isIsolated": is_isolated,
             "worktreePath": worktree_path,
+            "baseCommit": base_commit,
         }),
         StreamChunk::FooterStateUpdate {
             cwd,

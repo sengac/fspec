@@ -6,13 +6,13 @@
 //! Each function takes a `GraphDatabase` reference and returns a JSON string.
 //! Follows the exact same pattern as `ast_dispatch.rs`.
 
-use crate::graph::database::GraphDatabase;
-use crate::graph::dispatch_helpers::{format_graph_stats, matches_fields, LEARNINGS_SEARCHABLE_FIELDS};
+use crate::database::GraphDatabase;
+use crate::dispatch_helpers::{format_graph_stats, matches_fields, LEARNINGS_SEARCHABLE_FIELDS};
 use serde_json::Value;
 use tracing::warn;
 
 /// Bundled Learnings query source for named queries.
-pub const LEARNINGS_QUERIES: &str = include_str!("../../schemas/learnings-queries.gq");
+pub const LEARNINGS_QUERIES: &str = include_str!("../schemas/learnings-queries.gq");
 
 /// Search Learnings entities by text/category.
 ///

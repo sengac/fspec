@@ -1,0 +1,28 @@
+---
+source: fspec-tui/src/components/status_dialog.rs
+expression: rows
+---
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "             ╭────────────────────────────────────────────────────╮             "
+- "             │                                                    │             "
+- "             │ Error                                              │             "
+- "             │                                                    │             "
+- "             │ Operation failed: read-only filesystem             │             "
+- "             │                                                    │             "
+- "             │                Press ESC to dismiss                │             "
+- "             │                                                    │             "
+- "             ╰────────────────────────────────────────────────────╯             "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "
+- "                                                                                "

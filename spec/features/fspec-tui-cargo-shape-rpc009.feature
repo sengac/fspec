@@ -7,7 +7,6 @@
 @RPC-009
 @critical
 Feature: codelet/fspec-tui Cargo + source-shape regression (RPC-009)
-
   """
   Source-shape regression widening: codelet/fspec-tui/tests/source_shape_cargo.rs gains an assertion that `[dependencies]` lists `tui-input` (workspace dep) alongside the existing entries (`codelet-rpc`, `codelet-rpc-types`, `codelet-rpc-embedded`, `codelet-rpc-server`, `tokio`, `async-trait`, `futures`, `ratatui`, `crossterm`, `tui-popup`, `tokio-tungstenite`, `url`, `tarpc`, `anyhow`, `tracing`); the existing assertions that `codelet-napi`/`codelet-core` are NOT in `[dependencies]` and `codelet-napi` is NOT in `[dev-dependencies]` remain green. codelet/fspec-tui/tests/source_shape_trait.rs widens its scan loop's directory list from `["src"]` to additionally cover `src/views/` (already a subdir of `src/`, so the recursive `collect_rs_files` walker picks them up automatically — the test asserts that NONE of the new files contain forbidden patterns: `tokio::runtime::Builder`, `runtime::Builder::new_multi_thread`, `runtime::Builder::new_current_thread`, `tokio::runtime::Runtime::new`, `Runtime::new()`, NOR direct imports of `codelet_napi::`, `codelet_core::`, `tarpc::`, or `tokio_tungstenite::` (these stay encapsulated in the existing transport/embedded.rs and transport/websocket.rs files). codelet/Cargo.toml [workspace.dependencies] gains `tui-input = "0.10"` in the `# === Terminal & UI ===` block.
   """

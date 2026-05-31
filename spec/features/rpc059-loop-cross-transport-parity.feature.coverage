@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "Embedded and WebSocket loop_add both reach the stub",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+          "lines": "80-114",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674,
+                675,
+                676,
+                677
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Embedded and WebSocket loop_cancel both reach the stub",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+          "lines": "115-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                679,
+                680,
+                681,
+                682,
+                683,
+                684
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Embedded and WebSocket loop_list both reach the stub",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs",
+          "lines": "151-193",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/transport/embedded.rs",
+              "lines": [
+                686,
+                687,
+                688
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/rpc059_cross_transport_parity.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/transport/embedded.rs"
+    ],
+    "totalLinesCovered": 134
+  }
+}

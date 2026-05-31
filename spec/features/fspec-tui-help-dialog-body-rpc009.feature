@@ -6,7 +6,6 @@
 @RPC-009
 @critical
 Feature: Help dialog body update (RPC-009)
-
   """
   The HelpDialog static body string in codelet/fspec-tui/src/components/help_dialog.rs:25 (`HELP_BODY`) changes from the RPC-008 placeholder text (`?  ESC  q`) to one-line-per-key listing exactly: `j/k  Navigate`, `Tab  Switch pane`, `?    Toggle this help`, `q    Quit fspec-tui`, `Enter  Send`, `Ctrl+C  Interrupt`, `ESC  Dismiss this dialog`. The `HelpDialog::render` body is otherwise unchanged — same `Priority::Critical`, same `tui_popup::Popup` wrapped in the SizedWidgetRef adapter (`HelpBody`), same width/height calculation. The RPC-008 keybinding-content scenario (`help_dialog_static_body_lists_question_esc_and_q_keybindings`) is preserved (the new body still contains `?`, `ESC`, `q`); a NEW RPC-009 scenario asserts the additional substrings `Tab`, `Enter`, `Ctrl+C`, `j`, `k` are present. The existing insta snapshot file `help_dialog__centered_popup_80x24.snap` at codelet/fspec-tui/src/components/snapshots/ is regenerated via `cargo insta review`.
   """

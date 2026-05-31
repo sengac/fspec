@@ -11,8 +11,11 @@
 //! the AgentView path.
 
 use crate::components::Action;
+use crate::components::create_session_dialog::CreateSessionOption;
 use crate::components::help_dialog::HelpDialog;
 use crate::views::agent::slash_commands::SlashCommandAction;
+
+use codelet_rpc_types::CompactionResult;
 
 use super::slash_parser::{parse_slash_command, SlashCommandParse};
 use super::state::App;
@@ -31,9 +34,8 @@ impl App {
                 }
             }
             SlashCommandAction::Clear => {
-                self.navigator
-                    .agent
-                    .reset_scrollback(&mut self.agent_view_store);
+                // RPC-046: handler body lives in dispatch_rpc046.rs.
+                self.handle_slash_clear();
             }
             SlashCommandAction::Quit => {
                 self.should_quit = true;
@@ -58,24 +60,80 @@ impl App {
                 self.handle_open_thinking_dialog();
             }
             SlashCommandAction::Role => {
-                // RPC-022 rule [5]: the notice fallback handler stops
-                // surfacing `[notice] /role not yet implemented` for
-                // the popup `/role` route. The popup picker emits
-                // `Role` with no argument (the popup auto-closes the
-                // moment the user types a space, so `/role <text>`
-                // never reaches this arm). Bare `/role` clears the
-                // session role — matching the `parse_slash_command`
-                // submit-line semantics in dispatch_rpc022.rs.
-                if let Some(sid) = self.agent_view_store.current_session().cloned() {
-                    self.handle_set_session_role(sid, None);
-                }
+                // RPC-063: bare /role opens the RoleDialog (seeded from
+                // AgentViewStore). Silent no-op with no active session.
+                self.handle_open_role_dialog();
             }
-            other => {
-                let name = other.name();
-                self.navigator.agent.push_line(
-                    &mut self.agent_view_store,
-                    format!("[notice] /{name} not yet implemented in Rust TUI"),
-                );
+            SlashCommandAction::Compact => {
+                // RPC-047: parity with the TS handleCompactCommand path
+                // (src/tui/views/AgentView.tsx line ~2673). Wire the
+                // slash action to backend.compact_session(session_id):
+                //
+                // 1. Bare /compact with no current session is a silent
+                //    no-op (no backend call, no notice emitted).
+                // 2. Spawn a tokio task that awaits the round-trip and
+                //    routes the response into the originating session's
+                //    scrollback via Action::EmitSessionNotice — so the
+                //    notice lands on the right SessionContext even if
+                //    the user switched tabs while the RPC was in
+                //    flight (RPC-046 pattern).
+                let Some(session_id) = self.agent_view_store.current_session().cloned() else {
+                    return;
+                };
+                if tokio::runtime::Handle::try_current().is_err() {
+                    return;
+                }
+                let backend = self.backend.clone();
+                let action_tx = self.action_tx.clone();
+                let handle = tokio::spawn(async move {
+                    let text = match backend.compact_session(session_id.clone()).await {
+                        Ok(result) => format_compaction_notice(&result),
+                        Err(e) => format!("[error] /compact failed: {e}"),
+                    };
+                    let _ = action_tx.send(Action::EmitSessionNotice(session_id, text));
+                });
+                self.pending_tasks.push(handle);
+            }
+            SlashCommandAction::Detach => {
+                // RPC-050: /detach handler — three documented paths
+                // (no session / no binding / Ok-Err round-trip) live
+                // in dispatch_rpc050.rs::handle_slash_detach.
+                self.handle_slash_detach();
+            }
+            SlashCommandAction::Provider | SlashCommandAction::Providers => {
+                // RPC-054: open the ProviderSettingsView. Both the
+                // singular `/provider` and the legacy `/providers` alias
+                // route through the same OpenProviderSettingsView action.
+                let _ = self.action_tx.send(Action::OpenProviderSettingsView);
+            }
+            SlashCommandAction::Debug => {
+                // RPC-055: handler body lives in dispatch_rpc055.rs.
+                self.handle_slash_debug();
+            }
+            SlashCommandAction::Blocklist => {
+                // RPC-056: open the BlocklistView. dispatch_rpc056.rs
+                // handles the round-trip via Action::OpenBlocklistView
+                // → backend.blocklist_list() → Action::BlocklistRulesLoaded.
+                let _ = self.action_tx.send(Action::OpenBlocklistView);
+            }
+            SlashCommandAction::MergeWorktree => {
+                // RPC-057: handler body lives in dispatch_rpc057.rs.
+                self.handle_slash_merge_worktree();
+            }
+            SlashCommandAction::Schedule => {
+                // RPC-058: handler body lives in dispatch_rpc058.rs.
+                // Bare popup pick emits the static help notice.
+                self.handle_slash_schedule_help();
+            }
+            SlashCommandAction::Loop => {
+                // RPC-059: dispatch_rpc059.rs::handle_slash_loop_help.
+                self.handle_slash_loop_help();
+            }
+            SlashCommandAction::Isolation => {
+                // RPC-060: routed via try_dispatch_rpc060 in app/dispatch.rs.
+                let _ = self.action_tx.send(Action::OpenCreateSessionDialog {
+                    preselect: Some(CreateSessionOption::Isolated),
+                });
             }
         }
     }
@@ -108,21 +166,13 @@ impl App {
     /// session. Handles the no-session-manager stub case by surfacing a
     /// notice line in the scrollback rather than dispatching the call.
     ///
-    /// Moved out of `app/dispatch.rs` as part of RPC-020 to keep the
-    /// orchestrator under the 300-LoC ceiling.
-    ///
-    /// RPC-022: BEFORE forwarding the text to `backend.send_input` we
-    /// run `parse_slash_command` to intercept `/model`, `/thinking`,
-    /// and `/role …`. Slash commands DO NOT publish to
-    /// `backend.send_input` or to `persistence_add_history` — they
-    /// dispatch their own follow-up actions and the user-facing line
-    /// is suppressed too (the dialog itself is the user-visible
-    /// response).
+    /// RPC-022 intercepts `/model`, `/thinking`, `/role …` via
+    /// `parse_slash_command` before forwarding to `send_input`.
+    /// RPC-078 deletes the sync `push_line("user> …")` so UserInput
+    /// only lands via the `StreamChunk::UserInput` broadcast path.
     pub(crate) fn handle_input_submitted(&mut self, text: String) {
         let Some(session) = self.agent_view_store.current_session().cloned() else {
-            // Without a session we cannot route anything sensibly —
-            // mirror the legacy behaviour and silently drop. The TS
-            // Ink TUI does the same.
+            // No session: silently drop. The TS Ink TUI does the same.
             return;
         };
 
@@ -140,17 +190,66 @@ impl App {
                 self.handle_set_session_role(session, None);
                 return;
             }
+            SlashCommandParse::OpenRoleDialog => {
+                // RPC-063: bare /role (or trailing-space empty arg)
+                // opens the RoleDialog seeded from the AgentViewStore.
+                self.handle_open_role_dialog();
+                return;
+            }
             SlashCommandParse::SetRole(role) => {
                 self.handle_set_session_role(session, Some(role));
+                return;
+            }
+            SlashCommandParse::SetThinkingLevel(level) => {
+                // RPC-048: `/thinking off|low|med|medium|high` sets
+                // the per-session reasoning level inline without
+                // opening the picker dialog. Routes through the
+                // existing RPC-022 helper so backend.set_thinking_level
+                // is awaited and a follow-up backend.get_thinking_level
+                // refreshes AgentViewStore.thinking_level_for(session)
+                // via Action::ThinkingLevelLoaded.
+                self.handle_thinking_level_selected(session, level);
+                return;
+            }
+            SlashCommandParse::InvalidThinkingLevel(other) => {
+                // RPC-048: `/thinking <unknown>` surfaces an `[error]`
+                // notice into the focused session's scrollback. The
+                // arg is already trimmed + lowercased by the parser so
+                // the notice text is stable regardless of how the user
+                // typed it. NO backend call fires and no dialog is
+                // pushed.
+                self.navigator.agent.push_line(
+                    &mut self.agent_view_store,
+                    format!("[error] unknown thinking level: {other}"),
+                );
+                return;
+            }
+            SlashCommandParse::ScheduleSubcommand(sub) => {
+                // RPC-058: route the parsed `/schedule …` subcommand
+                // through the dedicated dispatcher in dispatch_rpc058.rs.
+                let _ = self
+                    .action_tx
+                    .send(Action::ScheduleSubcommandParsed(sub));
+                return;
+            }
+            SlashCommandParse::LoopSubcommand(sub) => {
+                // RPC-059: route to dispatch_rpc059.rs.
+                let _ = self.action_tx.send(Action::LoopSubcommandParsed(sub));
                 return;
             }
             SlashCommandParse::NotASlashCommand => {}
         }
 
-        self.navigator
-            .agent
-            .push_line(&mut self.agent_view_store, format!("user> {text}"));
+        // RPC-078: the sync `push_line("user> …")` is deleted — the
+        // user line lands via the `StreamChunk::UserInput` broadcast
+        // path (background_session::send_input) so we never duplicate.
+        // The stub `rpc-no-session-manager` session has no broadcaster
+        // so it pushes a `You:` line + `[notice]` here manually.
         if session.value == "rpc-no-session-manager" {
+            self.navigator.agent.push_line(
+                &mut self.agent_view_store,
+                format!("You: {text}"),
+            );
             self.navigator.agent.push_line(
                 &mut self.agent_view_store,
                 "[notice] no LLM session manager attached — input recorded but \
@@ -161,12 +260,39 @@ impl App {
         let backend = self.backend.clone();
         let session_for_send = session.clone();
         let text_for_send = text.clone();
-        tokio::spawn(async move {
-            let _ = backend.send_input(session_for_send, text_for_send).await;
-        });
+        // Guard sync test dispatchers (no tokio runtime).
+        if tokio::runtime::Handle::try_current().is_ok() {
+            tokio::spawn(async move {
+                let _ = backend.send_input(session_for_send, text_for_send).await;
+            });
+        }
+        // RPC-052: clear the durable pending-input draft now that the
+        // text has been submitted. Fire-and-forget — errors silently
+        // logged via tracing. Helper lives in dispatch_rpc052.rs.
+        self.spawn_clear_pending_input(session.clone());
         // RPC-025: fire-and-forget persistence_add_history + reset the
         // per-session HistoryNavState so the next Shift+↑ pulls a fresh
         // snapshot from disk.
         self.handle_input_submitted_persistence(session, text);
     }
+}
+
+/// RPC-047: format a `CompactionResult` into the user-facing scrollback
+/// notice line. Single-sourced so the `/compact` success branch AND the
+/// `StreamChunk::CompactionComplete` handler (in `dispatch_rpc045.rs`)
+/// produce byte-identical output.
+///
+/// Example output:
+/// ```text
+/// [compaction] 60.0% reduction (10000 → 4000 tokens, 12 turns summarised)
+/// ```
+pub(crate) fn format_compaction_notice(result: &CompactionResult) -> String {
+    let reduction_pct = (1.0 - result.compression_ratio) * 100.0;
+    format!(
+        "[compaction] {reduction:.1}% reduction ({orig} \u{2192} {compacted} tokens, {turns} turns summarised)",
+        reduction = reduction_pct,
+        orig = result.original_tokens,
+        compacted = result.compacted_tokens,
+        turns = result.turns_summarized,
+    )
 }

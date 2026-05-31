@@ -17,7 +17,7 @@ use graph_test_helpers::{make_decision, make_exploration, make_learning};
 async fn create_test_learnings_db() -> (GraphDatabase, tempfile::TempDir) {
     let dir = tempdir().expect("create temp dir");
     let db_path = dir.path().join("test-learnings.nano");
-    let schema = include_str!("../schemas/learnings.pg");
+    let schema = include_str!("../../graph/schemas/learnings.pg");
     let db = GraphDatabase::init(&db_path, schema)
         .await
         .expect("init learnings db");

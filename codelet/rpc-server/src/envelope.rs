@@ -19,7 +19,7 @@
 //! [`Envelope::LogEvent`] carries the `LogRecord` published by the
 //! host's tracing::Layer (RPC-007 architecture notes 6 + 7).
 
-use codelet_rpc_types::{LogRecord, SessionId, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk, WorkUnitInfo};
 use serde::{Deserialize, Serialize};
 
 /// WebSocket framing envelope.
@@ -52,6 +52,16 @@ pub enum Envelope {
     /// once on connect (initial snapshot) and once per debounced
     /// mutation thereafter.
     WorkUnitsUpdate(Vec<WorkUnitInfo>),
+    /// Server-pushed session status change (RPC-037).
+    /// Carries `(session_id, status)` — fed by the per-connection
+    /// `status_changes_fanout` task draining `SharedFspecService::status_changes_rx`
+    /// (which delegates to the attached `SessionManagerHandle`). Mirrors
+    /// the embedded `EmbeddedTransport::status_changes_rx` payload so
+    /// cross-transport parity holds for push-driven status updates.
+    StatusUpdate {
+        session_id: SessionId,
+        status: SessionStatus,
+    },
     /// Reserved: server-to-client command request (reverse channel).
     /// Rejected in RPC-007.
     CmdReq,
@@ -68,6 +78,7 @@ impl Envelope {
             Envelope::Event { .. } => "Event",
             Envelope::LogEvent(_) => "LogEvent",
             Envelope::WorkUnitsUpdate(_) => "WorkUnitsUpdate",
+            Envelope::StatusUpdate { .. } => "StatusUpdate",
             Envelope::CmdReq => "CmdReq",
             Envelope::CmdRes => "CmdRes",
         }

@@ -1261,7 +1261,7 @@ async fn test_multi_language_entities_load_into_graph() {
     let entities = walk_and_extract(project_dir, true)
         .expect("walk_and_extract should succeed");
 
-    let schema = include_str!("../schemas/ast-code.pg");
+    let schema = include_str!("../../graph/schemas/ast-code.pg");
     let db_path = temp_dir.path().join("test-multi-lang.nano");
     let db = GraphDatabase::init(&db_path, schema)
         .await

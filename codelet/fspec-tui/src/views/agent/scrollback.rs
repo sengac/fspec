@@ -1,75 +1,52 @@
 //! ScrollbackList — windowed VirtualList-style scrollback widget for
-//! AgentView (RPC-019).
+//! AgentView (RPC-019, RPC-078, RPC-094).
 //!
 //! Feature: spec/features/rpc019-scrollback.feature
+//!          spec/features/agentview-scrollback-wrap.feature
+//!          spec/features/rpc094-agentview-scrollback-scroll.feature
 //!
-//! Replaces the flat `Vec<RenderedChunk>` + manual scroll math that
-//! lived inline in `views/agent.rs` until RPC-018. The new widget
-//! tracks a [`ScrollState`] (offset + `stick_to_bottom`) and paints
-//! only the slice of chunks that fit in the visible viewport — total
-//! chunk count does NOT affect per-frame work.
-//!
-//! Mirrors the consumer semantics of `src/tui/components/VirtualList.tsx`
-//! (the TS Ink widget that backs AgentView's scrollback) but stays
-//! deliberately small — the lazy / group / scroll-mode / velocity
-//! features of the TS widget are deferred to a later RPC slice.
-//!
-//! Owned by AgentView (single-task mutation per RPC-009 tenere): all
-//! `push` / `scroll_*` calls happen on the App task.
-//!
-//! ```text
-//! ┌────────── ScrollbackList ───────────┐
-//! │ chunk 0 ... line 0                  │  ← offset = first visible chunk idx
-//! │ chunk 0 ... line 1                  │
-//! │ chunk 1 ... line 0                  │
-//! │ ...                                 │  height = viewport_height
-//! └─────────────────────────────────────┘
-//! ```
+//! Tracks a [`ScrollState`] (offset + `stick_to_bottom`) and paints
+//! only the slice of chunks that fit in the visible viewport. RPC-078:
+//! `offset` is expressed in VISUAL ROWS (wrapped Lines) so a multi-row
+//! chunk cannot push the most-recent line out of view.
 
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::widgets::{Paragraph, Widget};
 
 use super::RenderedChunk;
+use super::scrollback_paint::paint_scrollbar;
+use crate::store::agent_view::chunk_wrap::wrap_source;
 
-/// Scroll state extracted from `views/agent.rs` so the widget owns
-/// both fields together. `stick_to_bottom = true` is the natural
-/// chat-log default — new chunks auto-scroll the viewport so the
-/// latest content stays visible. Pressing PageUp drops out of stick
-/// mode; pressing PageDown / End re-enters it once the offset catches
-/// the tail.
+/// Scroll state for `ScrollbackList`. `stick_to_bottom = true` is the
+/// chat-log default; PageUp drops out, End/PageDown re-enters.
 #[derive(Debug, Clone, Copy)]
 pub struct ScrollState {
-    /// First visible chunk index (in chunks, not lines).
+    /// First visible visual row index (across all wrapped Lines).
     pub offset: usize,
-    /// When true, `push` auto-bumps `offset` so the latest chunk
-    /// stays in view, and rendering snaps to the bottom.
+    /// When true, render is bottom-anchored.
     pub stick_to_bottom: bool,
 }
 
 impl Default for ScrollState {
     fn default() -> Self {
-        Self {
-            offset: 0,
-            stick_to_bottom: true,
-        }
+        Self { offset: 0, stick_to_bottom: true }
     }
 }
 
-/// Windowed scrollback panel.
-///
-/// Owns a `Vec<RenderedChunk>` (lines pre-rendered as
-/// [`ratatui::text::Line`] objects). The `render` algorithm walks at
-/// most `viewport_height` chunks per frame; the total chunk count
-/// does not bound the work.
+/// Windowed scrollback panel. Per-frame work is O(viewport_height).
 #[derive(Debug, Default)]
 pub struct ScrollbackList {
     chunks: Vec<RenderedChunk>,
     scroll_state: ScrollState,
-    /// Latest observed viewport height (in rows). Updated each
-    /// `render` call and by callers that want to keep stick-mode
-    /// arithmetic correct before the first paint (`set_viewport_height`).
+    /// Latest observed viewport height (rows).
     viewport_height: u16,
+    /// Latest observed viewport width (cols). Drives per-chunk re-wrap
+    /// from `ChunkSource::text` on resize (RPC-078).
+    viewport_width: u16,
+    /// RPC-094: cached layout rect from `render_count_visited`.
+    /// `mouse_dispatch::handle_scrollback_mouse` hit-tests this.
+    last_rect: Option<Rect>,
 }
 
 impl ScrollbackList {
@@ -77,11 +54,31 @@ impl ScrollbackList {
         Self::default()
     }
 
-    /// Append a chunk. When `stick_to_bottom` is true the offset
-    /// auto-advances so the latest chunk stays in view (assuming the
-    /// caller has set a `viewport_height` ≥ 1).
+    /// Append a chunk; re-wrap from `ChunkSource` if width known.
     pub fn push(&mut self, chunk: RenderedChunk) {
+        let idx = self.chunks.len();
         self.chunks.push(chunk);
+        self.rewrap_after_mutation(idx);
+    }
+
+    /// Insert at `idx`, shifting subsequent chunks right. Mirrors
+    /// [`Vec::insert`]. **RPC-093**: used by
+    /// `chunk_processor::append_thinking` to splice a new thinking
+    /// block BEFORE an in-flight assistant chunk.
+    pub fn insert(&mut self, idx: usize, chunk: RenderedChunk) {
+        self.chunks.insert(idx, chunk);
+        self.rewrap_after_mutation(idx);
+    }
+
+    /// Shared post-mutation hook for `push` / `insert`: rewrap the
+    /// touched chunk if viewport width is known, then re-anchor
+    /// stick-to-bottom.
+    fn rewrap_after_mutation(&mut self, idx: usize) {
+        if self.viewport_width != 0 {
+            if let Some(c) = self.chunks.get_mut(idx) {
+                rewrap_chunk(c, self.viewport_width);
+            }
+        }
         if self.scroll_state.stick_to_bottom {
             self.recompute_offset_for_stick();
         }
@@ -91,32 +88,55 @@ impl ScrollbackList {
         self.chunks.len()
     }
 
+    /// Read-only access to the underlying chunks vector. **RPC-091**.
+    pub fn chunks(&self) -> &[RenderedChunk] {
+        &self.chunks
+    }
+
+    /// Mutable access to the underlying chunks vector. **RPC-091**:
+    /// in-place accumulation of streaming Text + ToolResult attach.
+    pub fn chunks_mut(&mut self) -> &mut Vec<RenderedChunk> {
+        &mut self.chunks
+    }
+
+    /// Re-wrap a single chunk at index `i` (or 80 cols pre-render).
+    /// **RPC-091**.
+    pub fn rewrap_at(&mut self, i: usize) {
+        let width = if self.viewport_width != 0 { self.viewport_width } else { 80 };
+        if let Some(chunk) = self.chunks.get_mut(i) {
+            rewrap_chunk(chunk, width);
+        }
+        if self.scroll_state.stick_to_bottom {
+            self.recompute_offset_for_stick();
+        }
+    }
     /// Visible window from `offset` outward, capped by `viewport_lines`.
-    /// Used by tests + by the AgentView render path.
     pub fn visible_window(&self, viewport_lines: u16) -> Vec<RenderedChunk> {
         let off = self.scroll_state.offset;
         let mut out = Vec::new();
         let mut rows_used: u16 = 0;
-        for chunk in self.chunks.iter().skip(off) {
+        let mut row_idx: usize = 0;
+        for chunk in self.chunks.iter() {
+            let chunk_rows = chunk.lines.len();
+            if row_idx + chunk_rows <= off {
+                row_idx += chunk_rows;
+                continue;
+            }
             if rows_used >= viewport_lines {
                 break;
             }
             out.push(chunk.clone());
-            rows_used = rows_used.saturating_add(chunk.lines.len() as u16);
+            rows_used = rows_used.saturating_add(chunk_rows as u16);
+            row_idx += chunk_rows;
         }
         out
     }
 
-    /// Public read-only handle on the scroll cursor — used by the
-    /// AgentView render path (to know whether to print a "scrolled-up"
-    /// hint) and by tests.
     pub fn scroll_state(&self) -> ScrollState {
         self.scroll_state
     }
 
-    /// Update the cached viewport height. Idempotent. Called both by
-    /// `render` (with `area.height`) and by tests / callers that need
-    /// to seed the stick-mode arithmetic before the first paint.
+    /// Update cached viewport height. Idempotent.
     pub fn set_viewport_height(&mut self, h: u16) {
         if self.viewport_height != h {
             self.viewport_height = h;
@@ -126,94 +146,134 @@ impl ScrollbackList {
         }
     }
 
-    /// PageUp: drop out of stick mode and step `offset` back by exactly
-    /// `lines` (capped at 0).
+    /// Update cached viewport width. Re-wraps every chunk that carries
+    /// a `ChunkSource` so resize never permanently truncates.
+    pub fn set_viewport_width(&mut self, w: u16) {
+        if self.viewport_width != w {
+            self.viewport_width = w;
+            if w != 0 {
+                for chunk in self.chunks.iter_mut() {
+                    rewrap_chunk(chunk, w);
+                }
+            }
+            if self.scroll_state.stick_to_bottom {
+                self.recompute_offset_for_stick();
+            }
+        }
+    }
+
+    /// PageUp: drop stick mode, step `offset` back by `lines`.
     pub fn scroll_up(&mut self, lines: usize) {
         self.scroll_state.stick_to_bottom = false;
         self.scroll_state.offset = self.scroll_state.offset.saturating_sub(lines);
     }
 
-    /// PageDown / End: step `offset` forward by `lines`, capped at the
-    /// tail. Reaching the tail re-enters stick mode.
+    /// PageDown/End: step `offset` forward, cap at tail, re-enter stick.
     pub fn scroll_down(&mut self, lines: usize) {
         let max_off = self.max_offset_for_viewport();
-        self.scroll_state.offset = self
-            .scroll_state
-            .offset
-            .saturating_add(lines)
-            .min(max_off);
+        self.scroll_state.offset = self.scroll_state.offset.saturating_add(lines).min(max_off);
         if self.scroll_state.offset >= max_off {
             self.scroll_state.stick_to_bottom = true;
         }
     }
 
-    pub fn jump_to_top(&mut self) {
-        self.scroll_state.stick_to_bottom = false;
-        self.scroll_state.offset = 0;
-    }
+    pub fn jump_to_top(&mut self) { self.scroll_state.stick_to_bottom = false; self.scroll_state.offset = 0; }
 
     pub fn jump_to_bottom(&mut self) {
         self.scroll_state.stick_to_bottom = true;
         self.recompute_offset_for_stick();
     }
 
-    /// RPC-020: drop every chunk and reset the scroll state to its
-    /// default (offset=0, stick_to_bottom=true). Called by App::dispatch
-    /// on `SlashCommandSelected(Clear)`.
+    /// RPC-020: drop every chunk and reset scroll state to default.
     pub fn reset(&mut self) {
         self.chunks.clear();
         self.scroll_state = ScrollState::default();
         self.viewport_height = 0;
+        self.viewport_width = 0;
     }
 
     /// Render the visible window into `area`. Returns the number of
-    /// chunks visited during layout (exposed for the source-shape
-    /// "render only lays out the visible window" assertion).
+    /// chunks visited during layout. RPC-078: scrollback fills from
+    /// the TOP; stick-to-bottom only kicks in when content overflows.
+    /// RPC-094 + TS parity (`src/tui/components/VirtualList.tsx`
+    /// lines 17-88): when content overflows we reserve a 2-col gutter
+    /// (1-col gap + 1-col scrollbar), rewrap content narrower, then
+    /// paint the scrollbar via [`paint_scrollbar`].
     pub fn render_count_visited(&mut self, area: Rect, buf: &mut Buffer) -> usize {
+        // Pass 1: wrap at full width to detect overflow.
+        self.set_viewport_width(area.width);
         self.set_viewport_height(area.height);
+        self.last_rect = Some(area);
         if area.width == 0 || area.height == 0 || self.chunks.is_empty() {
             return 0;
         }
-        let off = self.scroll_state.offset;
+        let vh = area.height as usize;
+        // Pass 2: when overflowing AND the terminal is at least 4 cols
+        // wide, reserve a 2-col gutter (1 gap + 1 scrollbar) and rewrap.
+        let reserve_gutter = self.total_visual_rows() > vh && area.width >= 4;
+        let content_width = if reserve_gutter { area.width - 2 } else { area.width };
+        if reserve_gutter {
+            self.set_viewport_width(content_width);
+        }
+        let total_rows = self.total_visual_rows();
+        let skip_rows = if self.scroll_state.stick_to_bottom {
+            total_rows.saturating_sub(vh)
+        } else {
+            self.scroll_state.offset
+        };
+        let mut row_idx: usize = 0;
         let mut y = area.y;
-        let mut visited = 0usize;
-        for chunk in self.chunks.iter().skip(off) {
-            if y >= area.y.saturating_add(area.height) {
-                break;
-            }
-            visited = visited.saturating_add(1);
+        let y_end = area.y.saturating_add(area.height);
+        let mut visited = 0_usize;
+        for chunk in &self.chunks {
+            if y >= y_end { break; }
+            let mut chunk_visited = false;
             for line in &chunk.lines {
-                if y >= area.y.saturating_add(area.height) {
-                    break;
-                }
-                let row = Rect {
-                    x: area.x,
-                    y,
-                    width: area.width,
-                    height: 1,
-                };
+                if row_idx < skip_rows { row_idx += 1; continue; }
+                if y >= y_end { break; }
+                let row = Rect { x: area.x, y, width: content_width, height: 1 };
                 Paragraph::new(line.clone()).render(row, buf);
                 y = y.saturating_add(1);
+                row_idx += 1;
+                if !chunk_visited {
+                    visited = visited.saturating_add(1);
+                    chunk_visited = true;
+                }
             }
+        }
+        if reserve_gutter && total_rows > vh {
+            paint_scrollbar(area, buf, vh, total_rows, self.scroll_state);
         }
         visited
     }
 
+    /// Sum of `chunk.lines.len()` across every chunk — the total
+    /// visible row count once everything is unfurled.
+    pub(crate) fn total_visual_rows(&self) -> usize {
+        self.chunks.iter().map(|c| c.lines.len()).sum()
+    }
+
     fn max_offset_for_viewport(&self) -> usize {
-        // When the total number of chunks (treated as 1-line each — line
-        // multi-row handling is a future RPC slice's concern) fits in
-        // the viewport, the offset stays at 0.
-        let total = self.chunks.len();
+        let total = self.total_visual_rows();
         let vh = self.viewport_height as usize;
-        if vh == 0 || total <= vh {
-            0
-        } else {
-            total.saturating_sub(vh)
-        }
+        if vh == 0 || total <= vh { 0 } else { total.saturating_sub(vh) }
     }
 
     fn recompute_offset_for_stick(&mut self) {
         self.scroll_state.offset = self.max_offset_for_viewport();
+    }
+
+    /// RPC-094: most-recent layout rect, set inside `render_count_visited`.
+    pub fn last_rect(&self) -> Option<Rect> {
+        self.last_rect
+    }
+}
+
+/// Re-derive `chunk.lines` from `chunk.source` for the given width.
+/// No-op when the chunk has no `ChunkSource`.
+fn rewrap_chunk(chunk: &mut RenderedChunk, width: u16) {
+    if let Some(source) = chunk.source.as_ref() {
+        chunk.lines = wrap_source(source, width);
     }
 }
 
@@ -224,61 +284,5 @@ impl Widget for &mut ScrollbackList {
 }
 
 #[cfg(test)]
-mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
-
-    use super::*;
-    use ratatui::text::{Line, Span};
-
-    fn chunk(seq: u64, body: &str) -> RenderedChunk {
-        RenderedChunk {
-            seq,
-            lines: vec![Line::from(Span::raw(body.to_string()))],
-        }
-    }
-
-    #[test]
-    fn default_state_is_offset_zero_stick_true() {
-        let s = ScrollState::default();
-        assert_eq!(s.offset, 0);
-        assert!(s.stick_to_bottom);
-    }
-
-    #[test]
-    fn push_with_stick_mode_keeps_latest_chunks_visible() {
-        let mut list = ScrollbackList::new();
-        list.set_viewport_height(3);
-        for i in 0..10 {
-            list.push(chunk(i, &format!("c{i}")));
-        }
-        assert!(list.scroll_state().stick_to_bottom);
-        assert_eq!(list.scroll_state().offset, 7);
-    }
-
-    #[test]
-    fn scroll_up_disables_stick_and_caps_at_zero() {
-        let mut list = ScrollbackList::new();
-        list.set_viewport_height(3);
-        for i in 0..10 {
-            list.push(chunk(i, "x"));
-        }
-        list.scroll_up(2);
-        assert_eq!(list.scroll_state().offset, 5);
-        assert!(!list.scroll_state().stick_to_bottom);
-        list.scroll_up(100);
-        assert_eq!(list.scroll_state().offset, 0);
-    }
-
-    #[test]
-    fn scroll_down_caps_at_max_and_re_enables_stick() {
-        let mut list = ScrollbackList::new();
-        list.set_viewport_height(3);
-        for i in 0..10 {
-            list.push(chunk(i, "x"));
-        }
-        list.scroll_up(5);
-        list.scroll_down(5);
-        assert_eq!(list.scroll_state().offset, 7);
-        assert!(list.scroll_state().stick_to_bottom);
-    }
-}
+#[path = "scrollback_tests.rs"]
+mod tests;

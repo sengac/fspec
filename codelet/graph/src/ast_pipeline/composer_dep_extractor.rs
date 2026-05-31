@@ -7,7 +7,7 @@ use std::path::Path;
 use serde_json::Value;
 
 use super::helpers;
-use crate::graph::graph_entities::GraphEntity;
+use crate::graph_entities::GraphEntity;
 
 /// Extract PHP dependencies from composer.json.
 pub fn extract_composer_dependencies(project_root: &Path) -> Result<Vec<GraphEntity>, String> {

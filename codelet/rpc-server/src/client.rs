@@ -11,7 +11,7 @@
 use crate::pump::{run_envelope_pump, ClientInbound};
 use crate::transport::ChannelTransport;
 use codelet_rpc::FspecServiceClient;
-use codelet_rpc_types::{LogRecord, SessionId, StreamChunk, WorkUnitInfo};
+use codelet_rpc_types::{LogRecord, SessionId, SessionStatus, StreamChunk, WorkUnitInfo};
 use futures::StreamExt;
 use tokio::sync::{broadcast, watch};
 use tokio_tungstenite::WebSocketStream;
@@ -31,6 +31,12 @@ const CHUNKS_BROADCAST_CAPACITY: usize = 256;
 /// Capacity of the logs broadcast channel internal to [`FspecWsClient`]
 /// (RPC-007). Matches `DEFAULT_LOGS_CAPACITY` in `codelet-rpc`.
 const LOGS_BROADCAST_CAPACITY: usize = 1024;
+
+/// Capacity of the status-changes broadcast channel internal to
+/// [`FspecWsClient`] (RPC-037). Matches the chunks capacity since
+/// status updates piggyback on the same per-connection envelope-out
+/// channel and are similar in volume.
+const STATUS_BROADCAST_CAPACITY: usize = 256;
 
 /// Client returned by [`ws_client_connect`].
 ///
@@ -70,6 +76,11 @@ pub struct FspecWsClient {
     /// owned by the pump task only — dropping it on WS disconnect
     /// closes every receiver returned by [`Self::logs_rx`].
     logs_rx_template: broadcast::Receiver<LogRecord>,
+    /// RPC-037: Template receiver for the status-changes broadcast.
+    /// The sender side is owned by the pump task only — dropping it on
+    /// WS disconnect closes every receiver returned by
+    /// [`Self::status_changes_rx`].
+    status_rx_template: broadcast::Receiver<(SessionId, SessionStatus)>,
 }
 
 impl FspecWsClient {
@@ -141,6 +152,16 @@ impl FspecWsClient {
     pub fn logs_rx(&self) -> broadcast::Receiver<LogRecord> {
         self.logs_rx_template.resubscribe()
     }
+
+    /// RPC-037: subscribe to server-pushed `(SessionId, SessionStatus)`
+    /// status updates. Sibling of
+    /// [`codelet_rpc_embedded::EmbeddedTransport::status_changes_rx`].
+    ///
+    /// Because the sender is held only by the pump task, a subscriber
+    /// observes `RecvError::Closed` as soon as the WS connection drops.
+    pub fn status_changes_rx(&self) -> broadcast::Receiver<(SessionId, SessionStatus)> {
+        self.status_rx_template.resubscribe()
+    }
 }
 
 /// Build an [`FspecWsClient`] over a tokio-tungstenite WebSocket stream.
@@ -167,6 +188,12 @@ where
     let (chunks_tx, chunks_rx_template) =
         broadcast::channel::<(SessionId, StreamChunk)>(CHUNKS_BROADCAST_CAPACITY);
     let (logs_tx, logs_rx_template) = broadcast::channel::<LogRecord>(LOGS_BROADCAST_CAPACITY);
+    // RPC-037: broadcast channel for push-driven status updates. The
+    // sender is moved into the pump task so dropping it on WS
+    // disconnect closes every subscriber returned by
+    // [`FspecWsClient::status_changes_rx`] (RPC-010 rule [23]).
+    let (status_tx, status_rx_template) =
+        broadcast::channel::<(SessionId, SessionStatus)>(STATUS_BROADCAST_CAPACITY);
 
     let (sink, stream) = ws.split();
 
@@ -184,6 +211,7 @@ where
                 work_units_tx: work_units_watch_tx,
                 chunks_tx,
                 logs_tx,
+                status_tx,
             },
             None,
             None,
@@ -206,5 +234,6 @@ where
         work_units_watch_rx,
         chunks_rx_template,
         logs_rx_template,
+        status_rx_template,
     })
 }

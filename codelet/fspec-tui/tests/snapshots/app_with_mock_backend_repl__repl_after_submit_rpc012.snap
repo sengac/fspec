@@ -3,7 +3,7 @@ source: fspec-tui/tests/app_with_mock_backend_repl.rs
 expression: rows
 ---
 - " #1 (AUTH-002): Agent                                        tokens: 0↓ 0↑ [0%] "
-- "user> hi                                                                        "
+- "You: hi                                                                         "
 - "                                                                                "
 - "                                                                                "
 - "                                                                                "

@@ -7,7 +7,6 @@
 @RPC-009
 @critical
 Feature: Agent REPL view (RPC-009)
-
   """
   Two sub-areas: (a) scrollback rendered as `Paragraph::new(Text::from_iter(...)).scroll((y_offset, 0)).wrap(Wrap { trim: false })` against an alt-screen Rect (NOT a virtualised list, NOT a custom BubbleList, NOT a HistoryCell trait — those are RPC-002 follow-ons); (b) single-line input rendered as `Paragraph::new(input.value()).block(Block::default().borders(Borders::ALL))` with cursor positioned via `frame.set_cursor_position` based on `input.visual_cursor()` from the `tui_input::Input` field. State: `AgentReplView { active_session: Option<SessionId>, scrollback: Vec<RenderedChunk>, input: tui_input::Input, scroll_offset: u16, stick_to_bottom: bool, focused: bool, action_tx: UnboundedSender<Action> }` where `RenderedChunk { seq: u64, lines: Vec<Line<'static>> }` (oatmeal-style nod, no caching machinery). chunks_rx subscriber filters by active session id — chunks for OTHER sessions are dropped before becoming Action::ChunkReceived. KeyCode::Enter on non-empty input emits Action::InputSubmitted then `input.reset()`; KeyCode::Char('c') with KeyModifiers::CONTROL emits Action::Interrupt; everything else forwards to `input.handle_event(event.into())`. tui-input is the ONLY new production dependency in this card.
   """

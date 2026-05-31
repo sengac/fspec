@@ -5,21 +5,20 @@
 @persistence
 @work-units
 Feature: RPC-017 work-units write helper (codelet_core::work_units_write::move_work_unit)
-
   """
   RPC-017 (slice 1 of 3) — codelet_core gains a write-side sibling
   module `codelet_core::work_units_write` that exposes:
 
-    pub enum Direction { Up, Down }
-    pub fn move_work_unit(cwd: &Path, id: &str, direction: Direction) -> Result<()>
+  pub enum Direction { Up, Down }
+  pub fn move_work_unit(cwd: &Path, id: &str, direction: Direction) -> Result<()>
 
   Semantics mirror `src/commands/prioritize-work-unit.ts`:
-    - Reorder within `states[<column>]` only — never across columns.
-    - Done column refuses reorders.
-    - Boundary moves are no-ops (Up at index 0; Down at index len-1).
-    - Persistence uses an atomic temp + rename + proper-lockfile-
-      compatible mkdir lock on `spec/work-units.json.lock` so concurrent
-      TS `fspec prioritize-work-unit` commands cooperate.
+  - Reorder within `states[<column>]` only — never across columns.
+  - Done column refuses reorders.
+  - Boundary moves are no-ops (Up at index 0; Down at index len-1).
+  - Persistence uses an atomic temp + rename + proper-lockfile-
+  compatible mkdir lock on `spec/work-units.json.lock` so concurrent
+  TS `fspec prioritize-work-unit` commands cooperate.
 
   The mkdir-lock helper is the lifted `with_file_lock` from
   `codelet/common/src/file_lock.rs` (extracted from the inlined copy

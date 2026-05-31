@@ -75,6 +75,7 @@ fn dispatch_clear_resets_scrollback_and_input() {
             ctx.scrollback.push(RenderedChunk {
                 seq: 0,
                 lines: vec![Line::from("x")],
+                source: None,
             });
         }
     }
@@ -113,26 +114,40 @@ fn dispatch_quit_flips_should_quit() {
     assert!(app.should_quit());
 }
 
-/// Scenario: Pressing Enter on an unimplemented command emits a scrollback notice
+/// Scenario: Pressing Enter on /isolation opens the CreateSessionDialog
+///
+/// RPC-060: replaces the legacy "unimplemented command emits a notice"
+/// behaviour — every SlashCommandAction variant now has a real handler.
+/// /isolation dispatches `Action::OpenCreateSessionDialog` with
+/// `preselect=Some(Isolated)` so the dialog opens with the worktree
+/// option highlighted.
 #[test]
 fn dispatch_unimplemented_command_emits_scrollback_notice() {
-    // @step Given an AgentView whose slash popup is open with "/compact" highlighted
+    use codelet_fspec_tui::CreateSessionOption;
+    // @step Given an AgentView whose slash popup is open with "/isolation" highlighted
     let (mut app, _mock) = fresh_app();
     seed_session(&mut app);
-    assert_eq!(app.navigator().agent.chunk_count(app.agent_view_store()), 0);
 
     // @step When the user presses Enter
-    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Compact));
+    app.dispatch(Action::SlashCommandSelected(SlashCommandAction::Isolation));
 
-    // @step Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Compact)
-    // (Action is dispatched directly above; this test asserts the
-    // App::dispatch reaction to that Action.)
+    // @step Then App::dispatch emits Action::OpenCreateSessionDialog { preselect: Some(Isolated) }
+    let action = app
+        .try_recv_action()
+        .expect("OpenCreateSessionDialog should be queued");
+    match action {
+        Action::OpenCreateSessionDialog { preselect } => {
+            assert_eq!(preselect, Some(CreateSessionOption::Isolated));
+        }
+        other => panic!("expected OpenCreateSessionDialog, got {other:?}"),
+    }
 
-    // @step And dispatching that action appends one scrollback chunk whose text contains "[notice]"
+    // @step And the scrollback receives NO `[notice] /isolation not yet
+    // implemented` chunk (the catch-all fallback was removed by RPC-060).
     assert_eq!(
         app.navigator().agent.chunk_count(app.agent_view_store()),
-        1,
-        "one notice chunk should be pushed"
+        0,
+        "/isolation should not emit a [notice] scrollback chunk anymore"
     );
 }
 
