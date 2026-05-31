@@ -11,8 +11,8 @@
 use std::collections::HashMap;
 
 use codelet_rpc_types::{
-    CompactionProgress, ContextFillInfo, ModelInfo, SessionId, SessionStatus, StreamChunk,
-    ThinkingLevel, TokenTracker, WorkUnitContext, WorkspaceInfo,
+    CompactionProgress, ModelInfo, SessionId, SessionStatus, ThinkingLevel,
+    WorkUnitContext, WorkspaceInfo,
 };
 
 pub mod blocklist_state;
@@ -26,45 +26,15 @@ pub mod navigation;
 pub mod role_state;
 pub mod session_context;
 pub mod supervisor_state;
+pub mod token_state;
 pub mod tool_args;
 pub mod work_unit_state;
 pub use history_state::HistoryNavState;
 pub use isolation_state::IsolationState;
 pub use navigation::NavTarget;
 pub use session_context::SessionContext;
+pub use token_state::TokenState;
 pub use tool_args::extract_tool_args_display;
-
-/// Per-session token state derived from `StreamChunk::TokenUpdate` +
-/// `StreamChunk::ContextFillUpdate` events. Mirrors `ExtractedTokenState`
-/// from `src/tui/utils/tokenStateUtils.ts`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct TokenState {
-    pub input_tokens: u64,
-    pub output_tokens: u64,
-    pub context_fill_pct: u8,
-}
-
-impl TokenState {
-    /// Fold an arriving chunk into this state.
-    pub fn apply_chunk(&mut self, chunk: &StreamChunk) {
-        match chunk {
-            StreamChunk::TokenUpdate { tokens } => self.apply_token_tracker(tokens),
-            StreamChunk::ContextFillUpdate { context_fill } => {
-                self.apply_context_fill(context_fill);
-            }
-            _ => {}
-        }
-    }
-
-    fn apply_token_tracker(&mut self, t: &TokenTracker) {
-        self.input_tokens = t.input_tokens as u64;
-        self.output_tokens = t.output_tokens as u64;
-    }
-
-    fn apply_context_fill(&mut self, info: &ContextFillInfo) {
-        self.context_fill_pct = info.fill_percentage.min(100) as u8;
-    }
-}
 
 /// AgentView session navigation state + per-session chrome state.
 /// Mutated only on the App task.

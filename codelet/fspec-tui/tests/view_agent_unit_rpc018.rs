@@ -131,6 +131,7 @@ async fn header_right_side_reflects_token_update_followed_by_context_fill_update
             input_tokens: 1234,
             output_tokens: 567,
             context_fill_pct: 45,
+            ..Default::default()
         },
     );
     let mut view = fresh_view();
@@ -299,6 +300,7 @@ fn stream_chunk_context_fill_update_updates_context_fill_pct() {
             input_tokens: 100,
             output_tokens: 50,
             context_fill_pct: 0,
+            ..Default::default()
         },
     );
     // @step When App::dispatch receives Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate with context_fill { fill_percentage: 45, effective_tokens: 0.0, threshold: 0.0, context_window: 0.0 })
@@ -333,6 +335,7 @@ fn non_token_stream_chunk_variants_leave_token_state_unchanged() {
             input_tokens: 1234,
             output_tokens: 567,
             context_fill_pct: 45,
+            ..Default::default()
         },
     );
     // @step When App::dispatch receives Action::ChunkReceived("s-1", StreamChunk::Text { text: "hi", correlation_id: None, observed_correlation_ids: None })

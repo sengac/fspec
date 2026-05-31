@@ -55,8 +55,13 @@ pub fn paint_header_and_role(
         is_isolated: false,
         is_debug_enabled,
         is_select_mode: false,
-        tokens_per_second: None,
-        reasoning_tokens: 0,
+        // RPC-099 — source these from the per-session TokenState so
+        // Shift+Left/Right cycling displays the FOCUSED session's
+        // accumulated metrics instead of hardcoded defaults. Mirrors
+        // TS `SessionHeader.tsx:127` `getMaxTokens(tokenUsage, rustTokens)`
+        // where `rustTokens` is `useRustSessionState(currentSessionId)`.
+        tokens_per_second: tokens.tokens_per_second.map(|v| v as f32),
+        reasoning_tokens: tokens.reasoning_tokens,
         compaction_reduction: None,
         is_loading,
         subordinate_label: subordinate_label.as_deref(),

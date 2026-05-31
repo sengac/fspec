@@ -186,6 +186,7 @@ fn action_chunk_received_context_fill_update_updates_only_fill_pct() {
             input_tokens: 100,
             output_tokens: 50,
             context_fill_pct: 0,
+            ..Default::default()
         },
     );
     // @step When App::dispatch receives Action::ChunkReceived("s-1", StreamChunk::ContextFillUpdate { context_fill: ContextFillInfo with fill_percentage = 45 })
