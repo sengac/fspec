@@ -100,10 +100,11 @@ impl App {
                 // in dispatch_rpc050.rs::handle_slash_detach.
                 self.handle_slash_detach();
             }
-            SlashCommandAction::Provider | SlashCommandAction::Providers => {
-                // RPC-054: open the ProviderSettingsView. Both the
-                // singular `/provider` and the legacy `/providers` alias
-                // route through the same OpenProviderSettingsView action.
+            SlashCommandAction::Provider => {
+                // RPC-054: open the ProviderSettingsView. Singular
+                // `/provider` only — the TypeScript Ink reference
+                // (slashCommands.ts) defines exactly one entry whose
+                // `name` is `'provider'`; no `/providers` alias.
                 let _ = self.action_tx.send(Action::OpenProviderSettingsView);
             }
             SlashCommandAction::Debug => {

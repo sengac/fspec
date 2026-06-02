@@ -4,8 +4,78 @@
 //! - Environment variables (ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN, OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, ZAI_API_KEY, ZAI_PLAN_API_KEY)
 //! - Auth files (~/.codex/auth.json for Codex OAuth, ~/.fspec/credentials/claude_auth.json for Claude OAuth, ~/.fspec/credentials/copilot_auth.json for GitHub Copilot OAuth)
 //! - PROV-067: Custom provider definitions discovered via `crate::custom::discover_provider_configs`
+//!
+//! RPC-108: This module also exposes the prefix-aware credential masking
+//! helper [`mask_api_key`] and the four provenance-tag constants
+//! ([`SOURCE_EXPLICIT`], [`SOURCE_FILE`], [`SOURCE_ENV`], [`SOURCE_DOTENV`])
+//! that mirror the TS `maskApiKey` / `ProviderConfigResult.source` contract
+//! at `src/utils/credentials.ts:56-59,277-291`.
 
 use std::collections::HashMap;
+
+/// Provenance tag for caller-supplied credentials (rare; mostly tests).
+/// Mirrors TS `ProviderConfigResult.source = 'explicit'`.
+pub const SOURCE_EXPLICIT: &str = "explicit";
+
+/// Provenance tag for credentials loaded from
+/// `~/.fspec/credentials/credentials.json`.
+/// Mirrors TS `ProviderConfigResult.source = 'file'`
+/// (`src/utils/credentials.ts:232`).
+pub const SOURCE_FILE: &str = "file";
+
+/// Provenance tag for credentials read from `process.env` /
+/// `std::env::var`. Mirrors TS `ProviderConfigResult.source = 'env'`
+/// (`src/utils/credentials.ts:243`).
+pub const SOURCE_ENV: &str = "env";
+
+/// Provenance tag for credentials parsed from a `.env` file in the
+/// current working directory. Mirrors TS
+/// `ProviderConfigResult.source = 'dotenv'`
+/// (`src/utils/credentials.ts:260`).
+pub const SOURCE_DOTENV: &str = "dotenv";
+
+/// RPC-108: Mask an API key for safe display.
+///
+/// Ports the TypeScript helper at `src/utils/credentials.ts:277-291`
+/// byte-for-byte:
+///
+/// - Keys shorter than 12 chars return the literal `••••••••`
+///   (8 bullet points, U+2022) — no prefix or suffix is exposed.
+/// - Otherwise the helper greedy-matches one of five recognised prefixes
+///   in declaration order — `sk-ant-`, `sk-`, `gsk_`, `AIza`, `xai-`.
+///   Order matters: `sk-ant-` MUST be tested before `sk-` because both
+///   would match an Anthropic key. The matched prefix is preserved
+///   verbatim; if none match, the first 6 chars are used as the prefix
+///   instead.
+/// - Always appends `••••••••` followed by the last 4 chars of the key.
+///
+/// Examples:
+/// ```
+/// use codelet_providers::credentials::mask_api_key;
+/// assert_eq!(mask_api_key("sk-ant-api03-abcdefghijklmnop"), "sk-ant-••••••••mnop");
+/// assert_eq!(mask_api_key("sk-test-1234567890abcdef"),      "sk-••••••••cdef");
+/// assert_eq!(mask_api_key("gsk_test_1234567890abcdef"),     "gsk_••••••••cdef");
+/// assert_eq!(mask_api_key("AIzaSyABCDEFGH1234IJKLmnop"),    "AIza••••••••mnop");
+/// assert_eq!(mask_api_key("xai-test-1234567890abcdef"),     "xai-••••••••cdef");
+/// assert_eq!(mask_api_key("short"),                          "••••••••");
+/// ```
+pub fn mask_api_key(api_key: &str) -> String {
+    // TS contract: `apiKey.length < 12` — JavaScript's `.length` counts
+    // UTF-16 code units. For the ASCII API keys this matches Rust's
+    // `.len()` byte count exactly. Non-ASCII keys are not in scope.
+    if api_key.len() < 12 {
+        return "••••••••".to_string();
+    }
+
+    const PREFIXES: &[&str] = &["sk-ant-", "sk-", "gsk_", "AIza", "xai-"];
+    let prefix: &str = PREFIXES
+        .iter()
+        .find(|p| api_key.starts_with(*p))
+        .copied()
+        .unwrap_or(&api_key[..6]);
+    let suffix = &api_key[api_key.len() - 4..];
+    format!("{prefix}••••••••{suffix}")
+}
 
 /// Provider credentials detected from environment variables and auth files
 #[derive(Debug, Clone)]

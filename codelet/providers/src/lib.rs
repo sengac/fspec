@@ -6,6 +6,8 @@ pub mod adapter;
 pub mod cache_optimization;
 pub mod cache_token_extractor;
 pub mod caching_client;
+/// RPC-107: Canonical 17-provider ordered registry (TS parity).
+pub mod catalog;
 pub mod claude;
 pub mod claude_auth;
 pub mod claude_headless_login;
@@ -14,7 +16,7 @@ pub mod claude_oauth_server;
 pub mod claude_refreshing_client;
 pub mod codex;
 pub mod copilot;
-mod credentials;
+pub mod credentials;
 pub mod custom;
 pub mod error;
 pub mod gemini;

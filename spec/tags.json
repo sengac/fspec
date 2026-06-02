@@ -2022,6 +2022,10 @@
           "description": "Output truncation and limit handling"
         },
         {
+          "name": "@ts-parity",
+          "description": "Feature requires parity with the TypeScript Ink reference implementation"
+        },
+        {
           "name": "@turn-selection",
           "description": "Scenarios testing turn-based selection in conversation"
         },
@@ -2268,6 +2272,10 @@
         {
           "name": "@rpc-097-reopen2",
           "description": "RPC-097 reopen #2: BoardView Shift+Right must consult global open-session list before showing CreateSessionDialog"
+        },
+        {
+          "name": "@rpc-101",
+          "description": "Work unit identifier tag for RPC-101 — context-fill badge real-time recompute on every TokenUpdate (parallel Rust/TS fix for the badge freezing during streaming and after ESC interrupt)"
         },
         {
           "name": "@technical-debt",
@@ -2714,7 +2722,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-05-31T04:10:17.415Z",
+    "lastUpdated": "2026-06-01T16:58:50.079Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

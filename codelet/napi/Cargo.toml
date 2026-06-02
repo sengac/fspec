@@ -159,3 +159,7 @@ required-features = ["__full_runtime"]
 [[test]]
 name = "compaction_post_inject_loading_test"
 required-features = ["__full_runtime"]
+
+[[test]]
+name = "session_bindings_smoke"
+required-features = ["__full_runtime"]

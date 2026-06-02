@@ -74,6 +74,21 @@ pub struct ProviderInfo {
     pub models: Vec<ProviderModelInfo>,
     /// API style for facade derivation (custom entries).
     pub api_style: Option<String>,
+    /// RPC-108: Display-safe masked API key for the configured row,
+    /// e.g. `Some("sk-ant-••••••••mnop")`. Populated server-side via
+    /// [`crate::credentials::mask_api_key`] when the provider is an
+    /// api-key entry with an env-sourced credential. `None` for
+    /// unconfigured providers and for OAuth-only providers (the TUI
+    /// view layer substitutes the literal `'OAuth'` string instead).
+    pub masked_key: Option<String>,
+    /// RPC-108: Provenance tag — one of
+    /// [`crate::credentials::SOURCE_EXPLICIT`],
+    /// [`crate::credentials::SOURCE_FILE`],
+    /// [`crate::credentials::SOURCE_ENV`],
+    /// [`crate::credentials::SOURCE_DOTENV`]. Mirrors TS
+    /// `ProviderConfigResult.source` at `src/utils/credentials.ts:56-59`.
+    /// `None` when the provider is unconfigured.
+    pub source: Option<String>,
 }
 
 /// Result of [`test_provider_connection`]. `matched_models` lists which
@@ -96,24 +111,67 @@ pub fn list_providers_info() -> Result<Vec<ProviderInfo>, ProviderError> {
     let credentials = ProviderCredentials::detect();
     let mut list: Vec<ProviderInfo> = Vec::new();
 
-    for (name, available) in [
-        ("claude", credentials.has_claude()),
-        ("openai", credentials.has_openai()),
-        ("gemini", credentials.has_gemini()),
-        ("zai", credentials.has_zai()),
-        ("codex", credentials.has_codex()),
-        ("github-copilot", credentials.has_github_copilot()),
-    ] {
+    // RPC-107: iterate the canonical 17-provider ordered registry so the
+    // Rust ratatui `ProviderSettingsView` matches the TS Ink reference
+    // byte-for-byte on order + display names. Pre-RPC-107 this loop
+    // hard-coded 6 entries using the legacy slug `claude`; the canonical
+    // surface uses `anthropic`.
+    for entry in crate::catalog::CANONICAL_PROVIDERS {
+        let available = match entry.id {
+            "openai" => credentials.has_openai(),
+            "anthropic" => credentials.has_claude(),
+            "gemini" => credentials.has_gemini(),
+            "zai" => credentials.has_zai(),
+            "codex" => credentials.has_codex(),
+            "github-copilot" => credentials.has_github_copilot(),
+            // Net-new canonical providers (cohere, mistral, xai,
+            // together, huggingface, openrouter, groq, deepseek,
+            // moonshot, galadriel, azure) probe their declared env var
+            // directly. OAuth-only entries declare an empty env_var and
+            // therefore remain unconfigured until a sibling card wires
+            // their auth-file probes.
+            _ => {
+                !entry.env_var.is_empty()
+                    && std::env::var(entry.env_var)
+                        .map(|v| !v.is_empty())
+                        .unwrap_or(false)
+            }
+        };
+        // RPC-108: derive masked_key + source for api-key entries
+        // whose credential comes from the declared env var. OAuth-only
+        // entries (anthropic, codex, github-copilot) always carry
+        // None for both fields — the TUI view layer renders 'OAuth'
+        // literal and the wire surface never carries OAuth token bytes.
+        let (masked_key, source) = match entry.auth_type {
+            crate::catalog::AuthType::ApiKey
+                if available && !entry.env_var.is_empty() =>
+            {
+                match std::env::var(entry.env_var) {
+                    Ok(raw) if !raw.is_empty() => (
+                        Some(crate::credentials::mask_api_key(&raw)),
+                        Some(crate::credentials::SOURCE_ENV.to_string()),
+                    ),
+                    _ => (None, None),
+                }
+            }
+            _ => (None, None),
+        };
         list.push(ProviderInfo {
-            name: name.to_string(),
-            display_name: Some(name.to_string()),
+            name: entry.id.to_string(),
+            display_name: Some(entry.display_name.to_string()),
             available,
             is_custom: false,
             facade: None,
-            base_url: None,
-            api_key_env_var: None,
+            base_url: entry.default_base_url.map(ToString::to_string),
+            api_key_env_var: if entry.env_var.is_empty() {
+                None
+            } else {
+                Some(entry.env_var.to_string())
+            },
             models: Vec::new(),
             api_style: None,
+            masked_key,
+            source,
         });
     }
 
@@ -151,6 +209,12 @@ pub fn list_providers_info() -> Result<Vec<ProviderInfo>, ProviderError> {
             api_key_env_var: env_var,
             models,
             api_style: Some(api_style_str.to_string()),
+            // RPC-108: custom providers don't carry a masked-key on
+            // this surface — `source: 'config'` tagging is PROV-067
+            // scope tracked separately. Leaving both fields None keeps
+            // the wire shape stable.
+            masked_key: None,
+            source: None,
         });
     }
 

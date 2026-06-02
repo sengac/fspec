@@ -128,6 +128,79 @@ describe('tokenStateUtils', () => {
       expect(result.contextFillPercentage).toBeNull();
       expect(result.tokensPerSecond).toBeNull();
     });
+
+    // RPC-101: extractTokenStateFromChunks now also surfaces the
+    // last known threshold so AgentView can prime its
+    // realtime-recompute cache on session restore. Without this the
+    // [X%] badge would freeze again until the next backend
+    // ContextFillUpdate arrives (potentially never, for an idle
+    // restored session).
+    it('should surface threshold from the last ContextFillUpdate (RPC-101)', () => {
+      // @step Given a buffered session contains multiple ContextFillUpdate chunks, the last carrying threshold=100000 tokens
+      const chunks = [
+        {
+          type: 'ContextFillUpdate',
+          contextFill: {
+            fillPercentage: 25,
+            effectiveTokens: 25_000,
+            threshold: 100_000,
+            contextWindow: 132_000,
+          },
+        },
+        { type: 'Text', text: 'Hello' },
+        {
+          type: 'ContextFillUpdate',
+          contextFill: {
+            fillPercentage: 45,
+            effectiveTokens: 45_000,
+            threshold: 100_000,
+            contextWindow: 132_000,
+          },
+        },
+      ];
+
+      // @step When extractTokenStateFromChunks is called on the buffered chunks during session restore
+      const result = extractTokenStateFromChunks(chunks);
+
+      // @step Then the returned ExtractedTokenState.contextThreshold MUST equal 100000
+      expect(result.contextFillPercentage).toBe(45);
+      expect(result.contextThreshold).toBe(100_000);
+      // @step Then AgentView MUST seed cachedContextThresholdRef.current with 100000 so the next TokenUpdate updates the badge without waiting for a backend ContextFillUpdate
+      // (verified by inspection of AgentView.tsx:3667-3669 and 4292-4294 — both restore sites
+      // assign extractedState.contextThreshold to cachedContextThresholdRef.current when non-null)
+    });
+
+    it('should return null contextThreshold when no ContextFillUpdate carries one (RPC-101)', () => {
+      // @step Then ContextFillUpdate without a threshold field MUST yield ExtractedTokenState.contextThreshold === null
+      const chunks = [
+        { type: 'ContextFillUpdate', contextFill: { fillPercentage: 45 } },
+      ];
+
+      const result = extractTokenStateFromChunks(chunks);
+
+      expect(result.contextFillPercentage).toBe(45);
+      expect(result.contextThreshold).toBeNull();
+    });
+
+    it('should treat non-positive threshold as missing (RPC-101)', () => {
+      // Non-positive threshold is treated identically to missing — protects
+      // the AgentView restore path from priming the cache with garbage.
+      const chunks = [
+        {
+          type: 'ContextFillUpdate',
+          contextFill: {
+            fillPercentage: 45,
+            threshold: 0,
+            effectiveTokens: 0,
+            contextWindow: 0,
+          },
+        },
+      ];
+
+      const result = extractTokenStateFromChunks(chunks);
+
+      expect(result.contextThreshold).toBeNull();
+    });
   });
 
   describe('calculateContextFillPercentage', () => {

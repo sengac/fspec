@@ -30,4 +30,7 @@ pub use agent::{AgentView, RenderedChunk as AgentRenderedChunk};
 pub use blocklist::{BlocklistEvent, BlocklistView};
 pub use board::BoardView;
 pub use navigator::{Navigator, ViewMode};
-pub use provider_settings::{ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView};
+pub use provider_settings::{
+    DetailStatus, DetailSub, NavItem, NavItemKind, OAuthMethod, ProviderDisplayInfo,
+    ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
+};

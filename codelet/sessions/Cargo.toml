@@ -28,6 +28,10 @@ codelet-core = { workspace = true }
 # codelet/sessions/tests/skeleton_invariants.rs (RPC-038).
 codelet-rpc-types = { workspace = true }
 
+# RPC-081: rig::message types used by restore_session_messages to push
+# User/Assistant envelopes into session.inner.messages.
+rig-core = { workspace = true }
+
 # === Async runtime ===
 tokio = { workspace = true }
 async-trait = { workspace = true }
@@ -60,3 +64,6 @@ serde_json = { workspace = true }
 # RPC-067: shared no-codelet-napi dependency-rule helpers used by
 # tests/no_napi_dependency.rs.
 codelet-test-helpers = { workspace = true }
+# RPC-081: restoration tests need a hermetic data dir.
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["test-util"] }

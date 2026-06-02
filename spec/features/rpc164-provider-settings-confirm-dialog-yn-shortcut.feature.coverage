@@ -1,0 +1,338 @@
+{
+  "scenarios": [
+    {
+      "name": "Pressing 'y' on a 2-button dialog emits Primary",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "83-101",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'Y' (uppercase) on a 2-button dialog emits Primary",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "106-121",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'n' on a 2-button dialog emits Cancel",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "126-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'N' (uppercase) on a 2-button dialog emits Cancel",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "146-161",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'n' on a 3-button dialog emits Cancel (not Secondary)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "166-185",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'y' on a 3-button dialog emits Primary",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "190-203",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'y' ignores the currently focused button",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "208-224",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'n' with Ctrl modifier returns Ignored",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "229-240",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                140,
+                141,
+                142
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'y' with Alt modifier returns Ignored",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "245-256",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                140,
+                141,
+                142
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing an unrelated printable character returns Ignored",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "261-272",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                166
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'y' inside ProviderSettingsView delete-credentials dialog emits ConfirmDeleteProviderCredentials",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "278-298",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing 'n' inside ProviderSettingsView delete-credentials dialog dismisses silently",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "303-323",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pre-existing keybinds remain unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs",
+          "lines": "327-365",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/confirm_dialog_yn_shortcut_rpc164.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/agent/confirm_dialog.rs",
+      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+    ],
+    "totalLinesCovered": 348
+  }
+}

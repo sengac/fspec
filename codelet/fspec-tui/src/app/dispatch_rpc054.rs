@@ -266,6 +266,14 @@ impl App {
             Action::DeleteProviderCredentials(id) => {
                 self.handle_delete_provider_credentials(id.clone());
             }
+            Action::ConfirmDeleteProviderCredentials(id) => {
+                // RPC-054 (revision): ConfirmDialog Primary acceptance
+                // routes through the same backend round-trip as the
+                // legacy raw `DeleteProviderCredentials` arm. The
+                // view-layer is now responsible for opening the
+                // dialog BEFORE this action fires.
+                self.handle_delete_provider_credentials(id.clone());
+            }
             Action::ProviderSettingsStatus(s) => {
                 self.handle_provider_settings_status(s.clone());
             }

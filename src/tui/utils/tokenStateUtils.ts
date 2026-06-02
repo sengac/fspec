@@ -22,6 +22,13 @@ interface TokenStateChunk {
   tokens?: TokenTracker;
   contextFill?: {
     fillPercentage: number;
+    // RPC-101: extra fields carried on the wire by ContextFillInfo
+    // (codelet/napi/index.d.ts:2952-2957). Optional here because
+    // older fixtures only set fillPercentage; consumers that want
+    // real-time recompute on TokenUpdate need threshold.
+    effectiveTokens?: number;
+    threshold?: number;
+    contextWindow?: number;
   };
 }
 
@@ -35,6 +42,14 @@ export interface ExtractedTokenState {
   contextFillPercentage: number | null;
   /** Tokens per second (only valid for running sessions) */
   tokensPerSecond: number | null;
+  /**
+   * RPC-101: Cached context-fill threshold (in tokens) from the last
+   * ContextFillUpdate in the buffer. Callers seed
+   * `cachedContextThresholdRef` with this so subsequent live
+   * TokenUpdates can recompute the percentage locally without
+   * waiting for the next ContextFillUpdate from the backend.
+   */
+  contextThreshold: number | null;
 }
 
 /**
@@ -46,7 +61,7 @@ export interface ExtractedTokenState {
  * Used when restoring session state from buffered output (resume, switch session).
  *
  * @param chunks - Array of stream chunks to scan
- * @returns Extracted token state (tokenUsage, contextFillPercentage, tokensPerSecond)
+ * @returns Extracted token state (tokenUsage, contextFillPercentage, tokensPerSecond, contextThreshold)
  */
 export function extractTokenStateFromChunks(
   chunks: TokenStateChunk[]
@@ -72,11 +87,20 @@ export function extractTokenStateFromChunks(
       ? (lastTokenUpdate.tokens.tokensPerSecond as number)
       : null;
 
+  // RPC-101: surface the last known threshold so callers can prime
+  // the realtime-recompute cache. Returns null when threshold is
+  // missing or non-positive (older fixtures emit ContextFillUpdate
+  // without it).
+  const rawThreshold = lastContextFillUpdate?.contextFill?.threshold;
+  const contextThreshold =
+    typeof rawThreshold === 'number' && rawThreshold > 0 ? rawThreshold : null;
+
   return {
     tokenUsage: lastTokenUpdate?.tokens ?? null,
     contextFillPercentage:
       lastContextFillUpdate?.contextFill?.fillPercentage ?? null,
     tokensPerSecond,
+    contextThreshold,
   };
 }
 

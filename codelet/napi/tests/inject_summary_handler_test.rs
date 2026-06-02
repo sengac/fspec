@@ -76,7 +76,7 @@ fn create_session_with_messages(
     ];
 
     for i in 0..num_system_reminders {
-        let reminder_type = reminder_types[i % reminder_types.len()].clone();
+        let reminder_type = reminder_types[i % reminder_types.len()];
         let content = format!("System reminder content #{}", i + 1);
         let reminder = create_system_reminder(reminder_type, &content);
         session.messages.push(reminder);
@@ -170,7 +170,7 @@ fn test_handler_returns_token_counts() {
     );
 
     let dag_content = "# D2: Architecture\n".to_string()
-        + &"- Design pattern detail. ".repeat(50);
+        + "- Design pattern detail. ".repeat(50).as_str();
 
     let result = handler(Uuid::new_v4(), dag_content);
     assert!(result.is_ok());

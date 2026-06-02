@@ -128,10 +128,16 @@ fn question_mark_in_board_view_still_opens_help_dialog() {
 }
 
 // =============================================================================
-// Scenario: Pressing q while the BoardView is focused still quits the app
+// Scenario: Pressing q while the BoardView is focused is IGNORED (RPC-102).
+//
+// Before RPC-102, the Stage-4 app-shortcut bound `q` to quit. RPC-102
+// inverted the binding: `q` is no longer a quit shortcut on the BoardView
+// (TS parity — `src/tui/components/BoardView.tsx` uses `key.escape`).
+// The BoardView ESC binding is exercised by
+// `tests/boardview_esc_exit_confirmation_rpc102.rs`.
 // =============================================================================
 #[test]
-fn q_in_board_view_still_quits() {
+fn q_in_board_view_is_ignored_after_rpc102() {
     // @step Given an App is constructed with active_view = Board and no critical dialog topmost
     let mut app = board_view_app();
     assert_eq!(app.active_view(), ViewMode::Board);
@@ -144,10 +150,16 @@ fn q_in_board_view_still_quits() {
     // @step When the app handles a KeyCode::Char('q') event with KeyModifiers::NONE
     let _ = app.handle_event(&synth_key(KeyCode::Char('q')));
 
-    // @step Then App::should_quit is set to true
+    // @step Then App::should_quit remains false (RPC-102: 'q' is no longer a quit binding outside DisconnectDialog)
     assert!(
-        app.should_quit(),
-        "BoardView `q` shortcut should still quit the app after RPC-073 fix",
+        !app.should_quit(),
+        "RPC-102: BoardView `q` shortcut must NOT quit — TS parity uses ESC for exit confirmation",
+    );
+    // @step And no compositor layer is pushed
+    assert_eq!(
+        app.compositor().len(),
+        0,
+        "RPC-102: BoardView `q` must not push any compositor layer",
     );
 }
 

@@ -63,7 +63,7 @@ fn parse_cells(line: &str) -> Vec<String> {
 
 fn push_padded_block(out: &mut String, block: &[&str]) {
     let rows: Vec<Vec<String>> = block.iter().map(|l| parse_cells(l)).collect();
-    let cols = rows.iter().map(|r| r.len()).max().unwrap_or(0);
+    let cols = rows.iter().map(Vec::len).max().unwrap_or(0);
     // Compute the widest content cell per column (ignoring separator rows).
     let mut widths = vec![0usize; cols];
     for row in &rows {
@@ -101,9 +101,9 @@ fn push_padded_block(out: &mut String, block: &[&str]) {
             out.push('|');
         }
         // Pad any missing trailing columns (ragged rows).
-        for j in row.len()..cols {
+        for w in widths.iter().take(cols).skip(row.len()) {
             out.push(' ');
-            for _ in 0..widths[j] {
+            for _ in 0..*w {
                 out.push(' ');
             }
             out.push_str(" |");

@@ -274,13 +274,222 @@ impl codelet_core::SessionManagerHandle for SessionManager {
     fn restore_session_messages(
         &self,
         session_id: &SessionId,
-        _envelopes: Vec<String>,
+        envelopes: Vec<String>,
     ) -> Result<(), String> {
+        // RPC-081: NAPI-free port of codelet/napi/src/session_bindings.rs:2401-2567.
+        // Walks each envelope JSON's message.content blocks, builds parallel
+        // rig::message::Message + StreamChunk vectors, then pushes rig messages
+        // into session.inner.messages and dispatches StreamChunks via
+        // session.handle_output. Preserves the system-reminder skip rule
+        // (text contains both "<system-reminder>" AND "<!-- type:") so stale
+        // reminders are NOT replayed — fresh ones are re-injected post-restore.
         let uuid = uuid_from(session_id);
-        match self.get_session(&uuid.to_string()) {
-            Ok(_session) => Ok(()),
-            Err(_) => Err(format!("Session not found: {}", session_id.value.as_str())),
+        let session = self
+            .get_session(&uuid.to_string())
+            .map_err(|_| format!("Session not found: {}", session_id.value.as_str()))?;
+
+        let mut rig_messages: Vec<rig::message::Message> = Vec::new();
+        let mut stream_chunks: Vec<StreamChunk> = Vec::new();
+
+        for envelope_json in &envelopes {
+            let envelope: serde_json::Value = serde_json::from_str(envelope_json)
+                .map_err(|e| format!("Failed to parse envelope: {e}"))?;
+
+            let Some(message) = envelope.get("message") else {
+                continue;
+            };
+
+            let role = message
+                .get("role")
+                .and_then(|r| r.as_str())
+                .unwrap_or("user");
+
+            if role == "assistant" {
+                let Some(content) = message.get("content") else {
+                    continue;
+                };
+                let Some(arr) = content.as_array() else {
+                    continue;
+                };
+
+                let mut text_parts: Vec<String> = Vec::new();
+
+                for block in arr {
+                    let block_type = block
+                        .get("type")
+                        .and_then(|t| t.as_str())
+                        .unwrap_or("");
+
+                    match block_type {
+                        "thinking" => {
+                            if let Some(thinking) =
+                                block.get("thinking").and_then(|t| t.as_str())
+                            {
+                                if !thinking.is_empty() {
+                                    stream_chunks
+                                        .push(StreamChunk::thinking(thinking.to_string()));
+                                }
+                            }
+                        }
+                        "text" => {
+                            if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
+                                text_parts.push(text.to_string());
+                                if !text.is_empty() {
+                                    stream_chunks.push(StreamChunk::text(text.to_string()));
+                                }
+                            }
+                        }
+                        "tool_use" => {
+                            let id = block
+                                .get("id")
+                                .and_then(|i| i.as_str())
+                                .unwrap_or("")
+                                .to_string();
+                            let name = block
+                                .get("name")
+                                .and_then(|n| n.as_str())
+                                .unwrap_or("")
+                                .to_string();
+                            let input = block
+                                .get("input")
+                                .map(|i| serde_json::to_string(i).unwrap_or_default())
+                                .unwrap_or_default();
+
+                            if !id.is_empty() && !name.is_empty() {
+                                stream_chunks.push(StreamChunk::tool_call(
+                                    codelet_rpc_types::ToolCallInfo { id, name, input },
+                                ));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+
+                let joined_text = text_parts.join("");
+                if !joined_text.is_empty() {
+                    rig_messages.push(rig::message::Message::Assistant {
+                        id: None,
+                        content: rig::OneOrMany::one(rig::message::AssistantContent::text(
+                            joined_text,
+                        )),
+                    });
+                }
+
+                stream_chunks.push(StreamChunk::done());
+            } else {
+                let Some(content) = message.get("content") else {
+                    continue;
+                };
+
+                if let Some(arr) = content.as_array() {
+                    let mut text_parts: Vec<String> = Vec::new();
+                    let mut chunks_for_this_envelope: Vec<StreamChunk> = Vec::new();
+
+                    for block in arr {
+                        let block_type = block
+                            .get("type")
+                            .and_then(|t| t.as_str())
+                            .unwrap_or("");
+
+                        match block_type {
+                            "text" => {
+                                if let Some(text) = block.get("text").and_then(|t| t.as_str())
+                                {
+                                    text_parts.push(text.to_string());
+                                    if !text.is_empty() {
+                                        chunks_for_this_envelope
+                                            .push(StreamChunk::user_input(text.to_string()));
+                                    }
+                                }
+                            }
+                            "tool_result" => {
+                                let tool_use_id = block
+                                    .get("tool_use_id")
+                                    .and_then(|i| i.as_str())
+                                    .unwrap_or("")
+                                    .to_string();
+                                let result_content = block
+                                    .get("content")
+                                    .and_then(|c| c.as_str())
+                                    .unwrap_or("")
+                                    .to_string();
+                                let is_error = block
+                                    .get("is_error")
+                                    .and_then(serde_json::Value::as_bool)
+                                    .unwrap_or(false);
+
+                                if !tool_use_id.is_empty() {
+                                    chunks_for_this_envelope.push(StreamChunk::tool_result(
+                                        codelet_rpc_types::ToolResultInfo {
+                                            tool_call_id: tool_use_id,
+                                            content: result_content,
+                                            is_error,
+                                        },
+                                    ));
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+
+                    let joined_text = text_parts.join("");
+                    if !joined_text.is_empty() {
+                        // Skip system reminders — they'll be re-injected fresh after restore.
+                        if joined_text.contains("<system-reminder>")
+                            && joined_text.contains("<!-- type:")
+                        {
+                            continue;
+                        }
+                        rig_messages.push(rig::message::Message::User {
+                            content: rig::OneOrMany::one(rig::message::UserContent::text(
+                                joined_text,
+                            )),
+                        });
+                    }
+
+                    // Flush this envelope's stream chunks (text user_input +
+                    // tool_result). For system-reminder-text envelopes the
+                    // `continue` above skipped this block entirely, so no
+                    // chunks are emitted — matching the NAPI behaviour.
+                    stream_chunks.extend(chunks_for_this_envelope);
+                } else if let Some(s) = content.as_str() {
+                    if !s.is_empty() {
+                        if s.contains("<system-reminder>") && s.contains("<!-- type:") {
+                            continue;
+                        }
+                        stream_chunks.push(StreamChunk::user_input(s.to_string()));
+                        rig_messages.push(rig::message::Message::User {
+                            content: rig::OneOrMany::one(rig::message::UserContent::text(
+                                s.to_string(),
+                            )),
+                        });
+                    }
+                }
+            }
         }
+
+        // Push rig messages into session.inner.messages.
+        // The trait method is sync; session.inner is a tokio::sync::Mutex,
+        // so we bridge via block_in_place + Handle::current.block_on. This
+        // mirrors the existing sync→async bridges in this file
+        // (create_session, clear_history, etc.).
+        if !rig_messages.is_empty() {
+            tokio::task::block_in_place(|| {
+                tokio::runtime::Handle::current().block_on(async {
+                    let mut inner = session.inner.lock().await;
+                    for msg in rig_messages {
+                        inner.messages.push(msg);
+                    }
+                });
+            });
+        }
+
+        // Dispatch stream chunks via session.handle_output for UI replay.
+        for chunk in stream_chunks {
+            session.handle_output(chunk);
+        }
+
+        Ok(())
     }
 
     fn restore_session_token_state(
@@ -877,14 +1086,24 @@ impl codelet_core::SessionManagerHandle for SessionManager {
                     credential_type: if p.is_custom {
                         "custom".to_string()
                     } else {
-                        // PROV-053: codex / github-copilot use OAuth flows;
-                        // everything else uses an env-var API key.
+                        // PROV-053 / RPC-107: codex, github-copilot, and
+                        // anthropic use OAuth flows; everything else uses
+                        // an env-var API key. The "anthropic" slug
+                        // replaces the legacy Rust-internal "claude" slug
+                        // as part of the RPC-107 canonical-catalog port.
                         match p.name.as_str() {
-                            "codex" | "github-copilot" => "oauth".to_string(),
+                            "anthropic" | "codex" | "github-copilot" => "oauth".to_string(),
                             _ => "api_key".to_string(),
                         }
                     },
                     model_count: p.models.len() as u32,
+                    // RPC-108: propagate masked credential + source
+                    // verbatim from codelet-providers. Masking has
+                    // already happened server-side via
+                    // `credentials::mask_api_key` before this mapper
+                    // runs, so raw key bytes never traverse the wire.
+                    masked_key: p.masked_key,
+                    source: p.source,
                 })
                 .collect(),
             Err(e) => {

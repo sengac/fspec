@@ -116,6 +116,9 @@ impl Navigator {
                 }
                 EventResult::consumed()
             }
+            // RPC-160: Tab→SwitchToModels — Consumed for now;
+            // model-settings view transition deferred to follow-up.
+            ProviderSettingsEvent::SwitchToModels => EventResult::consumed(),
         }
     }
 

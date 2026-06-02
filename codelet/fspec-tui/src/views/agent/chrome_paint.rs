@@ -62,7 +62,12 @@ pub fn paint_header_and_role(
         // where `rustTokens` is `useRustSessionState(currentSessionId)`.
         tokens_per_second: tokens.tokens_per_second.map(|v| v as f32),
         reasoning_tokens: tokens.reasoning_tokens,
-        compaction_reduction: None,
+        // RPC-100 — source the post-compaction reduction percentage
+        // from the per-session slot populated by
+        // `dispatch_rpc045.rs::CompactionComplete`. `Some(_)` widens
+        // the SessionHeader bracket to `[X%: COMPACTED Y%]`; `None`
+        // keeps the plain `[X%]` form. Mirrors TS AgentView.tsx:946-979.
+        compaction_reduction: sid.and_then(|s| store.compaction_reduction_for(s)),
         is_loading,
         subordinate_label: subordinate_label.as_deref(),
     }

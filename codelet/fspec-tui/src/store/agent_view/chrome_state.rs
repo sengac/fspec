@@ -56,4 +56,29 @@ impl AgentViewStore {
     pub fn set_workspace(&mut self, workspace: Option<WorkspaceInfo>) {
         self.workspace = workspace;
     }
+
+    // ── RPC-100 per-session compaction reduction accessors ────────────
+
+    /// Borrow the per-session compaction-reduction percentage, if any.
+    /// `None` means the session has not yet completed a compaction
+    /// (or was reset via `SessionStateChange { state: Cleared }`).
+    pub fn compaction_reduction_for(&self, session_id: &SessionId) -> Option<i32> {
+        self.compaction_reduction_by_session.get(session_id).copied()
+    }
+
+    /// Persist `reduction` (already computed as
+    /// `((1.0 - compression_ratio) * 100.0).round() as i32`) so the
+    /// SessionHeader can render `[X%: COMPACTED {reduction}%]` on the
+    /// next frame. Called by `dispatch_rpc045.rs` on
+    /// `StreamChunk::CompactionComplete`.
+    pub fn set_compaction_reduction(&mut self, session_id: SessionId, reduction: i32) {
+        self.compaction_reduction_by_session.insert(session_id, reduction);
+    }
+
+    /// Drop the cached compaction-reduction entry for `session_id`.
+    /// Called on `SessionStateChange { state: Cleared }` so the
+    /// SessionHeader drops the COMPACTED suffix after a `/clear`.
+    pub fn clear_compaction_reduction(&mut self, session_id: &SessionId) {
+        self.compaction_reduction_by_session.remove(session_id);
+    }
 }

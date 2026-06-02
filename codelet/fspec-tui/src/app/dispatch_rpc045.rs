@@ -27,7 +27,7 @@
 //!    the RPC-045 attachment).
 
 use codelet_rpc_types::{
-    FspecRequest, FspecResult, SessionId, SessionState, SessionStatus, StreamChunk,
+    FspecRequest, SessionId, SessionState, SessionStatus, StreamChunk,
 };
 use codelet_rpc_types::WorkspaceInfo;
 
@@ -38,6 +38,7 @@ use crate::store::{
 };
 
 use super::dispatch_rpc020::format_compaction_notice;
+use super::dispatch_rpc045_fspec_runner::run_fspec_command;
 use super::state::App;
 
 impl App {
@@ -69,6 +70,16 @@ impl App {
                         let _ = self
                             .action_tx
                             .send(Action::PauseCleared(session_id.clone()));
+                    }
+                    SessionState::Cleared => {
+                        // RPC-100: mirror TS AgentView.tsx:992-1006 —
+                        // SessionStateChange→Cleared zeroes the token
+                        // counters AND the compaction-reduction suffix
+                        // so the SessionHeader badge returns to `[0%]`
+                        // / no `COMPACTED` after a `/clear`.
+                        self.agent_view_store.reset_token_state(session_id);
+                        self.agent_view_store
+                            .clear_compaction_reduction(session_id);
                     }
                     _ => {}
                 }
@@ -126,6 +137,17 @@ impl App {
                 // emits its own notice so double-emission for /compact
                 // is acceptable parity with the TS Ink original.
                 self.agent_view_store.clear_compaction_progress(session_id);
+
+                // RPC-100: persist the reduction percentage on the
+                // per-session slot so SessionHeader renders the
+                // `[X%: COMPACTED Y%]` badge suffix. Same formula as
+                // `format_compaction_notice` in dispatch_rpc020.rs:290
+                // — keeping the notice line and the badge in sync.
+                let reduction = ((1.0 - compaction_result.compression_ratio) * 100.0).round()
+                    as i32;
+                self.agent_view_store
+                    .set_compaction_reduction(session_id.clone(), reduction);
+
                 let text = format_compaction_notice(compaction_result);
                 let _ = self
                     .action_tx
@@ -186,107 +208,3 @@ impl App {
     }
 }
 
-/// Execute `request` against `backend` and produce an `FspecResult`.
-/// Pure async helper — kept outside the `impl App` block so the runner
-/// task can call it without holding an `App` reference.
-async fn run_fspec_command(
-    backend: &dyn crate::transport::FspecBackend,
-    request: &FspecRequest,
-) -> FspecResult {
-    match request.command.as_str() {
-        "list-work-units" => match backend.list_work_units().await {
-            Ok(units) => match serde_json::to_string(&units) {
-                Ok(data) => FspecResult {
-                    success: true,
-                    data,
-                    error: None,
-                    system_reminder: None,
-                    tool_call_id: request.tool_call_id.clone(),
-                },
-                Err(e) => FspecResult {
-                    success: false,
-                    data: String::new(),
-                    error: Some(format!("serialise list-work-units result: {e}")),
-                    system_reminder: None,
-                    tool_call_id: request.tool_call_id.clone(),
-                },
-            },
-            Err(e) => FspecResult {
-                success: false,
-                data: String::new(),
-                error: Some(format!("list-work-units: {e}")),
-                system_reminder: None,
-                tool_call_id: request.tool_call_id.clone(),
-            },
-        },
-        "show-work-unit" => {
-            let target_id = parse_show_work_unit_id(&request.args_json);
-            match backend.list_work_units().await {
-                Ok(units) => match target_id {
-                    Some(id) => match units.iter().find(|u| u.id == id) {
-                        Some(unit) => match serde_json::to_string(unit) {
-                            Ok(data) => FspecResult {
-                                success: true,
-                                data,
-                                error: None,
-                                system_reminder: None,
-                                tool_call_id: request.tool_call_id.clone(),
-                            },
-                            Err(e) => FspecResult {
-                                success: false,
-                                data: String::new(),
-                                error: Some(format!("serialise show-work-unit: {e}")),
-                                system_reminder: None,
-                                tool_call_id: request.tool_call_id.clone(),
-                            },
-                        },
-                        None => FspecResult {
-                            success: false,
-                            data: String::new(),
-                            error: Some(format!("work unit not found: {id}")),
-                            system_reminder: None,
-                            tool_call_id: request.tool_call_id.clone(),
-                        },
-                    },
-                    None => FspecResult {
-                        success: false,
-                        data: String::new(),
-                        error: Some("show-work-unit: missing `id` in args_json".to_string()),
-                        system_reminder: None,
-                        tool_call_id: request.tool_call_id.clone(),
-                    },
-                },
-                Err(e) => FspecResult {
-                    success: false,
-                    data: String::new(),
-                    error: Some(format!("show-work-unit: {e}")),
-                    system_reminder: None,
-                    tool_call_id: request.tool_call_id.clone(),
-                },
-            }
-        }
-        other => FspecResult {
-            success: false,
-            data: String::new(),
-            error: Some(format!("unsupported command: {other}")),
-            system_reminder: None,
-            tool_call_id: request.tool_call_id.clone(),
-        },
-    }
-}
-
-/// Best-effort `id` extraction from `show-work-unit`'s `args_json`.
-/// Accepts both `{"id":"AUTH-001"}` and the fspec-CLI-style
-/// `{"_":["AUTH-001"]}`. Returns `None` when neither shape matches.
-fn parse_show_work_unit_id(args_json: &str) -> Option<String> {
-    let value: serde_json::Value = serde_json::from_str(args_json).ok()?;
-    if let Some(id) = value.get("id").and_then(|v| v.as_str()) {
-        return Some(id.to_string());
-    }
-    if let Some(arr) = value.get("_").and_then(|v| v.as_array()) {
-        if let Some(first) = arr.first().and_then(|v| v.as_str()) {
-            return Some(first.to_string());
-        }
-    }
-    None
-}

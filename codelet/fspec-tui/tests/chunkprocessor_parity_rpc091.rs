@@ -133,7 +133,7 @@ fn consecutive_text_deltas_accumulate_into_single_in_flight_assistant_chunk() {
         .map(|s| s.kind.clone())
         .expect("ChunkSource present");
     assert!(
-        matches!(kind, codelet_fspec_tui::ChunkKind::AssistantText { .. }),
+        matches!(kind, codelet_fspec_tui::ChunkKind::AssistantText),
         "expected AssistantText kind, got {kind:?}"
     );
 }
@@ -418,7 +418,7 @@ fn tool_result_attaches_to_matching_header_and_pushes_fresh_placeholder() {
     let kind1 = chunks[1].source.as_ref().map(|s| s.kind.clone()).unwrap();
     assert!(matches!(
         kind1,
-        codelet_fspec_tui::ChunkKind::AssistantText { .. }
+        codelet_fspec_tui::ChunkKind::AssistantText
     ));
     let is_streaming1 = chunks[1].source.as_ref().map(|s| s.is_streaming).unwrap();
     assert!(is_streaming1, "fresh placeholder must be is_streaming");

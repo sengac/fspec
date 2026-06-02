@@ -182,7 +182,10 @@ fn thinking_label(level: ThinkingLevel) -> Option<&'static str> {
 /// RPC-029: mirrors `getContextFillColor` from
 /// `src/tui/utils/sessionHeaderUtils.ts:37–42` — note the FOUR
 /// thresholds (the magenta band between 70% and 85% is easy to miss).
-pub(super) fn context_fill_color(pct: u8) -> Color {
+///
+/// RPC-100: widened to `u16` so the >=85 red band still triggers for
+/// pre-compaction overshoot values (e.g. 105% lands firmly in Red).
+pub(super) fn context_fill_color(pct: u16) -> Color {
     if pct < 50 {
         Color::Green
     } else if pct < 70 {

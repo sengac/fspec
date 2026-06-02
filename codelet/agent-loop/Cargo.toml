@@ -54,5 +54,8 @@ tempfile.workspace = true
 tokio = { workspace = true, features = ["test-util"] }
 codelet-test-helpers.workspace = true
 serde_json = { workspace = true }
+# RPC-080: persistence tests reach for the process-global data directory
+# + MESSAGE_STORE/SESSION_STORE singletons. Tests must serialise.
+serial_test.workspace = true
 # Stub LlmProvider used by the integration test; only compiled at test time.
 codelet-providers = { workspace = true, features = ["test-support"] }

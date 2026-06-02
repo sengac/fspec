@@ -78,6 +78,17 @@ bincode = { workspace = true }
 # RPC-067: shared no-codelet-napi dependency-rule helpers used by
 # tests/no_napi_dependency.rs.
 codelet-test-helpers.workspace = true
+# RPC-107: cross-transport parity tests drive the real SessionManager
+# through both transports to exercise the canonical provider catalog
+# below the wire boundary.
+codelet-sessions.workspace = true
+# RPC-107: provider_settings_canonical_order_rpc107.rs and existing
+# tests use #[serial] to serialise env-var manipulation across the
+# integration suite.
+serial_test.workspace = true
+# RPC-107: catalog unit tests reach into the static CANONICAL_PROVIDERS
+# slice exposed by codelet-providers.
+codelet-providers.workspace = true
 
 [lints]
 workspace = true

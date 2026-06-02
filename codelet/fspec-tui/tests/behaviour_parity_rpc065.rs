@@ -13,11 +13,17 @@
 //! Test sections (one mod per matrix row family):
 //!   slash_help, slash_clear, slash_quit, slash_model,
 //!   slash_thinking, slash_role, slash_resume, slash_search,
-//!   slash_provider, slash_providers_alias, slash_debug, slash_compact,
+//!   slash_provider, slash_debug, slash_compact,
 //!   slash_isolation, slash_blocklist, slash_detach, slash_merge_worktree,
 //!   slash_schedule, slash_loop, key_shift_arrows, key_history_recall,
 //!   key_tab_turn_selection, key_ctrl_r, key_esc_cascade,
 //!   key_enter_submit, key_ctrl_c_interrupt, key_pagedown_end.
+//!
+//! NOTE: `slash_providers_alias` was removed on 2026-06-01. The
+//! TypeScript SLASH_COMMANDS registry (src/tui/utils/slashCommands.ts)
+//! defines exactly one provider-related command: `name: 'provider'`.
+//! There is no `/providers` alias in TS, so the Rust frontend mirrors
+//! that 1:1 — see the deletion notice further down in this file.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -291,25 +297,15 @@ async fn slash_provider_activates_provider_settings_view() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// /providers — alias for /provider
+// /providers — DELETED (no alias). The TypeScript SLASH_COMMANDS registry
+// (src/tui/utils/slashCommands.ts) defines exactly one provider-related
+// entry: `name: 'provider'`. The Rust frontend mirrors that 1:1 — there
+// is no `SlashCommandAction::Providers` variant and no `/providers`
+// command. The previous `slash_providers_alias_activates_provider_settings_view`
+// test asserted a fabrication that did not exist in the TS reference and
+// has been deleted as part of the RPC-054 / RPC-020 / RPC-065 cross-card
+// revision (2026-06-01).
 // ─────────────────────────────────────────────────────────────────────────
-
-/// TS-REF: src/tui/views/AgentView.tsx (legacy `/providers` alias)
-/// DEEP-REF: dispatch_rpc020.rs::handle_slash_command Provider|Providers arm
-#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn slash_providers_alias_activates_provider_settings_view() {
-    // @step Given a fresh AppTestHarness with focused session s-1
-    let mut h = AppTestHarness::new();
-
-    // @step When I dispatch the slash command "/providers"
-    h.dispatch_slash(SlashCommandAction::Providers);
-
-    // @step And I drain pending tasks and actions
-    h.drain_pending().await;
-
-    // @step Then the navigator's active_view is ViewMode::ProviderSettings
-    assert_eq!(h.active_view(), ViewMode::ProviderSettings);
-}
 
 // ─────────────────────────────────────────────────────────────────────────
 // /debug — calls backend.toggle_debug

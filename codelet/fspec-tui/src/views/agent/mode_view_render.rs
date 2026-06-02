@@ -1,6 +1,12 @@
 //! RPC-028 — render helpers for ResumeSessionView and
 //! SearchHistoryView. Extracted to keep the parent files under the
 //! 300-LoC source-shape budget.
+//!
+//! RPC-054 (revision): `render_title_with_count` and
+//! `render_footer_hint` are promoted to `pub(crate)` so the
+//! ProviderSettingsView can reuse them. The title helper takes a
+//! `suffix` parameter so different views can label the count
+//! correctly (sessions: "available", providers: "configured").
 
 use codelet_rpc_types::SessionInfo;
 use ratatui::buffer::Buffer;
@@ -9,16 +15,22 @@ use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::{Paragraph, Widget};
 
-pub(super) fn render_title_with_count(area: Rect, buf: &mut Buffer, title: &str, count: usize) {
-    let text = format!("{title} ({count} available)");
+pub(crate) fn render_title_with_count(
+    area: Rect,
+    buf: &mut Buffer,
+    title: &str,
+    count: usize,
+    suffix: &str,
+) {
+    let text = format!("{title} ({count} {suffix})");
     let style = Style::default()
         .fg(Color::Blue)
         .add_modifier(Modifier::BOLD);
     Paragraph::new(Line::from(Span::styled(text, style))).render(area, buf);
 }
 
-pub(super) fn render_footer_hint(area: Rect, buf: &mut Buffer, text: &'static str) {
-    Paragraph::new(text).render(area, buf);
+pub(crate) fn render_footer_hint(area: Rect, buf: &mut Buffer, text: &str) {
+    Paragraph::new(text.to_string()).render(area, buf);
 }
 
 pub(super) fn render_session_rows(

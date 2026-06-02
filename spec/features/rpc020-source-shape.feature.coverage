@@ -2946,11 +2946,99 @@
           ]
         }
       ]
+    },
+    {
+      "name": "SlashCommandAction enum contains no Providers variant",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "lines": "241-275",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/agent/slash_commands.rs",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dispatch_rpc020.rs has no Providers arm",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/source_shape_rpc020.rs",
+          "lines": "278-298",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc020.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 13,
-    "coveredScenarios": 13,
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-tui/tests/source_shape_rpc020.rs"
@@ -2966,8 +3054,9 @@
       "codelet/fspec-tui/src/views/agent/file_search_popup.rs",
       "codelet/fspec-tui/src/views/agent.rs",
       "codelet/fspec-tui/src/components/mod.rs",
-      "src/tui/components/SlashCommandPalette.tsx"
+      "src/tui/components/SlashCommandPalette.tsx",
+      "codelet/fspec-tui/src/app/dispatch_rpc020.rs"
     ],
-    "totalLinesCovered": 2913
+    "totalLinesCovered": 3025
   }
 }

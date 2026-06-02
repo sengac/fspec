@@ -238,3 +238,82 @@ fn existing_ts_slash_and_file_search_components_are_untouched() {
     // @step And the file src/tui/utils/slashCommands.ts exists
     assert!(root.join("src/tui/utils/slashCommands.ts").is_file());
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Regression tests added by the 2026-06-01 revision (rule [14]).
+//
+// The TypeScript Ink reference (src/tui/utils/slashCommands.ts) defines
+// exactly ONE provider-related slash command: `name: 'provider'`. The
+// first-pass Rust port invented a `SlashCommandAction::Providers`
+// variant + a `{ action: Providers, description: "Open provider
+// settings" }` registry entry + a `SlashCommandAction::Provider |
+// SlashCommandAction::Providers` arm in `dispatch_rpc020.rs`. None of
+// that exists in the canonical TS source, so it MUST be deleted.
+//
+// These tests lock the deletion in place: any future regression that
+// re-introduces a `Providers` variant or a `/providers` registry entry
+// will fail the build.
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Scenario: SlashCommandAction enum contains no Providers variant
+#[test]
+fn slash_command_action_enum_has_no_providers_variant() {
+    // @step Given codelet/fspec-tui/src/views/agent/slash_commands.rs after the 2026-06-01 revision
+    let path = fspec_tui_src().join("views").join("agent").join("slash_commands.rs");
+    // @step When the source is parsed for SlashCommandAction variants
+    let source = read_raw(&path);
+
+    // @step Then the enum contains "Provider" exactly once
+    // (We check that "Provider," — i.e. the singular variant declaration
+    //  — exists, and the plural "Providers," does NOT exist.)
+    assert!(
+        source.contains("Provider,"),
+        "slash_commands.rs must declare SlashCommandAction::Provider"
+    );
+    // @step And the enum does NOT contain a "Providers" variant
+    assert!(
+        !source.contains("Providers,"),
+        "slash_commands.rs must NOT declare SlashCommandAction::Providers (no /providers in TS reference)"
+    );
+    // @step And the SLASH_COMMANDS const contains exactly one entry whose action is SlashCommandAction::Provider
+    // Count `action: SlashCommandAction::Provider,` (registry entry) — must be exactly 1
+    let registry_count = source.matches("action: SlashCommandAction::Provider,").count();
+    assert_eq!(
+        registry_count, 1,
+        "SLASH_COMMANDS must contain exactly one entry whose action is SlashCommandAction::Provider; got {registry_count}"
+    );
+    // @step And no entry in SLASH_COMMANDS has the name "providers"
+    assert!(
+        !source.contains("SlashCommandAction::Providers"),
+        "slash_commands.rs must NOT reference SlashCommandAction::Providers anywhere"
+    );
+    assert!(
+        !source.contains("\"providers\""),
+        "slash_commands.rs must NOT contain the string literal \"providers\""
+    );
+}
+
+/// Scenario: dispatch_rpc020.rs has no Providers arm
+#[test]
+fn dispatch_rpc020_has_no_providers_arm() {
+    // @step Given codelet/fspec-tui/src/app/dispatch_rpc020.rs after the 2026-06-01 revision
+    let path = fspec_tui_src().join("app").join("dispatch_rpc020.rs");
+    // @step When the file is read
+    let source = read_raw(&path);
+
+    // @step Then it contains exactly one arm matching "SlashCommandAction::Provider =>"
+    assert!(
+        source.contains("SlashCommandAction::Provider =>"),
+        "dispatch_rpc020.rs must have a single `SlashCommandAction::Provider =>` arm"
+    );
+    // @step And it does NOT contain "SlashCommandAction::Providers"
+    assert!(
+        !source.contains("SlashCommandAction::Providers"),
+        "dispatch_rpc020.rs must NOT reference SlashCommandAction::Providers"
+    );
+    // @step And it does NOT contain "| SlashCommandAction::Providers"
+    assert!(
+        !source.contains("| SlashCommandAction::Providers"),
+        "dispatch_rpc020.rs must NOT have a `| SlashCommandAction::Providers` arm"
+    );
+}

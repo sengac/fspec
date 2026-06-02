@@ -235,9 +235,11 @@ fn list_providers_shows_custom_providers_with_credential_status() {
         "my-llm should be available when MY_LLM_API_KEY is set"
     );
 
-    // @step And the result also includes built-in providers like claude and openai
+    // @step And the result also includes built-in providers like anthropic and openai
+    // RPC-107: the legacy 'claude' slug was migrated to the TS-canonical
+    // 'anthropic' slug as part of the canonical-17-provider port.
     let names: Vec<&str> = providers.iter().map(|p| p.name.as_str()).collect();
-    assert!(names.contains(&"claude"));
+    assert!(names.contains(&"anthropic"));
     assert!(names.contains(&"openai"));
 }
 

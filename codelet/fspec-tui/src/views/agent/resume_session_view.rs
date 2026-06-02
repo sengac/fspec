@@ -270,7 +270,7 @@ impl ResumeSessionView {
         let title_area = split[0];
         let body_area = split[2];
         let footer_area = split[3];
-        render_title_with_count(title_area, buf, "Resume Session", self.sessions.len());
+        render_title_with_count(title_area, buf, "Resume Session", self.sessions.len(), "available");
         render_session_rows(
             body_area,
             buf,

@@ -180,7 +180,7 @@ fn busy_to_idle_captures_spinner_text_and_enters_hiding() {
             assert_eq!(*started_at, 240);
             assert!(hide_completed_at.is_none());
         }
-        other => panic!("expected Hiding, got {:?}", other),
+        other => panic!("expected Hiding, got {other:?}"),
     }
 }
 
@@ -223,7 +223,7 @@ fn hiding_phase_advances_5_chars_per_17ms_and_renders_prefix() {
         let advanced = state.advance(t0 + *dms);
         let actual_visible = match &advanced {
             InputTransitionState::Hiding { visible_chars, .. } => *visible_chars,
-            other => panic!("expected Hiding at +{dms}ms, got {:?}", other),
+            other => panic!("expected Hiding at +{dms}ms, got {other:?}"),
         };
         assert_eq!(actual_visible, expected_visible[i], "step {dms}ms");
 
@@ -246,7 +246,7 @@ fn hiding_holds_34ms_at_zero_before_entering_showing() {
     let t1: u64 = 2_000;
     // @step Given an AgentView in InputTransitionState::Hiding that just reached visible_chars=0 at test clock t1 (hide_completed_at=t1)
     let zero = InputTransitionState::Hiding {
-        captured: captured.clone(),
+        captured,
         visible_chars: 0,
         started_at: t1 - 102, // arbitrary past start
         hide_completed_at: Some(t1),
@@ -257,7 +257,7 @@ fn hiding_holds_34ms_at_zero_before_entering_showing() {
     // @step Then the InputTransitionState remains Hiding with visible_chars=0
     match &still {
         InputTransitionState::Hiding { visible_chars, .. } => assert_eq!(*visible_chars, 0),
-        other => panic!("expected Hiding at +33ms, got {:?}", other),
+        other => panic!("expected Hiding at +33ms, got {other:?}"),
     }
 
     // @step When the App advances the test clock to t1+34ms
@@ -273,7 +273,7 @@ fn hiding_holds_34ms_at_zero_before_entering_showing() {
             assert_eq!(*visible_chars, 0);
             assert_eq!(*started_at, t1 + ANIMATION_PHASE_DELAY_MS);
         }
-        other => panic!("expected Showing at +34ms, got {:?}", other),
+        other => panic!("expected Showing at +34ms, got {other:?}"),
     }
 }
 
@@ -304,7 +304,7 @@ fn showing_reveals_placeholder_at_5_chars_per_17ms_then_idle() {
             // After reaching length the next state may collapse to Idle in the
             // SAME tick; treat that as "fully revealed" too.
             InputTransitionState::Idle => total,
-            other => panic!("expected Showing/Idle at +{dms}ms, got {:?}", other),
+            other => panic!("expected Showing/Idle at +{dms}ms, got {other:?}"),
         };
         assert_eq!(actual, expect_visible, "+{dms}ms");
 
@@ -323,7 +323,7 @@ fn showing_reveals_placeholder_at_5_chars_per_17ms_then_idle() {
     //   total=14, CHARS_PER_FRAME=5 → needs 3 frames (15 chars saturated)
     //   so 3 * INK_FRAME_TIME_MS = 51ms is the first frame that has Idle.
     let saturated = InputTransitionState::Showing {
-        placeholder: placeholder.clone(),
+        placeholder,
         visible_chars: total,
         started_at: t2,
     };
@@ -388,7 +388,7 @@ fn running_during_finish_animation_aborts_and_resumes_spinner() {
     // @step Then the InputTransitionState becomes Loading with elapsed_ms=0 and spinner_started_at=t3
     match &next {
         InputTransitionState::Loading { elapsed_ms } => assert_eq!(*elapsed_ms, 0),
-        other => panic!("expected Loading, got {:?}", other),
+        other => panic!("expected Loading, got {other:?}"),
     }
 
     // @step And the next render paints "⠋ Thinking... (Esc to stop)" starting at frame 0

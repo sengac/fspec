@@ -155,6 +155,14 @@ impl ConfirmDialog {
                 ConfirmDialogOutcome::Continued
             }
             KeyCode::Enter => self.outcome_for_index(self.focused),
+            // RPC-164: TS parity — 'y'/'Y' confirms (Primary), 'n'/'N' cancels.
+            // Mirrors src/tui/inputHandlers/deleteConfirmModeHandler.ts.
+            // Focus state is intentionally NOT consulted: the shortcut is a
+            // direct outcome dispatch, regardless of which button is focused.
+            KeyCode::Char('y') | KeyCode::Char('Y') => self.outcome_for_index(0),
+            KeyCode::Char('n') | KeyCode::Char('N') => {
+                self.outcome_for_index(self.cancel_index())
+            }
             _ => ConfirmDialogOutcome::Ignored,
         }
     }

@@ -1,16 +1,480 @@
 {
   "scenarios": [
     {
-      "name": "A turn's messages are persisted and restorable across binary restart",
-      "testMappings": []
+      "name": "persist_user_message writes a User MessageEnvelope before the LLM stream begins",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "102-138",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/persist.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "persist_assistant_message_internal writes an Assistant envelope with provider and stop_reason",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "140-179",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/persist.rs",
+              "lines": [
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PROV-039 — stop_reason=None becomes the literal \"unknown\" on disk",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "181-209",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/persist.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "persist_tool_result_internal writes a User envelope tagged with provider \"tool\"",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "211-254",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/persist.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "persist_token_state updates the session manifest's cumulative token totals",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "256-279",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/persist.rs",
+              "lines": [
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "persist_user_message returns Err on a missing manifest without panicking",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "281-303",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/persist.rs",
+              "lines": [
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape — agent_loop body invokes persist_user_message before dispatching to the provider",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "321-357",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "lines": [
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape — BackgroundOutput's StreamEvent::ToolResult arm persists assistant before tool_result",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "359-395",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/background_output.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape — BackgroundOutput's StreamEvent::Done arm persists assistant then token state",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "397-437",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/background_output.rs",
+              "lines": [
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape — BackgroundOutput's StreamEvent::Error arm flushes accumulated assistant content",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "439-464",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/background_output.rs",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Source-shape — BackgroundOutput's StreamEvent::Interrupted arm flushes accumulated assistant content",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "466-491",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/background_output.rs",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Boundary — persistence calls in codelet-agent-loop import from crate::persist (not codelet_napi)",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs",
+          "lines": "493-540",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/persist.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 1,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/agent-loop/tests/rpc080_agent_loop_persistence.rs"
+    ],
+    "implFiles": [
+      "codelet/agent-loop/src/persist.rs",
+      "codelet/agent-loop/src/agent_loop.rs",
+      "codelet/agent-loop/src/background_output.rs"
+    ],
+    "totalLinesCovered": 682
   }
 }

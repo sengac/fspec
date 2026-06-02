@@ -55,7 +55,7 @@ pub fn advance_transition(
         | (false, InputTransitionState::Compacting { .. }) => {
             // Busy → Idle: capture the last spinner line.
             let captured = last_spinner_line
-                .map(|s| s.to_string())
+                .map(ToString::to_string)
                 .unwrap_or_else(|| "⠋ Thinking... (Esc to stop)".to_string());
             InputTransitionState::transition_on_idle(prev, &captured, clock_ms)
         }
@@ -64,6 +64,7 @@ pub fn advance_transition(
 }
 
 #[cfg(test)]
+#[allow(clippy::panic, clippy::expect_used, clippy::unwrap_used)]
 mod tests {
     use super::*;
 

@@ -1,0 +1,348 @@
+{
+  "scenarios": [
+    {
+      "name": "ContextFillUpdate above 100% renders the raw value (not clamped to 100)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs",
+          "lines": "175-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/header_build.rs",
+              "lines": [
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CompactionComplete adds the COMPACTED suffix with reduction computed from (1 - compression_ratio) * 100",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs",
+          "lines": "213-251",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "compaction_reduction is per-session and does not leak across Shift+Right",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs",
+          "lines": "253-323",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/chrome_state.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            },
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view.rs",
+              "lines": [
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionStateChange Cleared resets context_fill_pct, tokens, and compaction_reduction",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs",
+          "lines": "325-387",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction notice line and header badge agree on the reduction percentage",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs",
+          "lines": "389-422",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+              "lines": [
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/agentview_session_header_compaction_percentage_rpc100.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+      "codelet/fspec-tui/src/views/agent/header_build.rs",
+      "codelet/fspec-tui/src/app/dispatch_rpc045.rs",
+      "codelet/fspec-tui/src/views/agent/chrome_paint.rs",
+      "codelet/fspec-tui/src/store/agent_view/chrome_state.rs",
+      "codelet/fspec-tui/src/store/agent_view.rs"
+    ],
+    "totalLinesCovered": 476
+  }
+}

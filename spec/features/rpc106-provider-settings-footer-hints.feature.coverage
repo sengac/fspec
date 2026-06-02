@@ -1,0 +1,527 @@
+{
+  "scenarios": [
+    {
+      "name": "Provider row selection yields the \"Enter: expand\" hint with FOOTER_COMMON suffix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "88-107",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ApiKey row selection yields the \"Enter: edit · d: delete\" hint with FOOTER_COMMON suffix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "109-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile row selection yields the \"Enter: edit · d: delete\" hint with FOOTER_COMMON suffix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "143-170",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddProfile row selection yields the \"Enter: create\" hint with FOOTER_COMMON suffix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "172-199",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuthLogin row selection yields the \"Enter: start login\" hint with FOOTER_COMMON suffix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "201-228",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OAuthStatus row selection yields the \"Enter: logout\" hint with FOOTER_COMMON suffix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "230-257",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty nav-item list (no selection) falls back to FOOTER_COMMON only",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "259-277",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Separator is U+00B7 MIDDLE DOT, never the pipe character",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "279-302",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Keybind labels use lowercase colon style, never uppercase pipe style",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "304-343",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer updates in real time when the user navigates between rows of different kinds",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "345-386",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer hint is rendered into a single bottom row via render_footer_hint",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "388-420",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "footer_hint_for(None) returns FOOTER_COMMON verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs",
+          "lines": "422-440",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_footer_hints_rpc106.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/footer_hints.rs",
+      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+    ],
+    "totalLinesCovered": 660
+  }
+}

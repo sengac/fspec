@@ -147,6 +147,8 @@ async fn full_credential_lifecycle_round_trips_across_transports() {
         configured: true,
         credential_type: "api_key".to_string(),
         model_count: 4,
+        masked_key: None,
+        source: None,
     });
     let (embedded, websocket) = dual_backends(service).await;
 

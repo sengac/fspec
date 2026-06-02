@@ -1,0 +1,315 @@
+{
+  "scenarios": [
+    {
+      "name": "Tab in List mode with providers emits SwitchToModels",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "70-100",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab in List mode with an empty provider list still emits SwitchToModels",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "103-115",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab in List mode with an active filter preserves filter state",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "118-159",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab in filter sub-mode does not trigger SwitchToModels",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "162-185",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab in EditApiKey detail mode is silently Consumed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "188-213",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab while delete-confirm dialog is open routes to dialog focus cycling",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "216-243",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct unit invocation of Tab on a default List-mode view",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "246-268",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Up then Tab then Down preserves arrow nav contract",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs",
+          "lines": "271-298",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_tab_switch_to_models_rpc160.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/list.rs",
+      "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+      "codelet/fspec-tui/src/views/provider_settings/mod.rs"
+    ],
+    "totalLinesCovered": 384
+  }
+}

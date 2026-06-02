@@ -1,109 +1,146 @@
 @done
-@session-management
-@provider-settings
-@agent-view
-@rpc
-@tui
-@rust
 @RPC-054
-Feature: /provider ProviderSettingsView App-dispatch routing (Action flow)
+@rust
+@tui
+@app
+@dispatch
+@provider-settings
+Feature: ProviderSettingsView — App dispatch wiring for the /provider slash command
 
   """
-  App-level dispatch behaviour for the ProviderSettingsView surface — Action::OpenProviderSettingsView / CloseProviderSettingsView / SaveProviderCredentials / TestProviderConnection / RefreshProviderModels / DeleteProviderCredentials flow through the App's tokio task chain against a scripted MockBackend. The synchronous keyboard surface lives in rpc054-provider-settings-view.feature; transport parity lives in rpc054-provider-settings-cross-transport-parity.feature.
+  Wiring from the SlashCommandAction::Provider variant through
+  App::dispatch_rpc054 round-trips into the backend, back through Action
+  variants, and into the ProviderSettingsView state owned by the
+  Navigator. This file covers the dispatch surface; the in-view key
+  handling is in rpc054-provider-settings-view.feature.
+
+  The dispatch surface mirrors the RPC-049 / RPC-050 / RPC-053 pattern:
+  spawn a tokio task, await the backend round-trip, route the response
+  back via Action variants, fold into the view on the App task.
   """
 
   Background: User Story
-    As a user of the Rust ratatui AgentView
-    I want /provider to open a settings view that lists configured providers and lets me edit credentials, test connections, refresh models, and clear credentials
-    So that I can configure and verify LLM provider credentials end-to-end through the App's action bus without leaving the TUI
+    As a developer using the Rust ratatui TUI
+    I want /provider to open ProviderSettingsView, list credentials,
+    save/test/refresh/delete via the backend, and roll responses back
+    into the view
+    So that the round-trip parity with the TS Ink frontend is preserved
+    while the Rust frontend uses its own SessionManagerHandle + tarpc
+    transport
 
-  # ─────────────────────────────────────────────────────────────────────
-  # /provider slash command opens the view
-  # ─────────────────────────────────────────────────────────────────────
+  @slash
+  @open
   Scenario: /provider slash command opens ProviderSettingsView
-    Given an App with a MockBackend
-    And the MockBackend's list_provider_credentials is scripted to return [anthropic api_key configured 8 models, openai api_key not_configured 0 models]
+    Given a fresh AppTestHarness with focused session s-1
+    And the ViewMode is currently Agent
     When the user submits "/provider" via the slash command palette
-    And all pending tasks have drained
-    Then the Navigator's active view is ProviderSettings
-    And the ProviderSettingsView's provider list contains 2 rows
-    And the focused row is "anthropic" with configured indicator "✓" and model count 8
+    Then SlashCommandAction::Provider is dispatched
+    And Action::OpenProviderSettingsView is sent on the action bus
+    And the Navigator's active_view is ViewMode::ProviderSettings
+    And backend.list_provider_credentials is awaited and the response is routed through Action::ProviderCredentialsLoaded
+    And the ProviderSettingsView's providers field is populated with the loaded list
 
+  @slash
+  @open
+  @no-alias
+  Scenario: /providers (plural) is NOT a slash command
+    Given a fresh AppTestHarness with focused session s-1
+    When the user types "/providers" into the input and presses Enter
+    Then the SLASH_COMMANDS registry has no entry matching "providers"
+    And no SlashCommandAction::Providers variant exists
+    And the text "/providers" is sent to the agent as ordinary input (NOT intercepted by the slash dispatcher)
+    And the ViewMode stays Agent (no flip to ProviderSettings)
+
+  @slash
+  @open
+  Scenario: Re-opening /provider resets the view to a clean List mode
+    Given the ProviderSettingsView was previously left in Detail::EditApiKey for "anthropic" with draft "stale"
+    When the user submits "/provider" again
+    Then the ProviderSettingsView's mode is reset to List
+    And no stale draft text is rendered
+
+  @esc
+  @close
   Scenario: Esc returns from ProviderSettingsView to AgentView
-    Given the ProviderSettingsView is open in list mode
-    And the previously focused session is s-1
-    When the user presses Esc
-    Then the Navigator's active view is Agent
-    And the current session is s-1
+    Given the ProviderSettingsView is open
+    When the user presses Esc in List mode
+    Then Action::CloseProviderSettingsView is dispatched
+    And the Navigator's active_view is ViewMode::Agent
+    And the AgentView's prior session, scrollback, and input are intact
 
-  # ─────────────────────────────────────────────────────────────────────
-  # API key editing flow
-  # ─────────────────────────────────────────────────────────────────────
-  Scenario: Enter on the API key edit form saves and refreshes the list
-    Given the ProviderSettingsView is in edit-api-key mode for "anthropic" with draft "sk-test"
+  @save
+  Scenario: Saving an API key fires backend.set_provider_credentials and refreshes the list
+    Given the ProviderSettingsView is in Detail::EditApiKey for "anthropic" with draft "sk-test-1"
     When the user presses Enter
-    And all pending tasks have drained
-    Then backend.set_provider_credentials is called exactly once with provider_id "anthropic" and an ApiKey input with key "sk-test"
-    And backend.list_provider_credentials is called at least once after the save
-    And the ProviderSettingsView is back in list mode
-    And the anthropic row shows configured indicator "✓"
+    Then Action::SaveProviderCredentials { provider_id: "anthropic", api_key: "sk-test-1" } is dispatched
+    And backend.set_provider_credentials("anthropic", ProviderCredentialInput::api_key("sk-test-1")) is awaited
+    And on Ok the action Action::ProviderSettingsStatus("✓ anthropic credentials saved") is dispatched
+    And a follow-up backend.list_provider_credentials() refresh is dispatched
+    And the resulting Action::ProviderCredentialsLoaded folds the new list into the view
 
-  # ─────────────────────────────────────────────────────────────────────
-  # Test connection
-  # ─────────────────────────────────────────────────────────────────────
-  Scenario: Pressing 't' on a row runs a connection test
-    Given the ProviderSettingsView is open with the openai row focused
-    And the MockBackend's test_provider_connection is scripted to return TestConnectionResult{ success: true, error: None, latency_ms: 42 } for "openai"
+  @test-connection
+  Scenario: Pressing t inside Detail::Summary runs a connection test
+    Given the ProviderSettingsView is in Detail::Summary for "openai"
     When the user presses "t"
-    And all pending tasks have drained
-    Then backend.test_provider_connection is called exactly once with "openai"
-    And the right-pane status area shows "✓ ok (42ms)"
+    Then Action::TestProviderConnection("openai") is dispatched
+    And backend.test_provider_connection("openai") is awaited
+    And on Ok the action Action::ProviderTestComplete { provider_id: "openai", result: TestConnectionResult { success: true, latency_ms: 42, .. } } is dispatched
+    And the view's last_status updates to TestOk { latency_ms: 42 }
 
-  Scenario: Pressing 't' surfaces backend errors inline
-    Given the ProviderSettingsView is open with the openai row focused
-    And the MockBackend's test_provider_connection is scripted to return TestConnectionResult{ success: false, error: Some("unreachable: dns resolution failed"), latency_ms: 0 } for "openai"
+  @test-connection
+  Scenario: Backend test_provider_connection error surfaces inline as ✗
+    Given the ProviderSettingsView is in Detail::Summary for "openai"
     When the user presses "t"
-    And all pending tasks have drained
-    Then the right-pane status area contains "✗ unreachable: dns resolution failed"
-    And the openai row's configured indicator is unchanged
+    And backend.test_provider_connection returns Err("unreachable: dns")
+    Then Action::ProviderSettingsStatus("✗ unreachable: dns") is dispatched
+    And the view's last_status updates to Error { message: "unreachable: dns" }
+    And NO panic occurs
+    And NO scrollback notice is emitted to the AgentView
 
-  # ─────────────────────────────────────────────────────────────────────
-  # Refresh models
-  # ─────────────────────────────────────────────────────────────────────
-  Scenario: Pressing 'r' refreshes the model list and updates the row count
-    Given the ProviderSettingsView is open with the openai row focused
-    And the openai row's model count is 4
-    And the MockBackend's refresh_models_cache is scripted to return a 8-entry model list for "openai"
-    And the MockBackend's list_provider_credentials is scripted to return [openai api_key configured 8 models] after the refresh
+  @refresh-models
+  Scenario: Pressing r inside Detail::Summary refreshes the model cache
+    Given the ProviderSettingsView is in Detail::Summary for "openai"
     When the user presses "r"
-    And all pending tasks have drained
-    Then backend.refresh_models_cache is called exactly once with "openai"
-    And backend.list_provider_credentials is called at least once after the refresh
-    And the openai row's model count is 8
-    And the right-pane status area contains "models refreshed"
+    Then Action::RefreshProviderModels("openai") is dispatched
+    And backend.refresh_models_cache("openai") is awaited
+    And on Ok the action Action::ProviderModelsRefreshed { provider_id: "openai", model_count: 8 } is dispatched
+    And a follow-up backend.list_provider_credentials() refresh is dispatched
+    And the openai row's model_count repaints from 4 to 8
 
-  # ─────────────────────────────────────────────────────────────────────
-  # Delete provider credentials
-  # ─────────────────────────────────────────────────────────────────────
-  Scenario: Pressing 'd' on a configured row clears the credentials
-    Given the ProviderSettingsView is open with the anthropic row focused
-    And the anthropic row is configured
-    And the MockBackend's list_provider_credentials is scripted to return [anthropic api_key not_configured 0 models] after the delete
+  @delete
+  @confirm-dialog
+  Scenario: d on a configured row opens ConfirmDialog before the backend is called
+    Given the ProviderSettingsView is in List mode with "anthropic" focused (configured = true)
     When the user presses "d"
-    And all pending tasks have drained
-    Then backend.delete_provider_credentials is called exactly once with "anthropic"
-    And backend.list_provider_credentials is called at least once after the delete
-    And the anthropic row shows configured indicator "(not configured)"
-    And the anthropic row's model count is 0
+    Then the ConfirmDialog is mounted
+    And NO Action::DeleteProviderCredentials nor Action::ConfirmDeleteProviderCredentials is dispatched
+    And backend.delete_provider_credentials is NEVER called
 
-  # ─────────────────────────────────────────────────────────────────────
-  # Error tolerance
-  # ─────────────────────────────────────────────────────────────────────
-  Scenario: Backend errors are silently logged without panicking
-    Given the ProviderSettingsView is open with the anthropic row focused
-    And the MockBackend's set_provider_credentials is scripted to return Err("write failed")
-    When the user opens the API-key edit form for anthropic, types "sk-test", and presses Enter
-    And all pending tasks have drained
-    Then the App must not panic
-    And no scrollback chunks contain the text "set_provider_credentials"
-    And the right-pane status area contains "✗ write failed"
+  @delete
+  @confirm-dialog
+  Scenario: Enter on ConfirmDialog Primary fires backend.delete_provider_credentials
+    Given the ProviderSettingsView's ConfirmDialog is open for "anthropic" with Primary focused
+    When the user presses Enter
+    Then Action::ConfirmDeleteProviderCredentials("anthropic") is dispatched
+    And backend.delete_provider_credentials("anthropic") is awaited
+    And on Ok the action Action::ProviderSettingsStatus("✓ anthropic credentials cleared") is dispatched
+    And a follow-up backend.list_provider_credentials() refresh is dispatched
+    And the anthropic row repaints with configured = false and model_count = 0
+
+  @delete
+  @confirm-dialog
+  Scenario: Esc on ConfirmDialog cancels without backend round-trip
+    Given the ProviderSettingsView's ConfirmDialog is open for "anthropic"
+    When the user presses Esc
+    Then the ConfirmDialog is dismissed
+    And NO Action::ConfirmDeleteProviderCredentials is dispatched
+    And backend.delete_provider_credentials is NEVER called
+
+  @errors
+  Scenario: Backend list_provider_credentials error logs via tracing only
+    Given the ProviderSettingsView has just been opened
+    When backend.list_provider_credentials returns Err("io: disk")
+    Then a tracing::warn event is emitted with error = "io: disk"
+    And Action::ProviderSettingsStatus("✗ list failed: io: disk") is dispatched
+    And NO panic occurs
+    And NO scrollback notice is emitted to the AgentView

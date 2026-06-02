@@ -146,11 +146,13 @@ fn list_providers_returns_all_six_built_in_providers() {
     );
 
     // @step Then the entries include the built-in provider keys 'claude', 'openai', 'gemini', 'zai', 'codex', and 'github-copilot'
+    // RPC-107: the legacy 'claude' slug was migrated to the TS-canonical
+    // 'anthropic' slug. Assert on the canonical slug going forward.
     let keys: Vec<&str> = providers.iter().map(|p| p.key.as_str()).collect();
-    for builtin in ["claude", "openai", "gemini", "zai", "codex", "github-copilot"] {
+    for builtin in ["anthropic", "openai", "gemini", "zai", "codex", "github-copilot"] {
         assert!(
             keys.contains(&builtin),
-            "RPC-073 bug 3: built-in provider '{builtin}' missing from list_providers result; got keys: {keys:?}",
+            "RPC-073 bug 3 / RPC-107: canonical built-in provider '{builtin}' missing from list_providers result; got keys: {keys:?}",
         );
     }
 }
@@ -168,17 +170,19 @@ fn list_providers_entries_have_populated_fields() {
     assert!(!providers.is_empty(), "list_providers must be non-empty");
 
     // @step When the test inspects the 'claude' ProviderInfo entry
-    let claude = providers
+    // RPC-107: the legacy 'claude' slug was migrated to the TS-canonical
+    // 'anthropic' slug. Inspect the canonical entry instead.
+    let anthropic = providers
         .iter()
-        .find(|p| p.key == "claude")
-        .expect("claude entry must exist in list_providers result");
+        .find(|p| p.key == "anthropic")
+        .expect("anthropic entry must exist in list_providers result (RPC-107 canonical slug)");
 
     // @step Then the entry has a non-empty 'key' field matching the provider slug 'claude'
-    assert_eq!(claude.key, "claude");
+    assert_eq!(anthropic.key, "anthropic");
 
     // @step Then the entry has a non-empty 'display_name' field
     assert!(
-        !claude.display_name.is_empty(),
+        !anthropic.display_name.is_empty(),
         "ProviderInfo.display_name must be non-empty for built-in providers (RPC-073 mapping)",
     );
 
@@ -188,7 +192,7 @@ fn list_providers_entries_have_populated_fields() {
     // models for built-ins (codelet/providers/src/custom/management.rs:115);
     // custom providers carry their config models. The field MUST exist
     // and be a Vec — even if empty.
-    let _models: &Vec<codelet_rpc_types::ModelEntry> = &claude.models;
+    let _models: &Vec<codelet_rpc_types::ModelEntry> = &anthropic.models;
     // Reaching here is the type-shape proof.
 }
 

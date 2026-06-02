@@ -92,6 +92,16 @@ pub struct AgentViewStore {
     // Accessors in `supervisor_state.rs`.
     pub(crate) supervisors_by_session: HashMap<SessionId, Vec<SessionId>>,
     pub(crate) supervisor_pending_count_by_session: HashMap<SessionId, usize>,
+
+    // ── RPC-100 per-session compaction reduction percentage ─────────────
+    // Populated by `dispatch_rpc045.rs::handle_stream_chunk_state_updates`
+    // when a `StreamChunk::CompactionComplete` arrives, and cleared on
+    // `SessionStateChange { state: Cleared }`. Read by
+    // `views/agent/chrome_paint.rs::paint_header_and_role` to render the
+    // `[X%: COMPACTED Y%]` SessionHeader suffix (mirrors TS
+    // `AgentView.tsx:946-979` `setCompactionReductionRef`).
+    // Accessors live in `store/agent_view/chrome_state.rs`.
+    pub(crate) compaction_reduction_by_session: HashMap<SessionId, i32>,
 }
 
 impl AgentViewStore {

@@ -3,8 +3,14 @@
 //! routing).
 //!
 //! The crossterm event flow is:
-//!   DisconnectDialog (Critical) → app-shortcuts (`?` / `q` / Ctrl+D)
-//!     → Compositor → Navigator → store mutation via [`super::dispatch`].
+//!   DisconnectDialog (Critical) → app-shortcuts (`?` / ESC on BoardView /
+//!     Ctrl+D) → Compositor → Navigator → store mutation via
+//!     [`super::dispatch`].
+//!
+//! RPC-102: replaced the legacy `q` quit binding with a BoardView ESC
+//! handler that pushes [`BoardExitConfirmationDialog`] for TS parity
+//! (`src/tui/components/BoardView.tsx:285-305`). The DisconnectDialog
+//! still honours `q`/`r` per RPC-011 CR-1 (handled at Stage 1).
 
 use std::time::Duration;
 
@@ -16,6 +22,9 @@ use futures::StreamExt;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
+use crate::components::board_exit_confirmation_dialog::{
+    BoardExitConfirmationDialog, BOARD_EXIT_CONFIRMATION_DIALOG_ID,
+};
 use crate::components::disconnect_dialog::DISCONNECT_DIALOG_ID;
 use crate::components::help_dialog::HelpDialog;
 use crate::components::{Action, EventResult, Priority};
@@ -127,8 +136,26 @@ impl App {
             self.should_render = true;
             return Some(EventResult::consumed());
         }
-        if key.code == KeyCode::Char('q') && key.modifiers == KeyModifiers::NONE {
-            self.should_quit = true;
+        // RPC-102: BoardView ESC opens "Exit fspec?" confirmation dialog.
+        // TS parity (`src/tui/components/BoardView.tsx:285-305` →
+        // `<ConfirmationDialog message="Exit fspec?" />`). Only triggers
+        // when the BoardView is the active view AND there is no other
+        // overlay on the compositor (popups, modals already handle ESC
+        // at Stage 2). The compositor.contains() guard prevents
+        // double-push on rapid ESC presses.
+        if key.code == KeyCode::Esc
+            && key.modifiers == KeyModifiers::NONE
+            && self.navigator.active_view == ViewMode::Board
+        {
+            if !self
+                .compositor
+                .contains(BOARD_EXIT_CONFIRMATION_DIALOG_ID)
+            {
+                let dialog = BoardExitConfirmationDialog::new()
+                    .with_action_tx(self.action_tx.clone());
+                self.compositor.push(Box::new(dialog));
+                self.should_render = true;
+            }
             return Some(EventResult::consumed());
         }
         if key.code == KeyCode::Char('d')

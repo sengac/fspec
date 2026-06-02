@@ -207,7 +207,17 @@ interface StreamChunk {
   status?: string;
   queuedInputs?: string[];
   tokens?: TokenTracker;
-  contextFill?: { fillPercentage: number };
+  contextFill?: {
+    fillPercentage: number;
+    // RPC-101: threshold (in tokens) carried on the wire by
+    // ContextFillInfo (see codelet/napi/index.d.ts:2952-2957). Used by
+    // updateTokenStateFromChunk to recompute fillPercentage in
+    // real-time on every TokenUpdate so the [X%] badge tracks
+    // tokens: X↓ Y↑ at the same cadence.
+    effectiveTokens?: number;
+    threshold?: number;
+    contextWindow?: number;
+  };
   error?: string;
   // Compaction result for CompactionComplete chunks
   compactionResult?: {
@@ -1101,6 +1111,16 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
 
+  // RPC-101: Cached context-fill threshold (in tokens) captured from
+  // the last ContextFillUpdate. Used by updateTokenStateFromChunk to
+  // recompute contextFillPercentage in real-time on every TokenUpdate
+  // so the [X%] badge tracks `tokens: X↓ Y↑` at the same cadence
+  // (instead of freezing until the next ContextFillUpdate, which the
+  // backend may emit only at end-of-turn or skip entirely on Esc
+  // interrupt). 0 means "no threshold known yet" — recompute is
+  // skipped until at least one ContextFillUpdate has arrived.
+  const cachedContextThresholdRef = useRef<number>(0);
+
   // TUI-066: Set ref for persistentChunkHandler to access setContextFillPercentage
   // This avoids TDZ since persistentChunkHandler is defined before this state
   useEffect(() => {
@@ -1119,8 +1139,38 @@ export const AgentView: React.FC<AgentViewProps> = ({
         setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
         setLastChunkTime(Date.now());
       }
+      // RPC-101: Recompute context-fill percentage locally so the [X%]
+      // badge updates at the same cadence as the tokens counters.
+      // Formula mirrors `calculateContextFillPercentage` and the
+      // backend's `emit_context_fill_from_usage` in
+      // codelet/cli/src/interactive/stream_loop.rs:108-126, with the
+      // cache discount (cache_read costs 10% of normal) baked in to
+      // match `TokenTracker.effective_tokens`. A real
+      // ContextFillUpdate from the backend will overwrite this value
+      // next (backend is authoritative when it speaks).
+      const threshold = cachedContextThresholdRef.current;
+      if (threshold > 0) {
+        const inputTokens = chunk.tokens.inputTokens ?? 0;
+        const cacheRead = chunk.tokens.cacheReadInputTokens ?? 0;
+        const cacheDiscount = Math.floor(cacheRead * 0.9);
+        const effective = Math.max(0, inputTokens - cacheDiscount);
+        const pct = Math.round((effective / threshold) * 100);
+        if (Number.isFinite(pct) && pct >= 0) {
+          setContextFillPercentage(pct);
+        }
+      }
     } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
       setContextFillPercentage(chunk.contextFill.fillPercentage);
+      // RPC-101: Cache the threshold so subsequent TokenUpdate chunks
+      // can recompute the percentage locally. Non-positive / undefined
+      // thresholds (older fixtures, malformed payloads) MUST NOT wipe
+      // a previously-cached good threshold — the ContextFillUpdate's
+      // fillPercentage is still applied above, but we keep the cached
+      // value for the next TokenUpdate.
+      const incoming = chunk.contextFill.threshold;
+      if (typeof incoming === 'number' && incoming > 0) {
+        cachedContextThresholdRef.current = incoming;
+      }
     }
   }, []);
 
@@ -3611,6 +3661,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
           if (extractedState.contextFillPercentage !== null) {
             setContextFillPercentage(extractedState.contextFillPercentage);
           }
+          // RPC-101: Seed the realtime-recompute cache so subsequent
+          // live TokenUpdates for this restored session update the
+          // badge at TokenUpdate cadence.
+          if (extractedState.contextThreshold !== null) {
+            cachedContextThresholdRef.current = extractedState.contextThreshold;
+          }
         }
 
         // REFAC-008: Cleanup previous handler before attaching to new session
@@ -4230,6 +4286,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
         }
         if (extractedState.contextFillPercentage !== null) {
           setContextFillPercentage(extractedState.contextFillPercentage);
+        }
+        // RPC-101: Seed realtime-recompute cache for this restored
+        // session so live TokenUpdates immediately move the badge.
+        if (extractedState.contextThreshold !== null) {
+          cachedContextThresholdRef.current = extractedState.contextThreshold;
         }
       } else if (result.tokenUsage) {
         // Use service result token data for persisted sessions

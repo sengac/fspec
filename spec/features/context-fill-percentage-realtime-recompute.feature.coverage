@@ -1,0 +1,299 @@
+{
+  "scenarios": [
+    {
+      "name": "TokenUpdate after cached threshold recomputes the badge locally without a new ContextFillUpdate",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "67-95",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TokenUpdate without prior ContextFillUpdate leaves the badge unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "49-66",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Local recompute applies the 90% cache discount to cache_read_input_tokens",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "101-119",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authoritative ContextFillUpdate overrides any locally-recomputed value",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "124-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Local recompute preserves overshoot above 100% (RPC-100 invariant)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "154-169",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ContextFillUpdate with non-positive threshold does not wipe a previously-cached good threshold",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs",
+          "lines": "178-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/store/agent_view/token_state.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/token_state_realtime_recompute_rpc101.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/store/agent_view/token_state.rs"
+    ],
+    "totalLinesCovered": 330
+  }
+}

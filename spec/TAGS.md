@@ -530,6 +530,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@tree-sitter` | Tree-sitter library for language-agnostic AST parsing |
 | `@triggers` | CI/CD trigger configuration |
 | `@truncation` | Output truncation and limit handling |
+| `@ts-parity` | Feature requires parity with the TypeScript Ink reference implementation |
 | `@turn-selection` | Scenarios testing turn-based selection in conversation |
 | `@turn-sequence` | Message turn sequence scenarios |
 | `@turns` | Turn boundary scenarios |
@@ -613,6 +614,7 @@ Tags tracking development status of features.
 | `@rpc-062` | Work unit identifier tag for RPC-062 — MCP injection plumbing audit in extracted SessionManager (Phase 7.9 of RPC-030) |
 | `@rpc-078` | Work unit identifier tag for RPC-078 — AgentView scrollback TS Ink parity port (chunk prefix correction, no-duplicate UserInput, viewport-width-aware wrapping, visual-row stick-to-bottom) |
 | `@rpc-097-reopen2` | RPC-097 reopen #2: BoardView Shift+Right must consult global open-session list before showing CreateSessionDialog |
+| `@rpc-101` | Work unit identifier tag for RPC-101 — context-fill badge real-time recompute on every TokenUpdate (parallel Rust/TS fix for the badge freezing during streaming and after ESC interrupt) |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -920,7 +922,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-05-31T04:10:17.415Z_
+_Last updated: 2026-06-01T16:58:50.079Z_
 
 **Update Command**: `fspec tag-stats`
 

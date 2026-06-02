@@ -1,67 +1,15 @@
 {
   "scenarios": [
     {
-      "name": "Enter on an api_key row opens an inline edit form",
+      "name": "Open view with no providers shows the centred placeholder",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "77-99",
+          "lines": "54-72",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
                 150,
                 151,
                 152,
@@ -92,27 +40,7 @@
                 177,
                 178,
                 179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200
+                180
               ]
             }
           ]
@@ -120,179 +48,15 @@
       ]
     },
     {
-      "name": "Typing into the API key edit form updates the draft value",
+      "name": "↓ scrolls the window when the selection moves past the visible rows",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "101-119",
+          "lines": "99-117",
           "implMappings": [
             {
               "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140,
-                141,
-                142,
-                143,
-                144,
-                145,
-                146,
-                147,
-                148,
-                149,
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Esc on the API key edit form cancels without saving",
-      "testMappings": [
-        {
-          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "152-170",
-          "implMappings": [
-            {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
-              "lines": [
-                150,
-                151,
-                152,
-                153,
-                154,
-                155,
-                156,
-                157,
-                158,
-                159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
                 195,
                 196,
                 197,
@@ -308,47 +72,7 @@
                 207,
                 208,
                 209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250
+                210
               ]
             }
           ]
@@ -356,22 +80,338 @@
       ]
     },
     {
-      "name": "Enter on an OAuth-type row shows the read-only notice",
+      "name": "Enter on an api_key row transitions to Detail::Summary",
       "testMappings": [
         {
           "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "245-264",
+          "lines": "151-172",
           "implMappings": [
             {
-              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
               "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
                 98,
                 99,
                 100,
                 101,
                 102,
-                103,
-                104,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on an oauth row transitions directly to Detail::OAuthNotice",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "175-189",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "t inside Detail::Summary emits TestProviderConnection",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "196-218",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "r inside Detail::Summary emits RefreshProviderModels",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "221-243",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TestOk last_status renders as green \"✓ ok (Xms)\"",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "812-857",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/status_text.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TestErr last_status renders as red \"✗ <error>\"",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "858-906",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/status_text.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter inside Detail::Summary on api_key provider opens EditApiKey",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "250-274",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Typing characters in EditApiKey grows the draft",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "277-296",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backspace removes the last draft character",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "299-317",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on EditApiKey with non-empty draft emits SaveProviderCredentials",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "320-339",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "d on a configured row opens the ConfirmDialog",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "370-388",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
                 105,
                 106,
                 107,
@@ -389,8 +429,341 @@
                 119,
                 120,
                 121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "d on an unconfigured row is a no-op",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "391-402",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on ConfirmDialog Primary emits ConfirmDeleteProviderCredentials",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "405-424",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc on ConfirmDialog cancels without emitting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "427-441",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in List mode emits ProviderSettingsEvent::Close",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "448-457",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in Detail::Summary returns to List mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "460-481",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in Detail::OAuthNotice returns to List mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "505-519",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer hint in List mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "545-557",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                120,
+                121,
                 122,
                 123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer hint in Detail::Summary mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "560-572",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer hint in Detail::EditApiKey mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "575-587",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Footer hint in Detail::OAuthNotice mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "590-600",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pressing \"/\" in List mode enters filter mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "612-630",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Typing characters in filter mode appends to filter string",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "633-654",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
                 124,
                 125,
                 126,
@@ -427,97 +800,190 @@
                 157,
                 158,
                 159,
-                160,
-                161,
-                162,
-                163,
-                164,
-                165,
-                166,
-                167,
-                168,
-                169,
-                170,
-                171,
-                172,
-                173,
-                174,
-                175,
-                176,
-                177,
-                178,
-                179,
-                180,
-                181,
-                182,
-                183,
-                184,
-                185,
-                186,
-                187,
-                188,
-                189,
-                190,
-                191,
-                192,
-                193,
-                194,
-                195,
-                196,
-                197,
-                198,
-                199,
-                200,
-                201,
-                202,
-                203,
-                204,
-                205,
-                206,
-                207,
-                208,
-                209,
-                210,
-                211,
-                212,
-                213,
-                214,
-                215,
-                216,
-                217,
-                218,
-                219,
-                220,
-                221,
-                222,
-                223,
-                224,
-                225,
-                226,
-                227,
-                228,
-                229,
-                230,
-                231,
-                232,
-                233,
-                234,
-                235,
-                236,
-                237,
-                238,
-                239,
-                240,
-                241,
-                242,
-                243,
-                244,
-                245,
-                246,
-                247,
-                248,
-                249,
-                250
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backspace in filter mode removes the last character",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "657-668",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter in filter mode exits filter mode but keeps the filter string",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "671-688",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in filter mode clears the filter string AND exits filter mode",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "691-712",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in List mode with a non-empty filter clears filter first (does not close view)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "715-734",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Esc in List mode with empty filter emits Close (second-Esc cascade)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "737-746",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/list.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter substring is matched against both id and name (case-insensitive)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
+          "lines": "749-776",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/mod.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
               ]
             }
           ]
@@ -526,23 +992,18 @@
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
+    "totalScenarios": 31,
+    "coveredScenarios": 31,
     "coveragePercent": 100,
     "testFiles": [
-      "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
-      "codelet/fspec-tui/tests/provider_settings_dispatch_rpc054.rs",
-      "codelet/fspec-tui/tests/rpc054_cross_transport_parity.rs",
-      "codelet/fspec-tui/tests/source_shape_rpc054.rs"
+      "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs"
     ],
     "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/list.rs",
       "codelet/fspec-tui/src/views/provider_settings/mod.rs",
-      "codelet/fspec-tui/src/app/dispatch_rpc054.rs",
-      "codelet/fspec-tui/src/views/navigator.rs",
-      "codelet/fspec-tui/src/transport/mod.rs",
-      "codelet/fspec-tui/src/transport/embedded.rs",
-      "codelet/rpc-types/src/lib.rs"
+      "codelet/fspec-tui/src/views/provider_settings/detail.rs",
+      "codelet/fspec-tui/src/views/provider_settings/status_text.rs"
     ],
-    "totalLinesCovered": 2126
+    "totalLinesCovered": 1282
   }
 }

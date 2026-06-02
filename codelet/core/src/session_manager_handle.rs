@@ -1975,6 +1975,8 @@ impl SessionManagerHandle for StubSessionManagerHandle {
                     configured: false,
                     credential_type: creds.kind.clone(),
                     model_count: 0,
+                    masked_key: None,
+                    source: None,
                 });
             guard.insert(
                 provider_id.to_string(),

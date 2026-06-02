@@ -16,6 +16,7 @@ use crate::compositor::Compositor;
 pub mod disconnect_dialog;
 pub mod dialog_theme;
 pub mod dialog_theme_rows;
+pub mod board_exit_confirmation_dialog;
 pub mod create_session_dialog;
 pub mod exit_confirmation_dialog;
 pub mod error_dialog;
@@ -649,6 +650,13 @@ pub enum Action {
     /// spawns `backend.delete_provider_credentials` followed by a
     /// fresh `list_provider_credentials` refresh.
     DeleteProviderCredentials(String),
+    /// RPC-054: emitted by the view AFTER the user accepts the
+    /// ConfirmDialog primary button — replaces the previous
+    /// direct-from-`d` flow so the destructive backend call never
+    /// fires without explicit confirmation. App::dispatch routes this
+    /// arm to the same `delete_provider_credentials` handler as the
+    /// raw `DeleteProviderCredentials` variant.
+    ConfirmDeleteProviderCredentials(String),
     /// RPC-054: emitted by the App for inline status updates that
     /// don't fit one of the typed *Loaded / *Complete variants
     /// (e.g. error messages from save / delete spawns).

@@ -123,3 +123,22 @@ Feature: RPC-020 source-shape regression for the slash + file search popup port
     And the file src/tui/hooks/useSlashCommandInput.ts exists
     And the file src/tui/hooks/useFileSearchInput.ts exists
     And the file src/tui/utils/slashCommands.ts exists
+
+  @no-alias
+  @ts-parity
+  Scenario: SlashCommandAction enum contains no Providers variant
+    Given codelet/fspec-tui/src/views/agent/slash_commands.rs after the 2026-06-01 revision
+    When the source is parsed for SlashCommandAction variants
+    Then the enum contains "Provider" exactly once
+    And the enum does NOT contain a "Providers" variant
+    And the SLASH_COMMANDS const contains exactly one entry whose action is SlashCommandAction::Provider
+    And no entry in SLASH_COMMANDS has the name "providers"
+
+  @no-alias
+  @ts-parity
+  Scenario: dispatch_rpc020.rs has no Providers arm
+    Given codelet/fspec-tui/src/app/dispatch_rpc020.rs after the 2026-06-01 revision
+    When the file is read
+    Then it contains exactly one arm matching "SlashCommandAction::Provider =>"
+    And it does NOT contain "SlashCommandAction::Providers"
+    And it does NOT contain "| SlashCommandAction::Providers"

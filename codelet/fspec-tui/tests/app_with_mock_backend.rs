@@ -109,14 +109,25 @@ fn esc_while_help_dialog_on_top_removes_the_dialog_via_deferred_callback() {
     assert_eq!(app.compositor().len(), 0);
 }
 
-/// Scenario: 'q' at App level sets should_quit and the run loop exits
+/// Scenario: Ctrl+D at App level sets should_quit and the run loop exits.
+///
+/// RPC-102: replaced the legacy `q` quit binding with a BoardView ESC
+/// confirmation dialog (see `boardview_esc_exit_confirmation_rpc102.rs`).
+/// `Ctrl+D` remains the lowest-level hard-exit shortcut.
 #[test]
-fn q_at_app_level_sets_should_quit_and_run_loop_exits() {
+fn ctrl_d_at_app_level_sets_should_quit_and_run_loop_exits() {
     // @step Given an App with a MockBackend and the run loop driven by a TestBackend terminal
     let (mut app, _term) = fresh_app_with_mock_backend();
 
-    // @step When the App receives a synthetic Key('q') event
-    let _ = app.handle_event(&synth_key(KeyCode::Char('q')));
+    // @step When the App receives a synthetic Key(Ctrl+D) event
+    use crossterm::event::{Event, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers};
+    let ctrl_d = Event::Key(KeyEvent {
+        code: KeyCode::Char('d'),
+        modifiers: KeyModifiers::CONTROL,
+        kind: KeyEventKind::Press,
+        state: KeyEventState::NONE,
+    });
+    let _ = app.handle_event(&ctrl_d);
 
     // @step Then the App's should_quit flag is true
     assert!(app.should_quit());

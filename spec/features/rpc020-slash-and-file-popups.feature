@@ -104,9 +104,9 @@ Feature: Slash command palette + @file search popup in AgentView
     Given an AgentView whose slash popup is open with "/isolation" highlighted
     When the user presses Enter
     Then AgentView emits Action::SlashCommandSelected(SlashCommandAction::Isolation)
-    And dispatching that action appends one scrollback chunk whose text contains "[notice]"
-    And that scrollback chunk's text contains "isolation"
-    And that scrollback chunk's text contains "not yet implemented"
+    And App::dispatch routes that action into Action::OpenCreateSessionDialog{preselect:Some(Isolated)}
+    And NO scrollback notice chunk is pushed for /isolation
+    And the slash popup is closed
     And the slash popup is closed
 
   Scenario: Pressing Tab on a selected slash command fills the input without executing

@@ -1,0 +1,592 @@
+{
+  "scenarios": [
+    {
+      "name": "Selected provider row paints a yellow background band",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "78-106",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unselected provider row paints white foreground on default background",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "108-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected profile row paints a cyan background band",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "137-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected oauth-login row paints a magenta background band",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "151-163",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected oauth-status row paints a green background band",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "165-177",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected add-profile row paints a green background band",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "179-191",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected api-key row paints a yellow background band",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "193-205",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unselected child rows are tinted by their kind on the default background",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "207-220",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Every non-provider row prepends a 4-space inner indent after the selection prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "226-244",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider rows have no 4-space inner indent — the expand glyph follows the marker directly",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "245-259",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider row paints the ▼ expanded glyph when expanded is true",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "260-269",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider row paints the ▶ collapsed glyph when expanded is false",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "270-279",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Selected row prefix is \"> \" and unselected prefix is \"  \"",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "280-295",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile row carries the 📁 folder icon directly after the inner indent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "296-305",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OauthLogin row carries the 🔑 key icon directly after the inner indent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "306-315",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AddProfile row carries the \"+ \" glyph directly after the inner indent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs",
+          "lines": "316-325",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-tui/src/views/provider_settings/row_render.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 16,
+    "coveredScenarios": 16,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-tui/tests/provider_settings_row_render_rpc104.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-tui/src/views/provider_settings/row_render.rs"
+    ],
+    "totalLinesCovered": 556
+  }
+}

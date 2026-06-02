@@ -25,6 +25,7 @@ pub mod dispatch_rpc024;
 pub mod dispatch_rpc025;
 pub mod dispatch_rpc026;
 pub mod dispatch_rpc045;
+pub mod dispatch_rpc045_fspec_runner;
 pub mod dispatch_rpc046;
 pub mod dispatch_rpc050;
 pub mod dispatch_rpc051;

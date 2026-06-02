@@ -31,7 +31,6 @@ pub enum SlashCommandAction {
     Blocklist,
     Compact,
     Debug,
-    Providers,
     Provider,
     Detach,
     MergeWorktree,
@@ -57,7 +56,6 @@ impl SlashCommandAction {
             SlashCommandAction::Blocklist => "blocklist",
             SlashCommandAction::Compact => "compact",
             SlashCommandAction::Debug => "debug",
-            SlashCommandAction::Providers => "providers",
             SlashCommandAction::Provider => "provider",
             SlashCommandAction::Detach => "detach",
             SlashCommandAction::MergeWorktree => "merge-worktree",
@@ -120,10 +118,6 @@ pub const SLASH_COMMANDS: &[SlashCommand] = &[
     SlashCommand {
         action: SlashCommandAction::Provider,
         description: "Configure API providers",
-    },
-    SlashCommand {
-        action: SlashCommandAction::Providers,
-        description: "Open provider settings",
     },
     SlashCommand {
         action: SlashCommandAction::Debug,
