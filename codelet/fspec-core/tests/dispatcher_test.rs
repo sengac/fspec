@@ -170,7 +170,7 @@ fn pre_tool_use_hook_short_circuits_dispatch() {
 use std::fs;
 use std::path::Path;
 
-use codelet_fspec_core::canonical::{lookup, CANONICAL_COMMANDS};
+use codelet_fspec_core::canonical::{is_ported, lookup, CANONICAL_COMMANDS};
 use serde_json::Value;
 
 // ---------- path helpers ----------
@@ -310,6 +310,20 @@ fn every_canonical_command_has_a_module_or_is_stubbed() {
 
         let body = fs::read_to_string(&path).expect("stub file readable");
 
+        // Ported commands no longer have to satisfy stub-shape invariants —
+        // they ship a real `pub async fn run` returning real data and
+        // legitimately don't contain `NotYetPorted`. The canonical list of
+        // ported commands lives in `crate::canonical::PORTED_COMMANDS`.
+        if is_ported(cmd.name) {
+            // Sanity check: ported commands MUST still have a `pub async fn run`,
+            // it just has a different signature/body. The shape contract is
+            // verified by each command's own integration test file.
+            if !body.contains("pub async fn run") {
+                missing_run_fn.push(cmd.name.to_string());
+            }
+            continue;
+        }
+
         // @step And each file declares a "pub async fn run" returning Result<String, FspecCoreError>
         if !body.contains("pub async fn run") || !body.contains("Result<String, FspecCoreError>") {
             missing_run_fn.push(cmd.name.to_string());
@@ -418,6 +432,14 @@ fn every_canonical_command_has_a_child_work_unit_under_rpc_003() {
         let canonical = lookup(command).expect("canonical entry");
         if !description.contains(canonical.ts_file) {
             bad_description.push(format!("{command}: description missing {}", canonical.ts_file));
+        }
+
+        // Ported commands (PORTED_COMMANDS) are exempt from the
+        // "status=backlog, estimate=null" invariants — once a port is in
+        // progress / done, those values legitimately change. They're still
+        // required to match title / description shape above.
+        if is_ported(command) {
+            continue;
         }
 
         // @step And every child work unit's status is "backlog"

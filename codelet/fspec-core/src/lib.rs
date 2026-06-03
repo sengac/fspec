@@ -25,6 +25,8 @@ pub mod canonical;
 pub mod commands;
 pub mod dispatch;
 pub mod error;
+pub mod io;
+pub mod types;
 
 pub use dispatch::{dispatch_command, DispatchRequest, DispatchResult};
 pub use error::FspecCoreError;

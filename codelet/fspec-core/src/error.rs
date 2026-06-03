@@ -38,4 +38,20 @@ pub enum FspecCoreError {
         command: &'static str,
         reason: String,
     },
+
+    /// Filesystem I/O failure while executing a ported command.
+    #[error("I/O error executing fspec command {command}: {source}")]
+    Io {
+        command: &'static str,
+        #[source]
+        source: std::io::Error,
+    },
+
+    /// JSON parse failure for one of the canonical fspec state files. The
+    /// message MUST contain `"Failed to parse <file>"` for parity with the
+    /// TypeScript implementation (`src/utils/ensure-files.ts:49-52`).
+    #[error(
+        "Failed to parse {file}: {reason}. The file may be corrupted or contain invalid JSON."
+    )]
+    ParseJson { file: String, reason: String },
 }

@@ -77,8 +77,16 @@ pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
         }
     };
 
-    let stub_result = run_stub(canonical.name, &req.args_json);
-    match stub_result {
+    // Fast path: every command that has been ported to Rust gets a dedicated
+    // arm in `run_ported` and receives the project_root so it can perform
+    // real filesystem work. Anything not in the ported set falls through to
+    // `run_stub` and returns the canonical NotYetPorted error.
+    let result = match run_ported(canonical.name, &req.args_json, &req.project_root) {
+        Some(r) => r,
+        None => run_stub(canonical.name, &req.args_json),
+    };
+
+    match result {
         Ok(data) => DispatchResult {
             success: true,
             data,
@@ -87,6 +95,42 @@ pub fn dispatch_command(req: DispatchRequest) -> DispatchResult {
         },
         Err(err) => DispatchResult::from_error(err),
     }
+}
+
+/// Route ported commands. Returns `Some(result)` when `name` matches a Rust
+/// implementation; `None` when the command is still a stub. The set of arms
+/// here grows monotonically with each landed RPC-XXX child card.
+fn run_ported(
+    name: &'static str,
+    args_json: &str,
+    project_root: &std::path::Path,
+) -> Option<Result<String, FspecCoreError>> {
+    // Identify ported commands FIRST so unported names skip runtime construction.
+    if !crate::canonical::is_ported(name) {
+        return None;
+    }
+
+    let runtime = match tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+    {
+        Ok(rt) => rt,
+        Err(e) => {
+            return Some(Err(FspecCoreError::InvalidArgs {
+                command: name,
+                reason: format!("failed to build tokio runtime: {e}"),
+            }));
+        }
+    };
+
+    Some(runtime.block_on(async move {
+        match name {
+            // RPC-253 — list-work-units
+            "list-work-units" => commands::list_work_units::run(args_json, project_root).await,
+            // Unreachable: gated by `is_ported` above.
+            _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
+        }
+    }))
 }
 
 /// Route a canonical command name to its corresponding stub module. Phase 1
@@ -196,7 +240,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "list-schedules" => commands::list_schedules::run(args_json).await,
             "list-tags" => commands::list_tags::run(args_json).await,
             "list-virtual-hooks" => commands::list_virtual_hooks::run(args_json).await,
-            "list-work-units" => commands::list_work_units::run(args_json).await,
+            // "list-work-units" — ported (RPC-253). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "pause-schedule" => commands::pause_schedule::run(args_json).await,
             "prioritize-work-unit" => commands::prioritize_work_unit::run(args_json).await,
             "query-bottlenecks" => commands::query_bottlenecks::run(args_json).await,

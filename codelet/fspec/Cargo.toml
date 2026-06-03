@@ -30,6 +30,7 @@ codelet-rpc-types.workspace = true
 codelet-rpc-embedded.workspace = true
 codelet-rpc-server.workspace = true
 codelet-fspec-tui.workspace = true
+codelet-fspec-core.workspace = true
 codelet-core.workspace = true
 # RPC-025: the fspec binary MUST call codelet_common::set_data_directory
 # at bootstrap (in common::build_service) so the global data dir is

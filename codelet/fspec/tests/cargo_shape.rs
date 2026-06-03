@@ -337,8 +337,19 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     //
     // RPC-011 rule [24] / architecture note [7] add `status.rs` as a
     // fifth subcommand sibling alongside `client.rs` and `daemon.rs`.
-    // The lock-list grows from 5 to 6; no other extras permitted.
-    for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
+    // RPC-253 (list-work-units CLI port) adds `list_work_units.rs` as a
+    // sixth subcommand sibling — the shell-facing bridge that delegates
+    // to `fspec_core::commands::list_work_units::run`. The lock-list
+    // grows from 5 → 6 → 7; no other extras permitted.
+    for f in [
+        "main.rs",
+        "combined.rs",
+        "daemon.rs",
+        "client.rs",
+        "common.rs",
+        "status.rs",
+        "list_work_units.rs",
+    ] {
         let p = src.join(f);
         assert!(
             p.is_file(),
@@ -348,10 +359,18 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
 
     // @step And no other `.rs` files exist directly under `codelet/fspec/src/`
-    let allowed: std::collections::HashSet<&str> = ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"]
-        .iter()
-        .copied()
-        .collect();
+    let allowed: std::collections::HashSet<&str> = [
+        "main.rs",
+        "combined.rs",
+        "daemon.rs",
+        "client.rs",
+        "common.rs",
+        "status.rs",
+        "list_work_units.rs",
+    ]
+    .iter()
+    .copied()
+    .collect();
     let mut unexpected = Vec::new();
     for entry in fs::read_dir(&src).expect("read_dir fspec/src") {
         let entry = entry.expect("dir entry");

@@ -190,3 +190,17 @@ pub const CANONICAL_COMMANDS: &[CanonicalCommand] = &[
 pub fn lookup(name: &str) -> Option<&'static CanonicalCommand> {
     CANONICAL_COMMANDS.iter().find(|c| c.name == name)
 }
+
+/// Commands that have a real Rust implementation. This set grows
+/// monotonically as RPC-XXX child cards land. Tests that assert phase-1 stub
+/// invariants (e.g. `every_canonical_command_has_a_module_or_is_stubbed`)
+/// MUST consult this list to know which commands are exempt from the stub
+/// shape — keeping the source of truth in one place.
+pub const PORTED_COMMANDS: &[&str] = &[
+    "list-work-units", // RPC-253
+];
+
+/// True when the named command has a real Rust port (i.e. NOT a stub).
+pub fn is_ported(name: &str) -> bool {
+    PORTED_COMMANDS.contains(&name)
+}
