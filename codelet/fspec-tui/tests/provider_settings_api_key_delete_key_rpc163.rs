@@ -19,7 +19,6 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-use codelet_fspec_tui::components::Action;
 use codelet_fspec_tui::views::{
     DetailStatus, DetailSub, ProviderSettingsEvent, ProviderSettingsMode, ProviderSettingsView,
 };
@@ -288,17 +287,20 @@ fn pressing_delete_must_not_clear_the_api_key_cannot_be_empty_status() {
 fn pressing_delete_in_summary_sub_mode_is_treated_as_unrelated() {
     // @step Given I am in Detail::Summary for the provider "anthropic" with last_status Some(Testing)
     let mut view = view_in_summary_mode();
-    // Press 't' to transition Summary { last_status: None } → Summary { last_status: Some(Testing) }
-    // and consume the resulting Emit(TestProviderConnection(_)) so subsequent
-    // keystrokes can be tested in isolation.
-    let init = view.handle_key(key(KeyCode::Char('t')));
-    assert!(
-        matches!(
-            init,
-            ProviderSettingsEvent::Emit(Action::TestProviderConnection(_))
-        ),
-        "precondition: t must emit TestProviderConnection, got {init:?}"
-    );
+    // RPC-154 removed the `t` keybind from handle_summary_key (TS parity:
+    // TS binds no `t` to test-connection on any Detail surface). The
+    // earlier setup pressed `t` to transition Summary { None } →
+    // Summary { Some(Testing) }; after RPC-154 we construct that state
+    // directly. The Delete-key behaviour under test (state preserved,
+    // Consumed, no Action) is independent of HOW we arrived at
+    // last_status: Some(Testing) — what matters is that the precondition
+    // matches the original Gherkin step.
+    view.mode = ProviderSettingsMode::Detail {
+        provider_id: "anthropic".to_string(),
+        sub: DetailSub::Summary {
+            last_status: Some(DetailStatus::Testing),
+        },
+    };
     assert_summary_with_status(&view, "anthropic", Some(DetailStatus::Testing));
 
     // @step When I press the Delete key

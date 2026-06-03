@@ -36,6 +36,15 @@ pub mod zai;
 #[cfg(feature = "test-support")]
 pub mod stub_provider;
 
+/// RPC-069: `rig::completion::CompletionModel` adapter for the
+/// deterministic stub provider. Lets `StubProvider::create_rig_agent`
+/// build a real `rig::agent::Agent<StubModel>` so the agent-loop
+/// dispatch macro can stream through `run_agent_stream_with_images`
+/// without special-casing. Gated behind `test-support` for the same
+/// reason as [`stub_provider`].
+#[cfg(feature = "test-support")]
+pub mod stub_model;
+
 pub use adapter::{
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
     extract_prompt_data, extract_text_from_content, validate_api_key_static, ProviderAdapter,

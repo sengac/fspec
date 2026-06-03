@@ -1,0 +1,22 @@
+{"IsolationStateChange":{"baseCommit":null,"isIsolated":false,"worktreePath":null}}
+{"UserInput":{"text":"hello"}}
+{"SessionStateChange":{"state":"Running"}}
+{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":0,"reasoning_tokens":null,"tokens_per_second":null}}}
+{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
+{"Text":{"correlationId":"<corr>","observedCorrelationIds":null,"text":"hi back"}}
+{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
+{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
+{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
+{"SessionStateChange":{"state":"Idle"}}
+"Done"
+{"SessionStateChange":{"state":"Cleared"}}
+{"UserInput":{"text":"trigger-tool"}}
+{"SessionStateChange":{"state":"Running"}}
+{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":0,"reasoning_tokens":null,"tokens_per_second":null}}}
+{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
+{"Text":{"correlationId":"<corr>","observedCorrelationIds":null,"text":"hi back"}}
+{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
+{"TokenUpdate":{"tokens":{"cache_creation_input_tokens":0,"cache_read_input_tokens":0,"cumulative_billed_input":null,"cumulative_billed_output":null,"input_tokens":0,"output_tokens":2,"reasoning_tokens":null,"tokens_per_second":null}}}
+{"ContextFillUpdate":{"contextFill":{"context_window":128000.0,"effective_tokens":0.0,"fill_percentage":0,"threshold":123904.0}}}
+{"SessionStateChange":{"state":"Idle"}}
+"Done"

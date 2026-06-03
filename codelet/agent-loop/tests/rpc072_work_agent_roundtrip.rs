@@ -124,7 +124,7 @@ async fn stub_provider_input_to_reply() {
                             got_text = true;
                         }
                     }
-                    StreamChunk::Done { .. } => {
+                    StreamChunk::Done => {
                         got_done = true;
                         break;
                     }

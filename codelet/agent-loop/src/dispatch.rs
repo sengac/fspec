@@ -114,9 +114,23 @@ macro_rules! run_with_provider {
 /// full session. If you add an arm to the match, add the same provider
 /// name here. If you remove an arm, remove it here.
 ///
+/// RPC-069: under `#[cfg(feature = "test-support")]` the `"stub"`
+/// provider is also accepted — mirrors the feature-gated `"stub" =>`
+/// arm in `agent_loop.rs`. Without the feature, the stub falls through
+/// to the custom-provider discovery path and ultimately fails as
+/// "Unsupported provider: stub" — the same behaviour a release build
+/// must exhibit.
+///
 /// Feature: spec/features/github-copilot-end-to-end-integration.feature
+/// Feature: spec/features/stub-provider-rig-dispatch.feature
 #[must_use]
 pub fn agent_loop_dispatch_supports_provider(provider_name: &str) -> bool {
+    #[cfg(feature = "test-support")]
+    {
+        if provider_name == "stub" {
+            return true;
+        }
+    }
     matches!(
         provider_name,
         "claude" | "openai" | "gemini" | "zai" | "codex" | "github-copilot" | "copilot"

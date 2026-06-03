@@ -1,7 +1,6 @@
 @wip
 @deferred
 @session-management
-@RPC-089
 @rust
 @agent-loop
 @rpc

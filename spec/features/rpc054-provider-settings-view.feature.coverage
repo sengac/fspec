@@ -150,39 +150,6 @@
       ]
     },
     {
-      "name": "t inside Detail::Summary emits TestProviderConnection",
-      "testMappings": [
-        {
-          "file": "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs",
-          "lines": "196-218",
-          "implMappings": [
-            {
-              "file": "codelet/fspec-tui/src/views/provider_settings/detail.rs",
-              "lines": [
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "r inside Detail::Summary emits RefreshProviderModels",
       "testMappings": [
         {
@@ -989,12 +956,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "t inside Detail::Summary is silently ignored (RPC-154 TS parity)",
+      "testMappings": []
     }
   ],
   "stats": {
     "totalScenarios": 31,
-    "coveredScenarios": 31,
-    "coveragePercent": 100,
+    "coveredScenarios": 30,
+    "coveragePercent": 97,
     "testFiles": [
       "codelet/fspec-tui/tests/provider_settings_view_rpc054.rs"
     ],

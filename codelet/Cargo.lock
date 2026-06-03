@@ -1029,6 +1029,7 @@ dependencies = [
  "codelet-cli",
  "codelet-common",
  "codelet-core",
+ "codelet-fspec-core",
  "codelet-graph",
  "codelet-providers",
  "codelet-rpc-types",
@@ -1195,6 +1196,19 @@ dependencies = [
  "url",
  "uuid",
  "vt100",
+]
+
+[[package]]
+name = "codelet-fspec-core"
+version = "0.1.0"
+dependencies = [
+ "regex",
+ "serde",
+ "serde_json",
+ "serial_test",
+ "tempfile",
+ "thiserror 1.0.69",
+ "tokio",
 ]
 
 [[package]]

@@ -61,7 +61,7 @@ Feature: ProviderSettingsView — full-screen mode-view keyboard handling
     And the anthropic row's credential_type is "api_key"
     When the user presses Enter
     Then the view's mode is Detail { provider_id: "anthropic", sub: Summary { last_status: None } }
-    And the footer hint reads "t Test | r Refresh Models | Esc Back"
+    And the footer hint reads "r: refresh models · Esc: back" (RPC-154 dropped `t: test ·` for TS parity)
 
   @list-mode
   @enter-oauth
@@ -75,12 +75,13 @@ Feature: ProviderSettingsView — full-screen mode-view keyboard handling
 
   @detail
   @summary
-  Scenario: t inside Detail::Summary emits TestProviderConnection
+  @rpc-154
+  Scenario: t inside Detail::Summary is silently ignored (RPC-154 TS parity)
     Given the ProviderSettingsView is in Detail { provider_id: "openai", sub: Summary { last_status: None } }
     When the user presses "t"
-    Then the emitted ProviderSettingsEvent is Emit(Action::TestProviderConnection("openai"))
-    And the last_status is updated to Testing
-    And the body shows "Testing…"
+    Then the emitted ProviderSettingsEvent is Consumed
+    And no Action::TestProviderConnection is emitted
+    And view.mode remains Detail::Summary with last_status: None preserved
 
   @detail
   @summary

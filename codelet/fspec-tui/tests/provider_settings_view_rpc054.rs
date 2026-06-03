@@ -114,9 +114,12 @@ fn enter_on_api_key_row_transitions_to_detail_summary() {
         }
         _ => panic!("expected Detail::Summary mode, got {:?}", view.mode),
     }
-    // @step And the footer hint reads "t: test · r: refresh models · Esc: back" (RPC-106)
+    // @step And the footer hint reads "r: refresh models · Esc: back" (RPC-154 dropped `t: test ·` for TS parity)
     let hint = view.footer_hint();
-    assert!(hint.contains("t: test"));
+    assert!(
+        !hint.contains("t: test"),
+        "RPC-154: Summary footer hint must NOT advertise `t: test` — the `t` keybind is removed; hint was {hint:?}"
+    );
     assert!(hint.contains("r: refresh models"));
     assert!(hint.contains("Esc: back"));
 }
@@ -146,25 +149,41 @@ fn enter_on_oauth_row_transitions_to_oauth_notice() {
 // Detail::Summary — t (test) and r (refresh) actions
 // ────────────────────────────────────────────────────────────────────────
 
-/// Scenario: t inside Detail::Summary emits TestProviderConnection
+/// Scenario: t inside Detail::Summary is silently ignored (RPC-154 — TS parity)
+///
+/// RPC-054 originally asserted `t` emitted Action::TestProviderConnection.
+/// RPC-154 removed that arm from handle_summary_key (TS binds no `t` on
+/// any Detail surface — src/tui/inputHandlers/listModeHandler.ts), so
+/// `t` now falls through the catch-all and is silently consumed with
+/// `last_status` preserved. The canonical assertions for the new
+/// behaviour live in tests/rpc154_summary_t_keybind_removal_shape.rs;
+/// this test stays here as a smoke-check that nothing has re-introduced
+/// the deviation under the rpc054 harness.
 #[test]
-fn t_inside_detail_summary_emits_test_provider_connection() {
+fn t_inside_detail_summary_is_silently_ignored_rpc154() {
     // @step Given the ProviderSettingsView is in Detail { provider_id: "openai", sub: Summary { last_status: None } }
     let mut view = list_view_with(vec![pinfo("openai", "api_key", true, 4)]);
     view.handle_key(key(KeyCode::Enter)); // List → Detail::Summary
     // @step When the user presses "t"
     let out = view.handle_key(key(KeyCode::Char('t')));
-    // @step Then the emitted ProviderSettingsEvent is Emit(Action::TestProviderConnection("openai"))
-    match out {
-        ProviderSettingsEvent::Emit(Action::TestProviderConnection(id)) => {
-            assert_eq!(id, "openai");
-        }
-        _ => panic!("expected TestProviderConnection action, got {out:?}"),
-    }
-    // @step And the last_status is updated to Testing
-    // @step And the body shows "Testing…"
+    // @step Then the emitted ProviderSettingsEvent is Consumed (no Action)
+    assert!(
+        matches!(out, ProviderSettingsEvent::Consumed),
+        "RPC-154: `t` in Detail::Summary must be silently Consumed (no Action); got {out:?}"
+    );
+    assert!(
+        !matches!(
+            out,
+            ProviderSettingsEvent::Emit(Action::TestProviderConnection(_))
+        ),
+        "RPC-154: `t` must NOT emit Action::TestProviderConnection — that was the Rust-only deviation; got {out:?}"
+    );
+    // @step And view.mode remains Detail::Summary with last_status: None
     if let ProviderSettingsMode::Detail { sub: DetailSub::Summary { last_status }, .. } = &view.mode {
-        assert!(matches!(last_status, Some(DetailStatus::Testing)));
+        assert!(
+            last_status.is_none(),
+            "RPC-154: last_status must remain None — the catch-all preserves it; got {last_status:?}"
+        );
     } else {
         panic!("expected Detail::Summary, got {:?}", view.mode);
     }
@@ -474,7 +493,7 @@ fn footer_hint_list_mode() {
     assert!(!hint.contains('|'), "must not contain pipe: {hint:?}");
 }
 
-/// Scenario: Footer hint in Detail::Summary mode (RPC-106 bullet style)
+/// Scenario: Footer hint in Detail::Summary mode (RPC-106 bullet style — RPC-154 drops `t: test`)
 #[test]
 fn footer_hint_detail_summary_mode() {
     // @step Given the ProviderSettingsView is in Detail::Summary for "openai"
@@ -482,8 +501,11 @@ fn footer_hint_detail_summary_mode() {
     view.handle_key(key(KeyCode::Enter));
     // @step When the view is rendered
     let hint = view.footer_hint();
-    // @step Then the footer row contains "t: test"
-    assert!(hint.contains("t: test"));
+    // @step Then the footer row does NOT contain "t: test" (RPC-154 removed the t keybind for TS parity)
+    assert!(
+        !hint.contains("t: test"),
+        "RPC-154: Summary footer must NOT advertise `t: test`; hint was {hint:?}"
+    );
     // @step And the footer row contains "r: refresh models"
     assert!(hint.contains("r: refresh models"));
     // @step And the footer row contains "Esc: back"

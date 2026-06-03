@@ -11,6 +11,11 @@ members = [
     "common",
     "core",
     "fspec",
+    # TOOL-019 / RPC-003: pure-Rust home for the future port of the
+    # TypeScript fspec CLI commands. Phase 1 ships only command stubs and
+    # a synchronous dispatcher entry point so the standalone fspec Rust
+    # binary's agent loop no longer hangs on Fspec tool dispatch.
+    "fspec-core",
     "fspec-tui",
     "git",
     "graph",
@@ -45,6 +50,9 @@ codelet-cli = { path = "cli" }
 codelet-agent-loop = { path = "agent-loop" }
 codelet-common = { path = "common" }
 codelet-core = { path = "core" }
+# TOOL-019 / RPC-003: pure-Rust home for the future port of the TypeScript
+# fspec CLI commands. Phase 1 only ships command stubs + a dispatcher.
+codelet-fspec-core = { path = "fspec-core" }
 codelet-fspec-tui = { path = "fspec-tui" }
 codelet-git = { path = "git" }
 codelet-graph = { path = "graph" }

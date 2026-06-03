@@ -151,7 +151,10 @@ impl ProviderSettingsView {
             }
             ProviderSettingsMode::Detail { sub, .. } => match sub {
                 DetailSub::Summary { .. } => {
-                    "t: test · r: refresh models · Esc: back".to_string()
+                    // RPC-154 — drop `t: test ·` (TS binds no `t` for
+                    // the test-connection action). Hint now matches
+                    // the actually-bound Summary keys.
+                    "r: refresh models · Esc: back".to_string()
                 }
                 DetailSub::EditApiKey { .. } => "Enter: save · Esc: cancel".to_string(),
                 DetailSub::OAuthNotice => "Esc: back".to_string(),

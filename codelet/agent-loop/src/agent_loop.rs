@@ -501,14 +501,27 @@ pub async fn agent_loop(
             let session_for_fspec = session.clone();
             let fspec_handler: codelet_tools::FspecHandler = std::sync::Arc::new(move |request: codelet_tools::FspecHandlerRequest| {
                 // RPC-041: Check the napi-side TSFN registration via the
-                // helper that consults CHUNK_FANOUT_TSFN. The user-visible
-                // error string is preserved verbatim for back-compat.
+                // helper that consults CHUNK_FANOUT_TSFN.
+                //
+                // TOOL-019: when the chunk callback is NOT registered
+                // (i.e. the standalone fspec Rust binary has no TypeScript
+                // shell), fall through to the in-process Rust dispatcher
+                // in `codelet_fspec_core`. Phase 1 stubs return a
+                // structured `NotYetPorted` / `UnknownCommand` error per
+                // command so the agent loop completes the turn instead of
+                // hanging on a non-existent JS callback.
                 if !is_global_chunk_callback_registered() {
+                    let dispatch_req = codelet_fspec_core::DispatchRequest {
+                        command: request.command.clone(),
+                        args_json: request.args_json.clone(),
+                        project_root: std::path::PathBuf::from(&request.project_root),
+                    };
+                    let dispatch_result = codelet_fspec_core::dispatch_command(dispatch_req);
                     return codelet_tools::FspecHandlerResult {
-                        success: false,
-                        data: String::new(),
-                        error: Some("Global chunk callback not registered - cannot execute fspec command".to_string()),
-                        system_reminder: None,
+                        success: dispatch_result.success,
+                        data: dispatch_result.data,
+                        error: dispatch_result.error,
+                        system_reminder: dispatch_result.system_reminder,
                     };
                 }
                 
@@ -950,6 +963,94 @@ pub async fn agent_loop(
                     &output,
                     thinking_config_value
                 ),
+                // RPC-069: Custom("stub") dispatch — route to the
+                // in-memory stub provider registered by
+                // `register_stub_provider()` in
+                // `codelet/fspec/src/common.rs::build_service` under
+                // the `test-stub-provider` feature. The stub yields
+                // the canned [Text("hi back"), Done] stream via its
+                // `StubModel` impl of `rig::completion::CompletionModel`
+                // with no network egress.
+                //
+                // Gated by the `test-support` feature so production
+                // builds (release `codelet-fspec` without
+                // `--features test-stub-provider`) compile this arm
+                // out entirely — same gate that controls whether the
+                // `codelet_providers::stub_provider` and
+                // `codelet_providers::stub_model` modules are even
+                // available.
+                //
+                // Lock-step contract: this arm MUST stay paired with
+                // the `"stub"` branch in
+                // `agent_loop_dispatch_supports_provider`
+                // (`dispatch.rs:118`). See RPC-069 rule [1].
+                //
+                // Feature: spec/features/stub-provider-rig-dispatch.feature
+                #[cfg(feature = "test-support")]
+                "stub" => {
+                    if codelet_providers::stub_provider::is_stub_registered(
+                        &current_provider,
+                    ) {
+                        tracing::debug!(
+                            "[run_with_provider] Creating stub agent - session={}, provider={}",
+                            session.id,
+                            current_provider,
+                        );
+                        let mcp_wrappers =
+                            codelet_tools::gather_mcp_tool_wrappers(session.id);
+                        let role_preamble = session.get_role();
+                        // StubProvider is a ZST — every instance is
+                        // identical. We construct a fresh one (rather
+                        // than down-casting the `Arc<dyn LlmProvider>`
+                        // from the registry) so we can call the
+                        // inherent `create_rig_agent` method directly,
+                        // mirroring the pattern every other provider
+                        // arm uses.
+                        let stub = codelet_providers::stub_provider::StubProvider::new();
+                        let agent = stub.create_rig_agent(
+                            session.id,
+                            role_preamble.as_deref(),
+                            thinking_config_value.clone(),
+                        );
+                        if !mcp_wrappers.is_empty() {
+                            for wrapper in mcp_wrappers {
+                                if let Err(e) =
+                                    agent.tool_server_handle.add_tool(wrapper).await
+                                {
+                                    tracing::warn!(
+                                        "[MCP] Failed to add MCP tool: {}",
+                                        e
+                                    );
+                                }
+                            }
+                        }
+                        codelet_tools::set_mcp_tool_server_handle(
+                            session.id,
+                            agent.tool_server_handle.clone(),
+                        );
+                        let agent = codelet_core::RigAgent::with_default_depth(agent);
+                        codelet_cli::interactive::run_agent_stream_with_images(
+                            agent,
+                            input,
+                            bridge_images.clone(),
+                            &mut inner_session,
+                            session.is_interrupted.clone(),
+                            session.compaction_in_progress.clone(),
+                            session.interrupt_notify.clone(),
+                            &output,
+                        )
+                        .await
+                    } else {
+                        tracing::error!(
+                            "Stub provider '{}' not in in-memory registry — was register_stub_provider() called?",
+                            current_provider,
+                        );
+                        Err(anyhow::anyhow!(
+                            "Stub provider '{}' not registered",
+                            current_provider
+                        ))
+                    }
+                }
                 _ => {
                     // PROV-092: Custom-provider dispatch. If the
                     // current_provider name corresponds to a registered

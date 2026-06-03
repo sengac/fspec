@@ -1,0 +1,21 @@
+[package]
+name = "codelet-fspec-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Pure-Rust home for the future port of the TypeScript fspec CLI commands (RPC-003 / TOOL-019). Phase 1 ships only command stubs and a dispatcher entry point so the standalone fspec Rust binary's agent loop no longer hangs on Fspec tool dispatch."
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+serial_test.workspace = true
+regex.workspace = true
+
+[lints]
+workspace = true

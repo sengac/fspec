@@ -30,6 +30,12 @@ futures = { workspace = true }
 
 codelet-common.workspace = true
 codelet-core.workspace = true
+# TOOL-019: Pure-Rust dispatcher for fspec commands. Used as the fallback
+# when the NAPI chunk callback is not registered (i.e. the standalone
+# fspec Rust binary), so the agent loop returns clean per-command
+# "not yet ported" errors instead of hanging on a non-existent JS
+# callback.
+codelet-fspec-core.workspace = true
 # RPC-092: codelet-graph hosts the lifted KGraph DB + AST pipeline +
 # Learnings extraction code (was codelet/napi/src/graph/). The agent loop
 # body (RPC-072 Phase B) will register graph_search_handler + the

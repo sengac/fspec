@@ -40,6 +40,57 @@ impl StubProvider {
     pub fn canned_chunks() -> Vec<StreamChunk> {
         vec![StreamChunk::text("hi back".to_string()), StreamChunk::done()]
     }
+
+    /// RPC-069: Build a real `rig::agent::Agent<StubModel>` so the
+    /// agent-loop dispatch macro can stream through
+    /// `codelet_cli::interactive::run_agent_stream_with_images` without
+    /// special-casing the stub. Mirrors the signature of every other
+    /// provider's inherent `create_rig_agent` (see
+    /// [`crate::ClaudeProvider::create_rig_agent`],
+    /// [`crate::custom::CustomProvider::create_rig_agent`], etc.) so
+    /// the agent-loop's `"stub" =>` arm can construct it uniformly.
+    ///
+    /// # Arguments
+    ///
+    /// * `session_id` — session UUID. Unused by the stub model itself
+    ///   but accepted for signature parity with real providers (real
+    ///   providers thread this through `TOOL-012` / `TOOL-014` to bind
+    ///   tools to session-scoped state).
+    /// * `preamble` — optional system prompt. Forwarded to the rig
+    ///   `AgentBuilder` so the stub's chat history still reflects the
+    ///   preamble shape real providers would see; the stub model
+    ///   itself ignores all message content and always emits
+    ///   `"hi back"`.
+    /// * `_thinking_config` — optional thinking-budget JSON. Accepted
+    ///   for parity with the agent-loop dispatch macro's call site but
+    ///   currently unused — the stub has no thinking primitive (per
+    ///   RPC-069 architecture assumption: silence on reasoning chunks
+    ///   is the Rust-pinned golden baseline).
+    ///
+    /// # Returns
+    ///
+    /// A fully built `rig::agent::Agent<StubModel>` ready to be
+    /// wrapped in `codelet_core::RigAgent::with_default_depth` and
+    /// fed into `run_agent_stream_with_images`. No tools are attached
+    /// — the stub never returns `ToolUse`, so a tool surface would be
+    /// dead weight and would only obscure the canned chunk stream.
+    #[must_use]
+    pub fn create_rig_agent(
+        &self,
+        session_id: uuid::Uuid,
+        preamble: Option<&str>,
+        _thinking_config: Option<serde_json::Value>,
+    ) -> rig::agent::Agent<crate::stub_model::StubModel> {
+        let _ = session_id;
+        let model = crate::stub_model::StubModel::new();
+        let mut builder = rig::agent::AgentBuilder::new(model);
+        if let Some(p) = preamble {
+            if !p.is_empty() {
+                builder = builder.preamble(p);
+            }
+        }
+        builder.build()
+    }
 }
 
 #[async_trait]

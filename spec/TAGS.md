@@ -213,6 +213,7 @@ Tags that categorize features by functional area.
 | `@research-integration` | Research tool integration and plugin system features |
 | `@research-tools` | Research tool system features and integrations |
 | `@reverse-acdd` | Features related to reverse ACDD for documenting existing codebases |
+| `@role` | Session role / system-prompt overlay (BUG-120, WATCH-004) — applies to features that read or write a session's role text. |
 | `@safety` | Safety and security features preventing accidental operations |
 | `@scaffolding` | Project Setup & Templates |
 | `@scalability` | Scalability and performance optimization features |
@@ -320,6 +321,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@budget-thinking` | Budget-based thinking mode for Claude models |
 | `@buffer-overflow` | Buffer overflow handling scenarios |
 | `@bug-144` | Bug fix work unit BUG-144 - PromptCancelled error chain preservation |
+| `@bug120` | BUG-120: session role must be injected as the system prompt preamble every turn. |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
 | `@cache` | Caching and persistence features |
@@ -474,6 +476,15 @@ Tags for specific technical concerns or architectural patterns.
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@rig` | Rig framework integration |
+| `@rpc-086` | RPC-086: Agent loop token tracking parity (update_tokens + TokenUpdate + ContextFillUpdate) |
+| `@rpc-087` | Regression-shape coverage of RPC-087 error classification + recovery wiring |
+| `@rpc-088` | RPC-088: Agent loop interrupt cascade parity (is_interrupted + interrupt_notify + Esc handler + StreamChunk::Interrupted) |
+| `@rpc-089` | RPC-089: Agent loop MCP injection drain source-shape coverage (mcp_injection_rx tokio::select! arm + mcp_channel_open flag) |
+| `@rpc-090` | RPC-090: Lifecycle hooks source-shape sweep |
+| `@rpc-149` | RPC-149: Provider settings list-mode keybind shape regression test — pin TS contract surface (Esc, /, Tab, Up, Down, Enter, d/D) and absence of Rust-only deviations (r/R, PageUp/PageDown/Home/End, wrap-around) |
+| `@rpc-150` | RPC-150: Provider settings list inline test_result decoration paint loop source-shape coverage (paint_test_result_decoration in list_nav_render.rs) |
+| `@rpc-154` | RPC-154 — Provider settings Detail::Summary `t` keybind removal regression shape |
+| `@rpc-155` | RPC-155 — Provider settings api-key edit: Delete key removes draft chars source-shape coverage |
 | `@runtime` | Runtime behavior and dynamic configuration |
 | `@rust` | Rust implementation components |
 | `@schema-validation` | JSON Schema validation features and commands |
@@ -615,6 +626,7 @@ Tags tracking development status of features.
 | `@rpc-078` | Work unit identifier tag for RPC-078 — AgentView scrollback TS Ink parity port (chunk prefix correction, no-duplicate UserInput, viewport-width-aware wrapping, visual-row stick-to-bottom) |
 | `@rpc-097-reopen2` | RPC-097 reopen #2: BoardView Shift+Right must consult global open-session list before showing CreateSessionDialog |
 | `@rpc-101` | Work unit identifier tag for RPC-101 — context-fill badge real-time recompute on every TokenUpdate (parallel Rust/TS fix for the badge freezing during streaming and after ESC interrupt) |
+| `@rpc-153` | RPC-153: Provider settings api-key edit filterPrintableChars ASCII 32-126 restriction — regression-shape coverage card pinning the is_printable_ascii helper signature, body range expression, and guard placement before draft.push(c) in handle_edit_key |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -922,7 +934,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-06-01T16:58:50.079Z_
+_Last updated: 2026-06-03T02:23:34.959Z_
 
 **Update Command**: `fspec tag-stats`
 

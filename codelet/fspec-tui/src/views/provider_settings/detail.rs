@@ -55,16 +55,16 @@ fn handle_summary_key(
             view.status.clear();
             ProviderSettingsEvent::Consumed
         }
-        KeyCode::Char('t') | KeyCode::Char('T') => {
-            view.mode = ProviderSettingsMode::Detail {
-                provider_id: provider_id.clone(),
-                sub: DetailSub::Summary {
-                    last_status: Some(DetailStatus::Testing),
-                },
-            };
-            view.status = "Testing…".to_string();
-            ProviderSettingsEvent::Emit(Action::TestProviderConnection(provider_id))
-        }
+        // RPC-154 — TS parity: the `t` / `T` (test connection) keybind
+        // does NOT exist in the canonical TS Detail surfaces
+        // (src/tui/inputHandlers/listModeHandler.ts binds no `t` for
+        // the test-connection action on any Detail screen). The
+        // previously present arm emitted a TestProviderConnection
+        // action and wrote a transient status string into
+        // `view.status` — both Rust-only deviations. After RPC-154
+        // `t` / `T` fall through to the catch-all below, which
+        // re-enters Summary preserving `last_status` and returns
+        // `ProviderSettingsEvent::Consumed`.
         KeyCode::Char('r') | KeyCode::Char('R') => {
             view.mode = ProviderSettingsMode::Detail {
                 provider_id: provider_id.clone(),

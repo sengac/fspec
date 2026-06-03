@@ -782,6 +782,10 @@
           "description": "Features related to reverse ACDD for documenting existing codebases"
         },
         {
+          "name": "@role",
+          "description": "Session role / system-prompt overlay (BUG-120, WATCH-004) — applies to features that read or write a session's role text."
+        },
+        {
           "name": "@safety",
           "description": "Safety and security features preventing accidental operations"
         },
@@ -1180,6 +1184,10 @@
         {
           "name": "@bug-144",
           "description": "Bug fix work unit BUG-144 - PromptCancelled error chain preservation"
+        },
+        {
+          "name": "@bug120",
+          "description": "BUG-120: session role must be injected as the system prompt preamble every turn."
         },
         {
           "name": "@build",
@@ -1798,6 +1806,42 @@
           "description": "Rig framework integration"
         },
         {
+          "name": "@rpc-086",
+          "description": "RPC-086: Agent loop token tracking parity (update_tokens + TokenUpdate + ContextFillUpdate)"
+        },
+        {
+          "name": "@rpc-087",
+          "description": "Regression-shape coverage of RPC-087 error classification + recovery wiring"
+        },
+        {
+          "name": "@rpc-088",
+          "description": "RPC-088: Agent loop interrupt cascade parity (is_interrupted + interrupt_notify + Esc handler + StreamChunk::Interrupted)"
+        },
+        {
+          "name": "@rpc-089",
+          "description": "RPC-089: Agent loop MCP injection drain source-shape coverage (mcp_injection_rx tokio::select! arm + mcp_channel_open flag)"
+        },
+        {
+          "name": "@rpc-090",
+          "description": "RPC-090: Lifecycle hooks source-shape sweep"
+        },
+        {
+          "name": "@rpc-149",
+          "description": "RPC-149: Provider settings list-mode keybind shape regression test — pin TS contract surface (Esc, /, Tab, Up, Down, Enter, d/D) and absence of Rust-only deviations (r/R, PageUp/PageDown/Home/End, wrap-around)"
+        },
+        {
+          "name": "@rpc-150",
+          "description": "RPC-150: Provider settings list inline test_result decoration paint loop source-shape coverage (paint_test_result_decoration in list_nav_render.rs)"
+        },
+        {
+          "name": "@rpc-154",
+          "description": "RPC-154 — Provider settings Detail::Summary `t` keybind removal regression shape"
+        },
+        {
+          "name": "@rpc-155",
+          "description": "RPC-155 — Provider settings api-key edit: Delete key removes draft chars source-shape coverage"
+        },
+        {
           "name": "@runtime",
           "description": "Runtime behavior and dynamic configuration"
         },
@@ -2278,6 +2322,10 @@
           "description": "Work unit identifier tag for RPC-101 — context-fill badge real-time recompute on every TokenUpdate (parallel Rust/TS fix for the badge freezing during streaming and after ESC interrupt)"
         },
         {
+          "name": "@rpc-153",
+          "description": "RPC-153: Provider settings api-key edit filterPrintableChars ASCII 32-126 restriction — regression-shape coverage card pinning the is_printable_ascii helper signature, body range expression, and guard placement before draft.push(c) in handle_edit_key"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
@@ -2722,7 +2770,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-06-01T16:58:50.079Z",
+    "lastUpdated": "2026-06-03T02:23:34.959Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

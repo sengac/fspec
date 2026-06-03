@@ -267,15 +267,27 @@ fn detect_custom_provider_availability() -> std::collections::HashMap<String, bo
 
     for cfg in configs {
         // Check the explicit api_key_env_var first.
-        let env_var_ok = cfg
+        //
+        // PROV-067 semantics (and the
+        // `custom_provider_is_unavailable_when_required_env_var_is_unset`
+        // regression test): when a custom provider config explicitly
+        // declares `api_key_env_var`, that env var is the SOLE
+        // availability signal. Whether or not the env var is set
+        // overrides the auth-block / facade fallback — declaring the
+        // env var in the config is the operator's way of saying "this
+        // provider requires this env var to be set", so we must not
+        // silently treat the provider as available just because a
+        // facade is configured.
+        let api_key_explicitly_required = cfg.api_key_env_var.is_some();
+        let api_key_env_var_ok = cfg
             .api_key_env_var
             .as_ref()
             .and_then(|v| std::env::var(v).ok())
             .map(|v| !v.is_empty())
             .unwrap_or(false);
 
-        let available = if env_var_ok {
-            true
+        let available = if api_key_explicitly_required {
+            api_key_env_var_ok
         } else {
             match &cfg.auth {
                 AuthConfig::Bearer { env_var, .. }

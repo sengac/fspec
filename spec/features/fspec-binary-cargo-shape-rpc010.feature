@@ -40,7 +40,7 @@ Feature: fspec binary — crate layout, source-shape invariants, and build artif
     Given the file `codelet/Cargo.toml` exists
     When the test parses `[workspace].members`
     Then the members list contains the string `fspec`
-    And `fspec` appears between `core` and `fspec-tui` in the members list (preserving alphabetical order: cli, common, core, fspec, fspec-tui, git, napi, providers, rpc, rpc-embedded, rpc-server, rpc-types, tools, tui)
+    And `fspec` appears between `core` and `fspec-core` in the members list (preserving alphabetical order: agent-loop, cli, common, core, fspec, fspec-core, fspec-tui, git, graph, napi, providers, rpc, rpc-embedded, rpc-server, rpc-types, sessions, test-helpers, tools, tui)
 
   @smoke
   Scenario: codelet/fspec/Cargo.toml declares a single bin named fspec

@@ -55,7 +55,6 @@ use common::{codelet_root, fspec_crate_root, make_workspace, project_root, spawn
 // and emits a port on stdout
 // ---------------------------------------------------------------------
 
-#[ignore = "RPC-066: requires fspec binary built with --features test-stub-provider; spawns the CLI binary against a real workspace"]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_fspec_daemon_boots_and_emits_a_port() {
     // @step Given the fspec binary has been built with the test-stub-provider feature enabled
@@ -136,7 +135,7 @@ fn scenario_workspace_registers_the_stub_provider() {
 // Scenario: send_input("hello") yields the canned [Text, Done] stream
 // ---------------------------------------------------------------------
 
-#[ignore = "RPC-066: requires fspec binary built with --features test-stub-provider"]
+#[cfg(feature = "test-stub-provider")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_send_input_hello_yields_canned_stream() {
     use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
@@ -168,34 +167,54 @@ async fn scenario_send_input_hello_yields_canned_stream() {
         .await
         .expect("send_input");
 
-    // @step Then within 5 seconds the captured vec contains exactly [Text { text: "hi back", .. }, Done]
-    let mut captured: Vec<(codelet_rpc_types::SessionId, StreamChunk)> = Vec::new();
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
-    while tokio::time::Instant::now() < deadline {
+    // @step Then within 15 seconds the captured vec contains Text("hi back") followed by Done
+    //
+    // RPC-069: Path A (StubModel routes through the full
+    // `run_agent_stream_with_images` pipeline) means the stream also
+    // emits housekeeping chunks (UserInput echo, SessionStateChange,
+    // TokenUpdate, ContextFillUpdate, IsolationStateChange) around the
+    // canned Text + Done. We assert the canned chunks ARRIVE; the
+    // full chunk-shape parity contract (including the housekeeping
+    // chunks) is locked in by the pinned golden file in
+    // `scenario_scripted_run_matches_golden`.
+    let mut got_text_count = 0usize;
+    let mut got_done = false;
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(15);
+    while tokio::time::Instant::now() < deadline && !got_done {
         let recv = tokio::time::timeout(Duration::from_millis(250), chunks_rx.recv()).await;
         match recv {
-            Ok(Ok((sid, chunk))) => {
-                if sid == session_id {
-                    let is_done = matches!(chunk, StreamChunk::Done);
-                    captured.push((sid, chunk));
-                    if is_done {
-                        break;
-                    }
+            Ok(Ok((sid, chunk))) if sid == session_id => match chunk {
+                StreamChunk::Text { text, .. } => {
+                    assert_eq!(
+                        text, "hi back",
+                        "stub provider must yield exactly 'hi back' as canned text"
+                    );
+                    got_text_count += 1;
                 }
-            }
+                StreamChunk::Done => got_done = true,
+                _ => {}
+            },
+            Ok(Ok(_)) => {}
             Ok(Err(_)) => break,
             Err(_) => continue,
         }
     }
 
-    assert_eq!(captured.len(), 2, "expected 2 chunks; got {}", captured.len());
-    match &captured[0].1 {
-        StreamChunk::Text { text, .. } => assert_eq!(text, "hi back"),
-        other => panic!("first chunk must be Text; got {other:?}"),
-    }
-    assert!(matches!(captured[1].1, StreamChunk::Done));
+    assert_eq!(
+        got_text_count, 1,
+        "stub provider must emit exactly one Text(\"hi back\") chunk; got {got_text_count}"
+    );
+    assert!(
+        got_done,
+        "stub provider must emit a terminal Done chunk within the 15s deadline"
+    );
 
     // @step And no other chunk variants appear in the vec for that session
+    // (RPC-069 Path A: housekeeping chunks ARE expected — tokens,
+    // context fill, session state. The structural assertion that the
+    // canned stream is Text + Done is satisfied by the two explicit
+    // asserts above; the full chunk-shape parity contract is delegated
+    // to `scenario_scripted_run_matches_golden`.)
 }
 // ---------------------------------------------------------------------
 // Scenario: normalise_chunk_stream substitutes timestamps, UUIDs,
@@ -366,7 +385,7 @@ mod normalise {
 // pinned golden
 // ---------------------------------------------------------------------
 
-#[ignore = "RPC-066: requires fspec binary built with --features test-stub-provider; full agent-loop integration"]
+#[cfg(feature = "test-stub-provider")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_scripted_run_matches_golden() {
     use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
@@ -643,7 +662,7 @@ fn scenario_runtime_budget_is_enforced() {
 // is denied
 // ---------------------------------------------------------------------
 
-#[ignore = "RPC-066: requires fspec binary built with --features test-stub-provider; subprocess spawn"]
+#[cfg(feature = "test-stub-provider")]
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn scenario_deny_network_egress_still_yields_canned_chunks() {
     use codelet_fspec_tui::{FspecBackend, WebSocketFspecBackend};
@@ -685,10 +704,15 @@ async fn scenario_deny_network_egress_still_yields_canned_chunks() {
         .await
         .expect("send_input");
 
-    // @step Then within 5 seconds the canned [Text, Done] stream is captured
+    // @step Then within 15 seconds the canned [Text, Done] stream is captured
+    //
+    // RPC-069: 15-second deadline (was 5) accommodates Path A's full
+    // `run_agent_stream_with_images` pipeline, which emits housekeeping
+    // chunks (UserInput, SessionStateChange, TokenUpdate, ContextFill,
+    // etc.) before and after the canned Text + Done.
     let mut got_text = false;
     let mut got_done = false;
-    let deadline = tokio::time::Instant::now() + Duration::from_secs(5);
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(15);
     while tokio::time::Instant::now() < deadline && !(got_text && got_done) {
         match tokio::time::timeout(Duration::from_millis(250), chunks_rx.recv()).await {
             Ok(Ok((sid, StreamChunk::Text { text, .. }))) if sid == session_id => {
@@ -702,10 +726,11 @@ async fn scenario_deny_network_egress_still_yields_canned_chunks() {
     assert!(got_text && got_done, "stub must emit Text+Done despite dead proxy");
 
     // @step And no reqwest::Client or eventsource-stream code path fires during the run
-    // (Structurally guaranteed: the StubProvider LlmProvider impl has
-    // no reqwest dependency. Any network egress would route through
-    // the dead 127.0.0.1:1 proxy and the canned stream would NOT
-    // arrive within 5 seconds.)
+    // (Structurally guaranteed: the StubProvider LlmProvider impl and
+    // its StubModel `rig::completion::CompletionModel` adapter have no
+    // reqwest dependency. Any network egress would route through the
+    // dead 127.0.0.1:1 proxy and the canned stream would NOT arrive
+    // within the deadline.)
 }
 // ---------------------------------------------------------------------
 // Scenario: codelet/fspec/tests/README.md documents regeneration and
@@ -749,5 +774,49 @@ fn scenario_tests_readme_documents_regeneration() {
         tail.contains("RPC-"),
         "future-TS-fixture section must reference the follow-up RPC card by id"
     );
+}
+
+// ---------------------------------------------------------------------
+// Scenario: agent_loop_dispatch_supports_provider includes the stub arm
+// under test-support (RPC-069 lock-step contract)
+// ---------------------------------------------------------------------
+
+#[cfg(feature = "test-stub-provider")]
+#[test]
+fn scenario_agent_loop_dispatch_supports_stub_arm() {
+    // @step Given the codelet-agent-loop crate is compiled with --features test-support
+    // (Compiled when cargo test runs codelet-fspec with --features
+    // test-stub-provider, which propagates test-support into
+    // codelet-agent-loop per Cargo.toml line 105-109.)
+
+    // @step When agent_loop_dispatch_supports_provider("stub") is called
+    let supports_stub =
+        codelet_agent_loop::agent_loop_dispatch_supports_provider("stub");
+
+    // @step Then it returns true
+    assert!(
+        supports_stub,
+        "agent_loop_dispatch_supports_provider(\"stub\") must return true under test-support \
+         (lock-step with the \"stub\" => arm in agent_loop.rs)"
+    );
+
+    // @step And the predicate stays in lock-step with the agent_loop.rs match arms
+    // (Existing arms must remain supported. If any of these regress,
+    // the dispatch.rs contract has drifted from the match block in
+    // agent_loop.rs.)
+    for provider in [
+        "claude",
+        "openai",
+        "gemini",
+        "zai",
+        "codex",
+        "github-copilot",
+        "copilot",
+    ] {
+        assert!(
+            codelet_agent_loop::agent_loop_dispatch_supports_provider(provider),
+            "existing arm '{provider}' must remain supported alongside the stub arm"
+        );
+    }
 }
 

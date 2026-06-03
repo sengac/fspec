@@ -256,7 +256,7 @@ fn scenario_codelet_fspec_is_registered_as_a_workspace_member() {
         "members must contain `fspec`; got {members_list:?}"
     );
 
-    // @step And `fspec` appears between `core` and `fspec-tui` in the members list (preserving alphabetical order, with the RPC-067 `test-helpers` crate appended after `sessions` and the RPC-072 `agent-loop` crate prepended before `cli`)
+    // @step And `fspec` appears between `core` and `fspec-core` in the members list (preserving alphabetical order: agent-loop, cli, common, core, fspec, fspec-core, fspec-tui, git, graph, napi, providers, rpc, rpc-embedded, rpc-server, rpc-types, sessions, test-helpers, tools, tui)
     let expected = [
         // RPC-072: NAPI-free FspecAgentHooks + agent_loop. Sorts ahead
         // of `cli` alphabetically.
@@ -265,8 +265,13 @@ fn scenario_codelet_fspec_is_registered_as_a_workspace_member() {
         "common",
         "core",
         "fspec",
+        // TOOL-019 / RPC-003: pure-Rust home for the future port of the
+        // TypeScript fspec CLI commands.
+        "fspec-core",
         "fspec-tui",
         "git",
+        // Knowledge-graph crate; sorts between `git` and `napi`.
+        "graph",
         "napi",
         "providers",
         "rpc",

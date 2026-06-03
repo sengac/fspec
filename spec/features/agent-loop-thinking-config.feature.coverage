@@ -1,16 +1,539 @@
 {
   "scenarios": [
     {
-      "name": "/thinking high threads the thinking_config into the provider request",
-      "testMappings": []
+      "name": "InputWithImages carries thinking_config alongside text and images",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "195-249",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/dispatch.rs",
+              "lines": [
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run_with_provider! macro forwards thinking config to create_rig_agent",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "253-310",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/dispatch.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "agent_loop body computes thinking_config_value per turn",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "310-383",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "lines": [
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All run_with_provider! call sites pass thinking_config_value",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "383-437",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "lines": [
+                867,
+                868,
+                869,
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914,
+                915,
+                916,
+                917,
+                918,
+                919,
+                920,
+                921,
+                922,
+                923,
+                924,
+                925,
+                926,
+                927,
+                928,
+                929,
+                930,
+                931,
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945,
+                946,
+                947,
+                948,
+                949,
+                950,
+                951,
+                952
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "OpenAI inlined arm passes thinking_config_value to create_rig_agent",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "437-471",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "lines": [
+                869,
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906,
+                907,
+                908,
+                909,
+                910,
+                911,
+                912,
+                913,
+                914
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Custom-provider fallthrough passes thinking_config_value to create_rig_agent",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "471-502",
+          "implMappings": [
+            {
+              "file": "codelet/agent-loop/src/agent_loop.rs",
+              "lines": [
+                953,
+                954,
+                955,
+                956,
+                957,
+                958,
+                959,
+                960,
+                961,
+                962,
+                963,
+                964,
+                965,
+                966,
+                967,
+                968,
+                969,
+                970,
+                971,
+                972,
+                973,
+                974,
+                975,
+                976,
+                977,
+                978,
+                979,
+                980,
+                981,
+                982,
+                983,
+                984,
+                985,
+                986,
+                987,
+                988,
+                989,
+                990,
+                991,
+                992,
+                993,
+                994,
+                995,
+                996,
+                997,
+                998,
+                999,
+                1000,
+                1001,
+                1002,
+                1003,
+                1004,
+                1005,
+                1006,
+                1007,
+                1008,
+                1009,
+                1010,
+                1011,
+                1012,
+                1013,
+                1014,
+                1015,
+                1016,
+                1017,
+                1018,
+                1019,
+                1020
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider create_rig_agent signature compiles for all 6 instance-based built-in providers",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "502-568",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/claude.rs",
+              "lines": [
+                507,
+                508,
+                509,
+                510,
+                511,
+                512
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CustomProvider create_rig_agent signature accepts thinking_config as its last argument",
+      "testMappings": [
+        {
+          "file": "codelet/agent-loop/tests/rpc085_thinking_config.rs",
+          "lines": "568-593",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/custom/custom_provider.rs",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 1,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/agent-loop/tests/rpc085_thinking_config.rs"
+    ],
+    "implFiles": [
+      "codelet/agent-loop/src/dispatch.rs",
+      "codelet/agent-loop/src/agent_loop.rs",
+      "codelet/providers/src/claude.rs",
+      "codelet/providers/src/custom/custom_provider.rs"
+    ],
+    "totalLinesCovered": 794
   }
 }
