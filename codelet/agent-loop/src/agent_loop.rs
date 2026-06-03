@@ -503,20 +503,48 @@ pub async fn agent_loop(
                 // RPC-041: Check the napi-side TSFN registration via the
                 // helper that consults CHUNK_FANOUT_TSFN.
                 //
-                // TOOL-019: when the chunk callback is NOT registered
-                // (i.e. the standalone fspec Rust binary has no TypeScript
-                // shell), fall through to the in-process Rust dispatcher
-                // in `codelet_fspec_core`. Phase 1 stubs return a
+                // TOOL-019 / RPC-327 follow-up: when the chunk callback is
+                // NOT registered (i.e. the standalone fspec Rust binary has
+                // no TypeScript shell), fall through to the in-process Rust
+                // dispatcher in `codelet_fspec_core`. Phase 1 stubs return a
                 // structured `NotYetPorted` / `UnknownCommand` error per
                 // command so the agent loop completes the turn instead of
                 // hanging on a non-existent JS callback.
+                //
+                // We still emit `FspecCommandRequest` + `FspecCommandResult`
+                // chunks here so the TUI / WS bridge subscribers can render
+                // the tool call visually — this matters because the
+                // standalone Rust binary is precisely the host where the
+                // shim returns `false`, yet the TUI is the primary surface
+                // that needs to see "Fspec(list-work-units) → <result>".
                 if !is_global_chunk_callback_registered() {
+                    let tool_call_id = uuid::Uuid::new_v4().to_string();
+                    let fspec_request = codelet_rpc_types::FspecRequest {
+                        command: request.command.clone(),
+                        args_json: request.args_json.clone(),
+                        project_root: request.project_root.clone(),
+                        tool_call_id: tool_call_id.clone(),
+                    };
+                    session_for_fspec
+                        .handle_output(StreamChunk::fspec_command_request(fspec_request));
+
                     let dispatch_req = codelet_fspec_core::DispatchRequest {
                         command: request.command.clone(),
                         args_json: request.args_json.clone(),
                         project_root: std::path::PathBuf::from(&request.project_root),
                     };
                     let dispatch_result = codelet_fspec_core::dispatch_command(dispatch_req);
+
+                    let fspec_result_chunk = codelet_rpc_types::FspecResult {
+                        success: dispatch_result.success,
+                        data: dispatch_result.data.clone(),
+                        error: dispatch_result.error.clone(),
+                        system_reminder: dispatch_result.system_reminder.clone(),
+                        tool_call_id,
+                    };
+                    session_for_fspec
+                        .handle_output(StreamChunk::fspec_command_result(fspec_result_chunk));
+
                     return codelet_tools::FspecHandlerResult {
                         success: dispatch_result.success,
                         data: dispatch_result.data,

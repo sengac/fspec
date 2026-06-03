@@ -59,13 +59,34 @@ pub use error::AgentLoopError;
 pub use hooks::FspecAgentHooks;
 
 /// RPC-072: NAPI-free shim for the napi-side `is_global_chunk_callback_registered`
-/// guard. The fspec binary has no TSFN — there is no global chunk
-/// callback to gate — so this always returns `true`, meaning the
-/// fspec-handler / command-emitter paths inside the agent_loop always
-/// fire their `FspecCommandRequest` chunks. Listeners that need them
-/// (TUI / WS bridge) subscribe to the per-session broadcast and pick
-/// them up; listeners that don't, drop them on the floor.
+/// guard.
+///
+/// **Semantics:** "Is there a TypeScript host listening on the global
+/// chunk-callback channel and capable of executing fspec commands /
+/// bridge commands on our behalf?"
+///
+/// In the standalone fspec Rust binary the answer is **always NO** —
+/// there is no NAPI TSFN, no TypeScript event loop, no
+/// `sessionSendFspecResult` caller. The shim therefore returns
+/// `false` so that:
+///
+///   * The fspec_handler closure at `agent_loop::agent_loop`
+///     (`if !is_global_chunk_callback_registered() { … }`) takes the
+///     in-process Rust dispatch path and routes the call through
+///     [`codelet_fspec_core::dispatch_command`]. **Without this**, the
+///     handler instead emits a `FspecCommandRequest` chunk and blocks
+///     on `BackgroundSession::wait_for_fspec_response()` forever —
+///     manifesting as a hung `Fspec(list-work-units)` tool call in
+///     the TUI.
+///   * The bridge command_emitter skips emission with a tracing warn,
+///     which is the correct semantics for the standalone binary
+///     (there is no TS to execute the relayed command).
+///
+/// FspecCommandRequest / FspecCommandResult chunks meant purely for
+/// UI display are still emitted by the dispatch path explicitly
+/// (TUI / WS bridge subscribers receive them via the per-session
+/// broadcast).
 #[inline]
 pub fn is_global_chunk_callback_registered() -> bool {
-    true
+    false
 }

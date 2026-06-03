@@ -1,8 +1,11 @@
 // Feature: spec/features/list-work-units-rust-port.feature
+// Feature: spec/features/fspec-dispatcher-tokio-nesting-safety.feature  (RPC-327)
 //
 // This test file validates the acceptance criteria for the Rust port of the
-// `list-work-units` fspec command (RPC-253). Each scenario maps to exactly
-// one #[test] function below with @step comments mirroring the Gherkin.
+// `list-work-units` fspec command (RPC-253) AND the RPC-327 regression that
+// `dispatch_command` MUST be safe to call from inside an active tokio runtime
+// (the agent loop's `#[tokio::main]`). Each scenario maps to exactly one
+// #[test] function below with @step comments mirroring the Gherkin.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -466,4 +469,102 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         !list_src.contains("FspecCoreError::NotYetPorted"),
         "list_work_units.rs must no longer be a NotYetPorted stub"
     );
+}
+
+/// Regression: `dispatch_command` MUST be callable from within an active
+/// tokio runtime — that is the exact context the agent loop runs in, where
+/// `FspecToolFacadeWrapper::call` is polled by `#[tokio::main]`. Prior to
+/// the fix in this commit, `run_ported` built a fresh `current_thread`
+/// tokio runtime and called `block_on()` on it, which dead-locks (or
+/// panics) when nested inside another runtime. The user-visible symptom
+/// was the agent loop hanging indefinitely on the `Fspec` tool call.
+///
+/// The fix replaces the nested-runtime path with a sync poll-once helper
+/// (`poll_sync_future`) since every ported command and every Phase 1 stub
+/// performs no genuine `.await` work.
+///
+/// Scenario: Dispatching list-work-units from inside an active tokio runtime returns synchronously without hanging
+#[tokio::test]
+async fn dispatch_command_does_not_hang_when_called_from_inside_a_tokio_runtime() {
+    // @step Given a tempdir project root seeded with spec/work-units.json containing AUTH-001, AUTH-002, and DASH-001
+    let tmp = TempDir::new().expect("tempdir");
+    seed_work_units(tmp.path(), three_unit_store());
+
+    // @step Given the test is running inside an active tokio runtime via #[tokio::test]
+    // (precondition satisfied by the #[tokio::test] attribute on this test fn)
+
+    // @step When I invoke dispatch_command for the list-work-units command via tokio::task::spawn_blocking
+    let started = std::time::Instant::now();
+    let result =
+        tokio::task::spawn_blocking(move || dispatch_command(req(tmp.path(), json!({ "format": "json" }))))
+            .await
+            .expect("spawn_blocking joined cleanly — a panic here means the nested-runtime bug regressed");
+    let elapsed = started.elapsed();
+
+    // @step Then the DispatchResult has success=true within 2 seconds
+    assert!(
+        elapsed < std::time::Duration::from_secs(2),
+        "dispatch_command from inside tokio runtime took {elapsed:?} — regression: nested block_on hanging"
+    );
+    assert!(result.success, "{result:?}");
+
+    // @step Then the workUnits array contains AUTH-001, AUTH-002, and DASH-001 in insertion order
+    let data = parse_data(&result.data);
+    assert_eq!(ids_in(&data), vec!["AUTH-001", "AUTH-002", "DASH-001"]);
+}
+
+/// Scenario: Dispatching an unported command from inside a tokio runtime returns NotYetPorted instead of hanging
+#[tokio::test]
+async fn dispatch_command_returns_not_yet_ported_when_called_from_inside_a_tokio_runtime() {
+    // @step Given the canonical command map registers 'add-rule' as a Phase 1 stub
+    // (precondition: 'add-rule' is in CANONICAL_COMMANDS and is_ported('add-rule') == false; verified in dispatcher_test.rs)
+
+    // @step Given the test is running inside an active tokio runtime via #[tokio::test]
+    // (precondition satisfied by the #[tokio::test] attribute on this test fn)
+
+    // @step When I invoke dispatch_command for the 'add-rule' command via tokio::task::spawn_blocking
+    let started = std::time::Instant::now();
+    let result = tokio::task::spawn_blocking(|| {
+        dispatch_command(DispatchRequest {
+            command: "add-rule".to_string(),
+            args_json: "{}".to_string(),
+            project_root: std::path::PathBuf::from("/tmp/fspec-rpc327"),
+        })
+    })
+    .await
+    .expect("spawn_blocking joined cleanly — a panic here means the nested-runtime bug regressed");
+    let elapsed = started.elapsed();
+
+    // @step Then the DispatchResult has success=false within 2 seconds
+    assert!(
+        elapsed < std::time::Duration::from_secs(2),
+        "dispatch_command for unported stub from inside tokio runtime took {elapsed:?} — regression: nested block_on hanging"
+    );
+    assert!(!result.success, "{result:?}");
+
+    // @step Then the error message contains the substring 'not yet ported'
+    let msg = result.error.as_ref().expect("error message expected");
+    assert!(
+        msg.contains("not yet ported"),
+        "error message missing canonical 'not yet ported' substring: {msg}"
+    );
+}
+
+/// Scenario: Dispatching list-work-units from a synchronous test context still works (backwards compatibility)
+#[test]
+fn dispatch_command_still_works_from_a_synchronous_test_context_for_backwards_compatibility() {
+    // @step Given a tempdir project root seeded with a representative spec/work-units.json
+    let tmp = TempDir::new().expect("tempdir");
+    seed_work_units(tmp.path(), three_unit_store());
+
+    // @step Given the test is a plain #[test] with no surrounding tokio runtime
+    // (precondition satisfied by the plain #[test] attribute on this test fn)
+
+    // @step When I invoke dispatch_command for the list-work-units command directly
+    let result = dispatch_command(req(tmp.path(), json!({ "format": "json" })));
+
+    // @step Then the DispatchResult has success=true and the filter/render output matches the existing list_work_units test suite expectations
+    assert!(result.success, "{result:?}");
+    let data = parse_data(&result.data);
+    assert_eq!(ids_in(&data), vec!["AUTH-001", "AUTH-002", "DASH-001"]);
 }

@@ -315,15 +315,22 @@ fn openai_inlined_arm_calls_run_agent_stream_with_images() {
          run_agent_stream_with_images call in the OpenAI arm"
     );
 
-    // @step And the call is positioned between line 850 and line 920
+    // @step And the call is positioned between line 850 and line 950
+    //
+    // RPC-327 follow-up: the fspec_handler closure earlier in this file
+    // grew by ~25 lines (it now also emits FspecCommandRequest /
+    // FspecCommandResult chunks around the in-process Rust dispatch path
+    // so the TUI can render the tool call). The line-range upper bound
+    // is widened accordingly — the invariant still locks the call to a
+    // bounded vicinity within the OpenAI inlined arm.
     let abs_offset = src
         .find("codelet_cli::interactive::run_agent_stream_with_images")
         .expect("agent_loop.rs must contain at least one run_agent_stream_with_images call");
     let line = line_number_of(&src, abs_offset);
     assert!(
-        (850..=920).contains(&line),
+        (850..=950).contains(&line),
         "first run_agent_stream_with_images call (OpenAI inlined arm) must \
-         live between lines 850 and 920; got line {line}"
+         live between lines 850 and 950; got line {line}"
     );
 }
 
@@ -382,10 +389,15 @@ fn custom_provider_fallthrough_calls_run_agent_stream_with_images() {
         .expect("custom-provider arm must invoke run_agent_stream_with_images");
     let stream_abs = arm_marker_abs + stream_rel;
     let line = line_number_of(&src, stream_abs);
+    // RPC-327 follow-up: bounds widened by ~30 lines because the
+    // fspec_handler closure earlier in agent_loop.rs now emits visibility
+    // chunks around the in-process Rust dispatch path (see the RPC-327
+    // edit at agent_loop.rs:~500). The invariant still locks the call to
+    // a bounded vicinity within the custom-provider fall-through arm.
     assert!(
-        (1000..=1100).contains(&line),
+        (1000..=1130).contains(&line),
         "custom-provider run_agent_stream_with_images call must live between \
-         lines 1000 and 1100; got line {line}"
+         lines 1000 and 1130; got line {line}"
     );
 }
 

@@ -13,11 +13,50 @@
 //! delegate back into TypeScript) is **out of scope** for the scaffolding
 //! turn — see the `TODO(TOOL-019)` marker below.
 
+use std::future::Future;
 use std::path::PathBuf;
+use std::pin::Pin;
+use std::task::{Context, Poll, Waker};
 
 use crate::canonical::lookup;
 use crate::commands;
 use crate::error::FspecCoreError;
+
+/// Synchronously drive a future that performs no genuine async work.
+///
+/// Every ported `commands::*::run` function and every Phase 1 stub
+/// resolves on the first poll — they touch only `std::fs` / `serde_json`
+/// and never `.await` on a tokio resource. We deliberately avoid
+/// `tokio::runtime::Runtime::block_on` here because [`dispatch_command`]
+/// is invoked from the agent loop's `FspecToolFacadeWrapper::call` path,
+/// which is already being polled inside the outer `#[tokio::main]`
+/// runtime. Building and entering a fresh tokio runtime from there
+/// either panics ("Cannot start a runtime from within a runtime") or
+/// dead-locks the worker thread — both manifest to the user as a
+/// hung tool call.
+///
+/// The future is polled once with a no-op waker; if it returns
+/// `Pending` the dispatcher returns a structured error rather than
+/// hanging, so a future refactor that accidentally introduces a real
+/// `.await` is caught loudly instead of silently.
+fn poll_sync_future<T, F>(future: F) -> Result<T, FspecCoreError>
+where
+    F: Future<Output = Result<T, FspecCoreError>>,
+{
+    let mut future = Box::pin(future);
+    let waker = Waker::noop();
+    let mut cx = Context::from_waker(waker);
+    match Pin::as_mut(&mut future).poll(&mut cx) {
+        Poll::Ready(v) => v,
+        Poll::Pending => Err(FspecCoreError::InvalidArgs {
+            command: "dispatch",
+            reason:
+                "ported command future returned Pending under sync dispatch — \
+                 introduce a real async runtime or make the command sync"
+                    .to_string(),
+        }),
+    }
+}
 
 /// Inputs to a single fspec tool dispatch.
 #[derive(Debug, Clone)]
@@ -105,25 +144,12 @@ fn run_ported(
     args_json: &str,
     project_root: &std::path::Path,
 ) -> Option<Result<String, FspecCoreError>> {
-    // Identify ported commands FIRST so unported names skip runtime construction.
+    // Identify ported commands FIRST so unported names skip future construction.
     if !crate::canonical::is_ported(name) {
         return None;
     }
 
-    let runtime = match tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-    {
-        Ok(rt) => rt,
-        Err(e) => {
-            return Some(Err(FspecCoreError::InvalidArgs {
-                command: name,
-                reason: format!("failed to build tokio runtime: {e}"),
-            }));
-        }
-    };
-
-    Some(runtime.block_on(async move {
+    Some(poll_sync_future(async move {
         match name {
             // RPC-253 — list-work-units
             "list-work-units" => commands::list_work_units::run(args_json, project_root).await,
@@ -138,19 +164,12 @@ fn run_ported(
 /// through to a [`FspecCoreError::NotYetPorted`] with the canonical
 /// `"RPC-PENDING"` work-unit placeholder.
 fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreError> {
-    // Block on the per-command async stub. We deliberately build a small
-    // current-thread runtime here — Phase 1 stubs do not perform any I/O
-    // and resolve immediately, so the cost is negligible. Future ports
-    // will likely lift this onto the caller's runtime instead.
-    let runtime = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .map_err(|e| FspecCoreError::InvalidArgs {
-            command: name,
-            reason: format!("failed to build tokio runtime: {e}"),
-        })?;
-
-    runtime.block_on(async move {
+    // Drive the per-command async stub synchronously. Phase 1 stubs perform
+    // no I/O and resolve on the first poll, so a no-op waker is sufficient.
+    // We deliberately avoid building a fresh tokio runtime here because this
+    // path is reached from inside the agent loop's `#[tokio::main]` runtime
+    // and a nested `block_on` either panics or dead-locks the worker.
+    poll_sync_future(async move {
         match name {
             "add-aggregate" => commands::add_aggregate::run(args_json).await,
             "add-aggregate-to-foundation" => commands::add_aggregate_to_foundation::run(args_json).await,
