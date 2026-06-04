@@ -78,16 +78,24 @@ impl Drop for ChildGuard {
     }
 }
 
-/// Spawn `fspec daemon --workspace <ws>` and read the bare-integer port
+/// Spawn `fspec --workspace <ws> daemon` and read the bare-integer port
 /// line off STDOUT. Mirrors the
 /// `codelet/rpc-server/tests/common/mod.rs::spawn_rpc_server_with_workspace`
 /// pattern verbatim (rule [14] / scenario "A new spawn_fspec_daemon
 /// helper proves the port-line contract is verbatim").
+///
+/// Argument order note: `--workspace` is declared on the top-level
+/// `Cli` struct (`main.rs::Cli::workspace`) and is intentionally NOT a
+/// clap-`global = true` flag (see the comment on that field, and rule
+/// [15] on RPC-253). Top-level flags MUST precede the subcommand name,
+/// so this helper invokes `fspec --workspace <ws> daemon`, never
+/// `fspec daemon --workspace <ws>` (which clap rejects with
+/// "unexpected argument '--workspace' found").
 pub fn spawn_fspec_daemon(workspace: &Path) -> (ChildGuard, u16) {
     let mut child = Command::new(fspec_bin())
-        .arg("daemon")
         .arg("--workspace")
         .arg(workspace)
+        .arg("daemon")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()

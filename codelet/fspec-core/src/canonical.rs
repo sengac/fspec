@@ -197,7 +197,13 @@ pub fn lookup(name: &str) -> Option<&'static CanonicalCommand> {
 /// MUST consult this list to know which commands are exempt from the stub
 /// shape — keeping the source of truth in one place.
 pub const PORTED_COMMANDS: &[&str] = &[
-    "list-work-units", // RPC-253
+    "list-work-units",  // RPC-253
+    "list-prefixes",    // RPC-248
+    "list-epics",       // RPC-243
+    "list-tags",        // RPC-251
+    "list-features",    // RPC-245
+    "list-attachments", // RPC-241
+    "list-hooks",       // RPC-247
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

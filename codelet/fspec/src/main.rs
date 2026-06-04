@@ -28,6 +28,12 @@ mod client;
 mod combined;
 mod common;
 mod daemon;
+mod list_attachments;
+mod list_epics;
+mod list_features;
+mod list_hooks;
+mod list_prefixes;
+mod list_tags;
 mod list_work_units;
 mod status;
 
@@ -46,7 +52,13 @@ use clap::{Parser, Subcommand};
                   - `daemon`            headless WS server only (suitable for systemd / launchd)\n\
                   - `client`            frontend-only; connects to a running daemon via WebSocket\n\
                   - `status`            one-shot health probe against the running daemon\n\
-                  - `list-work-units`   shell-facing port of the TypeScript Commander.js command (RPC-253)"
+                  - `list-work-units`   shell-facing port of the TypeScript Commander.js command (RPC-253)\n\
+                  - `list-prefixes`     shell-facing port of the TypeScript Commander.js command (RPC-248)\n\
+                  - `list-epics`        shell-facing port of the TypeScript Commander.js command (RPC-243)\n\
+                  - `list-tags`         shell-facing port of the TypeScript Commander.js command (RPC-251)\n\
+                  - `list-features`     shell-facing port of the TypeScript Commander.js command (RPC-245)\n\
+                  - `list-attachments`  shell-facing port of the TypeScript Commander.js command (RPC-241)\n\
+                  - `list-hooks`        shell-facing port of the TypeScript Commander.js command (RPC-247)"
 )]
 struct Cli {
     /// Workspace root to observe via WorkUnitsWatcher.
@@ -123,6 +135,44 @@ enum Mode {
         #[arg(long, value_name = "FORMAT", default_value = "text")]
         format: String,
     },
+    /// RPC-248: list registered prefixes from `spec/prefixes.json`.
+    ///
+    /// Shell-facing port of the TypeScript Commander.js
+    /// `list-prefixes` command (`src/commands/list-prefixes.ts`). The
+    /// TypeScript registration declares NO `.option(...)` calls, so this
+    /// clap variant is intentionally flag-less (rule [10] on RPC-248).
+    /// The action arm delegates to
+    /// `fspec_core::commands::list_prefixes::run` so the LLM-facing
+    /// dispatcher and the shell CLI share a single source of truth.
+    #[command(name = "list-prefixes", about = "List all prefixes")]
+    ListPrefixes,
+    /// RPC-243: list registered epics from `spec/epics.json`.
+    #[command(name = "list-epics", about = "List all epics")]
+    ListEpics,
+    /// RPC-251: list registered tags from `spec/tags.json`.
+    #[command(name = "list-tags", about = "List all registered tags")]
+    ListTags {
+        /// Filter tags by category (exact-match against category name).
+        #[arg(long, value_name = "CATEGORY")]
+        category: Option<String>,
+    },
+    /// RPC-245: list Gherkin feature files under `spec/features/`.
+    #[command(name = "list-features", about = "List all feature files")]
+    ListFeatures {
+        /// Filter features whose top-level tag set includes this tag (e.g. `@critical`).
+        #[arg(long, value_name = "TAG")]
+        tag: Option<String>,
+    },
+    /// RPC-241: list attachments for a work unit from `spec/work-units.json`.
+    #[command(name = "list-attachments", about = "List attachments for a work unit")]
+    ListAttachments {
+        /// Required work-unit identifier (e.g. `AUTH-001`).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+    },
+    /// RPC-247: list configured lifecycle hooks from `spec/fspec-hooks.json`.
+    #[command(name = "list-hooks", about = "List all configured lifecycle hooks")]
+    ListHooks,
 }
 
 #[tokio::main]
@@ -155,6 +205,72 @@ async fn main() -> std::process::ExitCode {
                 format: Some(format),
             };
             return match list_work_units::run(args).await {
+                Ok(code) => std::process::ExitCode::from(code),
+                Err(err) => {
+                    eprintln!("{err:#}");
+                    std::process::ExitCode::from(1)
+                }
+            };
+        }
+        Some(Mode::ListPrefixes) => {
+            // Same exit-code contract as the list-work-units arm above:
+            // delegate to the bridge module's `run`, which returns the
+            // resolved code so we propagate it verbatim. The empty
+            // `CliArgs::default()` mirrors the list-work-units pattern
+            // (clap struct → bridge → fspec_core) so future flag
+            // additions land as field additions only.
+            let args = list_prefixes::CliArgs::default();
+            return match list_prefixes::run(args).await {
+                Ok(code) => std::process::ExitCode::from(code),
+                Err(err) => {
+                    eprintln!("{err:#}");
+                    std::process::ExitCode::from(1)
+                }
+            };
+        }
+        Some(Mode::ListEpics) => {
+            let args = list_epics::CliArgs::default();
+            return match list_epics::run(args).await {
+                Ok(code) => std::process::ExitCode::from(code),
+                Err(err) => {
+                    eprintln!("{err:#}");
+                    std::process::ExitCode::from(1)
+                }
+            };
+        }
+        Some(Mode::ListTags { category }) => {
+            let args = list_tags::CliArgs { category };
+            return match list_tags::run(args).await {
+                Ok(code) => std::process::ExitCode::from(code),
+                Err(err) => {
+                    eprintln!("{err:#}");
+                    std::process::ExitCode::from(1)
+                }
+            };
+        }
+        Some(Mode::ListFeatures { tag }) => {
+            let args = list_features::CliArgs { tag };
+            return match list_features::run(args).await {
+                Ok(code) => std::process::ExitCode::from(code),
+                Err(err) => {
+                    eprintln!("{err:#}");
+                    std::process::ExitCode::from(1)
+                }
+            };
+        }
+        Some(Mode::ListAttachments { work_unit_id }) => {
+            let args = list_attachments::CliArgs { work_unit_id };
+            return match list_attachments::run(args).await {
+                Ok(code) => std::process::ExitCode::from(code),
+                Err(err) => {
+                    eprintln!("{err:#}");
+                    std::process::ExitCode::from(1)
+                }
+            };
+        }
+        Some(Mode::ListHooks) => {
+            let args = list_hooks::CliArgs::default();
+            return match list_hooks::run(args).await {
                 Ok(code) => std::process::ExitCode::from(code),
                 Err(err) => {
                     eprintln!("{err:#}");

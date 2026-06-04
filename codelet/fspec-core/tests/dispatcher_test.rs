@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/fspec-tool-rust-dispatcher.feature
 //
 // This test file validates the acceptance criteria for the synchronous

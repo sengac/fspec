@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/list-work-units-rust-port.feature
 // Feature: spec/features/fspec-dispatcher-tokio-nesting-safety.feature  (RPC-327)
 //
