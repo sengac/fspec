@@ -6,14 +6,14 @@
 Feature: Port list-features command to Rust
 
   """
-  Add `gherkin = { version = "0.16", default-features = false, features = ["parser"] }` to codelet/fspec-core/Cargo.toml — the gherkin crate is the Rust port of the `@cucumber/gherkin` JavaScript parser used by the TypeScript implementation.
+  Uses an inline hand-rolled scanner in `parse_feature_header` rather than the upstream `gherkin` crate — deliberate divergence to keep the dep tree tight while maintaining the same public surface as the TypeScript implementation.
   New shared helper `io::feature_glob::glob_feature_files(cwd) -> Result<Vec<String>, FspecCoreError>` returns sorted forward-slash relative paths for every `spec/features/**/*.feature` match. Uses std walk + manual filtering (no extra glob crate dep) to keep the dep tree tight.
   New `commands/list_features.rs` with: `ListFeaturesArgs { tag: Option<String>, format: Option<String> }`, `FeatureInfo { file: String, name: String, scenario_count: usize, tags: Vec<String> }` (serde rename_all=camelCase), `run(args_json, project_root) -> Result<String, FspecCoreError>`. Empty-spec/features error MUST escalate; parse errors MUST be silently swallowed (eprintln warning OK).
   New `FspecCoreError::DirectoryNotFound { path: String }` variant — escalated when spec/features/ does not exist. Its Display impl MUST contain the exact substring 'Directory not found: spec/features/' (parity with TS error message). The CLI bridge inspects this substring to choose exit code 2 vs 1.
   CLI bridge `codelet/fspec/src/list_features.rs`: `pub struct CliArgs { pub tag: Option<String> }`, `pub async fn run(args: CliArgs) -> Result<u8>`. Marshals args into JSON via serde_json::Map, calls fspec_core::commands::list_features::run, prints rendered text to stdout. On error: prints 'Error: <msg>' to stderr; exit code 2 if the error message contains 'Directory not found', else 1. NO inline glob/parse/filter/sort/render code.
-  Shared-file additions to be reviewed in Phase C report (orchestrator-owned): (1) Cargo.toml — add gherkin dep, (2) io/mod.rs — `pub mod feature_glob;`, (3) error.rs — `DirectoryNotFound { path }` variant, (4) canonical.rs PORTED_COMMANDS — add `"list-features"`, (5) dispatch.rs run_ported — add `"list-features" => commands::list_features::run(...)` arm AND remove its line from run_stub, (6) main.rs — `mod list_features;`, `Mode::ListFeatures { tag: Option<String> }` variant + arm, (7) cargo_shape.rs locked-file list — extend 8→9 to add `list_features.rs`.
+  Shared-file additions: (1) io/mod.rs — `pub mod feature_glob;`, (2) error.rs — `DirectoryNotFound { path }` variant, (3) canonical.rs PORTED_COMMANDS — add `"list-features"`, (4) dispatch.rs run_ported — add `"list-features" => commands::list_features::run(...)` arm AND remove its line from run_stub, (5) main.rs — `mod list_features;`, `Mode::ListFeatures { tag: Option<String> }` variant + arm, (6) cargo_shape.rs locked-file list — extend 8→9 to add `list_features.rs`. No new Cargo.toml dep is required because parsing is performed by the inline scanner.
   File-glob ordering note: TypeScript uses tinyglobby which returns paths with forward slashes regardless of platform; the Rust port MUST normalise to forward slashes (replace '\\' with '/') so the `file` field matches TS output byte-for-byte on Windows and the alphabetical sort is platform-stable.
-  Estimate justification: 5 points (complex). New crate dep (gherkin), new shared helper module, new error variant, two new feature files, dispatcher arm, CLI bridge, lock-list update. Similar shape to list-prefixes (RPC-248, 5pts) but with the added gherkin-parser dep + parse-error-swallowing nuance pushing complexity up rather than down.
+  Estimate justification: 5 points (complex). Inline gherkin scanner, new shared helper module, new error variant, two new feature files, dispatcher arm, CLI bridge, lock-list update. Similar shape to list-prefixes (RPC-248, 5pts) but with the parse-error-swallowing nuance pushing complexity up rather than down.
   """
 
   # ========================================
@@ -33,7 +33,7 @@ Feature: Port list-features command to Rust
   #   10. The standalone fspec binary at codelet/fspec/src/main.rs MUST expose `list-features` as a clap v4 derive subcommand with ONE flag: `--tag <TAG>` (matching the single TS Commander.js `.option('--tag <tag>', ...)` registration at src/commands/list-features.ts:156); no --format, no --cwd, no --workspace
   #   11. The clap subcommand action MUST delegate to the same fspec_core::commands::list_features::run() function used by the LLM-facing dispatcher (two front doors, one source of truth — RPC-003 §7/§11) and MUST NOT duplicate glob, parsing, filter, sorting, or rendering logic in the CLI bridge
   #   12. The CLI wrapper MUST resolve the project root from CWD (parity with TS process.cwd() default at src/commands/list-features.ts:29); exit 0 on success, exit 2 when the error message contains 'Directory not found' (parity with TS src/commands/list-features.ts:138-145), exit 1 on any other FspecCoreError; structured errors written to stderr prefixed with `Error:`
-  #   13. Shared infrastructure MUST be reused: a new helper `io::feature_glob::glob_feature_files(cwd) -> Result<Vec<String>, FspecCoreError>` provides the spec/features/**/*.feature listing, and the gherkin crate is added as a fspec-core dependency for parsing — no inline parser implementation in the command module
+  #   13. Shared infrastructure MUST be reused: a new helper `io::feature_glob::glob_feature_files(cwd) -> Result<Vec<String>, FspecCoreError>` provides the spec/features/**/*.feature listing; gherkin parsing is performed by an inline scanner module-private to commands/list_features.rs (rather than the gherkin crate) to keep the dep tree tight. Parse 'failures' in this context means lines that cannot be classified as Feature/Background/Scenario/Tag/Comment/Blank.
   #
   # EXAMPLES:
   #   1. Dispatch list-features against a tempdir with NO spec/ directory → dispatcher returns success=false with error message containing 'Directory not found: spec/features/'
@@ -70,24 +70,24 @@ Feature: Port list-features command to Rust
 
   Scenario: Aggregates feature names, scenario counts, and tags sorted by file path
     Given spec/features/auth.feature exists with name 'User Authentication', tags '@critical @auth' and 3 scenarios
-    Given spec/features/billing.feature exists with name 'Billing', tags '@billing' and 1 scenario
+    And spec/features/billing.feature exists with name 'Billing', tags '@billing' and 1 scenario
     When I dispatch list-features with format='json'
     Then the features array contains exactly two entries in order spec/features/auth.feature then spec/features/billing.feature
-    Then the auth entry has scenarioCount=3 and tags exactly ['@critical', '@auth']
-    Then the billing entry has scenarioCount=1 and tags exactly ['@billing']
+    And the auth entry has scenarioCount=3 and tags exactly ['@critical', '@auth']
+    And the billing entry has scenarioCount=1 and tags exactly ['@billing']
 
   Scenario: Filters features by exact tag match including the leading '@'
     Given spec/features/auth.feature exists with tag '@critical' and 1 scenario
-    Given spec/features/billing.feature exists with tag '@billing' and 1 scenario
+    And spec/features/billing.feature exists with tag '@billing' and 1 scenario
     When I dispatch list-features with format='json' and tag='@critical'
     Then the features array contains exactly one entry whose file is spec/features/auth.feature
 
   Scenario: Silently skips files that fail to parse without escalating
     Given spec/features/valid-feature.feature contains a parseable feature with 2 scenarios
-    Given spec/features/broken.feature contains the malformed bytes 'not a feature file'
+    And spec/features/broken.feature contains the malformed bytes 'not a feature file'
     When I dispatch list-features with format='json'
     Then the dispatcher returns success=true
-    Then the features array contains exactly one entry whose file is spec/features/valid-feature.feature
+    And the features array contains exactly one entry whose file is spec/features/valid-feature.feature
 
   Scenario: Sorts features alphabetically by file path regardless of glob order
     Given spec/features/zebra.feature, spec/features/alpha.feature and spec/features/mango.feature each contain one scenario
@@ -103,7 +103,7 @@ Feature: Port list-features command to Rust
     Given spec/features/auth.feature exists with name 'User Authentication', tags '@critical @auth' and 2 scenarios
     When I dispatch list-features with format='text'
     Then the DispatchResult.data contains the exact line '  spec/features/auth.feature - User Authentication (2 scenarios) [@critical @auth]'
-    Then the DispatchResult.data contains the exact line 'Found 1 feature files'
+    And the DispatchResult.data contains the exact line 'Found 1 feature files'
 
   Scenario: Text format with a tag filter uses the matching summary phrasing
     Given spec/features/auth.feature exists with tag '@critical' and 1 scenario
@@ -114,12 +114,12 @@ Feature: Port list-features command to Rust
     Given spec/features/auth.feature exists with name 'User Authentication', tags '@critical' and 2 scenarios
     When I dispatch list-features with format='json'
     Then the DispatchResult.data parses as JSON whose root object has a 'features' array of length 1
-    Then the first features entry contains fields file='spec/features/auth.feature', name='User Authentication', scenarioCount=2, tags=['@critical']
-    Then the DispatchResult.data uses 2-space indentation
+    And the first features entry contains fields file='spec/features/auth.feature', name='User Authentication', scenarioCount=2, tags=['@critical']
+    And the DispatchResult.data uses 2-space indentation
 
   Scenario: Shared infrastructure modules exist under fspec-core for reuse by other gherkin-aware commands
     Given the codelet/fspec-core crate is built
     When I inspect codelet/fspec-core/src/
     Then the module io::feature_glob::glob_feature_files exists and is publicly accessible from the crate root
-    Then the error::FspecCoreError enum declares a DirectoryNotFound variant whose Display contains the substring 'Directory not found'
-    Then list_features::run delegates to these shared modules rather than embedding its own filesystem-walk logic
+    And the error::FspecCoreError enum declares a DirectoryNotFound variant whose Display contains the substring 'Directory not found'
+    And list_features::run delegates to these shared modules rather than embedding its own filesystem-walk logic

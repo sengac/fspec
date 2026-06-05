@@ -151,7 +151,6 @@ pub fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), Fsp
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
     use super::*;
     use serde::Deserialize;
     use tempfile::TempDir;

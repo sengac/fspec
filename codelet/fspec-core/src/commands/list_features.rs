@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 //! `list-features` — Rust port of `src/commands/list-features.ts` (RPC-245).
 //!
 //! Walks `spec/features/**/*.feature`, parses each file with an inline
@@ -18,21 +19,25 @@
 //!     Parity with `src/commands/list-features.ts:92-95` bare `catch`.
 //!   - Empty results → success with an empty features array.
 //!
-//! The inline scanner is a pragmatic substitute for the upstream `gherkin`
-//! crate dep — it understands the subset of Gherkin needed by `list-features`
-//! (Feature header + tag lines + Scenario/Scenario Outline keyword
-//! counting). The orchestrator's wiring batch swaps to the real
-//! `gherkin = "0.16"` parser; this module's public surface remains
-//! unchanged.
+//! The inline scanner is a deliberate divergence from the upstream
+//! `gherkin` crate — it understands the subset of Gherkin needed by
+//! `list-features` (Feature header + tag lines + Scenario/Scenario
+//! Outline keyword counting). The Rust port intentionally avoids the
+//! `gherkin` crate dependency to keep the dep tree tight; see
+//! architecture note [0] on RPC-245 for the canonical rationale.
 
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+=======
+//! Stub for the `list-features` fspec command. See RPC-245 for the port work unit.
+//! Original TypeScript implementation: src/commands/list-features.ts
+>>>>>>> parent of 6fa95633 (refactor: more commands refactored)
 
 use crate::error::FspecCoreError;
-use crate::io::feature_glob::glob_feature_files;
 
+<<<<<<< HEAD
 /// CLI arguments accepted by `list-features`.
 ///
 /// Mirrors the TS `ListFeaturesOptions` interface at
@@ -84,6 +89,13 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
     // `src/commands/list-features.ts:92-95`). Tag filter is applied
     // INSIDE the loop, AFTER parse, so unparseable + filtered-out files
     // both drop out before sorting.
+    //
+    // Per-file parse failures emit `Warning: Could not parse <path>` on
+    // stderr (parity with TS `output.warn(...)` at line 94) WHEN the
+    // output format is text/default. The JSON format path stays silent
+    // so structured consumers receive a clean stderr alongside the
+    // pretty-printed payload on stdout.
+    let emit_warnings = !matches!(args.format.as_deref(), Some("json"));
     let mut features: Vec<FeatureInfo> = Vec::new();
     for file in files {
         let abs = project_root.join(&file);
@@ -91,11 +103,21 @@ pub async fn run(args_json: &str, project_root: &Path) -> Result<String, FspecCo
             Ok(s) => s,
             // I/O error reading a single feature file is treated as a
             // parse failure — silently skipped, parity with TS.
-            Err(_) => continue,
+            Err(_) => {
+                if emit_warnings {
+                    eprintln!("Warning: Could not parse {file}");
+                }
+                continue;
+            }
         };
         let parsed = match parse_feature_header(&content) {
             Some(p) => p,
-            None => continue,
+            None => {
+                if emit_warnings {
+                    eprintln!("Warning: Could not parse {file}");
+                }
+                continue;
+            }
         };
         if let Some(ref needle) = args.tag {
             if !parsed.tags.iter().any(|t| t == needle) {
@@ -212,6 +234,12 @@ fn parse_feature_header(content: &str) -> Option<ParsedHeader> {
 
 /// Render the text output format expected by the TS CLI wrapper
 /// (`src/commands/list-features.ts:109-134`).
+///
+/// Returns the rendered text. The populated path appends a trailing `\n`
+/// after the summary line (`Found N feature files\n`). The empty-list
+/// sentinel path returns `"No feature files found in spec/features/"`
+/// WITHOUT a trailing newline — the CLI bridge re-appends one for
+/// shell-pipeline friendliness.
 fn render_text(features: &[FeatureInfo], tag_filter: Option<&str>) -> String {
     if features.is_empty() {
         // Sentinel — exact byte-for-byte parity with TS line 111.
@@ -350,3 +378,11 @@ mod tests {
         );
     }
 }
+=======
+pub async fn run(_args_json: &str) -> Result<String, FspecCoreError> {
+    Err(FspecCoreError::NotYetPorted {
+        command: "list-features",
+        work_unit: "RPC-245",
+    })
+}
+>>>>>>> parent of 6fa95633 (refactor: more commands refactored)

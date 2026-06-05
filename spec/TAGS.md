@@ -627,6 +627,7 @@ Tags tracking development status of features.
 | `@rpc-097-reopen2` | RPC-097 reopen #2: BoardView Shift+Right must consult global open-session list before showing CreateSessionDialog |
 | `@rpc-101` | Work unit identifier tag for RPC-101 — context-fill badge real-time recompute on every TokenUpdate (parallel Rust/TS fix for the badge freezing during streaming and after ESC interrupt) |
 | `@rpc-153` | RPC-153: Provider settings api-key edit filterPrintableChars ASCII 32-126 restriction — regression-shape coverage card pinning the is_printable_ascii helper signature, body range expression, and guard placement before draft.push(c) in handle_edit_key |
+| `@rpc-252` | Work unit identifier tag for RPC-252 — port list-virtual-hooks command to Rust |
 | `@technical-debt` | Technical debt that should be addressed |
 | `@test-001` | Example test work unit |
 | `@todo` | To Do |
@@ -934,7 +935,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-06-03T02:23:34.959Z_
+_Last updated: 2026-06-04T20:40:44.239Z_
 
 **Update Command**: `fspec tag-stats`
 

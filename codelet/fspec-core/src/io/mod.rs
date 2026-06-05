@@ -10,6 +10,5 @@
 //! command logic to a single I/O backend.
 
 pub mod ensure;
-pub mod feature_glob;
 pub mod locked_file;
 pub mod project_root;

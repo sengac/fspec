@@ -54,7 +54,6 @@ Feature: List features CLI subcommand
     Given an empty directory with no spec/ subdirectory is set as the current working directory
     When I run `./codelet/target/release/fspec list-features` from that directory
     Then the command exits with code 2
-    Then stderr contains the substring 'Error:'
     Then stderr contains the substring 'Directory not found: spec/features/'
 
   Scenario: CLI against empty spec/features/ prints sentinel and exits 0
@@ -91,6 +90,24 @@ Feature: List features CLI subcommand
     Given the file codelet/fspec/src/list_features.rs exists as the CLI bridge module
     When I read the bridge module source
     Then the source does NOT contain the substring 'No feature files found'
-    Then the source does NOT contain the substring 'Found '
+    Then the source does NOT contain the substring 'Found {}'
     Then the source does NOT contain the substring 'scenarioCount'
     Then the source does NOT contain the substring 'glob_feature_files'
+
+  Scenario: CLI DirectoryNotFound error renders bare message plus indented Suggestion line
+    Given an empty directory with no spec/ subdirectory is set as the current working directory
+    When I run `./codelet/target/release/fspec list-features` from that directory
+    Then stderr contains the exact line 'Directory not found: spec/features/' (WITHOUT an 'Error:' prefix)
+    Then stderr contains the exact line "  Suggestion: Run 'fspec create-feature' to create your first feature"
+    Then the command exits with code 2
+
+
+  Scenario: CLI prints a Warning line to stderr when a feature file cannot be parsed
+    Given spec/features/valid.feature contains a parseable feature with 2 scenarios
+    When I run `./codelet/target/release/fspec list-features` from that directory
+    Then the command exits 0
+    Given spec/features/broken.feature contains plain text with no Feature header
+    Then stderr contains the exact line 'Warning: Could not parse spec/features/broken.feature'
+    Then stdout contains the substring 'spec/features/valid.feature - Valid'
+    Then stdout contains the exact line 'Found 1 feature files'
+

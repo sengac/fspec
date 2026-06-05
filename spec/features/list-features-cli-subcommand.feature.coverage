@@ -395,18 +395,120 @@
           ]
         }
       ]
+    },
+    {
+      "name": "CLI DirectoryNotFound error renders bare message plus indented Suggestion line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "lines": "176-217",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_features.rs",
+              "lines": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints a Warning line to stderr when a feature file cannot be parsed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "lines": "225-275",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/list_features.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec/tests/cli_list_features.rs",
+          "lines": "225-275",
+          "implMappings": []
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec/tests/cli_list_features.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/list_features.rs"
+      "codelet/fspec/src/list_features.rs",
+      "codelet/fspec-core/src/commands/list_features.rs"
     ],
-    "totalLinesCovered": 564
+    "totalLinesCovered": 772
   }
 }

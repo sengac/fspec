@@ -24,30 +24,25 @@ Feature: List hooks CLI subcommand
     Then stdout does NOT contain the substring '--event'
     Then stdout does NOT contain the substring '--workspace'
 
-  Scenario: CLI against empty directory prints sentinel and does not auto-create files
+  Scenario: CLI against empty directory writes zero bytes to stdout and does not auto-create files
     Given an empty directory with no spec/ subdirectory is set as the current working directory
     When I run `./codelet/target/release/fspec list-hooks` from that directory
     Then the command exits 0
-    Then stdout contains the substring 'No hooks are configured'
     Then spec/fspec-hooks.json was NOT created in the directory
+    Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result)
 
-  Scenario: CLI text output renders configured hooks grouped by event
+  Scenario: CLI writes zero bytes to stdout regardless of populated hooks (TS Commander.js action discards result)
     Given spec/fspec-hooks.json contains event 'pre-implementing' with hooks ['lint'] and event 'post-implementing' with hooks ['test', 'notify'] in that order
     When I run `./codelet/target/release/fspec list-hooks`
     Then the command exits 0
-    Then stdout contains the substring 'Configured Hooks:'
-    Then stdout contains the exact line 'pre-implementing:'
-    Then stdout contains the exact line '  - lint'
-    Then stdout contains the exact line 'post-implementing:'
-    Then stdout contains the exact line '  - test'
-    Then stdout contains the exact line '  - notify'
+    Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result)
 
-  Scenario: CLI exits 0 and prints the empty sentinel when spec/fspec-hooks.json contains invalid JSON
+  Scenario: CLI exits 0 with zero stdout bytes when spec/fspec-hooks.json contains invalid JSON
     Given spec/fspec-hooks.json exists in the working directory but contains invalid JSON syntax
     When I run `./codelet/target/release/fspec list-hooks`
     Then the command exits 0
-    Then stdout contains the substring 'No hooks are configured'
     Then stderr does NOT contain the substring 'Error:'
+    Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result on the swallowed-error path)
 
   Scenario: Default combined TUI mode is preserved when no subcommand is provided
     Given the fspec Rust binary has list-hooks registered as a clap subcommand alongside daemon, client, status, list-work-units, and list-prefixes

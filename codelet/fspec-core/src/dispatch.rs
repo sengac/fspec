@@ -153,6 +153,7 @@ fn run_ported(
         match name {
             // RPC-253 — list-work-units
             "list-work-units" => commands::list_work_units::run(args_json, project_root).await,
+<<<<<<< HEAD
             // RPC-248 — list-prefixes
             "list-prefixes" => commands::list_prefixes::run(args_json, project_root).await,
             // RPC-243 — list-epics
@@ -165,6 +166,26 @@ fn run_ported(
             "list-attachments" => commands::list_attachments::run(args_json, project_root).await,
             // RPC-247 — list-hooks
             "list-hooks" => commands::list_hooks::run(args_json, project_root).await,
+            // RPC-244 — list-feature-tags
+            "list-feature-tags" => {
+                commands::list_feature_tags::run(args_json, project_root).await
+            }
+            // RPC-246 — list-foundation-sections
+            "list-foundation-sections" => {
+                commands::list_foundation_sections::run(args_json, project_root).await
+            }
+            // RPC-249 — list-scenario-tags
+            "list-scenario-tags" => {
+                commands::list_scenario_tags::run(args_json, project_root).await
+            }
+            // RPC-250 — list-schedules
+            "list-schedules" => commands::list_schedules::run(args_json, project_root).await,
+            // RPC-252 — list-virtual-hooks
+            "list-virtual-hooks" => {
+                commands::list_virtual_hooks::run(args_json, project_root).await
+            }
+=======
+>>>>>>> parent of 6fa95633 (refactor: more commands refactored)
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -259,24 +280,41 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "import-example-map" => commands::import_example_map::run(args_json).await,
             "init" => commands::init::run(args_json).await,
             "link-coverage" => commands::link_coverage::run(args_json).await,
-            // "list-attachments" — ported (RPC-241). Handled by `run_ported`
-            // before reaching this match; intentionally absent here.
+            "list-attachments" => commands::list_attachments::run(args_json).await,
             "list-checkpoints" => commands::list_checkpoints::run(args_json).await,
+<<<<<<< HEAD
             // "list-epics" — ported (RPC-243). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "list-feature-tags" => commands::list_feature_tags::run(args_json).await,
+            // "list-feature-tags" — ported (RPC-244). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "list-features" — ported (RPC-245). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "list-foundation-sections" => commands::list_foundation_sections::run(args_json).await,
+            // "list-foundation-sections" — ported (RPC-246). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "list-hooks" — ported (RPC-247). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "list-prefixes" — ported (RPC-248). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "list-scenario-tags" => commands::list_scenario_tags::run(args_json).await,
-            "list-schedules" => commands::list_schedules::run(args_json).await,
+            // "list-scenario-tags" — ported (RPC-249). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "list-schedules" — ported (RPC-250). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "list-tags" — ported (RPC-251). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
+            // "list-virtual-hooks" — ported (RPC-252). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+=======
+            "list-epics" => commands::list_epics::run(args_json).await,
+            "list-feature-tags" => commands::list_feature_tags::run(args_json).await,
+            "list-features" => commands::list_features::run(args_json).await,
+            "list-foundation-sections" => commands::list_foundation_sections::run(args_json).await,
+            "list-hooks" => commands::list_hooks::run(args_json).await,
+            "list-prefixes" => commands::list_prefixes::run(args_json).await,
+            "list-scenario-tags" => commands::list_scenario_tags::run(args_json).await,
+            "list-schedules" => commands::list_schedules::run(args_json).await,
+            "list-tags" => commands::list_tags::run(args_json).await,
             "list-virtual-hooks" => commands::list_virtual_hooks::run(args_json).await,
+>>>>>>> parent of 6fa95633 (refactor: more commands refactored)
             // "list-work-units" — ported (RPC-253). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "pause-schedule" => commands::pause_schedule::run(args_json).await,

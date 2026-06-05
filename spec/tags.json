@@ -2326,6 +2326,10 @@
           "description": "RPC-153: Provider settings api-key edit filterPrintableChars ASCII 32-126 restriction — regression-shape coverage card pinning the is_printable_ascii helper signature, body range expression, and guard placement before draft.push(c) in handle_edit_key"
         },
         {
+          "name": "@rpc-252",
+          "description": "Work unit identifier tag for RPC-252 — port list-virtual-hooks command to Rust"
+        },
+        {
           "name": "@technical-debt",
           "description": "Technical debt that should be addressed"
         },
@@ -2770,7 +2774,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-06-03T02:23:34.959Z",
+    "lastUpdated": "2026-06-04T20:40:44.239Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

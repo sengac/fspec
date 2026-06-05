@@ -219,55 +219,23 @@ impl WorkUnit {
 }
 
 /// Shape of `spec/prefixes.json`.
-///
-/// `prefixes` is keyed by the prefix identifier (e.g. `"AUTH"`) and maps to
-/// the typed [`crate::types::prefix::Prefix`] record. We use [`IndexMap`] so
-/// `list-prefixes` (RPC-248) and any other consumer iterates entries in
-/// **registration order** — matching the TypeScript `Object.values(...)`
-/// iteration semantics at `src/commands/list-prefixes.ts:68`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PrefixesData {
     #[serde(default)]
-    pub prefixes: IndexMap<String, crate::types::prefix::Prefix>,
+    pub prefixes: serde_json::Map<String, serde_json::Value>,
 }
 
 impl PrefixesData {
     /// Default value used by `ensurePrefixesFile` (TS `src/utils/ensure-files.ts:64-73`).
     pub fn initial() -> Self {
         Self {
-            prefixes: IndexMap::new(),
-        }
-    }
-}
-
-/// Shape of `spec/epics.json` — Rust port of the TypeScript `EpicsData`
-/// interface at `src/commands/list-epics.ts:14-16`.
-///
-/// `epics` is keyed by the epic slug (e.g. `"auth"`) and maps to the typed
-/// [`crate::types::epic::Epic`] record. We use [`IndexMap`] so `list-epics`
-/// (RPC-243) iterates entries in **insertion order** — matching the
-/// TypeScript `Object.values(...)` iteration semantics at
-/// `src/commands/list-epics.ts:71`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EpicsData {
-    #[serde(default)]
-    pub epics: IndexMap<String, crate::types::epic::Epic>,
-}
-
-impl EpicsData {
-    /// Default value returned by `read_epics_or_empty` on ENOENT (mirrors
-    /// the TS empty-list path at `src/commands/list-epics.ts:53-55`). The
-    /// helper is read-only — it does NOT write this default to disk.
-    pub fn initial() -> Self {
-        Self {
-            epics: IndexMap::new(),
+            prefixes: serde_json::Map::new(),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
     use super::*;
     use serde_json::json;
 

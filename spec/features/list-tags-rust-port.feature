@@ -4,7 +4,6 @@
 @querying
 @cli
 Feature: Port list-tags command to Rust
-
   """
   New shared helper `io::ensure::ensure_tags_file(cwd) -> Result<TagsData, FspecCoreError>` lives alongside `ensure_prefixes_file` and uses the canonical 9-category default — Phase / Component / Feature Group / Technical / Platform / Priority / Status / Testing / Automation, in that order, each with an empty tags array. This matches `ensureTagsFile` in src/utils/ensure-files.ts:98-191 (load-or-init semantics).
 
@@ -43,7 +42,6 @@ Feature: Port list-tags command to Rust
   #   11. Shared modules `io::ensure::ensure_tags_file` and `types::tags::TagsData` exist and are publicly accessible from the fspec-core crate root
   #
   # ========================================
-
   Background: User Story
     As a developer using the standalone fspec Rust binary
     I want to dispatch list-tags from the agent loop and run `fspec list-tags` from a shell with byte-for-byte parity to the TypeScript implementation
@@ -53,44 +51,44 @@ Feature: Port list-tags command to Rust
     Given an empty project root directory with no spec/tags.json
     When I dispatch the list-tags command against that project root with format='json'
     Then the dispatcher returns success=true
-    Then spec/tags.json exists after the call
-    Then the dispatcher result's categories array has length 9 in the order Phase Tags, Component Tags, Feature Group Tags, Technical Tags, Platform Tags, Priority Tags, Status Tags, Testing Tags, Automation Tags
+    And spec/tags.json exists after the call
+    And the dispatcher result's categories array has length 9 in the order Phase Tags, Component Tags, Feature Group Tags, Technical Tags, Platform Tags, Priority Tags, Status Tags, Testing Tags, Automation Tags
 
   Scenario: Preserves insertion order of categories on disk (not alphabetical)
     Given spec/tags.json contains exactly two categories in the order Automation Tags then Phase Tags
     When I dispatch list-tags with format='json'
     Then the dispatcher returns success=true
-    Then the categories array contains exactly two entries in order Automation Tags then Phase Tags
+    And the categories array contains exactly two entries in order Automation Tags then Phase Tags
 
   Scenario: Sorts tags within each category alphabetically by tag name
     Given spec/tags.json contains a Phase Tags category with tags '@zed' (description 'Z desc') and '@aaa' (description 'A desc') in that insertion order
     When I dispatch list-tags with format='json'
     Then the dispatcher returns success=true
-    Then the Phase Tags entry's tags array contains exactly two entries
-    Then the first tag entry has tag='@aaa' and description='A desc'
-    Then the second tag entry has tag='@zed' and description='Z desc'
+    And the Phase Tags entry's tags array contains exactly two entries
+    And the first tag entry has tag='@aaa' and description='A desc'
+    And the second tag entry has tag='@zed' and description='Z desc'
 
   Scenario: Projects only tag and description fields, ignoring auxiliary Tag-interface fields
     Given spec/tags.json contains a Phase Tags category with a single tag whose name is '@critical', description is 'Critical features', and which also carries auxiliary fields 'usage', 'scope', and 'examples'
     When I dispatch list-tags with format='json'
     Then the dispatcher returns success=true
-    Then the first Phase Tags entry has tag='@critical' and description='Critical features'
-    Then the first Phase Tags entry does NOT contain the field 'usage'
-    Then the first Phase Tags entry does NOT contain the field 'scope'
-    Then the first Phase Tags entry does NOT contain the field 'examples'
+    And the first Phase Tags entry has tag='@critical' and description='Critical features'
+    And the first Phase Tags entry does NOT contain the field 'usage'
+    And the first Phase Tags entry does NOT contain the field 'scope'
+    And the first Phase Tags entry does NOT contain the field 'examples'
 
   Scenario: Restricts output to the matching category when --category is supplied
     Given spec/tags.json contains Phase Tags (with '@critical' description 'Critical features') and Component Tags (with '@cli' description 'CLI surface')
     When I dispatch list-tags with category='Phase Tags' and format='json'
     Then the dispatcher returns success=true
-    Then the categories array contains exactly one entry whose name is 'Phase Tags'
-    Then the response data does NOT contain the substring 'Component Tags'
+    And the categories array contains exactly one entry whose name is 'Phase Tags'
+    And the response data does NOT contain the substring 'Component Tags'
 
   Scenario: Returns structured error when --category does not match any category exactly
     Given spec/tags.json contains Phase Tags and Component Tags categories
     When I dispatch list-tags with category='No Such Category'
     Then the dispatcher returns success=false
-    Then the error message contains the substring 'Category not found: No Such Category. Available categories: Phase Tags, Component Tags'
+    And the error message contains the substring 'Category not found: No Such Category. Available categories: Phase Tags, Component Tags'
 
   Scenario: Escalates malformed tags.json as a structured parse error
     Given spec/tags.json exists but contains invalid JSON syntax
@@ -101,27 +99,27 @@ Feature: Port list-tags command to Rust
     Given spec/tags.json contains Phase Tags (with '@critical' description 'Critical features') and Component Tags (empty)
     When I dispatch list-tags with format='text'
     Then the DispatchResult.data contains the substring 'Phase Tags (1 tags)'
-    Then the DispatchResult.data contains the exact line '  @critical - Critical features'
-    Then the DispatchResult.data contains the substring 'Component Tags (0 tags)'
-    Then the DispatchResult.data contains the exact line '  No tags registered'
+    And the DispatchResult.data contains the exact line '  @critical - Critical features'
+    And the DispatchResult.data contains the substring 'Component Tags (0 tags)'
+    And the DispatchResult.data contains the exact line '  No tags registered'
 
   Scenario: Text format emits a trailing blank line after the last category
     Given spec/tags.json contains a single Phase Tags category with '@critical' (description 'Critical features')
     When I dispatch list-tags with format='text'
     Then the DispatchResult.data ends with a trailing newline character
-    Then the last non-empty line of the DispatchResult.data is '  @critical - Critical features'
+    And the last non-empty line of the DispatchResult.data is '  @critical - Critical features'
 
   Scenario: JSON format emits two-space indented payload with categories array
     Given spec/tags.json contains a single Phase Tags category with '@critical' (description 'Critical features')
     When I dispatch list-tags with format='json'
     Then the DispatchResult.data parses as JSON whose root object has a 'categories' array of length 1
-    Then the first categories entry has name='Phase Tags' and a tags array of length 1
-    Then the first tag entry has tag='@critical' and description='Critical features'
-    Then the DispatchResult.data uses 2-space indentation
+    And the first categories entry has name='Phase Tags' and a tags array of length 1
+    And the first tag entry has tag='@critical' and description='Critical features'
+    And the DispatchResult.data uses 2-space indentation
 
   Scenario: Shared infrastructure modules exist under codelet/fspec-core for reuse by other tag commands
     Given the codelet/fspec-core crate is built
     When I inspect codelet/fspec-core/src/
     Then the module io::ensure::ensure_tags_file exists and is publicly accessible from the crate root
-    Then types::tags::TagsData exists as a public type
-    Then commands/list_tags.rs no longer declares the NotYetPorted stub
+    And types::tags::TagsData exists as a public type
+    And commands/list_tags.rs no longer declares the NotYetPorted stub

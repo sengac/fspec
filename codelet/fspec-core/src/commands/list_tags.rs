@@ -1,31 +1,9 @@
-//! `list-tags` — Rust port of `src/commands/list-tags.ts` (RPC-251).
-//!
-//! Reads `spec/tags.json` (auto-creating it with the canonical 9-category
-//! default when missing — parity with the TS `ensureTagsFile` helper),
-//! projects each category to `{ name, tags: [{ tag, description }] }`,
-//! alphabetically sorts the tags WITHIN each category, optionally
-//! filters to a single category by exact `name` match, and emits either
-//! a 2-space-indented JSON payload or a plain-text summary.
-//!
-//! Both invocation paths — the LLM-facing dispatcher AND the standalone
-//! fspec Rust binary's clap subcommand — call this single function
-//! (RPC-003 §7/§11 two-front-doors invariant).
-//!
-//! `ensure_tags_file` is implemented locally for now; the orchestrator
-//! will PROMOTE it to a shared helper in `io/ensure.rs` alongside
-//! `ensure_prefixes_file` / `ensure_work_units_file` during the
-//! Phase C wiring batch (see Phase C report). The local helper is
-//! kept private (`fn`, not `pub fn`) so callers outside this module
-//! cannot bind to it during the transition.
-
-use std::cmp::Ordering;
-use std::path::Path;
-
-use serde::{Deserialize, Serialize};
+//! Stub for the `list-tags` fspec command. See RPC-251 for the port work unit.
+//! Original TypeScript implementation: src/commands/list-tags.ts
 
 use crate::error::FspecCoreError;
-use crate::io::ensure::ensure_tags_file;
 
+<<<<<<< HEAD
 /// CLI arguments accepted by `list-tags`. The shell-facing `fspec
 /// list-tags` advertises `--category` only; the dispatcher additionally
 /// accepts a `format` discriminator so the agent-loop tool-call
@@ -166,12 +144,12 @@ fn project_category(cat: &crate::types::tags::TagCategory) -> CategoryEntry {
     }
 }
 
-/// Lexicographic comparison standing in for the TS
-/// `String.prototype.localeCompare` call. For the ASCII-only tag
-/// names used by fspec (`@` + alphanumeric), Rust's default `cmp`
-/// matches `localeCompare` byte-for-byte; we factor it out into a
-/// dedicated fn so a future locale-aware refactor lands as a
-/// one-call change.
+/// Compare two tag names byte-wise.
+///
+/// NOTE: This is NOT a full locale-aware compare. For ASCII-only tag
+/// names (the only kind fspec emits today) byte cmp matches the TS
+/// `localeCompare` result byte-for-byte. Non-ASCII tags (e.g. `@café`)
+/// would sort differently — file an issue if you encounter one.
 fn cmp_tag(a: &str, b: &str) -> Ordering {
     a.cmp(b)
 }
@@ -382,4 +360,11 @@ mod tests {
             "unexpected error: {err}"
         );
     }
+=======
+pub async fn run(_args_json: &str) -> Result<String, FspecCoreError> {
+    Err(FspecCoreError::NotYetPorted {
+        command: "list-tags",
+        work_unit: "RPC-251",
+    })
+>>>>>>> parent of 6fa95633 (refactor: more commands refactored)
 }

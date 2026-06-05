@@ -59,7 +59,7 @@
       ]
     },
     {
-      "name": "CLI against empty directory prints sentinel and does not auto-create files",
+      "name": "CLI against empty directory writes zero bytes to stdout and does not auto-create files",
       "testMappings": [
         {
           "file": "codelet/fspec/tests/cli_list_hooks.rs",
@@ -113,11 +113,52 @@
               ]
             }
           ]
+        },
+        {
+          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "lines": "116-148",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_hooks.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
         }
       ]
     },
     {
-      "name": "CLI text output renders configured hooks grouped by event",
+      "name": "CLI writes zero bytes to stdout regardless of populated hooks (TS Commander.js action discards result)",
       "testMappings": [
         {
           "file": "codelet/fspec/tests/cli_list_hooks.rs",
@@ -171,11 +212,52 @@
               ]
             }
           ]
+        },
+        {
+          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "lines": "150-176",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_hooks.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
         }
       ]
     },
     {
-      "name": "CLI exits 0 and prints the empty sentinel when spec/fspec-hooks.json contains invalid JSON",
+      "name": "CLI exits 0 with zero stdout bytes when spec/fspec-hooks.json contains invalid JSON",
       "testMappings": [
         {
           "file": "codelet/fspec/tests/cli_list_hooks.rs",
@@ -226,6 +308,47 @@
                 92,
                 93,
                 94
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec/tests/cli_list_hooks.rs",
+          "lines": "178-210",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_hooks.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
               ]
             }
           ]
@@ -359,6 +482,6 @@
     "implFiles": [
       "codelet/fspec/src/list_hooks.rs"
     ],
-    "totalLinesCovered": 525
+    "totalLinesCovered": 708
   }
 }

@@ -1,16 +1,8 @@
 /**
- * Feature: spec/features/list-prefixes-cli-subcommand.feature
+ * Feature: spec/features/list-prefixes.feature
  *
- * This test file validates the user-facing `fspec list-prefixes` behaviour
- * shared by both the legacy TypeScript Commander.js entrypoint
- * (`src/commands/list-prefixes.ts`) and the Rust port wired via
- * RPC-248. The capability-level acceptance criteria live in the
- * Rust-port CLI subcommand feature file — the legacy
- * `list-prefixes.feature` was removed in RPC-248 to match the
- * list-work-units precedent set by RPC-253 (no legacy spec sibling).
- *
- * Scenarios in this test map to the text-output / empty-sentinel /
- * malformed-json paths of the CLI subcommand feature.
+ * This test file validates the acceptance criteria defined in the feature file.
+ * Scenarios in this test map directly to scenarios in the Gherkin feature.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';

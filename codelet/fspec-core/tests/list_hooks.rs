@@ -412,3 +412,33 @@ fn scenario_default_format_is_text() {
         result.data
     );
 }
+
+#[test]
+fn scenario_renders_unnamed_placeholder_when_hook_lacks_name_field() {
+    // Scenario: Renders unnamed placeholder when a hook lacks the name field
+    //
+    // RPC-247 follow-up fix: the impl at codelet/fspec-core/src/commands/list_hooks.rs:221
+    // emits `  - (unnamed)\n` for hooks missing the `name` field in the text
+    // renderer. This scenario locks in that behavior so a future refactor can't
+    // silently drop the marker.
+
+    // @step Given spec/fspec-hooks.json contains event 'pre-implementing' with a single hook entry that has NO name field but a command field
+    let tmp = TempDir::new().expect("tempdir");
+    write_hooks(
+        tmp.path(),
+        r#"{ "hooks": { "pre-implementing": [ { "command": "/bin/true" } ] } }"#,
+    );
+
+    // @step When I dispatch list-hooks with format='text'
+    let result = dispatch_command(req(tmp.path(), json!({ "format": "text" })));
+
+    // @step Then the dispatcher returns success=true
+    assert!(result.success, "{result:?}");
+
+    // @step Then the DispatchResult.data contains the exact line '  - (unnamed)'
+    assert!(
+        result.data.lines().any(|l| l == "  - (unnamed)"),
+        "missing exact line '  - (unnamed)'; got:\n{}",
+        result.data
+    );
+}

@@ -74,10 +74,21 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             // print as-is. The TS implementation always emits at
             // least one trailing `\n` via `output.log('')`, so the
             // rendered string is already shell-pipeline friendly.
+            //
+            // rule [8] / architecture note [5]: render_text always
+            // terminates with `\n` (verified by the rust-port feature
+            // file scenario "Text format emits a trailing blank line
+            // after the last category"). The previous explicit
+            // `if !rendered.ends_with('\n') { println!(); }` fallback
+            // was dead code; downgraded to a debug-only invariant
+            // check so a future regression in render_text is caught
+            // loudly in dev/test builds without polluting release
+            // output with an unreachable branch.
+            debug_assert!(
+                rendered.ends_with('\n'),
+                "render_text contract: must end with \\n"
+            );
             print!("{rendered}");
-            if !rendered.ends_with('\n') {
-                println!();
-            }
             Ok(0)
         }
         Err(err) => {

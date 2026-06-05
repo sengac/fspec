@@ -70,7 +70,8 @@ fn handle_list_key_body(src: &str) -> &str {
 fn arm_body<'a>(body: &'a str, pattern_prefix: &str) -> &'a str {
     let pat_start = body.find(pattern_prefix).unwrap_or_else(|| {
         panic!(
-            "match arm starting with `{pattern_prefix}` not found in handle_list_key body"
+            "match arm starting with `{}` not found in handle_list_key body",
+            pattern_prefix
         )
     });
     // From the arm pattern, find the `=>` and then the opening `{` of
@@ -79,7 +80,7 @@ fn arm_body<'a>(body: &'a str, pattern_prefix: &str) -> &'a str {
     // those we fall back to slicing from `=>` to the next match-arm
     // comma at brace-depth 0.
     let arrow_rel = body[pat_start..].find("=>").unwrap_or_else(|| {
-        panic!("expected `=>` after pattern `{pattern_prefix}`")
+        panic!("expected `=>` after pattern `{}`", pattern_prefix)
     });
     let after_arrow = pat_start + arrow_rel + 2;
     // Skip whitespace.
@@ -107,7 +108,8 @@ fn arm_body<'a>(body: &'a str, pattern_prefix: &str) -> &'a str {
             j += 1;
         }
         panic!(
-            "matching closing brace for arm `{pattern_prefix}` not found"
+            "matching closing brace for arm `{}` not found",
+            pattern_prefix
         );
     }
     // Expression arm — walk forward until a comma at brace-depth 0.
@@ -123,7 +125,7 @@ fn arm_body<'a>(body: &'a str, pattern_prefix: &str) -> &'a str {
         }
         j += 1;
     }
-    panic!("end of expression arm `{pattern_prefix}` not found");
+    panic!("end of expression arm `{}` not found", pattern_prefix);
 }
 
 // ────────────────────────────────────────────────────────────────────────
@@ -142,7 +144,8 @@ fn scenario_handle_list_key_has_exactly_two_clear_test_result_calls() {
     let count = body.matches("clear_test_result(").count();
     assert_eq!(
         count, 2,
-        "handle_list_key must have exactly 2 clear_test_result( call sites (Up + Down), found {count} (RPC-151)"
+        "handle_list_key must have exactly 2 clear_test_result( call sites (Up + Down), found {} (RPC-151)",
+        count
     );
 }
 

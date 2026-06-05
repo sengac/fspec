@@ -6,7 +6,7 @@
 Feature: Port list-attachments command to Rust
 
   """
-  New typed `attachments: Option<Vec<String>>` field on `codelet/fspec-core/src/types/work_unit.rs::WorkUnit` with `#[serde(default, skip_serializing_if = "Option::is_none")]` — preserves on-disk shape (no field emitted when absent) and allows typed access from `list_attachments::run`. The existing `extra: serde_json::Map<...>` flatten map continues to round-trip every OTHER unknown field unchanged
+  Implementation reads the `attachments` array from `WorkUnit.extra` (serde flatten map). A typed field on `WorkUnit` was considered but deferred — see test `shared_infrastructure_and_ported_wiring_are_in_place` in `codelet/fspec-core/tests/list_attachments.rs` for the Phase-C architecture-revision rationale.
   Reuses `crate::io::ensure::ensure_work_units_file` (NOT the read-only `read_work_units_or_empty` twin) so the load-or-init + escalating-parse-error semantics match TS's `await ensureWorkUnitsFile(cwd)` at src/commands/list-attachments.ts:20
   Two new dispatcher-side helpers: `format_size_kb(bytes: u64) -> String` returning `"{:.2}"`-formatted KB (parity with JS `(n/1024).toFixed(2)`), and `format_mtime(modified: SystemTime) -> String` returning a deterministic UTC ISO-like string (e.g. "2026-06-04 14:32:17 UTC"). These live inside `codelet/fspec-core/src/commands/list_attachments.rs` because they are command-specific and not reused elsewhere
   Args struct in fspec-core: `ListAttachmentsArgs { work_unit_id: Option<String>, format: Option<String> }` with `#[serde(default, rename_all = "camelCase")]` so the dispatcher accepts both `workUnitId` (JS-canonical) and the missing-field case (validated explicitly with a clear InvalidArgs error)
@@ -111,7 +111,7 @@ Feature: Port list-attachments command to Rust
     Then the DispatchResult.data contains the exact line "    Size: 1.21 KB"
     Then the DispatchResult.data contains the exact line "  ✗ spec/attachments/AUTH-001/b.png"
     Then the DispatchResult.data contains the exact line "    File not found on filesystem"
-    Then the substring 'a.png' appears before 'b.png' in the DispatchResult.data
+    Then the substring "a.png" appears before "b.png" in the DispatchResult.data
 
   Scenario: Rejects an empty arguments object with a structured InvalidArgs error
     Given an empty project root directory

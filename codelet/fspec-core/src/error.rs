@@ -54,13 +54,4 @@ pub enum FspecCoreError {
         "Failed to parse {file}: {reason}. The file may be corrupted or contain invalid JSON."
     )]
     ParseJson { file: String, reason: String },
-
-    /// A required directory was not found. Used by `list-features` (RPC-245)
-    /// and any future command that needs to escalate a missing-directory
-    /// condition with a dedicated exit code (2 instead of the generic 1).
-    /// The message MUST contain the literal substring
-    /// `"Directory not found: <path>"` for parity with the TypeScript
-    /// implementation (`src/commands/list-features.ts:33-38`).
-    #[error("Directory not found: {path}")]
-    DirectoryNotFound { path: String },
 }

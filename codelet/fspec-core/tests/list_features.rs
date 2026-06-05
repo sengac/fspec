@@ -120,7 +120,7 @@ fn aggregates_feature_names_scenario_counts_and_tags_sorted_by_file() {
         &feature_body("User Authentication", &["@critical", "@auth"], 3),
     );
 
-    // @step Given spec/features/billing.feature exists with name 'Billing', tags '@billing' and 1 scenario
+    // @step And spec/features/billing.feature exists with name 'Billing', tags '@billing' and 1 scenario
     write_feature(
         tmp.path(),
         "spec/features/billing.feature",
@@ -147,7 +147,7 @@ fn aggregates_feature_names_scenario_counts_and_tags_sorted_by_file() {
         Some(vec!["@critical", "@auth"])
     );
 
-    // @step Then the billing entry has scenarioCount=1 and tags exactly ['@billing']
+    // @step And the billing entry has scenarioCount=1 and tags exactly ['@billing']
     assert_eq!(arr[1]["scenarioCount"].as_u64(), Some(1));
     assert_eq!(
         arr[1]["tags"].as_array().map(|a| {
@@ -170,7 +170,7 @@ fn filters_features_by_exact_tag_match_with_leading_at() {
         &feature_body("Auth", &["@critical"], 1),
     );
 
-    // @step Given spec/features/billing.feature exists with tag '@billing' and 1 scenario
+    // @step And spec/features/billing.feature exists with tag '@billing' and 1 scenario
     write_feature(
         tmp.path(),
         "spec/features/billing.feature",
@@ -204,7 +204,7 @@ fn silently_skips_files_that_fail_to_parse_without_escalating() {
         &feature_body("Valid Feature", &[], 2),
     );
 
-    // @step Given spec/features/broken.feature contains the malformed bytes 'not a feature file'
+    // @step And spec/features/broken.feature contains the malformed bytes 'not a feature file'
     write_feature(
         tmp.path(),
         "spec/features/broken.feature",
@@ -220,7 +220,7 @@ fn silently_skips_files_that_fail_to_parse_without_escalating() {
         "broken.feature must be silently skipped: {result:?}"
     );
 
-    // @step Then the features array contains exactly one entry whose file is spec/features/valid-feature.feature
+    // @step And the features array contains exactly one entry whose file is spec/features/valid-feature.feature
     let data = parse_data(&result.data);
     let arr = data["features"].as_array().expect("features array");
     assert_eq!(arr.len(), 1, "expected 1 entry, got {arr:?}");
@@ -315,7 +315,7 @@ fn text_format_renders_populated_listing_with_header_line_and_summary() {
         result.data
     );
 
-    // @step Then the DispatchResult.data contains the exact line 'Found 1 feature files'
+    // @step And the DispatchResult.data contains the exact line 'Found 1 feature files'
     assert!(
         result.data.lines().any(|l| l == "Found 1 feature files"),
         "missing exact 'Found 1 feature files' summary; got:\n{}",
@@ -376,7 +376,7 @@ fn json_format_emits_two_space_indented_payload_with_canonical_field_set() {
     let arr = data["features"].as_array().expect("features array");
     assert_eq!(arr.len(), 1);
 
-    // @step Then the first features entry contains fields file='spec/features/auth.feature', name='User Authentication', scenarioCount=2, tags=['@critical']
+    // @step And the first features entry contains fields file='spec/features/auth.feature', name='User Authentication', scenarioCount=2, tags=['@critical']
     let entry = &arr[0];
     assert_eq!(entry["file"].as_str(), Some("spec/features/auth.feature"));
     assert_eq!(entry["name"].as_str(), Some("User Authentication"));
@@ -388,7 +388,7 @@ fn json_format_emits_two_space_indented_payload_with_canonical_field_set() {
         Some(vec!["@critical"])
     );
 
-    // @step Then the DispatchResult.data uses 2-space indentation
+    // @step And the DispatchResult.data uses 2-space indentation
     // serde_json::to_string_pretty produces 2-space indent by default. We
     // verify the indentation pattern by walking the nested structure:
     //   level 1: `  "features"` (2 spaces — root field)
@@ -435,7 +435,7 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         "io/feature_glob.rs must declare `pub fn glob_feature_files`; got:\n{feature_glob_src}"
     );
 
-    // @step Then the error::FspecCoreError enum declares a DirectoryNotFound variant whose Display contains the substring 'Directory not found'
+    // @step And the error::FspecCoreError enum declares a DirectoryNotFound variant whose Display contains the substring 'Directory not found'
     let error_src = fs::read_to_string(crate_src.join("error.rs"))
         .expect("error.rs readable");
     assert!(
@@ -447,7 +447,7 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         "error.rs DirectoryNotFound Display must contain 'Directory not found'; got:\n{error_src}"
     );
 
-    // @step Then list_features::run delegates to these shared modules rather than embedding its own filesystem-walk logic
+    // @step And list_features::run delegates to these shared modules rather than embedding its own filesystem-walk logic
     let list_src = fs::read_to_string(crate_src.join("commands/list_features.rs"))
         .expect("commands/list_features.rs readable");
     assert!(

@@ -104,3 +104,10 @@ Feature: Port list-hooks command to Rust
     When I dispatch list-hooks with an empty args object {}
     Then the dispatcher returns success=true
     Then the DispatchResult.data is exactly the string 'No hooks are configured'
+
+  Scenario: Renders unnamed placeholder when a hook lacks the name field
+    Given spec/fspec-hooks.json contains event 'pre-implementing' with a single hook entry that has NO name field but a command field
+    When I dispatch list-hooks with format='text'
+    Then the dispatcher returns success=true
+    Then the DispatchResult.data contains the exact line '  - (unnamed)'
+

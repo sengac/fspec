@@ -1,4 +1,3 @@
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/agent-loop-error-classification-recovery-wiring-shape.feature
 //!
 //! RPC-087 regression-shape coverage for the error classification +

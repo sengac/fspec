@@ -3,12 +3,11 @@
 //!
 //! Feature: spec/features/list-prefixes-cli-subcommand.feature
 //!
-//! Red phase: these tests MUST fail today because:
-//!   - `codelet/fspec/src/main.rs` does not yet register a `list-prefixes`
-//!     clap subcommand (clap returns exit code 2 for "unrecognized
-//!     subcommand").
-//!   - `codelet/fspec-core/src/commands/list_prefixes.rs` is still a
-//!     NotYetPorted stub.
+//! Green phase: these tests exercise the wired-up clap subcommand
+//! (`Mode::ListPrefixes` in `codelet/fspec/src/main.rs`) and the ported
+//! `codelet/fspec-core/src/commands/list_prefixes.rs` implementation.
+//! Each scenario maps 1:1 to a Gherkin scenario in the feature file
+//! above; @step comments mirror the Gherkin step text verbatim.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
@@ -398,7 +397,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert_eq!(dispatcher_auth["completedWorkUnits"].as_u64(), Some(1));
     assert_eq!(dispatcher_auth["completionPercentage"].as_u64(), Some(50));
 
-    // @step Then the dispatcher's DispatchResult.data parses to the same prefixes structure that `./codelet/target/release/fspec list-prefixes --format=json` would produce if it accepted that flag
+    // @step Then the dispatcher's DispatchResult.data shows AUTH at 1/2 (50%) and the CLI text output (`fspec list-prefixes`) shows the exact line '  Work Units: 1/2 (50%)' against the same on-disk state
     // The CLI today does NOT expose --format (per rule [10]), so we assert
     // the text path mirrors the same underlying data. This validates the
     // shared-function delegation (rule [11]).

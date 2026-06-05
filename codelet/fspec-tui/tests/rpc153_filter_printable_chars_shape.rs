@@ -40,7 +40,7 @@ fn detail_rs() -> String {
 /// Walk braces forward from `abs_open` (which must be the index of an
 /// opening `{`) until the matching close, returning the inclusive
 /// substring.
-fn brace_balanced(src: &str, abs_open: usize) -> &str {
+fn brace_balanced<'a>(src: &'a str, abs_open: usize) -> &'a str {
     let bytes = src.as_bytes();
     assert!(bytes[abs_open] == b'{', "abs_open must point at `{{`");
     let mut depth: i32 = 0;
@@ -58,20 +58,20 @@ fn brace_balanced(src: &str, abs_open: usize) -> &str {
         }
         i += 1;
     }
-    panic!("matching closing brace for opener at {abs_open} not found");
+    panic!("matching closing brace for opener at {} not found", abs_open);
 }
 
 /// Extract the body of the named function. Matches on the signature
 /// substring `fn <name>(` so it works for both single-line and
 /// multi-line signatures.
 fn fn_body<'a>(src: &'a str, fn_name: &str) -> &'a str {
-    let needle = format!("fn {fn_name}(");
+    let needle = format!("fn {}(", fn_name);
     let start = src
         .find(&needle)
-        .unwrap_or_else(|| panic!("`fn {fn_name}(` not found"));
+        .unwrap_or_else(|| panic!("`fn {}(` not found", fn_name));
     let brace_rel = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for `fn {fn_name}` not found"));
+        .unwrap_or_else(|| panic!("opening brace for `fn {}` not found", fn_name));
     brace_balanced(src, start + brace_rel)
 }
 
@@ -163,6 +163,7 @@ fn scenario_is_printable_ascii_guard_precedes_draft_push_in_handle_edit_key() {
     // @step And the offset of "is_printable_ascii(c)" must be less than the offset of "draft.push(c)"
     assert!(
         guard_offset < push_offset,
-        "is_printable_ascii(c) guard must appear BEFORE draft.push(c) so the push lives inside the `if is_printable_ascii(c) {{ … }}` arm and cannot leak control chars / DEL / non-ASCII into the api-key draft (RPC-153 / RPC-161 TS parity). guard_offset={guard_offset}, push_offset={push_offset}"
+        "is_printable_ascii(c) guard must appear BEFORE draft.push(c) so the push lives inside the `if is_printable_ascii(c) {{ … }}` arm and cannot leak control chars / DEL / non-ASCII into the api-key draft (RPC-153 / RPC-161 TS parity). guard_offset={}, push_offset={}",
+        guard_offset, push_offset
     );
 }
