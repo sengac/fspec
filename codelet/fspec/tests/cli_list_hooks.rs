@@ -110,11 +110,11 @@ fn scenario_clap_exposes_list_hooks_with_flag_aware_help() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI against empty directory writes zero bytes to stdout and does not auto-create files
+// Scenario: CLI against empty directory prints sentinel and does not auto-create files
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_against_empty_directory_writes_zero_bytes_and_no_files() {
+fn scenario_cli_against_empty_directory_prints_sentinel_and_no_files() {
     // @step Given an empty directory with no spec/ subdirectory is set as the current working directory
     let ws = tempfile::tempdir().expect("tempdir");
     assert!(!ws.path().join("spec").exists());
@@ -128,27 +128,25 @@ fn scenario_cli_against_empty_directory_writes_zero_bytes_and_no_files() {
         "list-hooks must exit 0 on empty workspace; got {code}, stderr={stderr}"
     );
 
+    // @step Then stdout contains the substring 'No hooks are configured'
+    assert!(
+        stdout.contains("No hooks are configured"),
+        "stdout must contain 'No hooks are configured'; got:\n{stdout}"
+    );
+
     // @step Then spec/fspec-hooks.json was NOT created in the directory
     assert!(
         !ws.path().join("spec/fspec-hooks.json").exists(),
         "list-hooks must NOT auto-create spec/fspec-hooks.json"
     );
-
-    // @step Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result)
-    assert_eq!(
-        stdout.len(),
-        0,
-        "stdout must be exactly zero bytes (TS Commander.js action discards listHooks result); got {} bytes:\n{stdout}",
-        stdout.len()
-    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI writes zero bytes to stdout regardless of populated hooks (TS Commander.js action discards result)
+// Scenario: CLI text output renders configured hooks grouped by event
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_writes_zero_bytes_regardless_of_populated_hooks() {
+fn scenario_cli_text_output_renders_configured_hooks() {
     // @step Given spec/fspec-hooks.json contains event 'pre-implementing' with hooks ['lint'] and event 'post-implementing' with hooks ['test', 'notify'] in that order
     let ws = tempfile::tempdir().expect("tempdir");
     write_hooks(ws.path(), &canonical_hooks_json());
@@ -162,21 +160,49 @@ fn scenario_cli_writes_zero_bytes_regardless_of_populated_hooks() {
         "list-hooks must exit 0 on populated config; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result)
-    assert_eq!(
-        stdout.len(),
-        0,
-        "stdout must be exactly zero bytes (TS Commander.js action discards listHooks result); got {} bytes:\n{stdout}",
-        stdout.len()
+    // @step Then stdout contains the substring 'Configured Hooks:'
+    assert!(
+        stdout.contains("Configured Hooks:"),
+        "stdout must contain 'Configured Hooks:' header; got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the exact line 'pre-implementing:'
+    assert!(
+        stdout.lines().any(|l| l == "pre-implementing:"),
+        "stdout must contain exact line 'pre-implementing:'; got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the exact line '  - lint'
+    assert!(
+        stdout.lines().any(|l| l == "  - lint"),
+        "stdout must contain exact line '  - lint'; got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the exact line 'post-implementing:'
+    assert!(
+        stdout.lines().any(|l| l == "post-implementing:"),
+        "stdout must contain exact line 'post-implementing:'; got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the exact line '  - test'
+    assert!(
+        stdout.lines().any(|l| l == "  - test"),
+        "stdout must contain exact line '  - test'; got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the exact line '  - notify'
+    assert!(
+        stdout.lines().any(|l| l == "  - notify"),
+        "stdout must contain exact line '  - notify'; got:\n{stdout}"
     );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI exits 0 with zero stdout bytes when spec/fspec-hooks.json contains invalid JSON
+// Scenario: CLI exits 0 and prints the empty sentinel when spec/fspec-hooks.json contains invalid JSON
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_invalid_json_exits_0_with_zero_stdout() {
+fn scenario_cli_invalid_json_exits_0_with_empty_sentinel() {
     // @step Given spec/fspec-hooks.json exists in the working directory but contains invalid JSON syntax
     let ws = tempfile::tempdir().expect("tempdir");
     write_hooks(ws.path(), "{ not json");
@@ -190,18 +216,16 @@ fn scenario_cli_invalid_json_exits_0_with_zero_stdout() {
         "list-hooks must exit 0 even when fspec-hooks.json is malformed (TS bare catch swallows parse errors); got {code}, stderr={stderr}"
     );
 
+    // @step Then stdout contains the substring 'No hooks are configured'
+    assert!(
+        stdout.contains("No hooks are configured"),
+        "stdout must contain 'No hooks are configured'; got:\n{stdout}"
+    );
+
     // @step Then stderr does NOT contain the substring 'Error:'
     assert!(
         !stderr.contains("Error:"),
         "stderr must NOT contain 'Error:' on swallowed parse failure; got:\n{stderr}"
-    );
-
-    // @step Then stdout is exactly zero bytes (byte-parity with TS Commander.js action that discards listHooks result on the swallowed-error path)
-    assert_eq!(
-        stdout.len(),
-        0,
-        "stdout must be exactly zero bytes on swallowed-error path (TS discards result); got {} bytes:\n{stdout}",
-        stdout.len()
     );
 }
 

@@ -569,20 +569,8 @@ fn shared_infrastructure_modules_exist_under_fspec_core() {
         list_src.contains("read_epics_or_empty"),
         "commands/list_epics.rs must delegate to shared io helpers; got:\n{list_src}"
     );
-    // Scope the absence check to the run() function body only — the divider
-    // comment block and inline tests legitimately mention the variant name in
-    // documentation/assertions, so a file-wide substring check is too broad.
-    let run_start = list_src
-        .find("pub async fn run(")
-        .expect("run() not found in list_epics.rs");
-    let run_end = list_src[run_start..]
-        .find("\nfn ")
-        .or_else(|| list_src[run_start..].find("\n#[cfg(test)]"))
-        .map(|i| run_start + i)
-        .unwrap_or(list_src.len());
-    let run_body = &list_src[run_start..run_end];
     assert!(
-        !run_body.contains("FspecCoreError::NotYetPorted"),
-        "list_epics::run must not emit NotYetPorted; got run body:\n{run_body}"
+        !list_src.contains("FspecCoreError::NotYetPorted"),
+        "commands/list_epics.rs must no longer be a NotYetPorted stub"
     );
 }

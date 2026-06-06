@@ -143,11 +143,14 @@ async fn scenario_workspace_path_overrides_cwd_for_the_work_units_watcher_root()
     // @step And a different tempdir `<B>` containing seeded work-units (id "B-1")
     let (b, _path_b) = make_workspace(&[("B-1", "tempdir-B", "backlog")]);
 
-    // @step When the developer runs `cd <A> && fspec daemon --workspace <B>`
+    // @step When the developer runs `cd <A> && fspec --workspace <B> daemon`
+    // (top-level `--workspace` MUST precede the `daemon` subcommand —
+    // see common/mod.rs::spawn_fspec_daemon docs and main.rs::Cli::workspace
+    // for the non-`global = true` rationale)
     let mut child = Command::new(fspec_bin())
-        .arg("daemon")
         .arg("--workspace")
         .arg(b.path())
+        .arg("daemon")
         .current_dir(a.path())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -339,22 +342,14 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // fifth subcommand sibling alongside `client.rs` and `daemon.rs`.
     // RPC-253 (list-work-units CLI port) adds `list_work_units.rs` as a
     // sixth subcommand sibling — the shell-facing bridge that delegates
-<<<<<<< HEAD
     // to `fspec_core::commands::list_work_units::run`.
     // RPC-248 (list-prefixes CLI port) adds `list_prefixes.rs` as a
     // seventh subcommand sibling — the shell-facing bridge that
     // delegates to `fspec_core::commands::list_prefixes::run`.
     // RPC-243/251/245/241/247 (list-epics, list-tags, list-features,
     // list-attachments, list-hooks CLI ports) add the 5 corresponding
-    // bridges. The lock-list grows from 5 → 6 → 7 → 8 → 13. RPC-246
-    // and RPC-250 (list-foundation-sections, list-schedules CLI ports)
-    // add 2 more (→15). RPC-244, RPC-249, RPC-252 (list-feature-tags,
-    // list-scenario-tags, list-virtual-hooks) add the final 3 →18; no
-    // other extras permitted.
-=======
-    // to `fspec_core::commands::list_work_units::run`. The lock-list
-    // grows from 5 → 6 → 7; no other extras permitted.
->>>>>>> parent of 6fa95633 (refactor: more commands refactored)
+    // bridges. The lock-list grows from 5 → 6 → 7 → 8 → 13; no other
+    // extras permitted.
     for f in [
         "main.rs",
         "combined.rs",
@@ -363,20 +358,12 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "common.rs",
         "status.rs",
         "list_work_units.rs",
-<<<<<<< HEAD
         "list_prefixes.rs",
         "list_epics.rs",
         "list_tags.rs",
         "list_features.rs",
         "list_attachments.rs",
         "list_hooks.rs",
-        "list_foundation_sections.rs",
-        "list_schedules.rs",
-        "list_feature_tags.rs",
-        "list_scenario_tags.rs",
-        "list_virtual_hooks.rs",
-=======
->>>>>>> parent of 6fa95633 (refactor: more commands refactored)
     ] {
         let p = src.join(f);
         assert!(
@@ -395,20 +382,12 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "common.rs",
         "status.rs",
         "list_work_units.rs",
-<<<<<<< HEAD
         "list_prefixes.rs",
         "list_epics.rs",
         "list_tags.rs",
         "list_features.rs",
         "list_attachments.rs",
         "list_hooks.rs",
-        "list_foundation_sections.rs",
-        "list_schedules.rs",
-        "list_feature_tags.rs",
-        "list_scenario_tags.rs",
-        "list_virtual_hooks.rs",
-=======
->>>>>>> parent of 6fa95633 (refactor: more commands refactored)
     ]
     .iter()
     .copied()
@@ -426,11 +405,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-<<<<<<< HEAD
-        "only the locked 18 .rs files are permitted; found extras: {unexpected:?}"
-=======
-        "only the locked 6 .rs files are permitted; found extras: {unexpected:?}"
->>>>>>> parent of 6fa95633 (refactor: more commands refactored)
+        "only the locked 13 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code

@@ -34,7 +34,6 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use codelet_fspec_core::commands::list_features;
-use codelet_fspec_core::FspecCoreError;
 use serde_json::{json, Map, Value};
 
 /// Strongly-typed args mirrored from the TypeScript Commander.js flag
@@ -82,28 +81,16 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             Ok(0)
         }
         Err(err) => {
-            // Parity with TS `src/commands/list-features.ts:138-145`:
-            //
-            //   if (error.message.includes('Directory not found')) {
-            //     output.error(error.message);                         // BARE message, no "Error:" prefix
-            //     output.log(chalk.gray("  Suggestion: ..."));         // indented continuation
-            //     process.exit(2);
-            //   }
-            //   output.error('Error:', error.message);                 // generic "Error: <msg>" form
-            //   process.exit(1);
-            //
-            // The TS `output.error` routes to stderr; `output.log` routes
-            // to stdout in CLI mode but the chalk.gray wrapper means the
-            // visual rendering is stderr-adjacent diagnostic text. For
-            // byte-for-byte parity with the Rust binary's
-            // single-output-stream contract we emit BOTH lines to stderr
-            // so shell pipelines see them together.
-            if matches!(err, FspecCoreError::DirectoryNotFound { .. }) {
-                eprintln!("{err}");
-                eprintln!("  Suggestion: Run 'fspec create-feature' to create your first feature");
+            let msg = err.to_string();
+            // Mirror the TS `output.error('Error:', ...)` path: stderr,
+            // prefixed, no ANSI required. Detect the ENOENT branch by
+            // substring (the orchestrator will rewrite this to match
+            // on the dedicated `DirectoryNotFound` variant during the
+            // wiring batch).
+            eprintln!("Error: {msg}");
+            if msg.contains("Directory not found") {
                 Ok(2)
             } else {
-                eprintln!("Error: {err}");
                 Ok(1)
             }
         }

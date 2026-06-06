@@ -455,32 +455,14 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let bridge_src = fs::read_to_string(&bridge_path).expect("bridge module readable");
 
     // @step Then the bridge module's only computation is JSON arg marshalling and CWD resolution
-    //
-    // Narrowed forbidden-substring list — only TAG-DOMAIN strings that
-    // would betray duplicated business logic. We deliberately do NOT
-    // forbid generic Rust idioms (`tags)\n`, `.sort_by`, `localeCompare`)
-    // because those would false-positive on incidental phrasing in
-    // comments / doc-strings. The three substrings below are the
-    // user-visible canonical strings emitted by `list_tags.rs::render_text`
-    // and its error paths — their presence in the bridge would
-    // prove duplication of the dispatcher's rendering / error logic.
     for forbidden in [
-        // Canonical "empty category" sentinel emitted by render_text
-        // when a category has zero tags (parity with TS
-        // `src/commands/list-tags.ts:78`). Must originate from
-        // fspec_core, never from the bridge.
         "No tags registered",
-        // Header substring emitted by render_text on the
-        // category-filter happy-path branch
-        // (`src/commands/list-tags.ts:60-67`). Bridge must not
-        // re-render headers.
-        "Available categories",
-        // Error message produced by fspec_core on the
-        // `--category` miss branch
-        // (`src/commands/list-tags.ts:48-54`). Bridge must surface
-        // it verbatim via `eprintln!("Error: {err}")`, never
-        // construct it locally.
+        "tags)\\n",
+        "Phase Tags (",
+        "localeCompare",
+        ".sort_by",
         "Category not found",
+        "Available categories",
     ] {
         assert!(
             !bridge_src.contains(forbidden),

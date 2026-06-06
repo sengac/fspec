@@ -1,9 +1,25 @@
-//! Stub for the `list-epics` fspec command. See RPC-243 for the port work unit.
-//! Original TypeScript implementation: src/commands/list-epics.ts
+//! `list-epics` — Rust port of `src/commands/list-epics.ts` (RPC-243).
+//!
+//! Reads `spec/epics.json` (returning `Ok(empty)` on ENOENT — list-epics
+//! does NOT auto-create the file) and aggregates per-epic work-unit
+//! completion progress from `spec/work-units.json` (silently swallowing
+//! malformed work-units, matching TS's bare `catch {}`). Emits either
+//! pretty-printed JSON or a plain-text summary.
+//!
+//! Both invocation paths (the LLM-facing dispatcher AND the standalone
+//! fspec Rust binary's clap subcommand) call this single function —
+//! RPC-003 §7/§11 two-front-doors invariant.
+
+use std::path::Path;
+
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 use crate::error::FspecCoreError;
+use crate::io::ensure::{read_epics_or_empty, read_work_units_or_empty};
+use crate::types::epic::Epic;
+use crate::types::work_unit::WorkUnit;
 
-<<<<<<< HEAD
 /// CLI arguments accepted by `list-epics`. Today only `format` is
 /// recognised at the dispatcher surface — the TS Commander.js registration
 /// at `src/commands/list-epics.ts:141-146` declares NO `.option(...)`
@@ -174,18 +190,6 @@ fn render_text(summaries: &[EpicWithProgress]) -> String {
     out
 }
 
-// ============================================================================
-// Production: lines 1-191 (above this divider)
-// Tests:      lines 195-322 (below this divider — gated by `#[cfg(test)]`)
-//
-// Inline `mod tests` is retained instead of extracted because the test cases
-// exercise private items (`ListEpicsArgs`, `EpicWithProgress`,
-// `aggregate_progress`, `render_text`) via `use super::*`. Promoting these to
-// `pub(crate)` to support a sibling test file under `tests/` was deemed too
-// invasive for the size win — the production surface above the divider stays
-// under 200 lines.
-// ============================================================================
-
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]
@@ -316,11 +320,4 @@ mod tests {
         assert!(out.contains("  Login features"));
         assert!(!out.contains("Work Units:"), "must omit progress: {out}");
     }
-=======
-pub async fn run(_args_json: &str) -> Result<String, FspecCoreError> {
-    Err(FspecCoreError::NotYetPorted {
-        command: "list-epics",
-        work_unit: "RPC-243",
-    })
->>>>>>> parent of 6fa95633 (refactor: more commands refactored)
 }

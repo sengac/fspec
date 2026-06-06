@@ -1,13 +1,13 @@
-//! CLI surface for the `list-prefixes` subcommand on the standalone fspec
-//! Rust binary — RPC-248.
+//! CLI surface for the `list-epics` subcommand on the standalone fspec
+//! Rust binary — RPC-243.
 //!
-//! Feature: spec/features/list-prefixes-cli-subcommand.feature
+//! Feature: spec/features/list-epics-cli-subcommand.feature
 //!
 //! Red phase: these tests MUST fail today because:
-//!   - `codelet/fspec/src/main.rs` does not yet register a `list-prefixes`
+//!   - `codelet/fspec/src/main.rs` does not yet register a `list-epics`
 //!     clap subcommand (clap returns exit code 2 for "unrecognized
 //!     subcommand").
-//!   - `codelet/fspec-core/src/commands/list_prefixes.rs` is still a
+//!   - `codelet/fspec-core/src/commands/list_epics.rs` is still a
 //!     NotYetPorted stub.
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
@@ -24,24 +24,24 @@ use common::fspec_bin;
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────
 
-fn run_list_prefixes(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
+fn run_list_epics(cwd: &Path, extra_args: &[&str]) -> (i32, String, String) {
     let mut cmd = Command::new(fspec_bin());
-    cmd.arg("list-prefixes");
+    cmd.arg("list-epics");
     for a in extra_args {
         cmd.arg(a);
     }
     cmd.current_dir(cwd);
-    let output = cmd.output().expect("spawn fspec list-prefixes");
+    let output = cmd.output().expect("spawn fspec list-epics");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
     (code, stdout, stderr)
 }
 
-fn write_prefixes(cwd: &Path, raw: &str) {
+fn write_epics(cwd: &Path, raw: &str) {
     let spec = cwd.join("spec");
     fs::create_dir_all(&spec).expect("mkdir spec");
-    fs::write(spec.join("prefixes.json"), raw).expect("write prefixes.json");
+    fs::write(spec.join("epics.json"), raw).expect("write epics.json");
 }
 
 fn write_work_units(cwd: &Path, raw: &str) {
@@ -50,11 +50,11 @@ fn write_work_units(cwd: &Path, raw: &str) {
     fs::write(spec.join("work-units.json"), raw).expect("write work-units.json");
 }
 
-fn canonical_prefixes_json() -> String {
+fn canonical_epics_json() -> String {
     r#"{
-  "prefixes": {
-    "AUTH": { "prefix": "AUTH", "description": "Auth features", "createdAt": "x" },
-    "DASH": { "prefix": "DASH", "description": "Dashboard", "createdAt": "x" }
+  "epics": {
+    "auth": { "id": "auth", "title": "Authentication", "description": "Login features", "createdAt": "x" },
+    "dash": { "id": "dash", "title": "Dashboard", "description": "Dashboard features", "createdAt": "x" }
   }
 }"#
     .to_string()
@@ -64,10 +64,10 @@ fn canonical_work_units_json() -> String {
     r#"{
   "version": "0.7.1",
   "workUnits": {
-    "AUTH-001": { "id": "AUTH-001", "title": "t", "status": "done", "createdAt": "x", "updatedAt": "x" },
-    "AUTH-002": { "id": "AUTH-002", "title": "t", "status": "backlog", "createdAt": "x", "updatedAt": "x" },
-    "DASH-001": { "id": "DASH-001", "title": "t", "status": "done", "createdAt": "x", "updatedAt": "x" },
-    "DASH-002": { "id": "DASH-002", "title": "t", "status": "done", "createdAt": "x", "updatedAt": "x" }
+    "AUTH-001": { "id": "AUTH-001", "title": "t", "epic": "auth", "status": "done", "createdAt": "x", "updatedAt": "x" },
+    "AUTH-002": { "id": "AUTH-002", "title": "t", "epic": "auth", "status": "backlog", "createdAt": "x", "updatedAt": "x" },
+    "DASH-001": { "id": "DASH-001", "title": "t", "epic": "dash", "status": "done", "createdAt": "x", "updatedAt": "x" },
+    "DASH-002": { "id": "DASH-002", "title": "t", "epic": "dash", "status": "done", "createdAt": "x", "updatedAt": "x" }
   },
   "states": {
     "backlog": ["AUTH-002"], "specifying": [], "testing": [],
@@ -79,20 +79,20 @@ fn canonical_work_units_json() -> String {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Clap exposes list-prefixes as a subcommand and prints flag-aware --help
+// Scenario: Clap exposes list-epics as a subcommand and prints flag-aware --help
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_clap_exposes_list_prefixes_with_flag_aware_help() {
+fn scenario_clap_exposes_list_epics_with_flag_aware_help() {
     // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
     // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
 
-    // @step When I run `./codelet/target/release/fspec list-prefixes --help` from a shell
+    // @step When I run `./codelet/target/release/fspec list-epics --help` from a shell
     let output = Command::new(fspec_bin())
-        .arg("list-prefixes")
+        .arg("list-epics")
         .arg("--help")
         .output()
-        .expect("spawn fspec list-prefixes --help");
+        .expect("spawn fspec list-epics --help");
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -100,43 +100,43 @@ fn scenario_clap_exposes_list_prefixes_with_flag_aware_help() {
     // @step Then the command exits 0
     assert_eq!(
         code, 0,
-        "fspec list-prefixes --help must exit 0; got {code}, stderr={stderr}"
+        "fspec list-epics --help must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains clap-generated help describing the list-prefixes subcommand
+    // @step Then stdout contains clap-generated help describing the list-epics subcommand
     assert!(
-        stdout.contains("list-prefixes") || stdout.contains("List all prefixes"),
-        "help must describe the list-prefixes subcommand; got:\n{stdout}"
+        stdout.contains("list-epics") || stdout.contains("List all epics"),
+        "help must describe the list-epics subcommand; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring '--status'
     assert!(
         !stdout.contains("--status"),
-        "list-prefixes --help must NOT advertise --status; got:\n{stdout}"
+        "list-epics --help must NOT advertise --status; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring '--prefix'
     assert!(
         !stdout.contains("--prefix"),
-        "list-prefixes --help must NOT advertise --prefix; got:\n{stdout}"
+        "list-epics --help must NOT advertise --prefix; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring '--epic'
     assert!(
         !stdout.contains("--epic"),
-        "list-prefixes --help must NOT advertise --epic; got:\n{stdout}"
+        "list-epics --help must NOT advertise --epic; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring '--format'
     assert!(
         !stdout.contains("--format"),
-        "list-prefixes --help must NOT advertise --format; got:\n{stdout}"
+        "list-epics --help must NOT advertise --format; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring '--workspace'
     assert!(
         !stdout.contains("--workspace"),
-        "list-prefixes --help must NOT advertise the global --workspace flag; got:\n{stdout}"
+        "list-epics --help must NOT advertise the global --workspace flag; got:\n{stdout}"
     );
 }
 
@@ -150,72 +150,78 @@ fn scenario_cli_against_empty_directory_prints_sentinel_and_no_files() {
     let ws = tempfile::tempdir().expect("tempdir");
     assert!(!ws.path().join("spec").exists());
 
-    // @step When I run `./codelet/target/release/fspec list-prefixes` from that directory
-    let (code, stdout, stderr) = run_list_prefixes(ws.path(), &[]);
+    // @step When I run `./codelet/target/release/fspec list-epics` from that directory
+    let (code, stdout, stderr) = run_list_epics(ws.path(), &[]);
 
     // @step Then the command exits 0
     assert_eq!(
         code, 0,
-        "fspec list-prefixes must exit 0 on empty workspace; got {code}, stderr={stderr}"
+        "fspec list-epics must exit 0 on empty workspace; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains the substring 'No prefixes found'
+    // @step Then stdout contains the substring 'No epics found'
     assert!(
-        stdout.contains("No prefixes found"),
-        "stdout must contain 'No prefixes found'; got:\n{stdout}"
+        stdout.contains("No epics found"),
+        "stdout must contain 'No epics found'; got:\n{stdout}"
     );
 
-    // @step Then spec/prefixes.json was NOT created in the directory
+    // @step Then spec/epics.json was NOT created in the directory
     assert!(
-        !ws.path().join("spec/prefixes.json").exists(),
-        "list-prefixes must NOT auto-create spec/prefixes.json"
+        !ws.path().join("spec/epics.json").exists(),
+        "list-epics must NOT auto-create spec/epics.json"
     );
 
     // @step Then spec/work-units.json was NOT created in the directory
     assert!(
         !ws.path().join("spec/work-units.json").exists(),
-        "list-prefixes must NOT auto-create spec/work-units.json"
+        "list-epics must NOT auto-create spec/work-units.json"
     );
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI text output renders prefix progress for the populated case
+// Scenario: CLI text output renders epic progress for the populated case
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_text_output_renders_prefix_progress() {
-    // @step Given spec/prefixes.json contains AUTH (description 'Auth features') and DASH (description 'Dashboard') in that order
+fn scenario_cli_text_output_renders_epic_progress() {
+    // @step Given spec/epics.json contains auth (title 'Authentication', description 'Login features') and dash (title 'Dashboard', description 'Dashboard features') in that order
     let ws = tempfile::tempdir().expect("tempdir");
-    write_prefixes(ws.path(), &canonical_prefixes_json());
+    write_epics(ws.path(), &canonical_epics_json());
 
-    // @step Given spec/work-units.json contains AUTH-001 (done), AUTH-002 (backlog), DASH-001 (done), DASH-002 (done)
+    // @step Given spec/work-units.json contains AUTH-001 (epic=auth, status=done), AUTH-002 (epic=auth, status=backlog), DASH-001 (epic=dash, status=done), DASH-002 (epic=dash, status=done)
     write_work_units(ws.path(), &canonical_work_units_json());
 
-    // @step When I run `./codelet/target/release/fspec list-prefixes`
-    let (code, stdout, stderr) = run_list_prefixes(ws.path(), &[]);
+    // @step When I run `./codelet/target/release/fspec list-epics`
+    let (code, stdout, stderr) = run_list_epics(ws.path(), &[]);
 
     // @step Then the command exits 0
     assert_eq!(
         code, 0,
-        "fspec list-prefixes must exit 0 on the populated case; got {code}, stderr={stderr}"
+        "fspec list-epics must exit 0 on the populated case; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains the substring 'Prefixes (2)'
+    // @step Then stdout contains the substring 'Epics (2)'
     assert!(
-        stdout.contains("Prefixes (2)"),
-        "stdout must contain 'Prefixes (2)' header; got:\n{stdout}"
+        stdout.contains("Epics (2)"),
+        "stdout must contain 'Epics (2)' header; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring 'AUTH'
+    // @step Then stdout contains the substring 'auth'
     assert!(
-        stdout.contains("AUTH"),
-        "stdout must contain 'AUTH'; got:\n{stdout}"
+        stdout.contains("auth"),
+        "stdout must contain 'auth'; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring '  Auth features'
+    // @step Then stdout contains the substring '  Authentication'
     assert!(
-        stdout.contains("  Auth features"),
-        "stdout must contain '  Auth features' description; got:\n{stdout}"
+        stdout.contains("  Authentication"),
+        "stdout must contain '  Authentication' title; got:\n{stdout}"
+    );
+
+    // @step Then stdout contains the substring '  Login features'
+    assert!(
+        stdout.contains("  Login features"),
+        "stdout must contain '  Login features' description; got:\n{stdout}"
     );
 
     // @step Then stdout contains the exact line '  Work Units: 1/2 (50%)'
@@ -224,10 +230,10 @@ fn scenario_cli_text_output_renders_prefix_progress() {
         "stdout must contain exact line '  Work Units: 1/2 (50%)'; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring 'DASH'
+    // @step Then stdout contains the substring 'dash'
     assert!(
-        stdout.contains("DASH"),
-        "stdout must contain 'DASH'; got:\n{stdout}"
+        stdout.contains("dash"),
+        "stdout must contain 'dash'; got:\n{stdout}"
     );
 
     // @step Then stdout contains the exact line '  Work Units: 2/2 (100%)'
@@ -238,22 +244,22 @@ fn scenario_cli_text_output_renders_prefix_progress() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: CLI exits 1 and writes to stderr when prefixes.json is malformed
+// Scenario: CLI exits 1 and writes to stderr when epics.json is malformed
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_cli_malformed_prefixes_json_exits_1_with_stderr() {
-    // @step Given spec/prefixes.json exists in the working directory but contains invalid JSON
+fn scenario_cli_malformed_epics_json_exits_1_with_stderr() {
+    // @step Given spec/epics.json exists in the working directory but contains invalid JSON
     let ws = tempfile::tempdir().expect("tempdir");
-    write_prefixes(ws.path(), "{ this is not valid json");
+    write_epics(ws.path(), "{ this is not valid json");
 
-    // @step When I run `./codelet/target/release/fspec list-prefixes`
-    let (code, stdout, stderr) = run_list_prefixes(ws.path(), &[]);
+    // @step When I run `./codelet/target/release/fspec list-epics`
+    let (code, stdout, stderr) = run_list_epics(ws.path(), &[]);
 
     // @step Then the command exits with code 1
     assert_eq!(
         code, 1,
-        "fspec list-prefixes must exit 1 on malformed prefixes.json; got {code}, stdout={stdout}, stderr={stderr}"
+        "fspec list-epics must exit 1 on malformed epics.json; got {code}, stdout={stdout}, stderr={stderr}"
     );
 
     // @step Then stderr contains the substring 'Error:'
@@ -262,10 +268,10 @@ fn scenario_cli_malformed_prefixes_json_exits_1_with_stderr() {
         "stderr must contain 'Error:' prefix; got:\n{stderr}"
     );
 
-    // @step Then stderr contains the substring 'Failed to parse prefixes.json'
+    // @step Then stderr contains the substring 'Failed to parse epics.json'
     assert!(
-        stderr.contains("Failed to parse prefixes.json"),
-        "stderr must contain 'Failed to parse prefixes.json'; got:\n{stderr}"
+        stderr.contains("Failed to parse epics.json"),
+        "stderr must contain 'Failed to parse epics.json'; got:\n{stderr}"
     );
 }
 
@@ -275,13 +281,13 @@ fn scenario_cli_malformed_prefixes_json_exits_1_with_stderr() {
 
 #[test]
 fn scenario_cli_malformed_work_units_json_exits_0_silently() {
-    // @step Given spec/prefixes.json contains AUTH (description 'Auth features')
+    // @step Given spec/epics.json contains auth (title 'Authentication')
     let ws = tempfile::tempdir().expect("tempdir");
-    write_prefixes(
+    write_epics(
         ws.path(),
         r#"{
-  "prefixes": {
-    "AUTH": { "prefix": "AUTH", "description": "Auth features", "createdAt": "x" }
+  "epics": {
+    "auth": { "id": "auth", "title": "Authentication", "createdAt": "x" }
   }
 }"#,
     );
@@ -289,19 +295,19 @@ fn scenario_cli_malformed_work_units_json_exits_0_silently() {
     // @step Given spec/work-units.json exists but contains the malformed bytes '{ not json'
     write_work_units(ws.path(), "{ not json");
 
-    // @step When I run `./codelet/target/release/fspec list-prefixes`
-    let (code, stdout, stderr) = run_list_prefixes(ws.path(), &[]);
+    // @step When I run `./codelet/target/release/fspec list-epics`
+    let (code, stdout, stderr) = run_list_epics(ws.path(), &[]);
 
     // @step Then the command exits 0
     assert_eq!(
         code, 0,
-        "fspec list-prefixes must exit 0 when work-units.json is malformed (TS silently swallows); got {code}, stderr={stderr}"
+        "fspec list-epics must exit 0 when work-units.json is malformed (TS silently swallows); got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains the substring 'AUTH'
+    // @step Then stdout contains the substring 'auth'
     assert!(
-        stdout.contains("AUTH"),
-        "stdout must list AUTH; got:\n{stdout}"
+        stdout.contains("auth"),
+        "stdout must list auth; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring 'Work Units:'
@@ -316,8 +322,8 @@ fn scenario_cli_malformed_work_units_json_exits_0_silently() {
 // ─────────────────────────────────────────────────────────────────────────
 
 #[test]
-fn scenario_default_combined_tui_mode_preserved_after_adding_list_prefixes() {
-    // @step Given the fspec Rust binary has list-prefixes registered as a clap subcommand alongside daemon, client, status, and list-work-units
+fn scenario_default_combined_tui_mode_preserved_after_adding_list_epics() {
+    // @step Given the fspec Rust binary has list-epics registered as a clap subcommand alongside daemon, client, status, list-work-units, and list-prefixes
     // (asserted by the help-listing check below)
 
     // @step When I run `./codelet/target/release/fspec --help`
@@ -333,8 +339,15 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_prefixes() {
     );
     let help = String::from_utf8_lossy(&output.stdout).into_owned();
 
-    // @step Then the help output lists daemon, client, status, list-work-units, and list-prefixes as available subcommands
-    for sub in ["daemon", "client", "status", "list-work-units", "list-prefixes"] {
+    // @step Then the help output lists daemon, client, status, list-work-units, list-prefixes, and list-epics as available subcommands
+    for sub in [
+        "daemon",
+        "client",
+        "status",
+        "list-work-units",
+        "list-prefixes",
+        "list-epics",
+    ] {
         assert!(
             help.contains(sub),
             "fspec --help must list `{sub}` subcommand; got:\n{help}"
@@ -354,13 +367,13 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_prefixes() {
 
 #[test]
 fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
-    // @step Given a project root whose spec/prefixes.json contains AUTH (description 'Auth features') and spec/work-units.json contains AUTH-001 (done) and AUTH-002 (backlog)
+    // @step Given a project root whose spec/epics.json contains auth (title 'Authentication') and spec/work-units.json contains AUTH-001 (epic=auth, status=done) and AUTH-002 (epic=auth, status=backlog)
     let ws = tempfile::tempdir().expect("tempdir");
-    write_prefixes(
+    write_epics(
         ws.path(),
         r#"{
-  "prefixes": {
-    "AUTH": { "prefix": "AUTH", "description": "Auth features", "createdAt": "x" }
+  "epics": {
+    "auth": { "id": "auth", "title": "Authentication", "createdAt": "x" }
   }
 }"#,
     );
@@ -369,8 +382,8 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         r#"{
   "version": "0.7.1",
   "workUnits": {
-    "AUTH-001": { "id": "AUTH-001", "title": "t", "status": "done", "createdAt": "x", "updatedAt": "x" },
-    "AUTH-002": { "id": "AUTH-002", "title": "t", "status": "backlog", "createdAt": "x", "updatedAt": "x" }
+    "AUTH-001": { "id": "AUTH-001", "title": "t", "epic": "auth", "status": "done", "createdAt": "x", "updatedAt": "x" },
+    "AUTH-002": { "id": "AUTH-002", "title": "t", "epic": "auth", "status": "backlog", "createdAt": "x", "updatedAt": "x" }
   },
   "states": {
     "backlog": ["AUTH-002"], "specifying": [], "testing": [],
@@ -380,9 +393,9 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
 }"#,
     );
 
-    // @step When I dispatch list-prefixes through fspec_core::dispatch::dispatch_command with format='json'
+    // @step When I dispatch list-epics through fspec_core::dispatch::dispatch_command with format='json'
     let req = codelet_fspec_core::DispatchRequest {
-        command: "list-prefixes".to_string(),
+        command: "list-epics".to_string(),
         args_json: r#"{"format":"json"}"#.to_string(),
         project_root: ws.path().to_path_buf(),
     };
@@ -390,43 +403,39 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert!(result.success, "dispatcher path must succeed; got {result:?}");
     let dispatcher_data: serde_json::Value =
         serde_json::from_str(&result.data).expect("dispatcher data is JSON");
-    let dispatcher_auth = &dispatcher_data["prefixes"]
+    let dispatcher_auth = &dispatcher_data["epics"]
         .as_array()
-        .expect("prefixes array")[0];
-    assert_eq!(dispatcher_auth["prefix"].as_str(), Some("AUTH"));
+        .expect("epics array")[0];
+
+    // @step Then the dispatcher's DispatchResult.data parses to an epics structure with auth at 1/2 (50%)
+    assert_eq!(dispatcher_auth["id"].as_str(), Some("auth"));
     assert_eq!(dispatcher_auth["totalWorkUnits"].as_u64(), Some(2));
     assert_eq!(dispatcher_auth["completedWorkUnits"].as_u64(), Some(1));
     assert_eq!(dispatcher_auth["completionPercentage"].as_u64(), Some(50));
 
-    // @step Then the dispatcher's DispatchResult.data parses to the same prefixes structure that `./codelet/target/release/fspec list-prefixes --format=json` would produce if it accepted that flag
-    // The CLI today does NOT expose --format (per rule [10]), so we assert
-    // the text path mirrors the same underlying data. This validates the
-    // shared-function delegation (rule [11]).
-    let (code, stdout, _stderr) = run_list_prefixes(ws.path(), &[]);
+    // @step Then the CLI text output reflects the same 1/2 (50%) progress
+    let (code, stdout, _stderr) = run_list_epics(ws.path(), &[]);
     assert_eq!(code, 0);
-    assert!(stdout.contains("AUTH"));
+    assert!(stdout.contains("auth"));
     assert!(
         stdout.lines().any(|l| l == "  Work Units: 1/2 (50%)"),
         "CLI text output must reflect the same 1/2 (50%) progress as the dispatcher; got:\n{stdout}"
     );
 
-    // @step Then the CLI bridge module codelet/fspec/src/list_prefixes.rs contains NO inline prefix-aggregation, filter, or rendering logic — its only computation is JSON arg marshalling
-    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_prefixes.rs");
+    // @step Then the CLI bridge module codelet/fspec/src/list_epics.rs contains NO inline epic-aggregation, filter, or rendering logic — its only computation is JSON arg marshalling
+    let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_epics.rs");
     assert!(
         bridge_path.exists(),
-        "codelet/fspec/src/list_prefixes.rs must exist as the CLI bridge module; got missing: {}",
+        "codelet/fspec/src/list_epics.rs must exist as the CLI bridge module; got missing: {}",
         bridge_path.display()
     );
     let bridge_src = fs::read_to_string(&bridge_path).expect("bridge module readable");
-    // Forbid any inline aggregation/rendering markers — the bridge must only marshall args
-    // and delegate. (Same anti-duplication guard used by RPC-253 in the
-    // list_work_units bridge.)
     for forbidden in [
         "completionPercentage",
         "totalWorkUnits",
         "completedWorkUnits",
-        "No prefixes found",
-        "Prefixes (",
+        "No epics found",
+        "Epics (",
         "Work Units:",
     ] {
         assert!(

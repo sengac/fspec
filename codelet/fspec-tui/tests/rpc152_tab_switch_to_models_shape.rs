@@ -38,7 +38,7 @@ fn mod_rs() -> String {
 /// Walk braces forward from `abs_open` (which must be the index of an
 /// opening `{`) until the matching close, returning the inclusive
 /// substring.
-fn brace_balanced<'a>(src: &'a str, abs_open: usize) -> &'a str {
+fn brace_balanced(src: &str, abs_open: usize) -> &str {
     let bytes = src.as_bytes();
     assert!(bytes[abs_open] == b'{', "abs_open must point at `{{`");
     let mut depth: i32 = 0;
@@ -56,32 +56,32 @@ fn brace_balanced<'a>(src: &'a str, abs_open: usize) -> &'a str {
         }
         i += 1;
     }
-    panic!("matching closing brace for opener at {} not found", abs_open);
+    panic!("matching closing brace for opener at {abs_open} not found");
 }
 
 /// Extract the body of the named function (e.g. `"handle_list_key"`,
 /// `"handle_filter_key"`). Returns the substring from the opening `{`
 /// through the matching `}`.
 fn fn_body<'a>(src: &'a str, fn_name: &str) -> &'a str {
-    let needle = format!("fn {}(", fn_name);
+    let needle = format!("fn {fn_name}(");
     let start = src
         .find(&needle)
-        .unwrap_or_else(|| panic!("`fn {}(` not found", fn_name));
+        .unwrap_or_else(|| panic!("`fn {fn_name}(` not found"));
     let brace_rel = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for `fn {}` not found", fn_name));
+        .unwrap_or_else(|| panic!("opening brace for `fn {fn_name}` not found"));
     brace_balanced(src, start + brace_rel)
 }
 
 /// Extract the body of the named enum (e.g. `"ProviderSettingsEvent"`).
 fn enum_body<'a>(src: &'a str, enum_name: &str) -> &'a str {
-    let needle = format!("pub enum {} {{", enum_name);
+    let needle = format!("pub enum {enum_name} {{");
     let start = src
         .find(&needle)
-        .unwrap_or_else(|| panic!("`pub enum {} {{` not found", enum_name));
+        .unwrap_or_else(|| panic!("`pub enum {enum_name} {{` not found"));
     let brace_rel = src[start..]
         .find('{')
-        .unwrap_or_else(|| panic!("opening brace for `enum {}` not found", enum_name));
+        .unwrap_or_else(|| panic!("opening brace for `enum {enum_name}` not found"));
     brace_balanced(src, start + brace_rel)
 }
 
@@ -148,8 +148,7 @@ fn scenario_filter_mode_guard_appears_before_tab_arm() {
     // @step And the offset of "if view.filter_mode {" must be less than the offset of "KeyCode::Tab => ProviderSettingsEvent::SwitchToModels"
     assert!(
         filter_offset < tab_offset,
-        "filter_mode guard must appear BEFORE the Tab arm so filter-mode Tab routes to handle_filter_key (RPC-152). filter_offset={}, tab_offset={}",
-        filter_offset, tab_offset
+        "filter_mode guard must appear BEFORE the Tab arm so filter-mode Tab routes to handle_filter_key (RPC-152). filter_offset={filter_offset}, tab_offset={tab_offset}"
     );
 }
 

@@ -3253,6 +3253,15 @@ export interface PauseState {
  * auth file present, etc.). `model_count` is the number of models the
  * provider's config currently exposes — drives the
  * "(n models)" suffix in each row.
+ *
+ * RPC-108: `masked_key` and `source` extend the wire surface so the
+ * TUI can render `'sk-ant-••••mnop [env]'`-style indicators on
+ * configured rows. Both stay `Option<String>` (not enums) because
+ * `napi(object)` does not support discriminated enums — matches the
+ * existing `credential_type` string convention at L407-409. Server-side
+ * the masking happens inside `codelet-providers` via
+ * `credentials::mask_api_key` BEFORE the data crosses the wire, so
+ * raw key bytes never traverse either transport.
  */
 export interface ProviderCredentialInfo {
   providerId: string;
@@ -3264,6 +3273,18 @@ export interface ProviderCredentialInfo {
    */
   credentialType: string;
   modelCount: number;
+  /**
+   * RPC-108: Display-safe masked credential (e.g.
+   * `Some("sk-ant-••••••••mnop")`). `None` for unconfigured rows and
+   * for OAuth-only providers (the view layer renders `'OAuth'`).
+   */
+  maskedKey?: string;
+  /**
+   * RPC-108: Provenance tag — one of `"explicit" | "file" | "env" |
+   * "dotenv"` mirroring TS `ProviderConfigResult.source` at
+   * `src/utils/credentials.ts:56-59`. `None` when unconfigured.
+   */
+  source?: string;
 }
 
 /**
