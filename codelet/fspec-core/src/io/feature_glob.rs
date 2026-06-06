@@ -9,13 +9,14 @@
 //! `validate`, `format`, `show-feature`) will reuse it instead of
 //! re-implementing the walk.
 //!
-//! Error semantics: missing `spec/features/` directory escalates as an
-//! [`FspecCoreError`] whose `Display` contains the exact substring
+//! Error semantics: missing `spec/features/` directory escalates as
+//! [`FspecCoreError::DirectoryNotFound { path: "spec/features/" }`]
+//! whose `Display` contains the exact substring
 //! `"Directory not found: spec/features/"` (parity with TS
-//! `src/commands/list-features.ts:33-38`). The transient variant used
-//! here is `InvalidArgs { command: "list-features", reason: ... }`; the
-//! orchestrator promotes this to a dedicated `DirectoryNotFound` variant
-//! during the wiring batch — both call-sites must be updated together.
+//! `src/commands/list-features.ts:33-38`). The dedicated
+//! `DirectoryNotFound` variant is returned directly (see lines 34-36);
+//! no intermediate `InvalidArgs` substring sniffing is required at the
+//! call sites.
 
 use std::path::{Path, PathBuf};
 
@@ -25,9 +26,10 @@ use crate::error::FspecCoreError;
 /// `*.feature` file path relative to `project_root` with forward-slash
 /// separators, sorted alphabetically.
 ///
-/// Returns `Err(InvalidArgs)` whose message contains
-/// `"Directory not found: spec/features/"` when the directory does not
-/// exist (parity with TS `access(featuresDir)` ENOENT branch).
+/// Returns `Err(FspecCoreError::DirectoryNotFound { path: "spec/features/" })`
+/// when the directory does not exist (parity with TS `access(featuresDir)`
+/// ENOENT branch). The `Display` impl produces the canonical
+/// `"Directory not found: spec/features/"` substring.
 pub fn glob_feature_files(project_root: &Path) -> Result<Vec<String>, FspecCoreError> {
     let features_dir = project_root.join("spec").join("features");
     if !features_dir.exists() {

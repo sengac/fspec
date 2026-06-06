@@ -22,13 +22,28 @@
 //! `src/commands/list-hooks.ts:47-54`. No event-aggregation or
 //! rendering logic is duplicated here.
 //!
+//! Byte-parity contract with the TS canonical CLI:
+//!   - The TypeScript Commander.js action at
+//!     `src/commands/list-hooks.ts:51-53` is
+//!     `.action(async (options) => { await listHooks(options); })`
+//!     and DISCARDS the returned `ListHooksResult` without ever
+//!     calling `console.log`. The TS CLI writes **zero bytes** to
+//!     stdout on every input (missing file, empty hooks, populated
+//!     config, invalid JSON, etc.).
+//!   - This bridge mirrors that exactly: we invoke
+//!     `list_hooks::run` (to preserve any future side-effects and to
+//!     surface real errors) but we DO NOT print its rendered text.
+//!     The dispatcher path retains the rendered text for the
+//!     structured-output contract used by the LLM tool-call protocol;
+//!     only the shell-CLI surface stays silent.
+//!
 //! Exit-code contract:
-//!   - 0 on success; the rendered text (no ANSI) is written to stdout.
+//!   - 0 on success; stdout is empty (byte-parity with TS).
 //!   - 1 on any [`codelet_fspec_core::FspecCoreError`]; the message is
 //!     written to stderr prefixed with `Error:`. In practice the
 //!     broad-swallow semantics of the underlying command mean this
 //!     error path is rarely hit — missing files and malformed JSON
-//!     both succeed with the empty sentinel.
+//!     both succeed silently with the empty sentinel.
 
 use std::env;
 use std::path::PathBuf;
@@ -71,20 +86,21 @@ pub async fn run(_args: CliArgs) -> Result<u8> {
     let args_json = json!(obj).to_string();
 
     match list_hooks::run(&args_json, &project_root).await {
-        Ok(rendered) => {
-            // text format embeds its own trailing-newline structure
-            // when populated; the empty-result sentinel (rendered by
-            // fspec_core) has no trailing newline, so we append one
-            // for shell-pipeline friendliness.
-            print!("{rendered}");
-            if !rendered.ends_with('\n') {
-                println!();
-            }
+        Ok(_rendered) => {
+            // BYTE-PARITY WITH TS COMMANDER.JS: the canonical TS
+            // action at `src/commands/list-hooks.ts:51-53` discards the
+            // returned `ListHooksResult` without printing. We MUST NOT
+            // write to stdout here. The dispatcher path retains the
+            // rendered text for the structured-output contract;
+            // this shell-CLI surface stays silent on success.
             Ok(0)
         }
         Err(err) => {
             // Mirror the TS `output.error('Error:', ...)` path: stderr,
-            // prefixed, no ANSI required.
+            // prefixed, no ANSI required. The broad-swallow semantics
+            // of `list_hooks::run` mean this branch is unreachable for
+            // the empty / malformed-file inputs — both fold into the
+            // Ok(_) arm above with the empty-sentinel payload.
             eprintln!("Error: {err}");
             Ok(1)
         }

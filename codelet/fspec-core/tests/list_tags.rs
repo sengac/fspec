@@ -11,7 +11,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use codelet_fspec_core::{dispatch_command, DispatchRequest};
 use serde_json::{json, Value};
@@ -505,7 +505,7 @@ fn scenario_shared_infrastructure_modules_exist_under_fspec_core() {
     );
 
     // @step Then types::tags::TagsData exists as a public type
-    let tags_path: PathBuf = crate_src.join("types/tags.rs");
+    let tags_path = crate_src.join("types/tags.rs");
     assert!(
         tags_path.exists(),
         "types/tags.rs must exist; got missing: {}",

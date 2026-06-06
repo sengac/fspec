@@ -1,0 +1,391 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes list-tags as a subcommand and prints flag-aware --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "76-126",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI against empty directory auto-creates tags.json and prints all 9 default categories",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "132-176",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI text output renders alphabetically sorted tags per category",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "182-239",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --category filter restricts output to the matching category",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "245-283",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --category filter exits 1 and writes 'Category not found' to stderr for unknown category",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "289-316",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 and writes to stderr when tags.json is malformed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "322-348",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "354-392",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher (no duplicated business logic)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_tags.rs",
+          "lines": "398-471",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/list_tags.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_list_tags.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/list_tags.rs"
+    ],
+    "totalLinesCovered": 608
+  }
+}

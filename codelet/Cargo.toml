@@ -123,6 +123,12 @@ glob = "0.3"
 ignore = "0.4"
 globset = "0.4"
 
+# === Gherkin parser (RPC-249) ===
+# Pure-Rust port of @cucumber/gherkin used by list-scenario-tags and
+# (in future) list-features. Disable default features to keep the
+# dep tree small — we only need the `parser` feature.
+gherkin = { version = "0.16", default-features = false, features = ["parser"] }
+
 # === Ripgrep Core ===
 grep-regex = "0.1"
 grep-searcher = "0.1"

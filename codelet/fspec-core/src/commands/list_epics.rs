@@ -190,6 +190,18 @@ fn render_text(summaries: &[EpicWithProgress]) -> String {
     out
 }
 
+// ============================================================================
+// Production: lines 1-191 (above this divider)
+// Tests:      lines 195-322 (below this divider — gated by `#[cfg(test)]`)
+//
+// Inline `mod tests` is retained instead of extracted because the test cases
+// exercise private items (`ListEpicsArgs`, `EpicWithProgress`,
+// `aggregate_progress`, `render_text`) via `use super::*`. Promoting these to
+// `pub(crate)` to support a sibling test file under `tests/` was deemed too
+// invasive for the size win — the production surface above the divider stays
+// under 200 lines.
+// ============================================================================
+
 #[cfg(test)]
 mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::useless_vec)]

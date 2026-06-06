@@ -166,12 +166,12 @@ fn project_category(cat: &crate::types::tags::TagCategory) -> CategoryEntry {
     }
 }
 
-/// Lexicographic comparison standing in for the TS
-/// `String.prototype.localeCompare` call. For the ASCII-only tag
-/// names used by fspec (`@` + alphanumeric), Rust's default `cmp`
-/// matches `localeCompare` byte-for-byte; we factor it out into a
-/// dedicated fn so a future locale-aware refactor lands as a
-/// one-call change.
+/// Compare two tag names byte-wise.
+///
+/// NOTE: This is NOT a full locale-aware compare. For ASCII-only tag
+/// names (the only kind fspec emits today) byte cmp matches the TS
+/// `localeCompare` result byte-for-byte. Non-ASCII tags (e.g. `@café`)
+/// would sort differently — file an issue if you encounter one.
 fn cmp_tag(a: &str, b: &str) -> Ordering {
     a.cmp(b)
 }

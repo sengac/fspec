@@ -348,8 +348,11 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // delegates to `fspec_core::commands::list_prefixes::run`.
     // RPC-243/251/245/241/247 (list-epics, list-tags, list-features,
     // list-attachments, list-hooks CLI ports) add the 5 corresponding
-    // bridges. The lock-list grows from 5 → 6 → 7 → 8 → 13; no other
-    // extras permitted.
+    // bridges. The lock-list grows from 5 → 6 → 7 → 8 → 13. RPC-246
+    // and RPC-250 (list-foundation-sections, list-schedules CLI ports)
+    // add 2 more (→15). RPC-244, RPC-249, RPC-252 (list-feature-tags,
+    // list-scenario-tags, list-virtual-hooks) add the final 3 →18; no
+    // other extras permitted.
     for f in [
         "main.rs",
         "combined.rs",
@@ -364,6 +367,11 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "list_features.rs",
         "list_attachments.rs",
         "list_hooks.rs",
+        "list_foundation_sections.rs",
+        "list_schedules.rs",
+        "list_feature_tags.rs",
+        "list_scenario_tags.rs",
+        "list_virtual_hooks.rs",
     ] {
         let p = src.join(f);
         assert!(
@@ -388,6 +396,11 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "list_features.rs",
         "list_attachments.rs",
         "list_hooks.rs",
+        "list_foundation_sections.rs",
+        "list_schedules.rs",
+        "list_feature_tags.rs",
+        "list_scenario_tags.rs",
+        "list_virtual_hooks.rs",
     ]
     .iter()
     .copied()
@@ -405,7 +418,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 13 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 18 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
