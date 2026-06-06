@@ -49,3 +49,27 @@ Feature: List Feature Tags Cli Subcommand
     When I run `./codelet/target/release/fspec list-feature-tags spec/features/user-auth.feature --show-categories`
     Then the command exits 0
     And stdout reflects the category cross-reference produced by fspec_core::commands::list_feature_tags::run with showCategories=true
+
+  Scenario: CLI exits 1 with stderr-routed error when feature file does not exist
+    Given a working directory containing no spec/features/missing.feature
+    When I run `./codelet/target/release/fspec list-feature-tags spec/features/missing.feature` from that directory
+    Then the command exits with code 1
+    Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
+    Then stdout contains zero bytes
+
+
+  Scenario: CLI exits 1 with stderr-routed error when --show-categories is combined with a missing file
+    Given a working directory containing no spec/features/missing.feature
+    When I run `./codelet/target/release/fspec list-feature-tags spec/features/missing.feature --show-categories` from that directory
+    Then the command exits with code 1
+    Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
+    Then stdout contains zero bytes
+
+
+  Scenario: CLI exits 1 with stderr-routed error when the file is not a valid Gherkin feature
+    Given spec/features/broken.feature contains the plain text 'Not a feature at all' with no Feature header
+    When I run `./codelet/target/release/fspec list-feature-tags spec/features/broken.feature` from that directory
+    Then the command exits with code 1
+    Then stderr contains the exact line 'Error: File does not contain a valid Feature'
+    Then stdout contains zero bytes
+

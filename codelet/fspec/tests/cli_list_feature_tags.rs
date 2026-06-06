@@ -47,38 +47,38 @@ fn scenario_clap_exposes_list_feature_tags_with_show_categories() {
         "fspec list-feature-tags --help must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains clap-generated help describing the list-feature-tags subcommand
+    // @step And stdout contains clap-generated help describing the list-feature-tags subcommand
     assert!(
         stdout.contains("list-feature-tags")
             || stdout.contains("List all tags on a specific feature file"),
         "help must describe the list-feature-tags subcommand; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring '--show-categories'
+    // @step And stdout contains the substring '--show-categories'
     assert!(
         stdout.contains("--show-categories"),
         "list-feature-tags --help must advertise --show-categories; got:\n{stdout}"
     );
 
-    // @step Then stdout contains a positional argument descriptor for `<FILE>` or `<file>`
+    // @step And stdout contains a positional argument descriptor for `<FILE>` or `<file>`
     assert!(
         stdout.contains("<FILE>") || stdout.contains("<file>"),
         "list-feature-tags --help must show <FILE> positional descriptor; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring '--format'
+    // @step And stdout does NOT contain the substring '--format'
     assert!(
         !stdout.contains("--format"),
         "list-feature-tags --help must NOT advertise --format; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring '--workspace'
+    // @step And stdout does NOT contain the substring '--workspace'
     assert!(
         !stdout.contains("--workspace"),
         "list-feature-tags --help must NOT advertise --workspace; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring '--cwd'
+    // @step And stdout does NOT contain the substring '--cwd'
     assert!(
         !stdout.contains("--cwd"),
         "list-feature-tags --help must NOT advertise --cwd; got:\n{stdout}"
@@ -120,25 +120,25 @@ fn scenario_cli_happy_path_prints_flat_declaration_tag_list() {
         "fspec list-feature-tags must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains the substring 'Tags on this feature:'
+    // @step And stdout contains the substring 'Tags on this feature:'
     assert!(
         stdout.contains("Tags on this feature:"),
         "stdout must contain 'Tags on this feature:' header; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the exact line '  @critical'
+    // @step And stdout contains the exact line '  @critical'
     assert!(
         stdout.lines().any(|l| l == "  @critical"),
         "stdout must contain exact line '  @critical'; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the exact line '  @auth'
+    // @step And stdout contains the exact line '  @auth'
     assert!(
         stdout.lines().any(|l| l == "  @auth"),
         "stdout must contain exact line '  @auth'; got:\n{stdout}"
     );
 
-    // @step Then the line '  @critical' appears BEFORE the line '  @auth' in stdout
+    // @step And the line '  @critical' appears BEFORE the line '  @auth' in stdout
     let critical = stdout
         .find("  @critical")
         .expect("@critical line present");
@@ -199,7 +199,7 @@ fn scenario_cli_show_categories_flag_emits_categorized_pairs() {
         "fspec list-feature-tags --show-categories must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout reflects the category cross-reference produced by fspec_core::commands::list_feature_tags::run with showCategories=true
+    // @step And stdout reflects the category cross-reference produced by fspec_core::commands::list_feature_tags::run with showCategories=true
     //
     // The bridge does NOT render categorized output itself — it simply
     // prints whatever `fspec_core::commands::list_feature_tags::run`
@@ -266,4 +266,139 @@ fn scenario_cli_bridge_module_embeds_no_duplicated_business_logic() {
             "bridge module must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI exits 1 with stderr-routed error when feature file does
+// not exist (RPC-244 reopened — post-restoration parity regression)
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_missing_file_routes_error_to_stderr_with_exit_1() {
+    // @step Given a working directory containing no spec/features/missing.feature
+    let ws = tempfile::tempdir().expect("tempdir");
+    // Intentionally do NOT create spec/features/missing.feature.
+
+    // @step When I run `./codelet/target/release/list_feature_tags_bin spec/features/missing.feature` from that directory
+    let output = Command::new(fspec_bin())
+        .arg("list-feature-tags")
+        .arg("spec/features/missing.feature")
+        .current_dir(ws.path())
+        .output()
+        .expect("spawn list_feature_tags_bin");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits with code 1
+    assert_eq!(
+        code, 1,
+        "missing file must exit 1 (parity with TS process.exit(1)); got code={code}\nstdout={stdout}\nstderr={stderr}"
+    );
+
+    // @step Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
+    assert!(
+        stderr
+            .lines()
+            .any(|l| l == "Error: File not found: spec/features/missing.feature"),
+        "stderr must contain exact line; got:\n{stderr}"
+    );
+
+    // @step Then stdout contains zero bytes
+    assert!(
+        stdout.is_empty(),
+        "missing-file error path must write ZERO bytes to stdout; got {} bytes:\n{stdout}",
+        stdout.len()
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI exits 1 with stderr-routed error when --show-categories
+// is combined with a missing file
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_missing_file_with_show_categories_also_routes_error_to_stderr() {
+    // @step Given a working directory containing no spec/features/missing.feature
+    let ws = tempfile::tempdir().expect("tempdir");
+
+    // @step When I run `./codelet/target/release/list_feature_tags_bin spec/features/missing.feature --show-categories` from that directory
+    let output = Command::new(fspec_bin())
+        .arg("list-feature-tags")
+        .arg("spec/features/missing.feature")
+        .arg("--show-categories")
+        .current_dir(ws.path())
+        .output()
+        .expect("spawn list_feature_tags_bin --show-categories");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits with code 1
+    assert_eq!(
+        code, 1,
+        "missing file with --show-categories must still exit 1; got code={code}\nstdout={stdout}\nstderr={stderr}"
+    );
+
+    // @step Then stderr contains the exact line 'Error: File not found: spec/features/missing.feature'
+    assert!(
+        stderr
+            .lines()
+            .any(|l| l == "Error: File not found: spec/features/missing.feature"),
+        "stderr must contain exact line; got:\n{stderr}"
+    );
+
+    // @step Then stdout contains zero bytes
+    assert!(
+        stdout.is_empty(),
+        "--show-categories must not change stdout silence on error; got {} bytes:\n{stdout}",
+        stdout.len()
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: CLI exits 1 with stderr-routed error when the file is not a
+// valid Gherkin feature
+// ─────────────────────────────────────────────────────────────────────────
+
+#[test]
+fn scenario_cli_invalid_gherkin_routes_error_to_stderr_with_exit_1() {
+    // @step Given spec/features/broken.feature contains the plain text 'Not a feature at all' with no Feature header
+    let ws = tempfile::tempdir().expect("tempdir");
+    let features_dir = ws.path().join("spec/features");
+    std::fs::create_dir_all(&features_dir).expect("mkdir features");
+    std::fs::write(features_dir.join("broken.feature"), "Not a feature at all\n")
+        .expect("write broken.feature");
+
+    // @step When I run `./codelet/target/release/list_feature_tags_bin spec/features/broken.feature` from that directory
+    let output = Command::new(fspec_bin())
+        .arg("list-feature-tags")
+        .arg("spec/features/broken.feature")
+        .current_dir(ws.path())
+        .output()
+        .expect("spawn list_feature_tags_bin broken.feature");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits with code 1
+    assert_eq!(
+        code, 1,
+        "invalid Gherkin must exit 1; got code={code}\nstdout={stdout}\nstderr={stderr}"
+    );
+
+    // @step Then stderr contains the exact line 'Error: File does not contain a valid Feature'
+    assert!(
+        stderr
+            .lines()
+            .any(|l| l == "Error: File does not contain a valid Feature"),
+        "stderr must contain exact line; got:\n{stderr}"
+    );
+
+    // @step Then stdout contains zero bytes
+    assert!(
+        stdout.is_empty(),
+        "invalid-Gherkin error path must write ZERO bytes to stdout; got {} bytes:\n{stdout}",
+        stdout.len()
+    );
 }

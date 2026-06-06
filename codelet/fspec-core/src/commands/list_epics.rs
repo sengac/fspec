@@ -144,10 +144,12 @@ where
 ///
 /// Layout (one block per epic, blank-line separated):
 ///
-///     <id>
-///       <title>
-///       <description>       — omitted when title or description is None
-///       Work Units: c/t (p%) — omitted when total is 0
+/// ```text
+/// <id>
+///   <title>
+///   <description>       — omitted when title or description is None
+///   Work Units: c/t (p%) — omitted when total is 0
+/// ```
 fn render_text(summaries: &[EpicWithProgress]) -> String {
     if summaries.is_empty() {
         return "No epics found".to_string();
