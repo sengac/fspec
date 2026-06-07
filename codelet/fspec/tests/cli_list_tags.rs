@@ -93,31 +93,31 @@ fn scenario_clap_exposes_list_tags_with_flag_aware_help() {
         "fspec list-tags --help must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains clap-generated help describing the list-tags subcommand
+    // @step And stdout contains clap-generated help describing the list-tags subcommand
     assert!(
         stdout.contains("list-tags") || stdout.contains("List all registered tags"),
         "help must describe the list-tags subcommand; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring '--category'
+    // @step And stdout contains the substring '--category'
     assert!(
         stdout.contains("--category"),
         "list-tags --help must advertise --category; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring '--format'
+    // @step And stdout does NOT contain the substring '--format'
     assert!(
         !stdout.contains("--format"),
         "list-tags --help must NOT advertise --format; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring '--workspace'
+    // @step And stdout does NOT contain the substring '--workspace'
     assert!(
         !stdout.contains("--workspace"),
         "list-tags --help must NOT advertise --workspace; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring '--cwd'
+    // @step And stdout does NOT contain the substring '--cwd'
     assert!(
         !stdout.contains("--cwd"),
         "list-tags --help must NOT advertise --cwd; got:\n{stdout}"
@@ -143,31 +143,31 @@ fn scenario_cli_against_empty_directory_auto_creates_tags_file() {
         "fspec list-tags must exit 0 on empty workspace; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains the substring 'Phase Tags (0 tags)'
+    // @step And stdout contains the substring 'Phase Tags (0 tags)'
     assert!(
         stdout.contains("Phase Tags (0 tags)"),
         "stdout must contain 'Phase Tags (0 tags)' header; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring 'Component Tags (0 tags)'
+    // @step And stdout contains the substring 'Component Tags (0 tags)'
     assert!(
         stdout.contains("Component Tags (0 tags)"),
         "stdout must contain 'Component Tags (0 tags)' header; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring 'Automation Tags (0 tags)'
+    // @step And stdout contains the substring 'Automation Tags (0 tags)'
     assert!(
         stdout.contains("Automation Tags (0 tags)"),
         "stdout must contain 'Automation Tags (0 tags)' header; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring '  No tags registered'
+    // @step And stdout contains the substring '  No tags registered'
     assert!(
         stdout.contains("  No tags registered"),
         "stdout must contain 'No tags registered' line; got:\n{stdout}"
     );
 
-    // @step Then spec/tags.json was created in the directory
+    // @step And spec/tags.json was created in the directory
     assert!(
         ws.path().join("spec").join("tags.json").exists(),
         "list-tags must auto-create spec tags file"
@@ -235,6 +235,9 @@ fn scenario_cli_text_output_renders_alphabetically_sorted_tags() {
         aaa < zed,
         "@aaa must appear before @zed; aaa={aaa} zed={zed}\n{stdout}"
     );
+    // @step And stdout contains the exact line ' @aaa - A desc'
+    // @step And stdout contains the exact line ' @zed - Z desc'
+    // @step And the line ' @aaa - A desc' appears BEFORE the line ' @zed - Z desc' in stdout
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -256,25 +259,25 @@ fn scenario_cli_category_filter_restricts_output() {
         "fspec list-tags --category 'Phase Tags' must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains the substring 'Phase Tags'
+    // @step And stdout contains the substring 'Phase Tags'
     assert!(
         stdout.contains("Phase Tags"),
         "stdout must contain 'Phase Tags'; got:\n{stdout}"
     );
 
-    // @step Then stdout contains the substring '@critical'
+    // @step And stdout contains the substring '@critical'
     assert!(
         stdout.contains("@critical"),
         "stdout must contain '@critical'; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring 'Component Tags'
+    // @step And stdout does NOT contain the substring 'Component Tags'
     assert!(
         !stdout.contains("Component Tags"),
         "filter must drop Component Tags; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT contain the substring '@cli'
+    // @step And stdout does NOT contain the substring '@cli'
     assert!(
         !stdout.contains("@cli"),
         "filter must drop @cli; got:\n{stdout}"
@@ -301,13 +304,13 @@ fn scenario_cli_category_filter_unknown_exits_1() {
         "fspec list-tags must exit 1 on unknown category; got {code}, stdout={stdout}, stderr={stderr}"
     );
 
-    // @step Then stderr contains the substring 'Error:'
+    // @step And stderr contains the substring 'Error:'
     assert!(
         stderr.contains("Error:"),
         "stderr must contain 'Error:' prefix; got:\n{stderr}"
     );
 
-    // @step Then stderr contains the substring 'Category not found: No Such Category. Available categories:'
+    // @step And stderr contains the substring 'Category not found: No Such Category. Available categories:'
     assert!(
         stderr.contains("Category not found: No Such Category. Available categories:"),
         "stderr must contain canonical error substring; got:\n{stderr}"
@@ -333,13 +336,13 @@ fn scenario_cli_malformed_tags_file_exits_1() {
         "fspec list-tags must exit 1 on malformed input; got {code}, stdout={stdout}, stderr={stderr}"
     );
 
-    // @step Then stderr contains the substring 'Error:'
+    // @step And stderr contains the substring 'Error:'
     assert!(
         stderr.contains("Error:"),
         "stderr must contain 'Error:' prefix; got:\n{stderr}"
     );
 
-    // @step Then stderr contains the substring 'Failed to parse tags.json'
+    // @step And stderr contains the substring 'Failed to parse tags.json'
     assert!(
         stderr.contains("Failed to parse tags.json"),
         "stderr must contain 'Failed to parse tags.json'; got:\n{stderr}"
@@ -388,6 +391,7 @@ fn scenario_default_combined_tui_mode_preserved_after_adding_list_tags() {
         help.contains("combined mode") || help.contains("combined"),
         "fspec --help long-about must document combined-mode default; got:\n{help}"
     );
+    // @step And the long-about description still documents that running fspec with no subcommand enters combined TUI mode
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -487,4 +491,41 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
             "bridge module must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
     }
+    // @step And the CLI bridge module codelet/fspec/src/list_tags.rs contains NO inline category-filter, tag-sorting, or rendering logic
+    // @step And the bridge module's only computation is JSON arg marshalling and CWD resolution
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-tags --help is byte-for-byte identical to TS (RPC-251)
+// ─────────────────────────────────────────────────────────────────────────
+
+const TS_HELP_FIXTURE_LT: &str = include_str!("fixtures/help/list-tags.txt");
+
+#[test]
+fn scenario_list_tags_help_matches_ts_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+
+    // @step When I run `./codelet/target/release/fspec list-tags --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-tags")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-tags --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "list-tags --help must exit 0; stderr={stderr}");
+
+    // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-tags.txt
+    assert_eq!(stdout, TS_HELP_FIXTURE_LT);
+
+    // @step And stdout starts with a blank line followed by 'LIST-TAGS'
+    assert!(stdout.starts_with("\nLIST-TAGS\n"));
+
+    // @step And stdout contains the section header 'OPTIONS' followed by '  --category <category>'
+    assert!(stdout.contains("OPTIONS\n  --category <category>\n"));
 }

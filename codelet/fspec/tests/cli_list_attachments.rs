@@ -93,18 +93,24 @@ fn work_units_with_attachments(id: &str, attachments: Option<&[&str]>) -> String
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Clap exposes list-attachments as a subcommand and prints flag-aware --help
+// Scenario: list-attachments --help is byte-for-byte identical to TS reference output
 // ─────────────────────────────────────────────────────────────────────────
+
+const TS_LA_HELP_FIXTURE: &str =
+    include_str!("fixtures/help/list-attachments.txt");
 
 #[test]
 fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
     // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
     // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
 
-    // @step When I run `./codelet/target/release/fspec list-attachments --help` from a shell
+    // @step And the TS reference binary `node dist/index.js list-attachments --help` produces a documented 69-line block (LIST-ATTACHMENTS header through NOTES section, including the TS-quirks: typicalWorkflow array comma-joined, relatedCommands entries already prefixed with 'fspec ', commonErrors Fix:undefined)
+
+    // @step When I run `./codelet/target/release/fspec list-attachments --help` piped to non-TTY (no color codes)
     let output = Command::new(fspec_bin())
         .arg("list-attachments")
         .arg("--help")
+        .env("NO_COLOR", "1")
         .output()
         .expect("spawn fspec list-attachments --help");
     let code = output.status.code().unwrap_or(-1);
@@ -117,17 +123,60 @@ fn scenario_clap_exposes_list_attachments_with_flag_aware_help() {
         "fspec list-attachments --help must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains clap-generated help describing the list-attachments subcommand
-    assert!(
-        stdout.contains("list-attachments") || stdout.contains("List all attachments"),
-        "help must describe the list-attachments subcommand; got:\n{stdout}"
+    // @step Then stdout is byte-for-byte identical to the TS reference output
+    assert_eq!(
+        stdout, TS_LA_HELP_FIXTURE,
+        "list-attachments --help output must be byte-for-byte identical to TS reference"
     );
 
-    // @step Then stdout contains the positional placeholder "<WORK_UNIT_ID>"
+    // @step Then stdout starts with a blank line followed by "LIST-ATTACHMENTS"
     assert!(
-        stdout.contains("<WORK_UNIT_ID>"),
-        "help must show the required positional placeholder '<WORK_UNIT_ID>'; got:\n{stdout}"
+        stdout.starts_with("\nLIST-ATTACHMENTS\n"),
+        "help must start with blank line then LIST-ATTACHMENTS header"
     );
+
+    // @step Then stdout contains the section header "PREREQUISITES"
+    assert!(stdout.contains("PREREQUISITES\n"), "help must contain PREREQUISITES section");
+
+    // @step Then stdout contains the section header "USAGE" followed by "  fspec list-attachments <workUnitId>"
+    assert!(
+        stdout.contains("USAGE\n  fspec list-attachments <workUnitId>\n"),
+        "help must contain USAGE\\n  fspec list-attachments <workUnitId>"
+    );
+
+    // @step Then stdout contains the section header "ARGUMENTS"
+    assert!(stdout.contains("ARGUMENTS\n"), "help must contain ARGUMENTS section");
+
+    // @step Then stdout contains the section header "OPTIONS" followed by "  No options available"
+    assert!(
+        stdout.contains("OPTIONS\n  No options available\n"),
+        "help must contain OPTIONS\\n  No options available"
+    );
+
+    // @step Then stdout contains the section header "TYPICAL WORKFLOW"
+    assert!(stdout.contains("TYPICAL WORKFLOW\n"), "help must contain TYPICAL WORKFLOW section");
+
+    // @step Then stdout contains the section header "EXAMPLES"
+    assert!(stdout.contains("EXAMPLES\n"), "help must contain EXAMPLES section");
+
+    // @step Then stdout contains the section header "COMMON ERRORS" with the literal token "Fix: undefined" twice
+    assert!(stdout.contains("COMMON ERRORS\n"), "help must contain COMMON ERRORS section");
+    assert_eq!(
+        stdout.matches("Fix: undefined").count(),
+        2,
+        "help must reproduce TS bug: Fix: undefined appears twice"
+    );
+
+    // @step Then stdout contains the section header "RELATED COMMANDS" with three entries each prefixed by "fspec fspec "
+    assert!(stdout.contains("RELATED COMMANDS\n"), "help must contain RELATED COMMANDS section");
+    assert_eq!(
+        stdout.matches("fspec fspec ").count(),
+        3,
+        "help must reproduce TS bug: relatedCommands entries already prefixed with 'fspec ' yielding 'fspec fspec '"
+    );
+
+    // @step Then stdout contains the section header "NOTES"
+    assert!(stdout.contains("NOTES\n"), "help must contain NOTES section");
 
     // @step Then stdout does NOT contain the substring '--status'
     assert!(
@@ -309,16 +358,16 @@ fn scenario_cli_unknown_work_unit_exits_1_with_stderr() {
         "fspec list-attachments NONEXISTENT-001 must exit 1; got {code}, stdout={stdout}, stderr={stderr}"
     );
 
-    // @step Then stderr contains the substring 'Error:'
+    // @step Then stderr contains the exact line "Error: Work unit 'NONEXISTENT-001' does not exist"
     assert!(
-        stderr.contains("Error:"),
-        "stderr must contain 'Error:' prefix; got:\n{stderr}"
+        stderr.lines().any(|l| l == "Error: Work unit 'NONEXISTENT-001' does not exist"),
+        "stderr must contain exact line 'Error: Work unit 'NONEXISTENT-001' does not exist'; got:\n{stderr}"
     );
 
-    // @step Then stderr contains the substring "Work unit 'NONEXISTENT-001' does not exist"
+    // @step Then stderr does NOT contain the substring "Invalid args for fspec command"
     assert!(
-        stderr.contains("Work unit 'NONEXISTENT-001' does not exist"),
-        "stderr must contain canonical 'does not exist' message; got:\n{stderr}"
+        !stderr.contains("Invalid args for fspec command"),
+        "stderr must NOT contain the InvalidArgs wrapper text (TS-parity); got:\n{stderr}"
     );
 }
 

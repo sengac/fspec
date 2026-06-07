@@ -1,0 +1,53 @@
+
+LIST-SCHEDULES
+List all configured scheduled jobs from spec/schedules.json. Shows schedule name, cron expression, timezone, job type, status, and last run information.
+
+WHEN TO USE
+  Use to review all configured schedules, check their status (active/paused), verify cron expressions, or find schedule names for other schedule commands.
+
+USAGE
+  fspec list-schedules [options]
+
+OPTIONS
+  --json
+    Output schedule data as JSON instead of a formatted table.
+
+TYPICAL WORKFLOW
+  fspec list-schedules → review status → fspec pause-schedule / fspec resume-schedule / fspec remove-schedule as needed
+
+EXAMPLES
+  1. List all schedules in table format
+  $ fspec list-schedules
+  Name            Cron          Timezone          Type    Status  Last Run
+----------------------------------------------------------------------------------------------------
+nightly-review  0 2 * * *     UTC               agent   active  2025-01-15 02:00
+daily-tests     30 6 * * 1-5  America/New_York  shell   active  2025-01-15 06:30
+
+Total: 2 schedule(s)
+
+  2. List schedules as JSON for programmatic use
+  $ fspec list-schedules --json
+  [{"name":"nightly-review","cron":"0 2 * * *","timezone":"UTC",...}]
+
+  3. When no schedules are configured
+  $ fspec list-schedules
+  No schedules configured.
+Use `fspec add-schedule` to create a schedule.
+
+COMMON ERRORS
+  ✗ No schedules configured
+    Fix: This is not an error. Create a schedule with 'fspec add-schedule'.
+
+RELATED COMMANDS
+  fspec add-schedule - Create a new schedule
+  fspec remove-schedule - Remove a schedule
+  fspec pause-schedule - Pause an active schedule
+  fspec resume-schedule - Resume a paused schedule
+
+NOTES
+  • Returns an empty list (not an error) when no schedules exist
+  • The --json flag is useful for scripting and CI/CD integration
+  • Status column shows "active" (green) or "paused" (yellow)
+  • Last Run shows the timestamp of the most recent execution
+  • Schedules are stored in spec/schedules.json
+

@@ -1,0 +1,51 @@
+
+LIST-HOOKS
+List all configured lifecycle hooks
+
+WHEN TO USE
+  Use this command to see what hooks are configured for your project, including their event names and hook names. Useful for understanding the current automation setup and debugging hook execution.
+
+USAGE
+  fspec list-hooks
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  fspec list-hooks → Review configured hooks → fspec validate-hooks → fspec add-hook (if needed)
+
+EXAMPLES
+  1. List all configured hooks
+  $ fspec list-hooks
+  Configured Hooks:
+
+pre-update-work-unit-status:
+  - validate-feature-file
+  - check-blockers
+
+post-implementing:
+  - run-tests
+  - lint-code
+
+post-validating:
+  - notify-slack
+
+  2. When no hooks are configured
+  $ fspec list-hooks
+  No hooks are configured
+
+COMMON ERRORS
+  ✗ No hooks are configured
+    Fix: This is not an error - it means you have no hooks configured yet. Create spec/fspec-hooks.json to add hooks.
+
+RELATED COMMANDS
+  fspec validate-hooks
+  fspec add-hook
+  fspec remove-hook
+
+NOTES
+  • Reads from spec/fspec-hooks.json
+  • Shows event names and hook names only (not full configuration)
+  • Use validate-hooks to check if hook scripts exist
+  • Hooks are organized by event (pre-/post- command pattern)
+

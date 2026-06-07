@@ -91,7 +91,7 @@ fn scenario_clap_exposes_list_features_with_flag_aware_help() {
         "list-features --help must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains clap-generated help describing the list-features subcommand
+    // @step Then stdout contains help describing the list-features subcommand
     assert!(
         stdout.contains("list-features") || stdout.contains("List all feature"),
         "help must describe the list-features subcommand; got:\n{stdout}"
@@ -119,12 +119,6 @@ fn scenario_clap_exposes_list_features_with_flag_aware_help() {
     assert!(
         !stdout.contains("--epic"),
         "list-features --help must NOT advertise --epic; got:\n{stdout}"
-    );
-
-    // @step Then stdout does NOT contain the substring '--format'
-    assert!(
-        !stdout.contains("--format"),
-        "list-features --help must NOT advertise --format; got:\n{stdout}"
     );
 
     // @step Then stdout does NOT contain the substring '--workspace'
@@ -471,4 +465,41 @@ fn scenario_cli_bridge_module_embeds_no_duplicated_business_logic() {
         !bridge_src.contains("glob_feature_files"),
         "bridge module must NOT call glob_feature_files directly; got:\n{bridge_src}"
     );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-features --help is byte-for-byte identical to TS formatCommandHelp reference output (RPC-245)
+// ─────────────────────────────────────────────────────────────────────────
+
+const TS_HELP_FIXTURE_LF: &str = include_str!("fixtures/help/list-features.txt");
+
+#[test]
+fn scenario_list_features_help_matches_ts_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+
+    // @step When I run `./codelet/target/release/fspec list-features --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-features")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-features --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "list-features --help must exit 0; stderr={stderr}");
+
+    // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-features.txt
+    assert_eq!(stdout, TS_HELP_FIXTURE_LF);
+
+    // @step And stdout starts with a blank line followed by 'LIST-FEATURES'
+    assert!(stdout.starts_with("\nLIST-FEATURES\n"));
+
+    // @step And stdout contains the section headers 'OPTIONS' and 'EXAMPLES' and 'NOTES'
+    assert!(stdout.contains("OPTIONS\n"));
+    assert!(stdout.contains("EXAMPLES\n"));
+    assert!(stdout.contains("NOTES\n"));
 }

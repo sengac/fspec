@@ -75,3 +75,11 @@ Feature: List epics CLI subcommand
     Then the dispatcher's DispatchResult.data parses to an epics structure with auth at 1/2 (50%)
     Then the CLI text output reflects the same 1/2 (50%) progress
     Then the CLI bridge module codelet/fspec/src/list_epics.rs contains NO inline epic-aggregation, filter, or rendering logic — its only computation is JSON arg marshalling
+
+  Scenario: list-epics --help is byte-for-byte identical to TS formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-epics --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-epics.txt
+    And stdout starts with a blank line followed by 'LIST-EPICS'
+

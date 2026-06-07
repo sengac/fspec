@@ -131,7 +131,7 @@ fn scenario_standalone_fspec_binary_exposes_list_work_units_as_a_clap_subcommand
         .output()
         .expect("spawn fspec list-work-units --help");
 
-    // @step Then the command exits 0 and prints clap-generated help listing --status, --prefix, --epic, --type, --format flags
+    // @step Then the command exits 0 and prints TS-style help listing --status, --prefix, --epic flags
     let code = output.status.code().unwrap_or(-1);
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -141,7 +141,7 @@ fn scenario_standalone_fspec_binary_exposes_list_work_units_as_a_clap_subcommand
     );
     // clap routes `--help` output to stdout by default.
     let help = if stdout.is_empty() { stderr.to_string() } else { stdout.to_string() };
-    for flag in ["--status", "--prefix", "--epic", "--type", "--format"] {
+    for flag in ["--status", "--prefix", "--epic"] {
         assert!(
             help.contains(flag),
             "help output must list {flag}; got:\n{help}"
@@ -467,4 +467,39 @@ fn scenario_subcommand_help_excludes_global_workspace_flag() {
         !stdout.contains("--workspace"),
         "list-work-units --help must NOT advertise the global --workspace flag; got:\n{stdout}"
     );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-work-units --help (RPC-253)
+// ─────────────────────────────────────────────────────────────────────────
+
+const TS_HELP_FIXTURE_LWU: &str = include_str!("fixtures/help/list-work-units.txt");
+
+#[test]
+fn scenario_list_work_units_help_matches_ts_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+
+    // @step When I run `./codelet/target/release/fspec list-work-units --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-work-units")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-work-units --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "list-work-units --help must exit 0; stderr={stderr}");
+
+    // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-work-units.txt
+    assert_eq!(stdout, TS_HELP_FIXTURE_LWU);
+
+    // @step And stdout starts with a blank line followed by 'LIST-WORK-UNITS'
+    assert!(stdout.starts_with("\nLIST-WORK-UNITS\n"));
+
+    // @step And stdout contains the section header 'TYPICAL WORKFLOW'
+    assert!(stdout.contains("TYPICAL WORKFLOW\n"));
 }

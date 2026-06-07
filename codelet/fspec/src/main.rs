@@ -199,6 +199,13 @@ enum Mode {
 
 #[tokio::main]
 async fn main() -> std::process::ExitCode {
+    // RPC-247 / strict byte-parity: intercept `fspec <list-*> --help` before
+    // clap parses, so we can emit the TS-formatted help block instead of
+    // clap's auto-generated one. Returns Some(exit_code) when handled.
+    if let Some(code) = intercept_ts_help() {
+        return std::process::ExitCode::from(code);
+    }
+
     let cli = Cli::parse();
 
     // All list-* bridge arms share the same exit-code contract: delegate
@@ -296,3 +303,73 @@ async fn main() -> std::process::ExitCode {
         }
     }
 }
+
+/// Pre-clap inspection of argv to handle `fspec <list-*> --help` / `-h`
+/// without going through clap's auto-generated help block. Returns
+/// `Some(exit_code)` when the request was handled (caller must exit
+/// immediately); returns `None` to let clap take over.
+///
+/// Per RPC-247 strict byte-parity: the printed text is whatever
+/// `codelet_fspec_core::help::format_command_help(&CONFIG)` produces for
+/// the matched subcommand. The TS reference `node dist/index.js <cmd> --help`
+/// piped to non-TTY is the contract.
+fn intercept_ts_help() -> Option<u8> {
+    use codelet_fspec_core::help::{configs, format_command_help};
+
+    let args: Vec<String> = std::env::args().collect();
+    // Need at least: program, subcommand, --help/-h
+    if args.len() < 3 {
+        return None;
+    }
+    let sub = args[1].as_str();
+    let wants_help = args[2..].iter().any(|a| a == "--help" || a == "-h");
+    if !wants_help {
+        return None;
+    }
+    let rendered = match sub {
+        "list-attachments" => format_command_help(&configs::list_attachments::CONFIG),
+        "list-epics" => format_command_help(&configs::list_epics::CONFIG),
+        "list-feature-tags" => format_command_help(&configs::list_feature_tags::CONFIG),
+        "list-features" => format_command_help(&configs::list_features::CONFIG),
+        "list-hooks" => format_command_help(&configs::list_hooks::CONFIG),
+        "list-prefixes" => format_command_help(&configs::list_prefixes::CONFIG),
+        "list-scenario-tags" => format_command_help(&configs::list_scenario_tags::CONFIG),
+        "list-schedules" => format_command_help(&configs::list_schedules::CONFIG),
+        "list-tags" => format_command_help(&configs::list_tags::CONFIG),
+        "list-virtual-hooks" => format_command_help(&configs::list_virtual_hooks::CONFIG),
+        "list-work-units" => format_command_help(&configs::list_work_units::CONFIG),
+        // RPC-246: list-foundation-sections has no custom -help.ts in TS; the
+        // reference is the bare Commander.js default output. We emit a byte-
+        // for-byte static string (mirrors `node dist/index.js
+        // list-foundation-sections --help` piped to non-TTY) and skip the
+        // double-newline tail that the rich formatter produces.
+        "list-foundation-sections" => {
+            print!("{}", LIST_FOUNDATION_SECTIONS_HELP);
+            return Some(0);
+        }
+        _ => return None,
+    };
+    // TS uses `console.log(formatCommandHelp(config))` which appends a
+    // trailing newline. The formatter output itself already ends in `\n`
+    // (final `lines.push('')` joined), so we use `println!` to mirror the
+    // double-newline tail that the TS reference produces.
+    println!("{rendered}");
+    Some(0)
+}
+
+/// Byte-exact TS reference output of
+/// `node dist/index.js list-foundation-sections --help` piped to non-TTY.
+///
+/// The TS reference uses bare Commander.js without a custom `-help.ts`
+/// file (see `src/commands/list-foundation-sections.ts:191-202`), so we
+/// reproduce Commander's default Usage/Description/Options block verbatim.
+/// Captured fixture: `codelet/fspec/tests/fixtures/help/list-foundation-sections.txt`.
+const LIST_FOUNDATION_SECTIONS_HELP: &str = "\
+Usage: fspec list-foundation-sections [options]
+
+List every valid foundation section with its JSON path and constraint info
+
+Options:
+  --format <format>  Output format: text (default) or json (default: \"text\")
+  -h, --help         Display help for command
+";

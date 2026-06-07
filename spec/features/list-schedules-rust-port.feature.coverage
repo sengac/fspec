@@ -429,20 +429,12 @@
           ]
         }
       ]
-    },
-    {
-      "name": "CLI surface accepts only the --json flag",
-      "testMappings": []
-    },
-    {
-      "name": "CLI delegates to the same fspec_core function as dispatcher",
-      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 11,
+    "totalScenarios": 9,
     "coveredScenarios": 9,
-    "coveragePercent": 82,
+    "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec-core/tests/list_schedules.rs"
     ],

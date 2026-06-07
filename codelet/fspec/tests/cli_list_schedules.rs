@@ -71,10 +71,10 @@ fn canonical_schedules_json() -> String {
 
 #[test]
 fn scenario_clap_exposes_list_schedules_with_json_flag_only() {
-    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    // @step Given the fspec Rust binary has been compiled with the list-schedules subcommand registered
     // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
 
-    // @step When I run `./codelet/target/release/fspec list-schedules --help` from a shell
+    // @step When I run `fspec list-schedules --help` from a shell
     let output = Command::new(fspec_bin())
         .arg("list-schedules")
         .arg("--help")
@@ -90,19 +90,19 @@ fn scenario_clap_exposes_list_schedules_with_json_flag_only() {
         "fspec list-schedules --help must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout describes the list-schedules subcommand
+    // @step And stdout describes the list-schedules subcommand
     assert!(
         stdout.contains("list-schedules") || stdout.contains("scheduled jobs"),
         "help must describe the list-schedules subcommand; got:\n{stdout}"
     );
 
-    // @step Then stdout advertises the --json flag
+    // @step And stdout advertises the --json flag
     assert!(
         stdout.contains("--json"),
         "list-schedules --help must advertise --json; got:\n{stdout}"
     );
 
-    // @step Then stdout does NOT advertise unrelated flags
+    // @step And stdout does NOT advertise the substrings '--status', '--prefix', '--epic', '--format', '--category', or '--workspace'
     for forbidden in ["--status", "--prefix", "--epic", "--format", "--category", "--workspace"]
     {
         assert!(
@@ -260,7 +260,7 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let ws = tempfile::tempdir().expect("tempdir");
     write_schedules(ws.path(), &canonical_schedules_json());
 
-    // @step When I dispatch list-schedules through fspec_core::dispatch::dispatch_command with format='json'
+    // @step When I dispatch list-schedules through fspec_core::dispatch::dispatch_command with format='json' AND I also invoke `fspec list-schedules --json` from a shell against the same project root
     let req = codelet_fspec_core::DispatchRequest {
         command: "list-schedules".to_string(),
         args_json: r#"{"format":"json"}"#.to_string(),
@@ -277,15 +277,23 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     assert_eq!(schedules_arr.len(), 1);
     assert_eq!(schedules_arr[0]["name"].as_str(), Some("nightly-build"));
 
-    // @step Then the CLI bridge path renders the same underlying data
     let (code, stdout, _stderr) = run_list_schedules(ws.path(), &["--json"]);
     assert_eq!(code, 0);
+
+    // @step Then both call sites return the identical pretty-printed JSON payload byte-for-byte
+    // CLI adds a single trailing newline (println!) on top of the dispatcher's
+    // raw payload — strip it for the byte comparison.
+    assert_eq!(
+        stdout.trim_end_matches('\n'),
+        result.data.trim_end_matches('\n'),
+        "CLI --json stdout and dispatcher data must be byte-for-byte identical pretty JSON (ignoring trailing newline)"
+    );
     let cli_data: serde_json::Value =
         serde_json::from_str(&stdout).expect("CLI --json stdout is JSON");
     assert_eq!(cli_data, dispatcher_data,
         "CLI --json output must equal dispatcher format='json' output verbatim");
 
-    // @step Then the CLI bridge module contains NO inline schedule-aggregation, filter, or rendering logic
+    // @step And the CLI bridge module codelet/fspec/src/list_schedules.rs contains NO inline schedule-aggregation, filter, or rendering logic
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_schedules.rs");
     assert!(
         bridge_path.exists(),
@@ -308,4 +316,87 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
             "bridge module must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
     }
+
+    // @step And the bridge module's only computation is the boolean-to-format-key JSON arg marshalling
+    // The bridge must call dispatch_command (or equivalent) and translate
+    // the bool `--json` flag into the JSON args `{"format":"json"}` or
+    // `{"format":"text"}`. Any other computation would duplicate fspec_core logic.
+    assert!(
+        bridge_src.contains("dispatch_command") || bridge_src.contains("list_schedules::run"),
+        "bridge module must delegate to dispatch_command or fspec_core::commands::list_schedules::run; got:\n{bridge_src}"
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-schedules --help is byte-for-byte identical to TS
+//           reference output (RPC-250 strict byte-parity)
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Captured byte-exact TS reference output of
+/// `node dist/index.js list-schedules --help` piped to non-TTY.
+/// Regenerate via:
+///   `node /Users/rquast/projects/fspec/dist/index.js list-schedules --help \
+///    > codelet/fspec/tests/fixtures/help/list-schedules.txt`
+const TS_HELP_FIXTURE: &str = include_str!("fixtures/help/list-schedules.txt");
+
+#[test]
+fn scenario_list_schedules_help_matches_ts_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
+
+    // @step When I run `./codelet/target/release/fspec list-schedules --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-schedules")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-schedules --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(
+        code, 0,
+        "list-schedules --help must exit 0; got {code}, stderr={stderr}"
+    );
+
+    // @step And stdout is byte-for-byte identical to the TS reference output at codelet/fspec/tests/fixtures/help/list-schedules.txt
+    assert_eq!(
+        stdout, TS_HELP_FIXTURE,
+        "list-schedules --help output must be byte-for-byte identical to TS reference"
+    );
+
+    // @step And stdout starts with a blank line followed by 'LIST-SCHEDULES'
+    assert!(
+        stdout.starts_with("\nLIST-SCHEDULES\n"),
+        "help must start with blank line then LIST-SCHEDULES header; got first 40 bytes:\n{:?}",
+        &stdout.chars().take(40).collect::<String>()
+    );
+
+    // @step And stdout contains the section header 'OPTIONS' followed by '  --json'
+    assert!(
+        stdout.contains("OPTIONS\n  --json\n"),
+        "help must contain OPTIONS section with --json flag"
+    );
+
+    // @step And stdout contains the line 'fspec add-schedule - Create a new schedule'
+    assert!(
+        stdout.contains("fspec add-schedule - Create a new schedule\n"),
+        "help must list add-schedule related command"
+    );
+
+    // @step And stdout contains the section header 'NOTES' listing exactly 5 notes
+    assert!(stdout.contains("NOTES\n"), "help must contain NOTES section");
+    let note_count = stdout
+        .lines()
+        .skip_while(|l| *l != "NOTES")
+        .skip(1)
+        .take_while(|l| l.starts_with("  • "))
+        .count();
+    assert_eq!(
+        note_count, 5,
+        "NOTES section must list exactly 5 bullet notes; got {note_count}"
+    );
 }

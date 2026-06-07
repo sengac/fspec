@@ -39,6 +39,7 @@ use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
+use codelet_fspec_core::FspecCoreError;
 use codelet_fspec_core::commands::list_attachments;
 use serde_json::json;
 
@@ -85,9 +86,18 @@ pub async fn run(args: CliArgs) -> Result<u8> {
             Ok(0)
         }
         Err(err) => {
-            // Mirror the TS `output.error('Error:', ...)` path: stderr,
-            // prefixed, no ANSI required for parity with rule [15] on RPC-241.
-            eprintln!("Error: {err}");
+            // RPC-241 strict-parity: TS Commander.js prints `Error: <msg>`
+            // where <msg> is the thrown Error's `message`. The Rust dispatcher
+            // wraps domain errors in `FspecCoreError::InvalidArgs { reason }`
+            // — we must strip the wrapper to match byte-for-byte.
+            match &err {
+                FspecCoreError::InvalidArgs { reason, .. } => {
+                    eprintln!("Error: {reason}");
+                }
+                _ => {
+                    eprintln!("Error: {err}");
+                }
+            }
             Ok(1)
         }
     }

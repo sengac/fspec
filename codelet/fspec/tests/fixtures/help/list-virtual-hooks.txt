@@ -1,0 +1,86 @@
+
+LIST-VIRTUAL-HOOKS
+List all virtual hooks configured for a work unit
+
+WHEN TO USE
+  Use this command to view all virtual hooks attached to a specific work unit. Shows hooks grouped by event with their configuration (blocking, git context, command). Useful for reviewing quality checks before workflow transitions or debugging hook execution.
+
+PREREQUISITES
+  • Work unit must exist
+
+USAGE
+  fspec list-virtual-hooks <workUnitId>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID to list hooks for (e.g., AUTH-001)
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Review Quality Gates Before Implementing
+    Example: fspec list-virtual-hooks AUTH-001
+# Review hooks, then:
+fspec update-work-unit-status AUTH-001 implementing
+    Check what quality checks will run before starting implementation.
+
+  • Debug Hook Execution
+    Example: fspec list-virtual-hooks AUTH-001
+# If hook fails, review command and fix
+    When a hook fails, list hooks to see the exact command being executed.
+
+  • Compare Hooks Across Work Units
+    Example: fspec list-virtual-hooks AUTH-001
+fspec list-virtual-hooks AUTH-002
+    Compare quality checks between related work units to ensure consistency.
+
+
+TYPICAL WORKFLOW
+  Add virtual hooks → fspec list-virtual-hooks → Review configuration → Update hooks if needed → Execute workflow transition
+
+EXAMPLES
+  1. List all virtual hooks for AUTH-001
+  $ fspec list-virtual-hooks AUTH-001
+  Virtual Hooks for AUTH-001:
+
+  post-implementing:
+    • eslint [blocking]
+      <quality-check-commands>
+    • prettier [non-blocking]
+      prettier --check .
+
+  pre-validating:
+    • typecheck [blocking]
+      <quality-check-commands>
+
+  2. List hooks for a work unit with no virtual hooks
+  $ fspec list-virtual-hooks BUG-042
+  No virtual hooks configured for BUG-042
+
+  3. List hooks including git context hooks
+  $ fspec list-virtual-hooks FEAT-123
+  Virtual Hooks for FEAT-123:
+
+  post-implementing:
+    • eslint [blocking] [git-context]
+      spec/hooks/.virtual/FEAT-123-eslint.sh
+
+COMMON ERRORS
+  ✗ Work unit 'AUTH-001' does not exist
+    Fix: Check work unit ID spelling or create work unit first: fspec create-story AUTH "Title" (or create-bug/create-task)
+
+RELATED COMMANDS
+  fspec add-virtual-hook
+  fspec remove-virtual-hook
+  fspec clear-virtual-hooks
+  fspec show-work-unit
+
+NOTES
+  • Hooks are displayed grouped by event for clarity
+  • [blocking] badge indicates hook failure prevents workflow transition
+  • [git-context] badge indicates hook uses git staged/unstaged files
+  • Hooks execute in the order they were added (top to bottom)
+  • Virtual hooks also appear in "fspec show-work-unit" output
+  • Empty output means no virtual hooks configured for the work unit
+

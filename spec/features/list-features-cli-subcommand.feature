@@ -42,12 +42,11 @@ Feature: List features CLI subcommand
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
     When I run `./codelet/target/release/fspec list-features --help` from a shell
     Then the command exits 0
-    Then stdout contains clap-generated help describing the list-features subcommand
+    Then stdout contains help describing the list-features subcommand
     Then stdout contains the substring '--tag'
     Then stdout does NOT contain the substring '--status'
     Then stdout does NOT contain the substring '--prefix'
     Then stdout does NOT contain the substring '--epic'
-    Then stdout does NOT contain the substring '--format'
     Then stdout does NOT contain the substring '--workspace'
 
   Scenario: CLI against directory with no spec/ exits 2 with Directory-not-found error
@@ -110,4 +109,13 @@ Feature: List features CLI subcommand
     Then stderr contains the exact line 'Warning: Could not parse spec/features/broken.feature'
     Then stdout contains the substring 'spec/features/valid.feature - Valid'
     Then stdout contains the exact line 'Found 1 feature files'
+
+
+  Scenario: list-features --help is byte-for-byte identical to TS formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-features --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-features.txt
+    And stdout starts with a blank line followed by 'LIST-FEATURES'
+    And stdout contains the section headers 'OPTIONS' and 'EXAMPLES' and 'NOTES'
 

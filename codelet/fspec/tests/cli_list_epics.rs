@@ -444,3 +444,35 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
         );
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-epics --help is byte-for-byte identical to TS reference (RPC-243)
+// ─────────────────────────────────────────────────────────────────────────
+
+const TS_HELP_FIXTURE_LE: &str = include_str!("fixtures/help/list-epics.txt");
+
+#[test]
+fn scenario_list_epics_help_matches_ts_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+
+    // @step When I run `./codelet/target/release/fspec list-epics --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-epics")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-epics --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "list-epics --help must exit 0; stderr={stderr}");
+
+    // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-epics.txt
+    assert_eq!(stdout, TS_HELP_FIXTURE_LE);
+
+    // @step And stdout starts with a blank line followed by 'LIST-EPICS'
+    assert!(stdout.starts_with("\nLIST-EPICS\n"));
+}

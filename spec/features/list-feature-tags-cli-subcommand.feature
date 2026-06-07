@@ -73,3 +73,13 @@ Feature: List Feature Tags Cli Subcommand
     Then stderr contains the exact line 'Error: File does not contain a valid Feature'
     Then stdout contains zero bytes
 
+
+  Scenario: list-feature-tags --help is byte-for-byte identical to TS formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-feature-tags --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the TS reference fixture at codelet/fspec/tests/fixtures/help/list-feature-tags.txt
+    And stdout starts with a blank line followed by 'LIST-FEATURE-TAGS'
+    And stdout contains the section header 'ARGUMENTS' followed by '  <file> (required)'
+    And stdout contains the section header 'OPTIONS' listing only '--show-categories'
+

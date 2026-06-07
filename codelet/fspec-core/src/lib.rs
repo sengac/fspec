@@ -25,6 +25,7 @@ pub mod canonical;
 pub mod commands;
 pub mod dispatch;
 pub mod error;
+pub mod help;
 pub mod io;
 pub mod types;
 

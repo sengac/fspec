@@ -385,18 +385,70 @@
           ]
         }
       ]
+    },
+    {
+      "name": "list-epics --help is byte-for-byte identical to TS formatCommandHelp reference output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_epics.rs",
+          "lines": "451-478",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/list_epics.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec/tests/cli_list_epics.rs"
     ],
     "implFiles": [
-      "codelet/fspec/src/list_epics.rs"
+      "codelet/fspec/src/list_epics.rs",
+      "codelet/fspec-core/src/help/configs/list_epics.rs"
     ],
-    "totalLinesCovered": 620
+    "totalLinesCovered": 683
   }
 }

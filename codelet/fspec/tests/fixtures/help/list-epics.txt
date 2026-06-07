@@ -1,0 +1,23 @@
+
+LIST-EPICS
+List all epics in the project
+
+USAGE
+  fspec list-epics
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. List all epics
+  $ fspec list-epics
+  user-management - User Management Features
+auth - Authentication System
+
+Found 2 epics
+
+RELATED COMMANDS
+  fspec create-epic
+  fspec show-epic
+  fspec delete-epic
+

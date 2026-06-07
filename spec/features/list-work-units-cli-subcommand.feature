@@ -16,7 +16,7 @@ Feature: List work units CLI subcommand
   Scenario: Clap exposes list-work-units as a subcommand and prints flag-aware --help
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
     When I run `./codelet/target/release/fspec list-work-units --help` from a shell
-    Then the command exits 0 and prints clap-generated help listing --status, --prefix, --epic, --type, --format flags
+    Then the command exits 0 and prints TS-style help listing --status, --prefix, --epic flags
 
   Scenario: CLI against empty directory creates default files and prints sentinel
     Given an empty directory with no spec/ subdirectory is set as the current working directory
@@ -60,4 +60,13 @@ Feature: List work units CLI subcommand
     When I run `./codelet/target/release/fspec list-work-units --help` from a shell
     Then the command exits 0
     Then stdout does NOT contain the substring '--workspace'
+
+
+  Scenario: list-work-units --help is byte-for-byte identical to TS formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-work-units --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-work-units.txt
+    And stdout starts with a blank line followed by 'LIST-WORK-UNITS'
+    And stdout contains the section header 'TYPICAL WORKFLOW'
 

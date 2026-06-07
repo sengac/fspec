@@ -15,11 +15,21 @@ Feature: List hooks CLI subcommand
     I want to invoke `fspec list-hooks` directly from a shell with the same flag-less surface offered by the TypeScript Commander.js CLI
     So that I can list configured lifecycle hooks from a script or terminal without going through the LLM tool-call dispatcher
 
-  Scenario: Clap exposes list-hooks as a subcommand and prints flag-aware --help
+  Scenario: list-hooks --help is byte-for-byte identical to TS reference output
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-hooks --help` from a shell
+    And the TS reference binary `node dist/index.js list-hooks --help` produces a documented 51-line block starting with a blank line, then "LIST-HOOKS", "List all configured lifecycle hooks", then WHEN TO USE / USAGE / OPTIONS / TYPICAL WORKFLOW / EXAMPLES / COMMON ERRORS / RELATED COMMANDS / NOTES sections
+    When I run `./codelet/target/release/fspec list-hooks --help` piped to non-TTY (no color codes)
     Then the command exits 0
-    Then stdout contains clap-generated help describing the list-hooks subcommand
+    Then stdout is byte-for-byte identical to the TS reference output
+    Then stdout starts with a blank line followed by "LIST-HOOKS"
+    Then stdout contains the section header "WHEN TO USE"
+    Then stdout contains the section header "USAGE" followed by "  fspec list-hooks"
+    Then stdout contains the section header "OPTIONS" followed by "  No options available"
+    Then stdout contains the section header "TYPICAL WORKFLOW"
+    Then stdout contains the section header "EXAMPLES" with both documented examples
+    Then stdout contains the section header "COMMON ERRORS"
+    Then stdout contains the section header "RELATED COMMANDS" listing validate-hooks, add-hook, remove-hook
+    Then stdout contains the section header "NOTES" listing the four documented notes
     Then stdout does NOT contain the substring '--format'
     Then stdout does NOT contain the substring '--event'
     Then stdout does NOT contain the substring '--workspace'

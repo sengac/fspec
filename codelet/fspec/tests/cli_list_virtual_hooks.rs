@@ -125,10 +125,10 @@ fn scenario_clap_exposes_list_virtual_hooks_with_flag_aware_help() {
         "help must describe the list-virtual-hooks subcommand; got:\n{stdout}"
     );
 
-    // @step And stdout contains the positional placeholder "<WORK_UNIT_ID>"
+    // @step And stdout contains the positional placeholder "<workUnitId>"
     assert!(
-        stdout.contains("<WORK_UNIT_ID>"),
-        "help must show the required positional placeholder '<WORK_UNIT_ID>'; got:\n{stdout}"
+        stdout.contains("<workUnitId>"),
+        "help must show the required positional placeholder '<workUnitId>'; got:\n{stdout}"
     );
 
     // @step And stdout does NOT contain the substring '--format'
@@ -274,4 +274,39 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
             "bridge module must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-virtual-hooks --help (RPC-252)
+// ─────────────────────────────────────────────────────────────────────────
+
+const TS_HELP_FIXTURE_LVH: &str = include_str!("fixtures/help/list-virtual-hooks.txt");
+
+#[test]
+fn scenario_list_virtual_hooks_help_matches_ts_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+
+    // @step When I run `./codelet/target/release/fspec list-virtual-hooks --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-virtual-hooks")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-virtual-hooks --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(code, 0, "list-virtual-hooks --help must exit 0; stderr={stderr}");
+
+    // @step And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-virtual-hooks.txt
+    assert_eq!(stdout, TS_HELP_FIXTURE_LVH);
+
+    // @step And stdout starts with a blank line followed by 'LIST-VIRTUAL-HOOKS'
+    assert!(stdout.starts_with("\nLIST-VIRTUAL-HOOKS\n"));
+
+    // @step And stdout contains the section header 'COMMON PATTERNS'
+    assert!(stdout.contains("COMMON PATTERNS\n"));
 }

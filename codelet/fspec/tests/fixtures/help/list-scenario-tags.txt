@@ -1,0 +1,32 @@
+
+LIST-SCENARIO-TAGS
+List all tags on a specific scenario
+
+USAGE
+  fspec list-scenario-tags <file> <scenario> [options]
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <scenario> (required)
+    Scenario name
+
+OPTIONS
+  --show-categories
+    Show tag categories from registry (spec/tags.json)
+
+EXAMPLES
+  1. List scenario tags
+  $ fspec list-scenario-tags spec/features/login.feature "Login with invalid password"
+  @edge-case
+@smoke
+
+  2. List tags with categories
+  $ fspec list-scenario-tags spec/features/login.feature "Valid user login" --show-categories
+  @WORK-UNIT-001 (Work Unit Tags)
+@smoke (Test Type Tags)
+
+RELATED COMMANDS
+  fspec add-tag-to-scenario
+  fspec list-feature-tags
+

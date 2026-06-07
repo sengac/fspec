@@ -279,11 +279,61 @@
           ]
         }
       ]
+    },
+    {
+      "name": "list-prefixes --help is byte-for-byte identical to TS formatCommandHelp reference output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_prefixes.rs",
+          "lines": "441-468",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/list_prefixes.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 7,
-    "coveredScenarios": 7,
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/fspec/tests/cli_list_prefixes.rs"
@@ -291,8 +341,9 @@
     "implFiles": [
       "codelet/fspec/src/main.rs",
       "codelet/fspec/src/list_prefixes.rs",
-      "codelet/fspec-core/src/io/ensure.rs"
+      "codelet/fspec-core/src/io/ensure.rs",
+      "codelet/fspec-core/src/help/configs/list_prefixes.rs"
     ],
-    "totalLinesCovered": 517
+    "totalLinesCovered": 579
   }
 }

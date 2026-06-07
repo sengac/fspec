@@ -78,15 +78,16 @@ fn scenario_clap_exposes_list_scenario_tags_with_flag_aware_help() {
     );
 
     // @step Then stdout contains the positional placeholder "<FILE>"
+    // RPC-249: intercept_ts_help now emits TS-style help (lowercase <file>) BEFORE clap.
     assert!(
-        stdout.contains("<FILE>"),
-        "help must show the required positional placeholder '<FILE>'; got:\n{stdout}"
+        stdout.contains("<file>"),
+        "help must show the required positional placeholder '<file>'; got:\n{stdout}"
     );
 
     // @step Then stdout contains the positional placeholder "<SCENARIO>"
     assert!(
-        stdout.contains("<SCENARIO>"),
-        "help must show the required positional placeholder '<SCENARIO>'; got:\n{stdout}"
+        stdout.contains("<scenario>"),
+        "help must show the required positional placeholder '<scenario>'; got:\n{stdout}"
     );
 
     // @step Then stdout contains the substring '--show-categories'
@@ -232,4 +233,69 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
             "bridge module must NOT embed `{forbidden}` (would duplicate fspec_core logic); got:\n{bridge_src}"
         );
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-scenario-tags --help is byte-for-byte identical to TS
+//           minimal formatCommandHelp reference output (RPC-249)
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Captured byte-exact TS reference output of
+/// `node dist/index.js list-scenario-tags --help` piped to non-TTY.
+const TS_HELP_FIXTURE_LST: &str = include_str!("fixtures/help/list-scenario-tags.txt");
+
+#[test]
+fn scenario_list_scenario_tags_help_matches_ts_minimal_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
+
+    // @step When I run `./codelet/target/release/fspec list-scenario-tags --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-scenario-tags")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-scenario-tags --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(
+        code, 0,
+        "list-scenario-tags --help must exit 0; got {code}, stderr={stderr}"
+    );
+
+    // @step And stdout is byte-for-byte identical to the TS reference fixture at codelet/fspec/tests/fixtures/help/list-scenario-tags.txt
+    assert_eq!(
+        stdout, TS_HELP_FIXTURE_LST,
+        "list-scenario-tags --help output must be byte-for-byte identical to TS reference"
+    );
+
+    // @step And stdout starts with a blank line followed by 'LIST-SCENARIO-TAGS'
+    assert!(
+        stdout.starts_with("\nLIST-SCENARIO-TAGS\n"),
+        "help must start with blank line then LIST-SCENARIO-TAGS header"
+    );
+
+    // @step And stdout contains '<file> (required)' and '<scenario> (required)' lines
+    assert!(
+        stdout.contains("<file> (required)"),
+        "help must document <file> (required) argument"
+    );
+    assert!(
+        stdout.contains("<scenario> (required)"),
+        "help must document <scenario> (required) argument"
+    );
+
+    // @step And stdout does NOT contain 'WHEN TO USE' or 'NOTES' section headers
+    assert!(
+        !stdout.contains("WHEN TO USE"),
+        "list-scenario-tags --help must NOT include WHEN TO USE section (TS config omits it)"
+    );
+    assert!(
+        !stdout.contains("NOTES\n"),
+        "list-scenario-tags --help must NOT include NOTES section (TS config omits it)"
+    );
 }

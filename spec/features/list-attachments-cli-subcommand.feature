@@ -18,12 +18,22 @@ Feature: List attachments CLI subcommand
     I want to invoke `fspec list-attachments <workUnitId>` directly from a shell with the same positional-argument surface offered by the TypeScript Commander.js CLI
     So that I can audit attachments registered for a work unit from a script or terminal without going through the LLM tool-call dispatcher
 
-  Scenario: Clap exposes list-attachments as a subcommand and prints flag-aware --help
+  Scenario: list-attachments --help is byte-for-byte identical to TS reference output
     Given the fspec Rust binary at codelet/target/release/fspec has been compiled
-    When I run `./codelet/target/release/fspec list-attachments --help` from a shell
+    And the TS reference binary `node dist/index.js list-attachments --help` produces a documented 69-line block (LIST-ATTACHMENTS header through NOTES section, including the TS-quirks: typicalWorkflow array comma-joined, relatedCommands entries already prefixed with 'fspec ', commonErrors Fix:undefined)
+    When I run `./codelet/target/release/fspec list-attachments --help` piped to non-TTY (no color codes)
     Then the command exits 0
-    Then stdout contains clap-generated help describing the list-attachments subcommand
-    Then stdout contains the positional placeholder "<WORK_UNIT_ID>"
+    Then stdout is byte-for-byte identical to the TS reference output
+    Then stdout starts with a blank line followed by "LIST-ATTACHMENTS"
+    Then stdout contains the section header "PREREQUISITES"
+    Then stdout contains the section header "USAGE" followed by "  fspec list-attachments <workUnitId>"
+    Then stdout contains the section header "ARGUMENTS"
+    Then stdout contains the section header "OPTIONS" followed by "  No options available"
+    Then stdout contains the section header "TYPICAL WORKFLOW"
+    Then stdout contains the section header "EXAMPLES"
+    Then stdout contains the section header "COMMON ERRORS" with the literal token "Fix: undefined" twice
+    Then stdout contains the section header "RELATED COMMANDS" with three entries each prefixed by "fspec fspec "
+    Then stdout contains the section header "NOTES"
     Then stdout does NOT contain the substring '--status'
     Then stdout does NOT contain the substring '--prefix'
     Then stdout does NOT contain the substring '--epic'
@@ -59,8 +69,8 @@ Feature: List attachments CLI subcommand
     Given spec/work-units.json contains AUTH-001 only (no NONEXISTENT-001 entry)
     When I run `./codelet/target/release/fspec list-attachments NONEXISTENT-001`
     Then the command exits with code 1
-    Then stderr contains the substring 'Error:'
-    Then stderr contains the substring "Work unit 'NONEXISTENT-001' does not exist"
+    Then stderr contains the exact line "Error: Work unit 'NONEXISTENT-001' does not exist"
+    Then stderr does NOT contain the substring "Invalid args for fspec command"
 
   Scenario: CLI exits 1 when work-units.json is malformed
     Given spec/work-units.json exists in the working directory but contains invalid JSON

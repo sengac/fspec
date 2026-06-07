@@ -1,0 +1,25 @@
+
+LIST-PREFIXES
+List all registered work unit prefixes
+
+USAGE
+  fspec list-prefixes
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. List all prefixes
+  $ fspec list-prefixes
+  AUTH - Authentication features
+UI - User interface components
+API - API endpoints
+
+Found 3 prefixes
+
+RELATED COMMANDS
+  fspec create-prefix
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+

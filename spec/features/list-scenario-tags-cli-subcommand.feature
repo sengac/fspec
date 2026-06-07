@@ -47,3 +47,13 @@ Feature: List scenario tags CLI subcommand
     When I dispatch list-scenario-tags through fspec_core::dispatch::dispatch_command with file='spec/features/user-login.feature', scenario='Login with valid credentials', and format='json'
     Then the dispatcher's DispatchResult.data parses to a JSON object with tags array of length 1
     Then the CLI bridge module codelet/fspec/src/list_scenario_tags.rs contains NO inline Gherkin parsing, tag accumulation, or category lookup logic — its only computation is JSON arg marshalling
+
+  Scenario: list-scenario-tags --help is byte-for-byte identical to TS minimal formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-scenario-tags --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the TS reference fixture at codelet/fspec/tests/fixtures/help/list-scenario-tags.txt
+    And stdout starts with a blank line followed by 'LIST-SCENARIO-TAGS'
+    And stdout contains '<file> (required)' and '<scenario> (required)' lines
+    And stdout does NOT contain 'WHEN TO USE' or 'NOTES' section headers
+

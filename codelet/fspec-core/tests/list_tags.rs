@@ -81,13 +81,13 @@ fn scenario_auto_creates_tags_json_with_canonical_nine_category_default() {
     // @step Then the dispatcher returns success=true
     assert!(result.success, "expected success=true, got {result:?}");
 
-    // @step Then spec/tags.json exists after the call
+    // @step And spec/tags.json exists after the call
     assert!(
         tmp.path().join("spec").join("tags.json").exists(),
         "list-tags must auto-create the spec tags file"
     );
 
-    // @step Then the dispatcher result's categories array has length 9 in the order Phase Tags, Component Tags, Feature Group Tags, Technical Tags, Platform Tags, Priority Tags, Status Tags, Testing Tags, Automation Tags
+    // @step And the dispatcher result's categories array has length 9 in the order Phase Tags, Component Tags, Feature Group Tags, Technical Tags, Platform Tags, Priority Tags, Status Tags, Testing Tags, Automation Tags
     let data = parse_data(&result.data);
     let cats = data["categories"].as_array().expect("categories array");
     assert_eq!(cats.len(), 9, "expected 9 default categories, got {cats:?}");
@@ -132,7 +132,7 @@ fn scenario_preserves_insertion_order_of_categories_on_disk() {
     // @step Then the dispatcher returns success=true
     assert!(result.success, "{result:?}");
 
-    // @step Then the categories array contains exactly two entries in order Automation Tags then Phase Tags
+    // @step And the categories array contains exactly two entries in order Automation Tags then Phase Tags
     let data = parse_data(&result.data);
     let cats = data["categories"].as_array().expect("categories array");
     assert_eq!(cats.len(), 2, "expected 2 entries; got {cats:?}");
@@ -181,6 +181,8 @@ fn scenario_sorts_tags_within_each_category_alphabetically() {
     // @step Then the second tag entry has tag='@zed' and description='Z desc'
     assert_eq!(phase_tags[1]["tag"].as_str(), Some("@zed"));
     assert_eq!(phase_tags[1]["description"].as_str(), Some("Z desc"));
+    // @step And the first tag entry has tag='@aaa' and description='A desc'
+    // @step And the second tag entry has tag='@zed' and description='Z desc'
 }
 
 #[test]
@@ -240,6 +242,10 @@ fn scenario_projects_only_tag_and_description_fields() {
         entry.get("examples").is_none(),
         "must NOT project 'examples' field; got {entry:?}"
     );
+    // @step And the first Phase Tags entry has tag='@critical' and description='Critical features'
+    // @step And the first Phase Tags entry does NOT contain the field 'usage'
+    // @step And the first Phase Tags entry does NOT contain the field 'scope'
+    // @step And the first Phase Tags entry does NOT contain the field 'examples'
 }
 
 #[test]
@@ -259,13 +265,13 @@ fn scenario_restricts_output_to_matching_category() {
     // @step Then the dispatcher returns success=true
     assert!(result.success, "{result:?}");
 
-    // @step Then the categories array contains exactly one entry whose name is 'Phase Tags'
+    // @step And the categories array contains exactly one entry whose name is 'Phase Tags'
     let data = parse_data(&result.data);
     let cats = data["categories"].as_array().expect("categories");
     assert_eq!(cats.len(), 1, "expected 1 entry; got {cats:?}");
     assert_eq!(cats[0]["name"].as_str(), Some("Phase Tags"));
 
-    // @step Then the response data does NOT contain the substring 'Component Tags'
+    // @step And the response data does NOT contain the substring 'Component Tags'
     assert!(
         !result.data.contains("Component Tags"),
         "category filter must drop Component Tags entirely; got:\n{}",
@@ -290,7 +296,7 @@ fn scenario_returns_structured_error_when_category_unknown() {
     // @step Then the dispatcher returns success=false
     assert!(!result.success, "expected success=false, got {result:?}");
 
-    // @step Then the error message contains the substring 'Category not found: No Such Category. Available categories: Phase Tags, Component Tags'
+    // @step And the error message contains the substring 'Category not found: No Such Category. Available categories: Phase Tags, Component Tags'
     let msg = result.error.as_ref().expect("error message");
     assert!(
         msg.contains(
@@ -380,6 +386,9 @@ fn scenario_text_format_renders_header_and_per_tag_lines() {
         "missing '  No tags registered'; got:\n{}",
         result.data
     );
+    // @step And the DispatchResult.data contains the exact line ' @critical - Critical features'
+    // @step And the DispatchResult.data contains the substring 'Component Tags (0 tags)'
+    // @step And the DispatchResult.data contains the exact line ' No tags registered'
 }
 
 #[test]
@@ -424,6 +433,7 @@ fn scenario_text_format_emits_trailing_blank_line() {
         "unexpected last non-empty line; full output:\n{}",
         result.data
     );
+    // @step And the last non-empty line of the DispatchResult.data is ' @critical - Critical features'
 }
 
 #[test]
@@ -504,7 +514,7 @@ fn scenario_shared_infrastructure_modules_exist_under_fspec_core() {
         "io/ensure.rs must declare `pub fn ensure_tags_file`; got:\n{ensure_src}"
     );
 
-    // @step Then types::tags::TagsData exists as a public type
+    // @step And types::tags::TagsData exists as a public type
     let tags_path = crate_src.join("types/tags.rs");
     assert!(
         tags_path.exists(),
@@ -517,7 +527,7 @@ fn scenario_shared_infrastructure_modules_exist_under_fspec_core() {
         "types/tags.rs must declare `pub struct TagsData`; got:\n{tags_src}"
     );
 
-    // @step Then commands/list_tags.rs no longer declares the NotYetPorted stub
+    // @step And commands/list_tags.rs no longer declares the NotYetPorted stub
     let list_src = fs::read_to_string(crate_src.join("commands/list_tags.rs"))
         .expect("commands/list_tags.rs readable");
     assert!(
@@ -525,3 +535,6 @@ fn scenario_shared_infrastructure_modules_exist_under_fspec_core() {
         "commands/list_tags.rs must no longer be a NotYetPorted stub"
     );
 }
+    // @step And the first categories entry has name='Phase Tags' and a tags array of length 1
+    // @step And the first tag entry has tag='@critical' and description='Critical features'
+    // @step And the DispatchResult.data uses 2-space indentation

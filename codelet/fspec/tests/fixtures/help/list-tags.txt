@@ -1,0 +1,32 @@
+
+LIST-TAGS
+List all registered tags from spec/tags.json
+
+USAGE
+  fspec list-tags [options]
+
+OPTIONS
+  --category <category>
+    Filter tags by category (e.g., "Phase Tags", "Component Tags")
+
+EXAMPLES
+  1. List all tags
+  $ fspec list-tags
+  Phase Tags:
+  @critical - Phase 1 features
+  @high - Phase 2 features
+
+Component Tags:
+  @cli - CLI commands
+  @parser - Parser features
+
+  2. List tags in specific category
+  $ fspec list-tags --category="Phase Tags"
+  @critical - Phase 1 features
+@high - Phase 2 features
+
+RELATED COMMANDS
+  fspec register-tag
+  fspec validate-tags
+  fspec tag-stats
+

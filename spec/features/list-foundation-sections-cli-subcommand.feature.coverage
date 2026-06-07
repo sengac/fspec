@@ -1,0 +1,85 @@
+{
+  "scenarios": [
+    {
+      "name": "list-foundation-sections --help is byte-for-byte identical to TS Commander.js reference output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_list_foundation_sections.rs",
+          "lines": "37-89",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/main.rs",
+              "lines": [
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 1,
+    "coveredScenarios": 1,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_list_foundation_sections.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/main.rs"
+    ],
+    "totalLinesCovered": 106
+  }
+}

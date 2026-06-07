@@ -79,3 +79,12 @@ Feature: List tags CLI subcommand
     Then the dispatcher's DispatchResult.data parses to a structure whose Phase Tags entry contains '@critical' with description 'Critical features'
     And the CLI bridge module codelet/fspec/src/list_tags.rs contains NO inline category-filter, tag-sorting, or rendering logic
     And the bridge module's only computation is JSON arg marshalling and CWD resolution
+
+  Scenario: list-tags --help is byte-for-byte identical to TS formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-tags --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-tags.txt
+    And stdout starts with a blank line followed by 'LIST-TAGS'
+    And stdout contains the section header 'OPTIONS' followed by '  --category <category>'
+

@@ -1,0 +1,47 @@
+
+LIST-FEATURES
+List all feature files with optional filtering by tags
+
+WHEN TO USE
+  Use to see all features in your project, or filter by specific tags to find features in a particular phase, component, or priority level.
+
+USAGE
+  fspec list-features [options]
+
+OPTIONS
+  --tag <tag>
+    Filter by tag (can be used multiple times, e.g., --tag=@critical --tag=@critical)
+  --format <format>
+    Output format: table (default), json, or simple
+
+EXAMPLES
+  1. List all features
+  $ fspec list-features
+  spec/features/login.feature
+spec/features/signup.feature
+
+Found 2 features
+
+  2. List phase 1 features
+  $ fspec list-features --tag=@critical
+  spec/features/login.feature [@critical @authentication]
+
+Found 1 feature
+
+  3. List features with multiple tags
+  $ fspec list-features --tag=@critical --tag=@critical
+  spec/features/login.feature [@critical @critical @authentication]
+
+Found 1 feature
+
+RELATED COMMANDS
+  fspec show-feature
+  fspec create-feature
+  fspec list-tags
+  fspec validate
+
+NOTES
+  • Searches spec/features/ directory
+  • Multiple --tag flags filter with AND logic (feature must have all tags)
+  • JSON format useful for tooling integration
+

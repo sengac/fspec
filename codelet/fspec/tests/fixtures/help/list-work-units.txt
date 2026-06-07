@@ -1,0 +1,45 @@
+
+LIST-WORK-UNITS
+List work units with optional filtering by status, prefix, or epic
+
+WHEN TO USE
+  Use this command when you need to view work units in the backlog, see what's in progress, or filter by specific criteria like status, prefix, or epic.
+
+USAGE
+  fspec list-work-units [options]
+
+OPTIONS
+  -s, --status <status>
+    Filter by workflow status: backlog, specifying, testing, implementing, validating, done, blocked
+  --prefix <prefix>
+    Filter by work unit prefix (e.g., AUTH, UI, API)
+  --epic <epic>
+    Filter by epic name
+
+TYPICAL WORKFLOW
+  backlog → specifying → testing → implementing → validating → done. Use --status flag to see work units at each stage.
+
+EXAMPLES
+  1. List all work units
+  $ fspec list-work-units
+  AUTH-001 - User login feature
+UI-002 - Dashboard layout
+
+  2. List only backlog items
+  $ fspec list-work-units --status=backlog
+  AUTH-003 - Password reset
+API-004 - User endpoints
+
+  3. List all AUTH-prefixed work units
+  $ fspec list-work-units --prefix=AUTH
+  AUTH-001 - User login feature
+AUTH-003 - Password reset
+
+RELATED COMMANDS
+  fspec show-work-unit
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+  fspec update-work-unit-status
+  fspec board
+

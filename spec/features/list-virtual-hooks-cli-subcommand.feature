@@ -22,7 +22,7 @@ Feature: List Virtual Hooks Cli Subcommand
     When I run `./codelet/target/release/fspec list-virtual-hooks --help` from a shell
     Then the command exits 0
     And stdout contains clap-generated help describing the list-virtual-hooks subcommand
-    And stdout contains the positional placeholder "<WORK_UNIT_ID>"
+    And stdout contains the positional placeholder "<workUnitId>"
     And stdout does NOT contain the substring '--format'
     And stdout does NOT contain the substring '--workspace'
 
@@ -45,3 +45,12 @@ Feature: List Virtual Hooks Cli Subcommand
     When I dispatch list-virtual-hooks through fspec_core::dispatch::dispatch_command with workUnitId='AUTH-001' and format='json'
     Then the dispatcher's DispatchResult.data parses to a JSON object with hooks array of length 1
     And the CLI bridge module codelet/fspec/src/list_virtual_hooks.rs contains NO inline rendering, hook-grouping, or work-unit-lookup logic — its only computation is JSON arg marshalling
+
+  Scenario: list-virtual-hooks --help is byte-for-byte identical to TS formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-virtual-hooks --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-virtual-hooks.txt
+    And stdout starts with a blank line followed by 'LIST-VIRTUAL-HOOKS'
+    And stdout contains the section header 'COMMON PATTERNS'
+

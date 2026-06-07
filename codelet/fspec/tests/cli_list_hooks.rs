@@ -60,18 +60,31 @@ fn canonical_hooks_json() -> String {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Scenario: Clap exposes list-hooks as a subcommand and prints flag-aware --help
+// Scenario: list-hooks --help is byte-for-byte identical to TS reference output
 // ─────────────────────────────────────────────────────────────────────────
+
+/// Captured byte-exact TS reference output of
+/// `node dist/index.js list-hooks --help` when piped to non-TTY (no colour).
+/// Regenerate via:
+///   `cd /tmp && node /Users/rquast/projects/fspec/dist/index.js list-hooks --help \
+///    > codelet/fspec/tests/fixtures/help/list-hooks.txt`
+const TS_HELP_FIXTURE: &str =
+    include_str!("fixtures/help/list-hooks.txt");
 
 #[test]
 fn scenario_clap_exposes_list_hooks_with_flag_aware_help() {
     // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
     // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
 
-    // @step When I run `./codelet/target/release/fspec list-hooks --help` from a shell
+    // @step And the TS reference binary `node dist/index.js list-hooks --help` produces a documented 51-line block starting with a blank line, then "LIST-HOOKS", "List all configured lifecycle hooks", then WHEN TO USE / USAGE / OPTIONS / TYPICAL WORKFLOW / EXAMPLES / COMMON ERRORS / RELATED COMMANDS / NOTES sections
+    // (Fixture captured at codelet/fspec/tests/fixtures/help/list-hooks.txt — 51 lines, 1237 bytes.)
+
+    // @step When I run `./codelet/target/release/fspec list-hooks --help` piped to non-TTY (no color codes)
     let output = Command::new(fspec_bin())
         .arg("list-hooks")
         .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
         .output()
         .expect("spawn list-hooks --help");
     let code = output.status.code().unwrap_or(-1);
@@ -84,11 +97,57 @@ fn scenario_clap_exposes_list_hooks_with_flag_aware_help() {
         "list-hooks --help must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout contains clap-generated help describing the list-hooks subcommand
-    assert!(
-        stdout.contains("list-hooks") || stdout.contains("List all configured lifecycle hooks"),
-        "help must describe the list-hooks subcommand; got:\n{stdout}"
+    // @step Then stdout is byte-for-byte identical to the TS reference output
+    assert_eq!(
+        stdout, TS_HELP_FIXTURE,
+        "list-hooks --help output must be byte-for-byte identical to TS reference"
     );
+
+    // @step Then stdout starts with a blank line followed by "LIST-HOOKS"
+    assert!(
+        stdout.starts_with("\nLIST-HOOKS\n"),
+        "help must start with blank line then LIST-HOOKS header; got first 32 bytes:\n{:?}",
+        &stdout.chars().take(32).collect::<String>()
+    );
+
+    // @step Then stdout contains the section header "WHEN TO USE"
+    assert!(stdout.contains("WHEN TO USE\n"), "help must contain WHEN TO USE section");
+
+    // @step Then stdout contains the section header "USAGE" followed by "  fspec list-hooks"
+    assert!(
+        stdout.contains("USAGE\n  fspec list-hooks\n"),
+        "help must contain USAGE\\n  fspec list-hooks"
+    );
+
+    // @step Then stdout contains the section header "OPTIONS" followed by "  No options available"
+    assert!(
+        stdout.contains("OPTIONS\n  No options available\n"),
+        "help must contain OPTIONS\\n  No options available"
+    );
+
+    // @step Then stdout contains the section header "TYPICAL WORKFLOW"
+    assert!(stdout.contains("TYPICAL WORKFLOW\n"), "help must contain TYPICAL WORKFLOW section");
+
+    // @step Then stdout contains the section header "EXAMPLES" with both documented examples
+    assert!(stdout.contains("EXAMPLES\n"), "help must contain EXAMPLES section");
+    assert!(stdout.contains("1. List all configured hooks"), "help must list example 1");
+    assert!(stdout.contains("2. When no hooks are configured"), "help must list example 2");
+
+    // @step Then stdout contains the section header "COMMON ERRORS"
+    assert!(stdout.contains("COMMON ERRORS\n"), "help must contain COMMON ERRORS section");
+
+    // @step Then stdout contains the section header "RELATED COMMANDS" listing validate-hooks, add-hook, remove-hook
+    assert!(stdout.contains("RELATED COMMANDS\n"), "help must contain RELATED COMMANDS section");
+    assert!(stdout.contains("fspec validate-hooks"), "help must list validate-hooks");
+    assert!(stdout.contains("fspec add-hook"), "help must list add-hook");
+    assert!(stdout.contains("fspec remove-hook"), "help must list remove-hook");
+
+    // @step Then stdout contains the section header "NOTES" listing the four documented notes
+    assert!(stdout.contains("NOTES\n"), "help must contain NOTES section");
+    assert!(stdout.contains("Reads from spec/fspec-hooks.json"), "help must list note 1");
+    assert!(stdout.contains("Shows event names and hook names only"), "help must list note 2");
+    assert!(stdout.contains("Use validate-hooks to check if hook scripts exist"), "help must list note 3");
+    assert!(stdout.contains("Hooks are organized by event"), "help must list note 4");
 
     // @step Then stdout does NOT contain the substring '--format'
     assert!(

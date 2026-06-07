@@ -1,0 +1,7 @@
+Usage: fspec list-foundation-sections [options]
+
+List every valid foundation section with its JSON path and constraint info
+
+Options:
+  --format <format>  Output format: text (default) or json (default: "text")
+  -h, --help         Display help for command

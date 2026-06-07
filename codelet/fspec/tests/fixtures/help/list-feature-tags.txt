@@ -1,0 +1,45 @@
+
+LIST-FEATURE-TAGS
+List all tags on a specific feature file
+
+WHEN TO USE
+  Use this command when you need to see all tags applied to a feature file, either just the tag names or with their category information from the tag registry.
+
+USAGE
+  fspec list-feature-tags <file> [options]
+
+ARGUMENTS
+  <file> (required)
+    Feature file path (e.g., spec/features/login.feature)
+
+OPTIONS
+  --show-categories
+    Show tag categories from registry (spec/tags.json)
+
+EXAMPLES
+  1. List all tags on a feature file
+  $ fspec list-feature-tags spec/features/login.feature
+  @critical
+@authentication
+@cli
+@critical
+
+  2. List tags with their categories
+  $ fspec list-feature-tags spec/features/login.feature --show-categories
+  @critical (Phase Tags)
+@authentication (Feature Group Tags)
+@cli (Component Tags)
+@critical (Priority Tags)
+
+RELATED COMMANDS
+  fspec add-tag-to-feature
+  fspec remove-tag-from-feature
+  fspec list-scenario-tags
+  fspec list-tags
+  fspec validate-tags
+
+NOTES
+  • Shows only tags at the feature level (not scenario-level tags)
+  • Use --show-categories to see which category each tag belongs to
+  • Tags are displayed in the order they appear in the feature file
+

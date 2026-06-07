@@ -73,3 +73,11 @@ Feature: List prefixes CLI subcommand
     When I dispatch list-prefixes through fspec_core::dispatch::dispatch_command with format='json'
     Then the dispatcher's DispatchResult.data shows AUTH at 1/2 (50%) and the CLI text output (`fspec list-prefixes`) shows the exact line '  Work Units: 1/2 (50%)' against the same on-disk state
     Then the CLI bridge module codelet/fspec/src/list_prefixes.rs contains NO inline prefix-aggregation, filter, or rendering logic — its only computation is JSON arg marshalling
+
+  Scenario: list-prefixes --help is byte-for-byte identical to TS formatCommandHelp reference output
+    Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    When I run `./codelet/target/release/fspec list-prefixes --help` piped to non-TTY
+    Then the command exits 0
+    And stdout is byte-for-byte identical to the fixture at codelet/fspec/tests/fixtures/help/list-prefixes.txt
+    And stdout starts with a blank line followed by 'LIST-PREFIXES'
+

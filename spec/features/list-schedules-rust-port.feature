@@ -101,20 +101,3 @@ Feature: Port list-schedules command to Rust
     When I dispatch list-schedules with an empty args object {}
     Then the dispatcher returns success=true
     Then the DispatchResult.data contains the exact line 'No schedules configured.'
-
-  Scenario: CLI surface accepts only the --json flag
-    Given the fspec Rust binary has been compiled with the list-schedules subcommand registered
-    When I run `fspec list-schedules --help` from a shell
-    Then the command exits 0
-    Then stdout describes the list-schedules subcommand
-    Then stdout advertises the --json flag
-    Then stdout does NOT advertise the substrings '--status', '--prefix', '--epic', '--format', '--category', or '--workspace'
-
-
-  Scenario: CLI delegates to the same fspec_core function as dispatcher
-    Given spec/schedules.json contains one shell schedule named 'nightly-build' with cron '0 2 * * *'
-    When I dispatch list-schedules through fspec_core::dispatch::dispatch_command with format='json' AND I also invoke `fspec list-schedules --json` from a shell against the same project root
-    Then both call sites return the identical pretty-printed JSON payload byte-for-byte
-    Then the CLI bridge module codelet/fspec/src/list_schedules.rs contains NO inline schedule-aggregation, filter, or rendering logic
-    Then the bridge module's only computation is the boolean-to-format-key JSON arg marshalling
-

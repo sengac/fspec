@@ -402,3 +402,69 @@ fn scenario_cli_invalid_gherkin_routes_error_to_stderr_with_exit_1() {
         stdout.len()
     );
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// Scenario: list-feature-tags --help is byte-for-byte identical to TS
+//           formatCommandHelp reference output (RPC-244 strict byte-parity)
+// ─────────────────────────────────────────────────────────────────────────
+
+/// Captured byte-exact TS reference output of
+/// `node dist/index.js list-feature-tags --help` piped to non-TTY.
+/// Regenerate via:
+///   `node /Users/rquast/projects/fspec/dist/index.js list-feature-tags --help \
+///    > codelet/fspec/tests/fixtures/help/list-feature-tags.txt`
+const TS_HELP_FIXTURE_LFT: &str = include_str!("fixtures/help/list-feature-tags.txt");
+
+#[test]
+fn scenario_list_feature_tags_help_matches_ts_formatcommandhelp_reference() {
+    // @step Given the fspec Rust binary at codelet/target/release/fspec has been compiled
+    // (Enforced at compile time by CARGO_BIN_EXE_fspec in fspec_bin().)
+
+    // @step When I run `./codelet/target/release/fspec list-feature-tags --help` piped to non-TTY
+    let output = Command::new(fspec_bin())
+        .arg("list-feature-tags")
+        .arg("--help")
+        .env_remove("CLICOLOR_FORCE")
+        .env("NO_COLOR", "1")
+        .output()
+        .expect("spawn list-feature-tags --help");
+    let code = output.status.code().unwrap_or(-1);
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+
+    // @step Then the command exits 0
+    assert_eq!(
+        code, 0,
+        "list-feature-tags --help must exit 0; got {code}, stderr={stderr}"
+    );
+
+    // @step And stdout is byte-for-byte identical to the TS reference fixture at codelet/fspec/tests/fixtures/help/list-feature-tags.txt
+    assert_eq!(
+        stdout, TS_HELP_FIXTURE_LFT,
+        "list-feature-tags --help output must be byte-for-byte identical to TS reference"
+    );
+
+    // @step And stdout starts with a blank line followed by 'LIST-FEATURE-TAGS'
+    assert!(
+        stdout.starts_with("\nLIST-FEATURE-TAGS\n"),
+        "help must start with blank line then LIST-FEATURE-TAGS header; got first 40 bytes:\n{:?}",
+        &stdout.chars().take(40).collect::<String>()
+    );
+
+    // @step And stdout contains the section header 'ARGUMENTS' followed by '  <file> (required)'
+    assert!(
+        stdout.contains("ARGUMENTS\n  <file> (required)\n"),
+        "help must contain ARGUMENTS section with <file> (required)"
+    );
+
+    // @step And stdout contains the section header 'OPTIONS' listing only '--show-categories'
+    assert!(
+        stdout.contains("OPTIONS\n  --show-categories\n"),
+        "help must contain OPTIONS section with --show-categories"
+    );
+    // Confirm no other --flag advertised in this command's help block
+    assert!(
+        !stdout.contains("--format"),
+        "list-feature-tags --help must NOT advertise --format"
+    );
+}
