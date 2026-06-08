@@ -58,9 +58,9 @@ use clap::{Parser, Subcommand};
                   - (no subcommand)     combined mode: ratatui TUI + always-on WS server in one process\n\
                   - `daemon`            headless WS server only (suitable for systemd / launchd)\n\
                   - `client`            frontend-only; connects to a running daemon via WebSocket\n\
-                  - `status`            one-shot health probe against the running daemon\n\
-                  - `list-*`            shell-facing ports of the TypeScript Commander.js commands\n\
-                                        (RPC-241, 243-253 — see `--help` on each subcommand)"
+                  - `status`            one-shot health probe against the running daemon\n\n\
+                  All remaining subcommands are the main fspec CLI commands. For details on any\n\
+                  individual command, run `fspec <command> --help`."
 )]
 struct Cli {
     /// Workspace root to observe via WorkUnitsWatcher.
