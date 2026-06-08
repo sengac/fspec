@@ -328,10 +328,19 @@ fn render_text(result: &ListFeatureTagsResult) -> String {
     }
 
     let mut out = String::from("Tags on this feature:\n\n");
-    for tag in &result.tags {
-        out.push_str("  ");
-        out.push_str(tag);
-        out.push('\n');
+
+    if let Some(categorized) = &result.categorized_tags {
+        out.push_str(&format!("{:<20} {}\n", "Tag", "Category"));
+        out.push_str(&format!("{}\n", "─".repeat(50)));
+        for entry in categorized {
+            out.push_str(&format!("{:<20} {}\n", entry.tag, entry.category));
+        }
+    } else {
+        for tag in &result.tags {
+            out.push_str("  ");
+            out.push_str(tag);
+            out.push('\n');
+        }
     }
     // Trim trailing newline so the output ends cleanly — callers can
     // append their own newline if needed.

@@ -6,6 +6,7 @@
 //! parity with the TS reference output.
 
 pub mod list_attachments;
+pub mod list_checkpoints;
 pub mod list_epics;
 pub mod list_feature_tags;
 pub mod list_features;
@@ -16,3 +17,12 @@ pub mod list_schedules;
 pub mod list_tags;
 pub mod list_virtual_hooks;
 pub mod list_work_units;
+pub mod query_dependency_stats;
+pub mod query_estimate_accuracy;
+pub mod query_metrics;
+pub mod query_work_units;
+pub mod show_deleted;
+pub mod show_epic;
+pub mod show_feature;
+pub mod show_work_unit;
+pub mod tag_stats;

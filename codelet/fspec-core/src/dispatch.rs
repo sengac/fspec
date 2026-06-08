@@ -183,6 +183,32 @@ fn run_ported(
             "list-virtual-hooks" => {
                 commands::list_virtual_hooks::run(args_json, project_root).await
             }
+            // RPC-242 — list-checkpoints
+            "list-checkpoints" => {
+                commands::list_checkpoints::run(args_json, project_root).await
+            }
+            // RPC-301 — show-deleted
+            "show-deleted" => commands::show_deleted::run(args_json, project_root).await,
+            // RPC-302 — show-epic
+            "show-epic" => commands::show_epic::run(args_json, project_root).await,
+            // RPC-304 — show-feature
+            "show-feature" => commands::show_feature::run(args_json, project_root).await,
+            // RPC-310 — tag-stats
+            "tag-stats" => commands::tag_stats::run(args_json, project_root).await,
+            // RPC-308 — show-work-unit
+            "show-work-unit" => commands::show_work_unit::run(args_json, project_root).await,
+            // RPC-257 — query-dependency-stats
+            "query-dependency-stats" => {
+                commands::query_dependency_stats::run(args_json, project_root).await
+            }
+            // RPC-258 — query-estimate-accuracy
+            "query-estimate-accuracy" => {
+                commands::query_estimate_accuracy::run(args_json, project_root).await
+            }
+            // RPC-261 — query-metrics
+            "query-metrics" => commands::query_metrics::run(args_json, project_root).await,
+            // RPC-263 — query-work-units
+            "query-work-units" => commands::query_work_units::run(args_json, project_root).await,
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -279,7 +305,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "link-coverage" => commands::link_coverage::run(args_json).await,
             // "list-attachments" — ported (RPC-241). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "list-checkpoints" => commands::list_checkpoints::run(args_json).await,
+            // "list-checkpoints" — ported (RPC-242). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "list-epics" — ported (RPC-243). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "list-feature-tags" — ported (RPC-244). Handled by `run_ported`
@@ -305,13 +332,17 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "pause-schedule" => commands::pause_schedule::run(args_json).await,
             "prioritize-work-unit" => commands::prioritize_work_unit::run(args_json).await,
             "query-bottlenecks" => commands::query_bottlenecks::run(args_json).await,
-            "query-dependency-stats" => commands::query_dependency_stats::run(args_json).await,
-            "query-estimate-accuracy" => commands::query_estimate_accuracy::run(args_json).await,
+            // "query-dependency-stats" — ported (RPC-257). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "query-estimate-accuracy" — ported (RPC-258). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "query-estimation-guide" => commands::query_estimation_guide::run(args_json).await,
             "query-example-mapping-stats" => commands::query_example_mapping_stats::run(args_json).await,
-            "query-metrics" => commands::query_metrics::run(args_json).await,
+            // "query-metrics" — ported (RPC-261). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "query-orphans" => commands::query_orphans::run(args_json).await,
-            "query-work-units" => commands::query_work_units::run(args_json).await,
+            // "query-work-units" — ported (RPC-263). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "record-iteration" => commands::record_iteration::run(args_json).await,
             "register-tag" => commands::register_tag::run(args_json).await,
             "remove-aggregate-from-foundation" => commands::remove_aggregate_from_foundation::run(args_json).await,
@@ -349,16 +380,21 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "set-user-story" => commands::set_user_story::run(args_json).await,
             "show-acceptance-criteria" => commands::show_acceptance_criteria::run(args_json).await,
             "show-coverage" => commands::show_coverage::run(args_json).await,
-            "show-deleted" => commands::show_deleted::run(args_json).await,
-            "show-epic" => commands::show_epic::run(args_json).await,
+            // "show-deleted" — ported (RPC-301). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "show-epic" — ported (RPC-302). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "show-event-storm" => commands::show_event_storm::run(args_json).await,
-            "show-feature" => commands::show_feature::run(args_json).await,
+            // "show-feature" — ported (RPC-304). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "show-foundation" => commands::show_foundation::run(args_json).await,
             "show-foundation-event-storm" => commands::show_foundation_event_storm::run(args_json).await,
             "show-test-patterns" => commands::show_test_patterns::run(args_json).await,
-            "show-work-unit" => commands::show_work_unit::run(args_json).await,
+            // "show-work-unit" — ported (RPC-308). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "suggest-dependencies" => commands::suggest_dependencies::run(args_json).await,
-            "tag-stats" => commands::tag_stats::run(args_json).await,
+            // "tag-stats" — ported (RPC-310). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "unlink-coverage" => commands::unlink_coverage::run(args_json).await,
             "update-foundation" => commands::update_foundation::run(args_json).await,
             "update-prefix" => commands::update_prefix::run(args_json).await,

@@ -32,6 +32,7 @@ use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
+use codelet_fspec_core::FspecCoreError;
 use codelet_fspec_core::commands::list_tags;
 use serde_json::json;
 
@@ -94,10 +95,20 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         Err(err) => {
             // Mirror the TS `output.error('Error:', error.message)`
             // path: stderr, prefixed, no ANSI required for parity
-            // with RPC-253 rule [14]. The canonical error substrings
-            // are carried in the Display impl of FspecCoreError
-            // verbatim by fspec_core itself.
-            eprintln!("Error: {err}");
+            // with RPC-253 rule [14]. The dispatcher wraps domain
+            // errors (e.g. unknown --category) in
+            // `FspecCoreError::InvalidArgs { reason }` — strip that
+            // wrapper so the printed message matches the bare TS
+            // Error.message (parity with the show_deleted bridge
+            // pattern).
+            match &err {
+                FspecCoreError::InvalidArgs { reason, .. } => {
+                    eprintln!("Error: {reason}");
+                }
+                _ => {
+                    eprintln!("Error: {err}");
+                }
+            }
             Ok(1)
         }
     }

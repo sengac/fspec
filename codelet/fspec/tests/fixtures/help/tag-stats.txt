@@ -1,0 +1,30 @@
+
+TAG-STATS
+Display statistics about tag usage across feature files
+
+USAGE
+  fspec tag-stats
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Show tag usage statistics
+  $ fspec tag-stats
+  Tag Usage Statistics:
+
+@critical: 45 features, 123 scenarios
+@high: 12 features, 34 scenarios
+@cli: 30 features
+@parser: 15 features
+
+RELATED COMMANDS
+  fspec list-tags
+  fspec validate-tags
+  fspec register-tag
+
+NOTES
+  • Shows how many features and scenarios use each tag
+  • Helps identify unused or underused tags
+  • Only counts tags that are actually used in .feature files
+

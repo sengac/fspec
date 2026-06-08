@@ -1,0 +1,650 @@
+{
+  "scenarios": [
+    {
+      "name": "Returns an empty byStoryPoints object when spec/ does not exist and does not auto-create files",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "52-79",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Escalates malformed work-units.json as a structured wrapped error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "82-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single work-unit query returns estimated, actual, and comparison fields",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "110-142",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single work-unit query for unknown id returns wrapped not-found error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "144-170",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single work-unit query defaults missing estimate and iterations to zero",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "172-204",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single work-unit query reads iterations from metrics.iterations when root-level iterations is undefined",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "206-232",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All-completed aggregation buckets by story point with averaged iterations",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "234-270",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All-completed aggregation excludes work units missing estimate or iterations",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "272-302",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "byPrefix=true groups by id prefix and reports avgAccuracy and recommendation strings",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "304-337",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "byStoryPoints key iteration order follows first-encounter insertion order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "339-369",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JSON dispatcher payload is pretty-printed with 2-space indent and canonical field order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "371-416",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                347,
+                348,
+                349,
+                350,
+                351,
+                352
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All-completed aggregation against missing work-units.json returns empty byStoryPoints",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "418-446",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Both invocation paths call the same fspec_core::commands::query_estimate_accuracy::run function",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/query_estimate_accuracy.rs",
+          "lines": "448-495",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/query_estimate_accuracy.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/query_estimate_accuracy.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/query_estimate_accuracy.rs"
+    ],
+    "totalLinesCovered": 1288
+  }
+}

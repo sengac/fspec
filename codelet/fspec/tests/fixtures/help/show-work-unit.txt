@@ -1,0 +1,130 @@
+
+SHOW-WORK-UNIT
+Display detailed information about a work unit including Example Mapping data, dependencies, and linked feature files
+
+WHEN TO USE
+  Use to view complete details of a work unit: status, type, description, Example Mapping (rules, examples, questions, assumptions), dependencies (blocks/blockedBy/dependsOn/relatesTo), linked feature files, attachments, and system reminders. Supports both human-readable text and JSON output.
+
+PREREQUISITES
+  • Work unit must exist in spec/work-units.json
+
+USAGE
+  fspec show-work-unit <workUnitId> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID (e.g., AUTH-001)
+
+OPTIONS
+  -f, --format <format>
+    Output format: text (default) or json
+
+COMMON PATTERNS
+  • View work unit before Example Mapping session
+    Example: # Check current state
+fspec show-work-unit AUTH-001
+
+# Add rules/examples/questions
+fspec add-rule AUTH-001 "Must validate email"
+fspec add-example AUTH-001 "User with valid credentials"
+fspec add-question AUTH-001 "Should we support OAuth?" --human
+    undefined
+
+  • Export work unit data for processing
+    Example: # Export as JSON for scripts/tools
+fspec show-work-unit AUTH-001 --format json > auth-001.json
+
+# Process with jq
+fspec show-work-unit AUTH-001 --format json | jq .rules
+    undefined
+
+  • Check system reminders
+    Example: # View work unit to see reminders
+fspec show-work-unit AUTH-001
+
+# Output includes:
+# <system-reminder>
+# Missing estimate for work unit AUTH-001
+# </system-reminder>
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. List work units: fspec list-work-units → 2. Show details: fspec show-work-unit <workUnitId> → 3. Update fields: fspec update-work-unit <workUnitId> --title "New title" → 4. Verify changes: fspec show-work-unit <workUnitId>
+
+EXAMPLES
+  1. Show work unit details in text format
+  $ fspec show-work-unit AUTH-001
+  AUTH-001
+Type: story
+Status: specifying
+
+User login feature
+Implement user authentication
+
+Rules:
+  1. Must validate email format
+  2. Password must be 8+ characters
+
+Questions:
+  [0] Should we support OAuth?
+
+Linked Features:
+  spec/features/auth/login.feature
+    spec/features/auth/login.feature:10 - Valid user login
+
+Created: 13/10/2025 14:30:00
+Updated: 13/10/2025 15:45:00
+
+  2. Show work unit details as JSON
+  $ fspec show-work-unit AUTH-001 --format json
+  {
+  "id": "AUTH-001",
+  "title": "User login feature",
+  "type": "story",
+  "status": "specifying",
+  "description": "Implement user authentication",
+  "rules": ["Must validate email format"],
+  "questions": ["[0] Should we support OAuth?"],
+  "linkedFeatures": [...],
+  "createdAt": "2025-10-13T14:30:00Z",
+  "updatedAt": "2025-10-13T15:45:00Z"
+}
+
+  3. Show epic details with children
+  $ fspec show-work-unit EPIC-001
+  EPIC-001
+Type: epic
+Status: implementing
+
+User Management
+
+Children: AUTH-001, AUTH-002, AUTH-003
+
+Created: 01/10/2025 10:00:00
+
+COMMON ERRORS
+  ✗ Work unit 'AUTH-999' does not exist
+    Fix: Verify the work unit ID exists with: fspec list-work-units
+
+  ✗ ENOENT: no such file or directory, spec/work-units.json
+    Fix: Initialize work units with: fspec create-story PREFIX "title" (or create-bug/create-task)
+
+RELATED COMMANDS
+  fspec list-work-units
+  fspec update-work-unit
+  fspec update-work-unit-status
+  fspec add-rule
+  fspec add-example
+  fspec add-question
+  fspec dependencies
+
+NOTES
+  • Text format shows all Example Mapping data (rules, examples, questions, assumptions, architecture notes)
+  • Text format shows all dependency relationships (blocks, blockedBy, dependsOn, relatesTo)
+  • Text format shows linked feature files with scenario names and line numbers
+  • JSON format includes all fields, suitable for scripting and automation
+  • System reminders are displayed for missing estimates, empty Example Mapping, long phase duration, or large estimates (> 13 points for story/bug)
+  • Questions are filtered to show only unselected questions (answered questions are hidden)
+  • Linked features are automatically discovered by scanning feature files for work unit tags
+

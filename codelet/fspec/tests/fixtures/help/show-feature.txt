@@ -1,0 +1,25 @@
+
+SHOW-FEATURE
+Display the contents of a feature file with syntax highlighting
+
+USAGE
+  fspec show-feature <file>
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Display feature file
+  $ fspec show-feature spec/features/login.feature
+  Feature: User Login
+  Scenario: Login with valid credentials
+    Given I am on the login page...
+
+RELATED COMMANDS
+  fspec list-features
+  fspec validate
+

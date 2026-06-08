@@ -1,0 +1,25 @@
+
+QUERY-METRICS
+Query project metrics and statistics
+
+USAGE
+  fspec query-metrics [options]
+
+OPTIONS
+  --metric <metric>
+    Specific metric to query
+  --format <format>
+    Output format: table or json
+  --work-unit-id <id>
+    Specific work unit to query metrics for
+
+EXAMPLES
+  1. Show all metrics
+  $ fspec query-metrics
+  Velocity: 23 points/week
+Cycle time: 3.5 days avg
+Throughput: 5 work units/week
+
+RELATED COMMANDS
+  fspec generate-summary-report
+

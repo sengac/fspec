@@ -1,0 +1,402 @@
+{
+  "scenarios": [
+    {
+      "name": "Returns deleted items in canonical concatenation order with only id text and deletedAt fields",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "80-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-creates work-units.json and fails when the requested work unit does not exist",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "143-174",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Returns empty deletedItems for a work unit that has never had soft-deletes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "176-199",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Excludes items whose deleted flag is false or missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "201-228",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Omits deletedAt from the JSON payload when the field is absent on the source item",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "230-263",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text format renders the empty case as 'No deleted items found'",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "265-288",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text format renders the populated case with header item lines and timestamps",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "290-342",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text format omits the deleted timestamp suffix when deletedAt is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "344-377",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Defaults to text format when the format argument is omitted",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "379-399",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Returns a structured error when workUnitId is missing from the args",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "401-421",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JSON format emits 2-space indented payload with the canonical field set",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "423-476",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shared infrastructure delegation",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_deleted.rs",
+          "lines": "478-499",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/show_deleted.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/show_deleted.rs"
+    ],
+    "totalLinesCovered": 603
+  }
+}

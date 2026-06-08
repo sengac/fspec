@@ -1,0 +1,26 @@
+
+QUERY-DEPENDENCY-STATS
+Show dependency statistics and potential blockers
+
+WHEN TO USE
+  Use to identify dependency bottlenecks, blocked work units, and critical paths.
+
+USAGE
+  fspec query-dependency-stats [options]
+
+OPTIONS
+  --show-critical-path
+    Highlight critical path through dependencies
+
+EXAMPLES
+  1. Show dependency stats
+  $ fspec query-dependency-stats
+  Total dependencies: 42
+Blocking work units: 5
+Blocked work units: 8
+Work units with no dependencies: 20
+
+RELATED COMMANDS
+  fspec export-dependencies
+  fspec add-dependency
+

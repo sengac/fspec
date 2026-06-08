@@ -1,0 +1,30 @@
+
+SHOW-EPIC
+Display details of an epic including associated work units
+
+USAGE
+  fspec show-epic <epicId>
+
+ARGUMENTS
+  <epicId> (required)
+    Epic ID (e.g., user-management)
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Show epic details
+  $ fspec show-epic user-management
+  user-management
+Title: User Management Features
+Description: Handles user accounts
+
+Work Units:
+  AUTH-001 - User login feature
+  AUTH-002 - Password reset
+
+RELATED COMMANDS
+  fspec list-epics
+  fspec create-epic
+  fspec list-work-units
+

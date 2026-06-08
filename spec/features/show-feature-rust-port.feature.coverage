@@ -1,0 +1,556 @@
+{
+  "scenarios": [
+    {
+      "name": "Bare-name lookup resolves to spec/features/<name>.feature and renders Work Units None when no WU tags present",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "69-98",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Direct path lookup resolves a feature path ending in .feature",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "99-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing feature file returns Feature file not found with the unresolved input",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "132-164",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid Gherkin syntax returns success false with Invalid Gherkin syntax prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "165-197",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Feature-level work-unit tag attaches to scenarios that lack their own WU tag",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "198-259",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scenario-level WU tag overrides feature-level for that scenario and produces a scenario-level entry",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "260-334",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work-units json yields Unknown title and unknown status enrichment",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "335-366",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JSON format emits a 2-space-indented object with feature AST and workUnits array",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "367-417",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Output path writes rendered content to disk and content field still echoes it",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "418-454",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shared infrastructure modules exist under fspec-core for reuse by other commands",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/show_feature.rs",
+          "lines": "455-480",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_feature.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/show_feature.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/show_feature.rs"
+    ],
+    "totalLinesCovered": 792
+  }
+}

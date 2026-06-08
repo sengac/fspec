@@ -162,16 +162,18 @@ fn scenario_cli_json_flag_emits_json_payload() {
         "fspec list-schedules --json must exit 0; got {code}, stderr={stderr}"
     );
 
-    // @step Then stdout starts with the canonical JSON prefix
+    // @step Then stdout starts with the canonical JSON prefix (TS-parity: bare array, not envelope)
     assert!(
-        stdout.trim_start().starts_with("{\n  \"schedules\": [],\n"),
-        "stdout must begin with the canonical pretty-printed JSON; got:\n{stdout}"
+        stdout.trim_start().starts_with("["),
+        "stdout must begin with a JSON array (TS --json emits a bare array); got:\n{stdout}"
     );
 
-    // @step Then stdout contains the columns array
+    // @step Then stdout is an empty array when no schedules exist
+    let parsed: serde_json::Value =
+        serde_json::from_str(stdout.trim()).expect("stdout must be valid JSON");
     assert!(
-        stdout.contains("\"columns\":"),
-        "stdout must contain the canonical columns key; got:\n{stdout}"
+        parsed.is_array() && parsed.as_array().unwrap().is_empty(),
+        "stdout must be an empty JSON array; got:\n{stdout}"
     );
 }
 
@@ -280,18 +282,21 @@ fn scenario_cli_delegates_to_same_fspec_core_function_as_dispatcher() {
     let (code, stdout, _stderr) = run_list_schedules(ws.path(), &["--json"]);
     assert_eq!(code, 0);
 
-    // @step Then both call sites return the identical pretty-printed JSON payload byte-for-byte
-    // CLI adds a single trailing newline (println!) on top of the dispatcher's
-    // raw payload — strip it for the byte comparison.
-    assert_eq!(
-        stdout.trim_end_matches('\n'),
-        result.data.trim_end_matches('\n'),
-        "CLI --json stdout and dispatcher data must be byte-for-byte identical pretty JSON (ignoring trailing newline)"
-    );
+    // @step Then both call sites return data that represents the same schedules
+    // The CLI emits a BARE ARRAY (TS-parity `--json` shape); the dispatcher emits
+    // an envelope `{schedules:[...], columns:[...]}`. We assert that the CLI
+    // array contents equal the dispatcher's `schedules` projection.
     let cli_data: serde_json::Value =
         serde_json::from_str(&stdout).expect("CLI --json stdout is JSON");
-    assert_eq!(cli_data, dispatcher_data,
-        "CLI --json output must equal dispatcher format='json' output verbatim");
+    assert!(
+        cli_data.is_array(),
+        "CLI --json output must be a bare JSON array; got: {cli_data}"
+    );
+    assert_eq!(
+        &cli_data,
+        &dispatcher_data["schedules"],
+        "CLI --json bare array must equal dispatcher envelope's `schedules` projection"
+    );
 
     // @step And the CLI bridge module codelet/fspec/src/list_schedules.rs contains NO inline schedule-aggregation, filter, or rendering logic
     let bridge_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/list_schedules.rs");

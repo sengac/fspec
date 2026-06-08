@@ -1,0 +1,39 @@
+
+SHOW-DELETED
+Display all soft-deleted items with IDs, text, and deletedAt timestamps for debugging and selective restoration
+
+USAGE
+  fspec show-deleted <workUnitId>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Show all deleted items with timestamps
+  $ fspec show-deleted AUTH-001
+  Deleted items for AUTH-001:
+
+[1] Old business rule (deleted: 2025-01-31T12:00:00.000Z)
+[3] Obsolete example (deleted: 2025-01-31T13:30:00.000Z)
+
+Total: 2 deleted items
+
+RELATED COMMANDS
+  fspec restore-rule
+  fspec restore-example
+  fspec restore-question
+  fspec restore-architecture-note
+  fspec compact-work-unit
+  fspec show-work-unit
+
+NOTES
+  • Shows items with deleted: true flag
+  • Displays stable IDs that can be used with restore commands
+  • Shows deletedAt timestamps in ISO 8601 format
+  • Useful for debugging and selective restoration
+  • Returns empty list if no deleted items exist
+

@@ -14,12 +14,21 @@ use serde_json::{json, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::ensure::{ensure_prefixes_file, ensure_work_units_file};
-use crate::types::work_unit::{WorkUnit, WorkUnitType};
+use crate::types::work_unit::WorkUnit;
 
 /// CLI arguments accepted by `list-work-units`. Field names mirror the
 /// kebab-case flags exposed by the TS Commander registration; serde uses
 /// camelCase aliases for parity with what the dispatcher receives over the
 /// existing JSON tool-call protocol.
+///
+/// `type` is modelled as `Option<String>` (NOT `Option<WorkUnitType>`)
+/// because the TS implementation accepts any string via
+/// `(wu.type || 'story') === options.type` and never validates the value
+/// at parse-time — invalid values simply match nothing and yield an empty
+/// `"No work units found"` result. Parity demands the same here:
+/// rejecting unknown variants at parse-time (the previous
+/// `Option<WorkUnitType>` behaviour) would diverge from TS which exits 0
+/// with the canonical empty-result sentinel.
 #[derive(Debug, Default, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
 struct ListWorkUnitsArgs {
@@ -30,7 +39,7 @@ struct ListWorkUnitsArgs {
     #[serde(default)]
     epic: Option<String>,
     #[serde(default, rename = "type")]
-    r#type: Option<WorkUnitType>,
+    r#type: Option<String>,
     /// `"text"` (default) or `"json"`.
     #[serde(default)]
     format: Option<String>,
@@ -88,16 +97,17 @@ fn filter_and_summarize(
         iter.retain(|wu| wu.epic.as_deref() == Some(epic.as_str()));
     }
 
-    if let Some(want) = args.r#type {
+    if let Some(want) = args.r#type.as_deref() {
         // Compare via string equality (parity with the TS expression
         // `(wu.type || 'story') === options.type` at
         // `src/commands/list-work-units.ts:56-61`). This preserves the
         // semantics where a `type="feature"` unit does NOT match
         // `--type=story` — the TS-runtime never coerces unknown variants
         // back to the default — while a missing/empty type DOES match
-        // `--type=story` via `type_str()`'s short-circuit.
-        let want_str = want.as_str();
-        iter.retain(|wu| wu.type_str() == want_str);
+        // `--type=story` via `type_str()`'s short-circuit. Bogus
+        // `--type=<anything>` values yield an empty result without
+        // erroring (TS accepts any string).
+        iter.retain(|wu| wu.type_str() == want);
     }
 
     iter.into_iter()
@@ -168,7 +178,16 @@ mod tests {
         let a: ListWorkUnitsArgs =
             serde_json::from_str(r#"{"status":"backlog","type":"task"}"#).unwrap();
         assert_eq!(a.status.as_deref(), Some("backlog"));
-        assert_eq!(a.r#type, Some(WorkUnitType::Task));
+        assert_eq!(a.r#type.as_deref(), Some("task"));
+    }
+
+    #[test]
+    fn args_parse_bogus_type_does_not_reject() {
+        // Parity with TS: unknown --type values are accepted at parse
+        // time and simply match nothing downstream.
+        let a: ListWorkUnitsArgs =
+            serde_json::from_str(r#"{"type":"feature"}"#).unwrap();
+        assert_eq!(a.r#type.as_deref(), Some("feature"));
     }
 
     #[test]

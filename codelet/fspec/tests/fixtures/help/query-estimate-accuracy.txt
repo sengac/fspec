@@ -1,0 +1,25 @@
+
+QUERY-ESTIMATE-ACCURACY
+Show estimation accuracy metrics comparing estimates to actuals
+
+WHEN TO USE
+  Use to assess estimation accuracy and improve future estimates.
+
+USAGE
+  fspec query-estimate-accuracy [options]
+
+OPTIONS
+  --prefix <prefix>
+    Filter by prefix
+
+EXAMPLES
+  1. Show accuracy metrics
+  $ fspec query-estimate-accuracy
+  Average estimate accuracy: 87%
+Underestimated: 5 work units
+Overestimated: 3 work units
+
+RELATED COMMANDS
+  fspec update-work-unit-estimate
+  fspec query-metrics
+

@@ -209,6 +209,16 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "list-scenario-tags",       // RPC-249
     "list-schedules",           // RPC-250
     "list-virtual-hooks",       // RPC-252
+    "list-checkpoints",         // RPC-242
+    "show-deleted",             // RPC-301
+    "show-epic",                // RPC-302
+    "show-feature",             // RPC-304
+    "tag-stats",                // RPC-310
+    "show-work-unit",           // RPC-308
+    "query-dependency-stats",   // RPC-257
+    "query-estimate-accuracy",  // RPC-258
+    "query-metrics",            // RPC-261
+    "query-work-units",         // RPC-263
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

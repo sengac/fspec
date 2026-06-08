@@ -1,0 +1,36 @@
+
+QUERY-WORK-UNITS
+Query work units with advanced filters and output formats
+
+USAGE
+  fspec query-work-units [options]
+
+OPTIONS
+  --status <status>
+    Filter by status
+  --type <type>
+    Filter by work unit type: story, task, or bug
+  --tag <tag>
+    Filter by tag (e.g., @cli, @high)
+  --epic <epic>
+    Filter by epic
+  --prefix <prefix>
+    Filter by prefix
+  --format <format>
+    Output format: table, json, csv
+
+EXAMPLES
+  1. Query with filters
+  $ fspec query-work-units --status=implementing --format=json
+  [{"id":"AUTH-001","status":"implementing","title":"Login feature"}]
+
+  2. Query completed stories tagged with @cli
+  $ fspec query-work-units --type=story --status=done --tag=@cli
+  [{"id":"CLI-001","status":"done","title":"CLI commands"}]
+
+RELATED COMMANDS
+  fspec list-work-units
+  fspec export-work-units
+  fspec search-scenarios
+  fspec compare-implementations
+

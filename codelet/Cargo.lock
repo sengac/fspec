@@ -1203,6 +1203,7 @@ dependencies = [
 name = "codelet-fspec-core"
 version = "0.1.0"
 dependencies = [
+ "codelet-git",
  "fs2",
  "gherkin",
  "indexmap 2.13.0",

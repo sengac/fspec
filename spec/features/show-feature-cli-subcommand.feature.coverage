@@ -1,0 +1,412 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes show-feature as a subcommand and prints flag-aware help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "lines": "52-89",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_feature.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-feature against a workspace with no spec/features prints feature-not-found and exits 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "lines": "90-121",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_feature.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI text output renders feature contents and Work Units None for a tag-free feature",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "lines": "122-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_feature.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI text output renders Work Unit progress block when the feature carries a work-unit tag",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "lines": "158-205",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_feature.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-feature --help is byte-for-byte identical to TS formatCommandHelp reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "lines": "206-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/show_feature.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "lines": "236-274",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_feature.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_feature.rs",
+          "lines": "275-342",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_feature.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_show_feature.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/show_feature.rs",
+      "codelet/fspec-core/src/help/configs/show_feature.rs"
+    ],
+    "totalLinesCovered": 574
+  }
+}

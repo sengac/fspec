@@ -1,0 +1,444 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes query-estimate-accuracy as a subcommand and prints flag-aware --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "60-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI against an empty workspace prints the empty-report header and does not auto-create files",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "110-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI text output renders the populated By Story Points section",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "154-210",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --format=json prints pretty-printed JSON to stdout",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "212-248",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "250-286",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "288-320",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "322-387",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_estimate_accuracy.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "query-estimate-accuracy --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_estimate_accuracy.rs",
+          "lines": "389-415",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/query_estimate_accuracy.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_query_estimate_accuracy.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/query_estimate_accuracy.rs",
+      "codelet/fspec-core/src/help/configs/query_estimate_accuracy.rs"
+    ],
+    "totalLinesCovered": 997
+  }
+}

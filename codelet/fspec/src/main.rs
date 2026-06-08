@@ -21,6 +21,7 @@ mod combined;
 mod common;
 mod daemon;
 mod list_attachments;
+mod list_checkpoints;
 mod list_epics;
 mod list_feature_tags;
 mod list_features;
@@ -32,7 +33,16 @@ mod list_schedules;
 mod list_tags;
 mod list_virtual_hooks;
 mod list_work_units;
+mod query_dependency_stats;
+mod query_estimate_accuracy;
+mod query_metrics;
+mod query_work_units;
+mod show_deleted;
+mod show_epic;
+mod show_feature;
+mod show_work_unit;
 mod status;
+mod tag_stats;
 
 use std::path::PathBuf;
 
@@ -195,6 +205,120 @@ enum Mode {
         #[arg(value_name = "WORK_UNIT_ID")]
         work_unit_id: String,
     },
+    /// RPC-242: list checkpoints (git stashes) saved for a work unit.
+    #[command(
+        name = "list-checkpoints",
+        about = "List all checkpoints for a work unit"
+    )]
+    ListCheckpoints {
+        /// Required work-unit identifier (e.g. `AUTH-001`).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+    },
+    /// RPC-301: show soft-deleted items for a work unit.
+    #[command(name = "show-deleted", about = "Show all soft-deleted items for a work unit")]
+    ShowDeleted {
+        /// Required work-unit identifier (e.g. `AUTH-001`).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+    },
+    /// RPC-302: show details and progress for an epic.
+    #[command(name = "show-epic", about = "Show epic details and progress")]
+    ShowEpic {
+        /// Required epic identifier.
+        #[arg(value_name = "EPIC_ID")]
+        epic_id: String,
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
+    /// RPC-304: show the contents of a feature file with work-unit annotations.
+    #[command(name = "show-feature", about = "Show feature file contents")]
+    ShowFeature {
+        /// Required feature file path or basename.
+        #[arg(value_name = "FEATURE")]
+        feature: String,
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+        /// Optional output file path.
+        #[arg(short = 'o', long, value_name = "PATH")]
+        output: Option<String>,
+    },
+    /// RPC-310: print tag usage statistics across the project.
+    #[command(name = "tag-stats", about = "Show tag usage statistics across feature files")]
+    TagStats,
+    /// RPC-308: show full details of a single work unit.
+    #[command(name = "show-work-unit", about = "Show full details of a single work unit")]
+    ShowWorkUnit {
+        /// Required work-unit identifier (e.g. `AUTH-001`).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
+    /// RPC-257: print dependency relationship statistics.
+    #[command(
+        name = "query-dependency-stats",
+        about = "Query dependency relationship statistics"
+    )]
+    QueryDependencyStats {
+        /// Output format: `text` (default — silent) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
+    /// RPC-258: print estimate accuracy aggregated across completed work units.
+    #[command(
+        name = "query-estimate-accuracy",
+        about = "Query estimate accuracy across completed work units"
+    )]
+    QueryEstimateAccuracy {
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
+    /// RPC-261: print velocity / iteration / cycle-time metrics.
+    #[command(
+        name = "query-metrics",
+        about = "Query velocity, iteration, and cycle-time metrics"
+    )]
+    QueryMetrics {
+        /// `--work-unit-id <id>` — query metrics for a single unit.
+        #[arg(long = "work-unit-id", value_name = "WORK_UNIT_ID")]
+        work_unit_id: Option<String>,
+        /// `--type <type>` — filter aggregate metrics to `story`, `task`, `bug`.
+        #[arg(long = "type", value_name = "TYPE")]
+        r#type: Option<String>,
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
+    /// RPC-263: query work units with rich filtering.
+    #[command(
+        name = "query-work-units",
+        about = "Query work units with filters (status, prefix, epic, type, tag)"
+    )]
+    QueryWorkUnits {
+        /// Filter by status.
+        #[arg(short = 's', long, value_name = "STATUS")]
+        status: Option<String>,
+        /// Filter by prefix.
+        #[arg(short = 'p', long, value_name = "PREFIX")]
+        prefix: Option<String>,
+        /// Filter by epic.
+        #[arg(short = 'e', long, value_name = "EPIC")]
+        epic: Option<String>,
+        /// Filter by type.
+        #[arg(short = 't', long = "type", value_name = "TYPE")]
+        r#type: Option<String>,
+        /// Filter by tag.
+        #[arg(long, value_name = "TAG")]
+        tag: Option<String>,
+        /// Output format: `text` (default), `json`, or `csv`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -294,6 +418,73 @@ async fn main() -> std::process::ExitCode {
             list_virtual_hooks::run,
             list_virtual_hooks::CliArgs { work_unit_id }
         ),
+        Some(Mode::ListCheckpoints { work_unit_id }) => forward!(
+            list_checkpoints::run,
+            list_checkpoints::CliArgs { work_unit_id }
+        ),
+        Some(Mode::ShowDeleted { work_unit_id }) => forward!(
+            show_deleted::run,
+            show_deleted::CliArgs { work_unit_id }
+        ),
+        Some(Mode::ShowEpic { epic_id, format }) => forward!(
+            show_epic::run,
+            show_epic::CliArgs { epic_id, format }
+        ),
+        Some(Mode::ShowFeature {
+            feature,
+            format,
+            output,
+        }) => forward!(
+            show_feature::run,
+            show_feature::CliArgs {
+                feature,
+                format,
+                output,
+            }
+        ),
+        Some(Mode::TagStats) => forward!(tag_stats::run, tag_stats::CliArgs::default()),
+        Some(Mode::ShowWorkUnit { work_unit_id, format }) => forward!(
+            show_work_unit::run,
+            show_work_unit::CliArgs { work_unit_id, format }
+        ),
+        Some(Mode::QueryDependencyStats { format }) => forward!(
+            query_dependency_stats::run,
+            query_dependency_stats::CliArgs { format }
+        ),
+        Some(Mode::QueryEstimateAccuracy { format }) => forward!(
+            query_estimate_accuracy::run,
+            query_estimate_accuracy::CliArgs { format }
+        ),
+        Some(Mode::QueryMetrics {
+            work_unit_id,
+            r#type,
+            format,
+        }) => forward!(
+            query_metrics::run,
+            query_metrics::CliArgs {
+                work_unit_id,
+                r#type,
+                format,
+            }
+        ),
+        Some(Mode::QueryWorkUnits {
+            status,
+            prefix,
+            epic,
+            r#type,
+            tag,
+            format,
+        }) => forward!(
+            query_work_units::run,
+            query_work_units::CliArgs {
+                status,
+                prefix,
+                epic,
+                r#type,
+                tag,
+                format,
+            }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -328,6 +519,7 @@ fn intercept_ts_help() -> Option<u8> {
     }
     let rendered = match sub {
         "list-attachments" => format_command_help(&configs::list_attachments::CONFIG),
+        "list-checkpoints" => format_command_help(&configs::list_checkpoints::CONFIG),
         "list-epics" => format_command_help(&configs::list_epics::CONFIG),
         "list-feature-tags" => format_command_help(&configs::list_feature_tags::CONFIG),
         "list-features" => format_command_help(&configs::list_features::CONFIG),
@@ -338,6 +530,15 @@ fn intercept_ts_help() -> Option<u8> {
         "list-tags" => format_command_help(&configs::list_tags::CONFIG),
         "list-virtual-hooks" => format_command_help(&configs::list_virtual_hooks::CONFIG),
         "list-work-units" => format_command_help(&configs::list_work_units::CONFIG),
+        "show-deleted" => format_command_help(&configs::show_deleted::CONFIG),
+        "show-epic" => format_command_help(&configs::show_epic::CONFIG),
+        "show-feature" => format_command_help(&configs::show_feature::CONFIG),
+        "show-work-unit" => format_command_help(&configs::show_work_unit::CONFIG),
+        "tag-stats" => format_command_help(&configs::tag_stats::CONFIG),
+        "query-dependency-stats" => format_command_help(&configs::query_dependency_stats::CONFIG),
+        "query-estimate-accuracy" => format_command_help(&configs::query_estimate_accuracy::CONFIG),
+        "query-metrics" => format_command_help(&configs::query_metrics::CONFIG),
+        "query-work-units" => format_command_help(&configs::query_work_units::CONFIG),
         // RPC-246: list-foundation-sections has no custom -help.ts in TS; the
         // reference is the bare Commander.js default output. We emit a byte-
         // for-byte static string (mirrors `node dist/index.js

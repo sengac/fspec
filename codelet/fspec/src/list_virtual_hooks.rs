@@ -41,6 +41,7 @@ use std::env;
 use std::path::PathBuf;
 
 use anyhow::{Context, Result};
+use codelet_fspec_core::FspecCoreError;
 use codelet_fspec_core::commands::list_virtual_hooks;
 use serde_json::json;
 
@@ -89,9 +90,19 @@ pub async fn run(args: CliArgs) -> Result<u8> {
         }
         Err(err) => {
             // Mirror the TS `output.error('✗ Failed to list virtual hooks:', ...)`
-            // path: stderr, prefixed with `Error:`, no ANSI required for
-            // parity with the cross-port error contract.
-            eprintln!("Error: {err}");
+            // path: stderr with the canonical prefix. The dispatcher wraps
+            // domain errors (e.g. "Work unit 'X' does not exist") in
+            // `FspecCoreError::InvalidArgs { reason }` — strip that wrapper
+            // so the printed message matches the bare TS Error.message
+            // (parity with the show_deleted bridge pattern).
+            match &err {
+                FspecCoreError::InvalidArgs { reason, .. } => {
+                    eprintln!("✗ Failed to list virtual hooks: {reason}");
+                }
+                _ => {
+                    eprintln!("✗ Failed to list virtual hooks: {err}");
+                }
+            }
             Ok(1)
         }
     }

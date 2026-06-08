@@ -1,0 +1,319 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes show-deleted as a subcommand with positional workUnitId and no flags",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "82-139",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints sentinel when the work unit exists but has no deleted items",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "141-167",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI text output renders header and item lines for the populated case",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "169-215",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 and writes to stderr when the work unit does not exist",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "217-246",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI auto-creates work-units.json before checking for the requested work unit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "248-272",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "274-315",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "317-381",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-deleted --help is byte-for-byte identical to TS formatCommandHelp reference output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_deleted.rs",
+          "lines": "383-407",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_deleted.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_show_deleted.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/show_deleted.rs"
+    ],
+    "totalLinesCovered": 494
+  }
+}

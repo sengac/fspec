@@ -38,7 +38,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Result};
 use codelet_fspec_core::commands::list_schedules;
-use serde_json::json;
+use serde_json::{json, Value};
 
 /// Strongly-typed args mirrored from the TypeScript Commander.js flag
 /// set for `list-schedules`
@@ -80,6 +80,27 @@ pub async fn run(args: CliArgs) -> Result<u8> {
 
     match list_schedules::run(&args_json, &project_root).await {
         Ok(rendered) => {
+            if args.json {
+                // TS `--json` emits the BARE schedules array
+                // (`output.log(JSON.stringify(result.schedules, null, 2))`),
+                // NOT the dispatcher envelope `{schedules, columns}`. Project
+                // the array out of the dispatcher payload so the CLI surface
+                // stays byte-compatible with TS for `--json` consumers.
+                //
+                // The dispatcher path keeps the envelope (its documented
+                // contract); the projection lives here in the bridge so
+                // `fspec_core` retains a single canonical response shape.
+                let parsed: Value = serde_json::from_str(&rendered)
+                    .context("parse list-schedules JSON payload")?;
+                let schedules = parsed
+                    .get("schedules")
+                    .cloned()
+                    .unwrap_or_else(|| Value::Array(Vec::new()));
+                let projected = serde_json::to_string_pretty(&schedules)
+                    .context("re-serialize schedules array")?;
+                println!("{projected}");
+                return Ok(0);
+            }
             // text format embeds its own trailing newline structure
             // (rule [7]); the JSON pretty-print path does NOT, so we
             // append one for shell-pipeline friendliness in that case
