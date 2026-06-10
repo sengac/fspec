@@ -1,0 +1,28 @@
+
+CLEAR-DEPENDENCIES
+Remove all dependencies from a work unit
+
+USAGE
+  fspec clear-dependencies <workUnitId> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+
+OPTIONS
+  --force
+    Skip confirmation
+
+EXAMPLES
+  1. Clear all dependencies
+  $ fspec clear-dependencies AUTH-001
+  ✓ Cleared all dependencies from AUTH-001
+
+RELATED COMMANDS
+  fspec add-dependency
+  fspec remove-dependency
+
+NOTES
+  • Removes all relationship types
+  • Requires confirmation unless --force is used
+

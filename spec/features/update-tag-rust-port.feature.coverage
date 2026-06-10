@@ -1,0 +1,620 @@
+{
+  "scenarios": [
+    {
+      "name": "Updates only the description when only --description is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "86-115",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moves tag to a different category preserving original description when --description is omitted",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "117-152",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moves tag to a different category and overrides description when both --category and --description are provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "154-184",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sorts tags alphabetically within the target category after cross-category move",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "186-223",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserves insertion order when description-only update inside the same category",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "225-259",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejects request when neither --category nor --description is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "261-289",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejects request when spec/tags.json does not exist",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "291-320",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejects request when the tag is not found in any category",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "322-351",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Rejects unknown target category with canonical Available categories list",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "353-381",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Treats category lookup as case-sensitive (lowercase variant does not match)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "383-406",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserves auxiliary top-level fields and does NOT bump statistics.lastUpdated",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "408-468",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Escalates malformed tags.json as a structured parse error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "470-498",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Renders multi-line success block on success",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_tag.rs",
+          "lines": "500-531",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_tag.rs",
+              "lines": [
+                246,
+                247,
+                248,
+                249,
+                250,
+                251
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/update_tag.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/update_tag.rs"
+    ],
+    "totalLinesCovered": 830
+  }
+}

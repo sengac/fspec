@@ -242,6 +242,33 @@ fn run_ported(
             }
             // RPC-300 — show-coverage
             "show-coverage" => commands::show_coverage::run(args_json, project_root).await,
+            // Batch 7 (2026-06-10) — mutation commands
+            // RPC-211 — create-epic
+            "create-epic" => commands::create_epic::run(args_json, project_root).await,
+            // RPC-217 — delete-epic
+            "delete-epic" => commands::delete_epic::run(args_json, project_root).await,
+            // RPC-213 — create-prefix
+            "create-prefix" => commands::create_prefix::run(args_json, project_root).await,
+            // RPC-265 — register-tag
+            "register-tag" => commands::register_tag::run(args_json, project_root).await,
+            // RPC-313 — update-prefix
+            "update-prefix" => commands::update_prefix::run(args_json, project_root).await,
+            // RPC-316 — update-tag
+            "update-tag" => commands::update_tag::run(args_json, project_root).await,
+            // RPC-222 — delete-tag
+            "delete-tag" => commands::delete_tag::run(args_json, project_root).await,
+            // RPC-176 — add-dependencies
+            "add-dependencies" => {
+                commands::add_dependencies::run(args_json, project_root).await
+            }
+            // RPC-271 — remove-dependency
+            "remove-dependency" => {
+                commands::remove_dependency::run(args_json, project_root).await
+            }
+            // RPC-204 — clear-dependencies
+            "clear-dependencies" => {
+                commands::clear_dependencies::run(args_json, project_root).await
+            }
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -271,7 +298,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "add-capability" => commands::add_capability::run(args_json).await,
             "add-command" => commands::add_command::run(args_json).await,
             "add-command-to-foundation" => commands::add_command_to_foundation::run(args_json).await,
-            "add-dependencies" => commands::add_dependencies::run(args_json).await,
+            // "add-dependencies" — ported (RPC-176, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-dependency" => commands::add_dependency::run(args_json).await,
             "add-diagram" => commands::add_diagram::run(args_json).await,
             "add-domain-event" => commands::add_domain_event::run(args_json).await,
@@ -299,25 +327,30 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "check" => commands::check::run(args_json).await,
             "checkpoint" => commands::checkpoint::run(args_json).await,
             "cleanup-checkpoints" => commands::cleanup_checkpoints::run(args_json).await,
-            "clear-dependencies" => commands::clear_dependencies::run(args_json).await,
+            // "clear-dependencies" — ported (RPC-204, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "clear-virtual-hooks" => commands::clear_virtual_hooks::run(args_json).await,
             "compact-work-unit" => commands::compact_work_unit::run(args_json).await,
             "compare-implementations" => commands::compare_implementations::run(args_json).await,
             "configure-tools" => commands::configure_tools::run(args_json).await,
             "copy-virtual-hooks" => commands::copy_virtual_hooks::run(args_json).await,
             "create-bug" => commands::create_bug::run(args_json).await,
-            "create-epic" => commands::create_epic::run(args_json).await,
+            // "create-epic" — ported (RPC-211, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "create-feature" => commands::create_feature::run(args_json).await,
-            "create-prefix" => commands::create_prefix::run(args_json).await,
+            // "create-prefix" — ported (RPC-213, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "create-story" => commands::create_story::run(args_json).await,
             "create-task" => commands::create_task::run(args_json).await,
             "delete-diagram" => commands::delete_diagram::run(args_json).await,
-            "delete-epic" => commands::delete_epic::run(args_json).await,
+            // "delete-epic" — ported (RPC-217, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "delete-features" => commands::delete_features::run(args_json).await,
             "delete-scenario" => commands::delete_scenario::run(args_json).await,
             "delete-scenarios" => commands::delete_scenarios::run(args_json).await,
             "delete-step" => commands::delete_step::run(args_json).await,
-            "delete-tag" => commands::delete_tag::run(args_json).await,
+            // "delete-tag" — ported (RPC-222, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "delete-work-unit" => commands::delete_work_unit::run(args_json).await,
             "dependencies" => commands::dependencies::run(args_json).await,
             "discover-event-storm" => commands::discover_event_storm::run(args_json).await,
@@ -381,13 +414,15 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "query-work-units" — ported (RPC-263). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "record-iteration" => commands::record_iteration::run(args_json).await,
-            "register-tag" => commands::register_tag::run(args_json).await,
+            // "register-tag" — ported (RPC-265, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-aggregate-from-foundation" => commands::remove_aggregate_from_foundation::run(args_json).await,
             "remove-architecture-note" => commands::remove_architecture_note::run(args_json).await,
             "remove-attachment" => commands::remove_attachment::run(args_json).await,
             "remove-capability" => commands::remove_capability::run(args_json).await,
             "remove-command-from-foundation" => commands::remove_command_from_foundation::run(args_json).await,
-            "remove-dependency" => commands::remove_dependency::run(args_json).await,
+            // "remove-dependency" — ported (RPC-271, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-domain-event-from-foundation" => commands::remove_domain_event_from_foundation::run(args_json).await,
             "remove-example" => commands::remove_example::run(args_json).await,
             "remove-foundation-bounded-context" => commands::remove_foundation_bounded_context::run(args_json).await,
@@ -440,10 +475,12 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             "unlink-coverage" => commands::unlink_coverage::run(args_json).await,
             "update-foundation" => commands::update_foundation::run(args_json).await,
-            "update-prefix" => commands::update_prefix::run(args_json).await,
+            // "update-prefix" — ported (RPC-313, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "update-scenario" => commands::update_scenario::run(args_json).await,
             "update-step" => commands::update_step::run(args_json).await,
-            "update-tag" => commands::update_tag::run(args_json).await,
+            // "update-tag" — ported (RPC-316, Batch 7). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "update-work-unit" => commands::update_work_unit::run(args_json).await,
             "update-work-unit-estimate" => commands::update_work_unit_estimate::run(args_json).await,
             "update-work-unit-status" => commands::update_work_unit_status::run(args_json).await,

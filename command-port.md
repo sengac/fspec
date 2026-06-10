@@ -986,6 +986,8 @@ move the rows into the "Completed batches" log at the bottom.
 | 3 | RPC-244, RPC-246, RPC-249, RPC-250, RPC-252 | 2026-06-05 | Positional-arg commands + bare Commander.js help special case |
 | 4 | RPC-247 | 2026-06-05 | Solo port; Framing A divergence (TS broken; Rust correct) |
 | 5 (fix-up) | RPC-252, RPC-253 (re-done) | 2026-06-07 | Help-text fixture/assertion alignment after intercept landed |
+| 6 | RPC-242, RPC-301, RPC-302, RPC-304, RPC-310 + RPC-308, RPC-257, RPC-258, RPC-261, RPC-263 + RPC-256, RPC-259, RPC-260, RPC-262, RPC-299, RPC-300, RPC-303, RPC-305, RPC-306, RPC-307 | 2026-06-09 | show-* / query-* commands; deepest read-only batch |
+| 7 | RPC-211, RPC-217, RPC-213, RPC-313, RPC-265, RPC-316, RPC-222, RPC-176, RPC-271, RPC-204 | 2026-06-10 | First **mutation** batch (10 commands): create/delete/update for epic/prefix/tag + add-dependencies/remove-dependency/clear-dependencies. Established write_json_atomic + IndexMap discipline. Lessons: (a) workers must NOT edit dispatch.rs, (b) Framing A inverse — when TS has no rich -help.ts, Rust formatter becomes canon, (c) clap variadic per-flag uses `num_args = 1..` (not `value_delimiter = ','`). main.rs cap bumped 850→1100. |
 
 ### Pitfalls encountered (don't repeat)
 

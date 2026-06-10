@@ -1,0 +1,40 @@
+
+CREATE-EPIC
+Create a new epic for organizing work units into high-level initiatives
+
+USAGE
+  fspec create-epic <epicId> <title>
+
+ARGUMENTS
+  <epicId> (required)
+    Epic ID in lowercase-with-hyphens format (e.g., user-management)
+  <title> (required)
+    Human-readable title for the epic
+
+OPTIONS
+  -d, --description <description>
+    Optional description providing more context about the epic
+
+EXAMPLES
+  1. Create epic with ID and title
+  $ fspec create-epic user-management "User Management Features"
+  ✓ Created epic user-management
+  Title: User Management Features
+
+  2. Create epic with description
+  $ fspec create-epic auth "Authentication System" -d "Handles user login and sessions"
+  ✓ Created epic auth
+  Title: Authentication System
+  Description: Handles user login and sessions
+
+RELATED COMMANDS
+  fspec list-epics
+  fspec show-epic
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+
+NOTES
+  • Epic IDs must be lowercase with hyphens (no spaces or special characters)
+  • Epics help organize related work units into business initiatives
+

@@ -1,0 +1,30 @@
+
+DELETE-TAG
+Delete a tag from the registry
+
+USAGE
+  fspec delete-tag <tag> [options]
+
+ARGUMENTS
+  <tag> (required)
+    Tag to delete
+
+OPTIONS
+  --force
+    Skip confirmation
+  --dry-run
+    Show what would be deleted without making changes
+
+EXAMPLES
+  1. Delete tag
+  $ fspec delete-tag @deprecated
+  ✓ Deleted tag @deprecated
+
+RELATED COMMANDS
+  fspec register-tag
+  fspec list-tags
+
+NOTES
+  • Tag must not be in use in any feature files
+  • Run validate-tags after deletion to verify
+

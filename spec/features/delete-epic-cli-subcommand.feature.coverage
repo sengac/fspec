@@ -1,0 +1,321 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes delete-epic with a positional arg and --force flag in --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "lines": "90-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_epic.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI deletes an existing epic and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "lines": "137-159",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_epic.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI accepts --force without changing behaviour (TS impl ignores it)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "lines": "161-182",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_epic.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 when the epic does not exist",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "lines": "184-213",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_epic.rs",
+              "lines": [
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "lines": "215-263",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/delete_epic.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delete-epic --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_delete_epic.rs",
+          "lines": "265-294",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/delete_epic.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_delete_epic.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/delete_epic.rs",
+      "codelet/fspec-core/src/help/configs/delete_epic.rs"
+    ],
+    "totalLinesCovered": 408
+  }
+}

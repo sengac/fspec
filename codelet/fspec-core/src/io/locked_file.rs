@@ -130,10 +130,11 @@ pub fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> Result<(), Fsp
                 command: "write_json_atomic",
                 source,
             })?;
-        tmp.write_all(b"\n").map_err(|source| FspecCoreError::Io {
-            command: "write_json_atomic",
-            source,
-        })?;
+        // Parity with TS `JSON.stringify(data, null, 2)`+`writeFile`: NO
+        // trailing newline. Adding a final `\n` would diverge from the
+        // byte-exact TS output for every command that writes through this
+        // helper (`spec/work-units.json`, `spec/prefixes.json`,
+        // `spec/epics.json`, `spec/tags.json`).
         tmp.sync_all().map_err(|source| FspecCoreError::Io {
             command: "write_json_atomic",
             source,

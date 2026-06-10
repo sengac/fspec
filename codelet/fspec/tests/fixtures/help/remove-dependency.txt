@@ -1,0 +1,93 @@
+
+REMOVE-DEPENDENCY
+Remove dependency relationships between work units to clean up outdated blockers and dependencies
+
+WHEN TO USE
+  Use this command when a dependency relationship is no longer valid (task completed, blocker removed, or relationship was added by mistake). This is the inverse of add-dependency and supports bidirectional cleanup for blocks/blocked-by and relates-to relationships.
+
+PREREQUISITES
+  • Work units must exist in spec/work-units.json
+  • At least one dependency relationship must exist to remove
+
+USAGE
+  fspec remove-dependency <workUnitId> [dependsOnId] [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID to remove dependency from
+  [dependsOnId] (optional)
+    Work unit ID to remove from dependsOn (shorthand for --depends-on)
+
+OPTIONS
+  --blocks <targetId>
+    Remove blocks relationship (also removes reverse blockedBy from target)
+  --blocked-by <targetId>
+    Remove blockedBy relationship (also removes reverse blocks from target)
+  --depends-on <targetId>
+    Remove dependsOn relationship (unidirectional)
+  --relates-to <targetId>
+    Remove relatesTo relationship (also removes reverse relatesTo from target)
+
+COMMON PATTERNS
+  • Clean up completed blocker
+    Example: # After AUTH-001 is done, unblock dependent tasks
+fspec remove-dependency AUTH-001 --blocks API-001
+fspec remove-dependency AUTH-001 --blocks UI-001
+    undefined
+
+  • Remove all dependencies for a work unit
+    Example: # List current dependencies
+fspec dependencies AUTH-002
+
+# Remove each dependency
+fspec remove-dependency AUTH-002 AUTH-001
+fspec remove-dependency AUTH-002 --relates-to UI-001
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Verify dependency exists: fspec dependencies <workUnitId> → 2. Remove dependency: fspec remove-dependency <workUnitId> --blocks <targetId> → 3. Verify removal: fspec dependencies <workUnitId>
+
+EXAMPLES
+  1. Shorthand: Remove AUTH-001 from AUTH-002 dependsOn list
+  $ fspec remove-dependency AUTH-002 AUTH-001
+  ✓ Dependency removed successfully
+
+  2. Remove blocks relationship (AUTH-002 no longer blocks API-001)
+  $ fspec remove-dependency AUTH-002 --blocks API-001
+  ✓ Dependency removed successfully
+
+  3. Remove blockedBy relationship (UI-001 no longer blocked)
+  $ fspec remove-dependency UI-001 --blocked-by API-001
+  ✓ Dependency removed successfully
+
+  4. Explicit: Remove AUTH-001 from DASH-001 dependsOn list
+  $ fspec remove-dependency DASH-001 --depends-on AUTH-001
+  ✓ Dependency removed successfully
+
+  5. Remove relatesTo relationship (bidirectional cleanup)
+  $ fspec remove-dependency UI-005 --relates-to UI-004
+  ✓ Dependency removed successfully
+
+COMMON ERRORS
+  ✗ Work unit 'AUTH-999' does not exist
+    Fix: Verify the work unit ID exists with: fspec list-work-units
+
+  ✗ Must specify at least one relationship to remove: <depends-on-id> or --blocks/--blocked-by/--depends-on/--relates-to
+    Fix: Provide either a second argument (dependsOnId) or one of the relationship flags
+
+  ✗ Cannot specify dependency both as argument and --depends-on option
+    Fix: Use either shorthand (two arguments) OR --depends-on flag, not both
+
+RELATED COMMANDS
+  fspec add-dependency
+  fspec dependencies
+  fspec clear-dependencies
+  fspec export-dependencies
+
+NOTES
+  • Use shorthand syntax (two arguments) for simple dependsOn removals
+  • Blocks/blocked-by and relates-to relationships are bidirectional - removing from one side removes from both
+  • DependsOn relationships are unidirectional - only removed from the specified work unit
+  • The command will succeed even if the relationship does not exist (idempotent)
+

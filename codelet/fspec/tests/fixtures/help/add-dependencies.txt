@@ -1,0 +1,89 @@
+
+ADD-DEPENDENCIES
+Add multiple dependency relationships to a work unit at once
+
+WHEN TO USE
+  Use this command to add multiple dependency relationships to a work unit in a single command, instead of calling add-dependency multiple times. Efficient for setting up complex dependency graphs.
+
+PREREQUISITES
+  • Work unit must exist in spec/work-units.json
+  • Target work units must exist
+
+USAGE
+  fspec add-dependencies <workUnitId> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID to add dependencies to (e.g., AUTH-001)
+
+OPTIONS
+  --blocks <ids...>
+    Space-separated list of work unit IDs that this work unit blocks
+  --blocked-by <ids...>
+    Space-separated list of work unit IDs that block this work unit
+  --depends-on <ids...>
+    Space-separated list of work unit IDs this work unit depends on
+  --relates-to <ids...>
+    Space-separated list of related work unit IDs (non-blocking association)
+
+COMMON PATTERNS
+  • Setting Up Dependency Chain
+    Example: # API depends on DB schema and auth
+fspec add-dependencies API-001 --depends-on DB-001 AUTH-001
+
+# UI depends on API
+fspec add-dependencies UI-001 --depends-on API-001
+    undefined
+
+  • Marking Blockers
+    Example: # Critical bug blocks multiple features
+fspec add-dependencies BUG-001 --blocks FEAT-001 FEAT-002 FEAT-003
+    undefined
+
+  • Related Work (Non-Blocking)
+    Example: # Documentation relates to multiple features
+fspec add-dependencies DOC-001 --relates-to AUTH-001 API-001 UI-001
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Create work units → 2. Identify dependencies → 3. fspec add-dependencies <id> --depends-on <deps> → 4. Verify: fspec dependencies <id>
+
+EXAMPLES
+  1. Add multiple dependencies and relations
+  $ fspec add-dependencies AUTH-001 --depends-on AUTH-002 AUTH-003 --relates-to UI-001
+  ✓ Added 3 dependencies successfully
+
+  2. Mark work unit as blocked by multiple dependencies
+  $ fspec add-dependencies API-001 --blocked-by DB-001 DB-002
+  ✓ Added 2 dependencies successfully
+
+  3. Mark work unit as blocking multiple other units
+  $ fspec add-dependencies UI-001 --blocks UI-002 UI-003 UI-004
+  ✓ Added 3 dependencies successfully
+
+  4. Add related work units (non-blocking relationships)
+  $ fspec add-dependencies REFAC-001 --relates-to AUTH-001 API-001 DB-001
+  ✓ Added 3 dependencies successfully
+
+COMMON ERRORS
+  ✗ Error: Work unit AUTH-001 does not exist
+    Fix: Ensure work unit exists. Run: fspec list-work-units
+
+  ✗ Error: Target work unit DB-001 does not exist
+    Fix: All target work units must exist before adding dependencies
+
+RELATED COMMANDS
+  fspec add-dependency
+  fspec remove-dependency
+  fspec dependencies
+  fspec export-dependencies
+  fspec suggest-dependencies
+
+NOTES
+  • All options accept space-separated lists of work unit IDs
+  • Each relationship is validated before being added
+  • Automatically creates bidirectional relationships where appropriate
+  • More efficient than multiple add-dependency calls
+  • Use --relates-to for associations that do not imply blocking or dependency
+

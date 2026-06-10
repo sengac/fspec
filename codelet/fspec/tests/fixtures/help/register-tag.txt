@@ -1,0 +1,11 @@
+Usage: fspec register-tag [options] <tag> <category> <description>
+
+Register a new tag in TAGS.md registry
+
+Arguments:
+  tag          Tag name (e.g., "@my-tag")
+  category     Category name (e.g., "Technical Tags")
+  description  Tag description
+
+Options:
+  -h, --help   Display help for command

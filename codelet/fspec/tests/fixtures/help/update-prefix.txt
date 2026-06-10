@@ -1,0 +1,24 @@
+
+UPDATE-PREFIX
+Update the description of a work unit prefix
+
+USAGE
+  fspec update-prefix <prefix> [options]
+
+ARGUMENTS
+  <prefix> (required)
+    Prefix to update
+
+OPTIONS
+  --description <description>
+    New description
+
+EXAMPLES
+  1. Update prefix description
+  $ fspec update-prefix AUTH --description "Authentication and authorization"
+  ✓ Updated prefix AUTH
+
+RELATED COMMANDS
+  fspec create-prefix
+  fspec list-prefixes
+

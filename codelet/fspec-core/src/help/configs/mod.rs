@@ -36,3 +36,20 @@ pub mod show_foundation_event_storm;
 pub mod show_test_patterns;
 pub mod show_work_unit;
 pub mod tag_stats;
+// Batch 7 (2026-06-10) — mutation commands
+pub mod add_dependencies;
+pub mod clear_dependencies;
+pub mod create_epic;
+pub mod create_prefix;
+pub mod delete_epic;
+pub mod delete_tag;
+// `register-tag` deliberately has no `CommandHelpConfig` — the TS source
+// (`src/commands/register-tag.ts`) ships without a custom `-help.ts`, so
+// `node dist/index.js register-tag --help` falls through to bare
+// Commander.js. The Rust binary special-cases the help intercept in
+// `codelet/fspec/src/main.rs` and emits the byte-exact static string
+// `REGISTER_TAG_HELP` instead (mirrors the `list-foundation-sections`
+// pattern documented in `command-port.md` §4).
+pub mod remove_dependency;
+pub mod update_prefix;
+pub mod update_tag;

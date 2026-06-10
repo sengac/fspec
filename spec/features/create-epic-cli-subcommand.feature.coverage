@@ -1,0 +1,382 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes create-epic with positional args and a --description flag in --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "lines": "48-100",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_epic.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI creates a minimal epic and prints the success block",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "lines": "102-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_epic.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI creates an epic with -d description and includes the Description line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "lines": "137-175",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_epic.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects an invalid epicId with exit 1 and stderr Error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "lines": "177-210",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_epic.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects creating an epic that already exists with exit 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "lines": "212-253",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_epic.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "lines": "255-307",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_epic.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create-epic --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_epic.rs",
+          "lines": "309-340",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/create_epic.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_create_epic.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/create_epic.rs",
+      "codelet/fspec-core/src/help/configs/create_epic.rs"
+    ],
+    "totalLinesCovered": 540
+  }
+}

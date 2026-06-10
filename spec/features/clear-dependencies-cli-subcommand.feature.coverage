@@ -1,0 +1,206 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "lines": "97-119",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/clear_dependencies.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invocation with --confirm wipes every dependency edge and reports success",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "lines": "121-174",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/clear_dependencies.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing --confirm flag exits 1 with the canonical error message on stderr",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "lines": "176-196",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/clear_dependencies.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing source work unit exits 1 with the canonical error message on stderr",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_clear_dependencies.rs",
+          "lines": "198-214",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/clear_dependencies.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_clear_dependencies.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/clear_dependencies.rs",
+      "codelet/fspec/src/clear_dependencies.rs"
+    ],
+    "totalLinesCovered": 240
+  }
+}

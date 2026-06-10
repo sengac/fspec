@@ -229,6 +229,14 @@ impl WorkUnit {
 pub struct PrefixesData {
     #[serde(default)]
     pub prefixes: IndexMap<String, crate::types::prefix::Prefix>,
+    /// Top-level extra fields (e.g. `prefixCounters`, `version`) preserved
+    /// verbatim across load → modify → save round-trips. Without this
+    /// `#[serde(flatten)]` catch-all, every write of `spec/prefixes.json`
+    /// would silently delete the `prefixCounters` map relied on by the
+    /// id-auto-increment commands (`create-story`, `create-bug`, …). See
+    /// the parity-review note for RPC-313 / RPC-316.
+    #[serde(flatten, default)]
+    pub extra: serde_json::Map<String, serde_json::Value>,
 }
 
 impl PrefixesData {
@@ -236,6 +244,7 @@ impl PrefixesData {
     pub fn initial() -> Self {
         Self {
             prefixes: IndexMap::new(),
+            extra: serde_json::Map::new(),
         }
     }
 }

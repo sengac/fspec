@@ -1,0 +1,398 @@
+{
+  "scenarios": [
+    {
+      "name": "Successful registration creates spec/prefixes.json with the new entry",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "53-106",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lowercase prefix is rejected before any file IO occurs",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "108-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "108-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prefix shorter than two characters is rejected",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "143-166",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "143-166",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prefix longer than six characters is rejected",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "168-191",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "168-191",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prefix containing digits is rejected",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "193-216",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Duplicate prefix is rejected and the existing file is left untouched",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "218-247",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Appending a second prefix preserves insertion order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "249-280",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Malformed prefixes.json escalates a structured parse error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "282-308",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Successful dispatcher path returns the canonical JSON shape",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "310-343",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shared infrastructure is reused without duplication",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/create_prefix.rs",
+          "lines": "345-381",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/create_prefix.rs",
+              "lines": [
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/create_prefix.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/create_prefix.rs"
+    ],
+    "totalLinesCovered": 673
+  }
+}

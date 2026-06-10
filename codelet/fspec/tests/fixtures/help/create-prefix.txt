@@ -1,0 +1,36 @@
+
+CREATE-PREFIX
+Register a new work unit prefix for organizing work by component or area
+
+WHEN TO USE
+  Use when starting work on a new component or area that needs its own work unit namespace.
+
+USAGE
+  fspec create-prefix <prefix> <description>
+
+ARGUMENTS
+  <prefix> (required)
+    Prefix code (e.g., AUTH, UI, API) - uppercase, short
+  <description> (required)
+    Description of what this prefix represents
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Register new prefix
+  $ fspec create-prefix AUTH "Authentication features"
+  ✓ Created prefix AUTH
+  Description: Authentication features
+
+RELATED COMMANDS
+  fspec list-prefixes
+  fspec update-prefix
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+
+NOTES
+  • Prefix must be uppercase
+  • Required before creating work units with that prefix
+

@@ -1,0 +1,436 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatcher deletes an existing epic from spec/epics.json",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "80-103",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher clears epicId references on matching prefixes when deleting an epic",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "105-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher clears epic references on matching work units when deleting an epic",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "143-188",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects deletion of a missing epic with the canonical wrapped error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "190-219",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher tolerates missing spec/prefixes.json (TS bare-catch parity)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "221-240",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher tolerates missing spec/work-units.json (TS bare-catch parity)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "242-256",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher tolerates malformed spec/prefixes.json silently",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "258-281",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher tolerates malformed spec/work-units.json silently",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "283-306",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher preserves non-matching epics, prefixes, and work units",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "308-389",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher response text renders the canonical success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "391-412",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher fails fast when required args are missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/delete_epic.rs",
+          "lines": "414-433",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/delete_epic.rs",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/delete_epic.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/delete_epic.rs"
+    ],
+    "totalLinesCovered": 588
+  }
+}

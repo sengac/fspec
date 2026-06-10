@@ -15,3 +15,4 @@ pub mod feature_glob;
 pub mod gherkin;
 pub mod locked_file;
 pub mod project_root;
+pub mod time;

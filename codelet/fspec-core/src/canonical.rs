@@ -230,6 +230,17 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "show-test-patterns",         // RPC-307
     "show-acceptance-criteria",   // RPC-299
     "show-coverage",              // RPC-300
+    // Batch 7 (2026-06-10) — mutation commands
+    "create-epic",                // RPC-211
+    "delete-epic",                // RPC-217
+    "create-prefix",              // RPC-213
+    "update-prefix",              // RPC-313
+    "register-tag",               // RPC-265
+    "update-tag",                 // RPC-316
+    "delete-tag",                 // RPC-222
+    "add-dependencies",           // RPC-176
+    "remove-dependency",          // RPC-271
+    "clear-dependencies",         // RPC-204
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

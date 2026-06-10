@@ -1,0 +1,28 @@
+
+DELETE-EPIC
+Delete an epic (does not delete associated work units)
+
+USAGE
+  fspec delete-epic <epicId> [options]
+
+ARGUMENTS
+  <epicId> (required)
+    Epic ID to delete
+
+OPTIONS
+  --force
+    Skip confirmation prompt
+
+EXAMPLES
+  1. Delete epic with confirmation
+  $ fspec delete-epic old-feature
+  ✓ Deleted epic old-feature
+
+RELATED COMMANDS
+  fspec create-epic
+  fspec list-epics
+
+NOTES
+  • Work units associated with the epic are NOT deleted
+  • Epic associations are removed from work units
+

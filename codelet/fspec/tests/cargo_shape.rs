@@ -360,6 +360,10 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // query-bottlenecks, query-estimation-guide, query-example-mapping-stats,
     // query-orphans, show-acceptance-criteria, show-coverage, show-event-storm,
     // show-foundation, show-foundation-event-storm, show-test-patterns.
+    // Batch 7 (RPC-211/217/213/313/265/316/222/176/271/204) adds 10 more (→48):
+    // create-epic, delete-epic, create-prefix, update-prefix, register-tag,
+    // update-tag, delete-tag, add-dependencies, remove-dependency,
+    // clear-dependencies.
     for f in [
         "main.rs",
         "combined.rs",
@@ -399,6 +403,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "show_foundation.rs",
         "show_foundation_event_storm.rs",
         "show_test_patterns.rs",
+        // Batch 7
+        "create_epic.rs",
+        "delete_epic.rs",
+        "create_prefix.rs",
+        "update_prefix.rs",
+        "register_tag.rs",
+        "update_tag.rs",
+        "delete_tag.rs",
+        "add_dependencies.rs",
+        "remove_dependency.rs",
+        "clear_dependencies.rs",
     ] {
         let p = src.join(f);
         assert!(
@@ -448,6 +463,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "show_foundation.rs",
         "show_foundation_event_storm.rs",
         "show_test_patterns.rs",
+        // Batch 7
+        "create_epic.rs",
+        "delete_epic.rs",
+        "create_prefix.rs",
+        "update_prefix.rs",
+        "register_tag.rs",
+        "update_tag.rs",
+        "delete_tag.rs",
+        "add_dependencies.rs",
+        "remove_dependency.rs",
+        "clear_dependencies.rs",
     ]
     .iter()
     .copied()
@@ -516,8 +542,12 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // arm, an `intercept_ts_help` arm, and a `mod` declaration. The
     // cumulative growth pushes main.rs to ~785 lines. Cap raised from
     // 700 → 850.
+    // Batch 7 (RPC-211/217/213/313/265/316/222/176/271/204) added 10
+    // mutation commands — many with multi-field clap variants
+    // (add-dependencies + remove-dependency have 5/6 fields each),
+    // pushing main.rs to ~990 lines. Cap raised from 850 → 1100.
     let common_cap: usize = 800;
-    let main_cap: usize = 850;
+    let main_cap: usize = 1100;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);

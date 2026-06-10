@@ -1,0 +1,27 @@
+
+UPDATE-TAG
+Update a registered tag description or category
+
+USAGE
+  fspec update-tag <tag> [options]
+
+ARGUMENTS
+  <tag> (required)
+    Tag to update
+
+OPTIONS
+  --description <description>
+    New description
+  --category <category>
+    New category
+
+EXAMPLES
+  1. Update tag description
+  $ fspec update-tag @performance --description "High-performance features"
+  ✓ Updated tag @performance
+
+RELATED COMMANDS
+  fspec register-tag
+  fspec delete-tag
+  fspec list-tags
+

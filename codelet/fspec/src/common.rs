@@ -25,6 +25,7 @@ use anyhow::{anyhow, Context, Result};
 use codelet_agent_loop::FspecAgentHooks;
 use codelet_core::work_units::WorkUnitsWatcher;
 use codelet_core::SessionManagerHandle;
+use codelet_fspec_core::FspecCoreError;
 use codelet_rpc::{register_log_layer, BroadcastLogLayer, SharedFspecService};
 use codelet_sessions::SessionManager;
 use serde::Deserialize;
@@ -467,6 +468,28 @@ fn keep_guard(guard: tracing_appender::non_blocking::WorkerGuard) {
         Mutex::new(Vec::new());
     if let Ok(mut g) = GUARDS.lock() {
         g.push(guard);
+    }
+}
+
+/// Render an [`FspecCoreError`] for the CLI surface.
+///
+/// The dispatcher-facing `FspecCoreError::Display` impl is part of the
+/// LLM-tool contract and wraps validation failures in
+/// `"Invalid args for fspec command <name>: <reason>"`. Shell users
+/// (parity target: `node dist/index.js <cmd>`) MUST see the unwrapped
+/// `<reason>` only — TS commands `output.error('Error:', error.message)`
+/// or `output.error('✗ Failed to <verb>:', error.message)` never include
+/// the dispatcher envelope. This helper strips it so every ported
+/// bridge can emit byte-parity stderr without duplicating the match
+/// boilerplate.
+///
+/// For non-`InvalidArgs` variants the Display impl is forwarded
+/// verbatim — those variants (`Io`, `ParseJson`, `DirectoryNotFound`,
+/// `UnknownCommand`, `NotYetPorted`) carry no dispatcher framing.
+pub fn render_core_error(err: &FspecCoreError) -> String {
+    match err {
+        FspecCoreError::InvalidArgs { reason, .. } => reason.clone(),
+        _ => err.to_string(),
     }
 }
 

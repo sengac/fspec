@@ -1,0 +1,494 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI updates the description of an existing prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "73-105",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI no-op call bumps only updatedAt",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "106-138",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects an unknown prefix with a wrapped error and exit 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "139-170",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI surface does NOT expose --epic-id",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "171-199",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI requires the prefix positional argument",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "200-219",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI help surface matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "220-245",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/update_prefix.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clap exposes update-prefix as a top-level subcommand",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "246-270",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function the dispatcher uses",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "271-302",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is given",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_prefix.rs",
+          "lines": "303-325",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_prefix.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_update_prefix.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/update_prefix.rs",
+      "codelet/fspec-core/src/help/configs/update_prefix.rs"
+    ],
+    "totalLinesCovered": 586
+  }
+}

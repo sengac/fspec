@@ -19,7 +19,14 @@
 mod client;
 mod combined;
 mod common;
+mod create_epic;
+mod create_prefix;
+mod clear_dependencies;
 mod daemon;
+mod delete_epic;
+mod delete_tag;
+mod add_dependencies;
+mod remove_dependency;
 mod list_attachments;
 mod list_checkpoints;
 mod list_epics;
@@ -41,6 +48,7 @@ mod query_example_mapping_stats;
 mod query_metrics;
 mod query_orphans;
 mod query_work_units;
+mod register_tag;
 mod show_acceptance_criteria;
 mod show_coverage;
 mod show_deleted;
@@ -53,6 +61,8 @@ mod show_test_patterns;
 mod show_work_unit;
 mod status;
 mod tag_stats;
+mod update_prefix;
+mod update_tag;
 
 use std::path::PathBuf;
 
@@ -462,6 +472,144 @@ enum Mode {
         #[arg(short = 'o', long, value_name = "FILE")]
         output: Option<String>,
     },
+    /// RPC-211: create a new epic in spec/epics.json.
+    #[command(name = "create-epic", about = "Create a new epic")]
+    CreateEpic {
+        /// Required epic identifier (positional).
+        #[arg(value_name = "EPIC_ID")]
+        epic_id: String,
+        /// Required epic title (positional).
+        #[arg(value_name = "TITLE")]
+        title: String,
+        /// Optional epic description.
+        #[arg(short = 'd', long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+    },
+    /// RPC-217: delete an epic from spec/epics.json.
+    #[command(name = "delete-epic", about = "Delete an epic")]
+    DeleteEpic {
+        /// Required epic identifier (positional).
+        #[arg(value_name = "EPIC_ID")]
+        epic_id: String,
+        /// Force delete even when work-units reference this epic.
+        /// NOTE: long-form `--force` only — TS Commander.js does NOT
+        /// expose a `-f` short alias (`src/commands/delete-epic.ts:97`)
+        /// and accepting one here would diverge from the byte-parity
+        /// help fixture and from any shell script that relies on `-f`
+        /// being an "unknown option" error.
+        #[arg(long)]
+        force: bool,
+    },
+    /// RPC-213: register a new work-unit prefix in spec/prefixes.json.
+    #[command(name = "create-prefix", about = "Register a new work unit prefix")]
+    CreatePrefix {
+        /// Required prefix code, 2-6 uppercase letters (positional).
+        #[arg(value_name = "PREFIX")]
+        prefix: String,
+        /// Required prefix description (positional).
+        #[arg(value_name = "DESCRIPTION")]
+        description: String,
+    },
+    /// RPC-265: register a new tag in spec/tags.json.
+    #[command(name = "register-tag", about = "Register a new tag")]
+    RegisterTag {
+        /// Tag name (positional; e.g. `@critical`).
+        #[arg(value_name = "TAG")]
+        tag: String,
+        /// Tag category (positional).
+        #[arg(value_name = "CATEGORY")]
+        category: String,
+        /// Tag description (positional).
+        #[arg(value_name = "DESCRIPTION")]
+        description: String,
+    },
+    /// RPC-313: update an existing prefix in spec/prefixes.json.
+    #[command(name = "update-prefix", about = "Update an existing prefix")]
+    UpdatePrefix {
+        /// Required prefix code (positional).
+        #[arg(value_name = "PREFIX")]
+        prefix: String,
+        /// New description for the prefix.
+        #[arg(short = 'd', long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+    },
+    /// RPC-316: update an existing tag in spec/tags.json.
+    #[command(name = "update-tag", about = "Update an existing tag")]
+    UpdateTag {
+        /// Tag name (positional).
+        #[arg(value_name = "TAG")]
+        tag: String,
+        /// New category for the tag.
+        #[arg(short = 'c', long, value_name = "CATEGORY")]
+        category: Option<String>,
+        /// New description for the tag.
+        #[arg(short = 'd', long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+    },
+    /// RPC-176: add multiple dependencies to a work unit at once.
+    #[command(name = "add-dependencies", about = "Add multiple dependencies to a work unit")]
+    AddDependencies {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Work-unit IDs this unit blocks (variadic per flag).
+        #[arg(long, num_args = 1.., value_name = "IDS")]
+        blocks: Option<Vec<String>>,
+        /// Work-unit IDs blocking this unit (variadic per flag).
+        #[arg(long = "blocked-by", num_args = 1.., value_name = "IDS")]
+        blocked_by: Option<Vec<String>>,
+        /// Work-unit IDs this unit depends on (variadic per flag).
+        #[arg(long = "depends-on", num_args = 1.., value_name = "IDS")]
+        depends_on: Option<Vec<String>>,
+        /// Related work-unit IDs (variadic per flag).
+        #[arg(long = "relates-to", num_args = 1.., value_name = "IDS")]
+        relates_to: Option<Vec<String>>,
+    },
+    /// RPC-222: delete a tag from spec/tags.json.
+    #[command(name = "delete-tag", about = "Delete a tag")]
+    DeleteTag {
+        /// Tag name (positional).
+        #[arg(value_name = "TAG")]
+        tag: String,
+        /// Force delete even when the tag is in use.
+        #[arg(short = 'f', long)]
+        force: bool,
+        /// Dry-run: report intended deletion without writing.
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
+    /// RPC-271: remove a dependency relationship between two work units.
+    #[command(name = "remove-dependency", about = "Remove a dependency relationship")]
+    RemoveDependency {
+        /// Source work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Optional positional shorthand: removes a depends-on link.
+        #[arg(value_name = "DEPENDS_ON_ID")]
+        depends_on_positional: Option<String>,
+        /// Remove a blocks edge.
+        #[arg(long, value_name = "TARGET_ID")]
+        blocks: Option<String>,
+        /// Remove a blocked-by edge.
+        #[arg(long = "blocked-by", value_name = "TARGET_ID")]
+        blocked_by: Option<String>,
+        /// Remove a depends-on edge.
+        #[arg(long = "depends-on", value_name = "TARGET_ID")]
+        depends_on: Option<String>,
+        /// Remove a relates-to edge.
+        #[arg(long = "relates-to", value_name = "TARGET_ID")]
+        relates_to: Option<String>,
+    },
+    /// RPC-204: clear all dependencies from a work unit.
+    #[command(name = "clear-dependencies", about = "Clear all dependencies from a work unit")]
+    ClearDependencies {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Confirm the destructive operation.
+        #[arg(long)]
+        confirm: bool,
+    },
 }
 
 #[tokio::main]
@@ -682,6 +830,53 @@ async fn main() -> std::process::ExitCode {
             show_coverage::run,
             show_coverage::CliArgs { feature_name, format, output }
         ),
+        Some(Mode::CreateEpic { epic_id, title, description }) => forward!(
+            create_epic::run,
+            create_epic::CliArgs { epic_id, title, description }
+        ),
+        Some(Mode::DeleteEpic { epic_id, force }) => forward!(
+            delete_epic::run,
+            delete_epic::CliArgs { epic_id, force }
+        ),
+        Some(Mode::CreatePrefix { prefix, description }) => forward!(
+            create_prefix::run,
+            create_prefix::CliArgs { prefix, description }
+        ),
+        Some(Mode::RegisterTag { tag, category, description }) => forward!(
+            register_tag::run,
+            register_tag::CliArgs { tag, category, description }
+        ),
+        Some(Mode::UpdatePrefix { prefix, description }) => forward!(
+            update_prefix::run,
+            update_prefix::CliArgs { prefix, description }
+        ),
+        Some(Mode::UpdateTag { tag, category, description }) => forward!(
+            update_tag::run,
+            update_tag::CliArgs { tag, category, description }
+        ),
+        Some(Mode::AddDependencies { work_unit_id, blocks, blocked_by, depends_on, relates_to }) => forward!(
+            add_dependencies::run,
+            add_dependencies::CliArgs { work_unit_id, blocks, blocked_by, depends_on, relates_to }
+        ),
+        Some(Mode::DeleteTag { tag, force, dry_run }) => forward!(
+            delete_tag::run,
+            delete_tag::CliArgs { tag, force, dry_run }
+        ),
+        Some(Mode::RemoveDependency { work_unit_id, depends_on_positional, blocks, blocked_by, depends_on, relates_to }) => forward!(
+            remove_dependency::run,
+            remove_dependency::CliArgs {
+                work_unit_id,
+                depends_on_positional,
+                blocks,
+                blocked_by,
+                depends_on,
+                relates_to,
+            }
+        ),
+        Some(Mode::ClearDependencies { work_unit_id, confirm }) => forward!(
+            clear_dependencies::run,
+            clear_dependencies::CliArgs { work_unit_id, confirm }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -752,6 +947,26 @@ fn intercept_ts_help() -> Option<u8> {
             format_command_help(&configs::show_acceptance_criteria::CONFIG)
         }
         "show-coverage" => format_command_help(&configs::show_coverage::CONFIG),
+        // Batch 7 (2026-06-10) — mutation commands
+        "create-epic" => format_command_help(&configs::create_epic::CONFIG),
+        "delete-epic" => format_command_help(&configs::delete_epic::CONFIG),
+        "create-prefix" => format_command_help(&configs::create_prefix::CONFIG),
+        "update-prefix" => format_command_help(&configs::update_prefix::CONFIG),
+        "update-tag" => format_command_help(&configs::update_tag::CONFIG),
+        "add-dependencies" => format_command_help(&configs::add_dependencies::CONFIG),
+        "delete-tag" => format_command_help(&configs::delete_tag::CONFIG),
+        "remove-dependency" => format_command_help(&configs::remove_dependency::CONFIG),
+        "clear-dependencies" => format_command_help(&configs::clear_dependencies::CONFIG),
+        // RPC-265 follow-up: register-tag has no custom `-help.ts` in TS;
+        // `node dist/index.js register-tag --help` falls through to bare
+        // Commander.js. The earlier Rust port introduced a rich
+        // CommandHelpConfig that diverges 18 lines from the TS reference —
+        // emit the bare TS string verbatim instead, mirroring the
+        // `list-foundation-sections` special-case directly below.
+        "register-tag" => {
+            print!("{}", REGISTER_TAG_HELP);
+            return Some(0);
+        }
         // RPC-246: list-foundation-sections has no custom -help.ts in TS; the
         // reference is the bare Commander.js default output. We emit a byte-
         // for-byte static string (mirrors `node dist/index.js
@@ -770,6 +985,29 @@ fn intercept_ts_help() -> Option<u8> {
     println!("{rendered}");
     Some(0)
 }
+
+/// Byte-exact TS reference output of
+/// `node dist/index.js register-tag --help` piped to non-TTY.
+///
+/// The TS reference has NO custom `-help.ts` for register-tag — Commander.js
+/// emits its default Usage/Arguments/Options block, which the earlier Rust
+/// port's `configs::register_tag::CONFIG` mismatched. Mirroring the bare
+/// Commander output here keeps the help fixture byte-stable against the
+/// upstream TS binary.
+/// Captured fixture: `codelet/fspec/tests/fixtures/help/register-tag.txt`.
+const REGISTER_TAG_HELP: &str = "\
+Usage: fspec register-tag [options] <tag> <category> <description>
+
+Register a new tag in TAGS.md registry
+
+Arguments:
+  tag          Tag name (e.g., \"@my-tag\")
+  category     Category name (e.g., \"Technical Tags\")
+  description  Tag description
+
+Options:
+  -h, --help   Display help for command
+";
 
 /// Byte-exact TS reference output of
 /// `node dist/index.js list-foundation-sections --help` piped to non-TTY.
