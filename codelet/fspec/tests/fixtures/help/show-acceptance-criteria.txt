@@ -1,0 +1,28 @@
+
+SHOW-ACCEPTANCE-CRITERIA
+Display acceptance criteria (scenarios) for a feature file
+
+USAGE
+  fspec show-acceptance-criteria <file>
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Show acceptance criteria
+  $ fspec show-acceptance-criteria spec/features/login.feature
+  Feature: User Login
+
+Scenario: Login with valid credentials
+  Given I am on the login page
+  When I enter valid credentials
+  Then I should be logged in
+
+RELATED COMMANDS
+  fspec get-scenarios
+  fspec show-feature
+

@@ -71,6 +71,63 @@ pub fn ensure_tags_file(cwd: &Path) -> Result<TagsData, FspecCoreError> {
     read_or_init_json(&path, &default, "tags.json")
 }
 
+/// Load (or initialize) `spec/foundation.json` for the project rooted at `cwd`.
+///
+/// Mirrors `ensureFoundationFile` in `src/utils/ensure-files.ts:199-237`.
+/// When missing, writes the canonical generic schema v2.0.0 default
+/// (project / problemSpace / solutionSpace / personas / architectureDiagrams).
+/// Returns the parsed JSON as an untyped [`serde_json::Value`] because the
+/// foundation schema is highly polymorphic and downstream consumers
+/// (`show-foundation`, `update-foundation`, `show-foundation-event-storm`)
+/// each model the relevant subtree on demand.
+///
+/// Malformed JSON escalates via [`FspecCoreError::ParseJson`] with
+/// `file = "foundation.json"` — substring-asserted by RPC-305 tests.
+pub fn ensure_foundation_file(cwd: &Path) -> Result<serde_json::Value, FspecCoreError> {
+    let spec = find_or_create_spec_directory(cwd)?;
+    let path = spec.join("foundation.json");
+    let default = foundation_initial();
+    read_or_init_json(&path, &default, "foundation.json")
+}
+
+/// Canonical default written by [`ensure_foundation_file`] when
+/// `spec/foundation.json` is missing. Mirrors the TS `initialData` literal
+/// at `src/utils/ensure-files.ts:203-234`.
+fn foundation_initial() -> serde_json::Value {
+    serde_json::json!({
+        "version": "2.0.0",
+        "project": {
+            "name": "Project Name",
+            "vision": "Project vision statement",
+            "projectType": "cli-tool"
+        },
+        "problemSpace": {
+            "primaryProblem": {
+                "title": "Primary Problem",
+                "description": "Problem description",
+                "impact": "high"
+            }
+        },
+        "solutionSpace": {
+            "overview": "Solution overview",
+            "capabilities": [
+                {
+                    "name": "Core Capability",
+                    "description": "Capability description"
+                }
+            ]
+        },
+        "personas": [
+            {
+                "name": "Primary User",
+                "description": "User description",
+                "goals": ["User goal"]
+            }
+        ],
+        "architectureDiagrams": []
+    })
+}
+
 /// Read `spec/prefixes.json` WITHOUT auto-creating it.
 ///
 /// RPC-248: the TypeScript `list-prefixes` command (see

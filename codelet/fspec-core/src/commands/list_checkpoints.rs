@@ -147,7 +147,7 @@ fn build_display(name: &str, index: &Option<Value>) -> CheckpointDisplay {
         .and_then(|v| v.as_array())
         .and_then(|arr| arr.iter().find(|cp| cp.get("name").and_then(|n| n.as_str()) == Some(name)))
         .and_then(|cp| cp.get("timestamp").and_then(|t| t.as_str()))
-        .map(|s| s.to_string())
+        .map(String::from)
         .unwrap_or_else(fallback_timestamp);
 
     CheckpointDisplay {
@@ -198,8 +198,7 @@ fn fallback_timestamp() -> String {
     let year = if month <= 2 { y + 1 } else { y };
 
     format!(
-        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:03}Z",
-        year, month, day, hour, minute, second, millis
+        "{year:04}-{month:02}-{day:02}T{hour:02}:{minute:02}:{second:02}.{millis:03}Z"
     )
 }
 

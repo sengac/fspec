@@ -1,0 +1,30 @@
+
+QUERY-ESTIMATION-GUIDE
+Get estimation guidance based on historical data for a work unit
+
+WHEN TO USE
+  Use after generating scenarios from Example Mapping to get data-driven estimation guidance based on similar historical work.
+
+USAGE
+  fspec query-estimation-guide <workUnitId> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+
+OPTIONS
+  --similar <count>
+    Number of similar work units to analyze
+
+EXAMPLES
+  1. Get estimation guidance
+  $ fspec query-estimation-guide AUTH-001
+  Based on 5 similar work units:
+  Suggested estimate: 5 points
+  Range: 3-8 points
+  Average actual: 5.2 points
+
+RELATED COMMANDS
+  fspec update-work-unit-estimate
+  fspec query-estimate-accuracy
+

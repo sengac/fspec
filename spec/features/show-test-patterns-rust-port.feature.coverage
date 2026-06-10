@@ -1,0 +1,134 @@
+{
+  "scenarios": [
+    {
+      "name": "Missing tag argument surfaces a structured InvalidArgs error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "136-158",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tag matches zero work units returns empty workUnits and patterns",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "160-189",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tag matches work units returns their tags arrays",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "191-218",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "includeCoverage true reads coverage files and dedupes test files",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "220-246",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "includeCoverage false leaves testFiles empty even when coverage files exist",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "248-269",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "json format flag sets data.format to 'json'",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "271-291",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default format flag yields 'table' format",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "293-313",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shared infrastructure module is registered for show-test-patterns",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "315-342",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_test_patterns.rs",
+              "lines": "1-204"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_show_test_patterns.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 200
+  }
+}

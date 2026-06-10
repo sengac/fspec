@@ -1,0 +1,119 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes query-example-mapping-stats as a subcommand and prints flag-aware --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "lines": "100-133",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_example_mapping_stats.rs",
+              "lines": "1-51"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI with --format=json prints the canonical empty stats against an empty workspace",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "lines": "135-167",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_example_mapping_stats.rs",
+              "lines": "1-51"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI without --format prints nothing to stdout (TS silent-text parity)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "lines": "169-185",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_example_mapping_stats.rs",
+              "lines": "1-51"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI with --format=text also prints nothing to stdout (explicit text bug parity)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "lines": "187-200",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_example_mapping_stats.rs",
+              "lines": "1-51"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 and writes to stderr when work-units.json is malformed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "lines": "202-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_example_mapping_stats.rs",
+              "lines": "1-51"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "lines": "224-254",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_example_mapping_stats.rs",
+              "lines": "1-51"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "query-example-mapping-stats --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_query_example_mapping_stats.rs",
+          "lines": "258-281",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/query_example_mapping_stats.rs",
+              "lines": "1-51"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_query_example_mapping_stats.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 174
+  }
+}

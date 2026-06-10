@@ -1,0 +1,149 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes show-test-patterns as a subcommand and prints flag help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "344-373",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI without --tag flag exits 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "375-390",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI default output prints the green summary line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "392-413",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --json prints 2-space JSON envelope to stdout",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "415-440",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI --include-coverage includes deduplicated test file paths",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "442-467",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits 1 when work-units.json is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "469-489",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "show-test-patterns --help is byte-for-byte identical to the TS formatCommandHelp reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "491-519",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default combined TUI mode is preserved when no subcommand is provided",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "521-549",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_test_patterns.rs",
+          "lines": "551-593",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/show_test_patterns.rs",
+              "lines": "1-62"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_show_test_patterns.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 242
+  }
+}

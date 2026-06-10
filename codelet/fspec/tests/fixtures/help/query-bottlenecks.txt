@@ -1,0 +1,122 @@
+
+QUERY-BOTTLENECKS
+Identify bottleneck work units blocking the most downstream work (2+ blocked work units)
+
+WHEN TO USE
+  Use this command to identify critical path blockers that are preventing progress on multiple work units. Essential for prioritization decisions and unblocking parallelizable work. Run daily during active development to maximize throughput.
+
+PREREQUISITES
+  • spec/work-units.json exists with work units and dependency relationships
+
+USAGE
+  fspec query-bottlenecks [options]
+
+OPTIONS
+  --output <format>
+    Output format: text or json
+    Default: text
+
+COMMON PATTERNS
+  • Daily Prioritization
+    Example: # Morning standup: identify blockers
+fspec query-bottlenecks
+
+# Prioritize highest score bottleneck
+fspec update-work-unit-status AUTH-001 implementing
+
+# After completion
+fspec update-work-unit-status AUTH-001 done
+
+# Re-check for new bottlenecks
+fspec query-bottlenecks
+    undefined
+
+  • Automation with JSON Output
+    Example: # Export bottlenecks for dashboard
+fspec query-bottlenecks --output json > bottlenecks.json
+
+# Process with jq (highest score first)
+jq '.bottlenecks | sort_by(-.score) | .[0]' bottlenecks.json
+    undefined
+
+  • Team Coordination
+    Example: # Identify parallelizable work
+fspec query-bottlenecks
+
+# If bottleneck score is high (5+), assign multiple team members:
+# - Member 1: Complete bottleneck AUTH-001
+# - Member 2-4: Work on unblocked parallel tasks
+
+# After bottleneck complete, previously blocked work can proceed
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Run bottleneck query: fspec query-bottlenecks → 2. Prioritize highest-score bottleneck → 3. Complete bottleneck work unit → 4. Update status: fspec update-work-unit-status <id> done → 5. Re-run query to identify next bottleneck
+
+EXAMPLES
+  1. List bottleneck work units blocking 2+ work units
+  $ fspec query-bottlenecks
+  Bottleneck Work Units (blocking 2+ work units):
+
+AUTH-001 (implementing) - Setup authentication infrastructure
+  Bottleneck Score: 5
+  Direct Blocks: AUTH-002, AUTH-003
+  Transitive Blocks: AUTH-004, AUTH-005, AUTH-006
+
+DB-001 (testing) - Database schema migration
+  Bottleneck Score: 3
+  Direct Blocks: DB-002, DB-003, DB-004
+
+Total bottlenecks: 2
+
+  2. Output bottlenecks as JSON for automation
+  $ fspec query-bottlenecks --output json
+  {
+  "bottlenecks": [
+    {
+      "id": "AUTH-001",
+      "title": "Setup authentication infrastructure",
+      "status": "implementing",
+      "score": 5,
+      "directBlocks": ["AUTH-002", "AUTH-003"],
+      "transitiveBlocks": ["AUTH-004", "AUTH-005", "AUTH-006"]
+    }
+  ]
+}
+
+  3. Show only top bottlenecks (highest scores)
+  $ fspec query-bottlenecks | head -20
+  Bottleneck Work Units (blocking 2+ work units):
+
+AUTH-001 (implementing) - Setup authentication infrastructure
+  Bottleneck Score: 5
+  Direct Blocks: AUTH-002, AUTH-003
+  Transitive Blocks: AUTH-004, AUTH-005, AUTH-006
+
+COMMON ERRORS
+  ✗ Error: No bottlenecks found
+    Fix: No work units are blocking 2+ other work units. This is good - no major blockers exist.
+
+  ✗ Error: work-units.json not found
+    Fix: Run: fspec init to create work-units.json file
+
+  ✗ Error: Invalid work-units.json format
+    Fix: Check for JSON syntax errors. Run: fspec validate-work-units (if available)
+
+RELATED COMMANDS
+  fspec query-orphans
+  fspec suggest-dependencies
+  fspec add-dependency
+  fspec update-work-unit-status
+  fspec show-work-unit
+
+NOTES
+  • Bottleneck score = total work units blocked (direct + transitive)
+  • Only work units NOT in "done" or "blocked" status are considered bottlenecks
+  • Minimum bottleneck score is 2 (blocking at least 2 work units)
+  • Work units are ranked by score (highest to lowest)
+  • Transitive blocks = work units blocked indirectly through dependency chain
+  • Direct blocks = work units directly blocked by this work unit
+  • Completing a high-score bottleneck can unblock significant parallelizable work
+

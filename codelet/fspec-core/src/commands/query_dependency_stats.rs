@@ -94,19 +94,21 @@ struct QueryDependencyStatsResult {
 /// the natural decimal representation otherwise. Matches JS `JSON.stringify`
 /// where `1.0 === 1` and prints `1` (no decimal point), while `0.5` prints
 /// `0.5`.
+#[allow(clippy::trivially_copy_pass_by_ref)] // serde serialize_with signature
 fn serialize_average_dependencies<S>(v: &f64, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
+    let v = *v;
     if v.is_finite() && v.fract() == 0.0 {
         // Truncate-cast is safe here: TS implementation bounds the value
         // through `Math.round(x * 100) / 100` then we only enter this arm
         // when the fractional part is exactly zero. The total-deps numerator
         // is a usize sum and the unit count is bounded by IndexMap capacity,
         // so the result fits comfortably in i64.
-        s.serialize_i64(*v as i64)
+        s.serialize_i64(v as i64)
     } else {
-        s.serialize_f64(*v)
+        s.serialize_f64(v)
     }
 }
 

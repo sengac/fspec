@@ -33,13 +33,23 @@ mod list_schedules;
 mod list_tags;
 mod list_virtual_hooks;
 mod list_work_units;
+mod query_bottlenecks;
 mod query_dependency_stats;
 mod query_estimate_accuracy;
+mod query_estimation_guide;
+mod query_example_mapping_stats;
 mod query_metrics;
+mod query_orphans;
 mod query_work_units;
+mod show_acceptance_criteria;
+mod show_coverage;
 mod show_deleted;
 mod show_epic;
+mod show_event_storm;
 mod show_feature;
+mod show_foundation;
+mod show_foundation_event_storm;
+mod show_test_patterns;
 mod show_work_unit;
 mod status;
 mod tag_stats;
@@ -93,6 +103,7 @@ enum Mode {
         connect: Option<String>,
     },
     /// RPC-011: print live daemon health and exit.
+    #[command(about = "One-shot health probe against the running daemon")]
     Status {
         /// Explicit WS URL — bypasses daemon.json autodiscovery.
         #[arg(long, value_name = "URL")]
@@ -100,7 +111,10 @@ enum Mode {
     },
     /// RPC-253: list work units from `spec/work-units.json`. Delegates to
     /// `fspec_core::commands::list_work_units::run` for two-front-doors parity.
-    #[command(name = "list-work-units")]
+    #[command(
+        name = "list-work-units",
+        about = "List work units (filter by status, prefix, epic, or type)"
+    )]
     ListWorkUnits {
         /// Filter by status (e.g. `backlog`, `implementing`).
         #[arg(short, long, value_name = "STATUS")]
@@ -319,6 +333,135 @@ enum Mode {
         #[arg(short = 'f', long, value_name = "FORMAT")]
         format: Option<String>,
     },
+    /// RPC-256: print bottleneck analysis for work-unit dependency graph.
+    #[command(name = "query-bottlenecks", about = "Identify dependency bottlenecks")]
+    QueryBottlenecks {
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'o', long, value_name = "FORMAT")]
+        output: Option<String>,
+    },
+    /// RPC-262: print orphan work units (no dependencies in either direction).
+    #[command(name = "query-orphans", about = "Show orphan work units")]
+    QueryOrphans {
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'o', long, value_name = "FORMAT")]
+        output: Option<String>,
+        /// Filter out work units in done status.
+        #[arg(long = "exclude-done")]
+        exclude_done: bool,
+    },
+    /// RPC-259: print estimation guide for a single work unit.
+    #[command(
+        name = "query-estimation-guide",
+        about = "Show estimation guide for a work unit"
+    )]
+    QueryEstimationGuide {
+        /// Work unit ID.
+        work_unit_id: String,
+        /// Output format: `text` (default — silent) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
+    /// RPC-260: print Example Mapping coverage statistics.
+    #[command(
+        name = "query-example-mapping-stats",
+        about = "Show Example Mapping coverage statistics"
+    )]
+    QueryExampleMappingStats {
+        /// Output format: `text` (default — silent) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+    },
+    /// RPC-303: show Event Storm artifacts for a work unit.
+    #[command(
+        name = "show-event-storm",
+        about = "Show Event Storm artifacts for a work unit"
+    )]
+    ShowEventStorm {
+        /// Work unit ID.
+        work_unit_id: String,
+    },
+    /// RPC-305: show contents of foundation.json (or a single section).
+    #[command(name = "show-foundation", about = "Show foundation.json contents")]
+    ShowFoundation {
+        /// Optional positional section name (e.g. `whatWeAreBuilding`).
+        section: Option<String>,
+        /// Output format: `text` (default), `json`, or `markdown`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+        /// Write output to file instead of stdout.
+        #[arg(short = 'o', long, value_name = "FILE")]
+        output: Option<String>,
+        /// Read from `foundation.json.draft` instead of `foundation.json`.
+        #[arg(long)]
+        draft: bool,
+        /// Accepted for TS parity; lists all valid sections.
+        #[arg(long = "list-sections")]
+        list_sections: bool,
+        /// Accepted for TS parity; no behaviour change.
+        #[arg(long = "line-numbers")]
+        line_numbers: bool,
+    },
+    /// RPC-306: show foundation-level Event Storm.
+    #[command(
+        name = "show-foundation-event-storm",
+        about = "Show foundation-level Event Storm"
+    )]
+    ShowFoundationEventStorm {
+        /// Filter by type: `event`, `command`, `aggregate`, etc.
+        #[arg(long = "type", value_name = "TYPE")]
+        r#type: Option<String>,
+        /// Filter by bounded context name.
+        #[arg(long, value_name = "CONTEXT")]
+        context: Option<String>,
+    },
+    /// RPC-307: show test patterns across coverage files for a tag.
+    #[command(
+        name = "show-test-patterns",
+        about = "Show test patterns for a tag"
+    )]
+    ShowTestPatterns {
+        /// Tag to filter on (required).
+        #[arg(long, value_name = "TAG")]
+        tag: String,
+        /// Include coverage data in output.
+        #[arg(long = "include-coverage")]
+        include_coverage: bool,
+        /// Emit JSON instead of human-readable output.
+        #[arg(long)]
+        json: bool,
+    },
+    /// RPC-299: show acceptance criteria filtered by tags.
+    #[command(
+        name = "show-acceptance-criteria",
+        about = "Show acceptance criteria filtered by tags"
+    )]
+    ShowAcceptanceCriteria {
+        /// Tag filter (repeatable; AND semantics).
+        #[arg(long, value_name = "TAG")]
+        tag: Vec<String>,
+        /// Output format: `text` (default), `markdown`, or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT", default_value = "text")]
+        format: String,
+        /// Write to file instead of stdout.
+        #[arg(short = 'o', long, value_name = "FILE")]
+        output: Option<String>,
+    },
+    /// RPC-300: show coverage report for a feature or project-wide.
+    #[command(
+        name = "show-coverage",
+        about = "Show coverage report for a feature (or project-wide)"
+    )]
+    ShowCoverage {
+        /// Optional feature name (with or without `.feature` extension).
+        feature_name: Option<String>,
+        /// Output format: `text` (default) or `json`.
+        #[arg(short = 'f', long, value_name = "FORMAT")]
+        format: Option<String>,
+        /// Write output to file instead of stdout.
+        #[arg(short = 'o', long, value_name = "FILE")]
+        output: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -485,6 +628,60 @@ async fn main() -> std::process::ExitCode {
                 format,
             }
         ),
+        Some(Mode::QueryBottlenecks { output }) => forward!(
+            query_bottlenecks::run,
+            query_bottlenecks::CliArgs { output }
+        ),
+        Some(Mode::QueryOrphans { output, exclude_done }) => forward!(
+            query_orphans::run,
+            query_orphans::CliArgs { output, exclude_done }
+        ),
+        Some(Mode::QueryEstimationGuide { work_unit_id, format }) => forward!(
+            query_estimation_guide::run,
+            query_estimation_guide::CliArgs { work_unit_id, format }
+        ),
+        Some(Mode::QueryExampleMappingStats { format }) => forward!(
+            query_example_mapping_stats::run,
+            query_example_mapping_stats::CliArgs { format }
+        ),
+        Some(Mode::ShowEventStorm { work_unit_id }) => forward!(
+            show_event_storm::run,
+            show_event_storm::CliArgs { work_unit_id }
+        ),
+        Some(Mode::ShowFoundation {
+            section,
+            format,
+            output,
+            draft,
+            list_sections,
+            line_numbers,
+        }) => forward!(
+            show_foundation::run,
+            show_foundation::CliArgs {
+                section,
+                format,
+                output,
+                draft,
+                list_sections,
+                line_numbers,
+            }
+        ),
+        Some(Mode::ShowFoundationEventStorm { r#type, context }) => forward!(
+            show_foundation_event_storm::run,
+            show_foundation_event_storm::CliArgs { r#type, context }
+        ),
+        Some(Mode::ShowTestPatterns { tag, include_coverage, json }) => forward!(
+            show_test_patterns::run,
+            show_test_patterns::CliArgs { tag, include_coverage, json }
+        ),
+        Some(Mode::ShowAcceptanceCriteria { tag, format, output }) => forward!(
+            show_acceptance_criteria::run,
+            show_acceptance_criteria::CliArgs { tags: tag, format: Some(format), output }
+        ),
+        Some(Mode::ShowCoverage { feature_name, format, output }) => forward!(
+            show_coverage::run,
+            show_coverage::CliArgs { feature_name, format, output }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -539,6 +736,22 @@ fn intercept_ts_help() -> Option<u8> {
         "query-estimate-accuracy" => format_command_help(&configs::query_estimate_accuracy::CONFIG),
         "query-metrics" => format_command_help(&configs::query_metrics::CONFIG),
         "query-work-units" => format_command_help(&configs::query_work_units::CONFIG),
+        "query-bottlenecks" => format_command_help(&configs::query_bottlenecks::CONFIG),
+        "query-orphans" => format_command_help(&configs::query_orphans::CONFIG),
+        "query-estimation-guide" => format_command_help(&configs::query_estimation_guide::CONFIG),
+        "query-example-mapping-stats" => {
+            format_command_help(&configs::query_example_mapping_stats::CONFIG)
+        }
+        "show-event-storm" => format_command_help(&configs::show_event_storm::CONFIG),
+        "show-foundation" => format_command_help(&configs::show_foundation::CONFIG),
+        "show-foundation-event-storm" => {
+            format_command_help(&configs::show_foundation_event_storm::CONFIG)
+        }
+        "show-test-patterns" => format_command_help(&configs::show_test_patterns::CONFIG),
+        "show-acceptance-criteria" => {
+            format_command_help(&configs::show_acceptance_criteria::CONFIG)
+        }
+        "show-coverage" => format_command_help(&configs::show_coverage::CONFIG),
         // RPC-246: list-foundation-sections has no custom -help.ts in TS; the
         // reference is the bare Commander.js default output. We emit a byte-
         // for-byte static string (mirrors `node dist/index.js

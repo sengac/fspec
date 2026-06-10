@@ -1,0 +1,134 @@
+{
+  "scenarios": [
+    {
+      "name": "Missing foundation.json surfaces an error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "111-133",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "foundation.json with no eventStorm field returns empty data and message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "135-162",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Soft-deleted items are filtered out",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "164-190",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filtering by type returns only matching items",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "192-218",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filtering by context name returns the bounded context plus linked items",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "220-258",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filtering by an unknown context name returns an empty array",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "260-281",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Combined context and type filters compose",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "283-310",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shared infrastructure module is registered for show-foundation-event-storm",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_show_foundation_event_storm.rs",
+          "lines": "312-340",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/show_foundation_event_storm.rs",
+              "lines": "1-177"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_show_foundation_event_storm.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 223
+  }
+}

@@ -47,7 +47,7 @@
 
 use std::path::Path;
 
-use gherkin::{Feature, GherkinEnv};
+use crate::io::gherkin::parse_feature_lenient;
 use serde::{Deserialize, Serialize};
 
 use crate::error::FspecCoreError;
@@ -154,7 +154,7 @@ fn load_scenario_tags(
         }
     };
 
-    let feature = match Feature::parse(&content, GherkinEnv::default()) {
+    let feature = match parse_feature_lenient(&content) {
         Ok(f) => f,
         Err(parse_err) => {
             return err_payload(format!(

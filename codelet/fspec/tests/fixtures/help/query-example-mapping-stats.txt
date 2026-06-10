@@ -1,0 +1,27 @@
+
+QUERY-EXAMPLE-MAPPING-STATS
+Show Example Mapping coverage statistics across work units
+
+WHEN TO USE
+  Use to assess specification quality and identify work units that need more Example Mapping.
+
+USAGE
+  fspec query-example-mapping-stats [options]
+
+OPTIONS
+  --status <status>
+    Filter by status
+
+EXAMPLES
+  1. Show EM stats
+  $ fspec query-example-mapping-stats
+  Work units with Example Mapping: 25/42 (59%)
+Total rules: 87
+Total examples: 134
+Unanswered questions: 12
+
+RELATED COMMANDS
+  fspec show-work-unit
+  fspec add-rule
+  fspec add-example
+

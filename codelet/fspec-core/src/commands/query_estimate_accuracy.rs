@@ -88,6 +88,7 @@ struct PointsBucket {
 /// the natural decimal representation otherwise. Matches JS `JSON.stringify`
 /// where `1.0 === 1` and prints `1` (no decimal point), while `1.5` prints
 /// `1.5`.
+#[allow(clippy::trivially_copy_pass_by_ref)] // serde serialize_with signature
 fn serialize_whole_number_f64<S>(v: &f64, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -334,7 +335,7 @@ fn compute_aggregate(data: &RawData, by_prefix: bool) -> AllResult {
             out.insert(
                 prefix,
                 PrefixBucket {
-                    avg_accuracy: format!("{:.1} avg iterations", avg),
+                    avg_accuracy: format!("{avg:.1} avg iterations"),
                     recommendation: format!(
                         "{count} sample{}",
                         if count > 1 { "s" } else { "" }

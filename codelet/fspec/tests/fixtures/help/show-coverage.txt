@@ -1,0 +1,116 @@
+
+SHOW-COVERAGE
+Display coverage report showing scenario-to-test-to-implementation traceability
+
+WHEN TO USE
+  Use this command to view coverage status for features, identify uncovered scenarios (gaps), verify traceability links, and track reverse ACDD mapping progress. Run regularly to find scenarios that need test/implementation links.
+
+USAGE
+  fspec show-coverage [feature-name] [options]
+
+ARGUMENTS
+  [feature-name] (optional)
+    Feature file name (without path or extension), e.g., "user-authentication". If omitted, shows project-wide coverage.
+
+OPTIONS
+  --format <format>
+    Output format: text or json (default: text)
+  --output <file>
+    Write output to file instead of stdout
+
+COMMON PATTERNS
+  • Find Coverage Gaps
+    Example: # See project-wide coverage
+fspec show-coverage
+
+# Focus on specific feature
+fspec show-coverage user-authentication
+
+# Identify scenarios marked ❌ NOT COVERED
+# Link missing tests/implementation
+    undefined
+
+  • Reverse ACDD Progress Tracking
+    Example: # Check what percentage of scenarios are mapped
+fspec show-coverage
+# Output: Overall Coverage: 20% (4/20 scenarios)
+
+# Map more scenarios...
+fspec link-coverage ...
+
+# Check progress
+fspec show-coverage
+# Output: Overall Coverage: 45% (9/20 scenarios)
+    undefined
+
+  • Export Coverage for CI/CD
+    Example: # Export as JSON for automated checks
+fspec show-coverage --format=json --output=coverage.json
+
+# Parse in CI pipeline to enforce coverage thresholds
+jq '.coveragePercent' coverage.json
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. fspec show-coverage → 2. Identify uncovered scenarios (gaps) → 3. Link tests/implementation → 4. Verify coverage increased
+
+EXAMPLES
+  1. Show coverage for specific feature
+  $ fspec show-coverage user-authentication
+  Coverage Report: user-authentication.feature
+Coverage: 50% (1/2 scenarios)
+
+## Scenarios
+### ✅ Login with valid credentials (FULLY COVERED)
+- **Test**: src/__tests__/auth.test.ts:45-62
+- **Implementation**: src/auth/login.ts:10,11,12,23,24
+
+### ❌ Login with invalid credentials (NOT COVERED)
+- No test mappings
+
+  2. Show project-wide coverage report
+  $ fspec show-coverage
+  Project Coverage Report
+Overall Coverage: 65% (13/20 scenarios)
+
+Features Overview:
+- user-authentication.feature: 50% (1/2) ⚠️
+- user-logout.feature: 100% (1/1) ✅
+- dashboard.feature: 67% (2/3) ⚠️
+- admin-tools.feature: 100% (4/4) ✅
+
+  3. Get coverage in JSON format for programmatic access
+  $ fspec show-coverage user-authentication --format=json
+  {
+  "feature": "user-authentication",
+  "totalScenarios": 2,
+  "coveredScenarios": 1,
+  "coveragePercent": 50,
+  "scenarios": [...]
+}
+
+  4. Save coverage report to file
+  $ fspec show-coverage --output=coverage-report.txt
+  ✓ Coverage report written to coverage-report.txt
+
+COMMON ERRORS
+  ✗ Error: Feature file user-authentication.feature not found
+    Fix: Check feature name matches file name. Run: fspec list-features
+
+  ✗ Error: Coverage file user-authentication.feature.coverage not found
+    Fix: Coverage file should auto-create with fspec create-feature. Try running create-feature again.
+
+RELATED COMMANDS
+  fspec link-coverage
+  fspec audit-coverage
+  fspec unlink-coverage
+  fspec list-features
+
+NOTES
+  • Coverage symbols: ✅ FULLY COVERED, ⚠️ PARTIALLY COVERED (test only), ❌ NOT COVERED
+  • Project-wide report (no args) shows overall coverage percentage
+  • Use --format=json for programmatic access in CI/CD pipelines
+  • Coverage percentages based on scenarios, not lines of code
+  • Run regularly to track reverse ACDD mapping progress
+

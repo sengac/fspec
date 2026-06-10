@@ -1,0 +1,60 @@
+
+SHOW-EVENT-STORM
+Display Event Storm artifacts as JSON (no semantic interpretation)
+
+WHEN TO USE
+  Use to view all Event Storm artifacts (events, commands, policies, hotspots) for a specific work unit in JSON format.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit must have eventStorm section initialized
+
+USAGE
+  fspec show-event-storm <work-unit-id>
+
+ARGUMENTS
+  <work-unit-id> (required)
+    Work unit ID to query
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Use for debugging Event Storm structure
+  • Verify Event Storm artifacts before generating Example Mapping
+  • Check item IDs and types
+  • View all artifacts in a single work unit
+
+EXAMPLES
+  1. Display Event Storm artifacts for work unit
+  $ fspec show-event-storm AUTH-001
+  {
+  "items": [
+    {"id": 0, "type": "domain-event", "text": "UserRegistered"},
+    {"id": 1, "type": "command", "text": "RegisterUser"},
+    {"id": 2, "type": "policy", "text": "Send welcome email", "when": "UserRegistered", "then": "SendWelcomeEmail"}
+  ],
+  "nextItemId": 3
+}
+
+COMMON ERRORS
+  ✗ Work unit not found
+    Fix: Ensure work unit exists: fspec show-work-unit <id>
+
+  ✗ No Event Storm artifacts
+    Fix: Add Event Storm items first: fspec add-domain-event <id> <text>
+
+RELATED COMMANDS
+  fspec add-domain-event
+  fspec add-command
+  fspec add-policy
+  fspec add-hotspot
+  fspec show-foundation-event-storm
+  fspec generate-example-mapping-from-event-storm
+
+NOTES
+  • Output is raw JSON (not formatted for human reading)
+  • Shows ALL items including deleted ones (soft-delete pattern)
+  • Use show-foundation-event-storm for foundation-level Event Storm
+  • Use generate-example-mapping-from-event-storm to convert to Example Mapping
+

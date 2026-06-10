@@ -186,7 +186,7 @@ fn question_count(wu: &WorkUnit) -> usize {
     wu.extra
         .get("questions")
         .and_then(Value::as_array)
-        .map(|arr| arr.len())
+        .map(Vec::len)
         .unwrap_or(0)
 }
 
@@ -337,7 +337,7 @@ fn parse_iso_to_ms(s: &str) -> i64 {
 fn days_from_civil(y: i32, m: u32, d: u32) -> i64 {
     let y = if m <= 2 { y - 1 } else { y } as i64;
     let era = if y >= 0 { y / 400 } else { (y - 399) / 400 };
-    let yoe = (y - era * 400) as i64;
+    let yoe = y - era * 400;
     let m = m as i64;
     let d = d as i64;
     let doy = (153 * (if m > 2 { m - 3 } else { m + 9 }) + 2) / 5 + d - 1;

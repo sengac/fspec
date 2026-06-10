@@ -42,7 +42,7 @@
 
 use std::path::Path;
 
-use gherkin::{Feature, GherkinEnv};
+use gherkin::Feature;
 use serde::{Deserialize, Serialize, Serializer};
 use serde_json::Value;
 
@@ -452,7 +452,7 @@ fn scan_linked_features(project_root: &Path, work_unit_id: &str) -> Vec<LinkedFe
             Ok(s) => s,
             Err(_) => continue,
         };
-        let feature = match Feature::parse(&content, GherkinEnv::default()) {
+        let feature = match crate::io::gherkin::parse_feature_lenient(&content) {
             Ok(f) => f,
             // Skip invalid feature files (TS does `continue`).
             Err(_) => continue,
@@ -802,7 +802,7 @@ fn iso8601_to_epoch_secs(ts: &str) -> Option<i64> {
     // Howard Hinnant's civil → days-since-epoch.
     let (yy, mm) = if mo <= 2 { (y - 1, mo + 9) } else { (y, mo - 3) };
     let era = if yy >= 0 { yy / 400 } else { (yy - 399) / 400 };
-    let yoe = (yy - era * 400) as i64; // [0, 399]
+    let yoe = yy - era * 400; // [0, 399]
     let doy = (153 * mm as i64 + 2) / 5 + d as i64 - 1; // [0, 365]
     let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy; // [0, 146096]
     let days = era * 146_097 + doe - 719_468;

@@ -84,6 +84,7 @@ struct ShowEpicResult {
 /// the natural decimal representation otherwise. Matches JS `JSON.stringify`
 /// where `50.0 === 50` and prints `50` (no decimal point), while `33.33`
 /// prints `33.33`.
+#[allow(clippy::trivially_copy_pass_by_ref)] // serde serialize_with signature
 fn serialize_completion_percentage<S>(v: &f64, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,

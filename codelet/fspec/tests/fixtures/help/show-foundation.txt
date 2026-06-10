@@ -1,0 +1,60 @@
+
+SHOW-FOUNDATION
+Display contents of foundation.json
+
+USAGE
+  fspec show-foundation [section] [options]
+
+ARGUMENTS
+  [section] (optional)
+    Specific section to show (optional)
+
+OPTIONS
+  --list-sections
+    List section names only (without content)
+  --line-numbers
+    Show line numbers in output
+
+EXAMPLES
+  1. Show all foundation data
+  $ fspec show-foundation
+  {
+  "projectName": "fspec",
+  "version": "1.0.0",
+  "sections": {...}
+}
+
+  2. List available sections
+  $ fspec show-foundation --list-sections
+  Available sections:
+  - Architecture Diagrams
+  - System Overview
+  - Project Goals
+
+  3. Show specific section
+  $ fspec show-foundation "Architecture Diagrams"
+  {
+  "Architecture Diagrams": [
+    {...}
+  ]
+}
+
+  4. Show section with line numbers
+  $ fspec show-foundation "System Overview" --line-numbers
+  1: {
+2:   "System Overview": {
+3:     ...
+4:   }
+5: }
+
+RELATED COMMANDS
+  fspec update-foundation
+  fspec add-diagram
+  fspec validate-foundation-schema
+
+NOTES
+  • foundation.json is the machine-readable source of truth
+  • Use generate-foundation-md for human-readable output
+  • --list-sections helps discover available section names
+  • --line-numbers useful for debugging or referencing specific lines
+

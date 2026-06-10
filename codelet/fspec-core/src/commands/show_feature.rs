@@ -53,12 +53,13 @@
 
 use std::path::Path;
 
-use gherkin::{Feature, GherkinEnv};
+use gherkin::Feature;
 use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::error::FspecCoreError;
 use crate::io::feature_glob::glob_feature_files;
+use crate::io::gherkin::parse_feature_lenient;
 use crate::types::work_unit::WorkUnitsData;
 
 /// CLI / dispatcher arguments accepted by `show-feature`.
@@ -201,7 +202,7 @@ fn build_outcome(project_root: &Path, feature_input: &str) -> Outcome {
         }
     };
 
-    let feature = match Feature::parse(&content, GherkinEnv::default()) {
+    let feature = match parse_feature_lenient(&content) {
         Ok(f) => f,
         Err(e) => {
             return Outcome {
@@ -420,6 +421,7 @@ fn render_text(outcome: &Outcome) -> String {
 
 /// Render the JSON output format. On success: 2-space pretty
 /// `{feature, workUnits, ...}`. On error: `{success:false, error}`.
+#[allow(clippy::expect_used)] // outcome.feature is set on success branch in build_outcome
 fn render_json(outcome: &Outcome) -> Result<String, FspecCoreError> {
     if !outcome.success {
         let v = json!({

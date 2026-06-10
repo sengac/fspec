@@ -9,7 +9,9 @@
 //! freely shared across the 162 child cards under RPC-003 without coupling
 //! command logic to a single I/O backend.
 
+pub mod coverage_glob;
 pub mod ensure;
 pub mod feature_glob;
+pub mod gherkin;
 pub mod locked_file;
 pub mod project_root;

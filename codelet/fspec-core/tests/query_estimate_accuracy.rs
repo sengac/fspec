@@ -65,7 +65,7 @@ fn returns_empty_by_story_points_when_spec_does_not_exist() {
     assert!(result.success, "expected success=true, got {result:?}");
     let data = parse_data(&result.data);
     assert_eq!(
-        data["byStoryPoints"].as_object().map(|m| m.is_empty()),
+        data["byStoryPoints"].as_object().map(serde_json::Map::is_empty),
         Some(true),
         "expected empty byStoryPoints object, got {}",
         result.data
@@ -431,7 +431,7 @@ fn all_completed_against_missing_work_units_json_returns_empty() {
     // @step And the payload field 'byStoryPoints' is an empty object
     let data = parse_data(&result.data);
     assert_eq!(
-        data["byStoryPoints"].as_object().map(|m| m.is_empty()),
+        data["byStoryPoints"].as_object().map(serde_json::Map::is_empty),
         Some(true),
         "expected empty byStoryPoints object; got:\n{}",
         result.data

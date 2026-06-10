@@ -209,6 +209,39 @@ fn run_ported(
             "query-metrics" => commands::query_metrics::run(args_json, project_root).await,
             // RPC-263 — query-work-units
             "query-work-units" => commands::query_work_units::run(args_json, project_root).await,
+            // Batch 6 (2026-06-09)
+            // RPC-256 — query-bottlenecks
+            "query-bottlenecks" => {
+                commands::query_bottlenecks::run(args_json, project_root).await
+            }
+            // RPC-262 — query-orphans
+            "query-orphans" => commands::query_orphans::run(args_json, project_root).await,
+            // RPC-259 — query-estimation-guide
+            "query-estimation-guide" => {
+                commands::query_estimation_guide::run(args_json, project_root).await
+            }
+            // RPC-260 — query-example-mapping-stats
+            "query-example-mapping-stats" => {
+                commands::query_example_mapping_stats::run(args_json, project_root).await
+            }
+            // RPC-303 — show-event-storm
+            "show-event-storm" => commands::show_event_storm::run(args_json, project_root).await,
+            // RPC-305 — show-foundation
+            "show-foundation" => commands::show_foundation::run(args_json, project_root).await,
+            // RPC-306 — show-foundation-event-storm
+            "show-foundation-event-storm" => {
+                commands::show_foundation_event_storm::run(args_json, project_root).await
+            }
+            // RPC-307 — show-test-patterns
+            "show-test-patterns" => {
+                commands::show_test_patterns::run(args_json, project_root).await
+            }
+            // RPC-299 — show-acceptance-criteria
+            "show-acceptance-criteria" => {
+                commands::show_acceptance_criteria::run(args_json, project_root).await
+            }
+            // RPC-300 — show-coverage
+            "show-coverage" => commands::show_coverage::run(args_json, project_root).await,
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -331,16 +364,20 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             "pause-schedule" => commands::pause_schedule::run(args_json).await,
             "prioritize-work-unit" => commands::prioritize_work_unit::run(args_json).await,
-            "query-bottlenecks" => commands::query_bottlenecks::run(args_json).await,
+            // "query-bottlenecks" — ported (RPC-256). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "query-dependency-stats" — ported (RPC-257). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "query-estimate-accuracy" — ported (RPC-258). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "query-estimation-guide" => commands::query_estimation_guide::run(args_json).await,
-            "query-example-mapping-stats" => commands::query_example_mapping_stats::run(args_json).await,
+            // "query-estimation-guide" — ported (RPC-259). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "query-example-mapping-stats" — ported (RPC-260). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "query-metrics" — ported (RPC-261). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "query-orphans" => commands::query_orphans::run(args_json).await,
+            // "query-orphans" — ported (RPC-262). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "query-work-units" — ported (RPC-263). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "record-iteration" => commands::record_iteration::run(args_json).await,
@@ -378,18 +415,24 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "search-implementation" => commands::search_implementation::run(args_json).await,
             "search-scenarios" => commands::search_scenarios::run(args_json).await,
             "set-user-story" => commands::set_user_story::run(args_json).await,
-            "show-acceptance-criteria" => commands::show_acceptance_criteria::run(args_json).await,
-            "show-coverage" => commands::show_coverage::run(args_json).await,
+            // "show-acceptance-criteria" — ported (RPC-299). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "show-coverage" — ported (RPC-300). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "show-deleted" — ported (RPC-301). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "show-epic" — ported (RPC-302). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "show-event-storm" => commands::show_event_storm::run(args_json).await,
+            // "show-event-storm" — ported (RPC-303). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "show-feature" — ported (RPC-304). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "show-foundation" => commands::show_foundation::run(args_json).await,
-            "show-foundation-event-storm" => commands::show_foundation_event_storm::run(args_json).await,
-            "show-test-patterns" => commands::show_test_patterns::run(args_json).await,
+            // "show-foundation" — ported (RPC-305). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "show-foundation-event-storm" — ported (RPC-306). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "show-test-patterns" — ported (RPC-307). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "show-work-unit" — ported (RPC-308). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "suggest-dependencies" => commands::suggest_dependencies::run(args_json).await,

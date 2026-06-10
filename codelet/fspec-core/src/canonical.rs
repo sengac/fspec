@@ -219,6 +219,17 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "query-estimate-accuracy",  // RPC-258
     "query-metrics",            // RPC-261
     "query-work-units",         // RPC-263
+    // Batch 6 (2026-06-09)
+    "query-bottlenecks",          // RPC-256
+    "query-orphans",              // RPC-262
+    "query-estimation-guide",     // RPC-259
+    "query-example-mapping-stats", // RPC-260
+    "show-event-storm",           // RPC-303
+    "show-foundation",            // RPC-305
+    "show-foundation-event-storm", // RPC-306
+    "show-test-patterns",         // RPC-307
+    "show-acceptance-criteria",   // RPC-299
+    "show-coverage",              // RPC-300
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

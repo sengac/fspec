@@ -86,13 +86,13 @@ pub struct CommandHelpConfig {
 /// trailing newline (the empty trailing line from `lines.push('')` is the
 /// final element joined into the output).
 pub fn format_command_help(config: &CommandHelpConfig) -> String {
-    let mut lines: Vec<String> = Vec::new();
-
     // Header
-    lines.push(String::new());
-    lines.push(config.name.to_uppercase());
-    lines.push(config.description.to_string());
-    lines.push(String::new());
+    let mut lines: Vec<String> = vec![
+        String::new(),
+        config.name.to_uppercase(),
+        config.description.to_string(),
+        String::new(),
+    ];
 
     // When to use
     if let Some(s) = config.when_to_use {

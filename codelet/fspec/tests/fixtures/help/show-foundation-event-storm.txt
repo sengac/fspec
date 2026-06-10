@@ -1,0 +1,66 @@
+
+SHOW-FOUNDATION-EVENT-STORM
+Display foundation Event Storm artifacts as JSON (no semantic interpretation)
+
+WHEN TO USE
+  Use to view foundation-level Event Storm artifacts (bounded contexts, pivotal events, aggregates) stored in foundation.json.
+
+PREREQUISITES
+  • foundation.json must exist
+  • Big Picture Event Storm must be initialized in foundation
+
+USAGE
+  fspec show-foundation-event-storm [--type <type>]
+
+OPTIONS
+  --type <type>
+    Filter by Event Storm item type (bounded-context, pivotal-event, aggregate)
+
+COMMON PATTERNS
+  • Use for strategic-level Event Storming (foundation scope)
+  • View bounded contexts and their relationships
+  • Check pivotal events that cross context boundaries
+  • Verify aggregate structures
+  • Foundation Event Storm is for BIG PICTURE, work unit Event Storm is for TACTICAL
+
+EXAMPLES
+  1. Display all foundation Event Storm artifacts
+  $ fspec show-foundation-event-storm
+  {
+  "boundedContexts": [...],
+  "pivotalEvents": [...],
+  "aggregates": [...]
+}
+
+  2. Display only bounded contexts
+  $ fspec show-foundation-event-storm --type bounded-context
+  {
+  "boundedContexts": [
+    {"id": 0, "name": "Identity", "description": "User authentication and authorization"}
+  ]
+}
+
+COMMON ERRORS
+  ✗ foundation.json not found
+    Fix: Initialize foundation first: fspec discover-foundation
+
+  ✗ No Event Storm data in foundation
+    Fix: Add Big Picture Event Storm artifacts to foundation.json
+
+RELATED COMMANDS
+  fspec show-event-storm
+  fspec show-foundation
+  fspec discover-foundation
+  fspec generate-example-mapping-from-event-storm
+  fspec remove-foundation-bounded-context
+  fspec remove-aggregate-from-foundation
+  fspec remove-domain-event-from-foundation
+  fspec remove-command-from-foundation
+
+NOTES
+  • Foundation Event Storm is stored in foundation.json (not work-units.json)
+  • Represents strategic domain model (DDD bounded contexts)
+  • Output is raw JSON format
+  • Use --type to filter specific artifact types
+  • Foundation-level artifacts define system architecture
+

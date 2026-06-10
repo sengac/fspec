@@ -1,0 +1,145 @@
+
+QUERY-ORPHANS
+Detect orphaned work units with no epic assignment or dependency relationships
+
+WHEN TO USE
+  Use this command to identify work units lacking context and traceability. Essential for work unit hygiene, preventing unplanned scope creep, and ensuring all work aligns with epics or has clear relationships. Run after bulk work unit creation or periodically for maintenance.
+
+PREREQUISITES
+  • spec/work-units.json exists with work units
+
+USAGE
+  fspec query-orphans [options]
+
+OPTIONS
+  --output <format>
+    Output format: json or text
+    Default: text
+  --exclude-done
+    Exclude work units in done status from orphan detection
+
+COMMON PATTERNS
+  • Maintenance Workflow
+    Example: # Weekly cleanup: find orphans
+fspec query-orphans
+
+# Assign epics to valid work
+fspec update-work-unit MISC-001 --epic=documentation
+fspec update-work-unit REFAC-003 --epic=authentication
+
+# Add relationships for cross-cutting work
+fspec add-dependency MISC-001 --relates-to AUTH-001
+
+# Delete invalid work units
+fspec delete-work-unit INVALID-001
+
+# Verify cleanup
+fspec query-orphans
+    undefined
+
+  • Bulk Work Unit Validation
+    Example: # After creating multiple work units
+fspec create-story AUTH "Setup auth"
+fspec create-story AUTH "Login flow"
+fspec create-story AUTH "Logout flow"
+
+# Check for orphans
+fspec query-orphans
+
+# Assign epic to all
+fspec update-work-unit AUTH-001 --epic=authentication
+fspec update-work-unit AUTH-002 --epic=authentication
+fspec update-work-unit AUTH-003 --epic=authentication
+    undefined
+
+  • JSON Export for Reporting
+    Example: # Export orphans for dashboard
+fspec query-orphans --output json > orphans.json
+
+# Count orphans by status
+jq '[.orphans[].status] | group_by(.) | map({status: .[0], count: length})' orphans.json
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Run orphan detection: fspec query-orphans → 2. Review orphaned work units → 3. Assign epic OR add relationship: fspec update-work-unit <id> --epic=<epic> OR fspec add-dependency <id> --relates-to=<other-id> → 4. Delete if invalid: fspec delete-work-unit <id> → 5. Verify: fspec query-orphans
+
+EXAMPLES
+  1. Find all orphaned work units (no epic, no relationships)
+  $ fspec query-orphans
+  Found 3 orphaned work unit(s):
+
+1. MISC-001 - Update documentation (backlog)
+   ⚠ No epic or dependency relationships
+   Suggested actions:
+     • Assign epic
+     • Add relationship
+     • Delete
+
+2. REFAC-003 - Refactor auth module (implementing)
+   ⚠ No epic or dependency relationships
+   Suggested actions:
+     • Assign epic
+     • Add relationship
+     • Delete
+
+To fix orphaned work units:
+  fspec update-work-unit <id> --epic=<epic-name>
+  fspec add-dependency <id> --depends-on=<other-id>  (or --blocks, --relates-to)
+  fspec delete-work-unit <id>
+
+  2. Find orphans excluding completed work
+  $ fspec query-orphans --exclude-done
+  Found 1 orphaned work unit(s):
+
+1. MISC-001 - Update documentation (backlog)
+   ⚠ No epic or dependency relationships
+   Suggested actions:
+     • Assign epic
+     • Add relationship
+     • Delete
+
+  3. Output orphans as JSON for automation
+  $ fspec query-orphans --output json
+  {
+  "orphans": [
+    {
+      "id": "MISC-001",
+      "title": "Update documentation",
+      "status": "backlog",
+      "suggestedActions": ["Assign epic", "Add relationship", "Delete"]
+    }
+  ]
+}
+
+  4. Count orphaned work units
+  $ fspec query-orphans | wc -l
+  15
+
+COMMON ERRORS
+  ✗ Error: No orphaned work units found
+    Fix: All work units have epic or dependency relationships. No action needed.
+
+  ✗ Error: work-units.json not found
+    Fix: Run: fspec init to create work-units.json file
+
+  ✗ Error: Invalid work-units.json format
+    Fix: Check for JSON syntax errors in spec/work-units.json
+
+RELATED COMMANDS
+  fspec query-bottlenecks
+  fspec suggest-dependencies
+  fspec update-work-unit
+  fspec add-dependency
+  fspec delete-work-unit
+  fspec list-epics
+
+NOTES
+  • A work unit is orphaned if it has NEITHER epic NOR dependency relationships
+  • Orphaned work units lack context and traceability (unclear WHY they exist)
+  • By default, includes ALL statuses (even "done" work can be orphaned)
+  • Use --exclude-done to focus on active work units needing attention
+  • Orphans often indicate ad-hoc work added without proper planning
+  • Suggested actions: (1) Assign epic, (2) Add relationship, (3) Delete if invalid
+  • Regular orphan detection prevents unplanned scope creep
+
