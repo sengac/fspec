@@ -293,6 +293,30 @@ debug = 1
 split-debuginfo = "off"
 codegen-units = 1
 
+# Slimmed release profile for distribution of the standalone `fspec` Rust
+# ELF/Mach-O binary (codelet/fspec). Inherits everything from
+# [profile.release] (LTO, codegen-units, opt-level) but drops the embedded
+# DWARF + symbol table that the macOS-SEA pprof contract requires for the
+# `codelet-napi` `.node` artifact.
+#
+# Rationale: the standalone `fspec` binary is NOT packed into a Node SEA
+# and is NOT the pprof sampling target. Keeping `debug = 1` in
+# `[profile.release]` for it inflates the Linux/macOS ELF/Mach-O artifact
+# from ~150 MB to ~800 MB (81% DWARF) for no operational benefit.
+#
+# Use this profile when shipping the standalone CLI:
+#   cargo build --profile release-slim -p codelet-fspec
+# The output lands at:
+#   codelet/target/release-slim/fspec
+#
+# Local profiling builds (and any napi build) still use `--release` so the
+# pprof + backtrace-rs symbolisation path documented above keeps working.
+[profile.release-slim]
+inherits = "release"
+strip = "symbols"
+debug = false
+split-debuginfo = "off"
+
 [profile.ci-test]
 debug = 1
 inherits = "test"

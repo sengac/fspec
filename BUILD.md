@@ -1,6 +1,15 @@
-# Building codelet-napi Multi-Platform Binaries
+# Building codelet Binaries
 
-This document describes how to build the `codelet-napi` NAPI-RS binaries for all 6 supported platforms from a macOS machine.
+This document describes how to build the two distributable Rust artifacts in this repository:
+
+1. **`codelet-napi`** — NAPI-RS bindings consumed by the TypeScript `fspec` CLI ([Building codelet-napi Multi-Platform Binaries](#building-codelet-napi-multi-platform-binaries)).
+2. **`fspec` (standalone)** — pure-Rust port of the `fspec` CLI shipped as a single ELF / Mach-O / PE binary ([Building the standalone `fspec` Rust binary](#building-the-standalone-fspec-rust-binary)).
+
+---
+
+## Building codelet-napi Multi-Platform Binaries
+
+This section describes how to build the `codelet-napi` NAPI-RS binaries for all 6 supported platforms from a macOS machine.
 
 ## Supported Platforms
 
@@ -187,3 +196,115 @@ Test the local bindings (macOS only):
 cd codelet/napi
 node -e "const { BackgroundSession } = require('./index.js'); console.log('OK')"
 ```
+
+---
+
+## Building the standalone `fspec` Rust binary
+
+The pure-Rust port of the `fspec` CLI lives in `codelet/fspec` and compiles
+to a single statically-linked binary (`fspec`). It is independent of the
+NAPI artifacts above — no Node.js runtime, no `.node` files, no SEA.
+
+### TL;DR
+
+```bash
+# Distribution build (recommended for shipping / install scripts):
+cd codelet
+cargo build --profile release-slim -p codelet-fspec
+ls -lh target/release-slim/fspec       # ≈ 150 MB
+
+# Local profiling build (keeps DWARF line tables for pprof-rs):
+cargo build --release -p codelet-fspec
+ls -lh target/release/fspec            # ≈ 800 MB
+```
+
+### Why two release profiles?
+
+`codelet/Cargo.toml` defines **two** optimised profiles. They share the
+same `opt-level`, `lto = "fat"` and `codegen-units = 1` — the only
+difference is debug-info retention.
+
+| Profile          | `debug` | `strip`     | Typical size | Use when                                      |
+|------------------|---------|-------------|--------------|-----------------------------------------------|
+| `release`        | `1`     | `"none"`    | ~800 MB      | Building `codelet-napi.node` for SEA + pprof  |
+| `release-slim`   | `false` | `"symbols"` | ~150 MB      | Shipping the standalone `fspec` binary        |
+
+#### The `[profile.release]` constraint
+
+The default `[profile.release]` block deliberately retains DWARF line
+tables (`debug = 1`) and the full symbol table (`strip = "none"`) with
+`split-debuginfo = "off"` so the DWARF stays *embedded* in the artifact.
+This exists for one reason: **the `codelet-napi` Node SEA pprof
+contract**.
+
+At launch, the Node Single-Executable-Application extracts the embedded
+`codelet-napi.node` into a random temp directory
+(`/var/folders/.../T/fspec-sea-<pid>/codelet-napi.node`). macOS's
+path-convention `.dSYM` lookup then searches for a sibling
+`codelet-napi.node.dSYM` bundle in that temp dir — which never exists
+— so without embedded DWARF, every `pprof` sample resolves to a raw
+address and `AgentManager.profile` returns phantom hot-spots like
+`_napi_register_module_v1` instead of real Rust function attribution.
+
+The standalone `fspec` binary has **none** of those constraints:
+
+- It is not packed into a SEA — DWARF doesn't need to ride with the file.
+- It is not the pprof sampling target — `codelet-napi` is.
+- It is shipped to end users — every megabyte of DWARF is dead weight.
+
+#### What `release-slim` does
+
+```toml
+[profile.release-slim]
+inherits = "release"
+strip = "symbols"      # drop .debug_*, .symtab, .strtab
+debug = false          # don't emit DWARF in the first place
+split-debuginfo = "off"
+```
+
+Result: identical code (same LTO, same opt-level) with the DWARF
+sections (`.debug_info`, `.debug_str`, `.debug_ranges`, `.debug_line`,
+`.debug_loc`, …) and the Rust symbol table removed. Verified on Linux
+aarch64:
+
+```text
+release       (debug=1, strip=none)     797 MB   → ~91 MB .text + ~677 MB DWARF
+release-slim  (debug=0, strip=symbols)  149 MB   → ~91 MB .text only
+```
+
+### Cross-compiling the standalone binary
+
+The standalone `fspec` binary has the same toolchain requirements as
+`codelet-napi` (Rust ≥ 1.80, `protoc`). Cross-compile by passing a
+`--target` triple:
+
+```bash
+# Linux aarch64
+cargo build --profile release-slim -p codelet-fspec \
+  --target aarch64-unknown-linux-gnu
+
+# macOS universal (run on Apple Silicon)
+cargo build --profile release-slim -p codelet-fspec \
+  --target aarch64-apple-darwin
+cargo build --profile release-slim -p codelet-fspec \
+  --target x86_64-apple-darwin
+
+# Windows x64 (via cargo-xwin in Docker — see Dockerfile.windows)
+cargo xwin build --profile release-slim -p codelet-fspec \
+  --target x86_64-pc-windows-msvc --cross-compiler clang
+```
+
+Artifacts land at `codelet/target/<triple>/release-slim/fspec[.exe]`.
+
+### Don't strip the wrong artifact
+
+- ✅ **Do** use `--profile release-slim` for the standalone `fspec` ELF.
+- ❌ **Do not** add `strip = "symbols"` or `debug = false` to
+  `[profile.release]`. That would silently break pprof attribution
+  inside the `codelet-napi.node` shipped through the Node SEA on macOS.
+- ❌ **Do not** post-process the SEA-bound `.node` file with `strip(1)`
+  for the same reason.
+
+If you only need a slim Linux binary right now without rebuilding,
+`strip -s codelet/target/release/fspec` produces the same ~150 MB
+output, but `--profile release-slim` is the supported path.

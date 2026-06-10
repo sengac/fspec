@@ -92,6 +92,16 @@ This opens the factory floor—your Kanban board with AI workstations ready to t
 
 ![Interactive Kanban](interactive-kanban.png)
 
+> **Building from source?** See [BUILD.md](BUILD.md) for both the
+> `codelet-napi` multi-platform binaries and the standalone pure-Rust
+> `fspec` binary. The standalone binary **must** be built with the
+> `release-slim` profile (`cargo build --profile release-slim -p codelet-fspec`)
+> — the default `release` profile retains ~650 MB of embedded DWARF that
+> only exists to make `pprof` sampling work inside the macOS Node SEA
+> bundle for `codelet-napi`. See
+> [BUILD.md → Building the standalone `fspec` Rust binary](BUILD.md#building-the-standalone-fspec-rust-binary)
+> for the full rationale and the table of profile differences.
+
 ---
 
 ## First Run: Starting the Factory
