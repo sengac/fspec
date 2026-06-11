@@ -1,0 +1,26 @@
+
+REMOVE-QUESTION
+Remove a question from Example Mapping by index
+
+USAGE
+  fspec remove-question <workUnitId> <index>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <index> (required)
+    Question index (from show-work-unit)
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Remove question at index 0
+  $ fspec remove-question AUTH-001 0
+  ✓ Removed question from AUTH-001
+
+RELATED COMMANDS
+  fspec add-question
+  fspec answer-question
+  fspec show-work-unit
+

@@ -1,0 +1,25 @@
+
+REMOVE-RULE
+Remove a business rule from Example Mapping by index
+
+USAGE
+  fspec remove-rule <workUnitId> <index>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <index> (required)
+    Rule index (from show-work-unit)
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Remove rule at index 1
+  $ fspec remove-rule AUTH-001 1
+  ✓ Removed rule from AUTH-001
+
+RELATED COMMANDS
+  fspec add-rule
+  fspec show-work-unit
+

@@ -1,0 +1,161 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_assumption.rs",
+          "lines": "65-81",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/add_assumption.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI successfully appends an assumption and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_assumption.rs",
+          "lines": "83-101",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_assumption.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_assumption.rs",
+          "lines": "120-156",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_assumption.rs",
+              "lines": [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects a non-specifying status with exit 1 and TS-parity error prefix",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 3,
+    "coveragePercent": 75,
+    "testFiles": [
+      "codelet/fspec/tests/cli_add_assumption.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/add_assumption.rs",
+      "codelet/fspec/src/add_assumption.rs"
+    ],
+    "totalLinesCovered": 204
+  }
+}

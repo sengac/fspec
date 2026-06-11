@@ -517,17 +517,20 @@ async fn dispatch_command_does_not_hang_when_called_from_inside_a_tokio_runtime(
 /// Scenario: Dispatching an unported command from inside a tokio runtime returns NotYetPorted instead of hanging
 #[tokio::test]
 async fn dispatch_command_returns_not_yet_ported_when_called_from_inside_a_tokio_runtime() {
-    // @step Given the canonical command map registers 'add-rule' as a Phase 1 stub
-    // (precondition: 'add-rule' is in CANONICAL_COMMANDS and is_ported('add-rule') == false; verified in dispatcher_test.rs)
+    // @step Given the canonical command map registers 'add-attachment' as a Phase 1 stub
+    // (precondition: 'add-attachment' is in CANONICAL_COMMANDS and is_ported('add-attachment') == false;
+    //  verified in dispatcher_test.rs. We use add-attachment instead of add-rule because the latter
+    //  has been ported as part of Batch 8 and now returns a real arg-parsing error rather than the
+    //  NotYetPorted stub message this regression test was written to catch.)
 
     // @step Given the test is running inside an active tokio runtime via #[tokio::test]
     // (precondition satisfied by the #[tokio::test] attribute on this test fn)
 
-    // @step When I invoke dispatch_command for the 'add-rule' command via tokio::task::spawn_blocking
+    // @step When I invoke dispatch_command for the 'add-attachment' command via tokio::task::spawn_blocking
     let started = std::time::Instant::now();
     let result = tokio::task::spawn_blocking(|| {
         dispatch_command(DispatchRequest {
-            command: "add-rule".to_string(),
+            command: "add-attachment".to_string(),
             args_json: "{}".to_string(),
             project_root: std::path::PathBuf::from("/tmp/fspec-rpc327"),
         })

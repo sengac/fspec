@@ -1,0 +1,48 @@
+
+REMOVE-ARCHITECTURE-NOTE
+Remove architecture note from work unit by index
+
+WHEN TO USE
+  Use when you need to remove an incorrect or outdated architecture note from a work unit. View current notes with show-work-unit to see indices.
+
+USAGE
+  fspec remove-architecture-note <workUnitId> <index>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID (e.g., WORK-001)
+  <index> (required)
+    Index of note to remove (0-based, see show-work-unit output)
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. First, view architecture notes with their indices
+  $ fspec show-work-unit WORK-001
+  Architecture Notes:
+  0. Uses @cucumber/gherkin parser
+  1. Must complete validation within 2 seconds
+  2. Share validation logic with formatter
+
+  2. Remove note at index 1 (the performance requirement)
+  $ fspec remove-architecture-note WORK-001 1
+  ✓ Architecture note removed successfully
+
+COMMON ERRORS
+  ✗ Work unit has no architecture notes
+    Fix: Verify work unit has notes using show-work-unit command
+
+  ✗ Invalid index N. Work unit has M architecture note(s)
+    Fix: Use show-work-unit to see valid indices (0-based)
+
+RELATED COMMANDS
+  fspec show-work-unit
+  fspec add-architecture-note
+  fspec generate-scenarios
+
+NOTES
+  • Indices are 0-based (first note is index 0)
+  • Use show-work-unit to view current notes and their indices
+  • Removing a note will shift subsequent indices down by 1
+

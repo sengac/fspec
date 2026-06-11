@@ -1,0 +1,322 @@
+{
+  "scenarios": [
+    {
+      "name": "Happy-path soft-delete sets the deleted flag and deletedAt",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "lines": "82-136",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Idempotent re-delete returns success without writing to disk",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "lines": "138-172",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                139,
+                140,
+                141,
+                142
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Status guard rejects remove-example when work unit is not in specifying",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "lines": "174-205",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work unit surfaces the canonical error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "lines": "207-229",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing examples array reports 'has no examples'",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "lines": "231-260",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty examples array reports 'has no examples'",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "lines": "262-284",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown example id reports 'Example with ID <n> not found'",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_example.rs",
+          "lines": "286-318",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_example.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/remove_example.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/remove_example.rs"
+    ],
+    "totalLinesCovered": 425
+  }
+}

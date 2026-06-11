@@ -269,6 +269,62 @@ fn run_ported(
             "clear-dependencies" => {
                 commands::clear_dependencies::run(args_json, project_root).await
             }
+            // Batch 8 (2026-06-11) — Example Mapping mutation commands
+            // RPC-189 — add-rule
+            "add-rule" => commands::add_rule::run(args_json, project_root).await,
+            // RPC-279 — remove-rule
+            "remove-rule" => commands::remove_rule::run(args_json, project_root).await,
+            // RPC-169 — add-assumption
+            "add-assumption" => commands::add_assumption::run(args_json, project_root).await,
+            // RPC-181 — add-example
+            "add-example" => commands::add_example::run(args_json, project_root).await,
+            // RPC-273 — remove-example
+            "remove-example" => commands::remove_example::run(args_json, project_root).await,
+            // RPC-188 — add-question
+            "add-question" => commands::add_question::run(args_json, project_root).await,
+            // RPC-278 — remove-question
+            "remove-question" => commands::remove_question::run(args_json, project_root).await,
+            // RPC-168 — add-architecture-note
+            "add-architecture-note" => {
+                commands::add_architecture_note::run(args_json, project_root).await
+            }
+            // RPC-267 — remove-architecture-note
+            "remove-architecture-note" => {
+                commands::remove_architecture_note::run(args_json, project_root).await
+            }
+            // RPC-298 — set-user-story
+            "set-user-story" => commands::set_user_story::run(args_json, project_root).await,
+            // Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
+            // RPC-177 — add-dependency
+            "add-dependency" => commands::add_dependency::run(args_json, project_root).await,
+            // RPC-196 — answer-question
+            "answer-question" => commands::answer_question::run(args_json, project_root).await,
+            // RPC-289 — restore-example
+            "restore-example" => commands::restore_example::run(args_json, project_root).await,
+            // RPC-291 — restore-rule
+            "restore-rule" => commands::restore_rule::run(args_json, project_root).await,
+            // RPC-290 — restore-question
+            "restore-question" => commands::restore_question::run(args_json, project_root).await,
+            // RPC-287 — restore-architecture-note
+            "restore-architecture-note" => {
+                commands::restore_architecture_note::run(args_json, project_root).await
+            }
+            // RPC-193 — add-tag-to-feature
+            "add-tag-to-feature" => {
+                commands::add_tag_to_feature::run(args_json, project_root).await
+            }
+            // RPC-281 — remove-tag-from-feature
+            "remove-tag-from-feature" => {
+                commands::remove_tag_from_feature::run(args_json, project_root).await
+            }
+            // RPC-194 — add-tag-to-scenario
+            "add-tag-to-scenario" => {
+                commands::add_tag_to_scenario::run(args_json, project_root).await
+            }
+            // RPC-282 — remove-tag-from-scenario
+            "remove-tag-from-scenario" => {
+                commands::remove_tag_from_scenario::run(args_json, project_root).await
+            }
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -290,8 +346,10 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "add-aggregate" => commands::add_aggregate::run(args_json).await,
             "add-aggregate-to-foundation" => commands::add_aggregate_to_foundation::run(args_json).await,
             "add-architecture" => commands::add_architecture::run(args_json).await,
-            "add-architecture-note" => commands::add_architecture_note::run(args_json).await,
-            "add-assumption" => commands::add_assumption::run(args_json).await,
+            // "add-architecture-note" — ported (RPC-168, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "add-assumption" — ported (RPC-169, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-attachment" => commands::add_attachment::run(args_json).await,
             "add-background" => commands::add_background::run(args_json).await,
             "add-bounded-context" => commands::add_bounded_context::run(args_json).await,
@@ -300,26 +358,33 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "add-command-to-foundation" => commands::add_command_to_foundation::run(args_json).await,
             // "add-dependencies" — ported (RPC-176, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-dependency" => commands::add_dependency::run(args_json).await,
+            // "add-dependency" — ported (RPC-177, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-diagram" => commands::add_diagram::run(args_json).await,
             "add-domain-event" => commands::add_domain_event::run(args_json).await,
             "add-domain-event-to-foundation" => commands::add_domain_event_to_foundation::run(args_json).await,
-            "add-example" => commands::add_example::run(args_json).await,
+            // "add-example" — ported (RPC-181, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-external-system" => commands::add_external_system::run(args_json).await,
             "add-foundation-bounded-context" => commands::add_foundation_bounded_context::run(args_json).await,
             "add-hook" => commands::add_hook::run(args_json).await,
             "add-hotspot" => commands::add_hotspot::run(args_json).await,
             "add-persona" => commands::add_persona::run(args_json).await,
             "add-policy" => commands::add_policy::run(args_json).await,
-            "add-question" => commands::add_question::run(args_json).await,
-            "add-rule" => commands::add_rule::run(args_json).await,
+            // "add-question" — ported (RPC-188, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "add-rule" — ported (RPC-189, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-scenario" => commands::add_scenario::run(args_json).await,
             "add-schedule" => commands::add_schedule::run(args_json).await,
             "add-step" => commands::add_step::run(args_json).await,
-            "add-tag-to-feature" => commands::add_tag_to_feature::run(args_json).await,
-            "add-tag-to-scenario" => commands::add_tag_to_scenario::run(args_json).await,
+            // "add-tag-to-feature" — ported (RPC-193, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "add-tag-to-scenario" — ported (RPC-194, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-virtual-hook" => commands::add_virtual_hook::run(args_json).await,
-            "answer-question" => commands::answer_question::run(args_json).await,
+            // "answer-question" — ported (RPC-196, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "audit-coverage" => commands::audit_coverage::run(args_json).await,
             "auto-advance" => commands::auto_advance::run(args_json).await,
             "board" => commands::board::run(args_json).await,
@@ -417,39 +482,50 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "register-tag" — ported (RPC-265, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "remove-aggregate-from-foundation" => commands::remove_aggregate_from_foundation::run(args_json).await,
-            "remove-architecture-note" => commands::remove_architecture_note::run(args_json).await,
+            // "remove-architecture-note" — ported (RPC-267, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-attachment" => commands::remove_attachment::run(args_json).await,
             "remove-capability" => commands::remove_capability::run(args_json).await,
             "remove-command-from-foundation" => commands::remove_command_from_foundation::run(args_json).await,
             // "remove-dependency" — ported (RPC-271, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "remove-domain-event-from-foundation" => commands::remove_domain_event_from_foundation::run(args_json).await,
-            "remove-example" => commands::remove_example::run(args_json).await,
+            // "remove-example" — ported (RPC-273, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-foundation-bounded-context" => commands::remove_foundation_bounded_context::run(args_json).await,
             "remove-hook" => commands::remove_hook::run(args_json).await,
             "remove-init-files" => commands::remove_init_files::run(args_json).await,
             "remove-persona" => commands::remove_persona::run(args_json).await,
-            "remove-question" => commands::remove_question::run(args_json).await,
-            "remove-rule" => commands::remove_rule::run(args_json).await,
+            // "remove-question" — ported (RPC-278, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "remove-rule" — ported (RPC-279, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-schedule" => commands::remove_schedule::run(args_json).await,
-            "remove-tag-from-feature" => commands::remove_tag_from_feature::run(args_json).await,
-            "remove-tag-from-scenario" => commands::remove_tag_from_scenario::run(args_json).await,
+            // "remove-tag-from-feature" — ported (RPC-281, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "remove-tag-from-scenario" — ported (RPC-282, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-virtual-hook" => commands::remove_virtual_hook::run(args_json).await,
             "repair-work-units" => commands::repair_work_units::run(args_json).await,
             "report-bug-to-github" => commands::report_bug_to_github::run(args_json).await,
             "research" => commands::research::run(args_json).await,
-            "restore-architecture-note" => commands::restore_architecture_note::run(args_json).await,
+            // "restore-architecture-note" — ported (RPC-287, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "restore-checkpoint" => commands::restore_checkpoint::run(args_json).await,
-            "restore-example" => commands::restore_example::run(args_json).await,
-            "restore-question" => commands::restore_question::run(args_json).await,
-            "restore-rule" => commands::restore_rule::run(args_json).await,
+            // "restore-example" — ported (RPC-289, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "restore-question" — ported (RPC-290, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "restore-rule" — ported (RPC-291, Batch 9). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "resume-schedule" => commands::resume_schedule::run(args_json).await,
             "retag" => commands::retag::run(args_json).await,
             "reverse" => commands::reverse::run(args_json).await,
             "review" => commands::review::run(args_json).await,
             "search-implementation" => commands::search_implementation::run(args_json).await,
             "search-scenarios" => commands::search_scenarios::run(args_json).await,
-            "set-user-story" => commands::set_user_story::run(args_json).await,
+            // "set-user-story" — ported (RPC-298, Batch 8). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "show-acceptance-criteria" — ported (RPC-299). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "show-coverage" — ported (RPC-300). Handled by `run_ported`

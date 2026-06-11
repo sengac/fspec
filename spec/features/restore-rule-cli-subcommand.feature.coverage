@@ -1,0 +1,303 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "lines": "110-130",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/restore_rule.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Happy-path single restore via CLI",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "lines": "132-163",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_rule.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work unit exits 1 with canonical stderr",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "lines": "165-188",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_rule.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Wrong status exits 1 with the phase-guard message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "lines": "190-212",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_rule.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Non-numeric index falls through to TS parseInt NaN parity",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "lines": "214-236",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_rule.rs",
+              "lines": [
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown --ids flag is rejected by clap with non-zero exit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "lines": "238-261",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_rule.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function as the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_rule.rs",
+          "lines": "263-307",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_rule.rs",
+              "lines": [
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_restore_rule.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/restore_rule.rs",
+      "codelet/fspec/src/restore_rule.rs"
+    ],
+    "totalLinesCovered": 366
+  }
+}

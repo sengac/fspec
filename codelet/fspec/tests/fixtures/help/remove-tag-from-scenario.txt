@@ -1,0 +1,49 @@
+
+REMOVE-TAG-FROM-SCENARIO
+Remove one or more tags from a specific scenario in a feature file
+
+WHEN TO USE
+  Use this command when you need to remove tags from a specific scenario, such as removing @wip after completing work, removing @deprecated before deletion, or cleaning up incorrect tags.
+
+USAGE
+  fspec remove-tag-from-scenario <file> <scenario> <tags...>
+
+ARGUMENTS
+  <file> (required)
+    Feature file path (e.g., spec/features/login.feature)
+  <scenario> (required)
+    Scenario name exactly as it appears in the feature file (e.g., "Login with valid credentials")
+  <tags...> (required)
+    One or more tags to remove (e.g., @wip @deprecated) - must include @ symbol
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Remove single tag from scenario
+  $ fspec remove-tag-from-scenario spec/features/login.feature "Login with valid credentials" @wip
+  ✓ Removed tag @wip from scenario "Login with valid credentials"
+
+  2. Remove multiple tags from scenario
+  $ fspec remove-tag-from-scenario spec/features/login.feature "Login with valid credentials" @wip @manual
+  ✓ Removed tags @wip, @manual from scenario "Login with valid credentials"
+
+COMMON ERRORS
+  ✗ Scenario not found
+    Fix: Ensure scenario name matches exactly (case-sensitive)
+
+  ✗ Tag not found on scenario
+    Fix: Use list-scenario-tags to see current tags on the scenario
+
+RELATED COMMANDS
+  fspec add-tag-to-scenario
+  fspec list-scenario-tags
+  fspec remove-tag-from-feature
+  fspec retag
+
+NOTES
+  • Scenario names are case-sensitive and must match exactly
+  • Tags must include the @ symbol
+  • Removing a tag that does not exist on the scenario will show an error
+  • Feature file is automatically reformatted after tag removal
+

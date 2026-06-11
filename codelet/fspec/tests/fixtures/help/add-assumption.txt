@@ -1,0 +1,29 @@
+
+ADD-ASSUMPTION
+Add an assumption to a work unit during specification
+
+WHEN TO USE
+  Use to document assumptions made during specification that may need validation later.
+
+USAGE
+  fspec add-assumption <work-unit-id> <assumption>
+
+ARGUMENTS
+  <work-unit-id> (required)
+    Work unit ID
+  <assumption> (required)
+    Assumption text
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Add assumption
+  $ fspec add-assumption AUTH-001 "Users have valid email addresses"
+  ✓ Assumption added successfully
+
+RELATED COMMANDS
+  fspec add-rule
+  fspec add-question
+  fspec show-work-unit
+

@@ -1,0 +1,25 @@
+
+REMOVE-EXAMPLE
+Remove an example from Example Mapping by index
+
+USAGE
+  fspec remove-example <workUnitId> <index>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <index> (required)
+    Example index (from show-work-unit)
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Remove example at index 2
+  $ fspec remove-example AUTH-001 2
+  ✓ Removed example from AUTH-001
+
+RELATED COMMANDS
+  fspec add-example
+  fspec show-work-unit
+

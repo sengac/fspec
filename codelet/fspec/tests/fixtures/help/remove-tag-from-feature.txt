@@ -1,0 +1,25 @@
+
+REMOVE-TAG-FROM-FEATURE
+Remove one or more tags from a feature file
+
+USAGE
+  fspec remove-tag-from-feature <file> <tags...>
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <tags...> (required)
+    One or more tags to remove
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Remove tag
+  $ fspec remove-tag-from-feature spec/features/login.feature @wip
+  ✓ Removed tag @wip from spec/features/login.feature
+
+RELATED COMMANDS
+  fspec add-tag-to-feature
+  fspec list-feature-tags
+

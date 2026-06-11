@@ -241,6 +241,28 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "add-dependencies",           // RPC-176
     "remove-dependency",          // RPC-271
     "clear-dependencies",         // RPC-204
+    // Batch 8 (2026-06-11) — Example Mapping mutation commands
+    "add-rule",                   // RPC-189
+    "remove-rule",                // RPC-279
+    "add-assumption",             // RPC-169
+    "add-example",                // RPC-181
+    "remove-example",             // RPC-273
+    "add-question",               // RPC-188
+    "remove-question",            // RPC-278
+    "add-architecture-note",      // RPC-168
+    "remove-architecture-note",   // RPC-267
+    "set-user-story",             // RPC-298
+    // Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
+    "add-dependency",                  // RPC-177
+    "answer-question",                 // RPC-196
+    "restore-example",                 // RPC-289
+    "restore-rule",                    // RPC-291
+    "restore-question",                // RPC-290
+    "restore-architecture-note",       // RPC-287
+    "add-tag-to-feature",              // RPC-193
+    "remove-tag-from-feature",         // RPC-281
+    "add-tag-to-scenario",             // RPC-194
+    "remove-tag-from-scenario",        // RPC-282
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

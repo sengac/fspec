@@ -1,0 +1,179 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_rule.rs",
+          "lines": "67-83",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/remove_rule.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI soft-deletes a rule and prints the canonical success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_rule.rs",
+          "lines": "85-105",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_rule.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_rule.rs",
+          "lines": "124-164",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_rule.rs",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects an unknown rule id with exit 1 and TS-parity error prefix",
+      "testMappings": []
+    },
+    {
+      "name": "CLI matches TS NaN behaviour when index is non-numeric",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 3,
+    "coveragePercent": 60,
+    "testFiles": [
+      "codelet/fspec/tests/cli_remove_rule.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/remove_rule.rs",
+      "codelet/fspec/src/remove_rule.rs"
+    ],
+    "totalLinesCovered": 232
+  }
+}

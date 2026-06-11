@@ -1,0 +1,76 @@
+
+SET-USER-STORY
+Set the user story for a work unit, capturing the role, action, and benefit for Example Mapping
+
+WHEN TO USE
+  Use this command during Example Mapping (Discovery phase) to capture the user story BEFORE generating scenarios. This is the FIRST step in defining acceptance criteria. Essential for ensuring generated scenarios align with user needs.
+
+WHEN NOT TO USE
+  Do not use after generating scenarios (use update-work-unit to change fields). Do not use for technical implementation details (those go in architecture notes).
+
+PREREQUISITES
+  • Work unit must exist (create with fspec create-story, create-bug, or create-task)
+  • Work unit should be in "specifying" status
+
+USAGE
+  fspec set-user-story <work-unit-id> [options]
+
+ARGUMENTS
+  <work-unit-id> (required)
+    Work unit ID (e.g., AUTH-001, DASH-002). Must match existing work unit.
+
+OPTIONS
+  --role <role>
+    User role or persona (e.g., "developer", "system admin")
+  --action <action>
+    What the user wants to do (e.g., "validate feature files")
+  --benefit <benefit>
+    Why the user wants it (e.g., "catch syntax errors early")
+
+COMMON PATTERNS
+  • Example Mapping: Set user story first, then add rules and examples before generating scenarios
+  • Feature Discovery: Capture user story during stakeholder conversations to ensure alignment
+  • ACDD Workflow: User story defines WHAT and WHY, scenarios define HOW
+
+TYPICAL WORKFLOW
+  1. Create work unit → 2. Move to specifying status → 3. fspec set-user-story (this command) → 4. Add rules/examples → 5. fspec generate-scenarios
+
+EXAMPLES
+  1. Set user story for authentication work unit
+  $ fspec set-user-story AUTH-001 --role "developer" --action "validate feature files automatically" --benefit "I catch syntax errors before committing"
+  ✓ User story set for AUTH-001
+  As a developer
+  I want to validate feature files automatically
+  So that I catch syntax errors before committing
+
+  2. Set user story for dashboard work unit
+  $ fspec set-user-story DASH-002 --role "system admin" --action "view all work unit statuses in one place" --benefit "I can track team progress at a glance"
+  ✓ User story set for DASH-002
+  As a system admin
+  I want to view all work unit statuses in one place
+  So that I can track team progress at a glance
+
+COMMON ERRORS
+  ✗ Error: Work unit 'AUTH-001' does not exist
+    Fix: Create work unit first: fspec create-story AUTH "User Authentication"
+
+  ✗ Error: Missing required option --role
+    Fix: Provide all three flags: --role, --action, and --benefit
+
+RELATED COMMANDS
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+  fspec generate-scenarios
+  fspec add-rule
+  fspec add-example
+  fspec show-work-unit
+
+NOTES
+  • User story format: "As a [role] I want to [action] So that [benefit]"
+  • ALWAYS set user story BEFORE generating scenarios (prevents prefill placeholders)
+  • Role should be a persona or user type, not a system component
+  • Action should describe capability, not implementation
+  • Benefit should explain business value or user outcome
+  • User story is stored in spec/work-units.json and used by generate-scenarios
+

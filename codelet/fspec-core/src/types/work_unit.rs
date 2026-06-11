@@ -153,7 +153,23 @@ impl WorkUnitStatus {
 
 /// A single work unit. Only the fields read by ported commands are typed;
 /// everything else round-trips through `extra`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// ## On-disk field-order parity (per-WorkUnit)
+///
+/// The TypeScript reference reads `work-units.json` via `JSON.parse` and writes
+/// back via `JSON.stringify`, both of which preserve the on-disk key order
+/// verbatim. A naive `#[derive(Serialize, Deserialize)]` on this struct would
+/// emit typed fields first and the flattened `extra` map second, producing a
+/// byte-different file (e.g. `description` ending up after `updatedAt`
+/// instead of staying between `title` and `status`). That parity gap was
+/// reported during the RPC-168/RPC-188/RPC-279/etc. parity review.
+///
+/// To preserve round-trip parity we implement [`Serialize`] / [`Deserialize`]
+/// manually and record the on-disk key order in [`Self::field_order`]. On
+/// write we emit fields in that original order; any new keys appended after
+/// the original read (e.g. `rules`, `nextRuleId`, `architectureNotes`) are
+/// added at the end in `extra`'s insertion order.
+#[derive(Debug, Clone)]
 pub struct WorkUnit {
     pub id: String,
     pub title: String,
@@ -164,19 +180,172 @@ pub struct WorkUnit {
     /// TypeScript runtime, where `WorkUnitType` is a compile-time union and
     /// `JSON.parse` happily accepts any string. Use [`Self::type_str`] for
     /// the TS-equivalent `wu.type || 'story'` default.
-    #[serde(default, skip_serializing_if = "Option::is_none", rename = "type")]
     pub r#type: Option<String>,
     pub status: WorkUnitStatus,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub epic: Option<String>,
-    #[serde(rename = "createdAt")]
     pub created_at: String,
-    #[serde(rename = "updatedAt")]
     pub updated_at: String,
     /// All fields the Rust port doesn't yet model — preserved verbatim so
     /// write-back doesn't lose data.
-    #[serde(flatten)]
     pub extra: serde_json::Map<String, serde_json::Value>,
+    /// Original on-disk key order captured during deserialization. Empty for
+    /// freshly-constructed units; consumed by [`Serialize`] to preserve
+    /// round-trip key order. NOT itself serialized to disk.
+    pub field_order: Vec<String>,
+}
+
+/// Canonical typed-field names recognised by [`WorkUnit`]'s manual
+/// (de)serialisation. Order mirrors the TypeScript object literal emitted by
+/// `src/commands/create-story.ts` — `id, type, title, status, createdAt,
+/// updatedAt, epic` — so freshly-constructed units (where `field_order` is
+/// empty) still produce TS-canonical output.
+const WORK_UNIT_TYPED_KEYS: &[&str] = &[
+    "id",
+    "type",
+    "title",
+    "status",
+    "createdAt",
+    "updatedAt",
+    "epic",
+];
+
+impl serde::Serialize for WorkUnit {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        // Resolve the current value for a typed key, returning `None` when the
+        // optional field is absent (so it is skipped, matching the original
+        // `#[serde(skip_serializing_if = "Option::is_none")]` attribute).
+        let typed_value = |key: &str| -> Option<serde_json::Value> {
+            match key {
+                "id" => Some(serde_json::Value::String(self.id.clone())),
+                "title" => Some(serde_json::Value::String(self.title.clone())),
+                "type" => self
+                    .r#type
+                    .as_ref()
+                    .map(|t| serde_json::Value::String(t.clone())),
+                "status" => Some(serde_json::Value::String(self.status.as_str().to_string())),
+                "epic" => self
+                    .epic
+                    .as_ref()
+                    .map(|e| serde_json::Value::String(e.clone())),
+                "createdAt" => Some(serde_json::Value::String(self.created_at.clone())),
+                "updatedAt" => Some(serde_json::Value::String(self.updated_at.clone())),
+                _ => None,
+            }
+        };
+
+        // Pre-compute the output key sequence, deduplicating while preserving
+        // (1) original on-disk positions from `field_order`, then (2) any
+        // typed fields that were not present on disk (canonical TS order),
+        // then (3) any new `extra` keys that were appended after the read.
+        let mut seen = std::collections::HashSet::with_capacity(
+            self.field_order.len() + WORK_UNIT_TYPED_KEYS.len() + self.extra.len(),
+        );
+        let mut ordered: Vec<(String, serde_json::Value)> = Vec::with_capacity(
+            self.field_order.len() + WORK_UNIT_TYPED_KEYS.len() + self.extra.len(),
+        );
+
+        for key in &self.field_order {
+            if !seen.insert(key.clone()) {
+                continue;
+            }
+            if let Some(v) = typed_value(key) {
+                ordered.push((key.clone(), v));
+            } else if let Some(v) = self.extra.get(key) {
+                ordered.push((key.clone(), v.clone()));
+            }
+            // else: optional typed field cleared since read (e.g. `epic` set to
+            // None) — skip so the on-disk file no longer carries the stale key.
+        }
+
+        for key in WORK_UNIT_TYPED_KEYS {
+            if seen.contains(*key) {
+                continue;
+            }
+            if let Some(v) = typed_value(key) {
+                seen.insert((*key).to_string());
+                ordered.push(((*key).to_string(), v));
+            }
+        }
+
+        for (key, value) in &self.extra {
+            if seen.insert(key.clone()) {
+                ordered.push((key.clone(), value.clone()));
+            }
+        }
+
+        let mut map = serializer.serialize_map(Some(ordered.len()))?;
+        for (k, v) in &ordered {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for WorkUnit {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error as DeError;
+
+        let mut raw: serde_json::Map<String, serde_json::Value> =
+            serde_json::Map::deserialize(deserializer)?;
+
+        let field_order: Vec<String> = raw.keys().cloned().collect();
+
+        let take_string = |raw: &mut serde_json::Map<String, serde_json::Value>,
+                           key: &'static str|
+         -> Result<String, D::Error> {
+            match raw.remove(key) {
+                Some(serde_json::Value::String(s)) => Ok(s),
+                Some(other) => Err(DeError::custom(format!(
+                    "field `{key}` must be a string, got {other}"
+                ))),
+                None => Err(DeError::missing_field(key)),
+            }
+        };
+
+        let take_optional_string = |raw: &mut serde_json::Map<String, serde_json::Value>,
+                                    key: &str|
+         -> Result<Option<String>, D::Error> {
+            match raw.remove(key) {
+                Some(serde_json::Value::String(s)) => Ok(Some(s)),
+                Some(serde_json::Value::Null) | None => Ok(None),
+                Some(other) => Err(DeError::custom(format!(
+                    "field `{key}` must be a string, got {other}"
+                ))),
+            }
+        };
+
+        let id = take_string(&mut raw, "id")?;
+        let title = take_string(&mut raw, "title")?;
+        let r#type = take_optional_string(&mut raw, "type")?;
+        let epic = take_optional_string(&mut raw, "epic")?;
+        let created_at = take_string(&mut raw, "createdAt")?;
+        let updated_at = take_string(&mut raw, "updatedAt")?;
+
+        let status: WorkUnitStatus = match raw.remove("status") {
+            Some(v) => serde_json::from_value(v).map_err(DeError::custom)?,
+            None => return Err(DeError::missing_field("status")),
+        };
+
+        Ok(WorkUnit {
+            id,
+            title,
+            r#type,
+            status,
+            epic,
+            created_at,
+            updated_at,
+            extra: raw,
+            field_order,
+        })
+    }
 }
 
 impl WorkUnit {

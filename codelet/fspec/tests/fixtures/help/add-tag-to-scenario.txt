@@ -1,0 +1,38 @@
+
+ADD-TAG-TO-SCENARIO
+Add one or more tags to a specific scenario
+
+USAGE
+  fspec add-tag-to-scenario <file> <scenario> <tags...> [options]
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <scenario> (required)
+    Scenario name (must match exactly)
+  <tags...> (required)
+    One or more tags to add
+
+OPTIONS
+  --validate-registry
+    Validate tags against spec/tags.json before adding
+
+EXAMPLES
+  1. Add tag to scenario
+  $ fspec add-tag-to-scenario spec/features/login.feature "Login with invalid password" @edge-case
+  ✓ Added tag @edge-case to scenario
+
+  2. Add tag with registry validation
+  $ fspec add-tag-to-scenario spec/features/login.feature "Login scenario" @WORK-UNIT-001 --validate-registry
+  ✓ Added tag @WORK-UNIT-001 to scenario "Login scenario"
+
+RELATED COMMANDS
+  fspec remove-tag-from-scenario
+  fspec list-scenario-tags
+  fspec register-tag
+
+NOTES
+  • Scenario name is case-sensitive
+  • Use --validate-registry to enforce tag registry compliance
+  • Duplicates are automatically ignored
+

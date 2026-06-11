@@ -1,0 +1,30 @@
+
+ADD-EXAMPLE
+Add a concrete example to a work unit during Example Mapping
+
+WHEN TO USE
+  Use during specifying phase to capture concrete examples that illustrate rules and will become test scenarios.
+
+USAGE
+  fspec add-example <workUnitId> <example>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <example> (required)
+    Concrete example description
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Add example
+  $ fspec add-example AUTH-001 "Login with user@example.com and correct password"
+  ✓ Example added successfully
+
+RELATED COMMANDS
+  fspec add-rule
+  fspec add-question
+  fspec generate-scenarios
+  fspec remove-example
+

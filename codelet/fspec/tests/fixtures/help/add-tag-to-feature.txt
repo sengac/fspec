@@ -1,0 +1,42 @@
+
+ADD-TAG-TO-FEATURE
+Add one or more tags to a feature file (feature-level tags)
+
+USAGE
+  fspec add-tag-to-feature <file> <tags...> [options]
+
+ARGUMENTS
+  <file> (required)
+    Feature file path
+  <tags...> (required)
+    One or more tags to add (e.g., @critical @critical)
+
+OPTIONS
+  --validate-registry
+    Validate tags against spec/tags.json before adding
+
+EXAMPLES
+  1. Add single tag
+  $ fspec add-tag-to-feature spec/features/login.feature @critical
+  ✓ Added tag @critical to spec/features/login.feature
+
+  2. Add multiple tags
+  $ fspec add-tag-to-feature spec/features/login.feature @critical @critical
+  ✓ Added tags @critical, @critical to spec/features/login.feature
+
+  3. Add tag with registry validation
+  $ fspec add-tag-to-feature spec/features/login.feature @custom-tag --validate-registry
+  Error: Tag @custom-tag is not registered in spec/tags.json
+Register it first with: fspec register-tag @custom-tag "Category" "Description"
+
+RELATED COMMANDS
+  fspec remove-tag-from-feature
+  fspec list-feature-tags
+  fspec add-tag-to-scenario
+  fspec register-tag
+
+NOTES
+  • Tags must be registered first (unless --validate-registry is skipped)
+  • Duplicates are automatically ignored
+  • Use --validate-registry to enforce tag registry compliance
+

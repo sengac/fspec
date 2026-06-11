@@ -1,0 +1,194 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatcher writes a user story to an existing work unit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/set_user_story.rs",
+          "lines": "76-106",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/set_user_story.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher overwrites an existing user story verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/set_user_story.rs",
+          "lines": "108-144",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/set_user_story.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects missing work unit IDs",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/set_user_story.rs",
+          "lines": "146-177",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/set_user_story.rs",
+              "lines": [
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher response data contains the four canonical success lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/set_user_story.rs",
+          "lines": "179-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/set_user_story.rs",
+              "lines": [
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher fails fast when required args are missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/set_user_story.rs",
+          "lines": "224-245",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/set_user_story.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/set_user_story.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/set_user_story.rs"
+    ],
+    "totalLinesCovered": 430
+  }
+}

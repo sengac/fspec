@@ -1,0 +1,268 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes restore-architecture-note with two positional args in --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "lines": "74-113",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "lines": [
+                29,
+                30,
+                31,
+                32,
+                33
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI restores an architecture note and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "lines": "117-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI prints idempotent message when already active",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "lines": "143-173",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects unknown note ID with exit 1 and stderr Error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "lines": "175-199",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects unknown work unit with exit 1 and stderr Error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "lines": "201-222",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "lines": [
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "lines": "224-287",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/restore_architecture_note.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "restore-architecture-note --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_restore_architecture_note.rs",
+          "lines": "289-315",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/restore_architecture_note.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_restore_architecture_note.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/restore_architecture_note.rs",
+      "codelet/fspec-core/src/help/configs/restore_architecture_note.rs"
+    ],
+    "totalLinesCovered": 373
+  }
+}

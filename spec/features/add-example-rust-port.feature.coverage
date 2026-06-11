@@ -1,0 +1,380 @@
+{
+  "scenarios": [
+    {
+      "name": "First example appended with stable id 0 and nextExampleId bumped to 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_example.rs",
+          "lines": "86-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Second example reuses the incrementing counter",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_example.rs",
+          "lines": "142-189",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Status guard rejects add-example when work unit is not in specifying",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_example.rs",
+          "lines": "190-220",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "lines": [
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work unit surfaces the canonical error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_example.rs",
+          "lines": "221-244",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-creates spec/work-units.json then reports missing-source error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_example.rs",
+          "lines": "245-277",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Success rendering embeds the system reminder block",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_example.rs",
+          "lines": "278-330",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System reminder falls back to 'the user' when userStory.role is absent",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_example.rs",
+          "lines": "331-353",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_example.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/add_example.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/add_example.rs"
+    ],
+    "totalLinesCovered": 520
+  }
+}

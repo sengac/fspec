@@ -1,0 +1,39 @@
+
+RESTORE-EXAMPLE
+Restore soft-deleted example by stable ID (undeletes item and clears deletedAt timestamp)
+
+USAGE
+  fspec restore-example <workUnitId> <index>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <index> (required)
+    Example ID (stable index from show-work-unit or show-deleted)
+
+OPTIONS
+  --ids <ids>
+    Restore multiple examples with comma-separated IDs (e.g., "2,5,7")
+
+EXAMPLES
+  1. Restore deleted example with ID 2
+  $ fspec restore-example AUTH-001 2
+  ✓ Restored example from AUTH-001
+Example reappears at index [2] in show-work-unit
+
+  2. Restore multiple examples at once (bulk restore)
+  $ fspec restore-example AUTH-001 --ids 2,5,7
+  ✓ Restored 3 examples from AUTH-001
+
+RELATED COMMANDS
+  fspec remove-example
+  fspec show-work-unit
+  fspec show-deleted
+  fspec compact-work-unit
+
+NOTES
+  • Uses stable IDs that never shift when items are removed
+  • Restoring an already-active item is idempotent (succeeds with message)
+  • Non-existent IDs will fail with clear error message
+  • Bulk restore validates all IDs before restoring any item
+

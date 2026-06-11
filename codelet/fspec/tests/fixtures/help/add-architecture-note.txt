@@ -1,0 +1,60 @@
+
+ADD-ARCHITECTURE-NOTE
+Add architecture note to work unit during Example Mapping
+
+WHEN TO USE
+  Use during Example Mapping (specifying phase) to capture architecture decisions, non-functional requirements, dependencies, performance constraints, security considerations, or implementation patterns that should appear in the generated feature file docstring.
+
+USAGE
+  fspec add-architecture-note <workUnitId> <note>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID (e.g., WORK-001)
+  <note> (required)
+    Architecture note text. Optionally prefix with category (e.g., "Dependency:", "Performance:", "Refactoring:", "Security:", "UI/UX:", "Implementation:")
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Prefix notes with "Dependency:" for libraries and integrations
+  • Prefix with "Performance:" for speed/throughput requirements
+  • Prefix with "Refactoring:" for code sharing opportunities
+  • Prefix with "Security:" for security considerations
+  • Prefix with "UI/UX:" for design references or examples
+  • Prefix with "Implementation:" for specific patterns to follow
+  • Notes without prefixes go into "General" category
+
+TYPICAL WORKFLOW
+  During Example Mapping: 1) Ask architecture questions, 2) Capture notes with add-architecture-note, 3) Run generate-scenarios to create feature file with populated docstring
+
+EXAMPLES
+  1. Add general architecture note
+  $ fspec add-architecture-note WORK-001 "Uses @cucumber/gherkin parser"
+  ✓ Architecture note added successfully
+
+  2. Add dependency note (will be categorized in docstring)
+  $ fspec add-architecture-note WORK-001 "Dependency: @cucumber/gherkin parser"
+  ✓ Architecture note added successfully
+
+  3. Add performance requirement
+  $ fspec add-architecture-note WORK-001 "Performance: Must complete validation within 2 seconds"
+  ✓ Architecture note added successfully
+
+  4. Add refactoring note
+  $ fspec add-architecture-note WORK-001 "Refactoring: Share validation logic with formatter"
+  ✓ Architecture note added successfully
+
+RELATED COMMANDS
+  fspec show-work-unit
+  fspec remove-architecture-note
+  fspec generate-scenarios
+  fspec add-assumption
+
+NOTES
+  • Architecture notes are stored in work unit and used to populate feature file docstrings
+  • Notes with recognized prefixes are automatically categorized in generated docstrings
+  • View captured notes with: fspec show-work-unit <workUnitId>
+  • Notes appear in generated feature files when running generate-scenarios
+

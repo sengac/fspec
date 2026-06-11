@@ -1,0 +1,271 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes remove-architecture-note with positional args in --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "lines": "74-122",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI soft-deletes an architecture note and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "lines": "124-159",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI reports the idempotent message when re-deleting",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "lines": "161-199",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects an unknown work unit with exit 1 and stderr Error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "lines": "201-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "lines": "237-282",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_architecture_note.rs",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "remove-architecture-note --help is byte-for-byte identical to TS reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_architecture_note.rs",
+          "lines": "284-313",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/remove_architecture_note.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_remove_architecture_note.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/remove_architecture_note.rs",
+      "codelet/fspec-core/src/help/configs/remove_architecture_note.rs"
+    ],
+    "totalLinesCovered": 393
+  }
+}

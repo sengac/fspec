@@ -1,0 +1,39 @@
+
+RESTORE-RULE
+Restore soft-deleted business rule by stable ID (undeletes item and clears deletedAt timestamp)
+
+USAGE
+  fspec restore-rule <workUnitId> <index>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <index> (required)
+    Rule ID (stable index from show-work-unit or show-deleted)
+
+OPTIONS
+  --ids <ids>
+    Restore multiple rules with comma-separated IDs (e.g., "2,5,7")
+
+EXAMPLES
+  1. Restore deleted rule with ID 2
+  $ fspec restore-rule AUTH-001 2
+  ✓ Restored rule from AUTH-001
+Rule reappears at index [2] in show-work-unit
+
+  2. Restore multiple rules at once (bulk restore)
+  $ fspec restore-rule AUTH-001 --ids 2,5,7
+  ✓ Restored 3 rules from AUTH-001
+
+RELATED COMMANDS
+  fspec remove-rule
+  fspec show-work-unit
+  fspec show-deleted
+  fspec compact-work-unit
+
+NOTES
+  • Uses stable IDs that never shift when items are removed
+  • Restoring an already-active item is idempotent (succeeds with message)
+  • Non-existent IDs will fail with clear error message
+  • Bulk restore validates all IDs before restoring any item
+

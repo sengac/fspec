@@ -1,0 +1,294 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatcher soft-deletes the matching architecture note by ID",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_architecture_note.rs",
+          "lines": "68-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_architecture_note.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher is idempotent on already-deleted notes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_architecture_note.rs",
+          "lines": "110-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_architecture_note.rs",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects missing work unit IDs",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_architecture_note.rs",
+          "lines": "152-180",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_architecture_note.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects when architectureNotes is missing or empty",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_architecture_note.rs",
+          "lines": "182-225",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_architecture_note.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects an unknown architecture note ID",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_architecture_note.rs",
+          "lines": "227-256",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_architecture_note.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher response data contains the canonical success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_architecture_note.rs",
+          "lines": "258-286",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_architecture_note.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher fails fast when required args are missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_architecture_note.rs",
+          "lines": "288-307",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_architecture_note.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/remove_architecture_note.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/remove_architecture_note.rs"
+    ],
+    "totalLinesCovered": 400
+  }
+}

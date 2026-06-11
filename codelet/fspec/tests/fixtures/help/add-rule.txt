@@ -1,0 +1,30 @@
+
+ADD-RULE
+Add a business rule to a work unit during Example Mapping
+
+WHEN TO USE
+  Use during specifying phase when capturing business rules discovered through Example Mapping conversations.
+
+USAGE
+  fspec add-rule <workUnitId> <rule>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <rule> (required)
+    Business rule description
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Add business rule
+  $ fspec add-rule AUTH-001 "Email must be valid format"
+  ✓ Rule added successfully
+
+RELATED COMMANDS
+  fspec add-question
+  fspec add-example
+  fspec generate-scenarios
+  fspec remove-rule
+

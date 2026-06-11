@@ -26,7 +26,28 @@ mod daemon;
 mod delete_epic;
 mod delete_tag;
 mod add_dependencies;
+mod add_architecture_note;
+mod add_assumption;
+mod add_example;
+mod add_question;
+mod add_rule;
+mod remove_architecture_note;
 mod remove_dependency;
+mod remove_example;
+mod remove_question;
+mod remove_rule;
+mod set_user_story;
+// Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
+mod add_dependency;
+mod add_tag_to_feature;
+mod add_tag_to_scenario;
+mod answer_question;
+mod remove_tag_from_feature;
+mod remove_tag_from_scenario;
+mod restore_architecture_note;
+mod restore_example;
+mod restore_question;
+mod restore_rule;
 mod list_attachments;
 mod list_checkpoints;
 mod list_epics;
@@ -610,6 +631,255 @@ enum Mode {
         #[arg(long)]
         confirm: bool,
     },
+    /// RPC-189: add a business rule to a work unit (Blue card in Example Mapping).
+    #[command(name = "add-rule", about = "Add a business rule to a work unit (Blue card in Example Mapping)")]
+    AddRule {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Business rule description (positional).
+        #[arg(value_name = "RULE")]
+        rule: String,
+    },
+    /// RPC-279: remove a business rule from a work unit by index.
+    #[command(name = "remove-rule", about = "Remove a business rule from a work unit by index")]
+    RemoveRule {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Rule index (0-based, positional). Accepted as a raw string so TS
+        /// `parseInt('abc', 10) → NaN` semantics are preserved when the
+        /// caller passes a non-numeric value — the core then surfaces
+        /// `"Rule with ID NaN not found"` instead of clap exiting with code 2.
+        #[arg(value_name = "INDEX")]
+        index: String,
+    },
+    /// RPC-169: add an assumption to a work unit during specification.
+    #[command(name = "add-assumption", about = "Add assumption to work unit during specification")]
+    AddAssumption {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Assumption text (positional).
+        #[arg(value_name = "ASSUMPTION")]
+        assumption: String,
+    },
+    /// RPC-181: add an example to a work unit (Green card in Example Mapping).
+    #[command(name = "add-example", about = "Add an example to a work unit during specification phase")]
+    AddExample {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Example description (positional).
+        #[arg(value_name = "EXAMPLE")]
+        example: String,
+    },
+    /// RPC-273: remove an example from a work unit by index.
+    #[command(name = "remove-example", about = "Remove an example from a work unit by index")]
+    RemoveExample {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Example index (0-based, positional). Accepted as a raw string so
+        /// TS `parseInt('abc', 10) → NaN` semantics are preserved when the
+        /// caller passes a non-numeric value — the core then surfaces
+        /// `"Example with ID NaN not found"` instead of clap exiting with
+        /// code 2. `allow_hyphen_values` lets clap accept negative integers
+        /// such as `-1` so TS-style `parseInt('-1', 10) → -1` parity holds.
+        #[arg(value_name = "INDEX", allow_hyphen_values = true)]
+        index: String,
+    },
+    /// RPC-188: add a question to a work unit (Red card in Example Mapping).
+    #[command(name = "add-question", about = "Add a question to a work unit during specification phase")]
+    AddQuestion {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Question text (positional).
+        #[arg(value_name = "QUESTION")]
+        question: String,
+    },
+    /// RPC-278: remove a question from a work unit by index.
+    #[command(name = "remove-question", about = "Remove a question from a work unit by index")]
+    RemoveQuestion {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Question index (0-based, positional). Accepted as a raw String
+        /// so the bridge can preserve TS `parseInt(_, 10)` semantics
+        /// (non-numeric input → "NaN" → canonical not-found error).
+        #[arg(value_name = "INDEX")]
+        index: String,
+    },
+    /// RPC-168: add an architecture note to a work unit during Example Mapping.
+    #[command(name = "add-architecture-note", about = "Add architecture note to work unit during Example Mapping")]
+    AddArchitectureNote {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Architecture note text (positional).
+        #[arg(value_name = "NOTE")]
+        note: String,
+    },
+    /// RPC-267: remove an architecture note from a work unit by index.
+    #[command(name = "remove-architecture-note", about = "Remove architecture note from work unit by index")]
+    RemoveArchitectureNote {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Index of note to remove (0-based, positional). Accepted as a
+        /// raw String so the bridge can preserve TS `parseInt(_, 10)`
+        /// semantics (non-numeric input → "NaN" → canonical not-found
+        /// error).
+        #[arg(value_name = "INDEX")]
+        index: String,
+    },
+    /// RPC-298: set user-story fields (role/action/benefit) for a work unit.
+    #[command(name = "set-user-story", about = "Set user story fields for work unit")]
+    SetUserStory {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// User role (As a...).
+        #[arg(long, value_name = "ROLE")]
+        role: String,
+        /// User action (I want to...).
+        #[arg(long, value_name = "ACTION")]
+        action: String,
+        /// User benefit (So that...).
+        #[arg(long, value_name = "BENEFIT")]
+        benefit: String,
+    },
+    /// RPC-177: add a dependency relationship between two work units.
+    #[command(name = "add-dependency", about = "Add dependency relationship between two work units")]
+    AddDependency {
+        /// Required source work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Optional positional shorthand: adds a depends-on link.
+        #[arg(value_name = "DEPENDS_ON_ID")]
+        depends_on_positional: Option<String>,
+        /// Add a blocks edge.
+        #[arg(long, value_name = "TARGET_ID")]
+        blocks: Option<String>,
+        /// Add a blocked-by edge.
+        #[arg(long = "blocked-by", value_name = "TARGET_ID")]
+        blocked_by: Option<String>,
+        /// Add a depends-on edge.
+        #[arg(long = "depends-on", value_name = "TARGET_ID")]
+        depends_on: Option<String>,
+        /// Add a relates-to edge.
+        #[arg(long = "relates-to", value_name = "TARGET_ID")]
+        relates_to: Option<String>,
+    },
+    /// RPC-196: answer an Example Mapping question and optionally promote it to a rule/assumption.
+    #[command(name = "answer-question", about = "Answer a question and optionally promote it")]
+    AnswerQuestion {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Question index (0-based, positional).
+        #[arg(value_name = "INDEX", allow_hyphen_values = true)]
+        index: i64,
+        /// Optional answer text.
+        #[arg(long, value_name = "ANSWER")]
+        answer: Option<String>,
+        /// Where to promote the answer: rule|rules|assumption|assumptions|none.
+        #[arg(long = "add-to", value_name = "TARGET")]
+        add_to: Option<String>,
+    },
+    /// RPC-289: restore a soft-deleted example on a work unit.
+    #[command(name = "restore-example", about = "Restore a soft-deleted example")]
+    RestoreExample {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Example index/id (raw — TS `parseInt('abc', 10)` semantics).
+        #[arg(value_name = "INDEX")]
+        index: String,
+    },
+    /// RPC-291: restore a soft-deleted rule on a work unit.
+    #[command(name = "restore-rule", about = "Restore a soft-deleted rule")]
+    RestoreRule {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Rule index/id (raw — TS `parseInt('abc', 10)` semantics).
+        #[arg(value_name = "INDEX")]
+        index: String,
+    },
+    /// RPC-290: restore a soft-deleted question on a work unit.
+    #[command(name = "restore-question", about = "Restore a soft-deleted question")]
+    RestoreQuestion {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Question index (0-based, positional).
+        #[arg(value_name = "INDEX")]
+        index: u64,
+    },
+    /// RPC-287: restore a soft-deleted architecture note on a work unit.
+    #[command(name = "restore-architecture-note", about = "Restore a soft-deleted architecture note")]
+    RestoreArchitectureNote {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Architecture note index (0-based, positional).
+        #[arg(value_name = "INDEX")]
+        index: u64,
+    },
+    /// RPC-193: add one or more tags to a feature file.
+    #[command(name = "add-tag-to-feature", about = "Add tags to a feature file")]
+    AddTagToFeature {
+        /// Feature file path (positional).
+        #[arg(value_name = "FILE")]
+        file: String,
+        /// One or more tags to add (variadic positional).
+        #[arg(value_name = "TAGS", num_args = 1..)]
+        tags: Vec<String>,
+        /// Validate added tags against `spec/tags.json` registry.
+        #[arg(long = "validate-registry")]
+        validate_registry: bool,
+    },
+    /// RPC-281: remove one or more tags from a feature file.
+    #[command(name = "remove-tag-from-feature", about = "Remove tags from a feature file")]
+    RemoveTagFromFeature {
+        /// Feature file path (positional).
+        #[arg(value_name = "FILE")]
+        file: String,
+        /// One or more tags to remove (variadic positional).
+        #[arg(value_name = "TAGS", num_args = 1..)]
+        tags: Vec<String>,
+    },
+    /// RPC-194: add one or more tags to a specific scenario in a feature file.
+    #[command(name = "add-tag-to-scenario", about = "Add tags to a scenario in a feature file")]
+    AddTagToScenario {
+        /// Feature file path (positional).
+        #[arg(value_name = "FILE")]
+        file: String,
+        /// Scenario name (positional).
+        #[arg(value_name = "SCENARIO")]
+        scenario_name: String,
+        /// One or more tags to add (variadic positional).
+        #[arg(value_name = "TAGS", num_args = 1..)]
+        tags: Vec<String>,
+        /// Validate added tags against `spec/tags.json` registry.
+        #[arg(long = "validate-registry")]
+        validate_registry: bool,
+    },
+    /// RPC-282: remove one or more tags from a specific scenario in a feature file.
+    #[command(name = "remove-tag-from-scenario", about = "Remove tags from a scenario in a feature file")]
+    RemoveTagFromScenario {
+        /// Feature file path (positional).
+        #[arg(value_name = "FILE")]
+        file: String,
+        /// Scenario name (positional).
+        #[arg(value_name = "SCENARIO")]
+        scenario_name: String,
+        /// One or more tags to remove (variadic positional).
+        #[arg(value_name = "TAGS", num_args = 1..)]
+        tags: Vec<String>,
+    },
 }
 
 #[tokio::main]
@@ -877,6 +1147,101 @@ async fn main() -> std::process::ExitCode {
             clear_dependencies::run,
             clear_dependencies::CliArgs { work_unit_id, confirm }
         ),
+        Some(Mode::AddRule { work_unit_id, rule }) => forward!(
+            add_rule::run,
+            add_rule::CliArgs { work_unit_id, rule }
+        ),
+        Some(Mode::RemoveRule { work_unit_id, index }) => forward!(
+            remove_rule::run,
+            remove_rule::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::AddAssumption { work_unit_id, assumption }) => forward!(
+            add_assumption::run,
+            add_assumption::CliArgs { work_unit_id, assumption }
+        ),
+        Some(Mode::AddExample { work_unit_id, example }) => forward!(
+            add_example::run,
+            add_example::CliArgs { work_unit_id, example }
+        ),
+        Some(Mode::RemoveExample { work_unit_id, index }) => forward!(
+            remove_example::run,
+            remove_example::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::AddQuestion { work_unit_id, question }) => forward!(
+            add_question::run,
+            add_question::CliArgs { work_unit_id, question }
+        ),
+        Some(Mode::RemoveQuestion { work_unit_id, index }) => forward!(
+            remove_question::run,
+            remove_question::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::AddArchitectureNote { work_unit_id, note }) => forward!(
+            add_architecture_note::run,
+            add_architecture_note::CliArgs { work_unit_id, note }
+        ),
+        Some(Mode::RemoveArchitectureNote { work_unit_id, index }) => forward!(
+            remove_architecture_note::run,
+            remove_architecture_note::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::SetUserStory { work_unit_id, role, action, benefit }) => forward!(
+            set_user_story::run,
+            set_user_story::CliArgs { work_unit_id, role, action, benefit }
+        ),
+        // Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
+        Some(Mode::AddDependency {
+            work_unit_id,
+            depends_on_positional,
+            blocks,
+            blocked_by,
+            depends_on,
+            relates_to,
+        }) => forward!(
+            add_dependency::run,
+            add_dependency::CliArgs {
+                work_unit_id,
+                depends_on_positional,
+                blocks,
+                blocked_by,
+                depends_on,
+                relates_to,
+            }
+        ),
+        Some(Mode::AnswerQuestion { work_unit_id, index, answer, add_to }) => forward!(
+            answer_question::run,
+            answer_question::CliArgs { work_unit_id, index, answer, add_to }
+        ),
+        Some(Mode::RestoreExample { work_unit_id, index }) => forward!(
+            restore_example::run,
+            restore_example::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::RestoreRule { work_unit_id, index }) => forward!(
+            restore_rule::run,
+            restore_rule::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::RestoreQuestion { work_unit_id, index }) => forward!(
+            restore_question::run,
+            restore_question::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::RestoreArchitectureNote { work_unit_id, index }) => forward!(
+            restore_architecture_note::run,
+            restore_architecture_note::CliArgs { work_unit_id, index }
+        ),
+        Some(Mode::AddTagToFeature { file, tags, validate_registry }) => forward!(
+            add_tag_to_feature::run,
+            add_tag_to_feature::CliArgs { file, tags, validate_registry }
+        ),
+        Some(Mode::RemoveTagFromFeature { file, tags }) => forward!(
+            remove_tag_from_feature::run,
+            remove_tag_from_feature::CliArgs { file, tags }
+        ),
+        Some(Mode::AddTagToScenario { file, scenario_name, tags, validate_registry }) => forward!(
+            add_tag_to_scenario::run,
+            add_tag_to_scenario::CliArgs { file, scenario_name, tags, validate_registry }
+        ),
+        Some(Mode::RemoveTagFromScenario { file, scenario_name, tags }) => forward!(
+            remove_tag_from_scenario::run,
+            remove_tag_from_scenario::CliArgs { file, scenario_name, tags }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -957,6 +1322,34 @@ fn intercept_ts_help() -> Option<u8> {
         "delete-tag" => format_command_help(&configs::delete_tag::CONFIG),
         "remove-dependency" => format_command_help(&configs::remove_dependency::CONFIG),
         "clear-dependencies" => format_command_help(&configs::clear_dependencies::CONFIG),
+        // Batch 8 (2026-06-11) — Example Mapping mutation commands
+        "add-rule" => format_command_help(&configs::add_rule::CONFIG),
+        "remove-rule" => format_command_help(&configs::remove_rule::CONFIG),
+        "add-assumption" => format_command_help(&configs::add_assumption::CONFIG),
+        "add-example" => format_command_help(&configs::add_example::CONFIG),
+        "remove-example" => format_command_help(&configs::remove_example::CONFIG),
+        "add-question" => format_command_help(&configs::add_question::CONFIG),
+        "remove-question" => format_command_help(&configs::remove_question::CONFIG),
+        "add-architecture-note" => format_command_help(&configs::add_architecture_note::CONFIG),
+        "remove-architecture-note" => format_command_help(&configs::remove_architecture_note::CONFIG),
+        "set-user-story" => format_command_help(&configs::set_user_story::CONFIG),
+        // Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
+        "add-dependency" => format_command_help(&configs::add_dependency::CONFIG),
+        "answer-question" => format_command_help(&configs::answer_question::CONFIG),
+        "restore-example" => format_command_help(&configs::restore_example::CONFIG),
+        "restore-rule" => format_command_help(&configs::restore_rule::CONFIG),
+        "restore-question" => format_command_help(&configs::restore_question::CONFIG),
+        "restore-architecture-note" => {
+            format_command_help(&configs::restore_architecture_note::CONFIG)
+        }
+        "add-tag-to-feature" => format_command_help(&configs::add_tag_to_feature::CONFIG),
+        "remove-tag-from-feature" => {
+            format_command_help(&configs::remove_tag_from_feature::CONFIG)
+        }
+        "add-tag-to-scenario" => format_command_help(&configs::add_tag_to_scenario::CONFIG),
+        "remove-tag-from-scenario" => {
+            format_command_help(&configs::remove_tag_from_scenario::CONFIG)
+        }
         // RPC-265 follow-up: register-tag has no custom `-help.ts` in TS;
         // `node dist/index.js register-tag --help` falls through to bare
         // Commander.js. The earlier Rust port introduced a rich

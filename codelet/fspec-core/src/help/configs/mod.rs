@@ -53,3 +53,25 @@ pub mod delete_tag;
 pub mod remove_dependency;
 pub mod update_prefix;
 pub mod update_tag;
+// Batch 8 (2026-06-11) — Example Mapping mutation commands
+pub mod add_architecture_note;
+pub mod add_assumption;
+pub mod add_example;
+pub mod add_question;
+pub mod add_rule;
+pub mod remove_architecture_note;
+pub mod remove_example;
+pub mod remove_question;
+pub mod remove_rule;
+pub mod set_user_story;
+// Batch 9 (2026-06-11) — dependency, q&a, tag-feature, tag-scenario, restore-*
+pub mod add_dependency;
+pub mod add_tag_to_feature;
+pub mod add_tag_to_scenario;
+pub mod answer_question;
+pub mod remove_tag_from_feature;
+pub mod remove_tag_from_scenario;
+pub mod restore_architecture_note;
+pub mod restore_example;
+pub mod restore_question;
+pub mod restore_rule;

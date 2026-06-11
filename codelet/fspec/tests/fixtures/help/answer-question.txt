@@ -1,0 +1,38 @@
+
+ANSWER-QUESTION
+Answer a question from Example Mapping and optionally convert to rule or assumption
+
+USAGE
+  fspec answer-question <workUnitId> <index> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <index> (required)
+    Question index number (from show-work-unit)
+
+OPTIONS
+  --answer <answer>
+    The answer text
+  --add-to <type>
+    Add answer to: rule, assumption, or none (default: none)
+  --add-to-rules
+    Also add answer as a rule (deprecated: use --add-to rule)
+  --add-to-assumptions
+    Also add answer as an assumption (deprecated: use --add-to assumption)
+
+EXAMPLES
+  1. Answer question
+  $ fspec answer-question AUTH-001 0 --answer "Yes, support Google OAuth"
+  ✓ Answered question: "Should we support OAuth?"
+  Answer: "Yes, support Google OAuth"
+
+  2. Answer and add as rule
+  $ fspec answer-question AUTH-001 0 --answer "Email required" --add-to-rules
+  ✓ Answered question and added to rules
+
+RELATED COMMANDS
+  fspec add-question
+  fspec add-rule
+  fspec add-assumption
+

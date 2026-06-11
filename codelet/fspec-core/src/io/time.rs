@@ -91,27 +91,28 @@ mod tests {
 
     #[test]
     fn epoch_to_ymdhms_handles_a_known_date() {
-        // 2024-01-15T12:34:56Z → 1_705_321_696 seconds since epoch.
-        let (y, mo, d, h, m, s) = epoch_to_ymdhms(1_705_321_696);
+        // 2024-01-15T12:34:56Z → 1_705_322_096 seconds since epoch.
+        // (verified via `date -d @1705322096 -u`)
+        let (y, mo, d, h, m, s) = epoch_to_ymdhms(1_705_322_096);
         assert_eq!((y, mo, d, h, m, s), (2024, 1, 15, 12, 34, 56));
     }
 
     #[test]
     fn format_iso8601_millis_preserves_millisecond_precision() {
-        // 2024-01-15T12:34:56.025Z → 1_705_321_696_025 millis.
-        let s = format_iso8601_millis(1_705_321_696_025);
+        // 2024-01-15T12:34:56.025Z → 1_705_322_096_025 millis.
+        let s = format_iso8601_millis(1_705_322_096_025);
         assert_eq!(s, "2024-01-15T12:34:56.025Z");
     }
 
     #[test]
     fn format_iso8601_millis_zero_pads_milliseconds() {
-        let s = format_iso8601_millis(1_705_321_696_001);
+        let s = format_iso8601_millis(1_705_322_096_001);
         assert!(s.ends_with(".001Z"), "got: {s}");
 
-        let s = format_iso8601_millis(1_705_321_696_000);
+        let s = format_iso8601_millis(1_705_322_096_000);
         assert!(s.ends_with(".000Z"), "got: {s}");
 
-        let s = format_iso8601_millis(1_705_321_696_999);
+        let s = format_iso8601_millis(1_705_322_096_999);
         assert!(s.ends_with(".999Z"), "got: {s}");
     }
 

@@ -1,0 +1,54 @@
+
+ADD-QUESTION
+Add a question to a work unit during Example Mapping discovery phase
+
+WHEN TO USE
+  Use during Example Mapping in the specifying phase when you encounter uncertainties, ambiguities, or need clarification from the human about requirements, rules, or expected behavior.
+
+USAGE
+  fspec add-question <workUnitId> <question>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID (e.g., AUTH-001)
+  <question> (required)
+    The question text (use @human: prefix for human-directed questions)
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Use @human: prefix for questions directed at the human (e.g., "@human: Should we support OAuth?")
+  • Ask one focused question at a time rather than multiple questions in one
+  • Frame questions to elicit concrete examples or rules
+  • Questions should be answered before moving to testing phase
+
+TYPICAL WORKFLOW
+  1. Add question during discovery
+  2. Human answers question
+  3. Convert answer to rule or assumption
+  4. Continue until no questions remain
+  5. Move to testing phase
+
+EXAMPLES
+  1. Add question during Example Mapping
+  $ fspec add-question AUTH-001 "@human: Should we support OAuth providers?"
+  ✓ Question added successfully
+
+  2. Answer the question (index 0)
+  $ fspec answer-question AUTH-001 0 --answer "Yes, support Google and GitHub OAuth"
+  ✓ Answered question: "@human: Should we support OAuth providers?"
+  Answer: "Yes, support Google and GitHub OAuth"
+
+RELATED COMMANDS
+  fspec answer-question
+  fspec add-rule
+  fspec add-example
+  fspec generate-scenarios
+  fspec show-work-unit
+
+NOTES
+  • Questions must be answered before transitioning from specifying to testing
+  • Use show-work-unit to see all questions and their status
+  • Questions capture uncertainties that become rules or assumptions once answered
+
