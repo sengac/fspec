@@ -1,0 +1,335 @@
+{
+  "scenarios": [
+    {
+      "name": "remove-hook --help is byte-for-byte identical to TS reference output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "lines": "65-113",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/remove_hook.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI writes zero bytes to stdout on success and exits 0",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "lines": "119-149",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_hook.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits non-zero with error when spec/fspec-hooks.json is missing",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "lines": "155-178",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_hook.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI exits non-zero with error when spec/fspec-hooks.json is invalid JSON",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "lines": "184-205",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_hook.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI is silent when called with a no-op (missing key/name)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "lines": "211-240",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_hook.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function as the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "lines": "246-290",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_hook.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/fspec/tests/cli_remove_hook.rs",
+          "lines": "246-297",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_hook.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": 1,
+    "implFiles": 2,
+    "totalLinesCovered": 680
+  }
+}

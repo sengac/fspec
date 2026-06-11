@@ -372,6 +372,10 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // add-dependency, answer-question, restore-example, restore-rule,
     // restore-question, restore-architecture-note, add-tag-to-feature,
     // remove-tag-from-feature, add-tag-to-scenario, remove-tag-from-scenario.
+    // Batch 10 (RPC-170/268/195/283/205/209/184/275/178/216) adds 10 more (→78):
+    // add-attachment, remove-attachment, add-virtual-hook, remove-virtual-hook,
+    // clear-virtual-hooks, copy-virtual-hooks, add-hook, remove-hook,
+    // add-diagram, delete-diagram.
     for f in [
         "main.rs",
         "combined.rs",
@@ -444,6 +448,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "remove_tag_from_feature.rs",
         "add_tag_to_scenario.rs",
         "remove_tag_from_scenario.rs",
+        // Batch 10 (attachments, virtual hooks, hooks, diagrams)
+        "add_attachment.rs",
+        "remove_attachment.rs",
+        "add_virtual_hook.rs",
+        "remove_virtual_hook.rs",
+        "clear_virtual_hooks.rs",
+        "copy_virtual_hooks.rs",
+        "add_hook.rs",
+        "remove_hook.rs",
+        "add_diagram.rs",
+        "delete_diagram.rs",
     ] {
         let p = src.join(f);
         assert!(
@@ -526,6 +541,17 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "remove_tag_from_feature.rs",
         "add_tag_to_scenario.rs",
         "remove_tag_from_scenario.rs",
+        // Batch 10 (attachments, virtual hooks, hooks, diagrams)
+        "add_attachment.rs",
+        "remove_attachment.rs",
+        "add_virtual_hook.rs",
+        "remove_virtual_hook.rs",
+        "clear_virtual_hooks.rs",
+        "copy_virtual_hooks.rs",
+        "add_hook.rs",
+        "remove_hook.rs",
+        "add_diagram.rs",
+        "delete_diagram.rs",
     ]
     .iter()
     .copied()
@@ -543,7 +569,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 68 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 78 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
@@ -603,7 +629,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // forward! match arms, pushing main.rs to ~1420 lines. Cap raised
     // from 1100 → 1500.
     let common_cap: usize = 900;
-    let main_cap: usize = 1500;
+    let main_cap: usize = 1700;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);

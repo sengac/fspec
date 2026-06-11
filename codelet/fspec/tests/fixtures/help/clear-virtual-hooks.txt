@@ -1,0 +1,72 @@
+
+CLEAR-VIRTUAL-HOOKS
+Clear all virtual hooks from a work unit
+
+WHEN TO USE
+  Use this command when a work unit reaches "done" status and you want to remove all virtual hooks. Clears the entire virtualHooks array and cleans up all generated script files in spec/hooks/.virtual/. Useful for cleanup after story completion or when resetting work unit configuration.
+
+PREREQUISITES
+  • Work unit must exist
+
+USAGE
+  fspec clear-virtual-hooks <workUnitId>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID to clear hooks from (e.g., AUTH-001)
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Cleanup After Story Completion
+    Example: fspec update-work-unit-status AUTH-001 done
+# AI asks: "Keep or remove hooks?"
+# User chooses: "remove"
+fspec clear-virtual-hooks AUTH-001
+    Standard workflow when completing a work unit and removing temporary quality checks.
+
+  • Reset Work Unit Configuration
+    Example: fspec clear-virtual-hooks AUTH-001
+# Start fresh with new hooks:
+fspec add-virtual-hook AUTH-001 post-implementing "<quality-check-commands>" --blocking
+    Clear all existing hooks to start with a clean slate and add new configuration.
+
+  • Bulk Cleanup After Release
+    Example: fspec list-work-units --status=done
+# For each done work unit:
+fspec clear-virtual-hooks AUTH-001
+fspec clear-virtual-hooks AUTH-002
+    Clean up virtual hooks from multiple completed work units after a release.
+
+
+TYPICAL WORKFLOW
+  Work unit reaches done → AI asks "Keep or remove hooks?" → User chooses remove → fspec clear-virtual-hooks
+
+EXAMPLES
+  1. Clear all virtual hooks from AUTH-001
+  $ fspec clear-virtual-hooks AUTH-001
+  ✓ Cleared 3 virtual hook(s) from AUTH-001
+
+  2. Clear hooks from work unit with no hooks
+  $ fspec clear-virtual-hooks BUG-042
+  ✓ Cleared 0 virtual hook(s) from BUG-042
+
+COMMON ERRORS
+  ✗ Work unit 'AUTH-001' does not exist
+    Fix: Check work unit ID spelling. List all work units: fspec list-work-units
+
+RELATED COMMANDS
+  fspec add-virtual-hook
+  fspec list-virtual-hooks
+  fspec remove-virtual-hook
+  fspec update-work-unit-status
+
+NOTES
+  • Clears ALL virtual hooks - operation cannot be undone
+  • Automatically cleans up all script files in spec/hooks/.virtual/
+  • Sets virtualHooks array to empty [] (not undefined)
+  • Operation is safe even if work unit has no hooks (clears 0 hooks)
+  • AI prompts for this decision when work unit transitions to "done" status
+  • Consider using remove-virtual-hook to selectively remove specific hooks
+

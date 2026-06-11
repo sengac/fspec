@@ -54,7 +54,7 @@ const config: CommandHelpConfig = {
   notes: [
     'Removes hook from spec/fspec-hooks.json',
     'Does NOT delete the hook script file',
-    'Event array is removed if it becomes empty',
+    'Empty event array is retained (key is NOT deleted)',
     'Use fspec list-hooks to see available hooks',
     'Case-sensitive: event and name must match exactly',
   ],

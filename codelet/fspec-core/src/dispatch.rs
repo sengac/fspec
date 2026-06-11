@@ -325,6 +325,37 @@ fn run_ported(
             "remove-tag-from-scenario" => {
                 commands::remove_tag_from_scenario::run(args_json, project_root).await
             }
+            // Batch 10 (2026-06-11) — attachments, virtual hooks, hooks, diagrams
+            // RPC-170 — add-attachment
+            "add-attachment" => commands::add_attachment::run(args_json, project_root).await,
+            // RPC-268 — remove-attachment
+            "remove-attachment" => {
+                commands::remove_attachment::run(args_json, project_root).await
+            }
+            // RPC-195 — add-virtual-hook
+            "add-virtual-hook" => {
+                commands::add_virtual_hook::run(args_json, project_root).await
+            }
+            // RPC-283 — remove-virtual-hook
+            "remove-virtual-hook" => {
+                commands::remove_virtual_hook::run(args_json, project_root).await
+            }
+            // RPC-205 — clear-virtual-hooks
+            "clear-virtual-hooks" => {
+                commands::clear_virtual_hooks::run(args_json, project_root).await
+            }
+            // RPC-209 — copy-virtual-hooks
+            "copy-virtual-hooks" => {
+                commands::copy_virtual_hooks::run(args_json, project_root).await
+            }
+            // RPC-184 — add-hook
+            "add-hook" => commands::add_hook::run(args_json, project_root).await,
+            // RPC-275 — remove-hook
+            "remove-hook" => commands::remove_hook::run(args_json, project_root).await,
+            // RPC-178 — add-diagram
+            "add-diagram" => commands::add_diagram::run(args_json, project_root).await,
+            // RPC-216 — delete-diagram
+            "delete-diagram" => commands::delete_diagram::run(args_json, project_root).await,
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -350,7 +381,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "add-assumption" — ported (RPC-169, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-attachment" => commands::add_attachment::run(args_json).await,
+            // "add-attachment" — ported (RPC-170, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-background" => commands::add_background::run(args_json).await,
             "add-bounded-context" => commands::add_bounded_context::run(args_json).await,
             "add-capability" => commands::add_capability::run(args_json).await,
@@ -360,14 +392,16 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "add-dependency" — ported (RPC-177, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-diagram" => commands::add_diagram::run(args_json).await,
+            // "add-diagram" — ported (RPC-178, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-domain-event" => commands::add_domain_event::run(args_json).await,
             "add-domain-event-to-foundation" => commands::add_domain_event_to_foundation::run(args_json).await,
             // "add-example" — ported (RPC-181, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "add-external-system" => commands::add_external_system::run(args_json).await,
             "add-foundation-bounded-context" => commands::add_foundation_bounded_context::run(args_json).await,
-            "add-hook" => commands::add_hook::run(args_json).await,
+            // "add-hook" — ported (RPC-184, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "add-hotspot" => commands::add_hotspot::run(args_json).await,
             "add-persona" => commands::add_persona::run(args_json).await,
             "add-policy" => commands::add_policy::run(args_json).await,
@@ -382,7 +416,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "add-tag-to-scenario" — ported (RPC-194, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-virtual-hook" => commands::add_virtual_hook::run(args_json).await,
+            // "add-virtual-hook" — ported (RPC-195, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "answer-question" — ported (RPC-196, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "audit-coverage" => commands::audit_coverage::run(args_json).await,
@@ -394,11 +429,13 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "cleanup-checkpoints" => commands::cleanup_checkpoints::run(args_json).await,
             // "clear-dependencies" — ported (RPC-204, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "clear-virtual-hooks" => commands::clear_virtual_hooks::run(args_json).await,
+            // "clear-virtual-hooks" — ported (RPC-205, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "compact-work-unit" => commands::compact_work_unit::run(args_json).await,
             "compare-implementations" => commands::compare_implementations::run(args_json).await,
             "configure-tools" => commands::configure_tools::run(args_json).await,
-            "copy-virtual-hooks" => commands::copy_virtual_hooks::run(args_json).await,
+            // "copy-virtual-hooks" — ported (RPC-209, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "create-bug" => commands::create_bug::run(args_json).await,
             // "create-epic" — ported (RPC-211, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -407,7 +444,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             "create-story" => commands::create_story::run(args_json).await,
             "create-task" => commands::create_task::run(args_json).await,
-            "delete-diagram" => commands::delete_diagram::run(args_json).await,
+            // "delete-diagram" — ported (RPC-216, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "delete-epic" — ported (RPC-217, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "delete-features" => commands::delete_features::run(args_json).await,
@@ -484,7 +522,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "remove-aggregate-from-foundation" => commands::remove_aggregate_from_foundation::run(args_json).await,
             // "remove-architecture-note" — ported (RPC-267, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-attachment" => commands::remove_attachment::run(args_json).await,
+            // "remove-attachment" — ported (RPC-268, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-capability" => commands::remove_capability::run(args_json).await,
             "remove-command-from-foundation" => commands::remove_command_from_foundation::run(args_json).await,
             // "remove-dependency" — ported (RPC-271, Batch 7). Handled by `run_ported`
@@ -493,7 +532,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "remove-example" — ported (RPC-273, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "remove-foundation-bounded-context" => commands::remove_foundation_bounded_context::run(args_json).await,
-            "remove-hook" => commands::remove_hook::run(args_json).await,
+            // "remove-hook" — ported (RPC-275, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "remove-init-files" => commands::remove_init_files::run(args_json).await,
             "remove-persona" => commands::remove_persona::run(args_json).await,
             // "remove-question" — ported (RPC-278, Batch 8). Handled by `run_ported`
@@ -505,7 +545,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "remove-tag-from-scenario" — ported (RPC-282, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-virtual-hook" => commands::remove_virtual_hook::run(args_json).await,
+            // "remove-virtual-hook" — ported (RPC-283, Batch 10). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "repair-work-units" => commands::repair_work_units::run(args_json).await,
             "report-bug-to-github" => commands::report_bug_to_github::run(args_json).await,
             "research" => commands::research::run(args_json).await,

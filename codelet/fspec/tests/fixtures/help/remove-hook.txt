@@ -1,0 +1,58 @@
+
+REMOVE-HOOK
+Remove a lifecycle hook from the configuration
+
+WHEN TO USE
+  Use this command to remove a hook from your configuration. Useful when you no longer need a specific automation or want to temporarily disable a hook.
+
+PREREQUISITES
+  • Hook configuration file exists (spec/fspec-hooks.json)
+  • Hook exists with the specified event and name
+
+USAGE
+  fspec remove-hook <event> <name>
+
+ARGUMENTS
+  <event> (required)
+    Event name of the hook to remove (e.g., pre-update-work-unit-status, post-implementing)
+  <name> (required)
+    Name of the hook to remove (e.g., validate-feature, run-tests)
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  fspec list-hooks → Identify hook to remove → fspec remove-hook <event> <name> → Verify with list-hooks
+
+EXAMPLES
+  1. Remove a pre-hook
+  $ fspec remove-hook pre-implementing validate-code
+  ✓ Hook removed: pre-implementing/validate-code
+
+  2. Remove a post-hook
+  $ fspec remove-hook post-implementing run-tests
+  ✓ Hook removed: post-implementing/run-tests
+
+  3. Remove a quality gate hook
+  $ fspec remove-hook pre-update-work-unit-status check-ready
+  ✓ Hook removed: pre-update-work-unit-status/check-ready
+
+COMMON ERRORS
+  ✗ Hook not found
+    Fix: Verify the event and hook name are correct using fspec list-hooks. Event and name must match exactly.
+
+  ✗ Hook configuration file not found
+    Fix: No hooks are configured. Nothing to remove.
+
+RELATED COMMANDS
+  fspec add-hook
+  fspec list-hooks
+  fspec validate-hooks
+
+NOTES
+  • Removes hook from spec/fspec-hooks.json
+  • Does NOT delete the hook script file
+  • Empty event array is retained (key is NOT deleted)
+  • Use fspec list-hooks to see available hooks
+  • Case-sensitive: event and name must match exactly
+

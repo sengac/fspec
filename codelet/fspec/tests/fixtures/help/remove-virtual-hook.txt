@@ -1,0 +1,79 @@
+
+REMOVE-VIRTUAL-HOOK
+Remove a specific virtual hook from a work unit
+
+WHEN TO USE
+  Use this command to remove a specific virtual hook from a work unit. Removes the hook configuration from spec/work-units.json and cleans up any generated script files in spec/hooks/.virtual/. Useful for removing broken hooks, hooks that are no longer needed, or correcting mistakes.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit must have virtual hooks configured
+  • Hook name must match exactly (case-sensitive)
+
+USAGE
+  fspec remove-virtual-hook <workUnitId> <hookName>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID to remove hook from (e.g., AUTH-001)
+  <hookName> (required)
+    Name of the hook to remove (e.g., eslint, prettier, typecheck)
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Remove Broken Hook
+    Example: fspec remove-virtual-hook AUTH-001 eslin
+fspec add-virtual-hook AUTH-001 post-implementing "eslint src/" --blocking
+    Remove hook with typo in command name, then add corrected version.
+
+  • Replace Hook Configuration
+    Example: fspec remove-virtual-hook AUTH-001 eslint
+fspec add-virtual-hook AUTH-001 post-implementing "eslint src/" --git-context --blocking
+    Remove existing hook and add new one with different configuration (e.g., add git context).
+
+  • Remove After Workflow Transition
+    Example: fspec update-work-unit-status AUTH-001 done
+# Hook failed, no longer needed:
+fspec remove-virtual-hook AUTH-001 experimental-check
+    Remove experimental or one-time hooks after work unit completion.
+
+
+TYPICAL WORKFLOW
+  fspec list-virtual-hooks → Identify hook to remove → fspec remove-virtual-hook → Verify removal
+
+EXAMPLES
+  1. Remove the eslint hook from AUTH-001
+  $ fspec remove-virtual-hook AUTH-001 eslint
+  ✓ Removed virtual hook 'eslint' from AUTH-001
+  Remaining virtual hooks: 1
+
+  2. Remove type check hook from BUG-042
+  $ fspec remove-virtual-hook BUG-042 typecheck
+  ✓ Removed virtual hook 'typecheck' from BUG-042
+  Remaining virtual hooks: 0
+
+COMMON ERRORS
+  ✗ Work unit 'AUTH-001' does not exist
+    Fix: Check work unit ID spelling. List all work units: fspec list-work-units
+
+  ✗ No virtual hooks configured for AUTH-001
+    Fix: Work unit has no hooks to remove. List hooks: fspec list-virtual-hooks AUTH-001
+
+  ✗ Virtual hook 'eslin' not found in AUTH-001
+    Fix: Check hook name spelling. List hooks: fspec list-virtual-hooks AUTH-001 (correct name might be "eslint")
+
+RELATED COMMANDS
+  fspec add-virtual-hook
+  fspec list-virtual-hooks
+  fspec clear-virtual-hooks
+
+NOTES
+  • Hook name is auto-generated from command (e.g., "<quality-check-commands>" → based on actual tool)
+  • To find hook names, use: fspec list-virtual-hooks <workUnitId>
+  • Automatically cleans up script files in spec/hooks/.virtual/
+  • If multiple hooks have same name at different events, only first is removed
+  • To remove ALL hooks, use: fspec clear-virtual-hooks
+  • Operation is permanent - hook configuration cannot be recovered
+

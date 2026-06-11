@@ -84,6 +84,17 @@ mod status;
 mod tag_stats;
 mod update_prefix;
 mod update_tag;
+// Batch 10 (2026-06-11) — attachments, virtual hooks, hooks, diagrams
+mod add_attachment;
+mod add_diagram;
+mod add_hook;
+mod add_virtual_hook;
+mod clear_virtual_hooks;
+mod copy_virtual_hooks;
+mod delete_diagram;
+mod remove_attachment;
+mod remove_hook;
+mod remove_virtual_hook;
 
 use std::path::PathBuf;
 
@@ -880,6 +891,133 @@ enum Mode {
         #[arg(value_name = "TAGS", num_args = 1..)]
         tags: Vec<String>,
     },
+    /// RPC-170: add an attachment to a work unit.
+    #[command(name = "add-attachment", about = "Add an attachment to a work unit")]
+    AddAttachment {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Source file path (positional).
+        #[arg(value_name = "FILE_PATH")]
+        file_path: String,
+        /// Optional description of the attachment.
+        #[arg(short = 'd', long = "description", value_name = "TEXT")]
+        description: Option<String>,
+    },
+    /// RPC-268: remove an attachment from a work unit.
+    #[command(name = "remove-attachment", about = "Remove an attachment from a work unit")]
+    RemoveAttachment {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Attachment file name (positional).
+        #[arg(value_name = "FILE_NAME")]
+        file_name: String,
+        /// Keep the file on disk; only remove the JSON reference.
+        #[arg(long = "keep-file")]
+        keep_file: bool,
+    },
+    /// RPC-195: add a virtual hook to a work unit.
+    #[command(name = "add-virtual-hook", about = "Add a virtual hook to a work unit")]
+    AddVirtualHook {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Event name (positional).
+        #[arg(value_name = "EVENT")]
+        event: String,
+        /// Hook command (positional).
+        #[arg(value_name = "COMMAND")]
+        command: String,
+        /// Blocking hook (default false).
+        #[arg(long = "blocking")]
+        blocking: bool,
+        /// Pass git context to the hook.
+        #[arg(long = "git-context")]
+        git_context: bool,
+    },
+    /// RPC-283: remove a virtual hook from a work unit by name.
+    #[command(name = "remove-virtual-hook", about = "Remove a virtual hook from a work unit by name")]
+    RemoveVirtualHook {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        /// Hook name (positional).
+        #[arg(value_name = "HOOK_NAME")]
+        hook_name: String,
+    },
+    /// RPC-205: remove all virtual hooks from a work unit.
+    #[command(name = "clear-virtual-hooks", about = "Clear all virtual hooks from a work unit")]
+    ClearVirtualHooks {
+        /// Required work-unit ID (positional).
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+    },
+    /// RPC-209: copy virtual hooks from one work unit to another.
+    #[command(name = "copy-virtual-hooks", about = "Copy virtual hooks from one work unit to another")]
+    CopyVirtualHooks {
+        /// Source work-unit ID.
+        #[arg(long = "from", value_name = "FROM_ID")]
+        from: Option<String>,
+        /// Target work-unit ID.
+        #[arg(long = "to", value_name = "TO_ID")]
+        to: Option<String>,
+        /// Copy only the named hook.
+        #[arg(long = "hook-name", value_name = "HOOK_NAME")]
+        hook_name: Option<String>,
+    },
+    /// RPC-184: add a project-level hook.
+    #[command(name = "add-hook", about = "Add a project-level lifecycle hook")]
+    AddHook {
+        /// Event name (positional).
+        #[arg(value_name = "EVENT")]
+        event: String,
+        /// Hook name (positional).
+        #[arg(value_name = "NAME")]
+        name: String,
+        /// Hook command.
+        #[arg(long = "command", value_name = "COMMAND")]
+        command: String,
+        /// Blocking hook (default false).
+        #[arg(long = "blocking")]
+        blocking: bool,
+        /// Timeout in seconds.
+        #[arg(long = "timeout", value_name = "SECONDS")]
+        timeout: Option<u64>,
+    },
+    /// RPC-275: remove a project-level hook by event + name.
+    #[command(name = "remove-hook", about = "Remove a project-level lifecycle hook")]
+    RemoveHook {
+        /// Event name (positional).
+        #[arg(value_name = "EVENT")]
+        event: String,
+        /// Hook name (positional).
+        #[arg(value_name = "NAME")]
+        name: String,
+    },
+    /// RPC-178: add a mermaid diagram to a foundation section.
+    #[command(name = "add-diagram", about = "Add a mermaid diagram to a foundation section")]
+    AddDiagram {
+        /// Foundation section (positional).
+        #[arg(value_name = "SECTION")]
+        section: String,
+        /// Diagram title (positional).
+        #[arg(value_name = "TITLE")]
+        title: String,
+        /// Mermaid code (positional).
+        #[arg(value_name = "CODE")]
+        code: String,
+    },
+    /// RPC-216: delete a mermaid diagram from a foundation section.
+    #[command(name = "delete-diagram", about = "Delete a mermaid diagram from a foundation section")]
+    DeleteDiagram {
+        /// Foundation section (positional).
+        #[arg(value_name = "SECTION")]
+        section: String,
+        /// Diagram title (positional).
+        #[arg(value_name = "TITLE")]
+        title: String,
+    },
 }
 
 #[tokio::main]
@@ -1242,6 +1380,46 @@ async fn main() -> std::process::ExitCode {
             remove_tag_from_scenario::run,
             remove_tag_from_scenario::CliArgs { file, scenario_name, tags }
         ),
+        Some(Mode::AddAttachment { work_unit_id, file_path, description }) => forward!(
+            add_attachment::run,
+            add_attachment::CliArgs { work_unit_id, file_path, description }
+        ),
+        Some(Mode::RemoveAttachment { work_unit_id, file_name, keep_file }) => forward!(
+            remove_attachment::run,
+            remove_attachment::CliArgs { work_unit_id, file_name, keep_file }
+        ),
+        Some(Mode::AddVirtualHook { work_unit_id, event, command, blocking, git_context }) => forward!(
+            add_virtual_hook::run,
+            add_virtual_hook::CliArgs { work_unit_id, event, command, blocking, git_context }
+        ),
+        Some(Mode::RemoveVirtualHook { work_unit_id, hook_name }) => forward!(
+            remove_virtual_hook::run,
+            remove_virtual_hook::CliArgs { work_unit_id, hook_name }
+        ),
+        Some(Mode::ClearVirtualHooks { work_unit_id }) => forward!(
+            clear_virtual_hooks::run,
+            clear_virtual_hooks::CliArgs { work_unit_id }
+        ),
+        Some(Mode::CopyVirtualHooks { from, to, hook_name }) => forward!(
+            copy_virtual_hooks::run,
+            copy_virtual_hooks::CliArgs { from, to, hook_name }
+        ),
+        Some(Mode::AddHook { event, name, command, blocking, timeout }) => forward!(
+            add_hook::run,
+            add_hook::CliArgs { event, name, command, blocking, timeout }
+        ),
+        Some(Mode::RemoveHook { event, name }) => forward!(
+            remove_hook::run,
+            remove_hook::CliArgs { event, name }
+        ),
+        Some(Mode::AddDiagram { section, title, code }) => forward!(
+            add_diagram::run,
+            add_diagram::CliArgs { section, title, code }
+        ),
+        Some(Mode::DeleteDiagram { section, title }) => forward!(
+            delete_diagram::run,
+            delete_diagram::CliArgs { section, title }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -1350,6 +1528,17 @@ fn intercept_ts_help() -> Option<u8> {
         "remove-tag-from-scenario" => {
             format_command_help(&configs::remove_tag_from_scenario::CONFIG)
         }
+        // Batch 10 (2026-06-11) — attachments, virtual hooks, hooks, diagrams
+        "add-attachment" => format_command_help(&configs::add_attachment::CONFIG),
+        "remove-attachment" => format_command_help(&configs::remove_attachment::CONFIG),
+        "add-virtual-hook" => format_command_help(&configs::add_virtual_hook::CONFIG),
+        "remove-virtual-hook" => format_command_help(&configs::remove_virtual_hook::CONFIG),
+        "clear-virtual-hooks" => format_command_help(&configs::clear_virtual_hooks::CONFIG),
+        "copy-virtual-hooks" => format_command_help(&configs::copy_virtual_hooks::CONFIG),
+        "add-hook" => format_command_help(&configs::add_hook::CONFIG),
+        "remove-hook" => format_command_help(&configs::remove_hook::CONFIG),
+        "add-diagram" => format_command_help(&configs::add_diagram::CONFIG),
+        "delete-diagram" => format_command_help(&configs::delete_diagram::CONFIG),
         // RPC-265 follow-up: register-tag has no custom `-help.ts` in TS;
         // `node dist/index.js register-tag --help` falls through to bare
         // Commander.js. The earlier Rust port introduced a rich

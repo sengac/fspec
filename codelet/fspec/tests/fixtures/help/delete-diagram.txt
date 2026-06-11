@@ -1,0 +1,26 @@
+
+DELETE-DIAGRAM
+Delete a diagram from foundation.json
+
+USAGE
+  fspec delete-diagram <section> <title>
+
+ARGUMENTS
+  <section> (required)
+    Section name in foundation.json
+  <title> (required)
+    Diagram title to delete
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Delete specific diagram
+  $ fspec delete-diagram "Architecture Diagrams" "Command Flow"
+  ✓ Deleted diagram from foundation.json
+
+RELATED COMMANDS
+  fspec add-diagram
+  fspec show-foundation
+  fspec update-foundation
+

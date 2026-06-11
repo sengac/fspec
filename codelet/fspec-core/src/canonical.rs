@@ -263,6 +263,17 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "remove-tag-from-feature",         // RPC-281
     "add-tag-to-scenario",             // RPC-194
     "remove-tag-from-scenario",        // RPC-282
+    // Batch 10 (2026-06-11) — attachments, virtual hooks, hooks, diagrams
+    "add-attachment",                  // RPC-170
+    "remove-attachment",               // RPC-268
+    "add-virtual-hook",                // RPC-195
+    "remove-virtual-hook",             // RPC-283
+    "clear-virtual-hooks",             // RPC-205
+    "copy-virtual-hooks",              // RPC-209
+    "add-hook",                        // RPC-184
+    "remove-hook",                     // RPC-275
+    "add-diagram",                     // RPC-178
+    "delete-diagram",                  // RPC-216
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

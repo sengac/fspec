@@ -75,3 +75,14 @@ pub mod restore_architecture_note;
 pub mod restore_example;
 pub mod restore_question;
 pub mod restore_rule;
+// Batch 10 (2026-06-11) — attachments, virtual hooks, hooks, diagrams
+pub mod add_attachment;
+pub mod add_diagram;
+pub mod add_hook;
+pub mod add_virtual_hook;
+pub mod clear_virtual_hooks;
+pub mod copy_virtual_hooks;
+pub mod delete_diagram;
+pub mod remove_attachment;
+pub mod remove_hook;
+pub mod remove_virtual_hook;

@@ -1,0 +1,453 @@
+{
+  "scenarios": [
+    {
+      "name": "Removes a single named entry leaving siblings intact",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "51-83",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty array after removal is retained (event key NOT deleted)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "85-123",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All duplicate entries with the same name are removed",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "125-158",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing event key is a silent no-op success",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "160-197",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Removing a name that does not exist is a silent no-op success",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "199-230",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ENOENT on spec/fspec-hooks.json propagates an error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "232-264",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid JSON propagates a ParseJson error (NO silent overwrite)",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "266-298",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserves unknown top-level fields and adjacent entries",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "300-345",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserves event-key insertion order across writes",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/remove_hook.rs",
+          "lines": "347-382",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/remove_hook.rs",
+              "lines": [
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": 1,
+    "implFiles": 1,
+    "totalLinesCovered": 937
+  }
+}

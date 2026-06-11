@@ -1,0 +1,78 @@
+
+ADD-HOOK
+Add a lifecycle hook to the configuration
+
+WHEN TO USE
+  Use this command to add a new lifecycle hook to your project. Hooks execute custom scripts at specific command events (pre-/post- pattern) and enable workflow automation like quality gates, testing, and notifications.
+
+PREREQUISITES
+  • Hook script exists at the specified path
+  • Hook script is executable (chmod +x)
+
+USAGE
+  fspec add-hook <event> <name> --command <path> [options]
+
+ARGUMENTS
+  <event> (required)
+    Event name when hook should run (e.g., pre-update-work-unit-status, post-implementing)
+  <name> (required)
+    Unique name for this hook (e.g., validate-feature, run-tests)
+
+OPTIONS
+  --command <path>
+    Path to hook script, relative to project root (e.g., spec/hooks/validate.sh)
+  --blocking
+    If set, hook failure prevents command execution (pre-hooks) or sets exit code to 1 (post-hooks)
+  --timeout <seconds>
+    Timeout in seconds (default: 60). Hook is killed if it exceeds this time.
+
+COMMON PATTERNS
+  • Quality Gate (Blocking Pre-Hook)
+    Example: fspec add-hook pre-implementing validate --command spec/hooks/lint.sh --blocking
+    Prevents implementing phase if linting fails. AI agents see failure in <system-reminder>.
+
+  • Automated Testing (Post-Hook)
+    Example: fspec add-hook post-implementing test --command spec/hooks/test.sh --timeout 300
+    Runs tests after implementation completes. Failure sets exit code to 1.
+
+  • Notification (Non-Blocking Post-Hook)
+    Example: fspec add-hook post-validating notify --command spec/hooks/notify-slack.sh
+    Sends notifications after validation. Failure does not prevent completion.
+
+
+TYPICAL WORKFLOW
+  Create hook script → Make executable (chmod +x) → fspec add-hook → fspec validate-hooks → Test execution
+
+EXAMPLES
+  1. Add blocking pre-hook to validate code before implementing
+  $ fspec add-hook pre-implementing validate-code --command spec/hooks/lint.sh --blocking
+  ✓ Hook added: pre-implementing/validate-code
+
+  2. Add post-hook with custom timeout
+  $ fspec add-hook post-implementing run-tests --command spec/hooks/test.sh --timeout 300
+  ✓ Hook added: post-implementing/run-tests
+
+  3. Add quality gate before status changes
+  $ fspec add-hook pre-update-work-unit-status check-ready --command spec/hooks/check.sh --blocking
+  ✓ Hook added: pre-update-work-unit-status/check-ready
+
+COMMON ERRORS
+  ✗ Hook script does not exist
+    Fix: Create the hook script first, then add the hook. Make sure the script is executable (chmod +x).
+
+  ✗ Hook name already exists for this event
+    Fix: Choose a unique name or remove the existing hook first with fspec remove-hook.
+
+RELATED COMMANDS
+  fspec remove-hook
+  fspec list-hooks
+  fspec validate-hooks
+
+NOTES
+  • Creates spec/fspec-hooks.json if it does not exist
+  • Hook scripts must be executable (chmod +x script-path)
+  • Paths must be relative to project root, not to spec/ directory
+  • Event names follow pre-<command> and post-<command> pattern
+  • Blocking hooks emit <system-reminder> tags on failure (for AI agents)
+  • Use --blocking for quality gates, omit for notifications
+

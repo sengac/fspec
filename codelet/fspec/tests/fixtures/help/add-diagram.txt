@@ -1,0 +1,81 @@
+
+ADD-DIAGRAM
+Add or update Mermaid diagram in foundation.json and regenerate FOUNDATION.md
+
+WHEN TO USE
+  Use this command to add architecture diagrams to foundation.json. The diagram code is validated against Mermaid syntax before being added. Useful for documenting system architecture, data flows, and component relationships.
+
+PREREQUISITES
+  • spec/foundation.json exists (created by fspec init or discover-foundation)
+
+USAGE
+  fspec add-diagram <section> <title> <code>
+
+ARGUMENTS
+  <section> (required)
+    Section name (e.g., "Architecture", "Data Flow") - used for organization
+  <title> (required)
+    Diagram title (e.g., "Command Flow", "System Architecture")
+  <code> (required)
+    Mermaid diagram code (syntax validated before adding)
+
+OPTIONS
+  No options available
+
+COMMON PATTERNS
+  • Add Architecture Diagrams
+    Example: fspec add-diagram "Architecture" "System Overview" "graph TB\n  User-->API\n  API-->Database"
+fspec add-diagram "Architecture" "Component Structure" "graph LR\n  CLI-->Core\n  Core-->Utils"
+    undefined
+
+  • Update Existing Diagram
+    Example: # Adding a diagram with the same title replaces the existing one
+fspec add-diagram "Architecture" "System Overview" "graph TB\n  User-->Gateway\n  Gateway-->Services"
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Design diagram in Mermaid Live Editor → 2. fspec add-diagram <section> <title> <code> → 3. Verify: fspec show-foundation → 4. View in FOUNDATION.md
+
+EXAMPLES
+  1. Add flowchart diagram
+  $ fspec add-diagram "Architecture" "Command Flow" "graph TB\n  CLI-->Parser\n  Parser-->Validator"
+  ✓ Added diagram "Command Flow"
+  Updated: spec/foundation.json
+  Regenerated: spec/FOUNDATION.md
+
+  2. Add system architecture diagram
+  $ fspec add-diagram "Architecture" "System Overview" "graph LR\n  User-->API\n  API-->Database"
+  ✓ Added diagram "System Overview"
+  Updated: spec/foundation.json
+  Regenerated: spec/FOUNDATION.md
+
+  3. Add sequence diagram
+  $ fspec add-diagram "Data Flow" "Authentication Flow" "sequenceDiagram\n  User->>API: Login\n  API->>DB: Verify"
+  ✓ Added diagram "Authentication Flow"
+  Updated: spec/foundation.json
+  Regenerated: spec/FOUNDATION.md
+
+COMMON ERRORS
+  ✗ Error: Invalid Mermaid syntax: ...
+    Fix: Validate your Mermaid code at https://mermaid.live or check Mermaid documentation
+
+  ✗ Error: Diagram code cannot be empty
+    Fix: Provide Mermaid diagram code as the third argument
+
+  ✗ Error: Updated foundation.json failed schema validation: ...
+    Fix: Ensure the diagram conforms to foundation schema requirements
+
+RELATED COMMANDS
+  fspec delete-diagram
+  fspec show-foundation
+  fspec generate-foundation-md
+
+NOTES
+  • Mermaid syntax is validated using mermaid.parse() before adding
+  • Invalid syntax will be rejected with detailed error messages
+  • If a diagram with the same title exists, it will be replaced
+  • Use \n for line breaks in diagram code when passing as string
+  • Supports all Mermaid diagram types: flowchart, sequence, class, state, etc.
+  • Diagrams are stored in foundation.json and rendered in FOUNDATION.md
+
