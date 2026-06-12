@@ -1,0 +1,372 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes create-task with positional args and option flags in --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "lines": "74-126",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_task.rs",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI creates a minimal task and prints the success block",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "lines": "127-166",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_task.rs",
+              "lines": [
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI creates a task with description, epic, and parent printing all detail lines",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "lines": "167-211",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_task.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI fails when foundation is missing with exit 1 and stderr Error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "lines": "212-233",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_task.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects an unregistered prefix with exit 1",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "lines": "234-256",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_task.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "lines": "257-315",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/create_task.rs",
+              "lines": [
+                69
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create-task --help is byte-for-byte identical to the fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_create_task.rs",
+          "lines": "316-337",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/create_task.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_create_task.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/create_task.rs",
+      "codelet/fspec-core/src/help/configs/create_task.rs"
+    ],
+    "totalLinesCovered": 507
+  }
+}

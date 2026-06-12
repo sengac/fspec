@@ -438,6 +438,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@multi-provider` | Multi-provider session support for sessions using different LLM providers |
 | `@multimodal` | Multimodal content handling (images, PDFs, etc.) |
 | `@multiple-bridges` | Multiple bridge connection scenarios |
+| `@mutation` | Marks features/scenarios for state-mutating commands (writes to spec/*.json) |
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
 | `@no-logging` | Ensuring secrets are not logged |
@@ -935,7 +936,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-06-04T20:40:44.239Z_
+_Last updated: 2026-06-12T00:06:35.873Z_
 
 **Update Command**: `fspec tag-stats`
 

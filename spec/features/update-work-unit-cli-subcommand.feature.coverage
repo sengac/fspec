@@ -1,0 +1,127 @@
+{
+  "scenarios": [
+    {
+      "name": "Clap exposes update-work-unit with positional arg and metadata flags in --help",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_work_unit.rs",
+          "lines": "72-129",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/update_work_unit.rs",
+              "lines": [
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI updates a work unit title and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_work_unit.rs",
+          "lines": "135-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_work_unit.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI reports failure for a missing work unit on stderr",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_update_work_unit.rs",
+          "lines": "163-181",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/update_work_unit.rs",
+              "lines": [
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_update_work_unit.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/update_work_unit.rs",
+      "codelet/fspec/src/update_work_unit.rs"
+    ],
+    "totalLinesCovered": 162
+  }
+}

@@ -95,10 +95,33 @@ mod delete_diagram;
 mod remove_attachment;
 mod remove_hook;
 mod remove_virtual_hook;
+// Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
+mod add_aggregate;
+mod add_bounded_context;
+mod add_command;
+mod add_domain_event;
+mod add_external_system;
+mod add_hotspot;
+mod add_policy;
+mod create_bug;
+mod create_story;
+mod create_task;
+// Batch 12 (2026-06-12) — work-units.json mutation + export commands
+mod compact_work_unit;
+mod delete_work_unit;
+mod export_dependencies;
+mod export_example_map;
+mod export_work_units;
+mod prioritize_work_unit;
+mod record_iteration;
+mod repair_work_units;
+mod update_work_unit;
+mod update_work_unit_estimate;
 
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
+use clap::error::{ContextKind, ContextValue, ErrorKind};
+use clap::{CommandFactory, Parser, Subcommand};
 
 /// `fspec` — combined frontend+server, daemon, or client.
 #[derive(Parser, Debug)]
@@ -1018,6 +1041,241 @@ enum Mode {
         #[arg(value_name = "TITLE")]
         title: String,
     },
+    // Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
+    /// RPC-165: add an aggregate to a work unit's Event Storm section.
+    #[command(name = "add-aggregate", about = "Add aggregate to Event Storm section of work unit")]
+    AddAggregate {
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        #[arg(value_name = "TEXT")]
+        text: String,
+        #[arg(long, value_name = "LIST")]
+        responsibilities: Option<String>,
+        #[arg(long, value_name = "MS")]
+        timestamp: Option<String>,
+        #[arg(long = "bounded-context", value_name = "CONTEXT")]
+        bounded_context: Option<String>,
+    },
+    /// RPC-174: add a command to a work unit's Event Storm section.
+    #[command(name = "add-command", about = "Add command to Event Storm section of work unit")]
+    AddCommand {
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        #[arg(value_name = "TEXT")]
+        text: String,
+        #[arg(long, value_name = "ACTOR")]
+        actor: Option<String>,
+        #[arg(long, value_name = "MS")]
+        timestamp: Option<String>,
+        #[arg(long = "bounded-context", value_name = "CONTEXT")]
+        bounded_context: Option<String>,
+    },
+    /// RPC-179: add a domain event to a work unit's Event Storm section.
+    #[command(name = "add-domain-event", about = "Add domain event to Event Storm section of work unit")]
+    AddDomainEvent {
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        #[arg(value_name = "TEXT")]
+        text: String,
+        #[arg(long, value_name = "MS")]
+        timestamp: Option<String>,
+        #[arg(long = "bounded-context", value_name = "CONTEXT")]
+        bounded_context: Option<String>,
+    },
+    /// RPC-185: add a hotspot to a work unit's Event Storm section.
+    #[command(name = "add-hotspot", about = "Add hotspot to Event Storm section of work unit")]
+    AddHotspot {
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        #[arg(value_name = "TEXT")]
+        text: String,
+        #[arg(long, value_name = "CONCERN")]
+        concern: Option<String>,
+        #[arg(long, value_name = "MS")]
+        timestamp: Option<String>,
+        #[arg(long = "bounded-context", value_name = "CONTEXT")]
+        bounded_context: Option<String>,
+    },
+    /// RPC-172: add a bounded context to a work unit's Event Storm section.
+    #[command(name = "add-bounded-context", about = "Add bounded context to Event Storm section of work unit")]
+    AddBoundedContext {
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        #[arg(value_name = "TEXT")]
+        text: String,
+        #[arg(long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+        #[arg(long, value_name = "MS")]
+        timestamp: Option<String>,
+        #[arg(long = "bounded-context", value_name = "CONTEXT")]
+        context: Option<String>,
+    },
+    /// RPC-182: add an external system to a work unit's Event Storm section.
+    #[command(name = "add-external-system", about = "Add external system to Event Storm section of work unit")]
+    AddExternalSystem {
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        #[arg(value_name = "TEXT")]
+        text: String,
+        #[arg(long = "type", value_name = "TYPE")]
+        system_type: Option<String>,
+        #[arg(long, value_name = "MS")]
+        timestamp: Option<String>,
+        #[arg(long = "bounded-context", value_name = "CONTEXT")]
+        context: Option<String>,
+    },
+    /// RPC-187: add a policy item to a work unit's Event Storm section.
+    #[command(name = "add-policy", about = "Add policy to Event Storm section for reactive business logic (WHEN event THEN command)")]
+    AddPolicy {
+        #[arg(value_name = "WORK_UNIT_ID")]
+        work_unit_id: String,
+        #[arg(value_name = "TEXT")]
+        text: String,
+        #[arg(long, value_name = "EVENT")]
+        when: Option<String>,
+        #[arg(long, value_name = "COMMAND")]
+        then: Option<String>,
+        #[arg(long, value_name = "MS")]
+        timestamp: Option<String>,
+        #[arg(long = "bounded-context", value_name = "NAME")]
+        bounded_context: Option<String>,
+    },
+    /// RPC-214: create a new story work unit.
+    #[command(name = "create-story", about = "Create a new story with Example Mapping guidance for defining acceptance criteria")]
+    CreateStory {
+        #[arg(value_name = "PREFIX")]
+        prefix: String,
+        #[arg(value_name = "TITLE")]
+        title: String,
+        #[arg(short = 'd', long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+        #[arg(short = 'e', long, value_name = "EPIC")]
+        epic: Option<String>,
+        #[arg(short = 'p', long, value_name = "PARENT")]
+        parent: Option<String>,
+    },
+    /// RPC-210: create a new bug work unit.
+    #[command(name = "create-bug", about = "Create a new bug with research guidance")]
+    CreateBug {
+        #[arg(value_name = "PREFIX")]
+        prefix: String,
+        #[arg(value_name = "TITLE")]
+        title: String,
+        #[arg(short = 'd', long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+        #[arg(short = 'e', long, value_name = "EPIC")]
+        epic: Option<String>,
+        #[arg(short = 'p', long, value_name = "PARENT")]
+        parent: Option<String>,
+    },
+    /// RPC-215: create a new task work unit.
+    #[command(name = "create-task", about = "Create a new task with minimal requirements")]
+    CreateTask {
+        #[arg(value_name = "PREFIX")]
+        prefix: String,
+        #[arg(value_name = "TITLE")]
+        title: String,
+        #[arg(short = 'd', long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+        #[arg(short = 'e', long, value_name = "EPIC")]
+        epic: Option<String>,
+        #[arg(short = 'p', long, value_name = "PARENT")]
+        parent: Option<String>,
+    },
+    /// RPC-317: update work unit metadata.
+    #[command(name = "update-work-unit", about = "Update work unit fields (title, description, epic, parent)")]
+    UpdateWorkUnit {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(short = 't', long, value_name = "TITLE")]
+        title: Option<String>,
+        #[arg(short = 'd', long, value_name = "DESCRIPTION")]
+        description: Option<String>,
+        #[arg(short = 'e', long, value_name = "EPIC")]
+        epic: Option<String>,
+        #[arg(short = 'p', long, value_name = "PARENT")]
+        parent: Option<String>,
+    },
+    /// RPC-318: set a Fibonacci story-point estimate.
+    #[command(name = "update-work-unit-estimate", about = "Set a Fibonacci story-point estimate on a work unit")]
+    UpdateWorkUnitEstimate {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(value_name = "estimate")]
+        estimate: String,
+    },
+    /// RPC-223: delete a work unit.
+    #[command(name = "delete-work-unit", about = "Delete a work unit")]
+    DeleteWorkUnit {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(long)]
+        force: bool,
+        #[arg(long = "skip-confirmation")]
+        skip_confirmation: bool,
+        #[arg(long = "cascade-dependencies")]
+        cascade_dependencies: bool,
+    },
+    /// RPC-206: permanently remove soft-deleted items from a work unit.
+    #[command(name = "compact-work-unit", about = "Permanently remove all soft-deleted items from a work unit")]
+    CompactWorkUnit {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+    },
+    /// RPC-255: reorder a work unit within its status column.
+    #[command(name = "prioritize-work-unit", about = "Reorder a work unit within its status column")]
+    PrioritizeWorkUnit {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(long, value_name = "POSITION", allow_hyphen_values = true)]
+        position: Option<String>,
+        #[arg(long, value_name = "workUnitId")]
+        before: Option<String>,
+        #[arg(long, value_name = "workUnitId")]
+        after: Option<String>,
+    },
+    /// RPC-284: rebuild work-unit state arrays and bidirectional dependency links.
+    #[command(name = "repair-work-units", about = "Repair work unit state arrays and bidirectional dependency links")]
+    RepairWorkUnits {
+        #[arg(long = "dry-run")]
+        dry_run: bool,
+    },
+    /// RPC-264: record an iteration increment on a work unit.
+    #[command(name = "record-iteration", about = "Record an iteration increment on a work unit")]
+    RecordIteration {
+        #[arg(value_name = "name")]
+        name: String,
+        #[arg(long, value_name = "DATE")]
+        start: Option<String>,
+        #[arg(long, value_name = "DATE")]
+        end: Option<String>,
+    },
+    /// RPC-229: export all work units to a file.
+    #[command(name = "export-work-units", about = "Export all work units to a JSON file")]
+    ExportWorkUnits {
+        #[arg(value_name = "format")]
+        format: String,
+        #[arg(value_name = "output")]
+        output: String,
+        #[arg(long, value_name = "STATUS")]
+        status: Option<String>,
+    },
+    /// RPC-228: export a work unit's Example Map to a JSON file.
+    #[command(name = "export-example-map", about = "Export a work unit's Example Map to a JSON file")]
+    ExportExampleMap {
+        #[arg(value_name = "workUnitId")]
+        work_unit_id: String,
+        #[arg(value_name = "file")]
+        file: String,
+    },
+    /// RPC-227: export the dependency graph to mermaid or JSON.
+    #[command(name = "export-dependencies", about = "Export the work-unit dependency graph to mermaid or JSON")]
+    ExportDependencies {
+        #[arg(value_name = "format")]
+        format: String,
+        #[arg(value_name = "output")]
+        output: String,
+    },
 }
 
 #[tokio::main]
@@ -1029,7 +1287,10 @@ async fn main() -> std::process::ExitCode {
         return std::process::ExitCode::from(code);
     }
 
-    let cli = Cli::parse();
+    let cli = match Cli::try_parse() {
+        Ok(cli) => cli,
+        Err(err) => return render_clap_error(err),
+    };
 
     // All list-* bridge arms share the same exit-code contract: delegate
     // to the bridge module's `run`, propagate the returned code verbatim,
@@ -1420,6 +1681,87 @@ async fn main() -> std::process::ExitCode {
             delete_diagram::run,
             delete_diagram::CliArgs { section, title }
         ),
+        // Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
+        Some(Mode::AddAggregate { work_unit_id, text, responsibilities, timestamp, bounded_context }) => forward!(
+            add_aggregate::run,
+            add_aggregate::CliArgs { work_unit_id, text, responsibilities, timestamp, bounded_context }
+        ),
+        Some(Mode::AddCommand { work_unit_id, text, actor, timestamp, bounded_context }) => forward!(
+            add_command::run,
+            add_command::CliArgs { work_unit_id, text, actor, timestamp, bounded_context }
+        ),
+        Some(Mode::AddDomainEvent { work_unit_id, text, timestamp, bounded_context }) => forward!(
+            add_domain_event::run,
+            add_domain_event::CliArgs { work_unit_id, text, timestamp, bounded_context }
+        ),
+        Some(Mode::AddHotspot { work_unit_id, text, concern, timestamp, bounded_context }) => forward!(
+            add_hotspot::run,
+            add_hotspot::CliArgs { work_unit_id, text, concern, timestamp, bounded_context }
+        ),
+        Some(Mode::AddBoundedContext { work_unit_id, text, description, timestamp, context }) => forward!(
+            add_bounded_context::run,
+            add_bounded_context::CliArgs { work_unit_id, text, description, timestamp, context }
+        ),
+        Some(Mode::AddExternalSystem { work_unit_id, text, system_type, timestamp, context }) => forward!(
+            add_external_system::run,
+            add_external_system::CliArgs { work_unit_id, text, system_type, timestamp, context }
+        ),
+        Some(Mode::AddPolicy { work_unit_id, text, when, then, timestamp, bounded_context }) => forward!(
+            add_policy::run,
+            add_policy::CliArgs { work_unit_id, text, when, then, timestamp, bounded_context }
+        ),
+        Some(Mode::CreateStory { prefix, title, description, epic, parent }) => forward!(
+            create_story::run,
+            create_story::CliArgs { prefix, title, description, epic, parent }
+        ),
+        Some(Mode::CreateBug { prefix, title, description, epic, parent }) => forward!(
+            create_bug::run,
+            create_bug::CliArgs { prefix, title, description, epic, parent }
+        ),
+        Some(Mode::CreateTask { prefix, title, description, epic, parent }) => forward!(
+            create_task::run,
+            create_task::CliArgs { prefix, title, description, epic, parent }
+        ),
+        Some(Mode::UpdateWorkUnit { work_unit_id, title, description, epic, parent }) => forward!(
+            update_work_unit::run,
+            update_work_unit::CliArgs { work_unit_id, title, description, epic, parent }
+        ),
+        Some(Mode::UpdateWorkUnitEstimate { work_unit_id, estimate }) => forward!(
+            update_work_unit_estimate::run,
+            update_work_unit_estimate::CliArgs { work_unit_id, points: estimate }
+        ),
+        Some(Mode::DeleteWorkUnit { work_unit_id, force, skip_confirmation, cascade_dependencies }) => forward!(
+            delete_work_unit::run,
+            delete_work_unit::CliArgs { work_unit_id, force, skip_confirmation, cascade_dependencies }
+        ),
+        Some(Mode::CompactWorkUnit { work_unit_id }) => forward!(
+            compact_work_unit::run,
+            compact_work_unit::CliArgs { work_unit_id }
+        ),
+        Some(Mode::PrioritizeWorkUnit { work_unit_id, position, before, after }) => forward!(
+            prioritize_work_unit::run,
+            prioritize_work_unit::CliArgs { work_unit_id, position, before, after }
+        ),
+        Some(Mode::RepairWorkUnits { dry_run }) => forward!(
+            repair_work_units::run,
+            repair_work_units::CliArgs { dry_run }
+        ),
+        Some(Mode::RecordIteration { name, start, end }) => forward!(
+            record_iteration::run,
+            record_iteration::CliArgs { name, start, end }
+        ),
+        Some(Mode::ExportWorkUnits { format, output, status }) => forward!(
+            export_work_units::run,
+            export_work_units::CliArgs { format, output, status }
+        ),
+        Some(Mode::ExportExampleMap { work_unit_id, file }) => forward!(
+            export_example_map::run,
+            export_example_map::CliArgs { work_unit_id, file }
+        ),
+        Some(Mode::ExportDependencies { format, output }) => forward!(
+            export_dependencies::run,
+            export_dependencies::CliArgs { format, output }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -1428,6 +1770,300 @@ async fn main() -> std::process::ExitCode {
             std::process::ExitCode::from(1)
         }
     }
+}
+
+/// Render a clap parse error in the byte-exact Commander.js format used by
+/// the TypeScript `fspec` reference, then exit with the matching code.
+///
+/// The TS CLI uses Commander.js, whose argument/usage errors differ from
+/// clap's default output in BOTH wording and exit code:
+///
+/// | situation                | Commander.js (TS)                                        | exit |
+/// |--------------------------|----------------------------------------------------------|------|
+/// | help / version requested | clap's own help/version text                             | 0    |
+/// | missing required arg     | `error: missing required argument '<name>'`              | 1    |
+/// | extra positional         | `error: too many arguments for '<cmd>'. Expected N ...`  | 1    |
+/// | unknown option           | `error: unknown option '<flag>'`                         | 1    |
+/// | option needs a value     | `error: option '<spec>' argument missing`                | 1    |
+/// | unknown subcommand       | `error: unknown command '<name>'`                        | 1    |
+///
+/// clap reports usage errors on stderr with exit code 2 and the multi-line
+/// "the following required arguments were not provided" block. This helper
+/// re-renders the FIRST offending item in Commander's single-line style.
+///
+/// Help (`--help`/`-h`) and version (`--version`/`-V`) are NOT errors in the
+/// Commander sense — clap surfaces them as `DisplayHelp` / `DisplayVersion`
+/// "errors" carrying the rendered text. We print that text verbatim on stdout
+/// and exit 0, matching the TS behaviour.
+fn render_clap_error(err: clap::Error) -> std::process::ExitCode {
+    match err.kind() {
+        // clap routes help/version text through Error::print(); reuse it so
+        // the rendered block matches clap's own formatting and exits 0.
+        ErrorKind::DisplayHelp
+        | ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand
+        | ErrorKind::DisplayVersion => {
+            let _ = err.print();
+            std::process::ExitCode::from(0)
+        }
+        ErrorKind::MissingRequiredArgument => {
+            // clap stores the missing items as usage tokens. Commander
+            // reports only the FIRST, and distinguishes positional arguments
+            // from required options:
+            //   - positional `<TITLE>`        → `missing required argument 'title'`
+            //   - required option `--role ...` → `required option '--role <role>' not specified`
+            match first_invalid_arg(&err) {
+                Some(tok) if tok.starts_with('-') => {
+                    eprintln!(
+                        "error: required option '{}' not specified",
+                        commander_option_spec(&tok)
+                    );
+                }
+                Some(tok) => {
+                    eprintln!(
+                        "error: missing required argument '{}'",
+                        commander_arg_name(&tok)
+                    );
+                }
+                None => {
+                    eprintln!("error: missing required argument ''");
+                }
+            }
+            std::process::ExitCode::from(1)
+        }
+        ErrorKind::UnknownArgument => {
+            // clap stores the typed token (e.g. "--zzz" or "-z"). For an
+            // extra positional value clap ALSO raises UnknownArgument, but
+            // Commander reports that as a "too many arguments" error — we
+            // distinguish by whether the token starts with '-'.
+            match first_invalid_arg(&err) {
+                Some(tok) if tok.starts_with('-') => {
+                    eprintln!("error: unknown option '{tok}'");
+                }
+                _ => {
+                    eprintln!("{}", too_many_arguments_message());
+                }
+            }
+            std::process::ExitCode::from(1)
+        }
+        ErrorKind::TooManyValues => {
+            eprintln!("{}", too_many_arguments_message());
+            std::process::ExitCode::from(1)
+        }
+        ErrorKind::InvalidValue if option_needs_value(&err) => {
+            // clap: "a value is required for '...' but none was supplied".
+            // Commander: "option '<spec>' argument missing".
+            eprintln!(
+                "error: option '{}' argument missing",
+                invalid_arg_spec(&err).unwrap_or_default()
+            );
+            std::process::ExitCode::from(1)
+        }
+        ErrorKind::NoEquals => {
+            eprintln!(
+                "error: option '{}' argument missing",
+                invalid_arg_spec(&err).unwrap_or_default()
+            );
+            std::process::ExitCode::from(1)
+        }
+        ErrorKind::InvalidSubcommand => {
+            // clap stores the rejected subcommand under InvalidSubcommand;
+            // fall back to argv[1] if absent.
+            let name = match err.get(ContextKind::InvalidSubcommand) {
+                Some(ContextValue::String(s)) => s.clone(),
+                _ => subcommand_token().unwrap_or_default(),
+            };
+            eprintln!("error: unknown command '{name}'");
+            std::process::ExitCode::from(1)
+        }
+        // Any other clap error: fall back to clap's own rendering + exit 1
+        // (Commander always exits 1 on argument errors).
+        _ => {
+            let _ = err.print();
+            std::process::ExitCode::from(1)
+        }
+    }
+}
+
+/// Extract the first `InvalidArg` context string from a clap error.
+fn first_invalid_arg(err: &clap::Error) -> Option<String> {
+    match err.get(ContextKind::InvalidArg) {
+        Some(ContextValue::String(s)) => Some(s.clone()),
+        Some(ContextValue::Strings(v)) => v.first().cloned(),
+        _ => None,
+    }
+}
+
+/// Render the full `-d, --description <description>` style flag spec for an
+/// option error (Commander includes BOTH short and long forms).
+fn invalid_arg_spec(err: &clap::Error) -> Option<String> {
+    match err.get(ContextKind::InvalidArg) {
+        Some(ContextValue::String(s)) => Some(commander_option_spec(s)),
+        Some(ContextValue::Strings(v)) => v.first().map(|s| commander_option_spec(s)),
+        _ => None,
+    }
+}
+
+/// Whether an `InvalidValue` error is the "option requires a value" variant.
+/// clap's `empty_value` constructor stores an EMPTY `InvalidValue` string —
+/// distinguishing the "needs a value" case from a genuine bad-value rejection
+/// (which carries the offending value).
+fn option_needs_value(err: &clap::Error) -> bool {
+    matches!(
+        err.get(ContextKind::InvalidValue),
+        Some(ContextValue::String(s)) if s.is_empty()
+    )
+}
+
+/// Convert a clap usage token / value_name to the Commander argument name.
+///
+/// clap surfaces required-argument tokens from the declared `value_name`,
+/// which in this codebase is either `UPPER_SNAKE` (e.g. `WORK_UNIT_ID`, auto
+/// or explicit) or already the verbatim Commander name in camelCase
+/// (e.g. `workUnitId`). Commander uses the `.argument('<name>')` name verbatim:
+/// a single lowercase word (`title`) or camelCase for multi-word names
+/// (`workUnitId`). We strip the angle brackets and:
+///   - `UPPER_SNAKE` / `snake_case` (contains `_`) → `camelCase`;
+///   - already mixed-case (e.g. `workUnitId`) → returned verbatim;
+///   - a single all-upper or all-lower word (e.g. `TITLE`, `file`) → lowercased.
+fn commander_arg_name(token: &str) -> String {
+    let trimmed = token.trim_start_matches('<').trim_end_matches('>');
+    if trimmed.contains('_') {
+        // UPPER_SNAKE / snake_case → camelCase.
+        let words: Vec<&str> = trimmed.split('_').filter(|w| !w.is_empty()).collect();
+        let mut out = String::new();
+        for (i, w) in words.iter().enumerate() {
+            let lower = w.to_lowercase();
+            if i == 0 {
+                out.push_str(&lower);
+            } else {
+                let mut chars = lower.chars();
+                if let Some(first) = chars.next() {
+                    out.extend(first.to_uppercase());
+                    out.push_str(chars.as_str());
+                }
+            }
+        }
+        out
+    } else if trimmed.chars().any(|c| c.is_ascii_uppercase())
+        && trimmed.chars().any(|c| c.is_ascii_lowercase())
+    {
+        // Already camelCase / mixed case (e.g. `workUnitId`) — verbatim.
+        trimmed.to_string()
+    } else {
+        // Single all-upper or all-lower word (e.g. `TITLE`, `file`).
+        trimmed.to_lowercase()
+    }
+}
+
+/// Render the `-s, --long <value>` Commander option spec from clap's
+/// `InvalidArg` token (which is the typed flag, e.g. `--description` or `-d`).
+/// We look up the matching clap argument by long/short to reconstruct both
+/// forms and the value placeholder.
+fn commander_option_spec(typed: &str) -> String {
+    let cmd = Cli::command();
+    let sub_name = subcommand_token();
+    let sub = sub_name
+        .as_deref()
+        .and_then(|n| cmd.get_subcommands().find(|c| c.get_name() == n));
+    let search = sub.unwrap_or(&cmd);
+    // clap's InvalidArg for an option error is `arg.to_string()`, e.g.
+    // "--description <DESCRIPTION>" or "-d, --description <DESCRIPTION>".
+    // Reduce it to the bare flag token (first whitespace/comma-delimited
+    // piece) before matching against the declared arguments.
+    let flag_token = typed
+        .split([' ', ','])
+        .next()
+        .unwrap_or(typed)
+        .trim();
+    let flag = flag_token.trim_start_matches('-');
+    for arg in search.get_arguments() {
+        let matches_long = arg.get_long().map(|l| l == flag).unwrap_or(false);
+        let matches_short = arg
+            .get_short()
+            .map(|s| s.to_string() == flag)
+            .unwrap_or(false);
+        if matches_long || matches_short {
+            let short = arg.get_short().map(|s| format!("-{s}, ")).unwrap_or_default();
+            let long = arg.get_long().map(|l| format!("--{l}")).unwrap_or_default();
+            let value = arg
+                .get_value_names()
+                .and_then(|v| v.first())
+                .map(|v| format!(" <{}>", v.as_str().to_lowercase()))
+                .unwrap_or_default();
+            return format!("{short}{long}{value}");
+        }
+    }
+    typed.to_string()
+}
+
+/// Build the Commander "too many arguments" message for the current
+/// subcommand: `too many arguments for '<cmd>'. Expected N arguments but
+/// got M.`. N = declared positional count, M = supplied positional count.
+fn too_many_arguments_message() -> String {
+    let cmd = Cli::command();
+    let argv: Vec<String> = std::env::args().collect();
+    let sub_name = subcommand_token().unwrap_or_default();
+    let sub = cmd.get_subcommands().find(|c| c.get_name() == sub_name);
+    let expected = sub
+        .map(|c| c.get_positionals().count())
+        .unwrap_or(0);
+    // Supplied positionals: argv after the subcommand, excluding flags and
+    // their values. This is a best-effort count that matches Commander's
+    // "got M" for the common all-positional commands.
+    let got = count_supplied_positionals(&argv, sub);
+    // Commander pluralises the EXPECTED noun: `argument` for 1, else
+    // `arguments` (`expected === 1 ? '' : 's'`). The `got` count is never
+    // pluralised in Commander's template.
+    let noun = if expected == 1 { "argument" } else { "arguments" };
+    format!(
+        "error: too many arguments for '{sub_name}'. Expected {expected} {noun} but got {got}."
+    )
+}
+
+/// Count positional tokens supplied after the subcommand, skipping options
+/// and any value they consume.
+fn count_supplied_positionals(argv: &[String], sub: Option<&clap::Command>) -> usize {
+    let mut count = 0usize;
+    let mut iter = argv.iter().skip(2); // program + subcommand
+    while let Some(tok) = iter.next() {
+        if tok == "--" {
+            count += iter.count();
+            break;
+        }
+        if tok.starts_with('-') && tok.len() > 1 {
+            // Option: if it takes a value and has no '=', skip the next token.
+            if !tok.contains('=') && option_takes_value(sub, tok) {
+                let _ = iter.next();
+            }
+            continue;
+        }
+        count += 1;
+    }
+    count
+}
+
+/// Whether the option token (`--epic` / `-e`) for the given subcommand
+/// consumes a following value.
+fn option_takes_value(sub: Option<&clap::Command>, tok: &str) -> bool {
+    let Some(sub) = sub else { return false };
+    let flag = tok.trim_start_matches('-');
+    for arg in sub.get_arguments() {
+        let matches_long = arg.get_long().map(|l| l == flag).unwrap_or(false);
+        let matches_short = arg
+            .get_short()
+            .map(|s| s.to_string() == flag)
+            .unwrap_or(false);
+        if matches_long || matches_short {
+            return arg.get_num_args().map(|n| n.takes_values()).unwrap_or(false);
+        }
+    }
+    false
+}
+
+/// The subcommand name from argv (first non-flag token after the program),
+/// or `None` if absent.
+fn subcommand_token() -> Option<String> {
+    std::env::args().nth(1).filter(|a| !a.starts_with('-'))
 }
 
 /// Pre-clap inspection of argv to handle `fspec <list-*> --help` / `-h`
@@ -1539,6 +2175,30 @@ fn intercept_ts_help() -> Option<u8> {
         "remove-hook" => format_command_help(&configs::remove_hook::CONFIG),
         "add-diagram" => format_command_help(&configs::add_diagram::CONFIG),
         "delete-diagram" => format_command_help(&configs::delete_diagram::CONFIG),
+        // Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
+        "add-aggregate" => format_command_help(&configs::add_aggregate::CONFIG),
+        "add-command" => format_command_help(&configs::add_command::CONFIG),
+        "add-domain-event" => format_command_help(&configs::add_domain_event::CONFIG),
+        "add-hotspot" => format_command_help(&configs::add_hotspot::CONFIG),
+        "add-bounded-context" => format_command_help(&configs::add_bounded_context::CONFIG),
+        "add-external-system" => format_command_help(&configs::add_external_system::CONFIG),
+        "add-policy" => format_command_help(&configs::add_policy::CONFIG),
+        "create-story" => format_command_help(&configs::create_story::CONFIG),
+        "create-bug" => format_command_help(&configs::create_bug::CONFIG),
+        "create-task" => format_command_help(&configs::create_task::CONFIG),
+        // Batch 12 (2026-06-12) — work-units.json mutation + export commands
+        "update-work-unit" => format_command_help(&configs::update_work_unit::CONFIG),
+        "update-work-unit-estimate" => {
+            format_command_help(&configs::update_work_unit_estimate::CONFIG)
+        }
+        "delete-work-unit" => format_command_help(&configs::delete_work_unit::CONFIG),
+        "compact-work-unit" => format_command_help(&configs::compact_work_unit::CONFIG),
+        "prioritize-work-unit" => format_command_help(&configs::prioritize_work_unit::CONFIG),
+        "repair-work-units" => format_command_help(&configs::repair_work_units::CONFIG),
+        "record-iteration" => format_command_help(&configs::record_iteration::CONFIG),
+        "export-work-units" => format_command_help(&configs::export_work_units::CONFIG),
+        "export-example-map" => format_command_help(&configs::export_example_map::CONFIG),
+        "export-dependencies" => format_command_help(&configs::export_dependencies::CONFIG),
         // RPC-265 follow-up: register-tag has no custom `-help.ts` in TS;
         // `node dist/index.js register-tag --help` falls through to bare
         // Commander.js. The earlier Rust port introduced a rich

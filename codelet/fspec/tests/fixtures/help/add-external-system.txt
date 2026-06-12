@@ -1,0 +1,80 @@
+
+ADD-EXTERNAL-SYSTEM
+Add external system to Event Storm section of work unit to identify third-party integrations and boundaries
+
+WHEN TO USE
+  Use during Event Storming when identifying external systems, third-party services, databases, message queues, or file systems that your domain interacts with.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit must have eventStorm section initialized
+  • External system should represent a clear external dependency
+
+USAGE
+  fspec add-external-system <workUnitId> <text> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <text> (required)
+    External system name (e.g., "Payment Gateway", "Email Service", "User Database")
+
+OPTIONS
+  --type <type>
+    External system type: REST_API, MESSAGE_QUEUE, DATABASE, THIRD_PARTY_SERVICE, FILE_SYSTEM
+  --timestamp <ms>
+    Timeline timestamp in milliseconds (for temporal ordering)
+  --bounded-context <context>
+    Bounded context for domain association
+
+COMMON PATTERNS
+  • External systems help identify integration points and dependencies
+  • Use --type to categorize external systems for better documentation
+  • External systems represent boundaries between your domain and the outside world
+  • Consider anti-corruption layers when integrating external systems
+  • External systems have pink sticky notes in physical Event Storming
+
+EXAMPLES
+  1. Add external system to work unit
+  $ fspec add-external-system CHECKOUT-001 "Payment Gateway"
+  ✓ Added external system "Payment Gateway" to CHECKOUT-001 (ID: 0)
+
+  2. Add external system with type
+  $ fspec add-external-system CHECKOUT-001 "Stripe API" --type REST_API
+  ✓ Added external system "Stripe API" to CHECKOUT-001 (ID: 1)
+
+  3. Add external system with type and bounded context
+  $ fspec add-external-system AUTH-001 "User Database" --type DATABASE --bounded-context "Identity"
+  ✓ Added external system "User Database" to AUTH-001 (ID: 0)
+
+  4. Add message queue external system
+  $ fspec add-external-system NOTIFY-001 "RabbitMQ" --type MESSAGE_QUEUE
+  ✓ Added external system "RabbitMQ" to NOTIFY-001 (ID: 0)
+
+COMMON ERRORS
+  ✗ Work unit not found
+    Fix: Ensure work unit exists: fspec show-work-unit <id>
+
+  ✗ Cannot add Event Storm items to work unit in done state
+    Fix: Work unit must be in specifying, testing, implementing, or validating state
+
+  ✗ Invalid external system type
+    Fix: Use one of: REST_API, MESSAGE_QUEUE, DATABASE, THIRD_PARTY_SERVICE, FILE_SYSTEM
+
+  ✗ spec/work-units.json not found
+    Fix: Initialize fspec first: fspec init
+
+RELATED COMMANDS
+  fspec add-domain-event
+  fspec add-command
+  fspec add-policy
+  fspec show-event-storm
+  fspec generate-example-mapping-from-event-storm
+
+NOTES
+  • External systems assigned stable IDs starting from 0
+  • Deleted external systems marked with deleted: true (soft delete)
+  • Use show-event-storm to view all Event Storm artifacts
+  • External systems help identify where to place adapters/ports in clean architecture
+  • Color: pink (matching physical Event Storming convention)
+

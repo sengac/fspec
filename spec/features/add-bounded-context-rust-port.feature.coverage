@@ -1,0 +1,234 @@
+{
+  "scenarios": [
+    {
+      "name": "First add seeds the eventStorm sub-object on a clean work unit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "70-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The color field is persisted as JSON null",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "110-130",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                76,
+                77,
+                78
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Optional description, timestamp and boundedContext fields are persisted in TS insertion order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "132-178",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Second add increments nextItemId and preserves insertion order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "180-217",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work unit surfaces the canonical not-found error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "223-249",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done state is rejected verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "251-277",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blocked state is rejected verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "279-305",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing spec/work-units.json reports the canonical not-found error without creating the file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_bounded_context.rs",
+          "lines": "307-326",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_bounded_context.rs",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/add_bounded_context.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/add_bounded_context.rs"
+    ],
+    "totalLinesCovered": 336
+  }
+}

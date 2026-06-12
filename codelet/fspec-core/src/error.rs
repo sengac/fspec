@@ -63,4 +63,15 @@ pub enum FspecCoreError {
     /// implementation (`src/commands/list-features.ts:33-38`).
     #[error("Directory not found: {path}")]
     DirectoryNotFound { path: String },
+
+    /// A precondition for a project-management command was not met and the
+    /// command surfaces a fully-formed, agent-facing message VERBATIM (no
+    /// wrapping prefix). Used by `check_foundation_exists` (Batch 11 create-*
+    /// commands) to emit the foundation-missing `userMessage` +
+    /// `<system-reminder>` exactly as built by the TypeScript
+    /// `buildFoundationMissingError` (`src/utils/foundation-check.ts:48-89`).
+    /// The message MUST contain the substrings `"Project foundation not found"`
+    /// and `"<system-reminder>"`.
+    #[error("{0}")]
+    FoundationMissing(String),
 }

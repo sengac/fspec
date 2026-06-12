@@ -1,0 +1,85 @@
+
+CREATE-STORY
+Create a new story with Example Mapping guidance for defining acceptance criteria
+
+WHEN TO USE
+  Use when creating user-facing features that require Example Mapping to clarify acceptance criteria through collaborative conversation (rules, examples, questions).
+
+PREREQUISITES
+  • Prefix must be registered: fspec create-prefix PREFIX "Description"
+  • Epic must exist if using --epic: fspec create-epic EPIC "Title"
+  • Parent story must exist if using --parent
+
+USAGE
+  fspec create-story <prefix> <title> [options]
+
+ARGUMENTS
+  <prefix> (required)
+    Story prefix (e.g., AUTH, UI, API). Must be registered with create-prefix first.
+  <title> (required)
+    Brief description of the story
+
+OPTIONS
+  -d, --description <description>
+    Detailed description of the story
+  -e, --epic <epic>
+    Epic ID to associate with this story
+  -p, --parent <parent>
+    Parent story ID for hierarchical relationships
+
+TYPICAL WORKFLOW
+  Create story: fspec create-story PREFIX "Title",Follow Example Mapping guidance from system-reminder,Set user story: fspec set-user-story STORY-001 --role "..." --action "..." --benefit "...",Add rules: fspec add-rule STORY-001 "Rule text",Add examples: fspec add-example STORY-001 "Example text",Add questions: fspec add-question STORY-001 "@human: Question?",Generate scenarios: fspec generate-scenarios STORY-001,Move to specifying: fspec update-work-unit-status STORY-001 specifying
+
+EXAMPLES
+  1. Create simple story with Example Mapping guidance
+  $ fspec create-story AUTH "User login feature"
+  ✓ Created story AUTH-001
+  Title: User login feature
+
+<system-reminder>
+Story AUTH-001 created successfully.
+
+Next steps - Example Mapping:
+  fspec add-rule AUTH-001 "Rule text"
+  fspec add-example AUTH-001 "Example text"
+  fspec add-question AUTH-001 "@human: Question?"
+  fspec set-user-story AUTH-001 --role "..." --action "..." --benefit "..."
+</system-reminder>
+
+  2. Create story with epic
+  $ fspec create-story AUTH "OAuth integration" --epic=user-management
+  ✓ Created story AUTH-002
+  Title: OAuth integration
+  Epic: user-management
+
+  3. Create child story with description
+  $ fspec create-story AUTH "Google login" --parent=AUTH-001 --description="Support Google OAuth"
+  ✓ Created story AUTH-003
+  Title: Google login
+  Description: Support Google OAuth
+  Parent: AUTH-001
+
+COMMON ERRORS
+  ✗ Prefix 'PREFIX' is not registered
+    Fix: undefined
+
+  ✗ Parent story 'PARENT-001' does not exist
+    Fix: undefined
+
+  ✗ Epic 'epic-name' does not exist
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec add-rule - Add business rule to story
+  fspec fspec add-example - Add concrete example to story
+  fspec fspec add-question - Add question for human clarification
+  fspec fspec set-user-story - Set user story fields (role, action, benefit)
+  fspec fspec generate-scenarios - Generate Gherkin scenarios from example map
+  fspec fspec update-work-unit-status - Move story through ACDD workflow
+
+NOTES
+  • Stories use Example Mapping for collaborative requirement discovery
+  • System-reminder guides AI agents to use Example Mapping commands
+  • Stories require feature files with acceptance criteria
+  • Stories require tests before implementation (ACDD)
+

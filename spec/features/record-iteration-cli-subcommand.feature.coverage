@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI record-iteration always fails per Framing A broken-CLI parity",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_record_iteration.rs",
+          "lines": "65-92",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/record_iteration.rs",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI record-iteration --help matches the TS formatCommandHelp reference",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_record_iteration.rs",
+          "lines": "94-115",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/record_iteration.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_record_iteration.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/record_iteration.rs",
+      "codelet/fspec-core/src/help/configs/record_iteration.rs"
+    ],
+    "totalLinesCovered": 90
+  }
+}

@@ -356,6 +356,56 @@ fn run_ported(
             "add-diagram" => commands::add_diagram::run(args_json, project_root).await,
             // RPC-216 — delete-diagram
             "delete-diagram" => commands::delete_diagram::run(args_json, project_root).await,
+            // Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
+            // RPC-165 — add-aggregate
+            "add-aggregate" => commands::add_aggregate::run(args_json, project_root).await,
+            // RPC-174 — add-command
+            "add-command" => commands::add_command::run(args_json, project_root).await,
+            // RPC-179 — add-domain-event
+            "add-domain-event" => commands::add_domain_event::run(args_json, project_root).await,
+            // RPC-185 — add-hotspot
+            "add-hotspot" => commands::add_hotspot::run(args_json, project_root).await,
+            // RPC-172 — add-bounded-context
+            "add-bounded-context" => commands::add_bounded_context::run(args_json, project_root).await,
+            // RPC-182 — add-external-system
+            "add-external-system" => commands::add_external_system::run(args_json, project_root).await,
+            // RPC-187 — add-policy
+            "add-policy" => commands::add_policy::run(args_json, project_root).await,
+            // RPC-214 — create-story
+            "create-story" => commands::create_story::run(args_json, project_root).await,
+            // RPC-210 — create-bug
+            "create-bug" => commands::create_bug::run(args_json, project_root).await,
+            // RPC-215 — create-task
+            "create-task" => commands::create_task::run(args_json, project_root).await,
+            // Batch 12 (2026-06-12) — work-units.json mutation + export commands
+            // RPC-317 — update-work-unit
+            "update-work-unit" => commands::update_work_unit::run(args_json, project_root).await,
+            // RPC-318 — update-work-unit-estimate
+            "update-work-unit-estimate" => {
+                commands::update_work_unit_estimate::run(args_json, project_root).await
+            }
+            // RPC-223 — delete-work-unit
+            "delete-work-unit" => commands::delete_work_unit::run(args_json, project_root).await,
+            // RPC-206 — compact-work-unit
+            "compact-work-unit" => commands::compact_work_unit::run(args_json, project_root).await,
+            // RPC-255 — prioritize-work-unit
+            "prioritize-work-unit" => {
+                commands::prioritize_work_unit::run(args_json, project_root).await
+            }
+            // RPC-284 — repair-work-units
+            "repair-work-units" => commands::repair_work_units::run(args_json, project_root).await,
+            // RPC-264 — record-iteration
+            "record-iteration" => commands::record_iteration::run(args_json, project_root).await,
+            // RPC-229 — export-work-units
+            "export-work-units" => commands::export_work_units::run(args_json, project_root).await,
+            // RPC-228 — export-example-map
+            "export-example-map" => {
+                commands::export_example_map::run(args_json, project_root).await
+            }
+            // RPC-227 — export-dependencies
+            "export-dependencies" => {
+                commands::export_dependencies::run(args_json, project_root).await
+            }
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -374,7 +424,6 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
     // and a nested `block_on` either panics or dead-locks the worker.
     poll_sync_future(async move {
         match name {
-            "add-aggregate" => commands::add_aggregate::run(args_json).await,
             "add-aggregate-to-foundation" => commands::add_aggregate_to_foundation::run(args_json).await,
             "add-architecture" => commands::add_architecture::run(args_json).await,
             // "add-architecture-note" — ported (RPC-168, Batch 8). Handled by `run_ported`
@@ -384,9 +433,9 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "add-attachment" — ported (RPC-170, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "add-background" => commands::add_background::run(args_json).await,
-            "add-bounded-context" => commands::add_bounded_context::run(args_json).await,
+            // "add-bounded-context" — ported (RPC-172, Batch 11). Handled by `run_ported`.
             "add-capability" => commands::add_capability::run(args_json).await,
-            "add-command" => commands::add_command::run(args_json).await,
+            // "add-command" — ported (RPC-174, Batch 11). Handled by `run_ported`.
             "add-command-to-foundation" => commands::add_command_to_foundation::run(args_json).await,
             // "add-dependencies" — ported (RPC-176, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -394,17 +443,17 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "add-diagram" — ported (RPC-178, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-domain-event" => commands::add_domain_event::run(args_json).await,
+            // "add-domain-event" — ported (RPC-179, Batch 11). Handled by `run_ported`.
             "add-domain-event-to-foundation" => commands::add_domain_event_to_foundation::run(args_json).await,
             // "add-example" — ported (RPC-181, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-external-system" => commands::add_external_system::run(args_json).await,
+            // "add-external-system" — ported (RPC-182, Batch 11). Handled by `run_ported`.
             "add-foundation-bounded-context" => commands::add_foundation_bounded_context::run(args_json).await,
             // "add-hook" — ported (RPC-184, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "add-hotspot" => commands::add_hotspot::run(args_json).await,
+            // "add-hotspot" — ported (RPC-185, Batch 11). Handled by `run_ported`.
             "add-persona" => commands::add_persona::run(args_json).await,
-            "add-policy" => commands::add_policy::run(args_json).await,
+            // "add-policy" — ported (RPC-187, Batch 11). Handled by `run_ported`.
             // "add-question" — ported (RPC-188, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-rule" — ported (RPC-189, Batch 8). Handled by `run_ported`
@@ -431,19 +480,20 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "clear-virtual-hooks" — ported (RPC-205, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "compact-work-unit" => commands::compact_work_unit::run(args_json).await,
+            // "compact-work-unit" — ported (RPC-206, Batch 12). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "compare-implementations" => commands::compare_implementations::run(args_json).await,
             "configure-tools" => commands::configure_tools::run(args_json).await,
             // "copy-virtual-hooks" — ported (RPC-209, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "create-bug" => commands::create_bug::run(args_json).await,
+            // "create-bug" — ported (RPC-210, Batch 11). Handled by `run_ported`.
             // "create-epic" — ported (RPC-211, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "create-feature" => commands::create_feature::run(args_json).await,
             // "create-prefix" — ported (RPC-213, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "create-story" => commands::create_story::run(args_json).await,
-            "create-task" => commands::create_task::run(args_json).await,
+            // "create-story" — ported (RPC-214, Batch 11). Handled by `run_ported`.
+            // "create-task" — ported (RPC-215, Batch 11). Handled by `run_ported`.
             // "delete-diagram" — ported (RPC-216, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "delete-epic" — ported (RPC-217, Batch 7). Handled by `run_ported`
@@ -454,13 +504,14 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "delete-step" => commands::delete_step::run(args_json).await,
             // "delete-tag" — ported (RPC-222, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "delete-work-unit" => commands::delete_work_unit::run(args_json).await,
+            // "delete-work-unit" — ported (RPC-223, Batch 12). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "dependencies" => commands::dependencies::run(args_json).await,
             "discover-event-storm" => commands::discover_event_storm::run(args_json).await,
             "discover-foundation" => commands::discover_foundation::run(args_json).await,
-            "export-dependencies" => commands::export_dependencies::run(args_json).await,
-            "export-example-map" => commands::export_example_map::run(args_json).await,
-            "export-work-units" => commands::export_work_units::run(args_json).await,
+            // "export-dependencies" — ported (RPC-227, Batch 12). Handled by `run_ported`.
+            // "export-example-map" — ported (RPC-228, Batch 12). Handled by `run_ported`.
+            // "export-work-units" — ported (RPC-229, Batch 12). Handled by `run_ported`.
             "format" => commands::format::run(args_json).await,
             "generate-coverage" => commands::generate_coverage::run(args_json).await,
             "generate-example-mapping-from-event-storm" => commands::generate_example_mapping_from_event_storm::run(args_json).await,
@@ -499,7 +550,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "list-work-units" — ported (RPC-253). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "pause-schedule" => commands::pause_schedule::run(args_json).await,
-            "prioritize-work-unit" => commands::prioritize_work_unit::run(args_json).await,
+            // "prioritize-work-unit" — ported (RPC-255, Batch 12). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "query-bottlenecks" — ported (RPC-256). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "query-dependency-stats" — ported (RPC-257). Handled by `run_ported`
@@ -516,7 +568,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "query-work-units" — ported (RPC-263). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "record-iteration" => commands::record_iteration::run(args_json).await,
+            // "record-iteration" — ported (RPC-264, Batch 12). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             // "register-tag" — ported (RPC-265, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "remove-aggregate-from-foundation" => commands::remove_aggregate_from_foundation::run(args_json).await,
@@ -547,7 +600,8 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "remove-virtual-hook" — ported (RPC-283, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "repair-work-units" => commands::repair_work_units::run(args_json).await,
+            // "repair-work-units" — ported (RPC-284, Batch 12). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "report-bug-to-github" => commands::report_bug_to_github::run(args_json).await,
             "research" => commands::research::run(args_json).await,
             // "restore-architecture-note" — ported (RPC-287, Batch 9). Handled by `run_ported`
@@ -598,8 +652,10 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "update-step" => commands::update_step::run(args_json).await,
             // "update-tag" — ported (RPC-316, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "update-work-unit" => commands::update_work_unit::run(args_json).await,
-            "update-work-unit-estimate" => commands::update_work_unit_estimate::run(args_json).await,
+            // "update-work-unit" — ported (RPC-317, Batch 12). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
+            // "update-work-unit-estimate" — ported (RPC-318, Batch 12). Handled by `run_ported`
+            // before reaching this match; intentionally absent here.
             "update-work-unit-status" => commands::update_work_unit_status::run(args_json).await,
             "validate" => commands::validate::run(args_json).await,
             "validate-foundation-schema" => commands::validate_foundation_schema::run(args_json).await,

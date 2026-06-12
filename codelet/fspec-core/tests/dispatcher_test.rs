@@ -30,16 +30,16 @@ fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
     // @step And the NAPI chunk callback is NOT registered (is_global_chunk_callback_registered returns false)
     // (precondition satisfied by reaching dispatch_command — agent_loop only delegates here on the false branch)
 
-    // @step And the dispatcher's command map records "add-attachment" as ported by RPC-XXX
+    // @step And the dispatcher's command map records "add-persona" as ported by RPC-XXX
     // (verified indirectly via the canonical_list test; here we trust the lookup.
-    //  We deliberately pick a command that is still in the stub state — `add-attachment`
-    //  maps to RPC-170 in the per-command mapping and is NOT in PORTED_COMMANDS, so its
+    //  We deliberately pick a command that is still in the stub state — `add-persona`
+    //  maps to RPC-186 in the per-command mapping and is NOT in PORTED_COMMANDS, so its
     //  stub still returns NotYetPorted. This test asserts the stub path; once
-    //  `add-attachment` itself is ported, swap to another unported canonical command.)
-    let stub_command = "add-attachment";
-    let stub_rpc = "RPC-170";
+    //  `add-persona` itself is ported, swap to another unported canonical command.)
+    let stub_command = "add-persona";
+    let stub_rpc = "RPC-186";
 
-    // @step When the LLM emits Fspec with command="add-attachment" and any args_json
+    // @step When the LLM emits Fspec with command="add-persona" and any args_json
     let start = std::time::Instant::now();
     let result = dispatch_command(req(stub_command));
     let elapsed = start.elapsed();
@@ -52,7 +52,7 @@ fn dispatcher_returns_not_yet_ported_for_known_unported_command() {
         .as_ref()
         .expect("expected an error message for unported command");
 
-    // @step And the error message contains the literal substring "add-attachment"
+    // @step And the error message contains the literal substring "add-persona"
     assert!(
         msg.contains(stub_command),
         "missing '{stub_command}' in error message: {msg}"

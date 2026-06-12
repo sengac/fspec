@@ -1,0 +1,230 @@
+{
+  "scenarios": [
+    {
+      "name": "First add seeds the eventStorm sub-object on a clean work unit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "70-108",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The --type option maps to the integrationType item field",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "110-129",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                80,
+                81,
+                82
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Optional timestamp and boundedContext fields are persisted in TS insertion order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "131-174",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Second add increments nextItemId and preserves insertion order",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "176-217",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing work unit surfaces the canonical not-found error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "219-245",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Done state is rejected verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "247-273",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blocked state is rejected verbatim",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "275-301",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Missing spec/work-units.json reports the canonical not-found error without creating the file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/add_external_system.rs",
+          "lines": "303-322",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/add_external_system.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/add_external_system.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/add_external_system.rs"
+    ],
+    "totalLinesCovered": 332
+  }
+}

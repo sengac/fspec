@@ -27,6 +27,7 @@ pub mod dispatch;
 pub mod error;
 pub mod help;
 pub mod io;
+pub mod js_compat;
 pub mod types;
 
 pub use dispatch::{dispatch_command, DispatchRequest, DispatchResult};

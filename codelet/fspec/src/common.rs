@@ -493,6 +493,27 @@ pub fn render_core_error(err: &FspecCoreError) -> String {
     }
 }
 
+/// Strip the dispatcher's `"Invalid args for fspec command <name>: "`
+/// envelope so a CLI bridge that routes through `dispatch_command` can emit
+/// only the bare `<reason>` on stderr — exactly what the TS
+/// `output.error('✗ Failed to <verb>:', error.message)` path prints.
+///
+/// `dispatch_command` returns errors as already-rendered Display strings, so
+/// validation failures arrive wrapped in the LLM-tool envelope
+/// `"Invalid args for fspec command <name>: <reason>"`. The shell user never
+/// sees that framing. Non-validation errors carry no envelope and are
+/// returned verbatim.
+///
+/// Shared by every kebab-routed bridge (e.g. `add-bounded-context`,
+/// `add-external-system`) so the unwrap logic lives in exactly one place.
+pub fn strip_dispatch_envelope(msg: &str) -> &str {
+    const PREFIX: &str = "Invalid args for fspec command ";
+    match msg.strip_prefix(PREFIX) {
+        Some(rest) => rest.splitn(2, ": ").nth(1).unwrap_or(msg),
+        None => msg,
+    }
+}
+
 /// Read daemon.json and return the `port` field.
 ///
 /// RPC-011 rule [20] keeps this function as a legacy accessor that

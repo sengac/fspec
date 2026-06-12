@@ -274,6 +274,28 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "remove-hook",                     // RPC-275
     "add-diagram",                     // RPC-178
     "delete-diagram",                  // RPC-216
+    // Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
+    "add-aggregate",                   // RPC-165
+    "add-command",                     // RPC-174
+    "add-domain-event",                // RPC-179
+    "add-hotspot",                     // RPC-185
+    "add-bounded-context",             // RPC-172
+    "add-external-system",             // RPC-182
+    "add-policy",                      // RPC-187
+    "create-story",                    // RPC-214
+    "create-bug",                      // RPC-210
+    "create-task",                     // RPC-215
+    // Batch 12 (2026-06-12) — work-units.json mutation + export commands
+    "update-work-unit",                // RPC-317
+    "update-work-unit-estimate",       // RPC-318
+    "delete-work-unit",                // RPC-223
+    "compact-work-unit",               // RPC-206
+    "prioritize-work-unit",            // RPC-255
+    "repair-work-units",               // RPC-284
+    "record-iteration",                // RPC-264
+    "export-work-units",               // RPC-229
+    "export-example-map",              // RPC-228
+    "export-dependencies",             // RPC-227
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

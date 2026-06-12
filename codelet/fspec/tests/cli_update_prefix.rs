@@ -191,16 +191,16 @@ fn scenario_cli_does_not_expose_epic_id_flag() {
     // @step When I run `fspec update-prefix AUTH --epic-id auth-epic` in that project root
     let (code, _stdout, stderr) = run_update_prefix(ws.path(), &["AUTH", "--epic-id", "auth-epic"]);
 
-    // @step Then the process exits with code 2
+    // @step Then the process exits with code 1
     assert_eq!(
-        code, 2,
-        "clap must reject --epic-id with usage error; stderr={stderr}"
+        code, 1,
+        "Commander rejects --epic-id with exit 1; stderr={stderr}"
     );
 
-    // @step Then stderr contains the substring 'unexpected argument'
+    // @step Then stderr contains the substring 'unknown option'
     assert!(
-        stderr.contains("unexpected argument"),
-        "clap must complain about unexpected argument; got:\n{stderr}"
+        stderr.contains("unknown option"),
+        "Commander must complain about unknown option; got:\n{stderr}"
     );
 
     // @step Then spec/prefixes.json is byte-identical to its pre-call content
@@ -218,13 +218,13 @@ fn scenario_cli_requires_prefix_positional() {
     // @step When I run `fspec update-prefix` with no arguments in that project root
     let (code, _stdout, stderr) = run_update_prefix(ws.path(), &[]);
 
-    // @step Then the process exits with code 2
-    assert_eq!(code, 2, "clap must reject missing positional; stderr={stderr}");
+    // @step Then the process exits with code 1
+    assert_eq!(code, 1, "Commander rejects missing positional with exit 1; stderr={stderr}");
 
     // @step Then stderr contains the substring 'required'
     assert!(
         stderr.contains("required"),
-        "clap must mention 'required'; got:\n{stderr}"
+        "Commander must mention 'required'; got:\n{stderr}"
     );
 }
 

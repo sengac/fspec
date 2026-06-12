@@ -1,0 +1,72 @@
+
+ADD-BOUNDED-CONTEXT
+Add bounded context to Event Storm section of work unit for organizing domain boundaries
+
+WHEN TO USE
+  Use during Event Storming when identifying strategic boundaries (Bounded Contexts) that separate distinct subdomains or business capabilities in your system.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit must have eventStorm section initialized
+  • Bounded context should represent a clear strategic boundary in the domain
+
+USAGE
+  fspec add-bounded-context <workUnitId> <text> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <text> (required)
+    Bounded context name (e.g., "Order Management", "Inventory", "Identity")
+
+OPTIONS
+  --description <text>
+    Description of bounded context purpose and scope
+  --timestamp <ms>
+    Timeline timestamp in milliseconds (for temporal ordering)
+
+COMMON PATTERNS
+  • Bounded contexts represent strategic boundaries in your domain
+  • Each bounded context has its own ubiquitous language
+  • Use bounded contexts to organize aggregates, events, and commands
+  • Bounded contexts communicate through well-defined interfaces
+  • Foundation-level bounded contexts (Big Picture) vs work unit-level (Process Modeling)
+
+EXAMPLES
+  1. Add bounded context to work unit
+  $ fspec add-bounded-context CHECKOUT-001 "Order Management"
+  ✓ Added bounded context "Order Management" to CHECKOUT-001 (ID: 0)
+
+  2. Add bounded context with description
+  $ fspec add-bounded-context CHECKOUT-001 "Inventory" --description "Manages product stock and warehouse operations"
+  ✓ Added bounded context "Inventory" to CHECKOUT-001 (ID: 1)
+
+  3. Add identity bounded context
+  $ fspec add-bounded-context AUTH-001 "Identity" --description "User authentication and authorization"
+  ✓ Added bounded context "Identity" to AUTH-001 (ID: 0)
+
+COMMON ERRORS
+  ✗ Work unit not found
+    Fix: Ensure work unit exists: fspec show-work-unit <id>
+
+  ✗ Cannot add Event Storm items to work unit in done state
+    Fix: Work unit must be in specifying, testing, implementing, or validating state
+
+  ✗ spec/work-units.json not found
+    Fix: Initialize fspec first: fspec init
+
+RELATED COMMANDS
+  fspec add-aggregate
+  fspec add-domain-event
+  fspec add-foundation-bounded-context
+  fspec show-event-storm
+  fspec show-foundation-event-storm
+
+NOTES
+  • Bounded Contexts are a core DDD pattern for managing complexity
+  • Work unit bounded contexts are tactical (Process Modeling level)
+  • Foundation bounded contexts are strategic (Big Picture level)
+  • Bounded contexts assigned stable IDs starting from 0
+  • Deleted bounded contexts marked with deleted: true (soft delete)
+  • Use show-event-storm to view all Event Storm artifacts
+

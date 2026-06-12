@@ -1654,6 +1654,10 @@
           "description": "Multiple bridge connection scenarios"
         },
         {
+          "name": "@mutation",
+          "description": "Marks features/scenarios for state-mutating commands (writes to spec/*.json)"
+        },
+        {
           "name": "@napi",
           "description": "NAPI-RS native module bindings for Node.js"
         },
@@ -2774,7 +2778,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-06-04T20:40:44.239Z",
+    "lastUpdated": "2026-06-12T00:06:35.873Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

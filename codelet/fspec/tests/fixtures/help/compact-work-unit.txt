@@ -1,0 +1,43 @@
+
+COMPACT-WORK-UNIT
+Permanently remove soft-deleted items and renumber IDs sequentially (destructive operation)
+
+USAGE
+  fspec compact-work-unit <workUnitId>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+
+OPTIONS
+  --force
+    Skip confirmation prompt and compact during non-done status (use with caution)
+
+EXAMPLES
+  1. Compact work unit with confirmation prompt (safe, requires user input)
+  $ fspec compact-work-unit AUTH-001
+  ⚠ Warning: This will permanently remove 3 deleted items
+Continue? (y/N) y
+✓ Compacted AUTH-001
+Removed 3 deleted items, renumbered remaining 7 items to IDs [0-6]
+
+  2. Force compact without confirmation (use during non-done status)
+  $ fspec compact-work-unit AUTH-001 --force
+  ⚠ Warning: Compacting during "specifying" status permanently removes deleted items
+✓ Compacted AUTH-001
+Removed 3 deleted items
+
+RELATED COMMANDS
+  fspec show-deleted
+  fspec restore-rule
+  fspec update-work-unit-status
+
+NOTES
+  • Compaction is PERMANENT and cannot be undone
+  • Removes all soft-deleted items (deleted: true)
+  • Renumbers remaining items sequentially starting from 0
+  • Resets nextId counters to match remaining item count
+  • Preserves chronological order (sorted by createdAt timestamp)
+  • Auto-compact triggers when moving work unit to "done" status
+  • Requires --force flag when compacting during non-done status
+

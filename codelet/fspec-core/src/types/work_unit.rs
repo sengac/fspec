@@ -15,21 +15,44 @@ pub const CURRENT_VERSION: &str = "0.7.1";
 ///
 /// Insertion order of `work_units` is preserved via [`IndexMap`] so that
 /// `Object.values(...)` parity holds with the TypeScript implementation.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// ## On-disk top-level key-order parity
+///
+/// The TypeScript reference reads `work-units.json` via `JSON.parse` and writes
+/// it back via `JSON.stringify`, both of which preserve the on-disk top-level
+/// key order verbatim. Real-world files are NOT in the `version, meta,
+/// workUnits, states` order emitted by a naive `#[derive(Serialize)]` — a
+/// migrated file commonly reads `meta, migrationHistory, prefixCounters,
+/// states, version, workUnits` (the alphabetised order written by an earlier
+/// migration). A naive derive therefore byte-diverges from TS on every
+/// mutating-command write (delete/compact/prioritize/repair).
+///
+/// To preserve round-trip parity we implement [`Serialize`] / [`Deserialize`]
+/// manually and record the on-disk key order in [`Self::field_order`] —
+/// exactly mirroring the per-[`WorkUnit`] approach. On write we emit the four
+/// typed keys (`version`, `meta`, `workUnits`, `states`) plus every `extra`
+/// key in their original on-disk positions; any key not present on the
+/// original read is appended in canonical (TS `initialData`) order.
+#[derive(Debug, Clone)]
 pub struct WorkUnitsData {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub meta: Option<Meta>,
-    #[serde(rename = "workUnits", default)]
     pub work_units: IndexMap<String, WorkUnit>,
-    #[serde(default = "default_states")]
     pub states: WorkUnitStates,
     /// Everything else (`migrationHistory`, `prefixCounters`, future fields)
     /// is preserved transparently.
-    #[serde(flatten, default)]
     pub extra: serde_json::Map<String, serde_json::Value>,
+    /// Original on-disk top-level key order captured during deserialization.
+    /// Empty for freshly-constructed values (e.g. [`Self::initial`]); consumed
+    /// by [`Serialize`] to preserve round-trip key order. NOT serialized.
+    pub field_order: Vec<String>,
 }
+
+/// Canonical typed-key order emitted by `ensureWorkUnitsFile`'s `initialData`
+/// literal (`src/utils/ensure-files.ts:21-37`): `version, meta, workUnits,
+/// states`. Used to position any typed key absent from the on-disk
+/// [`WorkUnitsData::field_order`] (i.e. freshly-created files).
+const WORK_UNITS_TYPED_KEYS: &[&str] = &["version", "meta", "workUnits", "states"];
 
 impl WorkUnitsData {
     /// Returns the default value used for first-time creation of
@@ -38,23 +61,256 @@ impl WorkUnitsData {
     pub fn initial(now_iso: impl Into<String>) -> Self {
         Self {
             version: Some(CURRENT_VERSION.to_string()),
-            meta: Some(Meta {
-                version: "1.0.0".to_string(),
-                last_updated: now_iso.into(),
-            }),
+            meta: Some(Meta::new("1.0.0", now_iso.into())),
             work_units: IndexMap::new(),
             states: default_states(),
             extra: serde_json::Map::new(),
+            field_order: Vec::new(),
         }
     }
 }
 
+impl serde::Serialize for WorkUnitsData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::{Error as SerError, SerializeMap};
+
+        // Resolve the current value for a typed key, returning `None` when the
+        // optional field is absent (so it is skipped, matching the original
+        // `#[serde(skip_serializing_if = "Option::is_none")]` attributes on
+        // `version` / `meta`). `workUnits` and `states` are always present.
+        let typed_value = |key: &str| -> Result<Option<serde_json::Value>, S::Error> {
+            match key {
+                "version" => Ok(self
+                    .version
+                    .as_ref()
+                    .map(|v| serde_json::Value::String(v.clone()))),
+                "meta" => match &self.meta {
+                    Some(meta) => Ok(Some(serde_json::to_value(meta).map_err(SerError::custom)?)),
+                    None => Ok(None),
+                },
+                "workUnits" => {
+                    Ok(Some(serde_json::to_value(&self.work_units).map_err(SerError::custom)?))
+                }
+                "states" => {
+                    Ok(Some(serde_json::to_value(&self.states).map_err(SerError::custom)?))
+                }
+                _ => Ok(None),
+            }
+        };
+
+        let mut seen = std::collections::HashSet::with_capacity(
+            self.field_order.len() + WORK_UNITS_TYPED_KEYS.len() + self.extra.len(),
+        );
+        let mut ordered: Vec<(String, serde_json::Value)> = Vec::with_capacity(
+            self.field_order.len() + WORK_UNITS_TYPED_KEYS.len() + self.extra.len(),
+        );
+
+        // (1) original on-disk positions.
+        for key in &self.field_order {
+            if !seen.insert(key.clone()) {
+                continue;
+            }
+            if let Some(v) = typed_value(key)? {
+                ordered.push((key.clone(), v));
+            } else if let Some(v) = self.extra.get(key) {
+                ordered.push((key.clone(), v.clone()));
+            }
+            // else: optional typed field cleared since read — skip.
+        }
+
+        // (2) typed keys not present on disk, in canonical TS order.
+        for key in WORK_UNITS_TYPED_KEYS {
+            if seen.contains(*key) {
+                continue;
+            }
+            if let Some(v) = typed_value(key)? {
+                seen.insert((*key).to_string());
+                ordered.push(((*key).to_string(), v));
+            }
+        }
+
+        // (3) any new `extra` keys appended after the read.
+        for (key, value) in &self.extra {
+            if seen.insert(key.clone()) {
+                ordered.push((key.clone(), value.clone()));
+            }
+        }
+
+        let mut map = serializer.serialize_map(Some(ordered.len()))?;
+        for (k, v) in &ordered {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for WorkUnitsData {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::Error as DeError;
+
+        let mut raw: serde_json::Map<String, serde_json::Value> =
+            serde_json::Map::deserialize(deserializer)?;
+
+        let field_order: Vec<String> = raw.keys().cloned().collect();
+
+        let version = match raw.remove("version") {
+            Some(serde_json::Value::String(s)) => Some(s),
+            Some(serde_json::Value::Null) | None => None,
+            Some(other) => {
+                return Err(DeError::custom(format!(
+                    "field `version` must be a string, got {other}"
+                )))
+            }
+        };
+
+        let meta = match raw.remove("meta") {
+            Some(serde_json::Value::Null) | None => None,
+            Some(value) => Some(serde_json::from_value(value).map_err(DeError::custom)?),
+        };
+
+        let work_units = match raw.remove("workUnits") {
+            Some(serde_json::Value::Null) | None => IndexMap::new(),
+            Some(value) => serde_json::from_value(value).map_err(DeError::custom)?,
+        };
+
+        let states = match raw.remove("states") {
+            Some(serde_json::Value::Null) | None => default_states(),
+            Some(value) => serde_json::from_value(value).map_err(DeError::custom)?,
+        };
+
+        Ok(WorkUnitsData {
+            version,
+            meta,
+            work_units,
+            states,
+            extra: raw,
+            field_order,
+        })
+    }
+}
+
 /// `meta` block of `work-units.json`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// Like [`WorkUnit`] and [`WorkUnitsData`], `Meta` preserves on-disk key order
+/// across a load → modify → save round-trip. Real files store the keys as
+/// `{ lastUpdated, version }` (the order written by the migration tooling),
+/// whereas `ensureWorkUnitsFile`'s `initialData` literal writes
+/// `{ version, lastUpdated }` (`src/utils/ensure-files.ts:23-25`). A naive
+/// derive would always emit the struct's declaration order and byte-diverge
+/// from TS on every mutating-command write that re-serialises an existing
+/// `meta` block. The manual (de)serialisation below records the original key
+/// order in [`Self::field_order`] and replays it on write.
+#[derive(Debug, Clone)]
 pub struct Meta {
     pub version: String,
-    #[serde(rename = "lastUpdated")]
     pub last_updated: String,
+    /// Any additional `meta` keys present on disk, preserved verbatim.
+    pub extra: serde_json::Map<String, serde_json::Value>,
+    /// Original on-disk key order; empty for freshly-constructed values.
+    pub field_order: Vec<String>,
+}
+
+/// Canonical typed-key order for a freshly-created `meta` block, matching the
+/// TS `initialData` literal (`version`, then `lastUpdated`).
+const META_TYPED_KEYS: &[&str] = &["version", "lastUpdated"];
+
+impl Meta {
+    /// Construct a `meta` block in canonical (TS `initialData`) key order.
+    pub fn new(version: impl Into<String>, last_updated: impl Into<String>) -> Self {
+        Self {
+            version: version.into(),
+            last_updated: last_updated.into(),
+            extra: serde_json::Map::new(),
+            field_order: Vec::new(),
+        }
+    }
+}
+
+impl serde::Serialize for Meta {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let typed_value = |key: &str| -> Option<serde_json::Value> {
+            match key {
+                "version" => Some(serde_json::Value::String(self.version.clone())),
+                "lastUpdated" => Some(serde_json::Value::String(self.last_updated.clone())),
+                _ => None,
+            }
+        };
+
+        let mut seen = std::collections::HashSet::with_capacity(
+            self.field_order.len() + META_TYPED_KEYS.len() + self.extra.len(),
+        );
+        let mut ordered: Vec<(String, serde_json::Value)> = Vec::new();
+
+        for key in &self.field_order {
+            if !seen.insert(key.clone()) {
+                continue;
+            }
+            if let Some(v) = typed_value(key) {
+                ordered.push((key.clone(), v));
+            } else if let Some(v) = self.extra.get(key) {
+                ordered.push((key.clone(), v.clone()));
+            }
+        }
+        for key in META_TYPED_KEYS {
+            if seen.contains(*key) {
+                continue;
+            }
+            if let Some(v) = typed_value(key) {
+                seen.insert((*key).to_string());
+                ordered.push(((*key).to_string(), v));
+            }
+        }
+        for (key, value) in &self.extra {
+            if seen.insert(key.clone()) {
+                ordered.push((key.clone(), value.clone()));
+            }
+        }
+
+        let mut map = serializer.serialize_map(Some(ordered.len()))?;
+        for (k, v) in &ordered {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Meta {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let mut raw: serde_json::Map<String, serde_json::Value> =
+            serde_json::Map::deserialize(deserializer)?;
+        let field_order: Vec<String> = raw.keys().cloned().collect();
+
+        let take_string = |raw: &mut serde_json::Map<String, serde_json::Value>, key: &str| {
+            match raw.remove(key) {
+                Some(serde_json::Value::String(s)) => s,
+                _ => String::new(),
+            }
+        };
+
+        let version = take_string(&mut raw, "version");
+        let last_updated = take_string(&mut raw, "lastUpdated");
+
+        Ok(Meta {
+            version,
+            last_updated,
+            extra: raw,
+            field_order,
+        })
+    }
 }
 
 /// The 7 Kanban state arrays. Each entry is a work-unit ID.

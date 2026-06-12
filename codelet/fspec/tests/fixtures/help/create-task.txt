@@ -1,0 +1,82 @@
+
+CREATE-TASK
+Create a new task with minimal requirements for operational work (setup, config, infrastructure)
+
+WHEN TO USE
+  Use when tracking operational work that does not require user-facing features, tests, or acceptance criteria (e.g., setup CI/CD, update dependencies, refactor code).
+
+PREREQUISITES
+  • Prefix must be registered: fspec create-prefix PREFIX "Description"
+  • Epic must exist if using --epic: fspec create-epic EPIC "Title"
+  • Parent task must exist if using --parent
+
+USAGE
+  fspec create-task <prefix> <title> [options]
+
+ARGUMENTS
+  <prefix> (required)
+    Task prefix (e.g., TASK, INFRA, DEVOPS). Must be registered with create-prefix first.
+  <title> (required)
+    Brief description of the task
+
+OPTIONS
+  -d, --description <description>
+    Detailed description of the task
+  -e, --epic <epic>
+    Epic ID to associate with this task
+  -p, --parent <parent>
+    Parent task ID for hierarchical relationships
+
+TYPICAL WORKFLOW
+  Create task: fspec create-task PREFIX "Title",Tasks can skip specifying phase (optional feature file),Move directly to implementing: fspec update-work-unit-status TASK-001 implementing,Complete work without tests (for operational tasks),Move to done: fspec update-work-unit-status TASK-001 done
+
+EXAMPLES
+  1. Create simple task with minimal requirements
+  $ fspec create-task TASK "Setup CI/CD pipeline"
+  ✓ Created task TASK-001
+  Title: Setup CI/CD pipeline
+
+<system-reminder>
+Task TASK-001 created successfully.
+
+Tasks are for operational work.
+  - Tasks have optional feature file
+  - Tasks have optional tests
+  - Tasks can skip Example Mapping
+</system-reminder>
+
+  2. Create task with epic
+  $ fspec create-task INFRA "Configure monitoring" --epic=infrastructure
+  ✓ Created task INFRA-001
+  Title: Configure monitoring
+  Epic: infrastructure
+
+  3. Create task with description
+  $ fspec create-task DEVOPS "Update dependencies" --description="Security patches"
+  ✓ Created task DEVOPS-001
+  Title: Update dependencies
+  Description: Security patches
+
+COMMON ERRORS
+  ✗ Prefix 'PREFIX' is not registered
+    Fix: undefined
+
+  ✗ Parent task 'PARENT-001' does not exist
+    Fix: undefined
+
+  ✗ Epic 'epic-name' does not exist
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec update-work-unit-status - Move task through workflow
+  fspec fspec list-work-units - List all tasks
+  fspec fspec show-work-unit - Show task details
+  fspec fspec update-work-unit - Update task title/description
+
+NOTES
+  • Tasks have optional feature files (not required for operational work)
+  • Tasks have optional tests (not required for infrastructure work)
+  • Tasks can skip Example Mapping (no need for acceptance criteria)
+  • Tasks can move directly to implementing without specifying phase
+  • Examples: Setup CI/CD, configure monitoring, update dependencies, refactor code, write docs
+

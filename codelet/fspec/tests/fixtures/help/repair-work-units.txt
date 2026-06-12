@@ -1,0 +1,28 @@
+
+REPAIR-WORK-UNITS
+Repair work unit data integrity issues
+
+WHEN TO USE
+  Use when validate-work-units reports issues that need fixing, such as broken references or invalid data.
+
+USAGE
+  fspec repair-work-units [options]
+
+OPTIONS
+  --dry-run
+    Show what would be repaired without making changes
+
+EXAMPLES
+  1. Repair all issues
+  $ fspec repair-work-units
+  ✓ Repaired 3 work units
+  - Fixed broken dependency: AUTH-001 → AUTH-999 (deleted)
+  - Reset invalid status: UI-002
+
+RELATED COMMANDS
+  fspec validate-work-units
+
+NOTES
+  • Use --dry-run first to preview changes
+  • Creates backup before modifying
+

@@ -1,0 +1,303 @@
+{
+  "scenarios": [
+    {
+      "name": "Export a work unit with full example mapping data",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "lines": "70-131",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Export a work unit with no example mapping data",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "lines": "132-153",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Export to a nested output path creates parent directories",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "lines": "154-177",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "lines": [
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Export a work unit that does not exist fails",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "lines": "178-198",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "lines": [
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Export with a malformed work units file escalates a parse error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "lines": "199-219",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "lines": [
+                51,
+                52,
+                53
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher and core produce identical file content",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_example_map.rs",
+          "lines": "220-250",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_example_map.rs",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/export_example_map.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/export_example_map.rs"
+    ],
+    "totalLinesCovered": 372
+  }
+}

@@ -86,3 +86,25 @@ pub mod delete_diagram;
 pub mod remove_attachment;
 pub mod remove_hook;
 pub mod remove_virtual_hook;
+// Batch 11 (2026-06-12) — Event Storm item-add + create-* commands
+pub mod add_aggregate;
+pub mod add_bounded_context;
+pub mod add_command;
+pub mod add_domain_event;
+pub mod add_external_system;
+pub mod add_hotspot;
+pub mod add_policy;
+pub mod create_bug;
+pub mod create_story;
+pub mod create_task;
+// Batch 12 (2026-06-12) — work-units.json mutation + export commands
+pub mod compact_work_unit;
+pub mod delete_work_unit;
+pub mod export_dependencies;
+pub mod export_example_map;
+pub mod export_work_units;
+pub mod prioritize_work_unit;
+pub mod record_iteration;
+pub mod repair_work_units;
+pub mod update_work_unit;
+pub mod update_work_unit_estimate;

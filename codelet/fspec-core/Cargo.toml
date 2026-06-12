@@ -14,12 +14,12 @@ tokio.workspace = true
 indexmap = { version = "2", features = ["serde"] }
 fs2 = "0.4"
 gherkin.workspace = true
+regex.workspace = true
 codelet-git = { path = "../git" }
 
 [dev-dependencies]
 tempfile.workspace = true
 serial_test.workspace = true
-regex.workspace = true
 
 [lints]
 workspace = true

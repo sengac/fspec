@@ -1,0 +1,69 @@
+
+ADD-DOMAIN-EVENT
+Add domain event to Event Storm section of work unit for Big Picture Event Storming
+
+WHEN TO USE
+  Use during Big Picture Event Storming discovery phase when capturing significant domain events that represent state changes in the system.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit must have eventStorm section initialized
+  • Event text should describe WHAT HAPPENED (past tense)
+
+USAGE
+  fspec add-domain-event <workUnitId> <text> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <text> (required)
+    Event text/name (PascalCase recommended, e.g., "UserRegistered", "OrderPlaced")
+
+OPTIONS
+  --timestamp <ms>
+    Timeline timestamp in milliseconds (for temporal ordering of events)
+  --bounded-context <context>
+    Bounded context for domain association (DDD concept)
+
+COMMON PATTERNS
+  • Use PascalCase for event names (UserRegistered, OrderPlaced)
+  • Events represent WHAT HAPPENED (past tense, not imperative)
+  • Group related events using --bounded-context flag
+  • Use --timestamp for temporal ordering on Big Picture Event Storm timeline
+  • Generate Example Mapping from events: fspec generate-example-mapping-from-event-storm
+
+EXAMPLES
+  1. Add domain event to work unit
+  $ fspec add-domain-event AUTH-001 "UserRegistered"
+  ✓ Added domain event "UserRegistered" to AUTH-001 (ID: 0)
+
+  2. Add domain event with bounded context
+  $ fspec add-domain-event AUTH-001 "UserAuthenticated" --bounded-context "Identity"
+  ✓ Added domain event "UserAuthenticated" to AUTH-001 (ID: 1)
+
+  3. Add domain event with timeline timestamp
+  $ fspec add-domain-event CHECKOUT-001 "OrderPlaced" --timestamp 1000
+  ✓ Added domain event "OrderPlaced" to CHECKOUT-001 (ID: 0)
+
+COMMON ERRORS
+  ✗ Work unit not found
+    Fix: Ensure work unit exists: fspec show-work-unit <id>
+
+  ✗ spec/work-units.json not found
+    Fix: Initialize fspec first: fspec init
+
+RELATED COMMANDS
+  fspec add-command
+  fspec add-policy
+  fspec add-hotspot
+  fspec show-event-storm
+  fspec show-foundation-event-storm
+  fspec generate-example-mapping-from-event-storm
+
+NOTES
+  • Domain events are immutable facts that occurred in the system
+  • Events assigned stable IDs starting from 0
+  • Deleted events marked with deleted: true (soft delete)
+  • Use show-event-storm to view all Event Storm artifacts
+  • Bounded contexts help organize events by subdomain (DDD pattern)
+

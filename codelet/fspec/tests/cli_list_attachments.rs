@@ -221,10 +221,10 @@ fn scenario_cli_missing_positional_exits_2() {
     // @step When I run `./codelet/target/release/fspec list-attachments` (no positional) from that directory
     let (code, _stdout, stderr) = run_list_attachments(ws.path(), &[]);
 
-    // @step Then the command exits with code 2
+    // @step Then the command exits with code 1
     assert_eq!(
-        code, 2,
-        "fspec list-attachments (no positional) must exit 2 (clap usage error); got {code}, stderr={stderr}"
+        code, 1,
+        "fspec list-attachments (no positional) must exit 1 (Commander usage error parity); got {code}, stderr={stderr}"
     );
 
     // @step Then stderr names the missing required argument

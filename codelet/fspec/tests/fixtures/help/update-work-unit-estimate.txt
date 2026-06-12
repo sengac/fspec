@@ -1,0 +1,59 @@
+
+UPDATE-WORK-UNIT-ESTIMATE
+Set story point estimate for a work unit using Fibonacci scale
+
+WHEN TO USE
+  Use after generating scenarios from Example Mapping when you have enough information to estimate complexity. IMPORTANT: Story and Bug work units require a completed feature file before estimation. Task work units can be estimated at any stage.
+
+PREREQUISITES
+  • For story/bug work units: Feature file must exist and be complete (no prefill placeholders)
+  • For task work units: No prerequisites (tasks do not require feature files)
+  • Work unit must be in specifying phase or later
+
+USAGE
+  fspec update-work-unit-estimate <id> <points>
+
+ARGUMENTS
+  <id> (required)
+    Work unit ID
+  <points> (required)
+    Story points (Fibonacci: 1, 2, 3, 5, 8, 13, 21)
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Set estimate for story work unit (requires completed feature file)
+  $ fspec update-work-unit-estimate AUTH-001 5
+  ✓ Work unit AUTH-001 estimate set to 5
+
+  2. Set estimate for task work unit (no feature file required)
+  $ fspec update-work-unit-estimate TASK-001 3
+  ✓ Work unit TASK-001 estimate set to 3
+
+COMMON ERRORS
+  ✗ ACDD requires feature file completion before estimation
+    Fix: undefined
+
+  ✗ Feature file has prefill placeholders must be removed first
+    Fix: undefined
+
+  ✗ Invalid estimate: 7. Must be one of: 1,2,3,5,8,13,21
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec show-work-unit
+  fspec query-estimate-accuracy
+  fspec generate-scenarios
+  fspec set-user-story
+
+NOTES
+  • Use Fibonacci sequence for estimates: 1, 2, 3, 5, 8, 13, 21
+  • Estimate AFTER generating scenarios from Example Mapping and completing feature file
+  • 1=trivial, 3=small, 5=medium, 8=large, 13+=very large
+  • Story/Bug types: MUST have completed feature file with @WORK-UNIT-ID tag
+  • Task types: Can be estimated without feature files
+  • Prefill placeholders ([role], [action], etc.) block estimation
+  • IMPORTANT: Estimates > 13 points trigger a warning in show-work-unit recommending breakdown into smaller work units (1-13 points each)
+  • Large estimate warnings persist until estimate ≤ 13 or status = done (tasks exempt from warnings)
+

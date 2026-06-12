@@ -1,0 +1,26 @@
+
+RECORD-ITERATION
+Record an iteration or sprint with metadata
+
+USAGE
+  fspec record-iteration <name> [options]
+
+ARGUMENTS
+  <name> (required)
+    Iteration name (e.g., "Sprint 1", "Week 42")
+
+OPTIONS
+  --start <date>
+    Start date (ISO format)
+  --end <date>
+    End date (ISO format)
+
+EXAMPLES
+  1. Record iteration
+  $ fspec record-iteration "Sprint 1" --start 2025-10-01 --end 2025-10-15
+  ✓ Recorded iteration "Sprint 1"
+
+RELATED COMMANDS
+  fspec query-metrics
+  fspec generate-summary-report
+

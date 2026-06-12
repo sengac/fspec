@@ -1,0 +1,351 @@
+{
+  "scenarios": [
+    {
+      "name": "Dispatcher exports all work units to a JSON file",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "lines": "72-105",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher rejects an unsupported format",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "lines": "107-127",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher ignores the status filter and exports every unit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "lines": "129-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dispatcher preserves work-unit insertion order in the export",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "lines": "159-183",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI and dispatcher converge on the same fspec-core function",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/export_work_units.rs",
+          "lines": "185-235",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/export_work_units.rs",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/export_work_units.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/export_work_units.rs"
+    ],
+    "totalLinesCovered": 415
+  }
+}

@@ -459,6 +459,28 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "remove_hook.rs",
         "add_diagram.rs",
         "delete_diagram.rs",
+        // Batch 11 (Event Storm item-add + create-*)
+        "add_aggregate.rs",
+        "add_command.rs",
+        "add_domain_event.rs",
+        "add_hotspot.rs",
+        "add_bounded_context.rs",
+        "add_external_system.rs",
+        "add_policy.rs",
+        "create_story.rs",
+        "create_bug.rs",
+        "create_task.rs",
+        // Batch 12 (work-units.json mutation + export)
+        "update_work_unit.rs",
+        "update_work_unit_estimate.rs",
+        "delete_work_unit.rs",
+        "compact_work_unit.rs",
+        "prioritize_work_unit.rs",
+        "repair_work_units.rs",
+        "record_iteration.rs",
+        "export_work_units.rs",
+        "export_example_map.rs",
+        "export_dependencies.rs",
     ] {
         let p = src.join(f);
         assert!(
@@ -552,6 +574,28 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "remove_hook.rs",
         "add_diagram.rs",
         "delete_diagram.rs",
+        // Batch 11 (Event Storm item-add + create-*)
+        "add_aggregate.rs",
+        "add_command.rs",
+        "add_domain_event.rs",
+        "add_hotspot.rs",
+        "add_bounded_context.rs",
+        "add_external_system.rs",
+        "add_policy.rs",
+        "create_story.rs",
+        "create_bug.rs",
+        "create_task.rs",
+        // Batch 12 (work-units.json mutation + export)
+        "update_work_unit.rs",
+        "update_work_unit_estimate.rs",
+        "delete_work_unit.rs",
+        "compact_work_unit.rs",
+        "prioritize_work_unit.rs",
+        "repair_work_units.rs",
+        "record_iteration.rs",
+        "export_work_units.rs",
+        "export_example_map.rs",
+        "export_dependencies.rs",
     ]
     .iter()
     .copied()
@@ -569,7 +613,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 78 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 98 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code
@@ -628,8 +672,15 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     // tags + restore-*) added 20 more clap variants + intercept arms +
     // forward! match arms, pushing main.rs to ~1420 lines. Cap raised
     // from 1100 → 1500.
+    // Batch 10 (10 attachment/hook/diagram commands) pushed main.rs further;
+    // cap raised 1500 → 1700.
+    // Batch 11 (10 Event Storm item-add + create-* commands) added 10 clap
+    // variants + forward! arms + help-intercept arms, pushing main.rs to
+    // ~1815 lines. Cap raised from 1700 → 2000.
+    // Parity batch (clap→Commander usage-error rendering: render_clap_error +
+    // ~9 helper fns) pushes main.rs to ~2093 lines. Cap raised from 2000 → 2300.
     let common_cap: usize = 900;
-    let main_cap: usize = 1700;
+    let main_cap: usize = 2300;
     let standard_cap: usize = 300;
     for f in ["main.rs", "combined.rs", "daemon.rs", "client.rs", "common.rs", "status.rs"] {
         let p = src.join(f);

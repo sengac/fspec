@@ -115,10 +115,10 @@ fn scenario_cli_missing_positionals_exits_2() {
     // @step When I run `./codelet/target/release/fspec list-scenario-tags` (no positionals) from that directory
     let (code, _stdout, stderr) = run_list_scenario_tags(ws.path(), &[]);
 
-    // @step Then the command exits with code 2
+    // @step Then the command exits with code 1
     assert_eq!(
-        code, 2,
-        "fspec list-scenario-tags (no positionals) must exit 2 (clap usage error); got {code}, stderr={stderr}"
+        code, 1,
+        "fspec list-scenario-tags (no positionals) must exit 1 (Commander usage error parity); got {code}, stderr={stderr}"
     );
 
     // @step Then stderr names the missing required argument

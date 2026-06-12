@@ -1,0 +1,61 @@
+
+ADD-HOTSPOT
+Add hotspot to Event Storm section for capturing uncertainties, risks, or problems
+
+WHEN TO USE
+  Use during Big Picture Event Storming when encountering areas of uncertainty, risk, or problems that need further investigation.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit must have eventStorm section initialized
+  • Hotspot should identify a PROBLEM or UNCERTAINTY
+
+USAGE
+  fspec add-hotspot <workUnitId> <text> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <text> (required)
+    Hotspot description (brief title)
+
+OPTIONS
+  --concern <description>
+    Risk, uncertainty, or problem description (detailed explanation)
+  --timestamp <ms>
+    Timeline position in milliseconds
+  --bounded-context <name>
+    Bounded context association
+
+COMMON PATTERNS
+  • Hotspots represent QUESTIONS or RISKS to investigate
+  • Use --concern to document detailed problem description
+  • Convert hotspots to questions via generate-example-mapping-from-event-storm
+  • Hotspots often become @human questions in Example Mapping
+
+EXAMPLES
+  1. Add hotspot with concern description
+  $ fspec add-hotspot AUTH-001 "Password Reset Flow" --concern "Unclear timeout logic"
+  ✓ Added hotspot "Password Reset Flow" to AUTH-001 (ID: 0)
+
+  2. Capture external dependency uncertainty
+  $ fspec add-hotspot PAYMENT-001 "Payment Gateway" --concern "Third-party API availability unclear"
+  ✓ Added hotspot "Payment Gateway" to PAYMENT-001 (ID: 0)
+
+COMMON ERRORS
+  ✗ Work unit not found
+    Fix: Ensure work unit exists: fspec show-work-unit <id>
+
+RELATED COMMANDS
+  fspec add-domain-event
+  fspec add-command
+  fspec add-policy
+  fspec show-event-storm
+  fspec generate-example-mapping-from-event-storm
+
+NOTES
+  • Hotspots highlight areas needing more discovery
+  • Concerns can be converted to questions for stakeholders
+  • Use show-event-storm to view all hotspots
+  • Hotspots assigned stable IDs starting from 0
+

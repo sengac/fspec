@@ -1,0 +1,113 @@
+
+UPDATE-WORK-UNIT
+Update work unit metadata including title, description, epic association, and parent relationship
+
+WHEN TO USE
+  Use this command to modify work unit metadata after creation. Common use cases: refining title/description, changing epic association, or restructuring parent-child relationships. NOTE: Work unit type (story/bug/task) is immutable and cannot be changed.
+
+PREREQUISITES
+  • Work unit must exist in spec/work-units.json
+
+USAGE
+  fspec update-work-unit <workUnitId> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID to update (e.g., AUTH-001)
+
+OPTIONS
+  -t, --title <title>
+    New title for the work unit
+  -d, --description <description>
+    New description for the work unit
+  -e, --epic <epic>
+    Epic ID to associate with (moves work unit to new epic)
+  -p, --parent <parent>
+    Parent work unit ID (for hierarchical relationships, prevents circular references)
+
+COMMON PATTERNS
+  • Refine work unit details
+    Example: # Initial creation
+fspec create-story AUTH "User auth"
+
+# Refine after Example Mapping
+fspec update-work-unit AUTH-001 --title "OAuth 2.0 authentication" --description "Implement OAuth 2.0 flow with Google"
+    undefined
+
+  • Reorganize epic structure
+    Example: # Move work units to different epic
+fspec update-work-unit AUTH-001 --epic SECURITY
+fspec update-work-unit AUTH-002 --epic SECURITY
+
+# Verify epic structure
+fspec show-epic SECURITY
+    undefined
+
+  • Create parent-child relationships
+    Example: # Break large work unit into subtasks
+fspec create-story AUTH "OAuth implementation" --parent AUTH-001
+fspec create-task AUTH "OAuth testing" --parent AUTH-001
+
+# View hierarchy
+fspec show-work-unit AUTH-001
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. View current metadata: fspec show-work-unit <workUnitId> → 2. Update fields: fspec update-work-unit <workUnitId> --title "New title" → 3. Verify changes: fspec show-work-unit <workUnitId>
+
+EXAMPLES
+  1. Update work unit title
+  $ fspec update-work-unit AUTH-001 --title "OAuth 2.0 integration"
+  ✓ Work unit AUTH-001 updated successfully
+
+  2. Update work unit description
+  $ fspec update-work-unit AUTH-001 --description "Implement OAuth 2.0 authentication flow"
+  ✓ Work unit AUTH-001 updated successfully
+
+  3. Move work unit to different epic
+  $ fspec update-work-unit AUTH-001 --epic AUTH
+  ✓ Work unit AUTH-001 updated successfully
+
+  4. Set parent-child relationship
+  $ fspec update-work-unit AUTH-002 --parent AUTH-001
+  ✓ Work unit AUTH-002 updated successfully
+
+  5. Update multiple fields at once
+  $ fspec update-work-unit AUTH-001 --title "New title" --description "New description" --epic API
+  ✓ Work unit AUTH-001 updated successfully
+
+COMMON ERRORS
+  ✗ Work unit 'AUTH-999' does not exist
+    Fix: Verify the work unit ID exists with: fspec list-work-units
+
+  ✗ Epic 'NONEXISTENT' does not exist
+    Fix: Check available epics with: fspec list-epics or create epic with: fspec create-epic
+
+  ✗ Parent work unit 'AUTH-999' does not exist
+    Fix: Verify parent ID exists with: fspec list-work-units
+
+  ✗ Circular parent relationship detected
+    Fix: Cannot set parent to a work unit that is already a descendant. Check hierarchy with: fspec show-work-unit <id>
+
+  ✗ Work unit type is immutable and cannot be changed after creation
+    Fix: Delete this work unit and create a new one with the correct type (story/bug/task)
+
+RELATED COMMANDS
+  fspec show-work-unit
+  fspec update-work-unit-status
+  fspec update-work-unit-estimate
+  fspec create-story
+  fspec create-bug
+  fspec create-task
+  fspec list-work-units
+
+NOTES
+  • Provide at least one option (--title, --description, --epic, or --parent)
+  • Work unit type is immutable - delete and recreate to change type
+  • Changing epic moves work unit from old epic to new epic automatically
+  • Parent-child relationships are validated for circular references
+  • Epic references are automatically updated in spec/epics.json
+  • Parent references update children arrays in both old and new parent work units
+  • UpdatedAt timestamp is automatically set to current time
+

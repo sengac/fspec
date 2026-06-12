@@ -1,0 +1,28 @@
+
+EXPORT-WORK-UNITS
+Export work units to JSON or CSV format
+
+USAGE
+  fspec export-work-units <format> <output> [options]
+
+ARGUMENTS
+  <format> (required)
+    Output format: json or csv
+  <output> (required)
+    Output file path
+
+OPTIONS
+  --status <status>
+    Filter by status
+  --epic <epic>
+    Filter by epic
+
+EXAMPLES
+  1. Export to JSON
+  $ fspec export-work-units json work-units.json
+  ✓ Exported 42 work units to work-units.json
+
+RELATED COMMANDS
+  fspec list-work-units
+  fspec query-work-units
+

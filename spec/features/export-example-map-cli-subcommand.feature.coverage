@@ -1,0 +1,146 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI export-example-map writes the JSON file and prints the success message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_export_example_map.rs",
+          "lines": "73-97",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/export_example_map.rs",
+              "lines": [
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI export-example-map fails for an unknown work unit",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_export_example_map.rs",
+          "lines": "98-116",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/export_example_map.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI export-example-map requires the file argument",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_export_example_map.rs",
+          "lines": "117-135",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/export_example_map.rs",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI export-example-map --help prints the help fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_export_example_map.rs",
+          "lines": "136-159",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/export_example_map.rs",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec-core function as the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_export_example_map.rs",
+          "lines": "160-185",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/export_example_map.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_export_example_map.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/export_example_map.rs",
+      "codelet/fspec-core/src/help/configs/export_example_map.rs"
+    ],
+    "totalLinesCovered": 162
+  }
+}

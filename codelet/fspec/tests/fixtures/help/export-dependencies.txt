@@ -1,0 +1,25 @@
+
+EXPORT-DEPENDENCIES
+Export dependency graph visualization in various formats
+
+USAGE
+  fspec export-dependencies <format> <output>
+
+ARGUMENTS
+  <format> (required)
+    Output format: dot, mermaid, or json
+  <output> (required)
+    Output file path
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Export as Mermaid diagram
+  $ fspec export-dependencies mermaid dependencies.mmd
+  ✓ Exported dependencies to dependencies.mmd
+
+RELATED COMMANDS
+  fspec add-dependency
+  fspec query-dependency-stats
+

@@ -1,0 +1,25 @@
+
+EXPORT-EXAMPLE-MAP
+Export Example Mapping data from work unit to JSON file
+
+USAGE
+  fspec export-example-map <workUnitId> <file>
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <file> (required)
+    Output JSON file path
+
+OPTIONS
+  No options available
+
+EXAMPLES
+  1. Export Example Mapping
+  $ fspec export-example-map AUTH-001 example-map.json
+  ✓ Exported Example Mapping to example-map.json
+
+RELATED COMMANDS
+  fspec import-example-map
+  fspec show-work-unit
+

@@ -286,10 +286,10 @@ fn scenario_cli_exits_2_when_work_unit_id_positional_missing() {
     // @step When I run `fspec remove-attachment` (no positionals) from that directory
     let (code, _stdout, stderr) = run_remove_attachment(ws.path(), &[]);
 
-    // @step Then the exit code is 2
+    // @step Then the exit code is 1
     assert_eq!(
-        code, 2,
-        "fspec remove-attachment (no positionals) must exit 2; stderr={stderr}"
+        code, 1,
+        "fspec remove-attachment (no positionals) must exit 1 (Commander parity); stderr={stderr}"
     );
 
     // @step And stderr names the missing required argument
@@ -310,10 +310,10 @@ fn scenario_cli_exits_2_when_file_name_positional_missing() {
     // @step When I run `fspec remove-attachment AUTH-001` (missing second positional) from that directory
     let (code, _stdout, stderr) = run_remove_attachment(ws.path(), &["AUTH-001"]);
 
-    // @step Then the exit code is 2
+    // @step Then the exit code is 1
     assert_eq!(
-        code, 2,
-        "fspec remove-attachment AUTH-001 (no second positional) must exit 2; stderr={stderr}"
+        code, 1,
+        "fspec remove-attachment AUTH-001 (no second positional) must exit 1 (Commander parity); stderr={stderr}"
     );
 
     // @step And stderr names the missing required argument

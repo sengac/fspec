@@ -1,0 +1,84 @@
+
+CREATE-BUG
+Create a new bug with research guidance for understanding existing code before fixing
+
+WHEN TO USE
+  Use when tracking bugs that require researching existing scenarios, implementation, and test coverage before fixing to prevent regression.
+
+PREREQUISITES
+  • Prefix must be registered: fspec create-prefix PREFIX "Description"
+  • Epic must exist if using --epic: fspec create-epic EPIC "Title"
+  • Parent bug must exist if using --parent
+
+USAGE
+  fspec create-bug <prefix> <title> [options]
+
+ARGUMENTS
+  <prefix> (required)
+    Bug prefix (e.g., BUG, FIX, HOTFIX). Must be registered with create-prefix first.
+  <title> (required)
+    Brief description of the bug
+
+OPTIONS
+  -d, --description <description>
+    Detailed description of the bug
+  -e, --epic <epic>
+    Epic ID to associate with this bug
+  -p, --parent <parent>
+    Parent bug ID for hierarchical relationships
+
+TYPICAL WORKFLOW
+  Create bug: fspec create-bug PREFIX "Title",Follow research guidance from system-reminder,Search scenarios: fspec search-scenarios --query="keyword",Search implementation: fspec search-implementation --function="functionName",Check coverage: fspec show-coverage feature-name,Add reproduction steps: fspec add-example BUG-001 "Reproduction steps",Add fix scenarios: fspec add-rule BUG-001 "Expected behavior",Move to specifying: fspec update-work-unit-status BUG-001 specifying
+
+EXAMPLES
+  1. Create simple bug with research guidance
+  $ fspec create-bug BUG "Login validation broken"
+  ✓ Created bug BUG-001
+  Title: Login validation broken
+
+<system-reminder>
+Bug BUG-001 created successfully.
+
+CRITICAL: Research existing code FIRST before fixing bugs.
+  fspec search-scenarios --query="login"
+  fspec search-implementation --function="validateLogin"
+  fspec show-coverage
+</system-reminder>
+
+  2. Create bug with epic
+  $ fspec create-bug BUG "Memory leak in dashboard" --epic=performance
+  ✓ Created bug BUG-002
+  Title: Memory leak in dashboard
+  Epic: performance
+
+  3. Create critical bug with description
+  $ fspec create-bug HOTFIX "Critical auth bypass" --description="CVE-2024-1234"
+  ✓ Created bug HOTFIX-001
+  Title: Critical auth bypass
+  Description: CVE-2024-1234
+
+COMMON ERRORS
+  ✗ Prefix 'PREFIX' is not registered
+    Fix: undefined
+
+  ✗ Parent bug 'PARENT-001' does not exist
+    Fix: undefined
+
+  ✗ Epic 'epic-name' does not exist
+    Fix: undefined
+
+RELATED COMMANDS
+  fspec fspec search-scenarios - Search existing scenarios by keyword
+  fspec fspec search-implementation - Search implementation for function usage
+  fspec fspec show-coverage - Check test coverage for features
+  fspec fspec list-features - List all feature files
+  fspec fspec add-rule - Add expected behavior rule
+  fspec fspec add-example - Add reproduction steps
+  fspec fspec update-work-unit-status - Move bug through ACDD workflow
+
+NOTES
+  • Bugs require research BEFORE fixing to prevent regressions
+  • System-reminder guides AI agents to use research commands
+  • Bugs should link to existing features when fixing behavior
+  • Bugs may or may not require new tests (depends on coverage gaps)
+

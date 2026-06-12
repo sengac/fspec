@@ -1,0 +1,71 @@
+
+ADD-COMMAND
+Add command to Event Storm section of work unit for Big Picture Event Storming
+
+WHEN TO USE
+  Use during Big Picture Event Storming discovery phase when capturing user intentions or system commands that trigger domain events.
+
+PREREQUISITES
+  • Work unit must exist
+  • Work unit must have eventStorm section initialized
+  • Command text should describe an ACTION (imperative verb)
+
+USAGE
+  fspec add-command <workUnitId> <text> [options]
+
+ARGUMENTS
+  <workUnitId> (required)
+    Work unit ID
+  <text> (required)
+    Command text/name (PascalCase recommended, e.g., "RegisterUser", "PlaceOrder")
+
+OPTIONS
+  --actor <actor>
+    Actor who executes the command (e.g., "User", "Admin", "System")
+  --timestamp <ms>
+    Timeline timestamp in milliseconds (for temporal ordering)
+  --bounded-context <context>
+    Bounded context for domain association (DDD concept)
+
+COMMON PATTERNS
+  • Use PascalCase for command names (RegisterUser, PlaceOrder)
+  • Commands represent user INTENTIONS (imperative verbs)
+  • Commands typically trigger domain events (PlaceOrder → OrderPlaced)
+  • Use --actor to specify WHO executes the command
+  • Group related commands using --bounded-context flag
+
+EXAMPLES
+  1. Add command to work unit
+  $ fspec add-command AUTH-001 "RegisterUser"
+  ✓ Added command "RegisterUser" to AUTH-001 (ID: 0)
+
+  2. Add command with actor specification
+  $ fspec add-command AUTH-001 "LoginUser" --actor "User"
+  ✓ Added command "LoginUser" to AUTH-001 (ID: 1)
+
+  3. Add command with actor and bounded context
+  $ fspec add-command CHECKOUT-001 "PlaceOrder" --actor "Customer" --bounded-context "Sales"
+  ✓ Added command "PlaceOrder" to CHECKOUT-001 (ID: 0)
+
+COMMON ERRORS
+  ✗ Work unit not found
+    Fix: Ensure work unit exists: fspec show-work-unit <id>
+
+  ✗ spec/work-units.json not found
+    Fix: Initialize fspec first: fspec init
+
+RELATED COMMANDS
+  fspec add-domain-event
+  fspec add-policy
+  fspec add-hotspot
+  fspec show-event-storm
+  fspec show-foundation-event-storm
+  fspec generate-example-mapping-from-event-storm
+
+NOTES
+  • Commands represent intentions that trigger state changes
+  • Commands assigned stable IDs starting from 0
+  • Deleted commands marked with deleted: true (soft delete)
+  • Use show-event-storm to view all Event Storm artifacts
+  • Bounded contexts help organize commands by subdomain (DDD pattern)
+
