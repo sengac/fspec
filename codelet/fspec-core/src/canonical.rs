@@ -957,6 +957,17 @@ pub const PORTED_COMMANDS: &[&str] = &[
     "remove-command-from-foundation",    // RPC-270
     // RPC-233 — generate-foundation-md (FOUNDATION.md generator)
     "generate-foundation-md", // RPC-233
+    // Batch 14 (2026-06-13) — schedules, foundation domain-events, read-only queries, foundation/tools config
+    "add-schedule",                        // RPC-191
+    "remove-schedule",                     // RPC-280
+    "pause-schedule",                      // RPC-254
+    "resume-schedule",                     // RPC-292
+    "add-domain-event-to-foundation",      // RPC-180
+    "remove-domain-event-from-foundation", // RPC-272
+    "dependencies",                        // RPC-224
+    "get-scenarios",                       // RPC-237
+    "update-foundation",                   // RPC-312
+    "configure-tools",                     // RPC-208
 ];
 
 /// True when the named command has a real Rust port (i.e. NOT a stub).

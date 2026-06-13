@@ -1,0 +1,128 @@
+
+DEPENDENCIES
+Show all dependency relationships for a work unit (blocks, blockedBy, dependsOn, relatesTo)
+
+WHEN TO USE
+  Use this command to quickly view all dependency relationships for a specific work unit. Shows which work units it blocks, is blocked by, depends on, and relates to. Essential for understanding work unit relationships and planning implementation order.
+
+PREREQUISITES
+  • spec/work-units.json exists with work units
+
+USAGE
+  fspec dependencies <work-unit-id> [options]
+
+ARGUMENTS
+  <work-unit-id> (required)
+    Work unit ID to show dependencies for
+
+OPTIONS
+  --graph
+    Display dependencies as graph visualization (shows dependency tree)
+
+COMMON PATTERNS
+  • Quick Dependency Check
+    Example: # Before starting work, check what blocks this work unit
+fspec dependencies UI-001
+
+# Output shows:
+#   Blocked by: AUTH-001, API-001
+#
+# Decision: Wait for AUTH-001 and API-001 to complete
+    undefined
+
+  • Understanding Impact
+    Example: # Check what will be unblocked after completing this work
+fspec dependencies AUTH-001
+
+# Output shows:
+#   Blocks: AUTH-002, AUTH-003, UI-001
+#
+# Completing AUTH-001 will unblock 3 work units
+    undefined
+
+  • Dependency Tree Visualization
+    Example: # View full dependency tree
+fspec dependencies AUTH-001 --graph
+
+# Shows cascading dependencies
+    undefined
+
+  • Integration with add-dependency
+    Example: # Add dependency
+fspec add-dependency UI-001 AUTH-001
+
+# Verify it was added
+fspec dependencies UI-001
+# Output: Depends on: AUTH-001
+    undefined
+
+
+TYPICAL WORKFLOW
+  1. Create work units → 2. Add dependencies with add-dependency command → 3. View relationships: fspec dependencies <id> → 4. Plan implementation order based on dependencies
+
+EXAMPLES
+  1. Show dependencies for work unit with no relationships
+  $ fspec dependencies MCP-001
+  Dependencies for MCP-001:
+
+  2. Show dependencies for work unit with multiple relationships
+  $ fspec dependencies MCP-004
+  Dependencies for MCP-004:
+  Depends on: MCP-001, MCP-002
+  Blocks: MCP-005
+  Related to: DOC-MCP-004
+
+  3. Show all dependency types
+  $ fspec dependencies AUTH-001
+  Dependencies for AUTH-001:
+  Blocks: AUTH-002, AUTH-003
+  Blocked by: INFRA-001
+  Depends on: SCHEMA-001
+  Related to: DOC-001
+
+  4. Show dependencies as graph visualization
+  $ fspec dependencies AUTH-001 --graph
+  AUTH-001
+  blocks → AUTH-002
+    blocks → AUTH-004
+  blocks → AUTH-003
+
+COMMON ERRORS
+  ✗ Error: Work unit 'INVALID-999' does not exist
+    Fix: Verify work unit ID exists. Run: fspec list-work-units
+
+Note: This error includes AI-friendly system-reminder with suggestions.
+
+RELATED COMMANDS
+  fspec add-dependency - Add dependency relationships between work units
+  fspec remove-dependency - Remove dependency relationships
+  fspec query-bottlenecks - Find critical path blockers
+  fspec suggest-dependencies - Auto-suggest dependencies based on patterns
+  fspec export-dependencies - Export dependency graph (JSON/Mermaid)
+  fspec show-work-unit - Show complete work unit details (includes dependencies)
+
+NOTES
+  • Simplified Command (BUG-019):
+  •   - This command was simplified from multi-action to single-purpose
+  •   - Old: fspec dependencies <action> <work-unit-id>
+  •   - New: fspec dependencies <work-unit-id>
+  •   - Other actions now use dedicated commands (add-dependency, remove-dependency, etc.)
+  • 
+  • Relationship types displayed:
+  •   blocks: Work units blocked by this work unit
+  •   blockedBy: Work units blocking this work unit
+  •   dependsOn: Soft dependencies (ordering hints)
+  •   relatesTo: Related work units (no blocking)
+  • 
+  • Error handling:
+  •   - Non-existent work units show AI-friendly system-reminder
+  •   - System-reminder includes troubleshooting steps
+  •   - Wrapped for visibility in Claude Code
+  • 
+  • For comprehensive dependency management:
+  •   - add-dependency: Create relationships
+  •   - remove-dependency: Delete relationships
+  •   - clear-dependencies: Remove all relationships
+  •   - export-dependencies: Visualize full graph
+  •   - query-bottlenecks: Find critical path issues
+

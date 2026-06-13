@@ -1,0 +1,95 @@
+
+ADD-SCHEDULE
+Add a new scheduled job to spec/schedules.json. Supports two job types: agent (spawns an AI agent session) and shell (executes a shell command). Schedules use standard 5-field cron expressions with IANA timezones.
+
+WHEN TO USE
+  Use when you need to set up recurring automated tasks such as nightly code reviews, daily test runs, periodic dependency checks, or scheduled report generation.
+
+WHEN NOT TO USE
+  Do not use for one-off tasks. Use lifecycle hooks instead if you need automation triggered by workflow state changes.
+
+PREREQUISITES
+  • Project must be initialized (spec/ directory exists)
+  • Schedule name must be unique (not already in spec/schedules.json)
+  • Cron expression must be valid 5-field standard syntax
+  • Timezone must be a valid IANA timezone string
+
+USAGE
+  fspec add-schedule -n <name> -c <cron> -z <timezone> -t <type> [options]
+
+OPTIONS
+  -n, --name <name>
+    Schedule name in slug format (lowercase, hyphenated). Must be unique across all schedules.
+  -c, --cron <expression>
+    Standard 5-field cron expression (minute hour day-of-month month day-of-week). Example: "0 2 * * *" for daily at 2 AM.
+  -z, --timezone <tz>
+    IANA timezone string for cron evaluation. Example: "America/New_York", "UTC", "Europe/London".
+  -t, --type <type>
+    Job type: "agent" (AI agent session) or "shell" (command execution).
+  -r, --role <role>
+    Agent role/system prompt (required for agent type). Defines the agent persona.
+  -p, --prompt <prompt>
+    Initial prompt sent to the agent session (required for agent type).
+  --command <command>
+    Shell command to execute (required for shell type).
+  -o, --overlap <policy>
+    What to do if the previous run is still active. "skip" (default) drops the run, "queue" waits.
+    Default: skip
+
+TYPICAL WORKFLOW
+  fspec add-schedule → fspec list-schedules → fspec pause-schedule (if needed) → fspec resume-schedule → fspec remove-schedule (cleanup)
+
+EXAMPLES
+  1. Add an agent schedule that runs nightly at 2 AM UTC
+  $ fspec add-schedule -n nightly-review -c "0 2 * * *" -z UTC -t agent -r "Security reviewer" -p "Review src/ for vulnerabilities"
+  ✓ Schedule 'nightly-review' added successfully
+  Type: agent
+  Cron: 0 2 * * *
+  Timezone: UTC
+
+  2. Add a shell schedule that runs tests weekdays at 6:30 AM Eastern
+  $ fspec add-schedule -n daily-tests -c "30 6 * * 1-5" -z America/New_York -t shell --command "<test-command>"
+  ✓ Schedule 'daily-tests' added successfully
+  Type: shell
+  Cron: 30 6 * * 1-5
+  Timezone: America/New_York
+
+  3. Add a weekly dependency audit with queue overlap policy
+  $ fspec add-schedule -n weekly-deps -c "0 9 * * 1" -z Europe/London -t shell --command "npx depcheck" -o queue
+  ✓ Schedule 'weekly-deps' added successfully
+  Type: shell
+  Cron: 0 9 * * 1
+  Timezone: Europe/London
+
+COMMON ERRORS
+  ✗ Schedule 'nightly-review' already exists
+    Fix: Choose a different name or remove the existing schedule first with 'fspec remove-schedule nightly-review'.
+
+  ✗ Agent schedules require both role and prompt
+    Fix: When using -t agent, you must provide both -r/--role and -p/--prompt.
+
+  ✗ Shell schedules require a command
+    Fix: When using -t shell, you must provide --command.
+
+  ✗ Invalid schedule name 'My Schedule'
+    Fix: Names must be lowercase, hyphenated slugs (e.g., 'my-schedule', 'nightly-review').
+
+  ✗ Invalid cron expression
+    Fix: Use standard 5-field format: minute(0-59) hour(0-23) day(1-31) month(1-12) weekday(0-7).
+
+RELATED COMMANDS
+  fspec list-schedules - List all configured schedules
+  fspec remove-schedule - Remove a schedule
+  fspec pause-schedule - Pause a schedule
+  fspec resume-schedule - Resume a paused schedule
+  fspec add-hook - Add lifecycle hooks (event-driven alternative)
+
+NOTES
+  • Schedules are stored in spec/schedules.json
+  • The file is created automatically if it does not exist
+  • Agent schedules spawn an AI agent session with the given role and prompt
+  • Shell schedules execute the command in the project root directory
+  • Overlap policy controls concurrent execution: skip (default) or queue
+  • New schedules are created with status "active" by default
+  • Cron expressions use 5-field standard syntax (no seconds field)
+

@@ -1,0 +1,253 @@
+{
+  "scenarios": [
+    {
+      "name": "Updating projectName on final foundation.json sets the nested field and regenerates FOUNDATION.md",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "lines": "80-111",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Updating problemImpact with an invalid enum value fails fast and leaves the file unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "lines": "113-141",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Updating projectType with a value longer than 30 characters fails fast",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "lines": "143-169",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "When a draft exists the draft is the write target and no FOUNDATION.md regeneration occurs",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "lines": "171-196",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An unknown section name is rejected and the foundation file is left unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "lines": "198-224",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "An empty section name is rejected before any file IO",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "lines": "226-252",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty content for a normal section is rejected with the generic content error",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/update_foundation.rs",
+          "lines": "254-280",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/update_foundation.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/update_foundation.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/update_foundation.rs"
+    ],
+    "totalLinesCovered": 320
+  }
+}

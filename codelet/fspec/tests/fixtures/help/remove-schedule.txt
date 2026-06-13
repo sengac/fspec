@@ -1,0 +1,51 @@
+
+REMOVE-SCHEDULE
+Remove a scheduled job from spec/schedules.json. Permanently deletes the schedule entry.
+
+WHEN TO USE
+  Use when a scheduled job is no longer needed and should be permanently removed. For temporary disabling, use pause-schedule instead.
+
+WHEN NOT TO USE
+  Do not use if you only want to temporarily stop a schedule. Use pause-schedule to suspend it and resume-schedule to reactivate later.
+
+PREREQUISITES
+  • Schedule must exist in spec/schedules.json
+  • spec/schedules.json must exist (created by add-schedule)
+
+USAGE
+  fspec remove-schedule <name>
+
+ARGUMENTS
+  <name> (required)
+    The name of the schedule to remove (must match an existing schedule)
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  fspec list-schedules → identify obsolete schedule → fspec remove-schedule <name> → fspec list-schedules (verify)
+
+EXAMPLES
+  1. Remove the nightly-review schedule
+  $ fspec remove-schedule nightly-review
+  ✓ Schedule 'nightly-review' removed successfully
+
+  2. Remove the daily-tests schedule
+  $ fspec remove-schedule daily-tests
+  ✓ Schedule 'daily-tests' removed successfully
+
+COMMON ERRORS
+  ✗ Schedule 'nightly-review' does not exist
+    Fix: Check the schedule name with 'fspec list-schedules'. Names are case-sensitive slugs.
+
+RELATED COMMANDS
+  fspec add-schedule - Create a new schedule
+  fspec list-schedules - List all configured schedules
+  fspec pause-schedule - Temporarily disable a schedule (non-destructive)
+  fspec resume-schedule - Re-enable a paused schedule
+
+NOTES
+  • Removal is permanent — there is no undo
+  • Consider using pause-schedule if you may need the schedule again
+  • The schedule entry is deleted from spec/schedules.json atomically
+

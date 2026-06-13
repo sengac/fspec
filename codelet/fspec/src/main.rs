@@ -130,6 +130,18 @@ mod add_command_to_foundation;
 mod remove_command_from_foundation;
 mod generate_foundation_md;
 
+// Batch 14 (2026-06-13)
+mod add_schedule;
+mod remove_schedule;
+mod pause_schedule;
+mod resume_schedule;
+mod add_domain_event_to_foundation;
+mod remove_domain_event_from_foundation;
+mod dependencies;
+mod get_scenarios;
+mod update_foundation;
+mod configure_tools;
+
 use std::path::PathBuf;
 
 use clap::error::{ContextKind, ContextValue, ErrorKind};
@@ -1375,6 +1387,96 @@ enum Mode {
         #[arg(long = "output", value_name = "path")]
         output: Option<String>,
     },
+    /// RPC-191: add a scheduled job (agent or shell) to schedules.json.
+    #[command(name = "add-schedule", about = "Add a scheduled workflow automation job")]
+    AddSchedule {
+        #[arg(short = 'n', long = "name", value_name = "name", allow_hyphen_values = true)]
+        name: String,
+        #[arg(short = 'c', long = "cron", value_name = "expression", allow_hyphen_values = true)]
+        cron: String,
+        #[arg(short = 'z', long = "timezone", value_name = "tz", allow_hyphen_values = true)]
+        timezone: String,
+        #[arg(short = 't', long = "type", value_name = "type", allow_hyphen_values = true)]
+        r#type: String,
+        #[arg(short = 'r', long = "role", value_name = "role", allow_hyphen_values = true)]
+        role: Option<String>,
+        #[arg(short = 'p', long = "prompt", value_name = "prompt", allow_hyphen_values = true)]
+        prompt: Option<String>,
+        #[arg(long = "command", value_name = "command", allow_hyphen_values = true)]
+        command: Option<String>,
+        #[arg(short = 'o', long = "overlap", value_name = "policy", default_value = "skip", allow_hyphen_values = true)]
+        overlap: String,
+    },
+    /// RPC-280: remove a scheduled job from schedules.json.
+    #[command(name = "remove-schedule", about = "Remove a scheduled job")]
+    RemoveSchedule {
+        #[arg(value_name = "name")]
+        name: String,
+    },
+    /// RPC-254: pause an active scheduled job.
+    #[command(name = "pause-schedule", about = "Pause an active scheduled job")]
+    PauseSchedule {
+        #[arg(value_name = "name")]
+        name: String,
+    },
+    /// RPC-292: resume a paused scheduled job.
+    #[command(name = "resume-schedule", about = "Resume a paused scheduled job")]
+    ResumeSchedule {
+        #[arg(value_name = "name")]
+        name: String,
+    },
+    /// RPC-180: add a domain event to a foundation bounded context.
+    #[command(name = "add-domain-event-to-foundation", about = "Add a domain event to a foundation bounded context in Big Picture Event Storm")]
+    AddDomainEventToFoundation {
+        #[arg(value_name = "context-name")]
+        context_name: String,
+        #[arg(value_name = "event-name")]
+        event_name: String,
+        #[arg(short = 'd', long = "description", value_name = "text")]
+        description: Option<String>,
+    },
+    /// RPC-272: remove a domain event from a foundation bounded context (soft-delete).
+    #[command(name = "remove-domain-event-from-foundation", about = "Remove a domain event from a foundation bounded context (soft-delete)")]
+    RemoveDomainEventFromFoundation {
+        #[arg(value_name = "context-name")]
+        context_name: String,
+        #[arg(value_name = "event-name")]
+        event_name: String,
+    },
+    /// RPC-224: show dependency relationships for a work unit.
+    #[command(name = "dependencies", about = "Show all dependency relationships for a work unit")]
+    Dependencies {
+        #[arg(value_name = "work-unit-id")]
+        work_unit_id: String,
+        #[arg(long = "graph")]
+        graph: bool,
+    },
+    /// RPC-237: extract scenarios from feature files.
+    #[command(name = "get-scenarios", about = "Extract scenarios from feature files with optional tag filtering")]
+    GetScenarios {
+        #[arg(long = "tag", value_name = "tag")]
+        tag: Vec<String>,
+        #[arg(long = "format", value_name = "format", default_value = "text")]
+        format: String,
+    },
+    /// RPC-312: update a foundation field.
+    #[command(name = "update-foundation", about = "Update a foundation field")]
+    UpdateFoundation {
+        #[arg(value_name = "section")]
+        section: String,
+        #[arg(value_name = "content")]
+        content: String,
+    },
+    /// RPC-208: configure test and quality-check tool commands.
+    #[command(name = "configure-tools", about = "Configure test and quality check commands")]
+    ConfigureTools {
+        #[arg(long = "test-command", value_name = "command")]
+        test_command: Option<String>,
+        #[arg(long = "quality-commands", value_name = "commands", num_args = 1..)]
+        quality_commands: Option<Vec<String>>,
+        #[arg(long = "reconfigure")]
+        reconfigure: bool,
+    },
 }
 
 #[tokio::main]
@@ -1906,6 +2008,61 @@ async fn main() -> std::process::ExitCode {
             generate_foundation_md::run,
             generate_foundation_md::CliArgs { output }
         ),
+        Some(Mode::AddSchedule {
+            name,
+            cron,
+            timezone,
+            r#type,
+            role,
+            prompt,
+            command,
+            overlap,
+        }) => forward!(
+            add_schedule::run,
+            add_schedule::CliArgs {
+                name,
+                cron,
+                timezone,
+                job_type: r#type,
+                role,
+                prompt,
+                command,
+                overlap,
+            }
+        ),
+        Some(Mode::RemoveSchedule { name }) => {
+            forward!(remove_schedule::run, remove_schedule::CliArgs { name })
+        }
+        Some(Mode::PauseSchedule { name }) => {
+            forward!(pause_schedule::run, pause_schedule::CliArgs { name })
+        }
+        Some(Mode::ResumeSchedule { name }) => {
+            forward!(resume_schedule::run, resume_schedule::CliArgs { name })
+        }
+        Some(Mode::AddDomainEventToFoundation { context_name, event_name, description }) => forward!(
+            add_domain_event_to_foundation::run,
+            add_domain_event_to_foundation::CliArgs { context_name, event_name, description }
+        ),
+        Some(Mode::RemoveDomainEventFromFoundation { context_name, event_name }) => forward!(
+            remove_domain_event_from_foundation::run,
+            remove_domain_event_from_foundation::CliArgs { context_name, event_name }
+        ),
+        Some(Mode::Dependencies { work_unit_id, graph }) => forward!(
+            dependencies::run,
+            dependencies::CliArgs { work_unit_id, graph }
+        ),
+        Some(Mode::GetScenarios { tag, format }) => forward!(
+            get_scenarios::run,
+            get_scenarios::CliArgs { tags: tag, format }
+        ),
+        Some(Mode::UpdateFoundation { section, content }) => forward!(
+            update_foundation::run,
+            update_foundation::CliArgs { section, content }
+        ),
+        Some(Mode::ConfigureTools { test_command, quality_commands, reconfigure }) => forward!(
+            configure_tools::run,
+            configure_tools::CliArgs { test_command, quality_commands, reconfigure }
+        ),
     };
     match res {
         Ok(()) => std::process::ExitCode::SUCCESS,
@@ -2198,7 +2355,21 @@ fn option_takes_value(sub: Option<&clap::Command>, tok: &str) -> bool {
             .map(|s| s.to_string() == flag)
             .unwrap_or(false);
         if matches_long || matches_short {
-            return arg.get_num_args().map(|n| n.takes_values()).unwrap_or(false);
+            // Prefer the explicit num_args when clap has finalised it; otherwise
+            // fall back to the ArgAction, which the derive layer always sets
+            // (Set/Append consume a value; SetTrue/SetFalse/Count/Help/Version
+            // are valueless flags). Relying on num_args alone is unsafe because
+            // `Command::command()` does not finalise num_args for derive-defined
+            // options, leaving it `None` and mis-counting option values as
+            // excess positionals (TS parity: Commander counts only true
+            // positionals).
+            if let Some(n) = arg.get_num_args() {
+                return n.takes_values();
+            }
+            return matches!(
+                arg.get_action(),
+                clap::ArgAction::Set | clap::ArgAction::Append
+            );
         }
     }
     false
@@ -2370,6 +2541,21 @@ fn intercept_ts_help() -> Option<u8> {
         "generate-foundation-md" => {
             format_command_help(&configs::generate_foundation_md::CONFIG)
         }
+        // Batch 14 (2026-06-13)
+        "add-schedule" => format_command_help(&configs::add_schedule::CONFIG),
+        "remove-schedule" => format_command_help(&configs::remove_schedule::CONFIG),
+        "pause-schedule" => format_command_help(&configs::pause_schedule::CONFIG),
+        "resume-schedule" => format_command_help(&configs::resume_schedule::CONFIG),
+        "add-domain-event-to-foundation" => {
+            format_command_help(&configs::add_domain_event_to_foundation::CONFIG)
+        }
+        "remove-domain-event-from-foundation" => {
+            format_command_help(&configs::remove_domain_event_from_foundation::CONFIG)
+        }
+        "dependencies" => format_command_help(&configs::dependencies::CONFIG),
+        "get-scenarios" => format_command_help(&configs::get_scenarios::CONFIG),
+        "update-foundation" => format_command_help(&configs::update_foundation::CONFIG),
+        "configure-tools" => format_command_help(&configs::configure_tools::CONFIG),
         // RPC-265 follow-up: register-tag has no custom `-help.ts` in TS;
         // `node dist/index.js register-tag --help` falls through to bare
         // Commander.js. The earlier Rust port introduced a rich

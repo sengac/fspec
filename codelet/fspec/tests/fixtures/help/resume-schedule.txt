@@ -1,0 +1,54 @@
+
+RESUME-SCHEDULE
+Resume a paused scheduled job by setting its status back to "active". The schedule will begin triggering again according to its cron expression.
+
+WHEN TO USE
+  Use after a maintenance window or investigation is complete to re-enable a previously paused schedule.
+
+WHEN NOT TO USE
+  Do not use on schedules that are already active. Check status first with list-schedules.
+
+PREREQUISITES
+  • Schedule must exist in spec/schedules.json
+  • Schedule must currently have status "paused"
+
+USAGE
+  fspec resume-schedule <name>
+
+ARGUMENTS
+  <name> (required)
+    The name of the schedule to resume (must be currently paused)
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  fspec list-schedules → confirm schedule is paused → fspec resume-schedule <name> → fspec list-schedules (verify active)
+
+EXAMPLES
+  1. Resume the nightly-review schedule after maintenance
+  $ fspec resume-schedule nightly-review
+  ✓ Schedule 'nightly-review' resumed successfully
+
+  2. Re-enable daily test runs
+  $ fspec resume-schedule daily-tests
+  ✓ Schedule 'daily-tests' resumed successfully
+
+COMMON ERRORS
+  ✗ Schedule 'nightly-review' does not exist
+    Fix: Check the schedule name with 'fspec list-schedules'. Names are case-sensitive slugs.
+
+  ✗ Schedule 'nightly-review' is already active
+    Fix: The schedule is already active and will trigger normally. No action needed.
+
+RELATED COMMANDS
+  fspec pause-schedule - Pause an active schedule
+  fspec list-schedules - List all schedules and their status
+  fspec add-schedule - Create a new schedule
+  fspec remove-schedule - Permanently remove a schedule
+
+NOTES
+  • Resuming restores the schedule to "active" status
+  • The schedule will trigger on its next matching cron time after resuming
+  • Missed runs during the paused period are not retroactively executed
+

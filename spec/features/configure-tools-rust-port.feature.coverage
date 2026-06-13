@@ -1,0 +1,189 @@
+{
+  "scenarios": [
+    {
+      "name": "Setting only the test command writes it under tools.test.command in a fresh project",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "lines": "54-73",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "lines": [
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Setting both test command and quality commands persists both arrays",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "lines": "75-100",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "lines": [
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "The reconfigure flag short-circuits without writing the config",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "lines": "102-127",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "A second run preserves previously stored quality commands via read-modify-write",
+      "testMappings": [
+        {
+          "file": "codelet/fspec-core/tests/configure_tools.rs",
+          "lines": "129-157",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/commands/configure_tools.rs",
+              "lines": [
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec-core/tests/configure_tools.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/commands/configure_tools.rs"
+    ],
+    "totalLinesCovered": 210
+  }
+}

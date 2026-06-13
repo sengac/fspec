@@ -1,0 +1,160 @@
+{
+  "scenarios": [
+    {
+      "name": "CLI resumes a paused schedule and prints a success message",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_resume_schedule.rs",
+          "lines": "83-115",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/resume_schedule.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI reports an error and exits 1 when the schedule does not exist",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_resume_schedule.rs",
+          "lines": "117-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/resume_schedule.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resume-schedule --help is byte-for-byte identical to TS reference output",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_resume_schedule.rs",
+          "lines": "152-203",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/resume_schedule.rs",
+              "lines": [
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function as the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_resume_schedule.rs",
+          "lines": "205-264",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/resume_schedule.rs",
+              "lines": [
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_resume_schedule.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec/src/resume_schedule.rs",
+      "codelet/fspec-core/src/help/configs/resume_schedule.rs"
+    ],
+    "totalLinesCovered": 258
+  }
+}

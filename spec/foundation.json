@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "project": {
-    "name": "fspec",
+    "name": "x",
     "vision": "The only system that transforms business conversations into production-ready features—unifying product owners, business analysts, developers, QA engineers, and AI agents in a single disciplined workflow where requirements become executable specs, specs become tests, and complete traceability prevents anyone (human or AI) from breaking the chain.",
     "projectType": "cli-tool"
   },

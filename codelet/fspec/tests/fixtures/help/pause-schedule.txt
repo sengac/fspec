@@ -1,0 +1,54 @@
+
+PAUSE-SCHEDULE
+Pause a scheduled job by setting its status to "paused". The schedule remains in spec/schedules.json but will not trigger until resumed.
+
+WHEN TO USE
+  Use when you want to temporarily stop a schedule from triggering without removing it. Useful during maintenance windows, deployments, or when investigating issues.
+
+WHEN NOT TO USE
+  Do not use if you want to permanently remove the schedule. Use remove-schedule instead.
+
+PREREQUISITES
+  • Schedule must exist in spec/schedules.json
+  • Schedule must currently have status "active"
+
+USAGE
+  fspec pause-schedule <name>
+
+ARGUMENTS
+  <name> (required)
+    The name of the schedule to pause (must be currently active)
+
+OPTIONS
+  No options available
+
+TYPICAL WORKFLOW
+  fspec list-schedules → fspec pause-schedule <name> (before maintenance) → perform maintenance → fspec resume-schedule <name> (after maintenance)
+
+EXAMPLES
+  1. Pause the nightly-review schedule
+  $ fspec pause-schedule nightly-review
+  ✓ Schedule 'nightly-review' paused successfully
+
+  2. Pause during a maintenance window
+  $ fspec pause-schedule daily-tests
+  ✓ Schedule 'daily-tests' paused successfully
+
+COMMON ERRORS
+  ✗ Schedule 'nightly-review' does not exist
+    Fix: Check the schedule name with 'fspec list-schedules'. Names are case-sensitive slugs.
+
+  ✗ Schedule 'nightly-review' is already paused
+    Fix: The schedule is already paused. Use resume-schedule to reactivate it.
+
+RELATED COMMANDS
+  fspec resume-schedule - Resume a paused schedule
+  fspec list-schedules - List all schedules and their status
+  fspec remove-schedule - Permanently remove a schedule
+  fspec add-schedule - Create a new schedule
+
+NOTES
+  • Pausing is non-destructive — the schedule configuration is preserved
+  • A paused schedule will not trigger until explicitly resumed
+  • Use list-schedules to verify the schedule status after pausing
+

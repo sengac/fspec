@@ -1,0 +1,186 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_domain_event_from_foundation.rs",
+          "lines": "105-123",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/remove_domain_event_from_foundation.rs",
+              "lines": [
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI successfully soft-deletes a domain event and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_domain_event_from_foundation.rs",
+          "lines": "136-176",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_domain_event_from_foundation.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects a missing event with exit 1 and the TS-parity error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_domain_event_from_foundation.rs",
+          "lines": "178-219",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_domain_event_from_foundation.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_remove_domain_event_from_foundation.rs",
+          "lines": "221-278",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/remove_domain_event_from_foundation.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_remove_domain_event_from_foundation.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/remove_domain_event_from_foundation.rs",
+      "codelet/fspec/src/remove_domain_event_from_foundation.rs"
+    ],
+    "totalLinesCovered": 265
+  }
+}

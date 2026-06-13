@@ -432,6 +432,31 @@ fn run_ported(
             "generate-foundation-md" => {
                 commands::generate_foundation_md::run(args_json, project_root).await
             }
+            // Batch 14 (2026-06-13)
+            // RPC-191 — add-schedule
+            "add-schedule" => commands::add_schedule::run(args_json, project_root).await,
+            // RPC-280 — remove-schedule
+            "remove-schedule" => commands::remove_schedule::run(args_json, project_root).await,
+            // RPC-254 — pause-schedule
+            "pause-schedule" => commands::pause_schedule::run(args_json, project_root).await,
+            // RPC-292 — resume-schedule
+            "resume-schedule" => commands::resume_schedule::run(args_json, project_root).await,
+            // RPC-180 — add-domain-event-to-foundation
+            "add-domain-event-to-foundation" => {
+                commands::add_domain_event_to_foundation::run(args_json, project_root).await
+            }
+            // RPC-272 — remove-domain-event-from-foundation
+            "remove-domain-event-from-foundation" => {
+                commands::remove_domain_event_from_foundation::run(args_json, project_root).await
+            }
+            // RPC-224 — dependencies
+            "dependencies" => commands::dependencies::run(args_json, project_root).await,
+            // RPC-237 — get-scenarios
+            "get-scenarios" => commands::get_scenarios::run(args_json, project_root).await,
+            // RPC-312 — update-foundation
+            "update-foundation" => commands::update_foundation::run(args_json, project_root).await,
+            // RPC-208 — configure-tools
+            "configure-tools" => commands::configure_tools::run(args_json, project_root).await,
             // Unreachable: gated by `is_ported` above.
             _ => unreachable!("ported-command match must agree with `is_ported` predicate"),
         }
@@ -470,9 +495,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "add-diagram" — ported (RPC-178, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-domain-event" — ported (RPC-179, Batch 11). Handled by `run_ported`.
-            "add-domain-event-to-foundation" => {
-                commands::add_domain_event_to_foundation::run(args_json).await
-            }
+            // "add-domain-event-to-foundation" — ported (RPC-180, Batch 14). Handled by `run_ported`.
             // "add-example" — ported (RPC-181, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "add-external-system" — ported (RPC-182, Batch 11). Handled by `run_ported`.
@@ -487,7 +510,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "add-rule" — ported (RPC-189, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "add-scenario" => commands::add_scenario::run(args_json).await,
-            "add-schedule" => commands::add_schedule::run(args_json).await,
+            // "add-schedule" — ported (RPC-191, Batch 14). Handled by `run_ported`.
             "add-step" => commands::add_step::run(args_json).await,
             // "add-tag-to-feature" — ported (RPC-193, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
@@ -511,7 +534,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "compact-work-unit" — ported (RPC-206, Batch 12). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "compare-implementations" => commands::compare_implementations::run(args_json).await,
-            "configure-tools" => commands::configure_tools::run(args_json).await,
+            // "configure-tools" — ported (RPC-208, Batch 14). Handled by `run_ported`.
             // "copy-virtual-hooks" — ported (RPC-209, Batch 10). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "create-bug" — ported (RPC-210, Batch 11). Handled by `run_ported`.
@@ -534,7 +557,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "delete-work-unit" — ported (RPC-223, Batch 12). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "dependencies" => commands::dependencies::run(args_json).await,
+            // "dependencies" — ported (RPC-224, Batch 14). Handled by `run_ported`.
             "discover-event-storm" => commands::discover_event_storm::run(args_json).await,
             "discover-foundation" => commands::discover_foundation::run(args_json).await,
             // "export-dependencies" — ported (RPC-227, Batch 12). Handled by `run_ported`.
@@ -549,7 +572,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             "generate-scenarios" => commands::generate_scenarios::run(args_json).await,
             "generate-summary-report" => commands::generate_summary_report::run(args_json).await,
             "generate-tags-md" => commands::generate_tags_md::run(args_json).await,
-            "get-scenarios" => commands::get_scenarios::run(args_json).await,
+            // "get-scenarios" — ported (RPC-237, Batch 14). Handled by `run_ported`.
             "import-example-map" => commands::import_example_map::run(args_json).await,
             "init" => commands::init::run(args_json).await,
             "link-coverage" => commands::link_coverage::run(args_json).await,
@@ -579,7 +602,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "list-work-units" — ported (RPC-253). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "pause-schedule" => commands::pause_schedule::run(args_json).await,
+            // "pause-schedule" — ported (RPC-254, Batch 14). Handled by `run_ported`.
             // "prioritize-work-unit" — ported (RPC-255, Batch 12). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "query-bottlenecks" — ported (RPC-256). Handled by `run_ported`
@@ -611,9 +634,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "remove-command-from-foundation" — ported (RPC-270, Batch 13). Handled by `run_ported`.
             // "remove-dependency" — ported (RPC-271, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-domain-event-from-foundation" => {
-                commands::remove_domain_event_from_foundation::run(args_json).await
-            }
+            // "remove-domain-event-from-foundation" — ported (RPC-272, Batch 14). Handled by `run_ported`.
             // "remove-example" — ported (RPC-273, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "remove-foundation-bounded-context" — ported (RPC-274, Batch 13). Handled by `run_ported`.
@@ -625,7 +646,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "remove-rule" — ported (RPC-279, Batch 8). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "remove-schedule" => commands::remove_schedule::run(args_json).await,
+            // "remove-schedule" — ported (RPC-280, Batch 14). Handled by `run_ported`.
             // "remove-tag-from-feature" — ported (RPC-281, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             // "remove-tag-from-scenario" — ported (RPC-282, Batch 9). Handled by `run_ported`
@@ -645,7 +666,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // before reaching this match; intentionally absent here.
             // "restore-rule" — ported (RPC-291, Batch 9). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
-            "resume-schedule" => commands::resume_schedule::run(args_json).await,
+            // "resume-schedule" — ported (RPC-292, Batch 14). Handled by `run_ported`.
             "retag" => commands::retag::run(args_json).await,
             "reverse" => commands::reverse::run(args_json).await,
             "review" => commands::review::run(args_json).await,
@@ -677,7 +698,7 @@ fn run_stub(name: &'static str, args_json: &str) -> Result<String, FspecCoreErro
             // "tag-stats" — ported (RPC-310). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "unlink-coverage" => commands::unlink_coverage::run(args_json).await,
-            "update-foundation" => commands::update_foundation::run(args_json).await,
+            // "update-foundation" — ported (RPC-312, Batch 14). Handled by `run_ported`.
             // "update-prefix" — ported (RPC-313, Batch 7). Handled by `run_ported`
             // before reaching this match; intentionally absent here.
             "update-scenario" => commands::update_scenario::run(args_json).await,

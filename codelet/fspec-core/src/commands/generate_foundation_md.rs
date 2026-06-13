@@ -11,10 +11,12 @@
 //!
 //! * **JSON schema validation**: the TS command calls `validateFoundationJson`
 //!   (Ajv) and aborts with a `foundation.json has validation errors: ...`
-//!   message on failure. No Ajv equivalent is ported to Rust
-//!   (`validate-foundation-schema` is still `NotYetPorted`), so this port
-//!   SKIPS schema validation. Valid foundations produce byte-identical
-//!   output; the Ajv error text for malformed input cannot be reproduced.
+//!   message on failure. This port reproduces that gate with a native
+//!   draft-07-subset validator
+//!   ([`crate::generators::foundation_schema::validate_foundation`]) bundling
+//!   the same `generic-foundation.schema.json`; errors render in Ajv's
+//!   `${instancePath}: ${message}` form. Valid foundations produce
+//!   byte-identical output.
 //! * **Mermaid validation**: TS uses `mermaid.parse()` + jsdom. Rust uses the
 //!   lightweight pure-string pre-check documented in `add_diagram.rs`
 //!   (quoted-subgraph-title + invalid-identifier detection only). The
@@ -26,7 +28,7 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 
 use crate::error::FspecCoreError;
-use crate::generators::{generate_foundation_md, validate_mermaid};
+use crate::generators::{format_errors, generate_foundation_md, validate_foundation, validate_mermaid};
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(default)]
@@ -89,6 +91,23 @@ fn generate(project_root: &Path, output_path: Option<&str>) -> Result<String, Fs
             file: "foundation.json".to_string(),
             reason: e.to_string(),
         })?;
+
+    // Validate foundation.json against the bundled generic-foundation schema
+    // BEFORE rendering — mirroring the TS `validateFoundationJson` (Ajv) gate
+    // in `generate-foundation-md.ts`. On failure the TS command returns
+    // `{ success: false }` and writes nothing. The six Event-Storm
+    // auto-regenerate callers ignore that result (best-effort), so an invalid
+    // foundation simply leaves FOUNDATION.md untouched. Errors render as
+    // `${instancePath}: ${message}` joined by "; " to match Ajv verbatim.
+    if let Err(schema_errors) = validate_foundation(&foundation) {
+        return Err(FspecCoreError::InvalidArgs {
+            command: "generate-foundation-md",
+            reason: format!(
+                "foundation.json has validation errors: {}",
+                format_errors(&schema_errors)
+            ),
+        });
+    }
 
     // Validate all Mermaid diagrams in architectureDiagrams (lightweight
     // pre-check). Mirrors the TS loop that collects every failure.
@@ -193,11 +212,27 @@ mod tests {
         .unwrap();
     }
 
+    /// Schema-valid scaffold matching `generic-foundation.schema.json`'s
+    /// required top-level shape. Tests merge their own fields onto this so
+    /// the schema-validation gate added to `generate()` passes — the TS
+    /// `validateFoundationJson` (Ajv) check rejects bare `{project:{...}}`.
+    fn valid_base() -> serde_json::Map<String, Value> {
+        json!({
+            "version": "2.0.0",
+            "project": { "name": "Demo", "vision": "V", "projectType": "cli-tool" },
+            "problemSpace": { "primaryProblem": { "title": "t", "description": "d", "impact": "medium" } },
+            "solutionSpace": { "overview": "o", "capabilities": [{ "name": "C", "description": "d" }] }
+        })
+        .as_object()
+        .cloned()
+        .unwrap()
+    }
+
     #[test]
     fn generate_writes_foundation_md_byte_exact() {
         // @step Given spec/foundation.json exists with a valid generic foundation
         let tmp = tempfile::tempdir().unwrap();
-        let foundation = json!({ "project": { "name": "Demo", "vision": "V" } });
+        let foundation = Value::Object(valid_base());
         write_foundation(tmp.path(), foundation.clone());
         // @step When I dispatch generate-foundation-md with no output override
         let message = generate(tmp.path(), None).unwrap();
@@ -217,10 +252,7 @@ mod tests {
     fn generate_honours_custom_output_path() {
         // @step Given spec/foundation.json exists with a valid generic foundation
         let tmp = tempfile::tempdir().unwrap();
-        write_foundation(
-            tmp.path(),
-            json!({ "project": { "name": "Demo", "vision": "V" } }),
-        );
+        write_foundation(tmp.path(), Value::Object(valid_base()));
         // @step When I dispatch generate-foundation-md with output='docs/FOUNDATION.md'
         let message = generate(tmp.path(), Some("docs/FOUNDATION.md")).unwrap();
         // @step Then generation succeeds
@@ -260,31 +292,28 @@ mod tests {
 
     #[test]
     fn generate_renders_header_only_when_no_optional_sections() {
-        // @step Given a foundation with a project name but no problem space, solution space, personas, or diagrams
+        // @step Given a foundation with a project name but no personas or diagrams
         let tmp = tempfile::tempdir().unwrap();
-        write_foundation(
-            tmp.path(),
-            json!({ "project": { "name": "Demo", "vision": "V" }, "problemSpace": {}, "solutionSpace": {} }),
-        );
+        write_foundation(tmp.path(), Value::Object(valid_base()));
         // @step When the markdown is generated
         generate(tmp.path(), None).unwrap();
         let md = std::fs::read_to_string(tmp.path().join("spec").join("FOUNDATION.md")).unwrap();
-        // @step Then only the title header is rendered
+        // @step Then the title header is rendered
         assert!(md.contains("# Demo Project Foundation"));
         assert!(md.starts_with("<!-- THIS FILE IS AUTO-GENERATED"));
     }
 
     #[test]
     fn generate_falls_back_to_default_header_when_no_project_name() {
-        // @step Given a foundation with no project name
-        let tmp = tempfile::tempdir().unwrap();
-        write_foundation(
-            tmp.path(),
-            json!({ "problemSpace": {}, "solutionSpace": {} }),
-        );
-        // @step When the markdown is generated
-        generate(tmp.path(), None).unwrap();
-        let md = std::fs::read_to_string(tmp.path().join("spec").join("FOUNDATION.md")).unwrap();
+        // @step Given a name-less foundation, the generator falls back to the default header
+        let mut base = valid_base();
+        // A name-less foundation is schema-invalid (project.name has minLength 1
+        // and project is required), so it would not regenerate via generate().
+        // Exercise the renderer directly to assert the fallback header.
+        base.remove("project");
+        let foundation = Value::Object(base);
+        // @step When the markdown is generated directly (bypassing the schema gate)
+        let md = generate_foundation_md(&foundation).unwrap();
         // @step Then a fallback header is rendered
         assert!(md.contains("# Project Foundation"));
     }
@@ -317,15 +346,14 @@ mod tests {
 
         // @step Given spec/foundation.json has one architectureDiagram whose mermaidCode has an unterminated node label
         let tmp = tempfile::tempdir().unwrap();
-        write_foundation(
-            tmp.path(),
-            json!({
-                "project": { "name": "Demo", "vision": "V" },
-                "architectureDiagrams": [
-                    { "title": "Broken", "mermaidCode": "flowchart TD\n  A[Start --> B[Done" }
-                ]
-            }),
+        let mut base = valid_base();
+        base.insert(
+            "architectureDiagrams".to_string(),
+            json!([
+                { "title": "Broken", "mermaidCode": "flowchart TD\n  A[Start --> B[Done" }
+            ]),
         );
+        write_foundation(tmp.path(), Value::Object(base));
 
         // @step When I dispatch generate-foundation-md
         let err = generate(tmp.path(), None).unwrap_err();
@@ -345,21 +373,22 @@ mod tests {
 
         // @step Given a foundation with bounded contexts, aggregates, commands and events
         let tmp = tempfile::tempdir().unwrap();
-        write_foundation(
-            tmp.path(),
+        let mut base = valid_base();
+        base.insert(
+            "eventStorm".to_string(),
             json!({
-                "project": { "name": "Demo", "vision": "V" },
-                "eventStorm": {
-                    "items": [
-                        { "type": "bounded_context", "id": "bc1", "text": "Work Management" },
-                        { "type": "bounded_context", "id": "bc2", "text": "Specification" },
-                        { "type": "command", "id": "1", "text": "Create Work Unit", "boundedContextId": "bc1" },
-                        { "type": "aggregate", "id": "1", "text": "Work Unit", "boundedContextId": "bc1" },
-                        { "type": "event", "id": "1", "text": "Work Unit Created", "boundedContextId": "bc1" }
-                    ]
-                }
+                "level": "big_picture",
+                "items": [
+                    { "type": "bounded_context", "id": 1, "text": "Work Management", "color": null, "deleted": false, "createdAt": "2024-01-01T00:00:00.000Z" },
+                    { "type": "bounded_context", "id": 2, "text": "Specification", "color": null, "deleted": false, "createdAt": "2024-01-01T00:00:00.000Z" },
+                    { "type": "command", "id": 3, "text": "Create Work Unit", "boundedContextId": 1, "color": "blue", "deleted": false, "createdAt": "2024-01-01T00:00:00.000Z" },
+                    { "type": "aggregate", "id": 4, "text": "Work Unit", "boundedContextId": 1, "color": "yellow", "deleted": false, "createdAt": "2024-01-01T00:00:00.000Z" },
+                    { "type": "event", "id": 5, "text": "Work Unit Created", "boundedContextId": 1, "color": "orange", "deleted": false, "createdAt": "2024-01-01T00:00:00.000Z" }
+                ],
+                "nextItemId": 6
             }),
         );
+        write_foundation(tmp.path(), Value::Object(base));
 
         // @step When the FOUNDATION.md generator emits the bounded-context map and per-context event-flow diagrams
         let message = generate(tmp.path(), None).unwrap();

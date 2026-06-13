@@ -1,0 +1,82 @@
+
+CONFIGURE-TOOLS
+Configure test and quality check commands for platform-agnostic workflow. Required for ACDD validation phase.
+
+WHEN TO USE
+  Use this command during first-time setup or when changing test/quality tools. fspec is platform-agnostic and does NOT hardcode tool commands. You MUST configure tools for your specific platform (Node.js, Python, Rust, Go, etc.).
+
+PREREQUISITES
+  • Identify your testing framework (<test-command>, pytest, cargo test, go test, etc.)
+  • Identify your quality check commands (linting, formatting, type checking)
+  • Run from project root directory
+
+USAGE
+  fspec configure-tools [options]
+
+OPTIONS
+  --test-command <command>
+    Test command to run (e.g., "<test-command>", "pytest", "cargo test", "go test ./...")
+  --quality-commands <commands...>
+    Quality check commands to run (e.g., "<quality-check-commands>", "black --check ." "mypy .", "cargo clippy" "cargo fmt --check")
+  --reconfigure
+    Re-detect tools and update existing configuration
+
+TYPICAL WORKFLOW
+  1. Detect framework: Check package.json, Cargo.toml, go.mod, etc.
+2. Configure tools: fspec configure-tools --test-command <cmd> --quality-commands <cmds>
+3. Verify: cat spec/fspec-config.json
+4. Use in ACDD: Tools are used automatically during validating phase
+
+EXAMPLES
+  1. Configure tools for your platform
+  $ fspec configure-tools --test-command "<test-command>" --quality-commands "<quality-check-commands>"
+  ✓ Test command configured: <test-command>
+✓ Quality check commands configured: <quality-check-commands>
+✓ Configuration saved to spec/fspec-config.json
+
+  2. Configure for Python project with pytest
+  $ fspec configure-tools --test-command "pytest" --quality-commands "black --check ." "mypy ."
+  ✓ Test command configured: pytest
+✓ Quality check commands configured: black --check ., mypy .
+✓ Configuration saved to spec/fspec-config.json
+
+  3. Configure for Rust project with cargo
+  $ fspec configure-tools --test-command "cargo test" --quality-commands "cargo clippy" "cargo fmt --check"
+  ✓ Test command configured: cargo test
+✓ Quality check commands configured: cargo clippy, cargo fmt --check
+✓ Configuration saved to spec/fspec-config.json
+
+  4. Configure for Go project
+  $ fspec configure-tools --test-command "go test ./..." --quality-commands "go fmt ./..." "go vet ./..."
+  ✓ Test command configured: go test ./...
+✓ Quality check commands configured: go fmt ./..., go vet ./...
+✓ Configuration saved to spec/fspec-config.json
+
+  5. Re-detect and update tool configuration
+  $ fspec configure-tools --reconfigure
+  Detecting project type...
+Found: Node.js (package.json)
+Recommended test command: <test-command>
+Recommended quality commands: <quality-check-commands>
+[Interactive prompts to confirm...]
+
+COMMON ERRORS
+  ✗ NO TEST COMMAND CONFIGURED
+    Fix: Run: fspec configure-tools --test-command "your-test-command"
+
+  ✗ No quality check commands configured
+    Fix: Run: fspec configure-tools --quality-commands "lint-cmd" "format-cmd"
+
+RELATED COMMANDS
+  fspec bootstrap
+  fspec validate
+  fspec check
+  fspec board
+
+NOTES
+  • Configuration persists in spec/fspec-config.json
+  • Commands are run during validating phase of ACDD workflow
+  • Platform-agnostic: works with any language/framework
+  • System reminders guide you if tools are not configured
+  • Use --reconfigure to update existing configuration
+

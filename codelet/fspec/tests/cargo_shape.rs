@@ -620,6 +620,18 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
         "remove_command_from_foundation.rs",
         // RPC-233 (foundation markdown regeneration)
         "generate_foundation_md.rs",
+        // Batch 14 (2026-06-13): schedules, foundation domain-events,
+        // read-only queries, foundation/tools config CLI bridges.
+        "add_schedule.rs",
+        "remove_schedule.rs",
+        "pause_schedule.rs",
+        "resume_schedule.rs",
+        "add_domain_event_to_foundation.rs",
+        "remove_domain_event_from_foundation.rs",
+        "dependencies.rs",
+        "get_scenarios.rs",
+        "update_foundation.rs",
+        "configure_tools.rs",
     ]
     .iter()
     .copied()
@@ -637,7 +649,7 @@ fn scenario_fspec_src_contains_exactly_the_locked_file_layout() {
     }
     assert!(
         unexpected.is_empty(),
-        "only the locked 109 .rs files are permitted; found extras: {unexpected:?}"
+        "only the locked 119 .rs files are permitted; found extras: {unexpected:?}"
     );
 
     // @step And each file in the directory is under 300 lines of code

@@ -121,3 +121,15 @@ pub mod remove_foundation_bounded_context;
 pub mod remove_persona;
 // RPC-233 — generate-foundation-md
 pub mod generate_foundation_md;
+
+// Batch 14 (2026-06-13)
+pub mod add_domain_event_to_foundation;
+pub mod add_schedule;
+pub mod configure_tools;
+pub mod dependencies;
+pub mod get_scenarios;
+pub mod pause_schedule;
+pub mod remove_domain_event_from_foundation;
+pub mod remove_schedule;
+pub mod resume_schedule;
+pub mod update_foundation;

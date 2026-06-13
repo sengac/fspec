@@ -1,0 +1,26 @@
+
+GET-SCENARIOS
+Extract scenarios from feature files with optional filtering
+
+USAGE
+  fspec get-scenarios [options]
+
+OPTIONS
+  --file <file>
+    Specific feature file
+  --tag <tag>
+    Filter by tag (can use multiple)
+  --format <format>
+    Output format: text, json, or list
+
+EXAMPLES
+  1. Get scenarios from file
+  $ fspec get-scenarios --file spec/features/login.feature
+  Login with valid credentials
+Login with invalid password
+Login with locked account
+
+RELATED COMMANDS
+  fspec show-acceptance-criteria
+  fspec list-features
+

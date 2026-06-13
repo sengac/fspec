@@ -1,0 +1,249 @@
+{
+  "scenarios": [
+    {
+      "name": "Help output matches the captured TS fixture",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "lines": "91-119",
+          "implMappings": [
+            {
+              "file": "codelet/fspec-core/src/help/configs/add_domain_event_to_foundation.rs",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI successfully appends a domain event and prints the success line",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "lines": "121-150",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI forwards the --description flag into the persisted item",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "lines": "152-184",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI rejects a missing bounded context with exit 1 and the TS-parity error prefix",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "lines": "186-218",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI delegates to the same fspec_core function used by the dispatcher",
+      "testMappings": [
+        {
+          "file": "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs",
+          "lines": "220-273",
+          "implMappings": [
+            {
+              "file": "codelet/fspec/src/add_domain_event_to_foundation.rs",
+              "lines": [
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/fspec/tests/cli_add_domain_event_to_foundation.rs"
+    ],
+    "implFiles": [
+      "codelet/fspec-core/src/help/configs/add_domain_event_to_foundation.rs",
+      "codelet/fspec/src/add_domain_event_to_foundation.rs"
+    ],
+    "totalLinesCovered": 331
+  }
+}
